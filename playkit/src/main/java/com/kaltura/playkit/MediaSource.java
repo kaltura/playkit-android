@@ -13,6 +13,7 @@ public class MediaSource {
         id = jsonObject.getString("id");
         url = jsonObject.getString("url");
         mimeType = jsonObject.getString("mimeType");
-        drmData = new DRMData(jsonObject.getJSONObject("drmData"));
+        JSONObject drmData = jsonObject.optJSONObject("drmData");
+        this.drmData = drmData != null ? new DRMData(drmData) : null;
     }
 }

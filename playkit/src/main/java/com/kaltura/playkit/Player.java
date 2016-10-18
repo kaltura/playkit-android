@@ -2,13 +2,6 @@ package com.kaltura.playkit;
 
 import android.view.View;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by Noam Tamim @ Kaltura on 18/09/2016.
  */
@@ -47,6 +40,18 @@ public interface Player {
      */
     void play();
 
+    /**
+     * Prepare for playing the next entry. If config.shouldAutoPlay is true, the entry will automatically
+     * play when it's ready and the current entry is ended.
+     * @param playerConfig
+     */
+    void prepareNext(PlayerConfig playerConfig);
+
+    /**
+     * Load the entry that was prepared with {@link #prepareNext(PlayerConfig)}. If the prepared
+     * config has {@link PlayerConfig#shouldAutoPlay}=true, this will trigger playback.
+     */
+    void loadNext();
     
     
 }
