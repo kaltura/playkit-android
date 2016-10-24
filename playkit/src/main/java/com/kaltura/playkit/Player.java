@@ -54,6 +54,22 @@ public interface Player {
     void loadNext();
     
     
+    class RelativeTime {
+        
+        enum Origin {
+            START, END
+        }
+
+        Origin origin;
+        long offset;
+    }
+    
+    interface TimeListener {
+        void onTimeReached(Player player, RelativeTime.Origin origin, long offset);
+    }
+
+    void addBoundaryTimeListener(RelativeTime[] times, boolean wait, TimeListener listener);
+    void addTimeProgressListener(long interval, TimeListener listener);
 }
 
 

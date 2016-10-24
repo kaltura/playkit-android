@@ -303,7 +303,17 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     public void loadNext() {
 
     }
-    
+
+    @Override
+    public void addBoundaryTimeListener(RelativeTime[] times, boolean async, TimeListener listener) {
+        
+    }
+
+    @Override
+    public void addTimeProgressListener(long interval, TimeListener listener) {
+
+    }
+
     // ExoPlayer
 
     private void initializePlayer() {
