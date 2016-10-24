@@ -8,7 +8,9 @@ import android.widget.LinearLayout;
 import com.kaltura.playkit.MediaEntry;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
+import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerFactory;
+import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.Utils;
 
 import org.json.JSONArray;
@@ -33,8 +35,22 @@ public class MainActivity extends AppCompatActivity {
         }
         
         
-        final Player player = PlayerFactory.newInstance(this);
+        final Player player = PlayerFactory.newPlayer(this);
+        
+        player.addEventListener(new PlayerEvent.Listener() {
+            @Override
+            public void onPlayerEvent(Player player, PlayerEvent event) {
+                
+            }
+        }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
 
+        player.addStateChangeListener(new PlayerState.Listener() {
+            @Override
+            public void onPlayerStateChanged(Player player, PlayerState newState) {
+                
+            }
+        });
+        
         PlayerConfig config = getPlayerConfig(0);
 
         if (config != null) {

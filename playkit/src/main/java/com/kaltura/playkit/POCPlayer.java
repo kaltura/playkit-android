@@ -3,7 +3,10 @@ package com.kaltura.playkit;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Surface;
 import android.view.View;
 
@@ -50,6 +53,7 @@ import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -267,14 +271,14 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     }
     
     @Override
-    public void load(PlayerConfig playerConfig) {
+    public void load(@NonNull PlayerConfig playerConfig) {
         mCurrentSourceUri = Uri.parse(playerConfig.entry.sources.get(0).url);
         shouldAutoPlay = playerConfig.shouldAutoPlay;
         initializePlayer();
     }
 
     @Override
-    public void apply(PlayerConfig playerConfig) {
+    public void apply(@NonNull PlayerConfig playerConfig) {
         shouldAutoPlay = playerConfig.shouldAutoPlay;
     }
 
@@ -295,7 +299,7 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     }
 
     @Override
-    public void prepareNext(PlayerConfig playerConfig) {
+    public void prepareNext(@NonNull PlayerConfig playerConfig) {
 
     }
 
@@ -305,12 +309,22 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     }
 
     @Override
-    public void addBoundaryTimeListener(RelativeTime[] times, boolean async, TimeListener listener) {
+    public void addEventListener(@NonNull PlayerEvent.Listener listener, @Nullable PlayerEvent... events) {
+        Log.e("POC", "events=" + Arrays.toString(events));
+    }
+
+    @Override
+    public void addStateChangeListener(@NonNull PlayerState.Listener listener) {
         
     }
 
     @Override
-    public void addTimeProgressListener(long interval, TimeListener listener) {
+    public void addBoundaryTimeListener(@NonNull RelativeTime[] times, boolean async, @NonNull TimeListener listener) {
+        
+    }
+
+    @Override
+    public void addTimeProgressListener(long interval, @NonNull TimeListener listener) {
 
     }
 
