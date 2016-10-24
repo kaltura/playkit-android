@@ -1,7 +1,6 @@
 package com.kaltura.playkit;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.View;
 
 /**
@@ -13,13 +12,13 @@ public interface Player {
      * Reset player and load a new config.
      * @param playerConfig
      */
-    void load(PlayerConfig playerConfig);
+    void load(@NonNull PlayerConfig playerConfig);
 
     /**
      * Modify player state with the set fields.
      * @param playerConfig
      */
-    void apply(PlayerConfig playerConfig);
+    void apply(@NonNull PlayerConfig playerConfig);
 
     /**
      * The Player's View.
@@ -43,7 +42,7 @@ public interface Player {
      * play when it's ready and the current entry is ended.
      * @param playerConfig
      */
-    void prepareNext(PlayerConfig playerConfig);
+    void prepareNext(@NonNull PlayerConfig playerConfig);
 
     /**
      * Load the entry that was prepared with {@link #prepareNext(PlayerConfig)}. If the prepared
@@ -51,7 +50,7 @@ public interface Player {
      */
     void loadNext();
     
-    void addEventListener(@NonNull PlayerEvent.Listener listener, @Nullable PlayerEvent... events);
+    void addEventListener(@NonNull PlayerEvent.Listener listener, PlayerEvent... events);
 
     void addStateChangeListener(@NonNull PlayerState.Listener listener);
 
@@ -69,8 +68,8 @@ public interface Player {
         void onTimeReached(Player player, RelativeTime.Origin origin, long offset);
     }
 
-    void addBoundaryTimeListener(RelativeTime[] times, boolean wait, TimeListener listener);
-    void addTimeProgressListener(long interval, TimeListener listener);
+    void addBoundaryTimeListener(@NonNull RelativeTime[] times, boolean wait, @NonNull TimeListener listener);
+    void addTimeProgressListener(long interval, @NonNull TimeListener listener);
 }
 
 
