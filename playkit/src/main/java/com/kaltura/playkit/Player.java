@@ -56,20 +56,32 @@ public interface Player {
 
     class RelativeTime {
         
-        enum Origin {
+        public enum Origin {
             START, END
         }
+        
+        public static final RelativeTime START = new RelativeTime(Origin.START, 0);
+        public static final RelativeTime END = new RelativeTime(Origin.END, 0);
 
         Origin origin;
         long offset;
+        
+        public RelativeTime(Origin origin, long offset) {
+            this.origin = origin;
+            this.offset = offset;
+        }
+        
+        public RelativeTime(long offset) {
+            this(Origin.START, offset);
+        }
     }
     
     interface TimeListener {
         void onTimeReached(Player player, RelativeTime.Origin origin, long offset);
     }
 
-    void addBoundaryTimeListener(@NonNull RelativeTime[] times, boolean wait, @NonNull TimeListener listener);
-    void addTimeProgressListener(long interval, @NonNull TimeListener listener);
+    void addBoundaryTimeListener(@NonNull TimeListener listener, boolean wait, @NonNull RelativeTime... times);
+    void addPeriodicTimeListener(@NonNull TimeListener listener, long interval);
 }
 
 

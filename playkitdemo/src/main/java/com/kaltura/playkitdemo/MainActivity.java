@@ -36,6 +36,12 @@ public class MainActivity extends AppCompatActivity {
         
         
         final Player player = PlayerFactory.newPlayer(this);
+        player.addBoundaryTimeListener(new Player.TimeListener() {
+            @Override
+            public void onTimeReached(Player player, Player.RelativeTime.Origin origin, long offset) {
+                
+            }
+        }, true, Player.RelativeTime.START);
         
         player.addEventListener(new PlayerEvent.Listener() {
             @Override
