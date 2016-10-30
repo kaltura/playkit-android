@@ -6,12 +6,13 @@ import android.util.Log;
 import android.widget.LinearLayout;
 
 import com.kaltura.playkit.MediaEntry;
+import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerFactory;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.plugins.SamplePlugin;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,10 +23,16 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     JSONObject mConfigJSON;
     
+    private void registerPlugins() {
+        PlayKitManager.registerPlugin(SamplePlugin.factory);
+    }
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        registerPlugins();
 
         try {
             mConfigJSON = new JSONObject(Utils.readAssetToString(this, "entries.playkit.json"));
@@ -33,9 +40,12 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "Can't read config file", e);
             return;
         }
+
+
+
+        final Player player = PlayKitManager.newPlayer(this);
         
         
-        final Player player = PlayerFactory.newPlayer(this);
         player.addBoundaryTimeListener(new Player.TimeListener() {
             @Override
             public void onTimeReached(Player player, Player.RelativeTime.Origin origin, long offset) {
