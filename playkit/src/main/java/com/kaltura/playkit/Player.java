@@ -26,11 +26,16 @@ public interface Player {
      */
     View getView();
 
+    
+    long getDuration();
+    
     /**
      * Get playback position in msec.
      * @return
      */
-    long getPosition();
+    long getCurrentPosition();
+    
+    void seekTo(long position);
 
     /**
      * 
@@ -94,7 +99,6 @@ public interface Player {
     }
 
     void addBoundaryTimeListener(@NonNull TimeListener listener, boolean wait, @NonNull RelativeTime... times);
-    void addPeriodicTimeListener(@NonNull TimeListener listener, long interval);
 }
 
 

@@ -289,8 +289,18 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     }
 
     @Override
-    public long getPosition() {
+    public long getDuration() {
+        return player.getDuration();
+    }
+
+    @Override
+    public long getCurrentPosition() {
         return player.getCurrentPosition();
+    }
+
+    @Override
+    public void seekTo(long position) {
+        player.seekTo(position);
     }
 
     @Override
@@ -337,11 +347,6 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     @Override
     public void addBoundaryTimeListener(@NonNull TimeListener listener, boolean wait, @NonNull RelativeTime... times) {
         
-    }
-
-    @Override
-    public void addPeriodicTimeListener(@NonNull TimeListener listener, long interval) {
-
     }
 
     // ExoPlayer
