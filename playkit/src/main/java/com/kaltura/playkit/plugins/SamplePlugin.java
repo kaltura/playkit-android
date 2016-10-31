@@ -29,7 +29,7 @@ public class SamplePlugin extends Plugin {
     };
     
     @Override
-    public void load(Context context, PlayerConfig playerConfig, Player player) {
+    protected void load(Player player, PlayerConfig playerConfig, Context context) {
         player.addEventListener(new PlayerEvent.Listener() {
             @Override
             public void onPlayerEvent(Player player, PlayerEvent event) {

@@ -5,6 +5,6 @@ package com.kaltura.playkit;
  */
 public class PlayerConfig {
     public boolean shouldAutoPlay = false;
-    public long position = 0;
-    public MediaEntry entry;
+    public long startPosition = 0;
+    public PKMediaEntry entry;
 }

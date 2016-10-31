@@ -5,7 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.LinearLayout;
 
-import com.kaltura.playkit.MediaEntry;
+import com.kaltura.playkit.MockMediaEntryProvider;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
@@ -14,15 +14,13 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.plugins.SamplePlugin;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-    JSONObject mConfigJSON;
-    
+
     private void registerPlugins() {
         PlayKitManager.registerPlugin(SamplePlugin.factory);
     }
@@ -34,8 +32,9 @@ public class MainActivity extends AppCompatActivity {
         
         registerPlugins();
 
+        JSONObject configJSON;
         try {
-            mConfigJSON = new JSONObject(Utils.readAssetToString(this, "entries.playkit.json"));
+            configJSON = new JSONObject(Utils.readAssetToString(this, "entries.playkit.json"));
         } catch (JSONException e) {
             Log.e(TAG, "Can't read config file", e);
             return;
@@ -67,30 +66,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         
-        PlayerConfig config = getPlayerConfig(0);
 
-        if (config != null) {
-            config.shouldAutoPlay = false;
-            player.load(config);
-
-            LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
-            layout.addView(player.getView());
-
-            player.play();
-        }
-    }
-
-    private PlayerConfig getPlayerConfig(int index) {
+        MockMediaEntryProvider mediaEntryProvider;
         try {
-            JSONArray jsonArray = mConfigJSON.getJSONArray("entries");
-            JSONObject jsonEntry = jsonArray.getJSONObject(index);
-            MediaEntry mediaEntry = new MediaEntry(jsonEntry);
-            PlayerConfig playerConfig = new PlayerConfig();
-            playerConfig.entry = mediaEntry;
-            return playerConfig;
+            mediaEntryProvider = new MockMediaEntryProvider(configJSON);
         } catch (JSONException e) {
-            Log.e(TAG, "JSON error", e);
-            return null;
+            Log.e(TAG, "Failed to load media info", e);
+            return;
         }
+
+        PlayerConfig config = new PlayerConfig();
+        config.shouldAutoPlay = true;
+
+        mediaEntryProvider.loadMediaEntry("m001");
+        config.entry = mediaEntryProvider.getMediaEntry();
+
+        player.load(config);
+
+        LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
+        layout.addView(player.getView());
     }
 }

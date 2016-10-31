@@ -33,9 +33,26 @@ public interface Player {
     long getPosition();
 
     /**
-     * Play if/when ready.
+     * 
+     * @return
+     */
+    boolean getAutoPlay();
+
+    /**
+     * Begin playing automatically when ready.
+     * @param autoPlay
+     */
+    void setAutoPlay(boolean autoPlay);
+
+    /**
+     * Play if/when ready. Calls {@link #setAutoPlay(boolean)} with true.
      */
     void play();
+
+    /**
+     * Pause. Calls {@link #setAutoPlay(boolean)} with false.
+     */
+    void pause();
 
     /**
      * Prepare for playing the next entry. If config.shouldAutoPlay is true, the entry will automatically
@@ -62,17 +79,13 @@ public interface Player {
         
         public static final RelativeTime START = new RelativeTime(Origin.START, 0);
         public static final RelativeTime END = new RelativeTime(Origin.END, 0);
-
-        Origin origin;
-        long offset;
+        
+        final Origin origin;
+        final long offset;
         
         public RelativeTime(Origin origin, long offset) {
             this.origin = origin;
             this.offset = offset;
-        }
-        
-        public RelativeTime(long offset) {
-            this(Origin.START, offset);
         }
     }
     
