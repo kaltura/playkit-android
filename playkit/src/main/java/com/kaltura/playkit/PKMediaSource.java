@@ -4,7 +4,7 @@ public class PKMediaSource {
     private String id;
     private String url;
     private String mimeType;
-    private DRMData drmData;
+    private PKDrmParams drmData;
 
     public String getId() {
         return id;
@@ -33,11 +33,11 @@ public class PKMediaSource {
         return this;
     }
 
-    public DRMData getDrmData() {
+    public PKDrmParams getDrmData() {
         return drmData;
     }
 
-    public PKMediaSource setDrmData(DRMData drmData) {
+    public PKMediaSource setDrmData(PKDrmParams drmData) {
         this.drmData = drmData;
         return this;
     }

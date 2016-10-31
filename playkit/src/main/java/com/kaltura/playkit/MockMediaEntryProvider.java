@@ -16,13 +16,13 @@ public class MockMediaEntryProvider implements MediaEntryProvider {
         mJsonObject = jsonObject.getJSONObject("entries");
     }
     
-    private DRMData parseDrmData(JSONObject jsonObject) throws JSONException {
+    private PKDrmParams parseDrmData(JSONObject jsonObject) throws JSONException {
         
         if (jsonObject == null) {
             return null;
         }
         
-        DRMData drmData = new DRMData();
+        PKDrmParams drmData = new PKDrmParams();
         drmData.licenseUri = jsonObject.getString("licenseUri");
         
         return drmData;

@@ -1,6 +1,6 @@
 package com.kaltura.playkit;
 
-public class DRMData {
+public class PKDrmParams {
     public String licenseUri;
 
 }
