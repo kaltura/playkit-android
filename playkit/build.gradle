@@ -20,4 +20,5 @@ android {
 
 dependencies {
     compile 'com.google.android.exoplayer:exoplayer:r2.0.2'
+    compile files('lib/YouboraLib-5.3.0.jar')
 }
