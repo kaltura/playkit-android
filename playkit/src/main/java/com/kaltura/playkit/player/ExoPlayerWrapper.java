@@ -62,7 +62,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     private boolean firstPlay;
 
     private PlayerEvent currentEvent;
-    private PlayerState currentState = PlayerState.IDLE;
+    private PlayerState currentState = PlayerState.IDLE, previousState;
     private PlayerController.StateChangedTrigger stateChangedTrigger;
 
 
@@ -157,6 +157,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
     private void changeState(PlayerState newState) {
+        previousState = currentState;
         if (newState.equals(currentState)) {
             return;
         }
@@ -177,30 +178,29 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     @Override
     public void onLoadingChanged(boolean isLoading) {
-        Log.e(TAG, "onLoadingChanged. isLoading => " + isLoading);
-        if(isLoading){
-            sendEvent(PlayerEvent.LOADED_METADATA);
-        }
+        Log.d(TAG, "onLoadingChanged. isLoading => " + isLoading);
     }
 
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         switch (playbackState) {
             case ExoPlayer.STATE_IDLE:
-                Log.e(TAG, "onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
+                Log.d(TAG, "onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
                 if (isSeeking) {
                     isSeeking = false;
                 }
                 break;
             case ExoPlayer.STATE_BUFFERING:
-                Log.e(TAG, "onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
+                Log.d(TAG, "onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.BUFFERING);
                 break;
             case ExoPlayer.STATE_READY:
-                Log.e(TAG, "onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
-
-                sendEvent(PlayerEvent.CAN_PLAY);
+                Log.d(TAG, "onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
+                changeState(PlayerState.READY);
+                if(!previousState.equals(PlayerState.READY)){
+                    sendEvent(PlayerEvent.CAN_PLAY);
+                }
                 //launch Playing event
                 if(firstPlay && playWhenReady){
                     firstPlay = false;
@@ -212,10 +212,10 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
                     sendEvent(PlayerEvent.SEEKED);
                 }
 
-                changeState(PlayerState.READY);
+
                 break;
             case ExoPlayer.STATE_ENDED:
-                Log.e(TAG, "onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
+                Log.d(TAG, "onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
                 currentEvent = PlayerEvent.ENDED;
                 break;
@@ -228,30 +228,29 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
-        Log.e(TAG, "onTimelineChanged");
+        Log.d(TAG, "onTimelineChanged");
     }
 
     @Override
     public void onPlayerError(ExoPlaybackException error) {
 
-        Log.e(TAG, "onPlayerError error type => " + error.type);
+        Log.d(TAG, "onPlayerError error type => " + error.type);
         sendEvent(PlayerEvent.ERROR);
     }
 
     @Override
     public void onPositionDiscontinuity() {
-        Log.e(TAG, "onPositionDiscontinuity");
+        Log.d(TAG, "onPositionDiscontinuity");
     }
 
     @Override
     public void onTrackSelectionsChanged(TrackSelections<? extends MappingTrackSelector.MappedTrackInfo> trackSelections) {
-        Log.e(TAG, "onTrackSelectionsChanged");
+        Log.d(TAG, "onTrackSelectionsChanged");
     }
 
     @Override
     public void load(Uri mediaSourceUri, boolean shouldAutoPlay) {
-        Log.e(TAG, "load");
-
+        Log.d(TAG, "load");
         if (player == null) {
             initializePlayer(shouldAutoPlay);
         }
@@ -261,8 +260,6 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         }
     }
 
-
-
     @Override
     public View getView() {
         return exoPlayerView;
@@ -270,6 +267,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     @Override
     public void play() {
+        Log.d(TAG, "play");
         if(player.getPlayWhenReady()) {
             return;
         }
@@ -324,6 +322,11 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     public void setStateChangedTrigger(PlayerController.StateChangedTrigger stateChangedTrigger) {
         this.stateChangedTrigger = stateChangedTrigger;
+    }
+
+    @Override
+    public long getDuration() {
+        return player.getDuration();
     }
 
 }

@@ -28,4 +28,6 @@ public interface PlayerEngine {
     void setEventTrigger(PlayerController.EventTrigger eventTrigger);
 
     void setStateChangedTrigger(PlayerController.StateChangedTrigger stateChangedTrigger);
+
+    long getDuration();
 }

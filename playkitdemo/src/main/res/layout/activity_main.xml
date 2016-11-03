@@ -5,16 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.kaltura.playkitdemo.MainActivity">
+    tools:context="com.kaltura.playkitdemo.MainActivity"
+    android:gravity="center">
 
 
     <LinearLayout
         android:orientation="horizontal"
-        android:layout_width="380dp"
+        android:layout_width="360dp"
         android:layout_height="220dp"
         android:id="@+id/player_root"
-        >
-    </LinearLayout>
+
+        />
 
     <include
         android:id="@+id/playerControls"

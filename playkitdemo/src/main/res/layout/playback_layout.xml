@@ -5,7 +5,8 @@
     android:layout_gravity="bottom"
     android:background="#CC000000"
     android:orientation="vertical"
-    android:layoutDirection="ltr">
+    android:layoutDirection="ltr"
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -20,7 +21,8 @@
 
         <ImageButton android:id="@+id/rew"
             android:contentDescription="@string/exo_controls_rewind_description"
-            style="@style/ExoMediaButton.Rewind"/>
+            style="@style/ExoMediaButton.Rewind"
+            android:visibility="gone"/>
 
         <ImageButton android:id="@+id/play"
             style="@style/ExoMediaButton"
@@ -32,7 +34,8 @@
 
         <ImageButton android:id="@+id/ffwd"
             android:contentDescription="@string/exo_controls_fastforward_description"
-            style="@style/ExoMediaButton.FastForward"/>
+            style="@style/ExoMediaButton.FastForward"
+            android:visibility="gone"/>
 
         <ImageButton android:id="@+id/next"
             android:contentDescription="@string/exo_controls_previous_description"

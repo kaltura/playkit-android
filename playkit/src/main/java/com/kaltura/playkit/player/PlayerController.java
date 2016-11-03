@@ -77,15 +77,15 @@ public class PlayerController implements Player {
         //wv classic -> MediaPlayerWrapper.
         // everything else -> ExoPlayerWrapper.
         //set eventListener.
-        Uri sourceUri = Uri.parse(playerConfig.getEntry().getSources().get(0).getUrl());
-        boolean shouldAutoplay = playerConfig.shouldAutoPlay();
+        Uri sourceUri = Uri.parse(playerConfig.getMediaEntry().getSources().get(0).getUrl());
+        boolean shouldAutoplay = playerConfig.isAutoPlay();
         player.load(sourceUri, shouldAutoplay);
 
     }
 
     @Override
     public void apply(@NonNull PlayerConfig playerConfig) {
-        Log.e(TAG, "apply");
+        Log.d(TAG, "apply");
     }
 
     @Override
@@ -95,73 +95,69 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public long getDuration() {
+        Log.d(TAG, "getDuration " + player.getCurrentPosition());
+
+        return player.getDuration();
+    }
+
+    @Override
     public long getCurrentPosition() {
-        Log.e(TAG, "getPosition " + player.getCurrentPosition());
+        Log.d(TAG, "getPosition " + player.getCurrentPosition());
         return player.getCurrentPosition();
     }
 
     @Override
     public void seekTo(long position) {
-        Log.e(TAG, "seek to " + position);
+        Log.d(TAG, "seek to " + position);
         player.seekTo(position);
     }
 
     @Override
     public boolean getAutoPlay() {
-        Log.e(TAG, "getAutoPlay " + player.shouldAutoPlay());
-        return false;
+        Log.d(TAG, "getAutoPlay " + player.shouldAutoPlay());
+        return player.shouldAutoPlay();
     }
 
     @Override
     public void setAutoPlay(boolean autoPlay) {
-        Log.e(TAG, "setAutoPlay => " + autoPlay);
+        Log.d(TAG, "setAutoPlay => " + autoPlay);
         player.setAutoPlay(autoPlay);
 
     }
 
     @Override
     public void play() {
-        Log.e(TAG, "play");
+        Log.d(TAG, "play");
         player.play();
     }
 
     @Override
     public void pause() {
-        Log.e(TAG, "pause");
+        Log.d(TAG, "pause");
         player.pause();
     }
 
     @Override
     public void prepareNext(@NonNull PlayerConfig playerConfig) {
-        Log.e(TAG, "prepareNext");
-
+        Log.d(TAG, "prepareNext");
     }
 
     @Override
     public void loadNext() {
-        Log.e(TAG, "loadNext");
+        Log.d(TAG, "loadNext");
     }
 
     @Override
     public void addEventListener(@NonNull PlayerEvent.Listener listener, PlayerEvent... events) {
-        Log.e(TAG, "addEventListener. events=> " + Arrays.toString(events));
+        Log.d(TAG, "addEventListener. events=> " + Arrays.toString(events));
         eventListeners.add(listener);
     }
 
     @Override
     public void addStateChangeListener(@NonNull PlayerState.Listener listener) {
-        Log.e(TAG, "addStateChangeListener");
+        Log.d(TAG, "addStateChangeListener");
         stateChangeListeners.add(listener);
-    }
-
-    @Override
-    public void addBoundaryTimeListener(@NonNull TimeListener listener, boolean wait, @NonNull RelativeTime... times) {
-        Log.e(TAG, "addBoundaryTimeListener");
-    }
-
-    @Override
-    public void addPeriodicTimeListener(@NonNull TimeListener listener, long interval) {
-        Log.e(TAG, "addPeriodicTimeListener");
     }
 
     public PlayerConfig getPlayerConfig() {

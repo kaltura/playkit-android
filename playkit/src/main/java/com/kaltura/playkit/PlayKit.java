@@ -2,13 +2,15 @@ package com.kaltura.playkit;
 
 import android.content.Context;
 
+import com.kaltura.playkit.player.PlayerController;
+
 import org.json.JSONObject;
 
 import java.util.Map;
 
 public class PlayKit {
     public Player createPlayer(Context context, PlayerConfig config) {
-        POCPlayer player = new POCPlayer(context);
+        PlayerController player = new PlayerController(context);
         player.load(config);
         
         Player decoratedPlayer = null;

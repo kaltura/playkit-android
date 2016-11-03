@@ -101,18 +101,13 @@ public class SamplePlugin extends PKPlugin implements DecoratedPlayerProvider {
 
             @Override
             public void play() {
-                Toast.makeText(mContext, "Delaying playback by 5000 ms", Toast.LENGTH_SHORT).show();
-                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        mPlayer.play();
-                    }
-                }, 5000);
+                Log.d(TAG, "Play pressed from " + TAG + " playerDecorator");
+                mPlayer.play();
             }
 
             @Override
             public void pause() {
-                Toast.makeText(mContext, "Will now pause", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Pause pressed from " + TAG + " playerDecorator");
                 mPlayer.pause();
             }
 

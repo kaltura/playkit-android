@@ -10,7 +10,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.exoplayer2.ExoPlayer;
 import com.kaltura.playkit.MockMediaEntryProvider;
 import com.kaltura.playkit.PlayKit;
 import com.kaltura.playkit.PlayKitManager;
@@ -18,7 +17,6 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.Plugin;
 import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.plugins.SamplePlugin;
 
@@ -37,7 +35,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageButton btnPlay, btnPause, btnFastForward, btnRewind, btnNext, btnPrevious;
     private SeekBar seekBar;
     private TextView tvCurTime, tvTime;
-    private Plugin.Factory samplePlugin;
 
 
     private void registerPlugins() {
@@ -48,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
+        initPlaybackControls();
         registerPlugins();
 
         JSONObject configJSON;
@@ -71,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         config.getPluginConfig("Sample");
 
 
-        final Player player = mPlayKit.createPlayer(this, config);
+        player = mPlayKit.createPlayer(this, config);
 
         Log.d(TAG, "Player: " + player.getClass());
         
@@ -88,6 +85,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 
             }
         });
+
+        LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
+        layout.addView(player.getView());
+
+        player.play();
+
     }
 
     private void initPlaybackControls() {
@@ -144,12 +147,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-        LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
-        layout.addView(player.getView());
 
-
-        player.play();
-    @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
 
     }
