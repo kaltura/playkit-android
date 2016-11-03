@@ -15,8 +15,8 @@ public enum PlayerEvent {
     PLAYING,   //  Sent when the media begins to play (either for the first time, after having been paused, or after ending and then restarting).
     SEEKED,   //  Sent when a seek operation completes.
     SEEKING;   //  Sent when a seek operation begins.
-    
-    
+
+
     public interface Listener {
         void onPlayerEvent(Player player, PlayerEvent event);
     }

@@ -30,7 +30,13 @@ public interface Player {
      * Get playback position in msec.
      * @return
      */
-    long getPosition();
+    long getCurrentPosition();
+
+    /**
+     * Seek to the specified position.
+     * @param position
+     */
+    void seekTo(long position);
 
     /**
      * 

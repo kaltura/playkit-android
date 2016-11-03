@@ -73,7 +73,7 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     private final Context mContext;
 
     private DefaultTrackSelector mTrackSelector;
-    private android.os.Handler mainHandler = new Handler();;
+    private android.os.Handler mainHandler = new Handler();
     private SimpleExoPlayer player;
     private SimpleExoPlayerView simpleExoPlayerView;
     private boolean shouldAutoPlay;
@@ -273,14 +273,14 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     
     @Override
     public void load(@NonNull PlayerConfig playerConfig) {
-        mCurrentSourceUri = Uri.parse(playerConfig.entry.getSources().get(0).getUrl());
-        shouldAutoPlay = playerConfig.shouldAutoPlay;
+        mCurrentSourceUri = Uri.parse(playerConfig.getEntry().getSources().get(0).getUrl());
+        shouldAutoPlay = playerConfig.shouldAutoPlay();
         initializePlayer();
     }
 
     @Override
     public void apply(@NonNull PlayerConfig playerConfig) {
-        shouldAutoPlay = playerConfig.shouldAutoPlay;
+        shouldAutoPlay = playerConfig.shouldAutoPlay();
     }
 
     @Override
@@ -289,8 +289,13 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     }
 
     @Override
-    public long getPosition() {
-        return player.getCurrentPosition();
+    public long getCurrentPosition() {
+        return 0;
+    }
+
+    @Override
+    public void seekTo(long position) {
+
     }
 
     @Override
