@@ -8,9 +8,11 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.exoplayer2.ExoPlayer;
 import com.kaltura.playkit.MockMediaEntryProvider;
+import com.kaltura.playkit.PlayKit;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
@@ -26,6 +28,9 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
     private static final String TAG = "MainActivity";
+    private PlayKit mPlayKit;
+    private MockMediaEntryProvider mMediaEntryProvider;
+
 
     private Player player;
 
@@ -36,74 +41,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void registerPlugins() {
-        PlayKitManager.registerPlugin(SamplePlugin.factory);
+        PlayKitManager.registerPlugins(SamplePlugin.factory);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        initPlaybackControls();
-
+        
         registerPlugins();
 
-
-        JSONObject configJSON = prepareConfigJSON();
-        initPlayer();
-
-
-        PlayerConfig config = new PlayerConfig();
-        config.setShouldAutoPlay(true);
-
-        try {
-            MockMediaEntryProvider mediaEntryProvider = new MockMediaEntryProvider(configJSON);
-            mediaEntryProvider.loadMediaEntry("m001");
-            config.setEntry(mediaEntryProvider.getMediaEntry());
-        } catch (JSONException e) {
-            Log.e(TAG, "Failed to load media info", e);
-        }
-
-        player.load(config);
-
-        LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
-        layout.addView(player.getView());
-
-    }
-
-    private JSONObject prepareConfigJSON() {
-        JSONObject configJSON = null;
+        JSONObject configJSON;
         try {
             configJSON = new JSONObject(Utils.readAssetToString(this, "entries.playkit.json"));
+            mMediaEntryProvider = new MockMediaEntryProvider(configJSON);
         } catch (JSONException e) {
             Log.e(TAG, "Can't read config file", e);
+            Toast.makeText(this, "JSON error: " + e, Toast.LENGTH_LONG).show();
+            return;
         }
 
-        return configJSON;
-    }
+        mPlayKit = new PlayKit();
 
-    private void initPlayer() {
-        player = PlayKitManager.createPlayer(this);
-        //add player listeners.
-        player.addBoundaryTimeListener(new Player.TimeListener() {
-            @Override
-            public void onTimeReached(Player player, Player.RelativeTime.Origin origin, long offset) {
-                Log.e(TAG, "onTimeReached => ");
+        PlayerConfig config = new PlayerConfig();
+//        config.setAutoPlay(true);
 
-            }
-        }, true, Player.RelativeTime.START);
+        mMediaEntryProvider.loadMediaEntry("m001");
+        config.setMediaEntry(mMediaEntryProvider.getMediaEntry());
+        config.getPluginConfig("Sample");
 
+
+        final Player player = mPlayKit.createPlayer(this, config);
+
+        Log.d(TAG, "Player: " + player.getClass());
+        
         player.addEventListener(new PlayerEvent.Listener() {
             @Override
             public void onPlayerEvent(Player player, PlayerEvent event) {
-
+                
             }
         }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
 
         player.addStateChangeListener(new PlayerState.Listener() {
             @Override
             public void onPlayerStateChanged(Player player, PlayerState newState) {
-                Log.e(TAG, "state changed to => " + newState.name());
+                
             }
         });
     }
@@ -162,6 +144,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+        LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
+        layout.addView(player.getView());
+
+
+        player.play();
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
 
