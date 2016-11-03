@@ -7,18 +7,21 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.Plugin;
 
-import static android.R.attr.start;
-
 /**
  * Created by zivilan on 02/11/2016.
  */
 
-public class TVPAPIAnalyticsPlugin extends Plugin {
-    private boolean isPlaying = false;
-    private boolean isConcurrent = false;
-    private boolean didFirstPlay = false;
+public class TVPAPIAnalyticsPlugin extends Plugin implements SendBeacon{
+    private boolean mIsPlaying = false;
+    private boolean mIsConcurrent = false;
+    private boolean mDidFirstPlay = false;
     private int mMediaHitInterval = -1;
     private int mFileId = -1;
+    private long mContinueTime;
+    private PlayerConfig mPlayerConfig;
+    private Context mContext;
+    private Player mPlayer;
+    private boolean mPlayFromContinue = false;
 
 
     private static final String TAG = "TVPAPIAnalytics";
@@ -38,6 +41,13 @@ public class TVPAPIAnalyticsPlugin extends Plugin {
     @Override
     protected void load(Player player, PlayerConfig playerConfig, Context context) {
         player.addEventListener(mEventListener);
+        this.mPlayerConfig = playerConfig;
+        this.mContext = context;
+        this.mPlayer = player;
+        if (mPlayerConfig.startPosition != -1){
+            this.mContinueTime = mPlayerConfig.startPosition;
+            this.mPlayFromContinue = true;
+        }
     }
 
     @Override
@@ -50,34 +60,35 @@ public class TVPAPIAnalyticsPlugin extends Plugin {
         public void onPlayerEvent(Player player, PlayerEvent event) {
             switch (event){
                 case CAN_PLAY:
-                    didFirstPlay = false;
-
+                    mDidFirstPlay = false;
+//                    mFileId = mPlayerConfig.getFileId();
                     break;
                 case DURATION_CHANGE:
 
                     break;
                 case ENDED:
-
+                    mIsPlaying = false;
+                    sendEvent(MEDIA_MARK, 'finish');
                     break;
                 case ERROR:
 
                     break;
                 case LOADED_METADATA:
-
+                    sendEvent(MEDIA_MARK, 'load');
                     break;
                 case PAUSE:
-                    isPlaying = false;
-                    if (didFirstPlay){
+                    mIsPlaying = false;
+                    if (mDidFirstPlay){
                         sendEvent(MEDIA_MARK, event);
                     }
                     break;
                 case PLAY:
-                    if (!didFirstPlay){
-                        didFirstPlay = true;
-                        isPlaying = true;
+                    if (!mDidFirstPlay){
+                        mDidFirstPlay = true;
+                        mIsPlaying = true;
                         sendEvent(MEDIA_MARK, 'first_play');
                     } else {
-                        isPlaying = true;
+                        mIsPlaying = true;
                         startMediaHitInterval();
                         sendEvent(MEDIA_MARK, event);
                     }
@@ -98,5 +109,9 @@ public class TVPAPIAnalyticsPlugin extends Plugin {
             }
         }
     };
+
+    private void bindContinueToTime(){
+
+    }
 
 }
