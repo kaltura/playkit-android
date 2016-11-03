@@ -4,8 +4,10 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.kaltura.playkit.MockMediaEntryProvider;
+import com.kaltura.playkit.PlayKit;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
@@ -20,9 +22,12 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
+    private PlayKit mPlayKit;
+    private MockMediaEntryProvider mMediaEntryProvider;
+
 
     private void registerPlugins() {
-        PlayKitManager.registerPlugin(SamplePlugin.factory);
+        PlayKitManager.registerPlugins(SamplePlugin.factory);
     }
     
     @Override
@@ -35,22 +40,26 @@ public class MainActivity extends AppCompatActivity {
         JSONObject configJSON;
         try {
             configJSON = new JSONObject(Utils.readAssetToString(this, "entries.playkit.json"));
+            mMediaEntryProvider = new MockMediaEntryProvider(configJSON);
         } catch (JSONException e) {
             Log.e(TAG, "Can't read config file", e);
+            Toast.makeText(this, "JSON error: " + e, Toast.LENGTH_LONG).show();
             return;
         }
 
+        mPlayKit = new PlayKit();
+
+        PlayerConfig config = new PlayerConfig();
+//        config.setAutoPlay(true);
+
+        mMediaEntryProvider.loadMediaEntry("m001");
+        config.setMediaEntry(mMediaEntryProvider.getMediaEntry());
+        config.getPluginConfig("Sample");
 
 
-        final Player player = PlayKitManager.newPlayer(this);
+        final Player player = mPlayKit.createPlayer(this, config);
         
-        
-        player.addBoundaryTimeListener(new Player.TimeListener() {
-            @Override
-            public void onTimeReached(Player player, Player.RelativeTime.Origin origin, long offset) {
-                
-            }
-        }, true, Player.RelativeTime.START);
+        Log.d(TAG, "Player: " + player.getClass());
         
         player.addEventListener(new PlayerEvent.Listener() {
             @Override
@@ -67,23 +76,11 @@ public class MainActivity extends AppCompatActivity {
         });
         
 
-        MockMediaEntryProvider mediaEntryProvider;
-        try {
-            mediaEntryProvider = new MockMediaEntryProvider(configJSON);
-        } catch (JSONException e) {
-            Log.e(TAG, "Failed to load media info", e);
-            return;
-        }
-
-        PlayerConfig config = new PlayerConfig();
-        config.shouldAutoPlay = true;
-
-        mediaEntryProvider.loadMediaEntry("m001");
-        config.entry = mediaEntryProvider.getMediaEntry();
-
-        player.load(config);
 
         LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
         layout.addView(player.getView());
+        
+        
+        player.play();
     }
 }

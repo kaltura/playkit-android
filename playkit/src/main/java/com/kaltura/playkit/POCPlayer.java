@@ -273,14 +273,14 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     
     @Override
     public void load(@NonNull PlayerConfig playerConfig) {
-        mCurrentSourceUri = Uri.parse(playerConfig.entry.getSources().get(0).getUrl());
-        shouldAutoPlay = playerConfig.shouldAutoPlay;
+        mCurrentSourceUri = Uri.parse(playerConfig.getMediaEntry().getSources().get(0).getUrl());
+        shouldAutoPlay = playerConfig.isAutoPlay();
         initializePlayer();
     }
 
     @Override
     public void apply(@NonNull PlayerConfig playerConfig) {
-        shouldAutoPlay = playerConfig.shouldAutoPlay;
+        shouldAutoPlay = playerConfig.isAutoPlay();
     }
 
     @Override
@@ -341,11 +341,6 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
 
     @Override
     public void addStateChangeListener(@NonNull PlayerState.Listener listener) {
-        
-    }
-
-    @Override
-    public void addBoundaryTimeListener(@NonNull TimeListener listener, boolean wait, @NonNull RelativeTime... times) {
         
     }
 

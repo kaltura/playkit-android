@@ -67,38 +67,13 @@ public interface Player {
     void prepareNext(@NonNull PlayerConfig playerConfig);
 
     /**
-     * Load the entry that was prepared with {@link #prepareNext(PlayerConfig)}. If the prepared
-     * config has {@link PlayerConfig#shouldAutoPlay}=true, this will trigger playback.
+     * Load the entry that was prepared with {@link #prepareNext(PlayerConfig)}.
      */
     void loadNext();
     
     void addEventListener(@NonNull PlayerEvent.Listener listener, PlayerEvent... events);
 
     void addStateChangeListener(@NonNull PlayerState.Listener listener);
-
-    class RelativeTime {
-        
-        public enum Origin {
-            START, END
-        }
-        
-        public static final RelativeTime START = new RelativeTime(Origin.START, 0);
-        public static final RelativeTime END = new RelativeTime(Origin.END, 0);
-        
-        final Origin origin;
-        final long offset;
-        
-        public RelativeTime(Origin origin, long offset) {
-            this.origin = origin;
-            this.offset = offset;
-        }
-    }
-    
-    interface TimeListener {
-        void onTimeReached(Player player, RelativeTime.Origin origin, long offset);
-    }
-
-    void addBoundaryTimeListener(@NonNull TimeListener listener, boolean wait, @NonNull RelativeTime... times);
 }
 
 
