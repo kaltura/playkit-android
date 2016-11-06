@@ -1,18 +1,14 @@
 package com.kaltura.playkit;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class MediaEntry {
-    public final String id;
-    public final List<MediaSource> sources;
-    public final long duration;
+
+    private String id;
+    private List<MediaSource> sources;
+    private long duration;
     
-    public MediaEntry(JSONObject jsonObject) throws JSONException {
+    /*public MediaEntry(JSONObject jsonObject) throws JSONException {
         id = jsonObject.getString("id");
         duration = jsonObject.getLong("duration");
         
@@ -23,5 +19,29 @@ public class MediaEntry {
             JSONObject jsonSource = jsonArray.getJSONObject(i);
             sources.add(new MediaSource(jsonSource));
         }
+    }*/
+
+    public String getId() {
+        return id;
+    }
+
+    public List<MediaSource> getSources() {
+        return sources;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setSources(List<MediaSource> sources) {
+        this.sources = sources;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
     }
 }

@@ -5,7 +5,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.LinearLayout;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.kaltura.playkit.Entries;
 import com.kaltura.playkit.MediaEntry;
+import com.kaltura.playkit.MockMediaEntryProvider;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
@@ -21,14 +25,18 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     JSONObject mConfigJSON;
-    
+    Entries mEntries;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         try {
-            mConfigJSON = new JSONObject(Utils.readAssetToString(this, "entries.playkit.json"));
+            //mConfigJSON = new JSONObject(Utils.readAssetToString(this, "entries.playkit.json"));
+            //mEntries = new Gson().fromJson()
+            MockMediaEntryProvider mockMediaEntryProvider = new MockMediaEntryProvider("entries.playkit.json")
+
         } catch (JSONException e) {
             Log.e(TAG, "Can't read config file", e);
             return;
