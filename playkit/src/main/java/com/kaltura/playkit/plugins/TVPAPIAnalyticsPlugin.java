@@ -2,16 +2,23 @@ package com.kaltura.playkit.plugins;
 
 import android.content.Context;
 
+import com.kaltura.playkit.PKPlugin;
+import com.kaltura.playkit.PlayKit;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.Plugin;
+
+import static com.kaltura.playkit.plugins.TVPAPIAnalyticsPlugin.TVPAPIEventType.MEDIA_MARK;
 
 /**
  * Created by zivilan on 02/11/2016.
  */
 
-public class TVPAPIAnalyticsPlugin extends Plugin implements SendBeacon{
+public class TVPAPIAnalyticsPlugin extends PKPlugin {
+    enum TVPAPIEventType{
+        MEDIA_MARK,
+        MEDIA_HIT;
+    }
     private boolean mIsPlaying = false;
     private boolean mIsConcurrent = false;
     private boolean mDidFirstPlay = false;
@@ -33,7 +40,7 @@ public class TVPAPIAnalyticsPlugin extends Plugin implements SendBeacon{
         }
 
         @Override
-        public Plugin newInstance() {
+        public PKPlugin newInstance(PlayKit playKitManager) {
             return new TVPAPIAnalyticsPlugin();
         }
     };
@@ -44,8 +51,8 @@ public class TVPAPIAnalyticsPlugin extends Plugin implements SendBeacon{
         this.mPlayerConfig = playerConfig;
         this.mContext = context;
         this.mPlayer = player;
-        if (mPlayerConfig.startPosition != -1){
-            this.mContinueTime = mPlayerConfig.startPosition;
+        if (mPlayerConfig.getStartPosition() != -1){
+            this.mContinueTime = mPlayerConfig.getStartPosition();
             this.mPlayFromContinue = true;
         }
     }
@@ -68,29 +75,29 @@ public class TVPAPIAnalyticsPlugin extends Plugin implements SendBeacon{
                     break;
                 case ENDED:
                     mIsPlaying = false;
-                    sendEvent(MEDIA_MARK, 'finish');
+                    sendEvent(MEDIA_MARK, "finish");
                     break;
                 case ERROR:
 
                     break;
                 case LOADED_METADATA:
-                    sendEvent(MEDIA_MARK, 'load');
+                    sendEvent(MEDIA_MARK, "load");
                     break;
                 case PAUSE:
                     mIsPlaying = false;
                     if (mDidFirstPlay){
-                        sendEvent(MEDIA_MARK, event);
+                        sendEvent(MEDIA_MARK, "pause");
                     }
                     break;
                 case PLAY:
                     if (!mDidFirstPlay){
                         mDidFirstPlay = true;
                         mIsPlaying = true;
-                        sendEvent(MEDIA_MARK, 'first_play');
+                        sendEvent(MEDIA_MARK, "first_play");
                     } else {
                         mIsPlaying = true;
                         startMediaHitInterval();
-                        sendEvent(MEDIA_MARK, event);
+                        sendEvent(MEDIA_MARK, "play");
                     }
 
                     break;
@@ -111,6 +118,14 @@ public class TVPAPIAnalyticsPlugin extends Plugin implements SendBeacon{
     };
 
     private void bindContinueToTime(){
+
+    }
+
+    private void startMediaHitInterval(){
+
+    }
+
+    private void sendEvent(TVPAPIEventType eventType, String eventContent){
 
     }
 
