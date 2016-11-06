@@ -1,6 +1,7 @@
 package com.kaltura.playkit.plugins;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PlayKit;
@@ -8,6 +9,12 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.URL;
+
+import static com.kaltura.playkit.plugins.TVPAPIAnalyticsPlugin.TVPAPIEventType.MEDIAMARK;
 import static com.kaltura.playkit.plugins.TVPAPIAnalyticsPlugin.TVPAPIEventType.MEDIA_MARK;
 
 /**
@@ -16,8 +23,8 @@ import static com.kaltura.playkit.plugins.TVPAPIAnalyticsPlugin.TVPAPIEventType.
 
 public class TVPAPIAnalyticsPlugin extends PKPlugin {
     enum TVPAPIEventType{
-        MEDIA_MARK,
-        MEDIA_HIT;
+        MEDIAMARK,
+        MEDIAHIT;
     }
     private boolean mIsPlaying = false;
     private boolean mIsConcurrent = false;
@@ -75,29 +82,29 @@ public class TVPAPIAnalyticsPlugin extends PKPlugin {
                     break;
                 case ENDED:
                     mIsPlaying = false;
-                    sendEvent(MEDIA_MARK, "finish");
+                    setMessageParams(MEDIAMARK, "finish");
                     break;
                 case ERROR:
 
                     break;
                 case LOADED_METADATA:
-                    sendEvent(MEDIA_MARK, "load");
+                    setMessageParams(MEDIAMARK, "load");
                     break;
                 case PAUSE:
                     mIsPlaying = false;
                     if (mDidFirstPlay){
-                        sendEvent(MEDIA_MARK, "pause");
+                        setMessageParams(MEDIAMARK, "pause");
                     }
                     break;
                 case PLAY:
                     if (!mDidFirstPlay){
                         mDidFirstPlay = true;
                         mIsPlaying = true;
-                        sendEvent(MEDIA_MARK, "first_play");
+                        setMessageParams(MEDIAMARK, "first_play");
                     } else {
                         mIsPlaying = true;
                         startMediaHitInterval();
-                        sendEvent(MEDIA_MARK, "play");
+                        setMessageParams(MEDIAMARK, "play");
                     }
 
                     break;
@@ -125,8 +132,51 @@ public class TVPAPIAnalyticsPlugin extends PKPlugin {
 
     }
 
-    private void sendEvent(TVPAPIEventType eventType, String eventContent){
+    private void setMessageParams(TVPAPIEventType eventType, String eventContent){
+        JSONObject baseParams = getBaseParams();
+        try {
+            baseParams.put("Action", eventContent);
+            baseParams.put("MethodName", eventType.toString())
+            sendMessage(eventType,baseParams);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
+    private JSONObject getBaseParams(){
+        int mediaType = 0;
+        JSONObject postData = new JSONObject();
+        try {
+            postData.put("initObj", mPlayerConfig.getInitObject());
+            postData.put("mediaType", mediaType);
+            postData.put("iMediaID", mPlayerConfig.getMediaEntry().getId());
+            postData.put("iFileID", mFileId);
+            postData.put("iLocation", mPlayer.getCurrentPosition());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return postData;
+    }
+
+    private String sendMessage(TVPAPIEventType service, JSONObject postData){
+        URL url = mPlayerConfig.getApiBaseUrl();
+        if (service != null && postData != null) {
+            String messageUrl = buildUrl(service.toString(), postData);
+            return messageUrl;
+        } else {
+            return "";
+        }
+    }
+
+    private static String buildUrl(String original, JSONObject postData) {
+        if (postData != null) {
+            String methodName = postData.optString("MethodName");
+            if (!TextUtils.isEmpty(methodName)) {
+                postData.remove("MethodName");
+                return original.concat(methodName);
+            }
+        }
+        return original;
     }
 
 }
