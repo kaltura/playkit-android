@@ -2,7 +2,7 @@ package com.kaltura.playkit;
 
 import android.content.Context;
 
-public abstract class Plugin {
+public abstract class PKPlugin {
 
     protected abstract void load(Player player, PlayerConfig playerConfig, Context context);
 
@@ -10,6 +10,7 @@ public abstract class Plugin {
 
     public interface Factory {
         String getName();
-        Plugin newInstance();
+        PKPlugin newInstance(PlayKit playKitManager);
     }
 }
+
