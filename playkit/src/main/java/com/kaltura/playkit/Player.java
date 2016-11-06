@@ -9,16 +9,10 @@ import android.view.View;
 public interface Player {
 
     /**
-     * Reset player and load a new config.
+     * Modify player settings with the set fields.
      * @param playerConfig
      */
-    void load(@NonNull PlayerConfig playerConfig);
-
-    /**
-     * Modify player state with the set fields.
-     * @param playerConfig
-     */
-    void apply(@NonNull PlayerConfig playerConfig);
+    void update(@NonNull PlayerConfig playerConfig);
 
     /**
      * The Player's View.

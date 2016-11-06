@@ -54,10 +54,10 @@ public class MainActivity extends AppCompatActivity {
 
         mMediaEntryProvider.loadMediaEntry("m001");
         config.setMediaEntry(mMediaEntryProvider.getMediaEntry());
-        config.getPluginConfig("Sample");
+        config.enablePlugin("Sample");
 
 
-        final Player player = mPlayKit.createPlayer(this, config);
+        final Player player = mPlayKit.loadPlayer(this, config);
         
         Log.d(TAG, "Player: " + player.getClass());
         
