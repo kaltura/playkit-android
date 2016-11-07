@@ -1,5 +1,6 @@
 package com.kaltura.playkit;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Collections;
@@ -41,7 +42,22 @@ public class PlayerConfig {
         this.mMediaEntry = mediaEntry;
         return this;
     }
+    
+    public void enablePlugin(String name) {
+        JSONObject pluginConfig = getPluginConfig(name);
+        if (pluginConfig.length() == 0) {
+            try {
+                pluginConfig.put("enable", true);
+            } catch (JSONException e) {
+                Report.shouldNeverHappen("Failed to enable plugin", e);
+            }
+        }
+    }
 
+    public void disablePlugin(String name) {
+        pluginConfig.remove(name);
+    }
+    
     public JSONObject getPluginConfig(String pluginName) {
         JSONObject jsonObject = pluginConfig.get(pluginName);
         if (jsonObject == null) {

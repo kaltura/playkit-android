@@ -29,12 +29,12 @@ public class MainActivity extends AppCompatActivity {
     private void registerPlugins() {
         PlayKitManager.registerPlugins(SamplePlugin.factory);
     }
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        
         registerPlugins();
 
         JSONObject configJSON;
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         final Player player = mPlayKit.loadPlayer(this, config);
-
+        
         Log.d(TAG, "Player: " + player.getClass());
         
         player.addEventListener(new PlayerEvent.Listener() {
@@ -74,13 +74,13 @@ public class MainActivity extends AppCompatActivity {
                 
             }
         });
-
+        
 
 
         LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
         layout.addView(player.getView());
-
-
+        
+        
         player.play();
     }
 }

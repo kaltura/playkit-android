@@ -9,11 +9,11 @@ import java.util.Map;
 
 
 public class PlayKit {
-
+    
     public Player loadPlayer(Context context, PlayerConfig config) {
         
         POCPlayer player = new POCPlayer(context, config);
-
+        
         PlayerDecorator playerDecorator = null;
 
         for (Map.Entry<String, JSONObject> pluginConfig : config.getPluginConfigMap().entrySet()) {

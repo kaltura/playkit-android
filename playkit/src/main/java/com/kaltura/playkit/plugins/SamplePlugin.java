@@ -50,7 +50,7 @@ public class SamplePlugin extends PKPlugin {
 
     @Override
     protected void update(Player player, PlayerConfig playerConfig, Context context) {
-
+        
     }
 
     @Override
