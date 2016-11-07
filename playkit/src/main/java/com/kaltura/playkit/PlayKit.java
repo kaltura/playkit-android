@@ -1,35 +1,41 @@
 package com.kaltura.playkit;
 
 import android.content.Context;
-
-import com.kaltura.playkit.player.PlayerController;
+import android.util.Log;
 
 import org.json.JSONObject;
 
 import java.util.Map;
 
+
 public class PlayKit {
-    public Player createPlayer(Context context, PlayerConfig config) {
-        PlayerController player = new PlayerController(context);
-        player.load(config);
+
+    public Player loadPlayer(Context context, PlayerConfig config) {
         
-        Player decoratedPlayer = null;
+        POCPlayer player = new POCPlayer(context, config);
+
+        PlayerDecorator playerDecorator = null;
 
         for (Map.Entry<String, JSONObject> pluginConfig : config.getPluginConfigMap().entrySet()) {
-            PKPlugin plugin = loadPlugin(pluginConfig.getKey(), player, config, context);
+            String name = pluginConfig.getKey();
+            PKPlugin plugin = loadPlugin(name, player, config, context);
             
-            if (plugin instanceof DecoratedPlayerProvider) {
-                Player decorator = ((DecoratedPlayerProvider) plugin).getDecoratedPlayer();
-                if (decorator != null) {
-                    if (decoratedPlayer != null) {
-                        throw new IllegalStateException("Only one decorator allowed");
-                    }
-                    decoratedPlayer = decorator;
+            if (plugin == null) {
+                Log.w("PlayKit", "Plugin not found: " + name);
+                continue;
+            }
+            // Check if the plugin provides a PlayerDecorator.
+            PlayerDecorator decorator = plugin.getPlayerDecorator();
+            if (decorator != null) {
+                if (playerDecorator != null) {
+                    throw new IllegalStateException("Only one decorator allowed");
                 }
+                playerDecorator = decorator;
+                playerDecorator.setPlayer(player);
             }
         }
 
-        return decoratedPlayer != null ? decoratedPlayer : player;
+        return playerDecorator != null ? playerDecorator : player;
     }
 
     private PKPlugin loadPlugin(String name, Player player, PlayerConfig config, Context context) {

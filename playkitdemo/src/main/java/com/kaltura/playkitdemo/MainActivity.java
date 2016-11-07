@@ -3,11 +3,7 @@ package com.kaltura.playkitdemo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.kaltura.playkit.MockMediaEntryProvider;
@@ -23,18 +19,11 @@ import com.kaltura.playkit.plugins.SamplePlugin;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private PlayKit mPlayKit;
     private MockMediaEntryProvider mMediaEntryProvider;
-
-
-    private Player player;
-
-    private ImageButton btnPlay, btnPause, btnFastForward, btnRewind, btnNext, btnPrevious;
-    private SeekBar seekBar;
-    private TextView tvCurTime, tvTime;
 
 
     private void registerPlugins() {
@@ -45,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        initPlaybackControls();
+
         registerPlugins();
 
         JSONObject configJSON;
@@ -65,10 +54,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mMediaEntryProvider.loadMediaEntry("m001");
         config.setMediaEntry(mMediaEntryProvider.getMediaEntry());
-        config.getPluginConfig("Sample");
+        config.enablePlugin("Sample");
 
 
-        player = mPlayKit.createPlayer(this, config);
+        final Player player = mPlayKit.loadPlayer(this, config);
 
         Log.d(TAG, "Player: " + player.getClass());
         
@@ -86,74 +75,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+
+
         LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
         layout.addView(player.getView());
 
+
         player.play();
-
-    }
-
-    private void initPlaybackControls() {
-        btnPlay = (ImageButton) this.findViewById(R.id.play);
-        btnPause = (ImageButton) this.findViewById(R.id.pause);
-        btnFastForward = (ImageButton) this.findViewById(R.id.ffwd);
-        btnRewind = (ImageButton) this.findViewById(R.id.rew);
-        btnNext = (ImageButton) this.findViewById(R.id.next);
-        btnPrevious = (ImageButton) this.findViewById(R.id.prev);
-
-        btnPlay.setOnClickListener(this);
-        btnPause.setOnClickListener(this);
-        btnFastForward.setOnClickListener(this);
-        btnRewind.setOnClickListener(this);
-        btnNext.setOnClickListener(this);
-        btnPrevious.setOnClickListener(this);
-
-        seekBar = (SeekBar) this.findViewById(R.id.mediacontroller_progress);
-        seekBar.setOnSeekBarChangeListener(this);
-
-        tvCurTime = (TextView) this.findViewById(R.id.time_current);
-        tvTime = (TextView) this.findViewById(R.id.time);
-
-        LinearLayout controlsLayout = (LinearLayout) this.findViewById(R.id.playerControls);
-//        controlsLayout.setVisibility(View.INVISIBLE);
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.play:
-                player.play();
-                break;
-            case R.id.pause:
-                player.pause();
-                break;
-            case R.id.ffwd:
-                //Do nothing
-                break;
-            case R.id.rew:
-                //Do nothing
-                break;
-            case R.id.next:
-                //Do nothing
-                break;
-            case R.id.prev:
-                //Do nothing
-                break;
-        }
-    }
-
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
-    }
-
-
-    public void onStartTrackingTouch(SeekBar seekBar) {
-
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-
     }
 }
