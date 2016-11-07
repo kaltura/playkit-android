@@ -1,12 +1,17 @@
 package com.kaltura.playkit.plugins.Youbora;
 
+import android.text.TextUtils;
+
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.plugins.TVPAPIAnalyticsPlugin;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.managers.ViewManager;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.net.URL;
 import java.util.Map;
 
 /**
@@ -78,5 +83,52 @@ public class YouboraLibraryManager extends PluginGeneric {
             }
         }
     };
+
+    private void setMessageParams(TVPAPIAnalyticsPlugin.TVPAPIEventType eventType, String eventContent){
+        JSONObject baseParams = getBaseParams();
+        try {
+            baseParams.put("Action", eventContent);
+            baseParams.put("MethodName", eventType.toString());
+            sendMessage(eventType,baseParams);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private JSONObject getBaseParams(){
+        int mediaType = 0;
+        JSONObject postData = new JSONObject();
+        try {
+            postData.put("initObj", mPlayerConfig.getInitObject());
+            postData.put("mediaType", mediaType);
+            postData.put("iMediaID", mPlayerConfig.getMediaEntry().getId());
+            postData.put("iFileID", mFileId);
+            postData.put("iLocation", mPlayer.getCurrentPosition());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return postData;
+    }
+
+    private String sendMessage(TVPAPIAnalyticsPlugin.TVPAPIEventType service, JSONObject postData){
+        URL url = mPlayerConfig.getApiBaseUrl();
+        if (service != null && postData != null) {
+            String messageUrl = buildUrl(service.toString(), postData);
+            return messageUrl;
+        } else {
+            return "";
+        }
+    }
+
+    private static String buildUrl(String original, JSONObject postData) {
+        if (postData != null) {
+            String methodName = postData.optString("MethodName");
+            if (!TextUtils.isEmpty(methodName)) {
+                postData.remove("MethodName");
+                return original.concat(methodName);
+            }
+        }
+        return original;
+    }
 
 }

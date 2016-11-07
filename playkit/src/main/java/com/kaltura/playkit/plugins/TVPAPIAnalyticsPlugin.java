@@ -136,7 +136,7 @@ public class TVPAPIAnalyticsPlugin extends PKPlugin {
         JSONObject baseParams = getBaseParams();
         try {
             baseParams.put("Action", eventContent);
-            baseParams.put("MethodName", eventType.toString())
+            baseParams.put("MethodName", eventType.toString());
             sendMessage(eventType,baseParams);
         } catch (JSONException e) {
             e.printStackTrace();
