@@ -85,25 +85,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mMediaEntryProvider.loadMediaEntry("m001");
         config.setMediaEntry(mMediaEntryProvider.getMediaEntry());
-        config.getPluginConfig("Sample");
+        config.enablePlugin("Sample");
 
 
-        player = mPlayKit.createPlayer(this, config);
-
+        final Player player = mPlayKit.loadPlayer(this, config);
+        
         Log.d(TAG, "Player: " + player.getClass());
-
+        
         player.addEventListener(new PlayerEvent.Listener() {
             @Override
             public void onPlayerEvent(Player player, PlayerEvent event) {
-
+                
             }
         }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
 
         player.addStateChangeListener(new PlayerState.Listener() {
             @Override
             public void onPlayerStateChanged(Player player, PlayerState newState) {
-                playerState = newState;
-                updateProgress();
+                
             }
         });
 
