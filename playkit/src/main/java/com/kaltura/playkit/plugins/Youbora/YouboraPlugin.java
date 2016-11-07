@@ -33,19 +33,31 @@ public class YouboraPlugin extends PKPlugin {
     };
 
     @Override
+    protected void update(Player player, PlayerConfig playerConfig, Context context){
+
+    }
+
+    @Override
     protected void load(Player player, PlayerConfig playerConfig, Context context) {
         this.mPlayerConfig = playerConfig;
         this.mPlayer = player;
         this.mContext = context;
         mPluginManager = new YouboraLibraryManager(new Options());
-        player.addEventListener(mPluginManager.getEventListener());
-        mPluginManager.startMonitoring(player);
+        startMonitoring(mPlayer);
     }
 
     @Override
     public void release() {
-        mPluginManager.stopMonitoring();
+        stopMonitoring();
     }
 
+    public void startMonitoring(Player player) {
+        mPluginManager.startMonitoring(player);
+        player.addEventListener(mPluginManager.getEventListener());
+        player.addStateChangeListener(mPluginManager.getStateChangeListener());
+    }
 
+    public void stopMonitoring() {
+        mPluginManager.stopMonitoring();
+    }
 }

@@ -1,17 +1,13 @@
 package com.kaltura.playkit.plugins.Youbora;
 
-import android.text.TextUtils;
-
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.plugins.TVPAPIAnalyticsPlugin;
+import com.kaltura.playkit.PlayerState;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.managers.ViewManager;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.net.URL;
 import java.util.Map;
 
 /**
@@ -37,6 +33,35 @@ public class YouboraLibraryManager extends PluginGeneric {
         ViewManager.setMonitoringInterval(MONITORING_INTERVAL);
     }
 
+    public PlayerState.Listener getStateChangeListener(){ return mStateChangeListener;}
+
+    private PlayerState.Listener mStateChangeListener = new PlayerState.Listener() {
+        @Override
+        public void onPlayerStateChanged(Player player, PlayerState newState) {
+            switch (newState){
+                case IDLE:
+
+                    break;
+                case LOADING:
+
+                    break;
+                case READY:
+                    playHandler();
+                    joinHandler();
+                    bufferedHandler();
+                    break;
+                case BUFFERING:
+                    bufferingHandler();
+                    break;
+            }
+            if (player.getAutoPlay()) {
+                resumeHandler();
+            } else {
+                pauseHandler();
+            }
+        }
+    };
+
     public PlayerEvent.Listener getEventListener(){
         return mEventListener;
     }
@@ -54,7 +79,7 @@ public class YouboraLibraryManager extends PluginGeneric {
 
                     break;
                 case ENDED:
-
+                    endedHandler();
                     break;
                 case ERROR:
 
@@ -66,7 +91,7 @@ public class YouboraLibraryManager extends PluginGeneric {
 
                     break;
                 case PLAY:
-
+                    playHandler();
                     break;
                 case PLAYING:
 
@@ -84,51 +109,30 @@ public class YouboraLibraryManager extends PluginGeneric {
         }
     };
 
-    private void setMessageParams(TVPAPIAnalyticsPlugin.TVPAPIEventType eventType, String eventContent){
-        JSONObject baseParams = getBaseParams();
-        try {
-            baseParams.put("Action", eventContent);
-            baseParams.put("MethodName", eventType.toString());
-            sendMessage(eventType,baseParams);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+    public void startMonitoring(Object player) {
+        super.startMonitoring(player);
+        this.lastReportedBitrate = super.getBitrate();
+        this.enableSeekMonitor();
     }
 
-    private JSONObject getBaseParams(){
-        int mediaType = 0;
-        JSONObject postData = new JSONObject();
-        try {
-            postData.put("initObj", mPlayerConfig.getInitObject());
-            postData.put("mediaType", mediaType);
-            postData.put("iMediaID", mPlayerConfig.getMediaEntry().getId());
-            postData.put("iFileID", mFileId);
-            postData.put("iLocation", mPlayer.getCurrentPosition());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return postData;
+    public void stopMonitoring() {
+        super.stopMonitoring();
     }
 
-    private String sendMessage(TVPAPIAnalyticsPlugin.TVPAPIEventType service, JSONObject postData){
-        URL url = mPlayerConfig.getApiBaseUrl();
-        if (service != null && postData != null) {
-            String messageUrl = buildUrl(service.toString(), postData);
-            return messageUrl;
-        } else {
-            return "";
-        }
+    public void setBitrate(Double bitrate) {
+        this.lastReportedBitrate = bitrate;
     }
 
-    private static String buildUrl(String original, JSONObject postData) {
-        if (postData != null) {
-            String methodName = postData.optString("MethodName");
-            if (!TextUtils.isEmpty(methodName)) {
-                postData.remove("MethodName");
-                return original.concat(methodName);
-            }
-        }
-        return original;
+    public void setThroughput(Double throughput) {
+        this.lastReportedthroughput = throughput;
+    }
+
+    public Double getBitrate() {
+        return this.lastReportedBitrate;
+    }
+
+    public Double getThroughput() {
+        return this.lastReportedthroughput;
     }
 
 }

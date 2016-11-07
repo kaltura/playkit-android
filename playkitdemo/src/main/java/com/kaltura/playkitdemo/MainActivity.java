@@ -15,6 +15,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.plugins.SamplePlugin;
+import com.kaltura.playkit.plugins.Youbora.YouboraPlugin;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void registerPlugins() {
         PlayKitManager.registerPlugins(SamplePlugin.factory);
+        PlayKitManager.registerPlugins(YouboraPlugin.factory);
     }
     
     @Override

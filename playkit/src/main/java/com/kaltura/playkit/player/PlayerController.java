@@ -84,8 +84,8 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void apply(@NonNull PlayerConfig playerConfig) {
-        Log.d(TAG, "apply");
+    public void update(PlayerConfig playerConfig) {
+
     }
 
     @Override

@@ -2,16 +2,17 @@ package com.kaltura.playkit.plugins;
 
 import android.content.Context;
 
+import com.kaltura.playkit.PKPlugin;
+import com.kaltura.playkit.PlayKit;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.Plugin;
 
 /**
  * Created by zivilan on 02/11/2016.
  */
 
-public class KalturaStatisticsPlugin extends Plugin {
+public class KalturaStatisticsPlugin extends PKPlugin {
     private static final String TAG = "KalturaStatisticsPlugin";
 
     public static final Factory factory = new Factory() {
@@ -21,7 +22,7 @@ public class KalturaStatisticsPlugin extends Plugin {
         }
 
         @Override
-        public Plugin newInstance() {
+        public PKPlugin newInstance(PlayKit playKit) {
             return new KalturaStatisticsPlugin();
         }
     };
@@ -33,6 +34,11 @@ public class KalturaStatisticsPlugin extends Plugin {
 
     @Override
     public void release() {
+
+    }
+
+    @Override
+    protected void update(Player player, PlayerConfig playerConfig, Context context) {
 
     }
 

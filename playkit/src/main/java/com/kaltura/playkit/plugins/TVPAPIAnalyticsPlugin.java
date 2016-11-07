@@ -12,10 +12,7 @@ import com.kaltura.playkit.PlayerEvent;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URL;
-
 import static com.kaltura.playkit.plugins.TVPAPIAnalyticsPlugin.TVPAPIEventType.MEDIAMARK;
-import static com.kaltura.playkit.plugins.TVPAPIAnalyticsPlugin.TVPAPIEventType.MEDIA_MARK;
 
 /**
  * Created by zivilan on 02/11/2016.
@@ -51,6 +48,11 @@ public class TVPAPIAnalyticsPlugin extends PKPlugin {
             return new TVPAPIAnalyticsPlugin();
         }
     };
+
+    @Override
+    protected void update(Player player, PlayerConfig playerConfig, Context context){
+
+    }
 
     @Override
     protected void load(Player player, PlayerConfig playerConfig, Context context) {
@@ -147,7 +149,7 @@ public class TVPAPIAnalyticsPlugin extends PKPlugin {
         int mediaType = 0;
         JSONObject postData = new JSONObject();
         try {
-            postData.put("initObj", mPlayerConfig.getInitObject());
+//            postData.put("initObj", mPlayerConfig.getInitObject());
             postData.put("mediaType", mediaType);
             postData.put("iMediaID", mPlayerConfig.getMediaEntry().getId());
             postData.put("iFileID", mFileId);
@@ -159,7 +161,7 @@ public class TVPAPIAnalyticsPlugin extends PKPlugin {
     }
 
     private String sendMessage(TVPAPIEventType service, JSONObject postData){
-        URL url = mPlayerConfig.getApiBaseUrl();
+//        URL url = mPlayerConfig.getApiBaseUrl();
         if (service != null && postData != null) {
             String messageUrl = buildUrl(service.toString(), postData);
             return messageUrl;
