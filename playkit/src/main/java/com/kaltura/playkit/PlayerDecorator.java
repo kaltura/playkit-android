@@ -46,9 +46,11 @@ public abstract class PlayerDecorator implements Player {
         mPlayer.prepareNext(playerConfig);
     }
 
-    
-    
-    
+    @Override
+    public long getBufferedPosition() {
+        return mPlayer.getBufferedPosition();
+    }
+
     @Override
     final public void update(@NonNull PlayerConfig playerConfig) {
         mPlayer.update(playerConfig);

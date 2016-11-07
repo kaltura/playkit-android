@@ -60,8 +60,10 @@ public class PlayerController implements Player {
         }
     };
 
-    public PlayerController(Context context){
+    public PlayerController(Context context, PlayerConfig config){
         this.context = context;
+        this.playerConfig = config;
+
         //create default player(ExoPlayer).
         player = new ExoPlayerWrapper(context);
         player.setEventTrigger(eventTrigger);
@@ -71,7 +73,7 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void load(@NonNull PlayerConfig playerConfig) {
+    public void update(@NonNull PlayerConfig playerConfig) {
         this.playerConfig = playerConfig;
         //create player based on player config.
         //wv classic -> MediaPlayerWrapper.
@@ -80,12 +82,6 @@ public class PlayerController implements Player {
         Uri sourceUri = Uri.parse(playerConfig.getMediaEntry().getSources().get(0).getUrl());
         boolean shouldAutoplay = playerConfig.isAutoPlay();
         player.load(sourceUri, shouldAutoplay);
-
-    }
-
-    @Override
-    public void apply(@NonNull PlayerConfig playerConfig) {
-        Log.d(TAG, "apply");
     }
 
     @Override
@@ -128,7 +124,6 @@ public class PlayerController implements Player {
     public void setAutoPlay(boolean autoPlay) {
         Log.d(TAG, "setAutoPlay => " + autoPlay);
         player.setAutoPlay(autoPlay);
-
     }
 
     @Override

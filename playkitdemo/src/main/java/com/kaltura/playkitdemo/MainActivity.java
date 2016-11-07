@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        initPlaybackControls();
+
         registerPlugins();
 
         JSONObject configJSON;
@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+        initPlaybackControls();
         LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
         layout.addView(player.getView());
         updateProgress();

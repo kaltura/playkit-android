@@ -3,6 +3,8 @@ package com.kaltura.playkit;
 import android.content.Context;
 import android.util.Log;
 
+import com.kaltura.playkit.player.PlayerController;
+
 import org.json.JSONObject;
 
 import java.util.Map;
@@ -12,7 +14,7 @@ public class PlayKit {
 
     public Player loadPlayer(Context context, PlayerConfig config) {
 
-        PlayerController player = new PlayerController(context);
+        PlayerController player = new PlayerController(context, config);
 
         PlayerDecorator playerDecorator = null;
 

@@ -12,6 +12,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.PlayerState;
 
 /**
  * Created by Noam Tamim @ Kaltura on 26/10/2016.
@@ -69,6 +70,7 @@ public class SamplePlugin extends PKPlugin {
     @Override
     public PlayerDecorator getPlayerDecorator() {
         return new PlayerDecorator() {
+
             @Override
             public void play() {
                 Toast.makeText(mContext, "Delaying playback by 5000 ms", Toast.LENGTH_SHORT).show();
