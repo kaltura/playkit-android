@@ -108,6 +108,11 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public long getBufferedPosition() {
+        return player.getBufferedPosition();
+    }
+
+    @Override
     public void seekTo(long position) {
         Log.d(TAG, "seek to " + position);
         player.seekTo(position);

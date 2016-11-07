@@ -299,6 +299,11 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     }
 
     @Override
+    public long getBufferedPosition() {
+        return player.getBufferedPosition();
+    }
+
+    @Override
     public void seekTo(long position) {
         player.seekTo(position);
     }

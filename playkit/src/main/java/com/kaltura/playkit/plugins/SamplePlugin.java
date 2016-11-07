@@ -49,6 +49,14 @@ public class SamplePlugin extends PKPlugin implements DecoratedPlayerProvider {
                 Log.d(TAG, "PlayerEvent:" + event);
             }
         });
+
+        player.addStateChangeListener(new PlayerState.Listener(){
+
+            @Override
+            public void onPlayerStateChanged(Player player, PlayerState newState) {
+                Log.d(TAG, "PlayerState:" + newState);
+            }
+        });
     }
 
     @Override
@@ -82,6 +90,11 @@ public class SamplePlugin extends PKPlugin implements DecoratedPlayerProvider {
             @Override
             public long getCurrentPosition() {
                 return mPlayer.getCurrentPosition();
+            }
+
+            @Override
+            public long getBufferedPosition() {
+                return mPlayer.getBufferedPosition();
             }
 
             @Override

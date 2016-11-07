@@ -30,4 +30,6 @@ public interface PlayerEngine {
     void setStateChangedTrigger(PlayerController.StateChangedTrigger stateChangedTrigger);
 
     long getDuration();
+
+    long getBufferedPosition();
 }

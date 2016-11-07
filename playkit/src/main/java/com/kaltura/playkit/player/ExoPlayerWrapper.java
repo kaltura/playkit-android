@@ -201,23 +201,26 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
                 if(!previousState.equals(PlayerState.READY)){
                     sendEvent(PlayerEvent.CAN_PLAY);
                 }
-                //launch Playing event
-                if(firstPlay && playWhenReady){
-                    firstPlay = false;
-                    sendEvent(PlayerEvent.PLAYING);
-                }
 
                 if(isSeeking){
                     isSeeking = false;
                     sendEvent(PlayerEvent.SEEKED);
                 }
 
+                if(playWhenReady){
+                    if(firstPlay){
+                        firstPlay = false;
+                        sendEvent(PlayerEvent.FIRST_PLAY);
+                    }
+
+                    sendEvent(PlayerEvent.PLAYING);
+                }
 
                 break;
             case ExoPlayer.STATE_ENDED:
                 Log.d(TAG, "onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
-                currentEvent = PlayerEvent.ENDED;
+                sendEvent(PlayerEvent.ENDED);
                 break;
             default:
                 break;
@@ -250,7 +253,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     @Override
     public void load(Uri mediaSourceUri, boolean shouldAutoPlay) {
-        Log.d(TAG, "load");
+        Log.d(TAG, "load should autoplay => " + shouldAutoPlay);
         if (player == null) {
             initializePlayer(shouldAutoPlay);
         }
@@ -271,18 +274,10 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         if(player.getPlayWhenReady()) {
             return;
         }
-
-        if(currentState.equals(PlayerState.READY)){
-            if(!firstPlay){
-                sendEvent(PlayerEvent.PLAY);
-            }else{
-                firstPlay = false;
-            }
-            sendEvent(PlayerEvent.PLAYING);
+        if(!firstPlay){
+            sendEvent(PlayerEvent.PLAY);
         }
-
         player.setPlayWhenReady(true);
-
     }
 
     @Override
@@ -316,17 +311,22 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         player.setPlayWhenReady(shouldAutoplay);
     }
 
+    @Override
+    public long getDuration() {
+        return player.getDuration();
+    }
+
+    @Override
+    public long getBufferedPosition() {
+        return player.getBufferedPosition();
+    }
+
     public void setEventTrigger(final PlayerController.EventTrigger eventTrigger) {
         this.eventTrigger = eventTrigger;
     }
 
     public void setStateChangedTrigger(PlayerController.StateChangedTrigger stateChangedTrigger) {
         this.stateChangedTrigger = stateChangedTrigger;
-    }
-
-    @Override
-    public long getDuration() {
-        return player.getDuration();
     }
 
 }

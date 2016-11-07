@@ -35,6 +35,8 @@ public interface Player {
      */
     long getCurrentPosition();
 
+    long getBufferedPosition();
+
     void seekTo(long position);
 
     /**

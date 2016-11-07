@@ -23,18 +23,38 @@ import com.kaltura.playkit.plugins.SamplePlugin;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Formatter;
+import java.util.Locale;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
     private static final String TAG = "MainActivity";
+    private static final int PROGRESS_BAR_MAX = 100;
+    private static final long TIME_UNSET = Long.MIN_VALUE + 1;
+
     private PlayKit mPlayKit;
     private MockMediaEntryProvider mMediaEntryProvider;
 
 
     private Player player;
+    private PlayerState playerState;
 
+    private LinearLayout controlsLayout;
     private ImageButton btnPlay, btnPause, btnFastForward, btnRewind, btnNext, btnPrevious;
     private SeekBar seekBar;
     private TextView tvCurTime, tvTime;
+    private boolean dragging = false;
+    private StringBuilder formatBuilder;
+    private Formatter formatter;
+
+    private Runnable updateProgressAction = new Runnable() {
+        @Override
+        public void run() {
+            updateProgress();
+        }
+    };
+
+
 
 
     private void registerPlugins() {
@@ -71,29 +91,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         player = mPlayKit.createPlayer(this, config);
 
         Log.d(TAG, "Player: " + player.getClass());
-        
+
         player.addEventListener(new PlayerEvent.Listener() {
             @Override
             public void onPlayerEvent(Player player, PlayerEvent event) {
-                
+
             }
         }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
 
         player.addStateChangeListener(new PlayerState.Listener() {
             @Override
             public void onPlayerStateChanged(Player player, PlayerState newState) {
-                
+                playerState = newState;
+                updateProgress();
             }
         });
 
         LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
         layout.addView(player.getView());
-
-        player.play();
-
+        updateProgress();
     }
 
     private void initPlaybackControls() {
+        formatBuilder = new StringBuilder();
+        formatter = new Formatter(formatBuilder, Locale.getDefault());
+
         btnPlay = (ImageButton) this.findViewById(R.id.play);
         btnPause = (ImageButton) this.findViewById(R.id.pause);
         btnFastForward = (ImageButton) this.findViewById(R.id.ffwd);
@@ -114,8 +136,61 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvCurTime = (TextView) this.findViewById(R.id.time_current);
         tvTime = (TextView) this.findViewById(R.id.time);
 
-        LinearLayout controlsLayout = (LinearLayout) this.findViewById(R.id.playerControls);
-//        controlsLayout.setVisibility(View.INVISIBLE);
+        controlsLayout = (LinearLayout) this.findViewById(R.id.playerControls);
+    }
+
+    private void updateProgress() {
+
+        long duration = player == null ? 0 : player.getDuration();
+        long position = player == null ? 0 : player.getCurrentPosition();
+        tvTime.setText(stringForTime(duration));
+        if (!dragging) {
+            tvCurTime.setText(stringForTime(position));
+        }
+        if (!dragging) {
+            seekBar.setProgress(progressBarValue(position));
+        }
+        long bufferedPosition = player == null ? 0 : player.getBufferedPosition();
+        seekBar.setSecondaryProgress(progressBarValue(bufferedPosition));
+        // Remove scheduled updates.
+        controlsLayout.removeCallbacks(updateProgressAction);
+        // Schedule an update if necessary.
+        if (playerState != PlayerState.IDLE) {
+            long delayMs;
+            if (player.getAutoPlay() && playerState == PlayerState.READY) {
+                delayMs = 1000 - (position % 1000);
+                if (delayMs < 200) {
+                    delayMs += 1000;
+                }
+            } else {
+                delayMs = 1000;
+            }
+            controlsLayout.postDelayed(updateProgressAction, delayMs);
+        }
+    }
+
+    private int progressBarValue(long position) {
+        long duration = player == null ? TIME_UNSET : player.getDuration();
+        return duration == TIME_UNSET || duration == 0 ? 0
+                : (int) ((position * PROGRESS_BAR_MAX) / duration);
+    }
+
+    private long positionValue(int progress) {
+        long duration = player == null ? TIME_UNSET : player.getDuration();
+        return duration == TIME_UNSET ? 0 : ((duration * progress) / PROGRESS_BAR_MAX);
+    }
+
+    private String stringForTime(long timeMs) {
+        if (timeMs == TIME_UNSET) {
+            timeMs = 0;
+        }
+        long totalSeconds = (timeMs + 500) / 1000;
+        long seconds = totalSeconds % 60;
+        long minutes = (totalSeconds / 60) % 60;
+        long hours = totalSeconds / 3600;
+        formatBuilder.setLength(0);
+        return hours > 0 ? formatter.format("%d:%02d:%02d", hours, minutes, seconds).toString()
+                : formatter.format("%02d:%02d", minutes, seconds).toString();
     }
 
     @Override
@@ -149,11 +224,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     public void onStartTrackingTouch(SeekBar seekBar) {
-
+        dragging = true;
     }
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-
+        dragging = false;
+        player.seekTo(positionValue(seekBar.getProgress()));
     }
 }
