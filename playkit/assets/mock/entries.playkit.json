@@ -1,0 +1,28 @@
+{
+  "entries": {
+    "m001": {
+      "duration": 60000,
+      "id": "m001",
+      "name": "demo1",
+      "sources": [
+        {
+          "id": "m001s001",
+          "mimeType": "application/dash+xml",
+          "url": "http://cfvod.kaltura.com/dasha/p/1851571/sp/185157100/serveFlavor/entryId/0_pl5lbfo0/v/2/flavorId/0_,zwq3l44r,otmaqpnf,ywkmqnkg,/forceproxy/true/name/a.mp4.urlset/manifest.mpd"
+        }
+      ]
+    },
+    "1_1h1vsv3z": {
+      "duration": 102000,
+      "id": "1_1h1vsv3z",
+      "name": "Kaltura Video Solutions for Media Companies",
+      "sources": [
+        {
+          "id": "1_ude4l5pb",
+          "mimeType": "application/mp4",
+          "url":"http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/url/protocol/http/a.mp4/flavorIds/0_,1_ude4l5pb,1_izgi81qa,1_3l6wh2jz,1_fafwf2t7,1_k6gs4dju,1_nzen8kfl"
+        }
+      ]
+    }
+  }
+}

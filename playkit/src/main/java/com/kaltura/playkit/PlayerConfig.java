@@ -42,7 +42,7 @@ public class PlayerConfig {
         this.mMediaEntry = mediaEntry;
         return this;
     }
-    
+
     public void enablePlugin(String name) {
         JSONObject pluginConfig = getPluginConfig(name);
         if (pluginConfig.length() == 0) {
@@ -57,7 +57,7 @@ public class PlayerConfig {
     public void disablePlugin(String name) {
         pluginConfig.remove(name);
     }
-    
+
     public JSONObject getPluginConfig(String pluginName) {
         JSONObject jsonObject = pluginConfig.get(pluginName);
         if (jsonObject == null) {
@@ -71,7 +71,7 @@ public class PlayerConfig {
         pluginConfig.put(pluginName, config);
         return this;
     }
-    
+
     public Map<String, JSONObject> getPluginConfigMap() {
         return Collections.unmodifiableMap(pluginConfig);
     }
