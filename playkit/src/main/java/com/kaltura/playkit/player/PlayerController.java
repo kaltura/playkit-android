@@ -68,6 +68,7 @@ public class PlayerController implements Player {
         player = new ExoPlayerWrapper(context);
         player.setEventTrigger(eventTrigger);
         player.setStateChangedTrigger(stateChangedTrigger);
+        update(this.playerConfig);
         //set player listener that notify controller about events that happened.
         // the PlayerController will pass them to the app.
     }
