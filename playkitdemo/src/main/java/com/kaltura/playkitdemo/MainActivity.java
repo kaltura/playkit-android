@@ -15,6 +15,7 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.plugins.SamplePlugin;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -45,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    
+    
     @Override
     protected void onStart() {
         
@@ -53,7 +56,8 @@ public class MainActivity extends AppCompatActivity {
         PlayerConfig config = new PlayerConfig();
 
         config.media.setMediaEntry(mMediaEntryProvider.getMediaEntry());
-        config.plugins.enablePlugin("Sample");
+//        config.plugins.enablePlugin("Sample");
+        configurePlugins(config.plugins);
 
 
         mPlayer = PlayKitManager.loadPlayer(config, this);
@@ -81,6 +85,14 @@ public class MainActivity extends AppCompatActivity {
 
         
         mPlayer.play();
+    }
+
+    private void configurePlugins(PlayerConfig.Plugins config) {
+        try {
+            config.setPluginConfig("Sample", new JSONObject().put("delay", 4200));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
