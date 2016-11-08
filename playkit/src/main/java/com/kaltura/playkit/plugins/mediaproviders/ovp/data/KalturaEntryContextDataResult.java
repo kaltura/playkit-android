@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.mediaprovider.ovp.data;
+package com.kaltura.playkit.plugins.mediaproviders.ovp.data;
 
 import com.kaltura.playkit.PKMediaSource;
 

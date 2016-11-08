@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.mediaprovider.phoenix.data;
+package com.kaltura.playkit.plugins.mediaproviders.phoenix.data;
 
 /**
  * Created by tehilarozin on 04/11/2016.

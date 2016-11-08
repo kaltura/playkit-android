@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.mediaprovider.mock;
+package com.kaltura.playkit.plugins.mediaproviders.mock;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -7,8 +7,8 @@ import com.google.gson.JsonSyntaxException;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.plugins.connect.ResultElement;
-import com.kaltura.playkit.plugins.mediaprovider.base.ErrorElement;
-import com.kaltura.playkit.plugins.mediaprovider.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.plugins.mediaproviders.base.ErrorElement;
+import com.kaltura.playkit.plugins.mediaproviders.base.OnMediaLoadCompletion;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;

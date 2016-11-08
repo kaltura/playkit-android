@@ -1,13 +1,13 @@
-package com.kaltura.playkit.plugins.mediaprovider.ovp;
+package com.kaltura.playkit.plugins.mediaproviders.ovp;
 
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.plugins.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.plugins.connect.OnRequestCompletion;
 import com.kaltura.playkit.plugins.connect.ResponseElement;
-import com.kaltura.playkit.plugins.mediaprovider.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.plugins.mediaprovider.ovp.data.KalturaEntryContextDataResult;
-import com.kaltura.playkit.plugins.mediaprovider.ovp.data.KalturaMediaEntry;
+import com.kaltura.playkit.plugins.mediaproviders.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.plugins.mediaproviders.ovp.data.KalturaEntryContextDataResult;
+import com.kaltura.playkit.plugins.mediaproviders.ovp.data.KalturaMediaEntry;
 
 /**
  * Created by tehilarozin on 30/10/2016.

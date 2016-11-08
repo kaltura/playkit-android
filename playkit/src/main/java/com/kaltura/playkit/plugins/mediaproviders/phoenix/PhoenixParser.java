@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.mediaprovider.phoenix;
+package com.kaltura.playkit.plugins.mediaproviders.phoenix;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -9,8 +9,8 @@ import com.kaltura.playkit.Defines;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Utils;
-import com.kaltura.playkit.plugins.mediaprovider.phoenix.data.AssetInfo;
-import com.kaltura.playkit.plugins.mediaprovider.phoenix.data.MediaFile;
+import com.kaltura.playkit.plugins.mediaproviders.phoenix.data.AssetInfo;
+import com.kaltura.playkit.plugins.mediaproviders.phoenix.data.MediaFile;
 
 import java.util.ArrayList;
 

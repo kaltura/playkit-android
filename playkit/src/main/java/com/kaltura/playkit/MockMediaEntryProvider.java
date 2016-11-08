@@ -1,6 +1,6 @@
 package com.kaltura.playkit;
 
-import com.kaltura.playkit.plugins.mediaprovider.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.plugins.mediaproviders.base.OnMediaLoadCompletion;
 
 import android.content.Context;
 

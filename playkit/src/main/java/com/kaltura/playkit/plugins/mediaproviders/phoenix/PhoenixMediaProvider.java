@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.mediaprovider.phoenix;
+package com.kaltura.playkit.plugins.mediaproviders.phoenix;
 
 import android.text.TextUtils;
 
@@ -7,9 +7,9 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.plugins.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.plugins.connect.OnRequestCompletion;
 import com.kaltura.playkit.plugins.connect.ResponseElement;
-import com.kaltura.playkit.plugins.mediaprovider.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.plugins.mediaprovider.phoenix.data.AssetInfo;
-import com.kaltura.playkit.plugins.mediaprovider.phoenix.data.MediaFile;
+import com.kaltura.playkit.plugins.mediaproviders.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.plugins.mediaproviders.phoenix.data.AssetInfo;
+import com.kaltura.playkit.plugins.mediaproviders.phoenix.data.MediaFile;
 
 import java.util.ArrayList;
 import java.util.Collections;

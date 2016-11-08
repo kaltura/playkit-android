@@ -2,9 +2,9 @@ package tests.mediaproviders;
 
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.plugins.connect.ResultElement;
-import com.kaltura.playkit.plugins.mediaprovider.base.ErrorElement;
-import com.kaltura.playkit.plugins.mediaprovider.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.plugins.mediaprovider.mock.MockMediaProvider;
+import com.kaltura.playkit.plugins.mediaproviders.base.ErrorElement;
+import com.kaltura.playkit.plugins.mediaproviders.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.plugins.mediaproviders.mock.MockMediaProvider;
 
 import junit.framework.TestCase;
 

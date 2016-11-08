@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.mediaprovider.tvpapi;
+package com.kaltura.playkit.plugins.mediaproviders.tvpapi;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MediaEntryProvider;
@@ -8,8 +8,8 @@ import com.kaltura.playkit.plugins.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.plugins.connect.OnRequestCompletion;
 import com.kaltura.playkit.plugins.connect.ResponseElement;
 import com.kaltura.playkit.plugins.connect.ResultElement;
-import com.kaltura.playkit.plugins.mediaprovider.base.ErrorElement;
-import com.kaltura.playkit.plugins.mediaprovider.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.plugins.mediaproviders.base.ErrorElement;
+import com.kaltura.playkit.plugins.mediaproviders.base.OnMediaLoadCompletion;
 
 /**
  * Created by tehilarozin on 27/10/2016.

@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.mediaprovider.base;
+package com.kaltura.playkit.plugins.mediaproviders.base;
 
 /**
  * Created by tehilarozin on 06/11/2016.

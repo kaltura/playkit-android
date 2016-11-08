@@ -13,8 +13,8 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.connect.ResultElement;
-import com.kaltura.playkit.plugins.mediaprovider.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.plugins.mediaprovider.mock.MockMediaProvider;
+import com.kaltura.playkit.plugins.mediaproviders.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.plugins.mediaproviders.mock.MockMediaProvider;
 
 
 public class MainActivity extends AppCompatActivity {

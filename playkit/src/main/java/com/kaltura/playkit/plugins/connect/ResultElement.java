@@ -1,6 +1,6 @@
 package com.kaltura.playkit.plugins.connect;
 
-import com.kaltura.playkit.plugins.mediaprovider.base.ErrorElement;
+import com.kaltura.playkit.plugins.mediaproviders.base.ErrorElement;
 
 /**
  * Created by tehilarozin on 06/09/2016.

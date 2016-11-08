@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.mediaprovider.base;
+package com.kaltura.playkit.plugins.mediaproviders.base;
 
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.core.OnCompletion;

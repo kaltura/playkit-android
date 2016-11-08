@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.mediaprovider.ovp.data;
+package com.kaltura.playkit.plugins.mediaproviders.ovp.data;
 
 /**
  * Created by tehilarozin on 31/10/2016.

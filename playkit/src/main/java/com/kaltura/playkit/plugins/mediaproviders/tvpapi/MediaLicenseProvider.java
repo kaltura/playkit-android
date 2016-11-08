@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.mediaprovider.tvpapi;
+package com.kaltura.playkit.plugins.mediaproviders.tvpapi;
 
 /**
  * Created by tehilarozin on 01/11/2016.

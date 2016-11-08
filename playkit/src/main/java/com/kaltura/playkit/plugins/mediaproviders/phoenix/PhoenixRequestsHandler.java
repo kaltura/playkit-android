@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.mediaprovider.phoenix;
+package com.kaltura.playkit.plugins.mediaproviders.phoenix;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.plugins.connect.OnRequestCompletion;
@@ -6,7 +6,7 @@ import com.kaltura.playkit.plugins.connect.RequestConfiguration;
 import com.kaltura.playkit.plugins.connect.RequestElement;
 import com.kaltura.playkit.plugins.connect.RequestQueue;
 import com.kaltura.playkit.plugins.connect.ResponseElement;
-import com.kaltura.playkit.plugins.mediaprovider.RequestsHandler;
+import com.kaltura.playkit.plugins.mediaproviders.RequestsHandler;
 
 import java.util.HashMap;
 

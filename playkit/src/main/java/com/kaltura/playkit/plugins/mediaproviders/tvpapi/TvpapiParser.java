@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.mediaprovider.tvpapi;
+package com.kaltura.playkit.plugins.mediaproviders.tvpapi;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

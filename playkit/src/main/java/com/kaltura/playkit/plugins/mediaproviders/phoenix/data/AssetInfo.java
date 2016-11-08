@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.mediaprovider.phoenix.data;
+package com.kaltura.playkit.plugins.mediaproviders.phoenix.data;
 
 import java.util.ArrayList;
 

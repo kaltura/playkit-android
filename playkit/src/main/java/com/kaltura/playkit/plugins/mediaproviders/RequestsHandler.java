@@ -1,7 +1,7 @@
-package com.kaltura.playkit.plugins.mediaprovider;
+package com.kaltura.playkit.plugins.mediaproviders;
 
 import com.kaltura.playkit.plugins.connect.RequestQueue;
-import com.kaltura.playkit.plugins.mediaprovider.base.ErrorElement;
+import com.kaltura.playkit.plugins.mediaproviders.base.ErrorElement;
 
 /**
  * Created by tehilarozin on 30/10/2016.
