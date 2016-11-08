@@ -47,7 +47,8 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     public void load(@NonNull PlayerConfig playerConfig) {
-        Player player = new POCPlayer(mContext, playerConfig);
+        Player player = new POCPlayer(mContext);
+        player.prepare(playerConfig.media);
 
         PlayerDecorator selectedDecorator = null;
 
