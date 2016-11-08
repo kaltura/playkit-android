@@ -1,16 +1,14 @@
 package com.kaltura.playkit.plugin.mediaprovider.mock;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.plugin.connect.OnCompletion;
 import com.kaltura.playkit.plugin.connect.ResultElement;
-import com.kaltura.playkit.plugin.mediaprovider.base.BaseMediaProvider;
 import com.kaltura.playkit.plugin.mediaprovider.base.ErrorElement;
-import com.kaltura.playkit.plugin.mediaprovider.base.ProviderBuilder;
+import com.kaltura.playkit.plugin.mediaprovider.base.OnMediaLoadCompletion;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -19,14 +17,15 @@ import java.io.FileReader;
  * Created by tehilarozin on 06/11/2016.
  */
 
-public class MockMediaProvider extends BaseMediaProvider {
+public class MockMediaProvider implements MediaEntryProvider {
 
-    private JsonObject entry;
+    private JsonObject inputJson;
     private String inputFile;
     private String id;
 
-    private MockMediaProvider(JsonObject entry) {
-        this.entry = entry;
+    private MockMediaProvider(JsonObject inputJson, String id) {
+        this.inputJson = inputJson;
+        this.id = id;
     }
 
     public MockMediaProvider(String inputFile, String id) {
@@ -34,47 +33,34 @@ public class MockMediaProvider extends BaseMediaProvider {
         this.id = id;
     }
 
-    @Override
-    public PKMediaEntry getMediaEntry() {
-        return mediaEntry;
+    public MockMediaProvider id(String id) {
+        this.id = id;
+        return this;
     }
 
     @Override
-    public void load(final OnCompletion callback) {
+    public void load(final OnMediaLoadCompletion completion) {
 
         ErrorElement error = null;
         PKMediaEntry mediaEntry = null;
 
-        //parse entry to MediaEntry
-        if (entry != null) {
-            mediaEntry = MockMediaParser.parseMedia(entry);
+        //parse Json input to MediaEntry
+        try {
+            mediaEntry = inputJson != null ? getFromJson(inputJson) : getFromFile();
 
-        } else {
-            JsonParser parser = new JsonParser();
-            try {
-                final JsonElement element = parser.parse(new FileReader(inputFile));
-                JsonObject entryObject;
-                if (element.getAsJsonObject().has("entries")) {
-                    entryObject = element.getAsJsonObject().getAsJsonObject("entries").getAsJsonObject(id);
-                } else {
-                    entryObject = element.getAsJsonObject();
-                }
-
-                if(entryObject != null) {
-                    mediaEntry = MockMediaParser.parseMedia(entryObject);
-                } else {
-                    error = ErrorElement.MediaNotFound;
-                }
-
-            } catch (FileNotFoundException ex) {
-                error = ErrorElement.LoadError;
-            }
+        } catch (FileNotFoundException | JsonSyntaxException ex) {
+            error = ErrorElement.LoadError;
+            mediaEntry = null;
         }
 
-        if(callback!=null){
+        if (mediaEntry == null) {
+            error = ErrorElement.MediaNotFound;
+        }
+
+        if (completion != null) {
             final ErrorElement finalError = error;
             final PKMediaEntry finalEntry = mediaEntry;
-            callback.onComplete(new ResultElement<PKMediaEntry>() {
+            completion.onComplete(new ResultElement<PKMediaEntry>() {
 
                 @Override
                 public PKMediaEntry getResponse() {
@@ -93,61 +79,32 @@ public class MockMediaProvider extends BaseMediaProvider {
             });
         }
 
-        /*requestHandler.getMockMedia(id, new OnCompletion<ResponseElement>() {
-            @Override
-            public void onComplete(ResponseElement response) {
-                if(response.isSuccess()){
-                    MediaEntry mediaEntry = MockMediaParser.parseMedia(response.getResponse());
-                    if(callback!=null){
-                        callback.onComplete(mediaEntry);
-                    }
-                } else
-            }
-        });*/
     }
 
+    private PKMediaEntry getFromFile() throws FileNotFoundException {
+        PKMediaEntry mediaEntry;JsonParser parser = new JsonParser();
 
-    public static class Builder implements ProviderBuilder {
+        final JsonObject data = parser.parse(new FileReader(inputFile)).getAsJsonObject();
+        mediaEntry = getFromJson(data.has("entries") ? data.getAsJsonObject("entries") : data);
+        return mediaEntry;
+    }
 
-        JsonObject data;
-        private String id;
-        private String file;
+    private PKMediaEntry getFromJson(JsonObject data)  throws JsonSyntaxException{
+        if (data.has(id)) { // data holds entries object (multiple entries)
+            return MockMediaParser.parseMedia(inputJson.getAsJsonObject(id));
 
-        public Builder setFile(String file) {
-            this.file = file;
-            return this;
+        } else if (data.getAsJsonPrimitive("id").getAsString().equals(id)) { // data is the actual inputJson object
+            return MockMediaParser.parseMedia(inputJson);
         }
-
-        public Builder setData(JsonObject data) {
-            this.data = data;
-            return this;
-        }
-
-        public Builder setId(String id) {
-            this.id = id;
-            return this;
-        }
-
-
-        @Override
-        public MediaEntryProvider build() {
-            /*data or file*/
-            if (data != null) {
-                return new MockMediaProvider(data.get(id).getAsJsonObject());
-            } else {
-                return new MockMediaProvider(file, id);
-            }
-        }
+        return null;
     }
 
 
     static class MockMediaParser {
 
-        static PKMediaEntry parseMedia(JsonObject mediaObject) {
-            PKMediaEntry mediaEntry = new Gson().fromJson(mediaObject, PKMediaEntry.class);
-            return mediaEntry;
+        static PKMediaEntry parseMedia(JsonObject mediaObject) throws JsonSyntaxException {
+            return new Gson().fromJson(mediaObject, PKMediaEntry.class);
         }
-
 
     }
 }

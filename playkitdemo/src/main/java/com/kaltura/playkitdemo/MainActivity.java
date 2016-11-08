@@ -13,7 +13,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.plugin.connect.OnCompletion;
+import com.kaltura.playkit.core.OnCompletion;
 import com.kaltura.playkit.plugin.connect.ResultElement;
 import com.kaltura.playkit.plugin.mediaprovider.mock.MockMediaProvider;
 import com.kaltura.playkit.plugins.SamplePlugin;

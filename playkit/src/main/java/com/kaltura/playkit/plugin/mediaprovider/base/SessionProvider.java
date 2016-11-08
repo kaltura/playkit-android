@@ -1,6 +1,6 @@
 package com.kaltura.playkit.plugin.mediaprovider.base;
 
-import com.kaltura.playkit.plugin.connect.OnCompletion;
+import com.kaltura.playkit.core.OnCompletion;
 
 /**
  * Created by tehilarozin on 06/11/2016.

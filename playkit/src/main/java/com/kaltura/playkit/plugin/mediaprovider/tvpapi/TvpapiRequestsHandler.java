@@ -2,7 +2,7 @@ package com.kaltura.playkit.plugin.mediaprovider.tvpapi;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.plugin.connect.RequestQueue;
-import com.kaltura.playkit.plugin.connect.OnCompletion;
+import com.kaltura.playkit.core.OnCompletion;
 import com.kaltura.playkit.plugin.connect.RequestConfiguration;
 import com.kaltura.playkit.plugin.connect.RequestElement;
 import com.kaltura.playkit.plugin.connect.ResponseElement;

@@ -3,7 +3,7 @@ package com.kaltura.playkit.plugin.mediaprovider.ovp;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.plugin.connect.APIOkRequestsExecutor;
-import com.kaltura.playkit.plugin.connect.OnCompletion;
+import com.kaltura.playkit.core.OnCompletion;
 import com.kaltura.playkit.plugin.connect.RequestQueue;
 import com.kaltura.playkit.plugin.connect.ResponseElement;
 import com.kaltura.playkit.plugin.mediaprovider.base.ProviderBuilder;

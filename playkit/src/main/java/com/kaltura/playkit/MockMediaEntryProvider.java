@@ -1,6 +1,6 @@
 package com.kaltura.playkit;
 
-import com.kaltura.playkit.plugin.connect.OnCompletion;
+import com.kaltura.playkit.plugin.mediaprovider.base.OnMediaLoadCompletion;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,12 +24,8 @@ public class MockMediaEntryProvider implements MediaEntryProvider {
             return null;
         }
 
-        PKDrmParams drmData = new PKDrmParams();
-        drmData.licenseUri = jsonObject.getString("licenseUri");
-
-        return drmData;
+        return new PKDrmParams(jsonObject.getString("licenseUri"));
     }
-
 
     private PKMediaSource parseMediaSource(JSONObject jsonObject) throws JSONException {
         PKMediaSource mediaSource = new PKMediaSource();
@@ -72,13 +68,10 @@ public class MockMediaEntryProvider implements MediaEntryProvider {
         }
     }
     
-    @Override
-    public PKMediaEntry getMediaEntry() {
-        return mMediaEntry;
-    }
+
 
     @Override
-    public void load(OnCompletion callback) {
+    public void load(OnMediaLoadCompletion callback) {
 
     }
 }

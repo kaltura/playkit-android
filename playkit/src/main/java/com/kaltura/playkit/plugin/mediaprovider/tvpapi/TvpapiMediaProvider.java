@@ -5,9 +5,10 @@ import android.os.Bundle;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.core.OnCompletion;
 import com.kaltura.playkit.plugin.connect.APIOkRequestsExecutor;
-import com.kaltura.playkit.plugin.connect.OnCompletion;
 import com.kaltura.playkit.plugin.connect.ResponseElement;
+import com.kaltura.playkit.plugin.mediaprovider.base.OnMediaLoadCompletion;
 
 /**
  * Created by tehilarozin on 27/10/2016.
@@ -17,7 +18,6 @@ public class TvpapiMediaProvider implements MediaEntryProvider {
 
     private TvpapiRequestsHandler requestsHandler;
     private JsonObject initObj; //!! should be provided per user login, can't be used cross users.
-    private OnCompletion completion;
 
     public TvpapiMediaProvider(String tvpapiAddress){
         requestsHandler = new TvpapiRequestsHandler(tvpapiAddress, new APIOkRequestsExecutor());
@@ -55,13 +55,9 @@ public class TvpapiMediaProvider implements MediaEntryProvider {
         this.initObj = initObj;
     }
 
-    @Override
-    public PKMediaEntry getMediaEntry() {
-        return null;
-    }
 
     @Override
-    public void load(OnCompletion callback) {
+    public void load(OnMediaLoadCompletion completion) {
 
     }
 }

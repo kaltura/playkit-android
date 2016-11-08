@@ -2,7 +2,7 @@ package com.kaltura.playkit.plugin.mediaprovider.ovp;
 
 import android.text.TextUtils;
 
-import com.kaltura.playkit.plugin.connect.OnCompletion;
+import com.kaltura.playkit.core.OnCompletion;
 import com.kaltura.playkit.plugin.connect.ParamsRequestElement;
 import com.kaltura.playkit.plugin.connect.RequestConfiguration;
 import com.kaltura.playkit.plugin.connect.RequestQueue;

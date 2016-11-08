@@ -1,9 +1,9 @@
 package tests.mediaproviders;
 
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.plugin.connect.OnCompletion;
 import com.kaltura.playkit.plugin.connect.ResultElement;
 import com.kaltura.playkit.plugin.mediaprovider.base.ErrorElement;
+import com.kaltura.playkit.plugin.mediaprovider.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.plugin.mediaprovider.mock.MockMediaProvider;
 
 import junit.framework.TestCase;
@@ -25,33 +25,32 @@ public class MockProviderTest extends TestCase {
     }
 
     @Test
-    public void testMockProvider(){
+    public void testMockProvider() {
 
-        final MockMediaProvider.Builder mockBuilder = new MockMediaProvider.Builder();
-        mockBuilder.setId("m001").setFile(InputFile).build().load(new OnCompletion<ResultElement>() {
+        final MockMediaProvider mockMediaProvider = new MockMediaProvider(InputFile, "m001");
+        mockMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
-            public void onComplete(ResultElement response) {
-                if(response.isSuccess()){
-                    PKMediaEntry mediaEntry = (PKMediaEntry) response.getResponse();
-                    System.out.println("got some response. id = "+mediaEntry.getId());
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                if (response.isSuccess()) {
+                    PKMediaEntry mediaEntry = response.getResponse();
+                    System.out.println("got some response. id = " + mediaEntry.getId());
                 } else {
                     assertFalse(response.getError() == null);
-                    System.out.println("got error on json load: "+response.getError().getMessage());
+                    System.out.println("got error on json load: " + response.getError().getMessage());
                 }
 
-                mockBuilder.setId("1_1h1vsv3z").build().load(new OnCompletion<ResultElement>() {
+                mockMediaProvider.id("1_1h1vsv3z").load(new OnMediaLoadCompletion() {
                     @Override
-                    public void onComplete(ResultElement response) {
+                    public void onComplete(ResultElement<PKMediaEntry> response) {
                         assertTrue(response.isSuccess());
                         assertTrue(response.getError() == null);
-                        PKMediaEntry mediaEntry = (PKMediaEntry) response.getResponse();
+                        PKMediaEntry mediaEntry = response.getResponse();
                         assertTrue(mediaEntry.getId().equals("1_1h1vsv3z"));
                         assertTrue(mediaEntry.getSources().get(0).getId().equals("1_ude4l5pb"));
 
-
-                        mockBuilder.setId("stam").build().load(new OnCompletion<ResultElement>() {
+                        mockMediaProvider.id("stam").load(new OnMediaLoadCompletion() {
                             @Override
-                            public void onComplete(ResultElement response) {
+                            public void onComplete(ResultElement<PKMediaEntry> response) {
                                 assertTrue(!response.isSuccess());
                                 assertTrue(response.getError() != null);
                                 assertTrue(response.getError().equals(ErrorElement.MediaNotFound));
@@ -59,6 +58,7 @@ public class MockProviderTest extends TestCase {
                         });
                     }
                 });
+
             }
         });
     }
