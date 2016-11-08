@@ -1,13 +1,14 @@
 package com.kaltura.playkit.plugins.mediaprovider.tvpapi;
 
-import android.os.Bundle;
-
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.core.OnCompletion;
 import com.kaltura.playkit.plugins.connect.APIOkRequestsExecutor;
+import com.kaltura.playkit.plugins.connect.OnRequestCompletion;
 import com.kaltura.playkit.plugins.connect.ResponseElement;
+import com.kaltura.playkit.plugins.connect.ResultElement;
+import com.kaltura.playkit.plugins.mediaprovider.base.ErrorElement;
 import com.kaltura.playkit.plugins.mediaprovider.base.OnMediaLoadCompletion;
 
 /**
@@ -18,36 +19,22 @@ public class TvpapiMediaProvider implements MediaEntryProvider {
 
     private TvpapiRequestsHandler requestsHandler;
     private JsonObject initObj; //!! should be provided per user login, can't be used cross users.
+    private String assetId;
+    private String format;
 
-    public TvpapiMediaProvider(String tvpapiAddress){
-        requestsHandler = new TvpapiRequestsHandler(tvpapiAddress, new APIOkRequestsExecutor());
-    }
 
-    public void load(String id, Bundle args, OnCompletion completion){
-        load((JsonObject)args.get("initObj"), id, args.getInt("typeId"), args.getString("formatName"), completion);
-    }
-
-    public void load(JsonObject initObj, String id, int typeId, String format, OnCompletion completion){
+    public TvpapiMediaProvider(String baseUrl, JsonObject initObj, String assetId){
+        requestsHandler = new TvpapiRequestsHandler(baseUrl, APIOkRequestsExecutor.getSingleton());
         this.initObj = initObj;
-        loadInfo(id, typeId, format, completion);
+        this.assetId = assetId;
+    }
+
+    public void format(String format) {
+        this.format = format;
     }
 
     private void loadInfo(String id, int typeId, final String format, final OnCompletion completion){
-        requestsHandler.getMediaInfo(initObj, id, typeId, new OnCompletion<ResponseElement>() {
-            @Override
-            public void onComplete(ResponseElement response) {
-                if(response != null && response.isSuccess()){
-                    //-> we have here a string representing the assetinfo
-                    //?? do we need to parse only the actual source to play? do we need a bacup source
-                    //?? DRM according to what? - only to the actual source
 
-                    PKMediaEntry mediaEntry = TvpapiParser.parseMediaEntry(response.getResponse(), format);
-                    if(completion != null){
-                        completion.onComplete(mediaEntry);
-                    }
-                }
-            }
-        });
     }
 
 
@@ -57,7 +44,36 @@ public class TvpapiMediaProvider implements MediaEntryProvider {
 
 
     @Override
-    public void load(OnMediaLoadCompletion completion) {
+    public void load(final OnMediaLoadCompletion completion) {
+        requestsHandler.getMediaInfo(initObj, assetId, new OnRequestCompletion() {
+            @Override
+            public void onComplete(ResponseElement response) {
+                if(response != null && response.isSuccess()){
+                    //-> we have here a string representing the assetinfo
+                    //?? do we need to parse only the actual source to play? do we need a bacup source
+                    //?? DRM according to what? - only to the actual source
 
+                    final PKMediaEntry mediaEntry = TvpapiParser.parseMediaEntry(response.getResponse(), format);
+                    if(completion != null){
+                        completion.onComplete(new ResultElement<PKMediaEntry>() {
+                            @Override
+                            public PKMediaEntry getResponse() {
+                                return mediaEntry;
+                            }
+
+                            @Override
+                            public boolean isSuccess() {
+                                return mediaEntry != null;
+                            }
+
+                            @Override
+                            public ErrorElement getError() {
+                                return mediaEntry == null ? ErrorElement.LoadError : null; // TODO: add error handling
+                            }
+                        });
+                    }
+                }
+            }
+        });
     }
 }

@@ -1,9 +1,9 @@
 package com.kaltura.playkit.plugins.mediaprovider.phoenix;
 
-import android.os.Bundle;
 import android.text.TextUtils;
 
 import com.kaltura.playkit.MediaEntryProvider;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.plugins.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.plugins.connect.OnRequestCompletion;
 import com.kaltura.playkit.plugins.connect.ResponseElement;
@@ -21,17 +21,23 @@ import java.util.Collections;
 public class PhoenixMediaProvider implements MediaEntryProvider {
 
     private PhoenixRequestsHandler requestsHandler;
+    private String assetId;
+    private String ks;
+    private int partnerId = 0;
+    private String referenceType;
+    private String format;
 
-    public PhoenixMediaProvider(String baseUrl){
+    public PhoenixMediaProvider(String baseUrl, int partnerId, String assetId, String assetType){
         requestsHandler = new PhoenixRequestsHandler(baseUrl, new APIOkRequestsExecutor());
     }
 
-    public void load(String ks, String id, Bundle args, OnRequestCompletion completion){
-        loadAsset(ks, id, args.getString("assetReferenceType"), args.getString("format"), completion);
+    public PhoenixMediaProvider(String baseUrl, String ks, String assetId, String assetType){
+        requestsHandler = new PhoenixRequestsHandler(baseUrl, new APIOkRequestsExecutor());
     }
 
-    private void loadAsset(String ks, String id, String assetType, final String format, final OnRequestCompletion completion){
-        requestsHandler.getMediaInfo(ks, id, assetType, new OnRequestCompletion() {
+    @Override
+    public void load(OnMediaLoadCompletion completion){
+        requestsHandler.getMediaInfo(ks, assetId, referenceType, new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
                 if(response != null && response.isSuccess()){
@@ -45,17 +51,12 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
                             }
                         }
                     }
-                    PhoenixParser.getMedia(asset);
+                    PKMediaEntry mediaEntry = PhoenixParser.getMedia(asset);
+                    //TODO pass mediaEntry to completion callback
                 }
             }
         });
     }
 
 
-
-
-    @Override
-    public void load(OnMediaLoadCompletion completion) {
-
-    }
 }

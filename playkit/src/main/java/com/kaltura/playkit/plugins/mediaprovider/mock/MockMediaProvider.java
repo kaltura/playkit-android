@@ -85,12 +85,12 @@ public class MockMediaProvider implements MediaEntryProvider {
         PKMediaEntry mediaEntry;JsonParser parser = new JsonParser();
 
         final JsonObject data = parser.parse(new FileReader(inputFile)).getAsJsonObject();
-        mediaEntry = getFromJson(data.has("entries") ? data.getAsJsonObject("entries") : data);
+        mediaEntry = getFromJson(data);
         return mediaEntry;
     }
 
     private PKMediaEntry getFromJson(JsonObject data)  throws JsonSyntaxException{
-        if (data.has(id)) { // data holds entries object (multiple entries)
+        if (data.has(id)) { // data holds multiple entry objects
             return MockMediaParser.parseMedia(inputJson.getAsJsonObject(id));
 
         } else if (data.getAsJsonPrimitive("id").getAsString().equals(id)) { // data is the actual inputJson object

@@ -2,7 +2,7 @@ package com.kaltura.playkit.plugins.mediaprovider.ovp;
 
 import android.text.TextUtils;
 
-import com.kaltura.playkit.core.OnCompletion;
+import com.kaltura.playkit.plugins.connect.OnRequestCompletion;
 import com.kaltura.playkit.plugins.connect.ParamsRequestElement;
 import com.kaltura.playkit.plugins.connect.RequestConfiguration;
 import com.kaltura.playkit.plugins.connect.RequestQueue;
@@ -52,7 +52,7 @@ public class KalturaOvpRequestsHandler extends RequestsHandler{
     }
 
 
-    public void listEntry(final String ks, final int parentId, final String entryId, final OnCompletion<ResponseElement> completion) {
+    public void listEntry(final String ks, final int parentId, final String entryId, final OnRequestCompletion completion) {
         ParamsRequestElement requestElement = new ParamsRequestElement() {
 
             @Override

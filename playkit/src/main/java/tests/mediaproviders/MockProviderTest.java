@@ -48,7 +48,7 @@ public class MockProviderTest extends TestCase {
                         assertTrue(mediaEntry.getId().equals("1_1h1vsv3z"));
                         assertTrue(mediaEntry.getSources().get(0).getId().equals("1_ude4l5pb"));
 
-                        mockMediaProvider.id("stam").load(new OnMediaLoadCompletion() {
+                        mockMediaProvider.id("notexists").load(new OnMediaLoadCompletion() {
                             @Override
                             public void onComplete(ResultElement<PKMediaEntry> response) {
                                 assertTrue(!response.isSuccess());

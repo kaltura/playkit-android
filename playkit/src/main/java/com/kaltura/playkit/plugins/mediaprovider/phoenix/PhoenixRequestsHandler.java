@@ -1,7 +1,7 @@
 package com.kaltura.playkit.plugins.mediaprovider.phoenix;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.core.OnCompletion;
+import com.kaltura.playkit.plugins.connect.OnRequestCompletion;
 import com.kaltura.playkit.plugins.connect.RequestConfiguration;
 import com.kaltura.playkit.plugins.connect.RequestElement;
 import com.kaltura.playkit.plugins.connect.RequestQueue;
@@ -20,7 +20,7 @@ public class PhoenixRequestsHandler extends RequestsHandler {
         super(address, executor);
     }
 
-    public void getMediaInfo(final String ks, final String assetId, final String assetReferenceType, final OnCompletion<ResponseElement> completion){
+    public void getMediaInfo(final String ks, final String assetId, final String assetReferenceType, final OnRequestCompletion completion){
 
         RequestElement requestElement = new RequestElement() {
 

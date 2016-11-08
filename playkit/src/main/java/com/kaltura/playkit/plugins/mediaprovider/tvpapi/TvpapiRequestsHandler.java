@@ -1,10 +1,10 @@
 package com.kaltura.playkit.plugins.mediaprovider.tvpapi;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.plugins.connect.RequestQueue;
-import com.kaltura.playkit.core.OnCompletion;
+import com.kaltura.playkit.plugins.connect.OnRequestCompletion;
 import com.kaltura.playkit.plugins.connect.RequestConfiguration;
 import com.kaltura.playkit.plugins.connect.RequestElement;
+import com.kaltura.playkit.plugins.connect.RequestQueue;
 import com.kaltura.playkit.plugins.connect.ResponseElement;
 import com.kaltura.playkit.plugins.mediaprovider.RequestsHandler;
 
@@ -20,7 +20,7 @@ public class TvpapiRequestsHandler extends RequestsHandler {
         super(address, executor);
     }
 
-    public void getMediaInfo(final JsonObject initObj, final String mediaId, final int mediaTypeId, final OnCompletion<ResponseElement> completion){
+    public void getMediaInfo(final JsonObject initObj, final String mediaId, final OnRequestCompletion completion){
 
         RequestElement requestElement = new RequestElement() {
 
@@ -39,7 +39,7 @@ public class TvpapiRequestsHandler extends RequestsHandler {
 
                 JsonObject body = new JsonObject();
                 body.add("initObj", initObj);
-                body.addProperty("filter_types", "["+mediaTypeId+"]");
+               // body.addProperty("filter_types", "["+mediaTypeId+"]");
                 body.addProperty("filter", "media_id="+mediaId);
                 body.addProperty("with", "[files]");
                 body.addProperty("page_index", 0);
