@@ -1,21 +1,44 @@
 package com.kaltura.playkit;
 
+import android.content.Context;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.kaltura.playkit.Utils.fullyReadInputStream;
 
 public class MockMediaEntryProvider implements MediaEntryProvider {
 
     private PKMediaEntry mMediaEntry;
-    private final JSONObject mJsonObject;
+    private JSONObject mJsonObject;
 
+    public MockMediaEntryProvider() {}
+    
     public MockMediaEntryProvider(JSONObject jsonObject) throws JSONException {
         mJsonObject = jsonObject.getJSONObject("entries");
     }
     
+    public MockMediaEntryProvider setJSONInputFile(String filename) throws IOException, JSONException {
+        InputStream inputStream = new FileInputStream(filename);
+        String jsonString = fullyReadInputStream(inputStream, 1024 * 1024).toString();
+        inputStream.close();
+        mJsonObject = new JSONObject(jsonString).getJSONObject("entries");
+        return this;
+    }
+
+    public MockMediaEntryProvider setInputJSONAsset(Context context, String assetId) throws IOException, JSONException {
+        String jsonString = Utils.readAssetToString(context, assetId);
+        mJsonObject = new JSONObject(jsonString).getJSONObject("entries");
+        return this;
+    }
+
     private PKDrmParams parseDrmData(JSONObject jsonObject) throws JSONException {
         
         if (jsonObject == null) {
@@ -60,7 +83,7 @@ public class MockMediaEntryProvider implements MediaEntryProvider {
     }
 
 
-    public void loadMediaEntry(String id) {
+    public MockMediaEntryProvider setMediaId(String id) {
         try {
             JSONObject jsonEntry = mJsonObject.getJSONObject(id);
 
@@ -68,6 +91,7 @@ public class MockMediaEntryProvider implements MediaEntryProvider {
         } catch (JSONException e) {
             throw new IllegalArgumentException(e);
         }
+        return this;
     }
     
     @Override

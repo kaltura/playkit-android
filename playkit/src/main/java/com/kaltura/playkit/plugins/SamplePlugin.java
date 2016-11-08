@@ -6,13 +6,12 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKPlugin;
-import com.kaltura.playkit.PlayKit;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
 
 /**
  * Created by Noam Tamim @ Kaltura on 26/10/2016.
@@ -31,14 +30,14 @@ public class SamplePlugin extends PKPlugin {
         }
 
         @Override
-        public PKPlugin newInstance(PlayKit playKitManager) {
+        public PKPlugin newInstance() {
             return new SamplePlugin();
         }
     };
     private Context mContext;
 
     @Override
-    protected void load(Player player, PlayerConfig playerConfig, Context context) {
+    protected void load(Player player, PlayerConfig playerConfig, MessageBus messageBus, Context context) {
         mPlayer = player;
         mContext = context;
         player.addEventListener(new PlayerEvent.Listener() {
@@ -47,19 +46,11 @@ public class SamplePlugin extends PKPlugin {
                 Log.d(TAG, "PlayerEvent:" + event);
             }
         });
-
-        player.addStateChangeListener(new PlayerState.Listener(){
-
-            @Override
-            public void onPlayerStateChanged(Player player, PlayerState newState) {
-                Log.d(TAG, "PlayerState:" + newState);
-            }
-        });
     }
 
     @Override
-    protected void update(Player player, PlayerConfig playerConfig, Context context) {
-
+    protected void update(PlayerConfig playerConfig) {
+        
     }
 
     @Override
@@ -70,7 +61,6 @@ public class SamplePlugin extends PKPlugin {
     @Override
     public PlayerDecorator getPlayerDecorator() {
         return new PlayerDecorator() {
-
             @Override
             public void play() {
                 Toast.makeText(mContext, "Delaying playback by 5000 ms", Toast.LENGTH_SHORT).show();

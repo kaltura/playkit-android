@@ -7,33 +7,29 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.kaltura.playkit.MockMediaEntryProvider;
-import com.kaltura.playkit.PlayKit;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.plugins.SamplePlugin;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
+import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-
-    public Player player;
-    public PlayKit mPlayKit;
-    public PlaybackControlsView controlsLayout;
-    public MockMediaEntryProvider mMediaEntryProvider;
+//    private PlayKit mPlayKit;
+    private MockMediaEntryProvider mMediaEntryProvider;
+    private Player mPlayer;
 
 
     private void registerPlugins() {
         PlayKitManager.registerPlugins(SamplePlugin.factory);
     }
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,52 +37,56 @@ public class MainActivity extends AppCompatActivity  {
 
         registerPlugins();
 
-        JSONObject configJSON;
         try {
-            configJSON = new JSONObject(Utils.readAssetToString(this, "entries.playkit.json"));
-            mMediaEntryProvider = new MockMediaEntryProvider(configJSON);
-        } catch (JSONException e) {
+            mMediaEntryProvider = new MockMediaEntryProvider().setInputJSONAsset(this, "entries.playkit.json").setMediaId("m001");
+        } catch (IOException | JSONException e) {
             Log.e(TAG, "Can't read config file", e);
             Toast.makeText(this, "JSON error: " + e, Toast.LENGTH_LONG).show();
-            return;
         }
-
-        mPlayKit = new PlayKit();
-
-        PlayerConfig config = new PlayerConfig();
-//        config.setAutoPlay(true);
-
-        mMediaEntryProvider.loadMediaEntry("m001");
-        config.setMediaEntry(mMediaEntryProvider.getMediaEntry());
-        config.enablePlugin("Sample");
-
-        player = mPlayKit.loadPlayer(this, config);
-        
-        Log.d(TAG, "Player: " + player.getClass());
-        addPlayerListeners();
-
-        LinearLayout layout = (LinearLayout) this.findViewById(R.id.player_root);
-        layout.addView(player.getView());
-
-        controlsLayout = (PlaybackControlsView) this.findViewById(R.id.playerControls);
-        controlsLayout.setPlayer(player);
     }
 
-    private void addPlayerListeners() {
-        player.addEventListener(new PlayerEvent.Listener() {
+    @Override
+    protected void onStart() {
+        
+        super.onStart();
+        
+        PlayerConfig config = new PlayerConfig();
+
+        config.media.setMediaEntry(mMediaEntryProvider.getMediaEntry());
+        config.plugins.enablePlugin("Sample");
+
+
+        mPlayer = PlayKitManager.loadPlayer(config, this);
+        
+        Log.d(TAG, "Player: " + mPlayer.getClass());
+        
+        mPlayer.addEventListener(new PlayerEvent.Listener() {
             @Override
             public void onPlayerEvent(Player player, PlayerEvent event) {
-
+                
             }
         }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
 
-        player.addStateChangeListener(new PlayerState.Listener() {
+        mPlayer.addStateChangeListener(new PlayerState.Listener() {
             @Override
             public void onPlayerStateChanged(Player player, PlayerState newState) {
-                if(controlsLayout != null){
-                    controlsLayout.setPlayerState(newState);
-                }
+                
             }
         });
+        
+
+
+        LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
+        layout.addView(mPlayer.getView());
+
+        
+        mPlayer.play();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        
+        mPlayer.release();
     }
 }
