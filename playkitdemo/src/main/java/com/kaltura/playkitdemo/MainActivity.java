@@ -5,7 +5,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.LinearLayout;
 
-import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKit;
 import com.kaltura.playkit.PlayKitManager;
@@ -13,10 +12,10 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.core.OnCompletion;
-import com.kaltura.playkit.plugin.connect.ResultElement;
-import com.kaltura.playkit.plugin.mediaprovider.mock.MockMediaProvider;
 import com.kaltura.playkit.plugins.SamplePlugin;
+import com.kaltura.playkit.plugins.connect.ResultElement;
+import com.kaltura.playkit.plugins.mediaprovider.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.plugins.mediaprovider.mock.MockMediaProvider;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -24,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     private PlayKit mPlayKit;
-    private MockMediaProvider.Builder mockProviderBuilder;
+    private MockMediaProvider mockProvider;
 
 
     private void registerPlugins() {
@@ -38,26 +37,16 @@ public class MainActivity extends AppCompatActivity {
 
         registerPlugins();
 
-        mockProviderBuilder = new MockMediaProvider.Builder().setFile("entries.playkit.json");
-        MediaEntryProvider mediaEntryProvider = mockProviderBuilder.setId("m001").build();
-        mediaEntryProvider.load(new OnCompletion<PKMediaEntry>() {
+        mockProvider = new MockMediaProvider("entries.playkit.json", "1_1h1vsv3z");
+        mockProvider.load(new OnMediaLoadCompletion() {
             @Override
-            public void onComplete(PKMediaEntry response) {
-                // loadPlayer()...
-            }
-        });
-
-        // load another entry
-        mockProviderBuilder.setId("m002").build().load(new OnCompletion<ResultElement>() {
-            @Override
-            public void onComplete(ResultElement response) {
-                // loadPlayer()...
-                if(response.isSuccess()) {
-                    onMediaLoaded((PKMediaEntry) response.getResponse());
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                if (response.isSuccess()) {
+                    onMediaLoaded(response.getResponse());
                 }
             }
-        });
 
+        });
     }
 
     private void onMediaLoaded(PKMediaEntry mediaEntry){

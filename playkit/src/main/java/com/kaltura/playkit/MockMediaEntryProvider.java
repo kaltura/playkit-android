@@ -1,6 +1,6 @@
 package com.kaltura.playkit;
 
-import com.kaltura.playkit.plugin.mediaprovider.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.plugins.mediaprovider.base.OnMediaLoadCompletion;
 
 import org.json.JSONArray;
 import org.json.JSONException;
