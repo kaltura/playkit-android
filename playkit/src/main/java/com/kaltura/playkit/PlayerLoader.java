@@ -47,7 +47,8 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     public void load(@NonNull PlayerConfig playerConfig) {
-        Player player = new POCPlayer(mContext, playerConfig);
+        Player player = new POCPlayer(mContext);
+        player.prepare(playerConfig.media);
 
         PlayerDecorator selectedDecorator = null;
 
@@ -139,7 +140,7 @@ class PlayerLoader extends PlayerDecoratorBase {
     private PKPlugin loadPlugin(String name, Player player, PlayerConfig config, MessageBus messageBus, Context context) {
         PKPlugin plugin = PlayKitManager.createPlugin(name);
         if (plugin != null) {
-            plugin.load(player, config, messageBus, context);
+            plugin.load(player, config.media, config.plugins.getPluginConfig(name), messageBus, context);
         }
         return plugin;
     }

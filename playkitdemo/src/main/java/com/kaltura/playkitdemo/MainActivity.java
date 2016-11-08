@@ -16,6 +16,9 @@ import com.kaltura.playkit.plugins.connect.ResultElement;
 import com.kaltura.playkit.plugins.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.plugins.mediaproviders.mock.MockMediaProvider;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -85,6 +88,14 @@ public class MainActivity extends AppCompatActivity {
 
 
         mPlayer.play();
+    }
+
+    private void configurePlugins(PlayerConfig.Plugins config) {
+        try {
+            config.setPluginConfig("Sample", new JSONObject().put("delay", 4200));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
