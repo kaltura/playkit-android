@@ -8,11 +8,15 @@ import android.view.View;
  */
 public interface Player {
 
-    /**
-     * Modify player settings with the set fields.
-     * @param playerConfig
-     */
-    void update(@NonNull PlayerConfig playerConfig);
+    void prepare(@NonNull PlayerConfig.Media playerConfig);
+    
+//    /**
+//     * Modify player settings with the set fields.
+//     * @param playerConfig
+//     */
+//    void update(@NonNull PlayerConfig playerConfig);
+    
+    void release();
 
     /**
      * The Player's View.
@@ -56,14 +60,13 @@ public interface Player {
     /**
      * Prepare for playing the next entry. If config.shouldAutoPlay is true, the entry will automatically
      * play when it's ready and the current entry is ended.
-     * @param playerConfig
      */
-    void prepareNext(@NonNull PlayerConfig playerConfig);
+    void prepareNext(@NonNull PlayerConfig.Media mediaConfig);
 
     /**
-     * Load the entry that was prepared with {@link #prepareNext(PlayerConfig)}.
+     * Load the entry that was prepared with {@link #prepareNext(PlayerConfig.Media)}.
      */
-    void loadNext();
+    void skip();
     
     void addEventListener(@NonNull PlayerEvent.Listener listener, PlayerEvent... events);
 
