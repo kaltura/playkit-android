@@ -6,7 +6,6 @@ import android.util.Log;
 import android.widget.LinearLayout;
 
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PlayKit;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
@@ -22,8 +21,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    private PlayKit mPlayKit;
+    //private PlayKit mPlayKit;
     private MockMediaProvider mockProvider;
+    private Player mPlayer;
 
 
     private void registerPlugins() {
@@ -38,6 +38,11 @@ public class MainActivity extends AppCompatActivity {
         registerPlugins();
 
         mockProvider = new MockMediaProvider("entries.playkit.json", "1_1h1vsv3z");
+
+    }
+
+    @Override
+    protected void onStart() {
         mockProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
@@ -50,27 +55,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onMediaLoaded(PKMediaEntry mediaEntry){
-        mPlayKit = new PlayKit();
 
         PlayerConfig config = new PlayerConfig();
-//        config.setAutoPlay(true);
 
-        config.setMediaEntry(mediaEntry);
-        config.enablePlugin("Sample");
+        config.media.setMediaEntry(mediaEntry);
+        config.plugins.enablePlugin("Sample");
 
 
-        final Player player = mPlayKit.loadPlayer(this, config);
+        mPlayer = PlayKitManager.loadPlayer(config, this);
 
-        Log.d(TAG, "Player: " + player.getClass());
+        Log.d(TAG, "Player: " + mPlayer.getClass());
 
-        player.addEventListener(new PlayerEvent.Listener() {
+        mPlayer.addEventListener(new PlayerEvent.Listener() {
             @Override
             public void onPlayerEvent(Player player, PlayerEvent event) {
 
             }
         }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
 
-        player.addStateChangeListener(new PlayerState.Listener() {
+        mPlayer.addStateChangeListener(new PlayerState.Listener() {
             @Override
             public void onPlayerStateChanged(Player player, PlayerState newState) {
 
@@ -78,9 +81,16 @@ public class MainActivity extends AppCompatActivity {
         });
 
         LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
-        layout.addView(player.getView());
+        layout.addView(mPlayer.getView());
 
 
-        player.play();
+        mPlayer.play();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        mPlayer.release();
     }
 }
