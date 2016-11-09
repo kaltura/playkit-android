@@ -1,6 +1,6 @@
 package com.kaltura.playkit;
 
-import com.kaltura.playkit.plugins.mediaproviders.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 
 import android.content.Context;
 
@@ -54,8 +54,7 @@ public class MockMediaEntryProvider implements MediaEntryProvider {
         PKMediaSource mediaSource = new PKMediaSource();
         mediaSource.setId(jsonObject.getString("id"));
         mediaSource.setUrl(jsonObject.getString("url"));
-        mediaSource.setMimeType(jsonObject.getString("mimeType"));
-        
+
         JSONObject drmData = jsonObject.optJSONObject("drmData");
         mediaSource.setDrmData(parseDrmData(drmData));
         

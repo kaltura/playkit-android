@@ -12,9 +12,9 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.plugins.SamplePlugin;
-import com.kaltura.playkit.plugins.connect.ResultElement;
-import com.kaltura.playkit.plugins.mediaproviders.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.plugins.mediaproviders.mock.MockMediaProvider;
+import com.kaltura.playkit.connect.ResultElement;
+import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.mediaproviders.mock.MockMediaProvider;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         PlayerConfig config = new PlayerConfig();
 
         config.media.setMediaEntry(mediaEntry);
-        config.plugins.enablePlugin("Sample");
+        configurePlugins(config.plugins);
 
 
         mPlayer = PlayKitManager.loadPlayer(config, this);
