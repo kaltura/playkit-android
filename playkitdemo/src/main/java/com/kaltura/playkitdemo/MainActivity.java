@@ -5,12 +5,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.LinearLayout;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
@@ -20,13 +23,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
     private Player mPlayer;
     private PlaybackControlsView controlsView;
-    private MockMediaEntryProvider mMediaEntryProvider;
+    private MockMediaProvider mockProvider;
 
 
     private void registerPlugins() {
@@ -40,7 +44,10 @@ public class MainActivity extends AppCompatActivity {
 
         registerPlugins();
 
-        mockProvider = new MockMediaProvider("entries.playkit.json", "1_1h1vsv3z");
+        JsonParser parser = new JsonParser();
+
+        final JsonObject data = parser.parse(Utils.readAssetToString(this, "mock/entries.playkit.json")).getAsJsonObject();
+        mockProvider = new MockMediaProvider(data, "1_1h1vsv3z");
 
     }
 
@@ -54,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
                     onMediaLoaded(response.getResponse());
                 }
             }
-
         });
     }
 
