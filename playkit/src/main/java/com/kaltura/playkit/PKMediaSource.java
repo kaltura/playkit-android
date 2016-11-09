@@ -3,7 +3,7 @@ package com.kaltura.playkit;
 public class PKMediaSource {
     private String id;
     private String url;
-    private String mimeType;
+    //private String mimeType;
     private PKDrmParams drmData;
 
     public String getId() {
@@ -24,14 +24,14 @@ public class PKMediaSource {
         return this;
     }
 
-    public String getMimeType() {
+    /*public String getMimeType() {
         return mimeType;
     }
 
     public PKMediaSource setMimeType(String mimeType) {
         this.mimeType = mimeType;
         return this;
-    }
+    }*/
 
     public PKDrmParams getDrmData() {
         return drmData;
