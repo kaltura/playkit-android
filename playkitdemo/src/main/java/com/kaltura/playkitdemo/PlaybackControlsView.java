@@ -2,6 +2,7 @@ package com.kaltura.playkitdemo;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
@@ -21,8 +22,8 @@ import java.util.Locale;
 
 public class PlaybackControlsView extends LinearLayout implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
+    private static final String TAG = PlaybackControlsView.class.getSimpleName();
     private static final int PROGRESS_BAR_MAX = 100;
-    private static final long TIME_UNSET = 0;
 
     private Player player;
     private PlayerState playerState;

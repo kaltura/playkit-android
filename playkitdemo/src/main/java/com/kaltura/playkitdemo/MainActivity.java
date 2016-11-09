@@ -21,9 +21,9 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-//    private PlayKit mPlayKit;
-    private MockMediaEntryProvider mMediaEntryProvider;
     private Player mPlayer;
+    private PlaybackControlsView controlsView;
+    private MockMediaEntryProvider mMediaEntryProvider;
 
 
     private void registerPlugins() {
@@ -59,28 +59,13 @@ public class MainActivity extends AppCompatActivity {
         mPlayer = PlayKitManager.loadPlayer(config, this);
         
         Log.d(TAG, "Player: " + mPlayer.getClass());
-        
-        mPlayer.addEventListener(new PlayerEvent.Listener() {
-            @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
-                
-            }
-        }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
-
-        mPlayer.addStateChangeListener(new PlayerState.Listener() {
-            @Override
-            public void onPlayerStateChanged(Player player, PlayerState newState) {
-                
-            }
-        });
-        
-
+        addPlayerListeners();
 
         LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
         layout.addView(mPlayer.getView());
 
-        
-        mPlayer.play();
+        controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
+        controlsView.setPlayer(mPlayer);
     }
 
     @Override
@@ -88,5 +73,23 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
         
         mPlayer.release();
+    }
+
+    private void addPlayerListeners() {
+        mPlayer.addEventListener(new PlayerEvent.Listener() {
+            @Override
+            public void onPlayerEvent(Player player, PlayerEvent event) {
+
+            }
+        }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
+
+        mPlayer.addStateChangeListener(new PlayerState.Listener() {
+            @Override
+            public void onPlayerStateChanged(Player player, PlayerState newState) {
+                if(controlsView != null){
+                    controlsView.setPlayerState(newState);
+                }
+            }
+        });
     }
 }

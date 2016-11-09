@@ -62,27 +62,24 @@ public class PlayerController implements Player {
 
     public PlayerController(Context context, PlayerConfig config){
         this.context = context;
-        this.playerConfig = config;
 
         //create default player(ExoPlayer).
         player = new ExoPlayerWrapper(context);
         player.setEventTrigger(eventTrigger);
         player.setStateChangedTrigger(stateChangedTrigger);
-        update(this.playerConfig);
-        //set player listener that notify controller about events that happened.
-        // the PlayerController will pass them to the app.
+        prepare(config.media);
     }
 
     @Override
-    public void update(@NonNull PlayerConfig playerConfig) {
-        this.playerConfig = playerConfig;
-        //create player based on player config.
-        //wv classic -> MediaPlayerWrapper.
-        // everything else -> ExoPlayerWrapper.
-        //set eventListener.
+    public void prepare(@NonNull PlayerConfig.Media playerConfig) {
         Uri sourceUri = Uri.parse(playerConfig.getMediaEntry().getSources().get(0).getUrl());
         boolean shouldAutoplay = playerConfig.isAutoPlay();
         player.load(sourceUri, shouldAutoplay);
+    }
+
+    @Override
+    public void release() {
+        Log.d(TAG, "release");
     }
 
     @Override
@@ -140,12 +137,13 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void prepareNext(@NonNull PlayerConfig playerConfig) {
+    public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
         Log.d(TAG, "prepareNext");
+
     }
 
     @Override
-    public void loadNext() {
+    public void skip() {
         Log.d(TAG, "loadNext");
     }
 
@@ -159,9 +157,5 @@ public class PlayerController implements Player {
     public void addStateChangeListener(@NonNull PlayerState.Listener listener) {
         Log.d(TAG, "addStateChangeListener");
         stateChangeListeners.add(listener);
-    }
-
-    public PlayerConfig getPlayerConfig() {
-        return playerConfig;
     }
 }

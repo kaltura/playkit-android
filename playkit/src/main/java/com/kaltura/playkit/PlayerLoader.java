@@ -4,6 +4,8 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.kaltura.playkit.player.PlayerController;
+
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -47,7 +49,7 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     public void load(@NonNull PlayerConfig playerConfig) {
-        Player player = new POCPlayer(mContext, playerConfig);
+        Player player = new PlayerController(mContext, playerConfig);
 
         PlayerDecorator selectedDecorator = null;
 

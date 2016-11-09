@@ -50,8 +50,10 @@ public abstract class PlayerDecoratorBase implements Player {
         mPlayer.prepareNext(mediaConfig);
     }
 
-
-
+    @Override
+    public long getBufferedPosition() {
+        return mPlayer.getBufferedPosition();
+    }
 
     @Override
     public void release() {
