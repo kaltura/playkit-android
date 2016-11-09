@@ -11,10 +11,10 @@ import java.util.Map;
  * Created by Noam Tamim @ Kaltura on 18/09/2016.
  */
 public class PlayerConfig {
-    
+
     public final Media media = new Media();
     public final Plugins plugins = new Plugins();
-    
+
     public static class Media {
         private boolean mAutoPlay = false;
         private long mStartPosition = 0;
@@ -49,9 +49,9 @@ public class PlayerConfig {
     }
     
     public static class Plugins {
-        
+
         private Map<String, JSONObject> pluginConfig = new HashMap<>();
-        
+
         public void enablePlugin(String name) {
             JSONObject pluginConfig = getPluginConfig(name);
             if (pluginConfig.length() == 0) {

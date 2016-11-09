@@ -7,6 +7,8 @@ import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Created by Noam Tamim @ Kaltura on 13/10/2016.
@@ -46,4 +48,16 @@ public class Utils {
         return bos;
     }
 
+    //TODO: test if works
+    public static String getFileExt(String fileUrl) {
+        String ext = "";
+        try {
+            URL url = new URL(fileUrl);
+            ext = url.getPath().substring(url.getPath().lastIndexOf("."));
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return ext;
+    }
 }

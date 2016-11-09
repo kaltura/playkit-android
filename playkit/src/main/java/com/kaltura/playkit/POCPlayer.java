@@ -265,13 +265,11 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     }
     private TrackSelectionHelper mTrackSelectionHelper;
     
-    public POCPlayer(Context context, PlayerConfig config) {
+    public POCPlayer(Context context) {
         mContext = context;
         simpleExoPlayerView = new SimpleExoPlayerView(context);
         simpleExoPlayerView.setUseController(false);
         mediaDataSourceFactory = buildDataSourceFactory(true);
-        
-        prepare(config.media);
     }
 
     @Override

@@ -13,6 +13,8 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 
+import org.json.JSONObject;
+
 /**
  * Created by Noam Tamim @ Kaltura on 26/10/2016.
  */
@@ -35,11 +37,13 @@ public class SamplePlugin extends PKPlugin {
         }
     };
     private Context mContext;
+    private int mDelay;
 
     @Override
-    protected void load(Player player, PlayerConfig playerConfig, MessageBus messageBus, Context context) {
+    protected void load(Player player, PlayerConfig.Media mediaConfig, JSONObject pluginConfig, MessageBus messageBus, Context context) {
         mPlayer = player;
         mContext = context;
+        mDelay = pluginConfig.optInt("delay");
         player.addEventListener(new PlayerEvent.Listener() {
             @Override
             public void onPlayerEvent(Player player, PlayerEvent event) {
@@ -63,13 +67,13 @@ public class SamplePlugin extends PKPlugin {
         return new PlayerDecorator() {
             @Override
             public void play() {
-                Toast.makeText(mContext, "Delaying playback by 5000 ms", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, "Delaying playback by " + mDelay + " ms", Toast.LENGTH_SHORT).show();
                 new Handler(Looper.myLooper()).postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         mPlayer.play();
                     }
-                }, 5000);
+                }, mDelay);
             }
         };
     }
