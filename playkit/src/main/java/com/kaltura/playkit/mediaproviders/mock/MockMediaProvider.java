@@ -1,17 +1,21 @@
 package com.kaltura.playkit.mediaproviders.mock;
 
+import android.content.Context;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.stream.JsonReader;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.mediaproviders.base.ErrorElement;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * Created by tehilarozin on 06/11/2016.
@@ -22,15 +26,17 @@ public class MockMediaProvider implements MediaEntryProvider {
     private JsonObject inputJson;
     private String inputFile;
     private String id;
+    private Context context;
 
     private MockMediaProvider(JsonObject inputJson, String id) {
         this.inputJson = inputJson;
         this.id = id;
     }
 
-    public MockMediaProvider(String inputFile, String id) {
+    public MockMediaProvider(String inputFile, Context context, String id) {
         this.inputFile = inputFile;
         this.id = id;
+        this.context = context;
     }
 
     public MockMediaProvider id(String id) {
@@ -48,7 +54,7 @@ public class MockMediaProvider implements MediaEntryProvider {
         try {
             mediaEntry = inputJson != null ? getFromJson(inputJson) : getFromFile();
 
-        } catch (FileNotFoundException | JsonSyntaxException ex) {
+        } catch (IOException | JsonSyntaxException ex) {
             error = ErrorElement.LoadError;
             mediaEntry = null;
         }
@@ -78,14 +84,27 @@ public class MockMediaProvider implements MediaEntryProvider {
                 }
             });
         }
-
     }
 
-    private PKMediaEntry getFromFile() throws FileNotFoundException {
+    /**
+     * reads entries Json input from a file. the data is "saved" in the inputJson member.
+     * next load on the same {@link MockMediaProvider} object will not read the file again, but
+     * use the inputJson member, and search for the "id" entry.
+     *
+     * @return - The Media entry identified by "id"
+     * @throws IOException
+     */
+    private PKMediaEntry getFromFile() throws IOException {
         JsonParser parser = new JsonParser();
 
-        final JsonObject data = parser.parse(new FileReader(inputFile)).getAsJsonObject();
-        return getFromJson(data);
+        if(context != null){
+            JsonReader jsonReader = new JsonReader(new InputStreamReader(context.getAssets().open(inputFile)));
+            inputJson = parser.parse(jsonReader).getAsJsonObject();
+        } else {
+            inputJson = parser.parse(new FileReader(inputFile)).getAsJsonObject();
+        }
+
+        return getFromJson(inputJson);
     }
 
     private PKMediaEntry getFromJson(JsonObject data)  throws JsonSyntaxException{
