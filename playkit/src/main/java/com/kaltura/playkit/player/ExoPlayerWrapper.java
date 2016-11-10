@@ -34,7 +34,10 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
+import com.google.android.exoplayer2.upstream.DataSource.Factory;
 import com.google.android.exoplayer2.util.Util;
+import com.kaltura.playkit.player.PlayerController.EventTrigger;
+import com.kaltura.playkit.player.PlayerController.StateChangedTrigger;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.utils.EventLogger;
@@ -47,23 +50,23 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     private static final String TAG = ExoPlayerWrapper.class.getSimpleName();
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
 
-    private EventLogger eventLogger; //TODO probably should be changed/wrapped by our own eventLogger? anyway for now it is ok.
-    private PlayerController.EventTrigger eventTrigger;
+    private EventLogger eventLogger;
+    private EventTrigger eventTrigger;
+    private StateChangedTrigger stateChangedTrigger;
 
     private Context context;
     private SimpleExoPlayer player;
     private SimpleExoPlayerView exoPlayerView;
 
-    private DataSource.Factory mediaDataSourceFactory;
-    private Handler mainHandler = new Handler();
-    private boolean playerNeedsSource;
-
-    private boolean isSeeking = false;
-    private boolean firstPlay;
-
     private PlayerEvent currentEvent;
     private PlayerState currentState = PlayerState.IDLE, previousState;
-    private PlayerController.StateChangedTrigger stateChangedTrigger;
+
+    private Handler mainHandler = new Handler();
+    private Factory mediaDataSourceFactory;
+
+    private boolean firstPlay;
+    private boolean isSeeking = false;
+
 
 
     public ExoPlayerWrapper(Context context) {
@@ -81,7 +84,6 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         setPlayerListeners();
         exoPlayerView.setPlayer(player);
         player.setPlayWhenReady(shouldAutoplay);
-        playerNeedsSource = true;
     }
 
     private void setPlayerListeners() {
@@ -108,7 +110,6 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         changeState(PlayerState.LOADING);
         MediaSource mediaSource = buildMediaSource(mediaSourceUri, null);
         player.prepare(mediaSource);
-        playerNeedsSource = false;
     }
 
     private MediaSource buildMediaSource(Uri uri, String overrideExtension) {
@@ -258,9 +259,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
             initializePlayer(shouldAutoPlay);
         }
 
-        if (playerNeedsSource) {
             preparePlayer(mediaSourceUri);
-        }
     }
 
     @Override
