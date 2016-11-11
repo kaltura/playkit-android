@@ -16,6 +16,8 @@ before_script:
   - echo $android_sdk_license > $ANDROID_HOME/licenses/android-sdk-license
 script:
   - ./gradlew build
+after_failure:
+  - cat playkitdemo/build/outputs/lint-results-debug.xml
 notifications:
   email:
     recipients:
