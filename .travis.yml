@@ -17,6 +17,7 @@ before_script:
 script:
   - ./gradlew build
 after_failure:
+  - cat playkit/build/outputs/lint-results-debug.xml
   - cat playkitdemo/build/outputs/lint-results-debug.xml
 notifications:
   email:
