@@ -1,0 +1,380 @@
+{
+  "executionTime": 2.866746,
+  "result": {
+    "metas": {
+      "synopsis": {
+        "objectType": "KalturaStringValue",
+        "value": "Young princess Anna of Arendelle dreams about finding true love at her sister Elsa’s coronation. Fate takes her on a dangerous journey in an attempt to end the eternal winter that has fallen over the kingdom. She's accompanied by ice delivery man Kristoff, his reindeer Sven, and snowman Olaf. On an adventure where she will find out what friendship, courage, family, and true love really means."
+      },
+      "Runtime": {
+        "objectType": "KalturaStringValue",
+        "value": "64"
+      },
+      "Catchup allowed ": {
+        "value": false,
+        "objectType": "KalturaBooleanValue"
+      }
+    },
+    "tags": {
+      "Free": {
+        "objects": [
+          {
+            "objectType": "KalturaStringValue",
+            "value": "yes"
+          }
+        ],
+        "objectType": "KalturaStringValueArray"
+      },
+      "Genre": {
+        "objects": [
+          {
+            "objectType": "KalturaStringValue",
+            "value": "Family"
+          }
+        ],
+        "objectType": "KalturaStringValueArray"
+      },
+      "QUALITY": {
+        "objects": [
+          {
+            "objectType": "KalturaStringValue",
+            "value": "hd"
+          }
+        ],
+        "objectType": "KalturaStringValueArray"
+      },
+      "Source": {
+        "objects": [
+          {
+            "objectType": "KalturaStringValue",
+            "value": "Web3"
+          }
+        ],
+        "objectType": "KalturaStringValueArray"
+      }
+    },
+    "images": [
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 86,
+        "width": 153,
+        "id": "9645b1a24eff4a42807e441050f57b2e_1",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_1/version/0/width/153/height/86/quality/100",
+        "ratio": "16:9"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 170,
+        "width": 302,
+        "id": "9645b1a24eff4a42807e441050f57b2e_1",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_1/version/0/width/302/height/170/quality/100",
+        "ratio": "16:9"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 320,
+        "width": 568,
+        "id": "9645b1a24eff4a42807e441050f57b2e_1",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_1/version/0/width/568/height/320/quality/100",
+        "ratio": "16:9"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 540,
+        "width": 960,
+        "id": "9645b1a24eff4a42807e441050f57b2e_1",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_1/version/0/width/960/height/540/quality/100",
+        "ratio": "16:9"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 720,
+        "width": 1280,
+        "id": "9645b1a24eff4a42807e441050f57b2e_1",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_1/version/0/width/1280/height/720/quality/100",
+        "ratio": "16:9"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 1152,
+        "width": 2048,
+        "id": "9645b1a24eff4a42807e441050f57b2e_1",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_1/version/0/width/2048/height/1152/quality/100",
+        "ratio": "16:9"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 70,
+        "width": 70,
+        "id": "9645b1a24eff4a42807e441050f57b2e_12",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_12/version/0/width/70/height/70/quality/100",
+        "ratio": "1:1"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 100,
+        "width": 100,
+        "id": "9645b1a24eff4a42807e441050f57b2e_12",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_12/version/0/width/100/height/100/quality/100",
+        "ratio": "1:1"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 154,
+        "width": 103,
+        "id": "9645b1a24eff4a42807e441050f57b2e_2",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_2/version/0/width/103/height/154/quality/100",
+        "ratio": "2:3"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 223,
+        "width": 149,
+        "id": "9645b1a24eff4a42807e441050f57b2e_2",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_2/version/0/width/149/height/223/quality/100",
+        "ratio": "2:3"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 318,
+        "width": 212,
+        "id": "9645b1a24eff4a42807e441050f57b2e_2",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_2/version/0/width/212/height/318/quality/100",
+        "ratio": "2:3"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 534,
+        "width": 355,
+        "id": "9645b1a24eff4a42807e441050f57b2e_2",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_2/version/0/width/355/height/534/quality/100",
+        "ratio": "2:3"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 1111,
+        "width": 800,
+        "id": "9645b1a24eff4a42807e441050f57b2e_2",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_2/version/0/width/800/height/1111/quality/100",
+        "ratio": "2:3"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 900,
+        "width": 600,
+        "id": "9645b1a24eff4a42807e441050f57b2e_2",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_2/version/0/width/600/height/900/quality/100",
+        "ratio": "2:3"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 158,
+        "width": 282,
+        "id": "9645b1a24eff4a42807e441050f57b2e_1",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_1/version/0/width/282/height/158/quality/100",
+        "ratio": "16:9"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 270,
+        "width": 180,
+        "id": "9645b1a24eff4a42807e441050f57b2e_2",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_2/version/0/width/180/height/270/quality/100",
+        "ratio": "2:3"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 80,
+        "width": 105,
+        "id": "9645b1a24eff4a42807e441050f57b2e_1",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_1/version/0/width/105/height/80/quality/100",
+        "ratio": "16:9"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 150,
+        "width": 195,
+        "id": "9645b1a24eff4a42807e441050f57b2e_1",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_1/version/0/width/195/height/150/quality/100",
+        "ratio": "16:9"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 55,
+        "width": 105,
+        "id": "9645b1a24eff4a42807e441050f57b2e_1",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_1/version/0/width/105/height/55/quality/100",
+        "ratio": "16:9"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 52,
+        "width": 70,
+        "id": "9645b1a24eff4a42807e441050f57b2e_1",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_1/version/0/width/70/height/52/quality/100",
+        "ratio": "16:9"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 445,
+        "width": 590,
+        "id": "9645b1a24eff4a42807e441050f57b2e_1",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_1/version/0/width/590/height/445/quality/100",
+        "ratio": "16:9"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 250,
+        "width": 300,
+        "id": "9645b1a24eff4a42807e441050f57b2e_1",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_1/version/0/width/300/height/250/quality/100",
+        "ratio": "16:9"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 500,
+        "width": 500,
+        "id": "9645b1a24eff4a42807e441050f57b2e_12",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_12/version/0/width/500/height/500/quality/100",
+        "ratio": "1:1"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 100,
+        "width": 200,
+        "id": "9645b1a24eff4a42807e441050f57b2e_17",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_17/version/0/width/200/height/100/quality/100",
+        "ratio": "2:1"
+      },
+      {
+        "objectType": "KalturaMediaImage",
+        "isDefault": false,
+        "version": 0,
+        "height": 300,
+        "width": 400,
+        "id": "9645b1a24eff4a42807e441050f57b2e_3",
+        "url": "http://52.31.136.244:8075/ImageServer/Service.svc/GetImage/p/198/entry_id/9645b1a24eff4a42807e441050f57b2e_3/version/0/width/400/height/300/quality/100",
+        "ratio": "4:3"
+      }
+    ],
+    "mediaFiles": [
+      {
+        "objectType": "KalturaMediaFile",
+        "duration": 1000,
+        "id": 392237,
+        "assetId": 258656,
+        "externalId": "",
+        "url": "http://cdnapi.kaltura.com/p/1774581/sp/177458100/playManifest/entryId/1_b8s3mmhs/format/applehttp/tags/mbr/protocol/http/f/a.m3u8",
+        "type": "Web trailer"
+      },
+      {
+        "objectType": "KalturaMediaFile",
+        "duration": 1000,
+        "id": 392238,
+        "assetId": 258656,
+        "externalId": "",
+        "url": "http://cdnapi.kaltura.com/p/1774581/sp/177458100/playManifest/entryId/1_tzhsuqij/format/applehttp/tags/mbr/protocol/http/f/a.m3u8",
+        "type": "Web SD"
+      },
+      {
+        "objectType": "KalturaMediaFile",
+        "duration": 3090,
+        "id": 397407,
+        "assetId": 258656,
+        "externalId": "",
+        "url": "http://cdnapi.kaltura.com/p/1774581/sp/177458100/playManifest/entryId/1_tzhsuqij/format/applehttp/tags/ipad/protocol/http/f/a.m3u8",
+        "type": "Mobile_Devices_Main_SD"
+      },
+      {
+        "objectType": "KalturaMediaFile",
+        "duration": 130,
+        "id": 428345,
+        "assetId": 258656,
+        "externalId": "",
+        "url": "http://cdnapi.kaltura.com/p/1774581/sp/177458100/playManifest/entryId/1_fuuycq1y/format/applehttp/tags/ipad/protocol/http/f/a.m3u8",
+        "type": "Mobile_Devices_Trailer"
+      },
+      {
+        "objectType": "KalturaMediaFile",
+        "duration": 3090,
+        "id": 464030,
+        "assetId": 258656,
+        "externalId": "",
+        "url": "http://cdnapi.kaltura.com/p/1774581/sp/177458100/playManifest/entryId/1_tzhsuqij/format/applehttp/tags/ipad/protocol/http/f/a.m3u8",
+        "type": "Mobile_Devices_Main_Download"
+      },
+      {
+        "objectType": "KalturaMediaFile",
+        "duration": 2237,
+        "id": 464302,
+        "assetId": 258656,
+        "externalId": "",
+        "url": "http://cdnapi.kaltura.com/p/1774581/sp/177458100/playManifest/entryId/1_tzhsuqij/format/applehttp/tags/ipad/protocol/http/f/a.m3u8",
+        "type": "Mobile_Devices_Main_HD"
+      }
+    ],
+    "startDate": 946684800,
+    "endDate": 2524608000,
+    "enableCdvr": false,
+    "enableCatchUp": false,
+    "enableStartOver": false,
+    "enableTrickPlay": false,
+    "id": 258656,
+    "type": 420,
+    "name": "Frozen",
+    "description": "*** Free *** Young princess Anna of Arendelle dreams about finding true love at her sister Elsa’s coronation. Fate takes her on a dangerous journey in an attempt to end the eternal winter that has fallen over the kingdom. She's accompanied by ice delivery man Kristoff, his reindeer Sven, and snowman Olaf. On an adventure where she will find out what friendship, courage, family, and true love really means......",
+    "objectType": "KalturaMediaAsset",
+    "enableRecordingPlaybackNonExistingChannel": false,
+    "enableRecordingPlaybackNonEntitledChannel": false,
+    "trickPlayBuffer": 0,
+    "catchUpBuffer": 0
+  }
+}

@@ -1,4 +1,4 @@
-package com.kaltura.playkit.mediaproviders.base;
+package com.kaltura.playkit.connect;
 
 /**
  * Created by tehilarozin on 06/11/2016.
@@ -6,10 +6,11 @@ package com.kaltura.playkit.mediaproviders.base;
 
 public class ErrorElement {
 
-    public static ErrorElement GeneralError = new ErrorElement("something went wrong", 666);
+    public static ErrorElement GeneralError = new ErrorElement("Something went wrong", 666);
     public static ErrorElement MediaNotFound = new ErrorElement("Requested Media could not be located", 404);
-    public static ErrorElement LoadError = new ErrorElement("Failed to load Media from source", 500);
+    public static ErrorElement LoadError = new ErrorElement("Failed to load data from source", 500);
     public static ErrorElement ConnectionError = new ErrorElement("Failed to connect to source", 408);
+    public static ErrorElement BadRequestError = new ErrorElement("Invalid or missing request params", 400);
 
     private String message;
     private int code;
@@ -27,6 +28,16 @@ public class ErrorElement {
 
     public String getMessage() {
         return message;
+    }
+
+    /**
+     * enable user to change default message with his own
+     * @param message
+     * @return
+     */
+    public ErrorElement message(String message){
+        this.message = message;
+        return this;
     }
 
     public int getCode() {

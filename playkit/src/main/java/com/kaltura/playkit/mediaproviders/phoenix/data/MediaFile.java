@@ -10,7 +10,7 @@ public class MediaFile {
     int id;
     int assetId;
     String url;
-    String formatType;
+    String type;
 
     public long getDuration() {
         return duration;
@@ -44,11 +44,11 @@ public class MediaFile {
         this.url = url;
     }
 
-    public String getFormatType() {
-        return formatType;
+    public String getType() {
+        return type;
     }
 
-    public void setFormatType(String formatType) {
-        this.formatType = formatType;
+    public void setType(String type) {
+        this.type = type;
     }
 }

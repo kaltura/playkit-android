@@ -1,11 +1,12 @@
 package com.kaltura.playkit.mediaproviders.base;
 
+import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.RequestQueue;
 
 /**
  * Created by tehilarozin on 30/10/2016.
  */
-// ????
+@Deprecated
 public abstract class RequestsHandler {
 
     protected String baseUrl;

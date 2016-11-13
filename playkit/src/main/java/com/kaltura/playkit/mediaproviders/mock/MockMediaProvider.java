@@ -10,7 +10,7 @@ import com.google.gson.stream.JsonReader;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.mediaproviders.base.ErrorElement;
+import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 
 import java.io.FileReader;

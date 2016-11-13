@@ -8,7 +8,7 @@ import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.ResponseElement;
 import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.mediaproviders.base.ErrorElement;
+import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 
 /**

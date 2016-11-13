@@ -9,7 +9,9 @@ import java.util.ArrayList;
 public class AssetInfo {
     int id;
     int type;
-    ArrayList<MediaFile> files;
+    String name;
+
+    ArrayList<MediaFile> mediaFiles;
 
     public int getId() {
         return id;
@@ -28,10 +30,10 @@ public class AssetInfo {
     }
 
     public ArrayList<MediaFile> getFiles() {
-        return files;
+        return mediaFiles;
     }
 
     public void setFiles(ArrayList<MediaFile> files) {
-        this.files = files;
+        this.mediaFiles = files;
     }
 }

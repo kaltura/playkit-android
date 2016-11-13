@@ -15,7 +15,7 @@ import java.util.ArrayList;
 /**
  * Created by tehilarozin on 03/11/2016.
  */
-
+@Deprecated
 public class PhoenixParser {
 
     private PKMediaEntry parseMediaEntry(String assetInfoJson, String sourceFormat) {
@@ -55,7 +55,7 @@ public class PhoenixParser {
             source.setId(""+file.getId());
             source.setUrl(file.getUrl());
 
-            //source.setMimeType(Defines.getMimeType(Utils.getFileExt(file.getUrl())));
+            //source.setMimeType(Defines.getMimeType(Accessories.getFileExt(file.getUrl())));
             mediaEntry.setDuration(file.getDuration()); // ??
         }
 

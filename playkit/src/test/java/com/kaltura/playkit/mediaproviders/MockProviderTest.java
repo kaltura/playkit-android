@@ -2,7 +2,7 @@ package com.kaltura.playkit.mediaproviders;
 
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.mediaproviders.base.ErrorElement;
+import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.mock.MockMediaProvider;
 

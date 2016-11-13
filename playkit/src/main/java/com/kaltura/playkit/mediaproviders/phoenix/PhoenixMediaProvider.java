@@ -1,21 +1,22 @@
 package com.kaltura.playkit.mediaproviders.phoenix;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.google.gson.JsonObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
+import com.kaltura.playkit.connect.Accessories;
+import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
-import com.kaltura.playkit.connect.RequestElement;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
-import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.mediaproviders.base.ErrorElement;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.phoenix.data.AssetInfo;
+import com.kaltura.playkit.mediaproviders.phoenix.data.AssetResult;
 import com.kaltura.playkit.mediaproviders.phoenix.data.MediaFile;
 
 import java.util.ArrayList;
@@ -36,34 +37,90 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
     private String referenceType;
     private String format;
 
-    public PhoenixMediaProvider(String baseUrl, int partnerId, String assetId, String assetReferenceType) {
+    public PhoenixMediaProvider(String baseUrl, int partnerId, String assetId, String assetReferenceType, String format) {
         //requestsHandler = new PhoenixRequestsHandler(baseUrl, new APIOkRequestsExecutor());
         this.baseUrl = baseUrl;
         this.partnerId = partnerId;
         this.assetId = assetId;
         this.referenceType = assetReferenceType;
+        this.format = format;
     }
 
-    public PhoenixMediaProvider(String baseUrl, String ks, String assetId, String assetReferenceType) {
+    public PhoenixMediaProvider(String baseUrl, String ks, String assetId, String assetReferenceType, String format) {
         //requestsHandler = new PhoenixRequestsHandler(baseUrl, new APIOkRequestsExecutor());
         this.baseUrl = baseUrl;
         this.ks = ks;
         this.assetId = assetId;
         this.referenceType = assetReferenceType;
+        this.format = format;
     }
 
-    public PhoenixMediaProvider requestExecutor(RequestQueue executor) {
+    public PhoenixMediaProvider setRequestExecutor(RequestQueue executor) {
         this.requestsExecutor = executor;
         return this;
     }
 
+    public PhoenixMediaProvider setAssetId(String assetId) {
+        this.assetId = assetId;
+        return this;
+    }
 
+    public PhoenixMediaProvider setFormat(String format) {
+        this.format = format;
+        return this;
+    }
+
+    public PhoenixMediaProvider setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+        return this;
+    }
+
+    public PhoenixMediaProvider setKs(String ks) {
+        this.ks = ks;
+        return this;
+    }
+
+    public PhoenixMediaProvider setPartnerId(int partnerId) {
+        this.partnerId = partnerId;
+        return this;
+    }
+
+    public PhoenixMediaProvider setReferenceType(String referenceType) {
+        this.referenceType = referenceType;
+        return this;
+    }
+
+    /**
+     * Activates the providers data fetching process.
+     * According to previously provided arguments, a request is built and passed to the remote server.
+     * Fetching flow can ended with {@link PKMediaEntry} object if succeeded or with {@link ErrorElement} if failed.
+     *
+     * @param completion - a callback for handling the result of data fetching flow.
+     */
     @Override
     public void load(final OnMediaLoadCompletion completion) {
+        // Ott play must have defined format in order to select the right media file to play.
+        if (TextUtils.isEmpty(format)) {
+            if (completion != null) {
+                completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": media file format is required!")));
+            }
+            return;
+        }
 
-        RequestElement requestElement = new RequestBuilder()
+        RequestBuilder requestBuilder = TextUtils.isEmpty(ks) ?
+                AssetService.assetGet(baseUrl, partnerId, assetId, referenceType) :
+                AssetService.assetGet(baseUrl, ks, assetId, referenceType);
+
+        requestsExecutor.queue(requestBuilder.completion(new OnRequestCompletion() {
+            @Override
+            public void onComplete(ResponseElement response) {
+                onAssetRequestResult(response, completion);
+            }
+        }).build());
+
+        /*new RequestBuilder()
                 .method("POST")
-                .url(baseUrl + "service/asset/action/get")
+                .url(getRequestUrl())
                 .tag("asset-get")
                 .body(getAssetRequestBody().toString())
                 .completion(new OnRequestCompletion() {
@@ -73,126 +130,49 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
                     }
                 }).build();
 
-        /*new RequestElement() {
-
-                @Override
-                public String getMethod() {
-                    return "POST";
-                }
-
-                @Override
-                public String getUrl() {
-                    return baseUrl + "service/asset/action/get";
-                }
-
-                @Override
-                public String getBody() {
-
-                    JsonObject body = new JsonObject();
-                    body.addProperty("ks", ks);
-                    body.addProperty("id", assetId);
-                    body.addProperty("assetReferenceType", assetReferenceType);
-
-                    return body.toString();
-                }
-
-                @Override
-                public String getTag() {
-                    return "asset-get";
-                }
-
-                @Override
-                public HashMap<String, String> getHeaders() {
-                    return null;
-                }
-
-                @Override
-                public String getId() {
-                    return null;
-                }
-
-                @Override
-                public RequestConfiguration config() {
-                    return null;
-                }
-
-                @Override
-                public void onComplete(final ResponseElement response) {
-                    if (response != null && response.isSuccess()) {
-                        AssetInfo asset = PhoenixParser.parseAsset(response.getResponse());
-                        if (!TextUtils.isEmpty(format)) {
-                            for (final MediaFile file : asset.getFiles()) {
-                                if (file.getFormatType().equals(format)) {
-                                    //?? only the "format" MediaFile should be parsed to MediaSource - app asked for a specific format(file)
-                                    ArrayList<MediaFile> newFiles = new ArrayList<>(Collections.singletonList(file));
-                                    asset.setFiles(newFiles);
-                                }
-                            }
-                        }
-                        final PKMediaEntry mediaEntry = PhoenixParser.getMedia(asset);
-                        //TODO pass mediaEntry to completion callback
-                        if (completion != null) {
-                            completion.onComplete(new ResultElement<PKMediaEntry>() {
-                                @Override
-                                public PKMediaEntry getResponse() {
-                                    return mediaEntry;
-                                }
-
-                                @Override
-                                public boolean isSuccess() {
-                                    return mediaEntry != null;
-                                }
-
-                                @Override
-                                public ErrorElement getError() {
-                                    return mediaEntry == null ? response.getError() : null;
-                                }
-                            });
-                        }
-                    }
-                }
-            };*/
-
-        requestsExecutor.queue(requestElement);
+        requestsExecutor.queue(requestElement);*/
     }
 
+    /*@NonNull
+    private String getRequestUrl() {
+        return baseUrl + (TextUtils.isEmpty(ks) ? "service/multirequest" : "service/asset/action/get");
+    }*/
 
     private void onAssetRequestResult(final ResponseElement response, final OnMediaLoadCompletion completion) {
+        ErrorElement error = null;
+        PKMediaEntry mediaEntry = null;
+
         if (response != null && response.isSuccess()) {
-            AssetInfo asset = PhoenixParser.parseAsset(response.getResponse());
-            if (!TextUtils.isEmpty(format)) {
+            AssetInfo asset = null;
+
+            try {
+                asset = PhoenixParser.parseAssetResult(response.getResponse());
+            } catch (JsonSyntaxException ex) {
+                error = ErrorElement.LoadError.message("failed parsing remote response: " + ex.getMessage());
+            }
+
+            if (asset != null) {
+                // only the provided "format" matching MediaFile should be parsed and added to the PKMediaEntry media sources
                 for (final MediaFile file : asset.getFiles()) {
-                    if (file.getFormatType().equals(format)) {
-                        //?? only the "format" MediaFile should be parsed to MediaSource - app asked for a specific format(file)
+                    if (file.getType().equals(format)) {
                         ArrayList<MediaFile> newFiles = new ArrayList<>(Collections.singletonList(file));
                         asset.setFiles(newFiles);
+                        break;
                     }
                 }
-            }
-            final PKMediaEntry mediaEntry = PhoenixParser.getMedia(asset);
-            //TODO pass mediaEntry to completion callback
-            if (completion != null) {
-                completion.onComplete(new ResultElement<PKMediaEntry>() {
-                    @Override
-                    public PKMediaEntry getResponse() {
-                        return mediaEntry;
-                    }
 
-                    @Override
-                    public boolean isSuccess() {
-                        return mediaEntry != null;
-                    }
-
-                    @Override
-                    public ErrorElement getError() {
-                        return mediaEntry == null ? response.getError() : null;
-                    }
-                });
+                mediaEntry = PhoenixParser.getMedia(asset);
             }
+        } else {
+            error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
+        }
+
+        if (completion != null) {
+            completion.onComplete(Accessories.buildResult(mediaEntry, error));
         }
     }
 
-    @NonNull
+   /* @NonNull
     private JsonObject getAssetRequestBody() {
         JsonObject body = new JsonObject();
         boolean isMultiReq = false;
@@ -226,25 +206,30 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
         params.addProperty("partnerId", partnerId);
         return params;
     }
+*/
 
+    static class PhoenixParser {
 
-        /*requestsHandler.getMediaInfo(ks, assetId, referenceType, new OnRequestCompletion() {
-            @Override
-            public void onComplete(ResponseElement response) {
-                if(response != null && response.isSuccess()){
-                    AssetInfo asset = PhoenixParser.parseAsset(response.getResponse());
-                    if(!TextUtils.isEmpty(format)){
-                        for(final MediaFile file : asset.getFiles()){
-                            if(file.getFormatType().equals(format)){
-                                //?? only the "format" MediaFile should be parsed to MediaSource - app asked for a specific format(file)
-                                ArrayList<MediaFile> newFiles = new ArrayList<>(Collections.singletonList(file));
-                                asset.setFiles(newFiles);
-                            }
-                        }
-                    }
-                    PKMediaEntry mediaEntry = PhoenixParser.getMedia(asset);
-                    //TODO pass mediaEntry to completion callback
-                }
+        static PKMediaEntry getMedia(AssetInfo assetInfo) {
+            PKMediaEntry mediaEntry = new PKMediaEntry();
+            mediaEntry.setId("" + assetInfo.getId());
+
+            ArrayList<PKMediaSource> sources = new ArrayList<>();
+            for (MediaFile file : assetInfo.getFiles()) {
+                PKMediaSource source = new PKMediaSource();
+                source.setId("" + file.getId());
+                source.setUrl(file.getUrl());
+
+                //source.setMimeType(Defines.getMimeType(Accessories.getFileExt(file.getUrl())));
+                sources.add(source);
+                mediaEntry.setDuration(file.getDuration()); // ??
             }
-        });*/
+            mediaEntry.setSources(sources);
+            return mediaEntry;
+        }
+
+        static AssetInfo parseAssetResult(String json) throws JsonSyntaxException {
+            return new Gson().fromJson(json, AssetResult.class).asset;
+        }
+    }
 }
