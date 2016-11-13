@@ -7,47 +7,47 @@ public abstract class PlayerDecoratorBase implements Player {
     
     @Override
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
-        mPlayer.prepare(mediaConfig);
+        player.prepare(mediaConfig);
     }
 
     @Override
     public long getDuration() {
-        return mPlayer.getDuration();
+        return player.getDuration();
     }
 
     @Override
     public long getCurrentPosition() {
-        return mPlayer.getCurrentPosition();
+        return player.getCurrentPosition();
     }
 
     @Override
     public void seekTo(long position) {
-        mPlayer.seekTo(position);
+        player.seekTo(position);
     }
 
     @Override
     public boolean getAutoPlay() {
-        return mPlayer.getAutoPlay();
+        return player.getAutoPlay();
     }
 
     @Override
     public void setAutoPlay(boolean autoPlay) {
-        mPlayer.setAutoPlay(autoPlay);
+        player.setAutoPlay(autoPlay);
     }
 
     @Override
     public void play() {
-        mPlayer.play();
+        player.play();
     }
 
     @Override
     public void pause() {
-        mPlayer.pause();
+        player.pause();
     }
 
     @Override
     public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
-        mPlayer.prepareNext(mediaConfig);
+        player.prepareNext(mediaConfig);
     }
 
 
@@ -55,37 +55,37 @@ public abstract class PlayerDecoratorBase implements Player {
 
     @Override
     public void release() {
-        mPlayer.release();
+        player.release();
     }
 
     @Override
     public View getView() {
-        return mPlayer.getView();
+        return player.getView();
     }
 
     @Override
     public void skip() {
-        mPlayer.skip();
+        player.skip();
     }
 
     @Override
     public void addEventListener(@NonNull PlayerEvent.Listener listener, PlayerEvent... events) {
-        mPlayer.addEventListener(listener, events);
+        player.addEventListener(listener, events);
     }
 
     @Override
     public void addStateChangeListener(@NonNull PlayerState.Listener listener) {
-        mPlayer.addStateChangeListener(listener);
+        player.addStateChangeListener(listener);
     }
 
     void setPlayer(Player player) {
-        mPlayer = player;
+        this.player = player;
     }
     
     Player getPlayer() {
-        return mPlayer;
+        return player;
     }
 
-    private Player mPlayer;
+    private Player player;
 
 }

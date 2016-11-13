@@ -70,15 +70,15 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
 
     public static final UUID WIDEVINE_UUID = new UUID(0xEDEF8BA979D64ACEL, 0xA3C827DCD51D21EDL);
     private static final com.google.android.exoplayer2.upstream.DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
-    private final Context mContext;
+    private final Context context;
 
-    private DefaultTrackSelector mTrackSelector;
+    private DefaultTrackSelector trackSelector;
     private android.os.Handler mainHandler = new Handler();;
     private SimpleExoPlayer player;
     private SimpleExoPlayerView simpleExoPlayerView;
     private boolean shouldAutoPlay;
     private boolean playerNeedsSource;
-    private Uri mCurrentSourceUri;
+    private Uri currentSourceUri;
     private DataSource.Factory mediaDataSourceFactory;
 
 
@@ -255,7 +255,7 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
         }
     }
     
-    private EventLogger mEventLogger = new EventLogger();
+    private EventLogger eventLogger = new EventLogger();
 
     private static class TrackSelectionHelper {
 
@@ -263,10 +263,10 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
             
         }
     }
-    private TrackSelectionHelper mTrackSelectionHelper;
+    private TrackSelectionHelper trackSelectionHelper;
     
     public POCPlayer(Context context) {
-        mContext = context;
+        this.context = context;
         simpleExoPlayerView = new SimpleExoPlayerView(context);
         simpleExoPlayerView.setUseController(false);
         mediaDataSourceFactory = buildDataSourceFactory(true);
@@ -274,7 +274,7 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
 
     @Override
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
-        mCurrentSourceUri = Uri.parse(mediaConfig.getMediaEntry().getSources().get(0).getUrl());
+        currentSourceUri = Uri.parse(mediaConfig.getMediaEntry().getSources().get(0).getUrl());
         shouldAutoPlay = mediaConfig.isAutoPlay();
         initializePlayer();
     }
@@ -353,17 +353,17 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
 
             TrackSelection.Factory videoTrackSelectionFactory =
                     new AdaptiveVideoTrackSelection.Factory(BANDWIDTH_METER);
-            mTrackSelector = new DefaultTrackSelector(mainHandler, videoTrackSelectionFactory);
-            mTrackSelector.addListener(this);
-            mTrackSelector.addListener(mEventLogger);
-            mTrackSelectionHelper = new TrackSelectionHelper(mTrackSelector, videoTrackSelectionFactory);
-            player = ExoPlayerFactory.newSimpleInstance(mContext, mTrackSelector, new DefaultLoadControl(),
+            trackSelector = new DefaultTrackSelector(mainHandler, videoTrackSelectionFactory);
+            trackSelector.addListener(this);
+            trackSelector.addListener(eventLogger);
+            trackSelectionHelper = new TrackSelectionHelper(trackSelector, videoTrackSelectionFactory);
+            player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(),
                     null, false);
             player.addListener(this);
-            player.addListener(mEventLogger);
-            player.setAudioDebugListener(mEventLogger);
-            player.setVideoDebugListener(mEventLogger);
-            player.setId3Output(mEventLogger);
+            player.addListener(eventLogger);
+            player.setAudioDebugListener(eventLogger);
+            player.setVideoDebugListener(eventLogger);
+            player.setId3Output(eventLogger);
 
             simpleExoPlayerView.setPlayer(player);
 
@@ -372,7 +372,7 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
         }
         if (playerNeedsSource) {
 
-            MediaSource mediaSource = buildMediaSource(mCurrentSourceUri, null);
+            MediaSource mediaSource = buildMediaSource(currentSourceUri, null);
             
             player.prepare(mediaSource);
             playerNeedsSource = false;
@@ -385,15 +385,15 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
         switch (type) {
             case C.TYPE_SS:
                 return new SsMediaSource(uri, buildDataSourceFactory(false),
-                        new DefaultSsChunkSource.Factory(mediaDataSourceFactory), mainHandler, mEventLogger);
+                        new DefaultSsChunkSource.Factory(mediaDataSourceFactory), mainHandler, eventLogger);
             case C.TYPE_DASH:
                 return new DashMediaSource(uri, buildDataSourceFactory(false),
-                        new DefaultDashChunkSource.Factory(mediaDataSourceFactory), mainHandler, mEventLogger);
+                        new DefaultDashChunkSource.Factory(mediaDataSourceFactory), mainHandler, eventLogger);
             case C.TYPE_HLS:
-                return new HlsMediaSource(uri, mediaDataSourceFactory, mainHandler, mEventLogger);
+                return new HlsMediaSource(uri, mediaDataSourceFactory, mainHandler, eventLogger);
             case C.TYPE_OTHER:
                 return new ExtractorMediaSource(uri, mediaDataSourceFactory, new DefaultExtractorsFactory(),
-                        mainHandler, mEventLogger);
+                        mainHandler, eventLogger);
             default: {
                 throw new IllegalStateException("Unsupported type: " + type);
             }
@@ -408,7 +408,7 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
         HttpMediaDrmCallback drmCallback = new HttpMediaDrmCallback(licenseUrl,
                 buildHttpDataSourceFactory(false), keyRequestProperties);
         return new StreamingDrmSessionManager<>(uuid,
-                FrameworkMediaDrm.newInstance(uuid), drmCallback, null, mainHandler, mEventLogger);
+                FrameworkMediaDrm.newInstance(uuid), drmCallback, null, mainHandler, eventLogger);
     }
 
     private void releasePlayer() {
@@ -416,9 +416,9 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
             shouldAutoPlay = player.getPlayWhenReady();
             player.release();
             player = null;
-            mTrackSelector = null;
-            mTrackSelectionHelper = null;
-            mEventLogger = null;
+            trackSelector = null;
+            trackSelectionHelper = null;
+            eventLogger = null;
         }
     }
 
@@ -430,7 +430,7 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
      * @return A new DataSource factory.
      */
     private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
-        return new DefaultDataSourceFactory(mContext, useBandwidthMeter ? BANDWIDTH_METER : null,
+        return new DefaultDataSourceFactory(context, useBandwidthMeter ? BANDWIDTH_METER : null,
                 buildHttpDataSourceFactory(useBandwidthMeter));
     }
 
@@ -442,7 +442,7 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
      * @return A new HttpDataSource factory.
      */
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
-        return new DefaultHttpDataSourceFactory(Util.getUserAgent(mContext, "PlayKit"), useBandwidthMeter ? BANDWIDTH_METER : null);
+        return new DefaultHttpDataSourceFactory(Util.getUserAgent(context, "PlayKit"), useBandwidthMeter ? BANDWIDTH_METER : null);
     }
 
     @Override

@@ -16,34 +16,34 @@ public class PlayerConfig {
     public final Plugins plugins = new Plugins();
 
     public static class Media {
-        private boolean mAutoPlay = false;
-        private long mStartPosition = 0;
-        private PKMediaEntry mMediaEntry;
+        private boolean autoPlay = false;
+        private long startPosition = 0;
+        private PKMediaEntry mediaEntry;
 
         public boolean isAutoPlay() {
-            return mAutoPlay;
+            return autoPlay;
         }
 
         public Media setAutoPlay(boolean autoPlay) {
-            this.mAutoPlay = autoPlay;
+            this.autoPlay = autoPlay;
             return this;
         }
 
         public long getStartPosition() {
-            return mStartPosition;
+            return startPosition;
         }
 
         public Media setStartPosition(long startPosition) {
-            this.mStartPosition = startPosition;
+            this.startPosition = startPosition;
             return this;
         }
 
         public PKMediaEntry getMediaEntry() {
-            return mMediaEntry;
+            return mediaEntry;
         }
 
         public Media setMediaEntry(PKMediaEntry mediaEntry) {
-            this.mMediaEntry = mediaEntry;
+            this.mediaEntry = mediaEntry;
             return this;
         }
     }

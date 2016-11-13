@@ -1,8 +1,8 @@
 package com.kaltura.playkit;
 
-import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
-
 import android.content.Context;
+
+import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,26 +18,26 @@ import static com.kaltura.playkit.Utils.fullyReadInputStream;
 
 public class MockMediaEntryProvider implements MediaEntryProvider {
 
-    private PKMediaEntry mMediaEntry;
-    private JSONObject mJsonObject;
+    private PKMediaEntry mediaEntry;
+    private JSONObject jsonObject;
 
     public MockMediaEntryProvider() {}
 
     public MockMediaEntryProvider(JSONObject jsonObject) throws JSONException {
-        mJsonObject = jsonObject.getJSONObject("entries");
+        this.jsonObject = jsonObject.getJSONObject("entries");
     }
 
     public MockMediaEntryProvider setJSONInputFile(String filename) throws IOException, JSONException {
         InputStream inputStream = new FileInputStream(filename);
         String jsonString = fullyReadInputStream(inputStream, 1024 * 1024).toString();
         inputStream.close();
-        mJsonObject = new JSONObject(jsonString).getJSONObject("entries");
+        jsonObject = new JSONObject(jsonString).getJSONObject("entries");
         return this;
     }
 
     public MockMediaEntryProvider setInputJSONAsset(Context context, String assetId) throws IOException, JSONException {
         String jsonString = Utils.readAssetToString(context, assetId);
-        mJsonObject = new JSONObject(jsonString).getJSONObject("entries");
+        jsonObject = new JSONObject(jsonString).getJSONObject("entries");
         return this;
     }
 
@@ -82,9 +82,9 @@ public class MockMediaEntryProvider implements MediaEntryProvider {
 
     public MockMediaEntryProvider setMediaId(String id) {
         try {
-            JSONObject jsonEntry = mJsonObject.getJSONObject(id);
+            JSONObject jsonEntry = jsonObject.getJSONObject(id);
 
-            mMediaEntry = parseMediaEntry(jsonEntry);
+            mediaEntry = parseMediaEntry(jsonEntry);
         } catch (JSONException e) {
             throw new IllegalArgumentException(e);
         }
