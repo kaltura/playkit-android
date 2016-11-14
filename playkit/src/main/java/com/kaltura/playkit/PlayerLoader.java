@@ -101,6 +101,11 @@ class PlayerLoader extends PlayerDecoratorBase {
         releasePlayer();
     }
 
+    @Override
+    public void onResume() {
+        getPlayer().onResume();
+    }
+
     private void releasePlayer() {
         getPlayer().release();
     }

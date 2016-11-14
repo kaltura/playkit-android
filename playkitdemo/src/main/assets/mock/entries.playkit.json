@@ -1,5 +1,5 @@
 {
-    "m001": {
+    "dash+xml": {
       "duration": 60000,
       "id": "m001",
       "name": "demo1",
@@ -10,8 +10,9 @@
           "url": "http://cfvod.kaltura.com/dasha/p/1851571/sp/185157100/serveFlavor/entryId/0_pl5lbfo0/v/2/flavorId/0_,zwq3l44r,otmaqpnf,ywkmqnkg,/forceproxy/true/name/a.mp4.urlset/manifest.mpd"
         }
       ]
-    },
-    "1_1h1vsv3z": {
+    }
+,
+    "mp4": {
       "duration": 102000,
       "id": "1_1h1vsv3z",
       "name": "Kaltura Video Solutions for Media Companies",
@@ -24,4 +25,18 @@
       ]
 
   }
+  ,
+      "x-mpegURL": {
+        "duration": 102000,
+          "id": "0_cg1wmv2s",
+          "name": "HLS",
+          "sources": [
+            {
+              "id": "0_cg1wmv2s",
+              "mimeType": "application/x-mpegURL",
+              "url": "http://cdnapi.kaltura.com/p/1982551/sp/198255100/playManifest/entryId/0_cg1wmv2s/format/applehttp/tags/iphonenew/protocol/http/f/a.m3u8"
+            }
+          ]
+
+    }
 }

@@ -32,4 +32,8 @@ public interface PlayerEngine {
     long getDuration();
 
     long getBufferedPosition();
+
+    void release();
+
+    void resume();
 }

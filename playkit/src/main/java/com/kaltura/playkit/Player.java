@@ -73,6 +73,8 @@ public interface Player {
     void addEventListener(@NonNull PlayerEvent.Listener listener, PlayerEvent... events);
 
     void addStateChangeListener(@NonNull PlayerState.Listener listener);
+
+    void onResume();
 }
 
 

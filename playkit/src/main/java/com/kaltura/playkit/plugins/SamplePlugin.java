@@ -67,13 +67,8 @@ public class SamplePlugin extends PKPlugin {
         return new PlayerDecorator() {
             @Override
             public void play() {
-                Toast.makeText(mContext, "Delaying playback by " + mDelay + " ms", Toast.LENGTH_SHORT).show();
-                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        mPlayer.play();
-                    }
-                }, mDelay);
+              Toast.makeText(mContext, "Play pressed through the decorator of " + TAG, Toast.LENGTH_SHORT).show();
+              mPlayer.play();
             }
         };
     }

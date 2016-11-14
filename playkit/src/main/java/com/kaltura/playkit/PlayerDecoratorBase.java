@@ -90,4 +90,8 @@ public abstract class PlayerDecoratorBase implements Player {
 
     private Player mPlayer;
 
+    @Override
+    public void onResume() {
+        mPlayer.onResume();
+    }
 }

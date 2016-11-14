@@ -2,7 +2,6 @@ package com.kaltura.playkitdemo;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
@@ -200,5 +199,13 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
     public void onStopTrackingTouch(SeekBar seekBar) {
         dragging = false;
         player.seekTo(positionValue(seekBar.getProgress()));
+    }
+
+    public void release() {
+        removeCallbacks(updateProgressAction);
+    }
+
+    public void resume() {
+        updateProgress();
     }
 }

@@ -24,11 +24,14 @@ public class PlayerController implements Player {
     private static final String TAG = PlayerController.class.getSimpleName();
 
     private PlayerEngine player;
-    private PlayerConfig playerConfig;
     private Context context;
 
     private List<PlayerEvent.Listener> eventListeners = new ArrayList<>();
     private List<PlayerState.Listener> stateChangeListeners = new ArrayList<>();
+
+    private PlayerConfig.Media mediaConfig;
+
+
 
     public interface EventTrigger {
         void triggerEvent(PlayerEvent event);
@@ -62,8 +65,7 @@ public class PlayerController implements Player {
 
     public PlayerController(Context context, PlayerConfig config){
         this.context = context;
-
-        //create default player(ExoPlayer).
+        this.mediaConfig = config.media;
         player = new ExoPlayerWrapper(context);
         player.setEventTrigger(eventTrigger);
         player.setStateChangedTrigger(stateChangedTrigger);
@@ -80,6 +82,7 @@ public class PlayerController implements Player {
     @Override
     public void release() {
         Log.d(TAG, "release");
+        player.release();
     }
 
     @Override
@@ -139,7 +142,7 @@ public class PlayerController implements Player {
     @Override
     public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
         Log.d(TAG, "prepareNext");
-
+        prepare(mediaConfig);
     }
 
     @Override
@@ -157,5 +160,14 @@ public class PlayerController implements Player {
     public void addStateChangeListener(@NonNull PlayerState.Listener listener) {
         Log.d(TAG, "addStateChangeListener");
         stateChangeListeners.add(listener);
+    }
+
+    @Override
+    public void onResume() {
+        Log.d(TAG, "on resume");
+        player.setEventTrigger(eventTrigger);
+        player.setStateChangedTrigger(stateChangedTrigger);
+        player.resume();
+        prepare(mediaConfig);
     }
 }

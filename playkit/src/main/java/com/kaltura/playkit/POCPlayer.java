@@ -350,6 +350,11 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
         
     }
 
+    @Override
+    public void onResume() {
+
+    }
+
     // ExoPlayer
 
     private void initializePlayer() {
