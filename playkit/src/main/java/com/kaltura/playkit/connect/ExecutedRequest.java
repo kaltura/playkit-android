@@ -36,6 +36,11 @@ public class ExecutedRequest implements ResponseElement {
         return this;
     }
 
+    public ExecutedRequest error(Exception exception) {
+        this.error = ErrorElement.fromException(exception);
+        return this;
+    }
+
         @Override
     public int getCode() {
         return code;

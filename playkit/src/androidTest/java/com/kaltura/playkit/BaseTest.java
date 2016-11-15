@@ -30,6 +30,6 @@ public class BaseTest {
 
     @After
     public void tearDown(){
-        resume();
+        /*resume();*/
     }
 }

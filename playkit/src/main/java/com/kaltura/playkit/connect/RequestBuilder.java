@@ -1,8 +1,10 @@
 package com.kaltura.playkit.connect;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by tehilarozin on 09/11/2016.
@@ -16,12 +18,16 @@ public class RequestBuilder {
 
     private String baseUrl;
     private String method;
-    //String body;
     private String id;
     private String tag = null;
-    private HashMap<String, String> headers = null;
+    private Map<String, String> headers;
     private RequestConfiguration configuration = null;
     private OnRequestCompletion completion;
+
+    public RequestBuilder(){
+        headers = new HashMap();
+        headers.put("ContentType", "application/json");
+    }
 
     public RequestBuilder url(String url){
         this.baseUrl = url;
@@ -86,10 +92,10 @@ public class RequestBuilder {
 
                 StringBuilder urlBuilder = new StringBuilder(baseUrl);
                 if(service != null){
-                    urlBuilder.append("/").append(service);
+                    urlBuilder.append("service/").append(service);
                 }
                 if(action != null){
-                    urlBuilder.append("/").append(action);
+                    urlBuilder.append("/action/").append(action);
                 }
 
                 return urlBuilder.toString();
@@ -106,7 +112,7 @@ public class RequestBuilder {
             }
 
             @Override
-            public HashMap<String, String> getHeaders() {
+            public Map getHeaders() {
                 return headers;
             }
 
@@ -130,5 +136,25 @@ public class RequestBuilder {
 
     }
 
+    public RequestBuilder addParams(JsonObject others){
+        if(others == null){
+            return this;
+        }
+        if(this.params == null){
+            this.params = new JsonObject();
+        }
+        for(Map.Entry<String, JsonElement> entry : others.entrySet()) {
+            this.params.add(entry.getKey(), entry.getValue());
+        }
 
+        return this;
+    }
+
+    public RequestBuilder addParam(String key, String value) {
+        if(this.params == null){
+            this.params = new JsonObject();
+        }
+        this.params.addProperty(key, value);
+        return this;
+    }
 }

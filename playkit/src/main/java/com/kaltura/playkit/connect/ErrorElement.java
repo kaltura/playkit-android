@@ -1,5 +1,7 @@
 package com.kaltura.playkit.connect;
 
+import java.net.SocketTimeoutException;
+
 /**
  * Created by tehilarozin on 06/11/2016.
  */
@@ -46,5 +48,11 @@ public class ErrorElement {
 
     public Object getExtra() {
         return extra;
+    }
+
+    public static ErrorElement fromException(Exception exception) {
+        if(exception instanceof SocketTimeoutException) return ErrorElement.ConnectionError;
+
+        return ErrorElement.GeneralError;
     }
 }

@@ -13,8 +13,8 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.mediaproviders.mock.MockMediaProvider;
+import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.backend.mock.MockMediaProvider;
 
 import org.json.JSONException;
 import org.json.JSONObject;

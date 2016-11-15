@@ -20,10 +20,10 @@ public class MultiRequestBuilder extends RequestBuilder {
 
         for (RequestBuilder builder : builders) {
             lastId++;
-            String property = lastId + "";
+            String reqId = lastId + "";
             builder.params.addProperty("service", builder.service);
             builder.params.addProperty("action", builder.action);
-            params.add(property, builder.params); // add single request params as an object of the multirequest reqId is the key
+            params.add(reqId, builder.params); // add single request params as an object of the multirequest reqId is the key
             //calls.put(reqId, builder);
             //builder.setId(reqId);
         }
