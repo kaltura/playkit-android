@@ -4,7 +4,7 @@ package com.kaltura.playkit;
  * Created by Noam Tamim @ Kaltura on 24/10/2016.
  */
 
-public enum PlayerEvent {
+public enum PlayerEvent implements PKEvent {
     CAN_PLAY,   // Sent when enough data is available that the media can be played, at least for a couple of frames. This corresponds to the HAVE_ENOUGH_DATA readyState.
     DURATION_CHANGE,   //  The metadata has loaded or changed, indicating a change in duration of the media. This is sent, for example, when the media has loaded enough that the duration is known.
     ENDED,   //  Sent when playback completes.
