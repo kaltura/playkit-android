@@ -1,12 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
+    // TODO - change back to 25.0.0 / 24.0.2
     compileSdkVersion 24
     buildToolsVersion "24.0.2"
 
     defaultConfig {
         applicationId "com.kaltura.playkitdemo"
         minSdkVersion 16
+        // TODO - change back to 25 / 24
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
@@ -20,6 +22,12 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:24.2.1'
     compile project(path: ':playkit')
+    // TODO - change back to 25.0.0 / 24.2.1
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-beta3'
+    compile 'com.android.support:design:24.2.1'
+    compile 'com.android.support:cardview-v7:24.2.1'
+    compile 'com.android.support:recyclerview-v7:24.2.1'
+    compile 'com.android.support:support-v4:24.2.1'
 }

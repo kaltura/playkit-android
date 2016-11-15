@@ -1,15 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.kaltura.playkitdemo.MainActivity">
+    android:orientation="vertical">
 
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:elevation="4dp"
+        app:theme="@style/AppTheme.NoActionBar"
+        app:popupTheme="@style/AppTheme.NoActionBar"/>
+
+
+
+    <FrameLayout
+        android:id="@+id/smartphone_menu_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
+
+</LinearLayout>
+
+
+
+<!--
+<FrameLayout
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <fragment class="com.kaltura.playkitdemo.RootMenuFragment"
+              android:id="@+id/menu_fragment"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"/>
+
+
+</FrameLayout>
+-->
+
+
+
+
+    <!--
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -19,4 +57,4 @@
         android:layout_alignParentTop="true"
         android:id="@+id/player_root">
     </LinearLayout>
-</RelativeLayout>
+    -->

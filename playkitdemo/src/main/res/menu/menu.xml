@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!--
+    <item
+        android:id="@+id/action_back"
+        android:icon="@drawable/back"
+        android:title="@string/action_back"
+        app:showAsAction="ifRoom"/>
+    -->
+
+
+    <item
+        android:id="@+id/action_info"
+        android:icon="@drawable/ic_info_outline_grey_600_24dp"
+        android:title="@string/action_info"
+        app:showAsAction="ifRoom"/>
+
+
+    <item
+        android:id="@+id/action_chromecast"
+        android:icon="@drawable/ic_cast_grey_600_24dp"
+        android:title="@string/action_chromecsat"
+        app:showAsAction="ifRoom"/>
+
+
+</menu>
