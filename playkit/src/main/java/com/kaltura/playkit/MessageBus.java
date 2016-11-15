@@ -11,27 +11,27 @@ import java.util.Set;
  * Created by Noam Tamim @ Kaltura on 07/11/2016.
  */
 public class MessageBus {
-    private final Context mContext;
-    private Map<PKEvent, Set<Listener>> mListeners;
+    private final Context context;
+    private Map<PKEvent, Set<Listener>> listeners;
 
     public MessageBus(Context context) {
-        mContext = context;
-        mListeners = new HashMap<>();
+        this.context = context;
+        listeners = new HashMap<>();
     }
     
     public void post(PKEvent event) {
-        for (Listener listener : mListeners.get(event)) {
+        for (Listener listener : listeners.get(event)) {
             listener.onEvent(event);
         }
     }
     
     public void listen(Listener listener, PKEvent... events) {
         for (PKEvent event : events) {
-            Set<Listener> listenerSet = mListeners.get(event);
+            Set<Listener> listenerSet = listeners.get(event);
             if (listenerSet == null) {
                 listenerSet = new HashSet<>();
                 listenerSet.add(listener);
-                mListeners.put(event, listenerSet);
+                listeners.put(event, listenerSet);
             } else {
                 listenerSet.add(listener);
             }

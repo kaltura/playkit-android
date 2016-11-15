@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         registerPlugins();
 
-        mockProvider = new MockMediaProvider("mock/entries.playkit.json", null, "1_1h1vsv3z");
+        mockProvider = new MockMediaProvider("mock/entries.playkit.json", this, "1_1h1vsv3z");
 
     }
 

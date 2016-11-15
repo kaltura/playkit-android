@@ -9,9 +9,9 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.connect.ErrorElement;
+import com.kaltura.playkit.connect.ResultElement;
 
 import java.io.FileReader;
 import java.io.IOException;

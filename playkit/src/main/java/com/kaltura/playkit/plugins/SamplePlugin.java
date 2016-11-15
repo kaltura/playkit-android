@@ -23,7 +23,9 @@ public class SamplePlugin extends PKPlugin {
 
     private static final String TAG = "SamplePlugin";
 
-    private Player mPlayer;
+    private Player player;
+    private Context context;
+    private int delay;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -36,14 +38,12 @@ public class SamplePlugin extends PKPlugin {
             return new SamplePlugin();
         }
     };
-    private Context mContext;
-    private int mDelay;
 
     @Override
     protected void load(Player player, PlayerConfig.Media mediaConfig, JSONObject pluginConfig, MessageBus messageBus, Context context) {
-        mPlayer = player;
-        mContext = context;
-        mDelay = pluginConfig.optInt("delay");
+        this.player = player;
+        this.context = context;
+        delay = pluginConfig.optInt("delay");
         player.addEventListener(new PlayerEvent.Listener() {
             @Override
             public void onPlayerEvent(Player player, PlayerEvent event) {
@@ -67,13 +67,13 @@ public class SamplePlugin extends PKPlugin {
         return new PlayerDecorator() {
             @Override
             public void play() {
-                Toast.makeText(mContext, "Delaying playback by " + mDelay + " ms", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Delaying playback by " + delay + " ms", Toast.LENGTH_SHORT).show();
                 new Handler(Looper.myLooper()).postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        mPlayer.play();
+                        player.play();
                     }
-                }, mDelay);
+                }, delay);
             }
         };
     }

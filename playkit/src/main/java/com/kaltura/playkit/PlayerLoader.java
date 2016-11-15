@@ -15,25 +15,25 @@ import java.util.Map;
 
 class LoadedPlugin {
     public LoadedPlugin(PKPlugin plugin, PlayerDecorator decorator) {
-        mPlugin = plugin;
-        mDecorator = decorator;
+        this.plugin = plugin;
+        this.decorator = decorator;
     }
 
-    PKPlugin mPlugin;
-    PlayerDecorator mDecorator;
+    PKPlugin plugin;
+    PlayerDecorator decorator;
 
 }
 
 class PlayerLoader extends PlayerDecoratorBase {
     private static final String TAG = "PlayerLoader";
-    private Context mContext;
-    private MessageBus mMessageBus;
+    private Context context;
+    private MessageBus messageBus;
     
-    private Map<String, LoadedPlugin> mLoadedPlugins = new LinkedHashMap<>();
+    private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
 
     PlayerLoader(Context context) {
-        mContext = context;
-        mMessageBus = new MessageBus(context);
+        this.context = context;
+        messageBus = new MessageBus(context);
     }
     
     private List<String> getPluginNames(PlayerConfig.Plugins pluginsConfig) {
@@ -47,14 +47,14 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     public void load(@NonNull PlayerConfig playerConfig) {
-        Player player = new POCPlayer(mContext);
+        Player player = new POCPlayer(context);
         player.prepare(playerConfig.media);
 
         PlayerDecorator selectedDecorator = null;
 
         for (Map.Entry<String, JSONObject> pluginConfig : playerConfig.plugins.getPluginConfigMap().entrySet()) {
             String name = pluginConfig.getKey();
-            PKPlugin plugin = loadPlugin(name, player, playerConfig, mMessageBus, mContext);
+            PKPlugin plugin = loadPlugin(name, player, playerConfig, messageBus, context);
 
             if (plugin == null) {
                 Log.w(TAG, "Plugin not found: " + name);
@@ -71,7 +71,7 @@ class PlayerLoader extends PlayerDecoratorBase {
                 selectedDecorator.setPlayer(player);
             }
 
-            mLoadedPlugins.put(name, new LoadedPlugin(plugin, decorator));
+            loadedPlugins.put(name, new LoadedPlugin(plugin, decorator));
         }
 
         if (selectedDecorator != null) {
@@ -106,7 +106,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     private void releasePlugins() {
         // Unload in the reversed order they were loaded, peeling off the decorators.
-        List<Map.Entry<String, LoadedPlugin>> plugins = new ArrayList<>(mLoadedPlugins.entrySet());
+        List<Map.Entry<String, LoadedPlugin>> plugins = new ArrayList<>(loadedPlugins.entrySet());
         ListIterator<Map.Entry<String, LoadedPlugin>> listIterator = plugins.listIterator(plugins.size());
         
         Player currentLayer = getPlayer();
@@ -116,24 +116,24 @@ class PlayerLoader extends PlayerDecoratorBase {
             LoadedPlugin loadedPlugin = pluginEntry.getValue();
             
             // Peel off decorator, if this plugin added one
-            if (loadedPlugin.mDecorator != null) {
-                Assert.checkState(loadedPlugin.mDecorator == currentLayer, "Decorator/layer mismatch");
+            if (loadedPlugin.decorator != null) {
+                Assert.checkState(loadedPlugin.decorator == currentLayer, "Decorator/layer mismatch");
                 if (currentLayer instanceof PlayerDecorator) {
                     currentLayer = ((PlayerDecorator) currentLayer).getPlayer();
                 }
             }
             
             // Release the plugin
-            loadedPlugin.mPlugin.release();
-            mLoadedPlugins.remove(pluginEntry.getKey());
+            loadedPlugin.plugin.release();
+            loadedPlugins.remove(pluginEntry.getKey());
         }
         
         setPlayer(currentLayer);
     }
 
     private void updatePluginConfig(PlayerConfig playerConfig) {
-        for (Map.Entry<String, LoadedPlugin> entry : mLoadedPlugins.entrySet()) {
-            entry.getValue().mPlugin.update(playerConfig);
+        for (Map.Entry<String, LoadedPlugin> entry : loadedPlugins.entrySet()) {
+            entry.getValue().plugin.update(playerConfig);
         }
     }
 
