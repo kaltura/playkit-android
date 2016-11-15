@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
@@ -11,13 +12,17 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.plugins.SamplePlugin;
-import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
+import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
+import com.kaltura.playkit.connect.ResultElement;
+import com.kaltura.playkit.plugins.SamplePlugin;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static com.kaltura.playkitdemo.MockParams.Format;
+import static com.kaltura.playkitdemo.MockParams.MediaId;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -27,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     //private PlayKit mPlayKit;
     private MockMediaProvider mockProvider;
     private Player mPlayer;
+    private PhoenixMediaProvider phoenixMediaProvider;
 
 
     private void registerPlugins() {
@@ -40,14 +46,17 @@ public class MainActivity extends AppCompatActivity {
 
         registerPlugins();
 
-        mockProvider = new MockMediaProvider("mock/entries.playkit.json", this, "1_1h1vsv3z");
+        //mockProvider = new MockMediaProvider("mock/entries.playkit.json", this, "1_1h1vsv3z");
+
+        phoenixMediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
+
 
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        mockProvider.load(new OnMediaLoadCompletion() {
+        /*mockProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
                 if (response.isSuccess()) {
@@ -55,6 +64,24 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
+        });*/
+
+        phoenixMediaProvider.load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(final ResultElement<PKMediaEntry> response) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (response.isSuccess()) {
+                            onMediaLoaded(response.getResponse());
+                        } else {
+
+                            Toast.makeText(MainActivity.this, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""), Toast.LENGTH_LONG).show();
+                            Log.e(TAG, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
+                        }
+                    }
+                });
+            }
         });
     }
 

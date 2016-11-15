@@ -22,12 +22,12 @@ public class AssetService extends PhoenixService {
                 .method("POST")
                 .url(baseUrl)
                 .tag("asset-get")
-                .params(getAssetGetReqParams(ks, assetId, referenceType));
+                .params(getAssetGetReqParams(ks, assetId, referenceType, partnerId));
     }
 
     static RequestBuilder assetGet(String baseUrl, int partnerId, String assetId, String referenceType) {
         return new MultiRequestBuilder(OttUserService.anonymousLogin(baseUrl, partnerId),
-                new RequestBuilder().params(getAssetGetReqParams("{1:result:ks}", assetId, referenceType)))
+                new RequestBuilder().params(getAssetGetReqParams("{1:result:ks}", assetId, referenceType, partnerId)))
                 .method("POST")
                 .tag("asset-multi-get");
     }
@@ -42,11 +42,13 @@ public class AssetService extends PhoenixService {
         return body;
     }*/
 
-    private static JsonObject getAssetGetReqParams(String ks, String assetId, String referenceType) {
+    private static JsonObject getAssetGetReqParams(String ks, String assetId, String referenceType, int partnerId) {
         JsonObject getParams = getPhoenixParams();
         getParams.addProperty("ks", ks);
         getParams.addProperty("id", assetId);
         getParams.addProperty("assetReferenceType", referenceType);
+        getParams.addProperty("Partner", partnerId);
+
         return getParams;
     }
 
