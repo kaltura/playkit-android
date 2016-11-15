@@ -52,6 +52,7 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
+import com.google.gson.JsonElement;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -76,7 +77,6 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     private android.os.Handler mainHandler = new Handler();;
     private SimpleExoPlayer player;
     private SimpleExoPlayerView simpleExoPlayerView;
-    private boolean shouldAutoPlay;
     private boolean playerNeedsSource;
     private Uri currentSourceUri;
     private DataSource.Factory mediaDataSourceFactory;
@@ -275,7 +275,6 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     @Override
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
         currentSourceUri = Uri.parse(mediaConfig.getMediaEntry().getSources().get(0).getUrl());
-        shouldAutoPlay = mediaConfig.isAutoPlay();
         initializePlayer();
     }
 
@@ -305,24 +304,13 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     }
 
     @Override
-    public boolean getAutoPlay() {
-        return shouldAutoPlay;
-    }
-
-    @Override
-    public void setAutoPlay(boolean autoPlay) {
-        shouldAutoPlay = autoPlay;
-        player.setPlayWhenReady(autoPlay);
-    }
-
-    @Override
     public void play() {
-        setAutoPlay(true);
+        player.setPlayWhenReady(true);
     }
 
     @Override
     public void pause() {
-        setAutoPlay(false);
+        player.setPlayWhenReady(false);
     }
 
     @Override
@@ -342,6 +330,11 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
 
     @Override
     public void addStateChangeListener(@NonNull PlayerState.Listener listener) {
+        
+    }
+
+    @Override
+    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable JsonElement value) {
         
     }
 
@@ -367,7 +360,7 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
 
             simpleExoPlayerView.setPlayer(player);
 
-            player.setPlayWhenReady(shouldAutoPlay);
+            player.setPlayWhenReady(false);
             playerNeedsSource = true;
         }
         if (playerNeedsSource) {
@@ -413,7 +406,6 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
 
     private void releasePlayer() {
         if (player != null) {
-            shouldAutoPlay = player.getPlayWhenReady();
             player.release();
             player = null;
             trackSelector = null;

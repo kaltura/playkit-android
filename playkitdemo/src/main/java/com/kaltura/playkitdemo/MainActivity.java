@@ -5,19 +5,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.LinearLayout;
 
+import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.mock.MockMediaProvider;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.kaltura.playkit.plugins.SamplePlugin;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -92,11 +90,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void configurePlugins(PlayerConfig.Plugins config) {
-        try {
-            config.setPluginConfig("Sample", new JSONObject().put("delay", 4200));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        JsonObject sampleConfig = new JsonObject();
+        sampleConfig.addProperty("delay", 4200);
+        config.setPluginConfig("Sample", sampleConfig);
     }
 
     @Override
