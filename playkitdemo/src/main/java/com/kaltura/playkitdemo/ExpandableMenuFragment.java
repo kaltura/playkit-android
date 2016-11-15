@@ -4,21 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 
 import java.util.ArrayList;
 
-import static com.kaltura.playkitdemo.R.layout.fragment_expandable_menu;
 
-
-public class ExpandableMenuFragment extends MenuFragment {
+public class ExpandableMenuFragment extends AbsMenuFragment {
 
 
     private static String TAG = "DEMO";
@@ -144,6 +136,12 @@ public class ExpandableMenuFragment extends MenuFragment {
     public void handleMoreInfoClick(View view) {
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.more_info_url)));
         startActivity(browserIntent);
+    }
+
+
+    @Override
+    protected int getDivider() {
+        return R.drawable.divider_big;
     }
 
 

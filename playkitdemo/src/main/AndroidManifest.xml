@@ -9,7 +9,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
         <activity
-            android:name=".MainActivity"
+            android:name=".AppMainActivity"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
         </activity>
@@ -42,6 +42,10 @@
             android:name=".TabletMenuActivity"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main">
         </activity>
     </application>
 

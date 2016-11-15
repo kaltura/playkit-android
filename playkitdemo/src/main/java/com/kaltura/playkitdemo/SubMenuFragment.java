@@ -8,7 +8,7 @@ import android.view.View;
 import java.util.ArrayList;
 
 
-public class SubMenuFragment extends MenuFragment {
+public class SubMenuFragment extends AbsMenuFragment {
 
 
 
@@ -97,6 +97,10 @@ public class SubMenuFragment extends MenuFragment {
     }
 
 
+    @Override
+    protected int getDivider() {
+        return R.drawable.divider_small;
+    }
 
 
     /**

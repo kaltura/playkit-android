@@ -2,6 +2,8 @@ package com.kaltura.playkitdemo;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
@@ -135,11 +137,10 @@ public class ExpandableMenuRecyclerAdapter extends RecyclerView.Adapter<Expandab
             subMenuList.setAdapter(adapter);
 
             // TODO - restore when back to 25.0.0
-            /*
             DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(context, layoutManager.getOrientation());
             dividerItemDecoration.setDrawable(ContextCompat.getDrawable(context, R.drawable.divider_small));
             subMenuList.addItemDecoration(dividerItemDecoration);
-            */
+
         }
 
 

@@ -2,6 +2,8 @@ package com.kaltura.playkitdemo;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -12,12 +14,13 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 
 import static android.content.ContentValues.TAG;
+import static java.security.AccessController.getContext;
 
 /**
  * Created by itanbarpeled on 14/11/2016.
  */
 
-public abstract class MenuFragment extends Fragment {
+public abstract class AbsMenuFragment extends Fragment {
 
 
     private RecyclerView mRecyclerView;
@@ -58,13 +61,13 @@ public abstract class MenuFragment extends Fragment {
         mRecyclerView.setAdapter(mAdapter);
 
         // TODO - return back after upgrading to 25.0.0
-        /*
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(), mLayoutManager.getOrientation());
-        dividerItemDecoration.setDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.divider_big));
+        dividerItemDecoration.setDrawable(ContextCompat.getDrawable(getContext(), getDivider()));
         mRecyclerView.addItemDecoration(dividerItemDecoration);
-        */
 
     }
+
+    abstract protected int getDivider();
 
 
     abstract protected ArrayList<CardData>  getDataSet();

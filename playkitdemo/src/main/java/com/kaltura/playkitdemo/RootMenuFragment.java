@@ -10,7 +10,7 @@ import android.view.View;
 import java.util.ArrayList;
 
 
-public class RootMenuFragment extends MenuFragment {
+public class RootMenuFragment extends AbsMenuFragment {
 
 
     /*
@@ -105,7 +105,7 @@ public class RootMenuFragment extends MenuFragment {
     MenuRecyclerAdapter.MenuClickListener mMenuClickListener = new MenuRecyclerAdapter.MenuClickListener() {
         @Override
         public void onItemClick(int position, View v) {
-            Log.v(MainActivity.TAG, "RootMenuFragment position " + position);
+            Log.v(AppMainActivity.TAG, "RootMenuFragment position " + position);
         }
     };
     */
@@ -154,6 +154,12 @@ public class RootMenuFragment extends MenuFragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+
+    @Override
+    protected int getDivider() {
+        return R.drawable.divider_big;
     }
 
 

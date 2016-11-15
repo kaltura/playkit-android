@@ -4,7 +4,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,25 +14,30 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.kaltura.playkit.MockMediaEntryProvider;
-import com.kaltura.playkit.PlayKit;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.connect.ResultElement;
+import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.mediaproviders.mock.MockMediaProvider;
 import com.kaltura.playkit.plugins.SamplePlugin;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static android.content.ContentValues.TAG;
 
 
 public class PlayerFragment extends Fragment {
 
 
 
-    private PlayKit mPlayKit;
-    private MockMediaEntryProvider mMediaEntryProvider;
+    private MockMediaProvider mockProvider;
+    private Player mPlayer;
 
     private boolean mIsCardExpanded;
     private TextView mCardTitleView;
@@ -62,15 +66,25 @@ public class PlayerFragment extends Fragment {
     }
 
 
+    private void registerPlugins() {
+        PlayKitManager.registerPlugins(SamplePlugin.factory);
+    }
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        /*
         if (getArguments() != null) {
-            /*
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
-            */
         }
+        */
+
+
+        registerPlugins();
+        mockProvider = new MockMediaProvider("entries.playkit.json", getContext(), "1_1h1vsv3z");
     }
 
 
@@ -117,47 +131,46 @@ public class PlayerFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        setPLayer();
     }
 
 
 
-    private void setPLayer() {
-        PlayKitManager.registerPlugins(SamplePlugin.factory);
+    @Override
+    public void onStart() {
+        super.onStart();
 
-        JSONObject configJSON;
+        mockProvider.load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                if (response.isSuccess()) {
+                    onMediaLoaded(response.getResponse());
+                }
+            }
 
-        try {
-            configJSON = new JSONObject(Utils.readAssetToString(getContext(), "entries.playkit.json"));
-            mMediaEntryProvider = new MockMediaEntryProvider(configJSON);
-        } catch (JSONException e) {
-            Log.e(MainActivity.TAG, "Can't read config file", e);
-            Toast.makeText(getContext(), "JSON error: " + e, Toast.LENGTH_LONG).show();
-            return;
-        }
+        });
+    }
 
-        mPlayKit = new PlayKit();
+
+    private void onMediaLoaded(PKMediaEntry mediaEntry){
 
         PlayerConfig config = new PlayerConfig();
-        config.setAutoPlay(true);
 
-        mMediaEntryProvider.loadMediaEntry("m001");
-        config.setMediaEntry(mMediaEntryProvider.getMediaEntry());
-        config.enablePlugin("Sample");
+        config.media.setMediaEntry(mediaEntry);
+        configurePlugins(config.plugins);
 
 
-        final Player player = mPlayKit.loadPlayer(getContext(), config);
+        mPlayer = PlayKitManager.loadPlayer(config, getContext());
 
+        Log.d(TAG, "Player: " + mPlayer.getClass());
 
-        player.addEventListener(new PlayerEvent.Listener() {
+        mPlayer.addEventListener(new PlayerEvent.Listener() {
             @Override
             public void onPlayerEvent(Player player, PlayerEvent event) {
 
             }
         }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
 
-        player.addStateChangeListener(new PlayerState.Listener() {
+        mPlayer.addStateChangeListener(new PlayerState.Listener() {
             @Override
             public void onPlayerStateChanged(Player player, PlayerState newState) {
 
@@ -165,12 +178,19 @@ public class PlayerFragment extends Fragment {
         });
 
 
-
-        mPlayerContainer.addView(player.getView());
-        player.play();
+        mPlayerContainer.addView(mPlayer.getView());
+        mPlayer.play();
 
     }
 
+
+    private void configurePlugins(PlayerConfig.Plugins config) {
+        try {
+            config.setPluginConfig("Sample", new JSONObject().put("delay", 4200));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
 
 
@@ -181,7 +201,14 @@ public class PlayerFragment extends Fragment {
     }
 
 
-    // TODO: Rename method, update argument and hook method into UI event
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        mPlayer.release();
+    }
+
+
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
             mListener.onFragmentInteraction(uri);
@@ -206,74 +233,3 @@ public class PlayerFragment extends Fragment {
 
 }
 
-
-
-
-
-
-/*
-private static final String TAG = "MainActivity";
-private PlayKit mPlayKit;
-private MockMediaEntryProvider mMediaEntryProvider;
-
-
-private void registerPlugins() {
-    PlayKitManager.registerPlugins(SamplePlugin.factory);
-}
-*/
-
-
-
-/*
-protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-
-
-    registerPlugins();
-
-    JSONObject configJSON;
-    try {
-        configJSON = new JSONObject(Utils.readAssetToString(this, "entries.playkit.json"));
-        mMediaEntryProvider = new MockMediaEntryProvider(configJSON);
-    } catch (JSONException e) {
-        Log.e(TAG, "Can't read config file", e);
-        Toast.makeText(this, "JSON error: " + e, Toast.LENGTH_LONG).show();
-        return;
-    }
-
-    mPlayKit = new PlayKit();
-
-    PlayerConfig config = new PlayerConfig();
-//        config.setAutoPlay(true);
-
-    mMediaEntryProvider.loadMediaEntry("m001");
-    config.setMediaEntry(mMediaEntryProvider.getMediaEntry());
-    config.enablePlugin("Sample");
-
-
-    final Player player = mPlayKit.loadPlayer(this, config);
-
-    Log.d(TAG, "Player: " + player.getClass());
-
-    player.addEventListener(new PlayerEvent.Listener() {
-        @Override
-        public void onPlayerEvent(Player player, PlayerEvent event) {
-
-        }
-    }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
-
-    player.addStateChangeListener(new PlayerState.Listener() {
-        @Override
-        public void onPlayerStateChanged(Player player, PlayerState newState) {
-
-        }
-    });
-
-
-
-    LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
-    layout.addView(player.getView());
-
-
-    player.play();
-*/
