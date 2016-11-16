@@ -35,8 +35,8 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.upstream.DataSource.Factory;
 import com.google.android.exoplayer2.util.Util;
-import com.kaltura.playkit.player.PlayerController.EventTrigger;
-import com.kaltura.playkit.player.PlayerController.StateChangedTrigger;
+import com.kaltura.playkit.player.PlayerController.EventListener;
+import com.kaltura.playkit.player.PlayerController.StateChangedListener;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.utils.EventLogger;
@@ -50,8 +50,8 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
 
     private EventLogger eventLogger;
-    private EventTrigger eventTrigger;
-    private StateChangedTrigger stateChangedTrigger;
+    private EventListener eventListener;
+    private StateChangedListener stateChangedListener;
 
     private Context context;
     private SimpleExoPlayer player;
@@ -169,7 +169,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
             return;
         }
         this.currentState = newState;
-        stateChangedTrigger.triggerStateChanged(currentState);
+        stateChangedListener.onStateChanged(currentState);
     }
 
     private void sendEvent(PlayerEvent newEvent) {
@@ -178,8 +178,8 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         }
 
         currentEvent = newEvent;
-        if (eventTrigger != null) {
-            eventTrigger.triggerEvent(currentEvent);
+        if (eventListener != null) {
+            eventListener.onEvent(currentEvent);
         }
     }
 
@@ -341,8 +341,8 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
                 playerPosition = player.getCurrentPosition();
             }
 
-            this.eventTrigger = null;
-            this.stateChangedTrigger = null;
+            this.eventListener = null;
+            this.stateChangedListener = null;
             this.eventLogger = null;
             player.release();
             player = null;
@@ -363,12 +363,12 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         }
     }
 
-    public void setEventTrigger(final PlayerController.EventTrigger eventTrigger) {
-        this.eventTrigger = eventTrigger;
+    public void setEventListener(final EventListener eventTrigger) {
+        this.eventListener = eventTrigger;
     }
 
-    public void setStateChangedTrigger(PlayerController.StateChangedTrigger stateChangedTrigger) {
-        this.stateChangedTrigger = stateChangedTrigger;
+    public void setStateChangedListener(StateChangedListener stateChangedTrigger) {
+        this.stateChangedListener = stateChangedTrigger;
     }
 
 }

@@ -25,9 +25,9 @@ public interface PlayerEngine {
 
     void setAutoPlay(boolean shouldAutoplay);
 
-    void setEventTrigger(PlayerController.EventTrigger eventTrigger);
+    void setEventListener(PlayerController.EventListener eventTrigger);
 
-    void setStateChangedTrigger(PlayerController.StateChangedTrigger stateChangedTrigger);
+    void setStateChangedListener(PlayerController.StateChangedListener stateChangedTrigger);
 
     long getDuration();
 

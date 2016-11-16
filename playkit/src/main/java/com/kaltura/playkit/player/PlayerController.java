@@ -33,17 +33,17 @@ public class PlayerController implements Player {
 
 
 
-    public interface EventTrigger {
-        void triggerEvent(PlayerEvent event);
+    public interface EventListener {
+        void onEvent(PlayerEvent event);
     }
 
-    public interface StateChangedTrigger {
-        void triggerStateChanged(PlayerState state);
+    public interface StateChangedListener {
+        void onStateChanged(PlayerState state);
     }
 
-    private EventTrigger eventTrigger = new EventTrigger() {
+    private EventListener eventTrigger = new EventListener() {
         @Override
-        public void triggerEvent(PlayerEvent event) {
+        public void onEvent(PlayerEvent event) {
             for (PlayerEvent.Listener eventListener : eventListeners){
                 if(eventListener != null){
                     eventListener.onPlayerEvent(PlayerController.this, event);
@@ -52,9 +52,9 @@ public class PlayerController implements Player {
         }
     };
 
-    private StateChangedTrigger stateChangedTrigger = new StateChangedTrigger() {
+    private StateChangedListener stateChangedTrigger = new StateChangedListener() {
         @Override
-        public void triggerStateChanged(PlayerState state) {
+        public void onStateChanged(PlayerState state) {
             for(PlayerState.Listener listener : stateChangeListeners){
                 if (listener != null){
                     listener.onPlayerStateChanged(PlayerController.this, state);
@@ -67,8 +67,8 @@ public class PlayerController implements Player {
         this.context = context;
         this.mediaConfig = config.media;
         player = new ExoPlayerWrapper(context);
-        player.setEventTrigger(eventTrigger);
-        player.setStateChangedTrigger(stateChangedTrigger);
+        player.setEventListener(eventTrigger);
+        player.setStateChangedListener(stateChangedTrigger);
         prepare(config.media);
     }
 
@@ -165,8 +165,8 @@ public class PlayerController implements Player {
     @Override
     public void onResume() {
         Log.d(TAG, "on resume");
-        player.setEventTrigger(eventTrigger);
-        player.setStateChangedTrigger(stateChangedTrigger);
+        player.setEventListener(eventTrigger);
+        player.setStateChangedListener(stateChangedTrigger);
         player.resume();
         prepare(mediaConfig);
     }

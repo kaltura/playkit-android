@@ -1,6 +1,5 @@
 package com.kaltura.playkit.utils;
 
-import android.util.Log;
 import android.view.Surface;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -110,7 +109,7 @@ public class EventLogger implements TrackSelector.EventListener<MappingTrackSele
 
     @Override
     public void onLoadCompleted(DataSpec dataSpec, int dataType, int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs, long mediaEndTimeMs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded) {
-        Log.e("", "anton on load completed");
+
     }
 
     @Override
