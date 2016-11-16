@@ -67,6 +67,7 @@ public class SamplePlugin extends PKPlugin {
         return new PlayerDecorator() {
             @Override
             public void play() {
+                player.play();
                 Toast.makeText(context, "Delaying playback by " + delay + " ms", Toast.LENGTH_SHORT).show();
                 new Handler(Looper.myLooper()).postDelayed(new Runnable() {
                     @Override

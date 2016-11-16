@@ -146,12 +146,13 @@ public class APIOkRequestsExecutor implements RequestQueue {
             call.enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) { //!! in case of request error on client side
+
                     if(call.isCanceled()){
                         //logger.warn("onFailure: call "+call.request().tag()+" was canceled. not passing results");
                         return;
                     }
                     // handle failures: create response from exception
-                    action.onComplete(new ExecutedRequest().response(getErrorResponse(e)).success(false));
+                    action.onComplete(new ExecutedRequest().error(e).success(false));
                 }
 
                 @Override

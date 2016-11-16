@@ -1,37 +1,33 @@
-package com.kaltura.playkit.mediaproviders;
-
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
-import android.test.suitebuilder.annotation.SmallTest;
+package com.kaltura.playkit.backend;
 
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.connect.ResultElement;
+import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
-import com.kaltura.playkit.connect.ErrorElement;
-import com.kaltura.playkit.connect.ResultElement;
+
+import junit.framework.TestCase;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
- * Created by tehilarozin on 09/11/2016.
+ * Created by tehilarozin on 07/11/2016.
  */
 
-@RunWith(AndroidJUnit4.class)
-@SmallTest
-public class MediaProvidersAndroidTest {
+public class MockProviderTest extends TestCase {
 
-    final static String InputFile = "mock/entries.playkit.json";
+    final static String InputFile = "assets/mock/entries.playkit.json";
 
-    public MediaProvidersAndroidTest(){}
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
+    }
 
     @Test
     public void testMockProvider() {
 
-        final MockMediaProvider mockMediaProvider = new MockMediaProvider(InputFile, InstrumentationRegistry.getTargetContext(), "m001");
+        final MockMediaProvider mockMediaProvider = new MockMediaProvider(InputFile, null, "m001");
         mockMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {

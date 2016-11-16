@@ -1,7 +1,9 @@
 package com.kaltura.playkit.connect;
 
 
-import java.util.HashMap;
+import android.support.annotation.NonNull;
+
+import java.util.Map;
 
 /**
  * Created by tehilarozin on 09/08/2016.
@@ -18,7 +20,7 @@ public interface RequestElement {
 
     String getTag();
 
-    HashMap<String, String> getHeaders();
+    @NonNull Map<String, String> getHeaders();
 
     String getId();
 

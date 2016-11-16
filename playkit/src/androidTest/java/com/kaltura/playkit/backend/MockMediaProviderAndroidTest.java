@@ -1,14 +1,13 @@
-package com.kaltura.playkit.mediaproviders;
+package com.kaltura.playkit.backend;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.ResultElement;
+import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.backend.mock.MockMediaProvider;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,12 +20,11 @@ import static org.junit.Assert.assertTrue;
  */
 
 @RunWith(AndroidJUnit4.class)
-@SmallTest
-public class MediaProvidersAndroidTest {
+public class MockMediaProviderAndroidTest {
 
     final static String InputFile = "mock/entries.playkit.json";
 
-    public MediaProvidersAndroidTest(){}
+    public MockMediaProviderAndroidTest(){}
 
     @Test
     public void testMockProvider() {
