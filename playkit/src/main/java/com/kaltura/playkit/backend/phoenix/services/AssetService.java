@@ -47,7 +47,14 @@ public class AssetService extends PhoenixService {
         getParams.addProperty("ks", ks);
         getParams.addProperty("id", assetId);
         getParams.addProperty("assetReferenceType", referenceType);
-        getParams.addProperty("Partner", partnerId);
+        getParams.addProperty("", partnerId);
+
+        /*"with"    :  [
+        {
+           "type": "files",
+           "objectType": "KalturaCatalogWithHolder"
+        }
+     ]*/
 
         return getParams;
     }

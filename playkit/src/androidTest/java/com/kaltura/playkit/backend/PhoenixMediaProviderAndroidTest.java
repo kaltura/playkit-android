@@ -296,7 +296,6 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest{
                                 bufferedReader.close();
                             }
 
-                            //AssetResult shit =  new Gson().fromJson(jsonReader, AssetResult.class);
                             request.onComplete(Accessories.buildResponse(stringBuilder.toString(), null));
 
                         } catch (IOException e) {
