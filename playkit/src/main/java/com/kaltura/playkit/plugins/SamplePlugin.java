@@ -1,16 +1,12 @@
 package com.kaltura.playkit.plugins;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
-import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 
 import org.json.JSONObject;
@@ -60,22 +56,5 @@ public class SamplePlugin extends PKPlugin {
     @Override
     public void release() {
 
-    }
-
-    @Override
-    public PlayerDecorator getPlayerDecorator() {
-        return new PlayerDecorator() {
-            @Override
-            public void play() {
-                player.play();
-                Toast.makeText(context, "Delaying playback by " + delay + " ms", Toast.LENGTH_SHORT).show();
-                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        player.play();
-                    }
-                }, delay);
-            }
-        };
     }
 }

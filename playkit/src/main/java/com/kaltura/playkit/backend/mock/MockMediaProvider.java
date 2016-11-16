@@ -28,7 +28,7 @@ public class MockMediaProvider implements MediaEntryProvider {
     private String id;
     private Context context;
 
-    private MockMediaProvider(JsonObject inputJson, String id) {
+    public MockMediaProvider(JsonObject inputJson, String id) {
         this.inputJson = inputJson;
         this.id = id;
     }

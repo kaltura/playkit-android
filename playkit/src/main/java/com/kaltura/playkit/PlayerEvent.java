@@ -14,9 +14,10 @@ public enum PlayerEvent implements PKEvent {
     PLAY,   //  Sent when playback of the media starts after having been paused; that is, when playback is resumed after a prior pause event.
     PLAYING,   //  Sent when the media begins to play (either for the first time, after having been paused, or after ending and then restarting).
     SEEKED,   //  Sent when a seek operation completes.
-    SEEKING;   //  Sent when a seek operation begins.
-    
-    
+    SEEKING,   //  Sent when a seek operation begins.
+    FIRST_PLAY; // Sent when the playback of the media started to play for the first time.
+
+
     public interface Listener {
         void onPlayerEvent(Player player, PlayerEvent event);
     }

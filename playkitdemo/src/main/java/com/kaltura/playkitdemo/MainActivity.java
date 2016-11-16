@@ -13,7 +13,6 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.plugins.SamplePlugin;
@@ -25,15 +24,15 @@ import static com.kaltura.playkitdemo.MockParams.Format;
 import static com.kaltura.playkitdemo.MockParams.MediaId;
 
 
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    //private PlayKit mPlayKit;
-    private MockMediaProvider mockProvider;
     private Player mPlayer;
     private PhoenixMediaProvider phoenixMediaProvider;
-
+    private PlaybackControlsView controlsView;
+    private boolean nowPlaying;
 
     private void registerPlugins() {
         PlayKitManager.registerPlugins(SamplePlugin.factory);
@@ -49,22 +48,6 @@ public class MainActivity extends AppCompatActivity {
         //mockProvider = new MockMediaProvider("mock/entries.playkit.json", this, "1_1h1vsv3z");
 
         phoenixMediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
-
-
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        /*mockProvider.load(new OnMediaLoadCompletion() {
-            @Override
-            public void onComplete(ResultElement<PKMediaEntry> response) {
-                if (response.isSuccess()) {
-                    onMediaLoaded(response.getResponse());
-                }
-            }
-
-        });*/
 
         phoenixMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
@@ -83,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
+
     }
 
     private void onMediaLoaded(PKMediaEntry mediaEntry){
@@ -90,32 +74,24 @@ public class MainActivity extends AppCompatActivity {
         PlayerConfig config = new PlayerConfig();
 
         config.media.setMediaEntry(mediaEntry);
+        if(mPlayer == null){
+
         configurePlugins(config.plugins);
 
 
         mPlayer = PlayKitManager.loadPlayer(config, this);
 
         Log.d(TAG, "Player: " + mPlayer.getClass());
-
-        mPlayer.addEventListener(new PlayerEvent.Listener() {
-            @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
-
-            }
-        }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
-
-        mPlayer.addStateChangeListener(new PlayerState.Listener() {
-            @Override
-            public void onPlayerStateChanged(Player player, PlayerState newState) {
-
-            }
-        });
+        addPlayerListeners();
 
         LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
         layout.addView(mPlayer.getView());
 
-
-        mPlayer.play();
+        controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
+        controlsView.setPlayer(mPlayer);
+        }else {
+            mPlayer.prepare(config.media);
+        }
     }
 
     private void configurePlugins(PlayerConfig.Plugins config) {
@@ -129,7 +105,54 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-
+        controlsView.release();
         mPlayer.release();
+
+    }
+
+    private void addPlayerListeners() {
+        mPlayer.addEventListener(new PlayerEvent.Listener() {
+            @Override
+            public void onPlayerEvent(Player player, PlayerEvent event) {
+
+            }
+        }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
+        
+        mPlayer.addEventListener(new PlayerEvent.Listener() {
+            @Override
+            public void onPlayerEvent(Player player, PlayerEvent event) {
+                switch (event) {
+                    case PLAY:
+                        nowPlaying = true;
+                        break;
+                    case PAUSE:
+                        nowPlaying = false;
+                        break;
+                }
+            }
+        }, PlayerEvent.PLAYING);
+
+        mPlayer.addStateChangeListener(new PlayerState.Listener() {
+            @Override
+            public void onPlayerStateChanged(Player player, PlayerState newState) {
+                if(controlsView != null){
+                    controlsView.setPlayerState(newState);
+                }
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(mPlayer != null){
+            mPlayer.restore();
+            if (nowPlaying) {
+                mPlayer.play();
+            }
+        }
+        if(controlsView != null){
+            controlsView.resume();
+        }
     }
 }
