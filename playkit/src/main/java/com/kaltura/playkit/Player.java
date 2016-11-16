@@ -53,7 +53,7 @@ public interface Player {
      */
     void skip();
     
-    void addEventListener(@NonNull PlayerEvent.Listener listener, PlayerEvent... events);
+    void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events);
 
     void addStateChangeListener(@NonNull PlayerState.Listener listener);
     

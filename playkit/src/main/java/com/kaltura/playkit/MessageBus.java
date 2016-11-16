@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public class MessageBus {
     private final Context context;
-    private Map<PKEvent, Set<Listener>> listeners;
+    private Map<PKEvent, Set<PKEvent.Listener>> listeners;
 
     public MessageBus(Context context) {
         this.context = context;
@@ -20,14 +20,14 @@ public class MessageBus {
     }
     
     public void post(PKEvent event) {
-        for (Listener listener : listeners.get(event)) {
+        for (PKEvent.Listener listener : listeners.get(event)) {
             listener.onEvent(event);
         }
     }
     
-    public void listen(Listener listener, PKEvent... events) {
+    public void listen(PKEvent.Listener listener, PKEvent... events) {
         for (PKEvent event : events) {
-            Set<Listener> listenerSet = listeners.get(event);
+            Set<PKEvent.Listener> listenerSet = listeners.get(event);
             if (listenerSet == null) {
                 listenerSet = new HashSet<>();
                 listenerSet.add(listener);
@@ -37,8 +37,4 @@ public class MessageBus {
             }
         }
     }
-    
-    public interface Listener {
-        void onEvent(PKEvent event);
-    } 
 }

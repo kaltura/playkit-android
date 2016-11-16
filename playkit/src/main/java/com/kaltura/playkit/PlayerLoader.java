@@ -8,9 +8,7 @@ import android.util.Log;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -34,16 +32,6 @@ class PlayerLoader extends PlayerDecorator {
         messageBus = new MessageBus(context);
     }
     
-    private List<String> getPluginNames(PlayerConfig.Plugins pluginsConfig) {
-
-        List<String> plugins = new ArrayList<>();
-        for (Map.Entry<String, JsonObject> pluginConfig : pluginsConfig.getPluginConfigMap().entrySet()) {
-            String name = pluginConfig.getKey();
-            plugins.add(name);
-        }
-        return plugins;
-    }
-
     public void load(@NonNull PlayerConfig playerConfig) {
         Player player = new POCPlayer(context);
         player.prepare(playerConfig.media);
@@ -109,5 +97,10 @@ class PlayerLoader extends PlayerDecorator {
             plugin.onLoad(player, config.media, config.plugins.getPluginConfig(name), messageBus, context);
         }
         return plugin;
+    }
+
+    @Override
+    public void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events) {
+        messageBus.listen(listener, events);
     }
 }

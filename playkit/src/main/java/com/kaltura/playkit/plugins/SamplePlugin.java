@@ -6,10 +6,10 @@ import android.util.Log;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
-import com.kaltura.playkit.PlayerEvent;
 
 /**
  * Created by Noam Tamim @ Kaltura on 26/10/2016.
@@ -40,10 +40,10 @@ public class SamplePlugin extends PKPlugin {
         this.player = player;
         this.context = context;
         this.delay = pluginConfig.get("delay").getAsLong();
-        player.addEventListener(new PlayerEvent.Listener() {
+        player.addEventListener(new PKEvent.Listener() {
             @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
-                Log.d(TAG, "PlayerEvent:" + event);
+            public void onEvent(PKEvent event) {
+                Log.d(TAG, "PKEvent:" + event);
             }
         });
     }

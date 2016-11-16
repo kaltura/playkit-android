@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.LinearLayout;
 
 import com.google.gson.JsonObject;
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
@@ -68,10 +69,10 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, "Player: " + mPlayer.getClass());
 
-        mPlayer.addEventListener(new PlayerEvent.Listener() {
+        mPlayer.addEventListener(new PKEvent.Listener() {
             @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
-
+            public void onEvent(PKEvent event) {
+                
             }
         }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
 

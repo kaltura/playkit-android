@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Surface;
 import android.view.View;
 
@@ -55,7 +54,6 @@ import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import com.google.gson.JsonElement;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -324,9 +322,7 @@ class POCPlayer implements Player, TrackSelector.EventListener<MappingTrackSelec
     }
 
     @Override
-    public void addEventListener(@NonNull PlayerEvent.Listener listener, @Nullable PlayerEvent... events) {
-        Log.e("POC", "events=" + Arrays.toString(events));
-    }
+    public void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events) {}
 
     @Override
     public void addStateChangeListener(@NonNull PlayerState.Listener listener) {

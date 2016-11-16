@@ -62,7 +62,7 @@ public abstract class PlayerDecorator implements Player {
     }
 
     @Override
-    public void addEventListener(@NonNull PlayerEvent.Listener listener, PlayerEvent... events) {
+    public void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events) {
         player.addEventListener(listener, events);
     }
 
