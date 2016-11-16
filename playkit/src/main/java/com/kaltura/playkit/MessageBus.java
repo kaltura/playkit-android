@@ -20,8 +20,11 @@ public class MessageBus {
     }
     
     public void post(PKEvent event) {
-        for (PKEvent.Listener listener : listeners.get(event)) {
-            listener.onEvent(event);
+        Set<PKEvent.Listener> listeners = this.listeners.get(event);
+        if (listeners != null) {
+            for (PKEvent.Listener listener : listeners) {
+                listener.onEvent(event);
+            }
         }
     }
     

@@ -24,6 +24,11 @@ public abstract class PlayerDecorator implements Player {
     }
 
     @Override
+    public long getBufferedPosition() {
+        return player.getBufferedPosition();
+    }
+
+    @Override
     public void seekTo(long position) {
         player.seekTo(position);
     }
@@ -74,6 +79,11 @@ public abstract class PlayerDecorator implements Player {
     @Override
     public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable JsonElement value) {
         player.updatePluginConfig(pluginName, key, value);
+    }
+
+    @Override
+    public void restore() {
+        player.restore();
     }
 
     void setPlayer(Player player) {

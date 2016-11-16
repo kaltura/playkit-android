@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.kaltura.playkit.player.PlayerController;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -33,15 +34,20 @@ class PlayerLoader extends PlayerDecorator {
     }
     
     public void load(@NonNull PlayerConfig playerConfig) {
-        Player player = new POCPlayer(context);
-        player.prepare(playerConfig.media);
+        Player player = new PlayerController(context, playerConfig);
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                messageBus.post(event);
+            }
+        });
 
         AdProvider adProvider = null;
         
 
         for (Map.Entry<String, JsonObject> pluginConfig : playerConfig.plugins.getPluginConfigMap().entrySet()) {
             String name = pluginConfig.getKey();
-            PKPlugin plugin = loadPlugin(name, player, playerConfig, messageBus, context);
+            PKPlugin plugin = loadPlugin(name, this, playerConfig, messageBus, context);
 
             if (plugin == null) {
                 Log.w(TAG, "Plugin not found: " + name);
@@ -79,6 +85,10 @@ class PlayerLoader extends PlayerDecorator {
         if (loadedPlugin != null) {
             loadedPlugin.plugin.onUpdateConfig(key, value);
         }
+    }
+    
+    public void restore() {
+        getPlayer().restore();
     }
 
     private void releasePlayer() {

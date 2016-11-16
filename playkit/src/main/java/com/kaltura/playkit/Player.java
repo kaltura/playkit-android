@@ -21,15 +21,17 @@ public interface Player {
      */
     View getView();
 
-    
+
     long getDuration();
-    
+
     /**
      * Get playback position in msec.
      * @return
      */
     long getCurrentPosition();
-    
+
+    long getBufferedPosition();
+
     void seekTo(long position);
 
     /**
@@ -58,6 +60,8 @@ public interface Player {
     void addStateChangeListener(@NonNull PlayerState.Listener listener);
     
     void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable JsonElement value);
+
+    void restore();
 }
 
 

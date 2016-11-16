@@ -1,7 +1,5 @@
 package com.kaltura.playkit.connect;
 
-import com.kaltura.playkit.mediaproviders.base.ErrorElement;
-
 /**
  * Created by tehilarozin on 06/09/2016.
  */
@@ -35,6 +33,11 @@ public class ExecutedRequest implements ResponseElement {
 
     public ExecutedRequest error(ErrorElement error) {
         this.error = error;
+        return this;
+    }
+
+    public ExecutedRequest error(Exception exception) {
+        this.error = ErrorElement.fromException(exception);
         return this;
     }
 

@@ -5,10 +5,10 @@ import android.support.test.runner.AndroidJUnit4;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.backend.mock.MockMediaProvider;
+import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.mediaproviders.base.ErrorElement;
-import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.mediaproviders.mock.MockMediaProvider;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
