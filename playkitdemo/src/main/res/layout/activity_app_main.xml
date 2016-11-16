@@ -12,8 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:elevation="4dp"
-        app:theme="@style/AppTheme.NoActionBar"
-        app:popupTheme="@style/AppTheme.NoActionBar"/>
+        app:theme="@style/AppTheme.Toolbar"
+        app:popupTheme="@style/AppTheme.Toolbar"/>
 
 
 
@@ -25,36 +25,3 @@
 
 
 </LinearLayout>
-
-
-
-<!--
-<FrameLayout
-
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-
-    <fragment class="com.kaltura.playkitdemo.RootMenuFragment"
-              android:id="@+id/menu_fragment"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"/>
-
-
-</FrameLayout>
--->
-
-
-
-
-    <!--
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:id="@+id/player_root">
-    </LinearLayout>
-    -->

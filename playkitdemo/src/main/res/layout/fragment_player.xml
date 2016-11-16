@@ -25,13 +25,13 @@
     <LinearLayout
         android:id="@+id/player_container"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:orientation="horizontal"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         android:adjustViewBounds="true"
-        tools:layout_editor_absoluteY="0dp"/>
+        app:layout_constraintDimensionRatio="H,16:9"/>
 
     <!--
     <ImageView

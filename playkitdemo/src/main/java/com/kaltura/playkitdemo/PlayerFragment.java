@@ -84,7 +84,7 @@ public class PlayerFragment extends Fragment {
 
 
         registerPlugins();
-        mockProvider = new MockMediaProvider("entries.playkit.json", getContext(), "1_1h1vsv3z");
+        mockProvider = new MockMediaProvider("mock/entries.playkit.json", getContext(), "1_1h1vsv3z");
     }
 
 
@@ -185,11 +185,13 @@ public class PlayerFragment extends Fragment {
 
 
     private void configurePlugins(PlayerConfig.Plugins config) {
+        /*
         try {
             config.setPluginConfig("Sample", new JSONObject().put("delay", 4200));
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        */
     }
 
 
