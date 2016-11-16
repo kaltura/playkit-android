@@ -281,9 +281,9 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         if (player.getPlayWhenReady()) {
             return;
         }
-        if (!firstPlay) {
-            sendEvent(PlayerEvent.PLAY);
-        }
+        
+        sendEvent(PlayerEvent.PLAY);
+        
         player.setPlayWhenReady(true);
     }
 
@@ -353,7 +353,8 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     @Override
     public void resume() {
         Log.d(TAG, "resume");
-        initializePlayer(shouldAutoPlay);
+        initializePlayer(false);
+        
         if (isTimelineStatic) {
             if (playerPosition == C.TIME_UNSET) {
                 player.seekToDefaultPosition(playerWindow);

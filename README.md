@@ -1,1 +1,3 @@
-# playkit-android
+# PlayKit for Android
+
+Stay tuned...

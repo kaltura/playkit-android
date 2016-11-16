@@ -1,16 +1,12 @@
 package com.kaltura.playkit.plugins;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
-import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 
 import org.json.JSONObject;
@@ -23,7 +19,9 @@ public class SamplePlugin extends PKPlugin {
 
     private static final String TAG = "SamplePlugin";
 
-    private Player mPlayer;
+    private Player player;
+    private Context context;
+    private int delay;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -36,14 +34,12 @@ public class SamplePlugin extends PKPlugin {
             return new SamplePlugin();
         }
     };
-    private Context mContext;
-    private int mDelay;
 
     @Override
     protected void load(Player player, PlayerConfig.Media mediaConfig, JSONObject pluginConfig, MessageBus messageBus, Context context) {
-        mPlayer = player;
-        mContext = context;
-        mDelay = pluginConfig.optInt("delay");
+        this.player = player;
+        this.context = context;
+        delay = pluginConfig.optInt("delay");
         player.addEventListener(new PlayerEvent.Listener() {
             @Override
             public void onPlayerEvent(Player player, PlayerEvent event) {
@@ -60,16 +56,5 @@ public class SamplePlugin extends PKPlugin {
     @Override
     public void release() {
 
-    }
-
-    @Override
-    public PlayerDecorator getPlayerDecorator() {
-        return new PlayerDecorator() {
-            @Override
-            public void play() {
-              Toast.makeText(mContext, "Play pressed through the decorator of " + TAG, Toast.LENGTH_SHORT).show();
-              mPlayer.play();
-            }
-        };
     }
 }

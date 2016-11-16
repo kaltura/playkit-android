@@ -163,7 +163,7 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void onResume() {
+    public void restore() {
         Log.d(TAG, "on resume");
         player.setEventListener(eventTrigger);
         player.setStateChangedListener(stateChangedTrigger);

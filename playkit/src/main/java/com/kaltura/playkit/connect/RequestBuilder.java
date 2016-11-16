@@ -1,6 +1,10 @@
 package com.kaltura.playkit.connect;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by tehilarozin on 09/11/2016.
@@ -8,18 +12,25 @@ import java.util.HashMap;
 
 public class RequestBuilder {
 
-    String url;
-    String method;
-    String body;
-    String id;
-    String tag = null;
-    HashMap<String, String> headers = null;
-    RequestConfiguration configuration = null;
+    protected String service = null;
+    protected String action = null;
+    protected JsonObject params;
 
-    OnRequestCompletion completion;
+    private String baseUrl;
+    private String method;
+    private String id;
+    private String tag = null;
+    private Map<String, String> headers;
+    private RequestConfiguration configuration = null;
+    private OnRequestCompletion completion;
+
+    public RequestBuilder(){
+        headers = new HashMap();
+        headers.put("ContentType", "application/json");
+    }
 
     public RequestBuilder url(String url){
-        this.url = url;
+        this.baseUrl = url;
         return this;
     }
 
@@ -28,10 +39,10 @@ public class RequestBuilder {
         return this;
     }
 
-    public RequestBuilder body(String body){
+    /*public RequestBuilder body(String body){
         this.body = body;
         return this;
-    }
+    }*/
 
     public RequestBuilder id(String id){
         this.id = id;
@@ -48,6 +59,24 @@ public class RequestBuilder {
         return this;
     }
 
+    public RequestBuilder params(JsonObject params) {
+        this.params = params;
+        return this;
+    }
+
+    public RequestBuilder service(String service) {
+        this.service = service;
+        return this;
+    }
+
+    public RequestBuilder action(String action) {
+        this.action = action;
+        return this;
+    }
+
+    public MultiRequestBuilder add(RequestBuilder requestBuilder){
+        return new MultiRequestBuilder(this, requestBuilder);
+    }
 
     public RequestElement build(){
         return new RequestElement() {
@@ -59,12 +88,22 @@ public class RequestBuilder {
 
             @Override
             public String getUrl() {
-                return url;
+                //return TextUtils.join("/", new String[]{baseUrl,service,action});
+
+                StringBuilder urlBuilder = new StringBuilder(baseUrl);
+                if(service != null){
+                    urlBuilder.append("service/").append(service);
+                }
+                if(action != null){
+                    urlBuilder.append("/action/").append(action);
+                }
+
+                return urlBuilder.toString();
             }
 
             @Override
             public String getBody() {
-                return body;
+                return params.toString();
             }
 
             @Override
@@ -73,7 +112,7 @@ public class RequestBuilder {
             }
 
             @Override
-            public HashMap<String, String> getHeaders() {
+            public Map getHeaders() {
                 return headers;
             }
 
@@ -95,5 +134,27 @@ public class RequestBuilder {
             }
         };
 
+    }
+
+    public RequestBuilder addParams(JsonObject others){
+        if(others == null){
+            return this;
+        }
+        if(this.params == null){
+            this.params = new JsonObject();
+        }
+        for(Map.Entry<String, JsonElement> entry : others.entrySet()) {
+            this.params.add(entry.getKey(), entry.getValue());
+        }
+
+        return this;
+    }
+
+    public RequestBuilder addParam(String key, String value) {
+        if(this.params == null){
+            this.params = new JsonObject();
+        }
+        this.params.addProperty(key, value);
+        return this;
     }
 }

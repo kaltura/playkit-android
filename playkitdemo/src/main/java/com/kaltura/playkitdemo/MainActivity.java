@@ -3,41 +3,36 @@ package com.kaltura.playkitdemo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
+import android.widget.Toast;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.Utils;
-import com.kaltura.playkit.plugins.SamplePlugin;
+import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.mediaproviders.mock.MockMediaProvider;
+import com.kaltura.playkit.plugins.SamplePlugin;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static com.kaltura.playkitdemo.MockParams.Format;
+import static com.kaltura.playkitdemo.MockParams.MediaId;
 
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
     private Player mPlayer;
+    private PhoenixMediaProvider phoenixMediaProvider;
     private PlaybackControlsView controlsView;
-    private MockMediaProvider mockProvider;
-    private JsonObject mockJsonData;
-    private String[] mediaEntryNames = {"dash+xml", "mp4", "x-mpegURL"};
-    private Spinner spinner;
+    private boolean nowPlaying;
 
     private void registerPlugins() {
         PlayKitManager.registerPlugins(SamplePlugin.factory);
@@ -50,18 +45,28 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         registerPlugins();
 
-        JsonParser parser = new JsonParser();
+        //mockProvider = new MockMediaProvider("mock/entries.playkit.json", this, "1_1h1vsv3z");
 
-        mockJsonData = parser.parse(Utils.readAssetToString(this, "mock/entries.playkit.json")).getAsJsonObject();
-        initSpinner();
-    }
+        phoenixMediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
 
-    private void initSpinner() {
-        spinner = (Spinner) findViewById(R.id.spinner);
-        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, mediaEntryNames);
-        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(spinnerArrayAdapter);
-        spinner.setOnItemSelectedListener(this);
+        phoenixMediaProvider.load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(final ResultElement<PKMediaEntry> response) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (response.isSuccess()) {
+                            onMediaLoaded(response.getResponse());
+                        } else {
+
+                            Toast.makeText(MainActivity.this, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""), Toast.LENGTH_LONG).show();
+                            Log.e(TAG, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
+                        }
+                    }
+                });
+            }
+        });
+
     }
 
     private void onMediaLoaded(PKMediaEntry mediaEntry){
@@ -112,6 +117,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             }
         }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
+        
+        mPlayer.addEventListener(new PlayerEvent.Listener() {
+            @Override
+            public void onPlayerEvent(Player player, PlayerEvent event) {
+                switch (event) {
+                    case PLAY:
+                        nowPlaying = true;
+                        break;
+                    case PAUSE:
+                        nowPlaying = false;
+                        break;
+                }
+            }
+        }, PlayerEvent.PLAYING);
 
         mPlayer.addStateChangeListener(new PlayerState.Listener() {
             @Override
@@ -127,30 +146,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     protected void onResume() {
         super.onResume();
         if(mPlayer != null){
-            mPlayer.onResume();
+            mPlayer.restore();
+            if (nowPlaying) {
+                mPlayer.play();
+            }
         }
         if(controlsView != null){
             controlsView.resume();
         }
-    }
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        mockProvider = new MockMediaProvider(mockJsonData, mediaEntryNames[position]);
-        mockProvider.load(new OnMediaLoadCompletion() {
-            @Override
-            public void onComplete(ResultElement<PKMediaEntry> response) {
-                if (response.isSuccess()) {
-                    onMediaLoaded(response.getResponse());
-                }else{
-                    Log.e(TAG, "failed to create a media entry " + response.getError().getMessage());
-                }
-            }
-        });
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-
     }
 }

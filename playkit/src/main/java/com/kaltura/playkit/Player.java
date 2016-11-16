@@ -74,7 +74,7 @@ public interface Player {
 
     void addStateChangeListener(@NonNull PlayerState.Listener listener);
 
-    void onResume();
+    void restore();
 }
 
 
