@@ -45,7 +45,7 @@ import com.kaltura.playkit.utils.EventLogger;
 /**
  * Created by anton.afanasiev on 31/10/2016.
  */
-public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSelector.EventListener<MappingTrackSelector.MappedTrackInfo> {
+class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSelector.EventListener<MappingTrackSelector.MappedTrackInfo> {
     private static final String TAG = ExoPlayerWrapper.class.getSimpleName();
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
 
@@ -70,25 +70,23 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     private long playerPosition;
     private Timeline.Window window;
     private boolean isTimelineStatic;
-    private boolean shouldAutoPlay;
     private Uri lastPlayingMediaSource;
 
 
-    public ExoPlayerWrapper(Context context) {
+    ExoPlayerWrapper(Context context) {
         this.context = context;
         mediaDataSourceFactory = buildDataSourceFactory(true);
         exoPlayerView = new CustomExoPlayerView(context);
         window = new Timeline.Window();
     }
 
-    private void initializePlayer(final boolean shouldAutoplay) {
+    private void initializePlayer() {
         eventLogger = new EventLogger();
         DefaultTrackSelector trackSelector = initializeTrackSelector();
 
         player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), null, false); // TODO check if we need DRM Session manager.
         setPlayerListeners();
         exoPlayerView.setPlayer(player);
-        player.setPlayWhenReady(shouldAutoplay);
     }
 
     private void setPlayerListeners() {
@@ -169,7 +167,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
             return;
         }
         this.currentState = newState;
-        stateChangedListener.onStateChanged(currentState);
+        stateChangedListener.onStateChanged(currentState, previousState);
     }
 
     private void sendEvent(PlayerEvent newEvent) {
@@ -261,10 +259,10 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
     @Override
-    public void load(Uri mediaSourceUri, boolean shouldAutoPlay) {
-        Log.d(TAG, "load should autoplay => " + shouldAutoPlay);
+    public void prepare(Uri mediaSourceUri) {
+        Log.d(TAG, "load");
         if (player == null) {
-            initializePlayer(shouldAutoPlay);
+            initializePlayer();
         }
 
         preparePlayer(mediaSourceUri);
@@ -309,16 +307,6 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
     @Override
-    public boolean shouldAutoPlay() {
-        return player.getPlayWhenReady();
-    }
-
-    @Override
-    public void setAutoPlay(boolean shouldAutoplay) {
-        player.setPlayWhenReady(shouldAutoplay);
-    }
-
-    @Override
     public long getDuration() {
         return player.getDuration();
     }
@@ -332,8 +320,6 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     public void release() {
         Log.d(TAG, "release");
         if (player != null) {
-
-            shouldAutoPlay = player.getPlayWhenReady();
             playerWindow = player.getCurrentWindowIndex();
             playerPosition = C.TIME_UNSET;
             Timeline timeline = player.getCurrentTimeline();
@@ -353,7 +339,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     @Override
     public void resume() {
         Log.d(TAG, "resume");
-        initializePlayer(false);
+        initializePlayer();
         
         if (isTimelineStatic) {
             if (playerPosition == C.TIME_UNSET) {
@@ -371,5 +357,4 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     public void setStateChangedListener(StateChangedListener stateChangedTrigger) {
         this.stateChangedListener = stateChangedTrigger;
     }
-
 }

@@ -2,7 +2,8 @@ package com.kaltura.playkit;
 
 import android.content.Context;
 
-import org.json.JSONObject;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 public abstract class PKPlugin {
 
@@ -11,14 +12,11 @@ public abstract class PKPlugin {
         PKPlugin newInstance();
     }
 
-    protected abstract void load(Player player, PlayerConfig.Media mediaConfig, JSONObject pluginConfig, MessageBus messageBus, Context context);
-    protected abstract void update(PlayerConfig playerConfig);
+    protected abstract void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, MessageBus messageBus, Context context);
+    protected abstract void onUpdateMedia(PlayerConfig.Media mediaConfig);
+    protected abstract void onUpdateConfig(String key, JsonElement value);
+    
 
-    protected abstract void release();
-
-    protected PlayerDecorator getPlayerDecorator() {
-        return null;
-    }
-
+    protected abstract void onDestroy();
 }
 

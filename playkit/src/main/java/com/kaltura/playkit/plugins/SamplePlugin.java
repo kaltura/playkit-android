@@ -3,25 +3,26 @@ package com.kaltura.playkit.plugins;
 import android.content.Context;
 import android.util.Log;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.kaltura.playkit.AdProvider;
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
-import com.kaltura.playkit.PlayerEvent;
-
-import org.json.JSONObject;
 
 /**
  * Created by Noam Tamim @ Kaltura on 26/10/2016.
  */
 
-public class SamplePlugin extends PKPlugin {
+public class SamplePlugin extends PKPlugin implements AdProvider {
 
     private static final String TAG = "SamplePlugin";
 
     private Player player;
     private Context context;
-    private int delay;
+    private long delay;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -36,25 +37,30 @@ public class SamplePlugin extends PKPlugin {
     };
 
     @Override
-    protected void load(Player player, PlayerConfig.Media mediaConfig, JSONObject pluginConfig, MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, MessageBus messageBus, Context context) {
         this.player = player;
         this.context = context;
-        delay = pluginConfig.optInt("delay");
-        player.addEventListener(new PlayerEvent.Listener() {
+        this.delay = pluginConfig.get("delay").getAsLong();
+        player.addEventListener(new PKEvent.Listener() {
             @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
-                Log.d(TAG, "PlayerEvent:" + event);
+            public void onEvent(PKEvent event) {
+                Log.d(TAG, "PKEvent:" + event);
             }
         });
     }
 
     @Override
-    protected void update(PlayerConfig playerConfig) {
+    protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
         
     }
 
     @Override
-    public void release() {
+    protected void onUpdateConfig(String key, JsonElement value) {
+
+    }
+
+    @Override
+    protected void onDestroy() {
 
     }
 }

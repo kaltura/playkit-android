@@ -7,9 +7,9 @@ import android.view.View;
  * Created by anton.afanasiev on 01/11/2016.
  */
 
-public interface PlayerEngine {
+interface PlayerEngine {
 
-    void load(Uri mediaSourceUri, boolean shouldAutoplay);
+    void prepare(Uri mediaSourceUri);
 
     View getView();
 
@@ -20,10 +20,6 @@ public interface PlayerEngine {
     long getCurrentPosition();
 
     void seekTo(long position);
-
-    boolean shouldAutoPlay();
-
-    void setAutoPlay(boolean shouldAutoplay);
 
     void setEventListener(PlayerController.EventListener eventTrigger);
 

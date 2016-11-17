@@ -1,7 +1,10 @@
 package com.kaltura.playkit;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.View;
+
+import com.google.gson.JsonElement;
 
 /**
  * Created by Noam Tamim @ Kaltura on 18/09/2016.
@@ -9,12 +12,6 @@ import android.view.View;
 public interface Player {
 
     void prepare(@NonNull PlayerConfig.Media playerConfig);
-    
-//    /**
-//     * Modify player settings with the set fields.
-//     * @param playerConfig
-//     */
-//    void update(@NonNull PlayerConfig playerConfig);
     
     void release();
 
@@ -38,24 +35,12 @@ public interface Player {
     void seekTo(long position);
 
     /**
-     * 
-     * @return
-     */
-    boolean getAutoPlay();
-
-    /**
-     * Begin playing automatically when ready.
-     * @param autoPlay
-     */
-    void setAutoPlay(boolean autoPlay);
-
-    /**
-     * Play if/when ready. Calls {@link #setAutoPlay(boolean)} with true.
+     * Play if/when ready.
      */
     void play();
 
     /**
-     * Pause. Calls {@link #setAutoPlay(boolean)} with false.
+     * Pause, or don't play when ready.
      */
     void pause();
 
@@ -70,9 +55,11 @@ public interface Player {
      */
     void skip();
     
-    void addEventListener(@NonNull PlayerEvent.Listener listener, PlayerEvent... events);
+    void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events);
 
-    void addStateChangeListener(@NonNull PlayerState.Listener listener);
+    void addStateChangeListener(@NonNull PKEvent.Listener<PlayerState.StateChangedEvent> listener);
+    
+    void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable JsonElement value);
 
     void restore();
 }
