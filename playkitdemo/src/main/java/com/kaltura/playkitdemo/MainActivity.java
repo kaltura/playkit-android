@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    private Player mPlayer;
+    private Player player;
     private MediaEntryProvider mediaProvider;
     private PlaybackControlsView controlsView;
     private boolean nowPlaying;
@@ -73,22 +73,22 @@ public class MainActivity extends AppCompatActivity {
         PlayerConfig config = new PlayerConfig();
 
         config.media.setMediaEntry(mediaEntry);
-        if(mPlayer == null){
+        if(player == null){
 
             configurePlugins(config.plugins);
             
-            mPlayer = PlayKitManager.loadPlayer(config, this);
+            player = PlayKitManager.loadPlayer(config, this);
 
-            Log.d(TAG, "Player: " + mPlayer.getClass());
+            Log.d(TAG, "Player: " + player.getClass());
             addPlayerListeners();
 
             LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
-            layout.addView(mPlayer.getView());
+            layout.addView(player.getView());
 
             controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
-            controlsView.setPlayer(mPlayer);
+            controlsView.setPlayer(player);
         }
-        mPlayer.prepare(config.media);
+        player.prepare(config.media);
     }
 
     private void configurePlugins(PlayerConfig.Plugins config) {
@@ -101,25 +101,25 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         controlsView.release();
-        mPlayer.release();
+        player.release();
     }
 
     private void addPlayerListeners() {
-        mPlayer.addEventListener(new PKEvent.Listener() {
+        player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
                 nowPlaying = true;
             }
         }, PlayerEvent.PLAY);
 
-        mPlayer.addEventListener(new PKEvent.Listener() {
+        player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
                 nowPlaying = false;
             }
         }, PlayerEvent.PAUSE);
 
-        mPlayer.addStateChangeListener(new PlayerState.Listener() {
+        player.addStateChangeListener(new PlayerState.Listener() {
             @Override
             public void onPlayerStateChanged(Player player, PlayerState newState) {
                 if(controlsView != null){
@@ -132,10 +132,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(mPlayer != null){
-            mPlayer.restore();
+        if(player != null){
+            player.restore();
             if (nowPlaying && AUTO_PLAY_ON_RESUME) {
-                mPlayer.play();
+                player.play();
             }
         }
         if(controlsView != null){
