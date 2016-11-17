@@ -9,7 +9,7 @@ import android.view.View;
 
 public interface PlayerEngine {
 
-    void load(Uri mediaSourceUri, boolean shouldAutoplay);
+    void prepare(Uri mediaSourceUri, boolean shouldAutoplay);
 
     View getView();
 
@@ -35,5 +35,5 @@ public interface PlayerEngine {
 
     void release();
 
-    void resume();
+    void restore();
 }

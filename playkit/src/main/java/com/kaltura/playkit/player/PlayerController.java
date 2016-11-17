@@ -30,7 +30,7 @@ public class PlayerController implements Player {
     private List<PlayerState.Listener> stateChangeListeners = new ArrayList<>();
 
     private PlayerConfig.Media mediaConfig;
-
+    private boolean wasReleased = false;
 
 
     public interface EventListener {
@@ -76,13 +76,14 @@ public class PlayerController implements Player {
     public void prepare(@NonNull PlayerConfig.Media playerConfig) {
         Uri sourceUri = Uri.parse(playerConfig.getMediaEntry().getSources().get(0).getUrl());
         boolean shouldAutoplay = playerConfig.isAutoPlay();
-        player.load(sourceUri, shouldAutoplay);
+        player.prepare(sourceUri, shouldAutoplay);
     }
 
     @Override
     public void release() {
         Log.d(TAG, "release");
         player.release();
+        wasReleased = true;
     }
 
     @Override
@@ -164,10 +165,13 @@ public class PlayerController implements Player {
 
     @Override
     public void restore() {
-        Log.d(TAG, "on resume");
-        player.setEventListener(eventTrigger);
-        player.setStateChangedListener(stateChangedTrigger);
-        player.resume();
-        prepare(mediaConfig);
+        Log.d(TAG, "restore");
+        if(wasReleased){
+            player.restore();
+            prepare(mediaConfig);
+            player.setEventListener(eventTrigger);
+            player.setStateChangedListener(stateChangedTrigger);
+            wasReleased = false;
+        }
     }
 }

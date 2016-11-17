@@ -70,7 +70,6 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     private long playerPosition;
     private Timeline.Window window;
     private boolean isTimelineStatic;
-    private boolean shouldAutoPlay;
     private Uri lastPlayingMediaSource;
 
 
@@ -169,7 +168,9 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
             return;
         }
         this.currentState = newState;
-        stateChangedListener.onStateChanged(currentState);
+        if(stateChangedListener != null){
+            stateChangedListener.onStateChanged(currentState);
+        }
     }
 
     private void sendEvent(PlayerEvent newEvent) {
@@ -205,21 +206,17 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
             case ExoPlayer.STATE_READY:
                 Log.d(TAG, "onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.READY);
-                if (!previousState.equals(PlayerState.READY)) {
-                    sendEvent(PlayerEvent.CAN_PLAY);
-                }
 
                 if (isSeeking) {
                     isSeeking = false;
                     sendEvent(PlayerEvent.SEEKED);
                 }
 
-                if (playWhenReady) {
-                    if (firstPlay) {
-                        firstPlay = false;
-                        sendEvent(PlayerEvent.FIRST_PLAY);
-                    }
+                if (!previousState.equals(PlayerState.READY)) {
+                    sendEvent(PlayerEvent.CAN_PLAY);
+                }
 
+                if (playWhenReady) {
                     sendEvent(PlayerEvent.PLAYING);
                 }
 
@@ -261,7 +258,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
     @Override
-    public void load(Uri mediaSourceUri, boolean shouldAutoPlay) {
+    public void prepare(Uri mediaSourceUri, boolean shouldAutoPlay) {
         Log.d(TAG, "load should autoplay => " + shouldAutoPlay);
         if (player == null) {
             initializePlayer(shouldAutoPlay);
@@ -281,9 +278,13 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         if (player.getPlayWhenReady()) {
             return;
         }
-        
+
+        if (firstPlay) {
+            sendEvent(PlayerEvent.FIRST_PLAY);
+            firstPlay = false;
+        }
         sendEvent(PlayerEvent.PLAY);
-        
+
         player.setPlayWhenReady(true);
     }
 
@@ -333,7 +334,6 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         Log.d(TAG, "release");
         if (player != null) {
 
-            shouldAutoPlay = player.getPlayWhenReady();
             playerWindow = player.getCurrentWindowIndex();
             playerPosition = C.TIME_UNSET;
             Timeline timeline = player.getCurrentTimeline();
@@ -351,10 +351,10 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
     @Override
-    public void resume() {
+    public void restore() {
         Log.d(TAG, "resume");
         initializePlayer(false);
-        
+
         if (isTimelineStatic) {
             if (playerPosition == C.TIME_UNSET) {
                 player.seekToDefaultPosition(playerWindow);
