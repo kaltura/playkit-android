@@ -2,6 +2,7 @@ package com.kaltura.playkit;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.kaltura.playkit.player.PlayerController;
@@ -70,6 +71,14 @@ class PlayerLoader extends PlayerDecoratorBase {
         }
 
         setPlayer(player);
+    }
+
+    @Override
+    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
+        LoadedPlugin loadedPlugin = loadedPlugins.get(pluginName);
+        if (loadedPlugin != null) {
+            loadedPlugin.plugin.onUpdateConfig(key, value);
+        }
     }
 
     @Override

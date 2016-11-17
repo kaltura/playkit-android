@@ -3,6 +3,7 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 
@@ -144,4 +145,10 @@ public class PlayerController implements Player {
     public PKAdInfo getAdInfo() {
         Assert.shouldNeverHappen();
         return null;
-    }}
+    }
+
+    @Override
+    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
+        Assert.shouldNeverHappen();
+    }
+}

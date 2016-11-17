@@ -56,7 +56,7 @@ public class SamplePlugin extends PKPlugin {
     }
 
     @Override
-    protected void onUpdateConfig(JSONObject pluginConfig) {
+    protected void onUpdateConfig(String key, Object value) {
         
     }
 

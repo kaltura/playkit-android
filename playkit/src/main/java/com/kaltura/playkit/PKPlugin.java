@@ -13,7 +13,7 @@ public abstract class PKPlugin {
 
     protected abstract void onLoad(Player player, PlayerConfig.Media mediaConfig, JSONObject pluginConfig, MessageBus messageBus, Context context);
     protected abstract void onUpdateMedia(PlayerConfig.Media mediaConfig);
-    protected abstract void onUpdateConfig(JSONObject pluginConfig);
+    protected abstract void onUpdateConfig(String key, Object value);
 
     protected abstract void onDestroy();
 
