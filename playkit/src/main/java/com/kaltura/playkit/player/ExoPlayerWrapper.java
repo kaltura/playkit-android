@@ -68,9 +68,9 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     private int playerWindow;
     private long playerPosition;
+    private Uri lastPlayedSource;
     private Timeline.Window window;
     private boolean isTimelineStatic;
-    private Uri lastPlayingMediaSource;
 
 
     public ExoPlayerWrapper(Context context) {
@@ -110,11 +110,11 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
     private void preparePlayer(Uri mediaSourceUri) {
-        firstPlay = !mediaSourceUri.equals(lastPlayingMediaSource);
-        this.lastPlayingMediaSource = mediaSourceUri;
+        firstPlay = !mediaSourceUri.equals(lastPlayedSource);
+        this.lastPlayedSource = mediaSourceUri;
         changeState(PlayerState.LOADING);
         MediaSource mediaSource = buildMediaSource(mediaSourceUri, null);
-        player.prepare(mediaSource, firstPlay, firstPlay);
+        player.prepare(mediaSource, isTimelineStatic, isTimelineStatic);
     }
 
     private MediaSource buildMediaSource(Uri uri, String overrideExtension) {
@@ -299,7 +299,10 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     @Override
     public long getCurrentPosition() {
-        return player.getCurrentPosition();
+        if(player != null){
+           return player.getCurrentPosition();
+        }
+        return C.POSITION_UNSET;
     }
 
     @Override
@@ -311,7 +314,10 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     @Override
     public boolean shouldAutoPlay() {
-        return player.getPlayWhenReady();
+        if(player != null){
+            player.getPlayWhenReady();
+        }
+        return false;
     }
 
     @Override
@@ -321,12 +327,18 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     @Override
     public long getDuration() {
-        return player.getDuration();
+        if(player != null){
+            return player.getDuration();
+        }
+        return C.TIME_UNSET;
     }
 
     @Override
     public long getBufferedPosition() {
-        return player.getBufferedPosition();
+        if(player != null){
+            return player.getBufferedPosition();
+        }
+        return C.POSITION_UNSET;
     }
 
     @Override
