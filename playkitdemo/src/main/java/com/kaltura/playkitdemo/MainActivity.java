@@ -6,6 +6,8 @@ import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.kaltura.playkit.MediaEntryProvider;
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
@@ -13,24 +15,23 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
+import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.plugins.SamplePlugin;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static com.kaltura.playkitdemo.MockParams.Format;
-import static com.kaltura.playkitdemo.MockParams.MediaId;
-
-
 
 public class MainActivity extends AppCompatActivity {
+    
+    
+    public static final boolean AUTO_PLAY_ON_RESUME = false;
 
     private static final String TAG = "MainActivity";
 
     private Player mPlayer;
-    private PhoenixMediaProvider phoenixMediaProvider;
+    private MediaEntryProvider mediaProvider;
     private PlaybackControlsView controlsView;
     private boolean nowPlaying;
 
@@ -45,11 +46,11 @@ public class MainActivity extends AppCompatActivity {
 
         registerPlugins();
 
-        //mockProvider = new MockMediaProvider("mock/entries.playkit.json", this, "1_1h1vsv3z");
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
 
-        phoenixMediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
+//        mediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
 
-        phoenixMediaProvider.load(new OnMediaLoadCompletion() {
+        mediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(final ResultElement<PKMediaEntry> response) {
                 runOnUiThread(new Runnable() {
@@ -76,22 +77,20 @@ public class MainActivity extends AppCompatActivity {
         config.media.setMediaEntry(mediaEntry);
         if(mPlayer == null){
 
-        configurePlugins(config.plugins);
+            configurePlugins(config.plugins);
+            
+            mPlayer = PlayKitManager.loadPlayer(config, this);
 
+            Log.d(TAG, "Player: " + mPlayer.getClass());
+            addPlayerListeners();
 
-        mPlayer = PlayKitManager.loadPlayer(config, this);
+            LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
+            layout.addView(mPlayer.getView());
 
-        Log.d(TAG, "Player: " + mPlayer.getClass());
-        addPlayerListeners();
-
-        LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
-        layout.addView(mPlayer.getView());
-
-        controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
-        controlsView.setPlayer(mPlayer);
-        }else {
-            mPlayer.prepare(config.media);
+            controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
+            controlsView.setPlayer(mPlayer);
         }
+        mPlayer.prepare(config.media);
     }
 
     private void configurePlugins(PlayerConfig.Plugins config) {
@@ -107,30 +106,22 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
         controlsView.release();
         mPlayer.release();
-
     }
 
     private void addPlayerListeners() {
-        mPlayer.addEventListener(new PlayerEvent.Listener() {
+        mPlayer.addEventListener(new PKEvent.Listener() {
             @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
+            public void onEvent(PKEvent event) {
+                nowPlaying = true;
+            }
+        }, PlayerEvent.PLAY);
 
-            }
-        }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
-        
-        mPlayer.addEventListener(new PlayerEvent.Listener() {
+        mPlayer.addEventListener(new PKEvent.Listener() {
             @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
-                switch (event) {
-                    case PLAY:
-                        nowPlaying = true;
-                        break;
-                    case PAUSE:
-                        nowPlaying = false;
-                        break;
-                }
+            public void onEvent(PKEvent event) {
+                nowPlaying = false;
             }
-        }, PlayerEvent.PLAYING);
+        }, PlayerEvent.PAUSE);
 
         mPlayer.addStateChangeListener(new PlayerState.Listener() {
             @Override
@@ -147,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         if(mPlayer != null){
             mPlayer.restore();
-            if (nowPlaying) {
+            if (nowPlaying && AUTO_PLAY_ON_RESUME) {
                 mPlayer.play();
             }
         }

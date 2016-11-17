@@ -10,9 +10,10 @@ import java.util.Set;
 /**
  * Created by Noam Tamim @ Kaltura on 07/11/2016.
  */
+@SuppressWarnings("WeakerAccess")
 public class MessageBus {
     private final Context context;
-    private Map<PKEvent, Set<Listener>> listeners;
+    private Map<Object, Set<PKEvent.Listener>> listeners;
 
     public MessageBus(Context context) {
         this.context = context;
@@ -20,14 +21,18 @@ public class MessageBus {
     }
     
     public void post(PKEvent event) {
-        for (Listener listener : listeners.get(event)) {
-            listener.onEvent(event);
+
+        Set<PKEvent.Listener> listeners = this.listeners.get(event.eventId());
+        if (listeners != null) {
+            for (PKEvent.Listener listener : listeners) {
+                listener.onEvent(event);
+            }
         }
     }
     
-    public void listen(Listener listener, PKEvent... events) {
+    public void listen(PKEvent.Listener listener, PKEvent... events) {
         for (PKEvent event : events) {
-            Set<Listener> listenerSet = listeners.get(event);
+            Set<PKEvent.Listener> listenerSet = listeners.get(event.eventId());
             if (listenerSet == null) {
                 listenerSet = new HashSet<>();
                 listenerSet.add(listener);
@@ -36,9 +41,6 @@ public class MessageBus {
                 listenerSet.add(listener);
             }
         }
+        
     }
-    
-    public interface Listener {
-        void onEvent(PKEvent event);
-    } 
 }

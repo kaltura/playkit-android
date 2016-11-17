@@ -4,10 +4,11 @@ import android.content.Context;
 import android.util.Log;
 
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
-import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.PlayerDecorator;
 
 import org.json.JSONObject;
 
@@ -36,25 +37,41 @@ public class SamplePlugin extends PKPlugin {
     };
 
     @Override
-    protected void load(Player player, PlayerConfig.Media mediaConfig, JSONObject pluginConfig, MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JSONObject pluginConfig, final MessageBus messageBus, Context context) {
         this.player = player;
         this.context = context;
         delay = pluginConfig.optInt("delay");
-        player.addEventListener(new PlayerEvent.Listener() {
+        
+        messageBus.listen(new PKEvent.Listener() {
             @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
+            public void onEvent(PKEvent event) {
                 Log.d(TAG, "PlayerEvent:" + event);
             }
         });
     }
 
     @Override
-    protected void update(PlayerConfig playerConfig) {
+    protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
         
     }
 
     @Override
-    public void release() {
+    protected void onUpdateConfig(JSONObject pluginConfig) {
+        
+    }
 
+    @Override
+    public void onDestroy() {
+
+    }
+
+    @Override
+    protected PlayerDecorator getPlayerDecorator() {
+        return new PlayerDecorator() {
+            @Override
+            public void play() {
+                super.play();
+            }
+        };
     }
 }

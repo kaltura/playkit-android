@@ -10,12 +10,6 @@ public interface Player {
 
     void prepare(@NonNull PlayerConfig.Media playerConfig);
     
-//    /**
-//     * Modify player settings with the set fields.
-//     * @param playerConfig
-//     */
-//    void update(@NonNull PlayerConfig playerConfig);
-    
     void release();
 
     /**
@@ -23,7 +17,6 @@ public interface Player {
      * @return
      */
     View getView();
-
 
     long getDuration();
 
@@ -38,24 +31,12 @@ public interface Player {
     void seekTo(long position);
 
     /**
-     * 
-     * @return
-     */
-    boolean getAutoPlay();
-
-    /**
-     * Begin playing automatically when ready.
-     * @param autoPlay
-     */
-    void setAutoPlay(boolean autoPlay);
-
-    /**
-     * Play if/when ready. Calls {@link #setAutoPlay(boolean)} with true.
+     * Play if/when ready.
      */
     void play();
 
     /**
-     * Pause. Calls {@link #setAutoPlay(boolean)} with false.
+     * Pause or don't play.
      */
     void pause();
 
@@ -70,11 +51,14 @@ public interface Player {
      */
     void skip();
     
-    void addEventListener(@NonNull PlayerEvent.Listener listener, PlayerEvent... events);
+    void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events);
 
     void addStateChangeListener(@NonNull PlayerState.Listener listener);
 
     void restore();
+    
+    PKAdInfo getAdInfo();
+    
+//    void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value);
 }
-
 
