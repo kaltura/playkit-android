@@ -13,6 +13,7 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.plugins.SamplePlugin;
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Player mPlayer;
     private PhoenixMediaProvider phoenixMediaProvider;
+    private MockMediaProvider mockProvider;
     private PlaybackControlsView controlsView;
     private boolean nowPlaying;
 
@@ -45,11 +47,11 @@ public class MainActivity extends AppCompatActivity {
 
         registerPlugins();
 
-        //mockProvider = new MockMediaProvider("mock/entries.playkit.json", this, "1_1h1vsv3z");
+        mockProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash+xml");
 
         phoenixMediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
 
-        phoenixMediaProvider.load(new OnMediaLoadCompletion() {
+        mockProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(final ResultElement<PKMediaEntry> response) {
                 runOnUiThread(new Runnable() {
