@@ -28,8 +28,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void registerPlugins() {
-        PlayKitManager.registerPlugins(SamplePlugin.factory);
-        PlayKitManager.registerPlugins(YouboraPlugin.factory);
+        PlayKitManager.registerPlugins(SamplePlugin.factory, YouboraPlugin.factory);
     }
     
     @Override
