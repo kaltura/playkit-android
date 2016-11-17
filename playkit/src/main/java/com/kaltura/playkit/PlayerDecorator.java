@@ -72,11 +72,6 @@ public abstract class PlayerDecorator implements Player {
     }
 
     @Override
-    public void addStateChangeListener(@NonNull PlayerState.Listener listener) {
-        player.addStateChangeListener(listener);
-    }
-
-    @Override
     public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable JsonElement value) {
         player.updatePluginConfig(pluginName, key, value);
     }

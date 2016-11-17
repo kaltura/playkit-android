@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.kaltura.playkit.AdProvider;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKPlugin;
@@ -15,7 +16,7 @@ import com.kaltura.playkit.PlayerConfig;
  * Created by Noam Tamim @ Kaltura on 26/10/2016.
  */
 
-public class SamplePlugin extends PKPlugin {
+public class SamplePlugin extends PKPlugin implements AdProvider {
 
     private static final String TAG = "SamplePlugin";
 

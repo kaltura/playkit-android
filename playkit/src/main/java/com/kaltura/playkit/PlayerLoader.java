@@ -34,13 +34,6 @@ class PlayerLoader extends PlayerDecorator {
     }
     
     public void load(@NonNull PlayerConfig playerConfig) {
-        Player player = new PlayerController(context, playerConfig);
-        player.addEventListener(new PKEvent.Listener() {
-            @Override
-            public void onEvent(PKEvent event) {
-                messageBus.post(event);
-            }
-        });
 
         AdProvider adProvider = null;
         
@@ -64,13 +57,15 @@ class PlayerLoader extends PlayerDecorator {
 
             loadedPlugins.put(name, new LoadedPlugin(plugin));
         }
-        
+
+        PlayerController playerController;
         if (adProvider != null) {
-            PlayerDecorator decorator = new AdEnabledPlayerDecorator(adProvider);
-            decorator.setPlayer(player);
+            playerController = new AdEnabledPlayerController(context, playerConfig.media, adProvider);
+        } else {
+            playerController = new PlayerController(context, playerConfig.media);
         }
 
-        setPlayer(player);
+        setPlayer(playerController.player());
     }
 
     @Override
@@ -112,5 +107,10 @@ class PlayerLoader extends PlayerDecorator {
     @Override
     public void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events) {
         messageBus.listen(listener, events);
+    }
+
+    @Override
+    public void addStateChangeListener(@NonNull PKEvent.Listener<PlayerState.StateChangedEvent> listener) {
+        messageBus.listen(listener, PlayerState.EVENT);
     }
 }

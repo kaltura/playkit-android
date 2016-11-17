@@ -15,25 +15,24 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by anton.afanasiev on 01/11/2016.
  */
 
-public class PlayerController implements Player {
+public class PlayerController {
 
     private static final String TAG = PlayerController.class.getSimpleName();
 
-    private PlayerEngine player;
+    private PlayerEngine playerEngine;
     private Context context;
 
-    private PKEvent.Listener listener;
-    private List<PlayerState.Listener> stateChangeListeners = new ArrayList<>();
+    private PKEvent.Listener eventListener;
 
     private PlayerConfig.Media mediaConfig;
 
+    public void setEventListener(PKEvent.Listener eventListener) {
+        this.eventListener = eventListener;
+    }
 
 
     interface EventListener {
@@ -41,125 +40,169 @@ public class PlayerController implements Player {
     }
 
     interface StateChangedListener {
-        void onStateChanged(PlayerState state);
+        void onStateChanged(PlayerState state, PlayerState previousState);
     }
 
-    private EventListener eventTrigger = new EventListener() {
+    private EventListener eventProxy = new EventListener() {
         @Override
         public void onEvent(PlayerEvent event) {
-            if (listener != null) {
-                listener.onEvent(event);
+            if (eventListener != null) {
+                eventListener.onEvent(event);
             }
         }
     };
 
-    private StateChangedListener stateChangedTrigger = new StateChangedListener() {
+    private StateChangedListener stateChangedProxy = new StateChangedListener() {
         @Override
-        public void onStateChanged(PlayerState state) {
-            for(PlayerState.Listener listener : stateChangeListeners){
-                if (listener != null){
-                    listener.onPlayerStateChanged(PlayerController.this, state);
-                }
+        public void onStateChanged(PlayerState state, PlayerState oldState) {
+            if (eventListener != null) {
+                eventListener.onEvent(state.stateChangedEvent(oldState));
             }
         }
     };
 
-    public PlayerController(Context context, PlayerConfig config){
+    public PlayerController(Context context, PlayerConfig.Media mediaConfig){
         this.context = context;
-        this.mediaConfig = config.media;
-        player = new ExoPlayerWrapper(context);
-        player.setEventListener(eventTrigger);
-        player.setStateChangedListener(stateChangedTrigger);
+        this.mediaConfig = mediaConfig;
+        playerEngine = new ExoPlayerWrapper(context);
+        playerEngine.setEventListener(eventProxy);
+        playerEngine.setStateChangedListener(stateChangedProxy);
 //        prepare(config.media);
     }
 
-    @Override
     public void prepare(@NonNull PlayerConfig.Media playerConfig) {
         Uri sourceUri = Uri.parse(playerConfig.getMediaEntry().getSources().get(0).getUrl());
-        player.load(sourceUri);
+        playerEngine.prepare(sourceUri);
     }
 
-    @Override
     public void release() {
         Log.d(TAG, "release");
-        player.release();
+        playerEngine.release();
     }
 
-    @Override
     public View getView() {
-        //return view of the current player.
-        return player.getView();
+        //return view of the current playerEngine.
+        return playerEngine.getView();
     }
 
-    @Override
     public long getDuration() {
-        Log.d(TAG, "getDuration " + player.getCurrentPosition());
+        Log.d(TAG, "getDuration " + playerEngine.getCurrentPosition());
 
-        return player.getDuration();
+        return playerEngine.getDuration();
     }
 
-    @Override
     public long getCurrentPosition() {
-        Log.d(TAG, "getPosition " + player.getCurrentPosition());
-        return player.getCurrentPosition();
+        Log.d(TAG, "getPosition " + playerEngine.getCurrentPosition());
+        return playerEngine.getCurrentPosition();
     }
 
-    @Override
     public long getBufferedPosition() {
-        return player.getBufferedPosition();
+        return playerEngine.getBufferedPosition();
     }
 
-    @Override
     public void seekTo(long position) {
         Log.d(TAG, "seek to " + position);
-        player.seekTo(position);
+        playerEngine.seekTo(position);
     }
 
-    @Override
     public void play() {
         Log.d(TAG, "play");
-        player.play();
+        playerEngine.play();
     }
 
-    @Override
     public void pause() {
         Log.d(TAG, "pause");
-        player.pause();
+        playerEngine.pause();
     }
-
-    @Override
-    public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
-        Log.d(TAG, "prepareNext");
-        prepare(mediaConfig);
-    }
-
-    @Override
-    public void skip() {
-        Log.d(TAG, "loadNext");
-    }
-
-    @Override
-    public void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events) {
-        this.listener = listener;
-    }
-
-    @Override
-    public void addStateChangeListener(@NonNull PlayerState.Listener listener) {
-        Log.d(TAG, "addStateChangeListener");
-        stateChangeListeners.add(listener);
-    }
-
-    @Override
-    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable JsonElement value) {
-        Assert.failState("Something is wrong");
-    }
-
-    @Override
+    
     public void restore() {
         Log.d(TAG, "on resume");
-        player.setEventListener(eventTrigger);
-        player.setStateChangedListener(stateChangedTrigger);
-        player.resume();
+        playerEngine.setEventListener(eventProxy);
+        playerEngine.setStateChangedListener(stateChangedProxy);
+        playerEngine.resume();
         prepare(mediaConfig);
     }
+    
+    public Player player() {
+        return new Player() {
+
+            PlayerController playerController = PlayerController.this;
+
+            @Override
+            public void prepare(@NonNull PlayerConfig.Media playerConfig) {
+                playerController.prepare(playerConfig);
+            }
+
+            @Override
+            public void release() {
+                playerController.release();
+            }
+
+            @Override
+            public View getView() {
+                return playerController.getView();
+            }
+
+            @Override
+            public long getDuration() {
+                return playerController.getDuration();
+            }
+
+            @Override
+            public long getCurrentPosition() {
+                return playerController.getCurrentPosition();
+            }
+
+            @Override
+            public long getBufferedPosition() {
+                return playerController.getBufferedPosition();
+            }
+
+            @Override
+            public void seekTo(long position) {
+                playerController.seekTo(position);
+            }
+
+            @Override
+            public void play() {
+                playerController.play();
+            }
+
+            @Override
+            public void pause() {
+                playerController.pause();
+            }
+
+            @Override
+            public void restore() {
+                playerController.restore();
+            }
+
+            @Override
+            public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
+                Assert.shouldNeverHappen();
+            }
+
+            @Override
+            public void skip() {
+                Assert.shouldNeverHappen();
+            }
+
+            @Override
+            public void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events) {
+                Assert.shouldNeverHappen();
+            }
+
+            @Override
+            public void addStateChangeListener(@NonNull PKEvent.Listener<PlayerState.StateChangedEvent> listener) {
+                Assert.shouldNeverHappen();
+            }
+
+            @Override
+            public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable JsonElement value) {
+                Assert.shouldNeverHappen();
+            }
+        };
+    }
 }
+

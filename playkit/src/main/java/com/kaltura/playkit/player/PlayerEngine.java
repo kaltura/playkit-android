@@ -9,7 +9,7 @@ import android.view.View;
 
 interface PlayerEngine {
 
-    void load(Uri mediaSourceUri);
+    void prepare(Uri mediaSourceUri);
 
     View getView();
 

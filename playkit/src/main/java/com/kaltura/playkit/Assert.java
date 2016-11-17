@@ -22,6 +22,10 @@ public class Assert {
     public static void failState(Object errorMessage) {
         throw new IllegalStateException(String.valueOf(errorMessage));
     }
+    
+    public static void shouldNeverHappen() {
+        failState("This should never happen. We're not supposed to be here.");
+    }
 
     public static <T> T checkNotNull(T reference, Object errorMessage) {
         if (reference == null) {

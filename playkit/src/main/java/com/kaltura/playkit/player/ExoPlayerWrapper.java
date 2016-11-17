@@ -167,7 +167,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
             return;
         }
         this.currentState = newState;
-        stateChangedListener.onStateChanged(currentState);
+        stateChangedListener.onStateChanged(currentState, previousState);
     }
 
     private void sendEvent(PlayerEvent newEvent) {
@@ -259,7 +259,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
     }
 
     @Override
-    public void load(Uri mediaSourceUri) {
+    public void prepare(Uri mediaSourceUri) {
         Log.d(TAG, "load");
         if (player == null) {
             initializePlayer();

@@ -1,12 +1,16 @@
 package com.kaltura.playkit;
 
+import android.content.Context;
+
+import com.kaltura.playkit.player.PlayerController;
+
 /**
  * Created by Noam Tamim @ Kaltura on 15/11/2016.
  */
 
-public class AdEnabledPlayerDecorator extends PlayerDecorator {
-    public AdEnabledPlayerDecorator(AdProvider adProvider) {
-        
+class AdEnabledPlayerController extends PlayerController {
+    AdEnabledPlayerController(Context context, PlayerConfig.Media mediaConfig, AdProvider adProvider) {
+        super(context, mediaConfig);
     }
 
     @Override

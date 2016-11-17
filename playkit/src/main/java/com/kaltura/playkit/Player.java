@@ -57,7 +57,7 @@ public interface Player {
     
     void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events);
 
-    void addStateChangeListener(@NonNull PlayerState.Listener listener);
+    void addStateChangeListener(@NonNull PKEvent.Listener<PlayerState.StateChangedEvent> listener);
     
     void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable JsonElement value);
 

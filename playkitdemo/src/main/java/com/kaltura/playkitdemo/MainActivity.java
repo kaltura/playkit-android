@@ -124,11 +124,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }, PlayerEvent.PAUSE);
 
-        mPlayer.addStateChangeListener(new PlayerState.Listener() {
+        mPlayer.addStateChangeListener(new PKEvent.Listener<PlayerState.StateChangedEvent>() {
             @Override
-            public void onPlayerStateChanged(Player player, PlayerState newState) {
+            public void onEvent(PlayerState.StateChangedEvent event) {
                 if(controlsView != null){
-                    controlsView.setPlayerState(newState);
+                    controlsView.setPlayerState(event.newState);
                 }
             }
         });
