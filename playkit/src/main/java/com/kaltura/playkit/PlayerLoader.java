@@ -5,9 +5,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.google.gson.JsonObject;
 import com.kaltura.playkit.player.PlayerController;
-
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -51,7 +50,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         Player player = playerController;
 
-        for (Map.Entry<String, JSONObject> pluginConfig : playerConfig.plugins.getPluginConfigMap().entrySet()) {
+        for (Map.Entry<String, JsonObject> pluginConfig : playerConfig.plugins.getPluginConfigMap().entrySet()) {
             String name = pluginConfig.getKey();
             PKPlugin plugin = loadPlugin(name, player, playerConfig, messageBus, context);
 

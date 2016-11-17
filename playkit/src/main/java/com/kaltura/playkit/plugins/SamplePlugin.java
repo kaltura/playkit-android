@@ -3,14 +3,13 @@ package com.kaltura.playkit.plugins;
 import android.content.Context;
 import android.util.Log;
 
+import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerDecorator;
-
-import org.json.JSONObject;
 
 /**
  * Created by Noam Tamim @ Kaltura on 26/10/2016.
@@ -37,10 +36,10 @@ public class SamplePlugin extends PKPlugin {
     };
 
     @Override
-    protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JSONObject pluginConfig, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
         this.player = player;
         this.context = context;
-        delay = pluginConfig.optInt("delay");
+        delay = pluginConfig.getAsJsonPrimitive("delay").getAsInt();
         
         messageBus.listen(new PKEvent.Listener() {
             @Override
