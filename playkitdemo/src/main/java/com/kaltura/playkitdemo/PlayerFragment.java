@@ -22,6 +22,7 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
+import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.plugins.SamplePlugin;
 
@@ -29,6 +30,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import static android.content.ContentValues.TAG;
+import static com.kaltura.playkitdemo.MockParams.Format;
+import static com.kaltura.playkitdemo.MockParams.MediaId;
 
 
 public class PlayerFragment extends Fragment {
@@ -36,12 +39,14 @@ public class PlayerFragment extends Fragment {
 
 
     private MockMediaProvider mockProvider;
+    private PhoenixMediaProvider phoenixMediaProvider;
     private Player mPlayer;
 
     private boolean mIsCardExpanded;
     private TextView mCardTitleView;
     private RelativeLayout mFeatureTitleContainer;
     private LinearLayout mPlayerContainer;
+    //private PlaybackControlsView controlsView;
 
 
     private OnFragmentInteractionListener mListener;
@@ -83,7 +88,8 @@ public class PlayerFragment extends Fragment {
 
 
         registerPlugins();
-        mockProvider = new MockMediaProvider("mock/entries.playkit.json", getContext(), "1_1h1vsv3z");
+        //mockProvider = new MockMediaProvider("mock/entries.playkit.json", getContext(), "1_1h1vsv3z");
+        phoenixMediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
     }
 
 
@@ -138,6 +144,7 @@ public class PlayerFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
+        /*
         mockProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
@@ -147,6 +154,26 @@ public class PlayerFragment extends Fragment {
             }
 
         });
+        */
+
+
+        phoenixMediaProvider.load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(final ResultElement<PKMediaEntry> response) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (response.isSuccess()) {
+                            onMediaLoaded(response.getResponse());
+                        } else {
+
+                            Toast.makeText(getContext(), "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""), Toast.LENGTH_LONG).show();
+                            Log.e(TAG, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
+                        }
+                    }
+                });
+            }
+        });
     }
 
 
@@ -155,30 +182,29 @@ public class PlayerFragment extends Fragment {
         PlayerConfig config = new PlayerConfig();
 
         config.media.setMediaEntry(mediaEntry);
-        configurePlugins(config.plugins);
+        //config.media.setAutoPlay(true);
 
 
-        mPlayer = PlayKitManager.loadPlayer(config, getContext());
+        if(mPlayer == null){
 
-        Log.d(TAG, "Player: " + mPlayer.getClass());
-
-        mPlayer.addEventListener(new PlayerEvent.Listener() {
-            @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
-
-            }
-        }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
-
-        mPlayer.addStateChangeListener(new PlayerState.Listener() {
-            @Override
-            public void onPlayerStateChanged(Player player, PlayerState newState) {
-
-            }
-        });
+            configurePlugins(config.plugins);
 
 
-        mPlayerContainer.addView(mPlayer.getView());
-        mPlayer.play();
+            mPlayer = PlayKitManager.loadPlayer(config, getContext());
+            mPlayer.play();
+
+            Log.d(TAG, "Player: " + mPlayer.getClass());
+            addPlayerListeners();
+
+            mPlayerContainer.addView(mPlayer.getView());
+
+            /*
+            controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
+            controlsView.setPlayer(mPlayer);
+            */
+        }else {
+            mPlayer.prepare(config.media);
+        }
 
     }
 
@@ -203,10 +229,66 @@ public class PlayerFragment extends Fragment {
 
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if(mPlayer != null){
+            mPlayer.restore();
+            /*
+            if (nowPlaying) {
+                mPlayer.play();
+            }
+            */
+        }
+
+        /*
+        if(controlsView != null){
+            controlsView.resume();
+        }
+        */
+    }
+
+
+    @Override
     public void onStop() {
         super.onStop();
 
+        //controlsView.release();
         mPlayer.release();
+    }
+
+
+    private void addPlayerListeners() {
+        mPlayer.addEventListener(new PlayerEvent.Listener() {
+            @Override
+            public void onPlayerEvent(Player player, PlayerEvent event) {
+
+            }
+        }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
+
+        mPlayer.addEventListener(new PlayerEvent.Listener() {
+            @Override
+            public void onPlayerEvent(Player player, PlayerEvent event) {
+                switch (event) {
+                    case PLAY:
+                        //nowPlaying = true;
+                        break;
+                    case PAUSE:
+                        //nowPlaying = false;
+                        break;
+                }
+            }
+        }, PlayerEvent.PLAYING);
+
+        mPlayer.addStateChangeListener(new PlayerState.Listener() {
+            @Override
+            public void onPlayerStateChanged(Player player, PlayerState newState) {
+                /*
+                if(controlsView != null){
+                    controlsView.setPlayerState(newState);
+                }
+                */
+            }
+        });
     }
 
 
