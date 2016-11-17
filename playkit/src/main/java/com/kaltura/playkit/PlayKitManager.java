@@ -1,5 +1,7 @@
 package com.kaltura.playkit;
 
+import android.content.Context;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,10 +18,15 @@ public class PlayKitManager {
         }
     }
 
-    static PKPlugin createPlugin(String name, PlayKit playKit) {
+    static PKPlugin createPlugin(String name) {
         PKPlugin.Factory pluginFactory = sPluginFactories.get(name);
-        return pluginFactory == null ? null : pluginFactory.newInstance(playKit);
+        return pluginFactory == null ? null : pluginFactory.newInstance();
     }
 
+    public static Player loadPlayer(PlayerConfig playerConfig, Context context) {
+        PlayerLoader playerLoader = new PlayerLoader(context);
+        playerLoader.load(playerConfig);
+        return playerLoader;
+    }
 }
 

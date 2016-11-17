@@ -24,23 +24,26 @@ public class PlayerController implements Player {
     private static final String TAG = PlayerController.class.getSimpleName();
 
     private PlayerEngine player;
-    private PlayerConfig playerConfig;
     private Context context;
 
     private List<PlayerEvent.Listener> eventListeners = new ArrayList<>();
     private List<PlayerState.Listener> stateChangeListeners = new ArrayList<>();
 
-    public interface EventTrigger {
-        void triggerEvent(PlayerEvent event);
+    private PlayerConfig.Media mediaConfig;
+
+
+
+    public interface EventListener {
+        void onEvent(PlayerEvent event);
     }
 
-    public interface StateChangedTrigger {
-        void triggerStateChanged(PlayerState state);
+    public interface StateChangedListener {
+        void onStateChanged(PlayerState state);
     }
 
-    private EventTrigger eventTrigger = new EventTrigger() {
+    private EventListener eventTrigger = new EventListener() {
         @Override
-        public void triggerEvent(PlayerEvent event) {
+        public void onEvent(PlayerEvent event) {
             for (PlayerEvent.Listener eventListener : eventListeners){
                 if(eventListener != null){
                     eventListener.onPlayerEvent(PlayerController.this, event);
@@ -49,9 +52,9 @@ public class PlayerController implements Player {
         }
     };
 
-    private StateChangedTrigger stateChangedTrigger = new StateChangedTrigger() {
+    private StateChangedListener stateChangedTrigger = new StateChangedListener() {
         @Override
-        public void triggerStateChanged(PlayerState state) {
+        public void onStateChanged(PlayerState state) {
             for(PlayerState.Listener listener : stateChangeListeners){
                 if (listener != null){
                     listener.onPlayerStateChanged(PlayerController.this, state);
@@ -60,32 +63,26 @@ public class PlayerController implements Player {
         }
     };
 
-    public PlayerController(Context context){
+    public PlayerController(Context context, PlayerConfig config){
         this.context = context;
-        //create default player(ExoPlayer).
+        this.mediaConfig = config.media;
         player = new ExoPlayerWrapper(context);
-        player.setEventTrigger(eventTrigger);
-        player.setStateChangedTrigger(stateChangedTrigger);
-        //set player listener that notify controller about events that happened.
-        // the PlayerController will pass them to the app.
+        player.setEventListener(eventTrigger);
+        player.setStateChangedListener(stateChangedTrigger);
+        prepare(config.media);
     }
 
     @Override
-    public void load(@NonNull PlayerConfig playerConfig) {
-        this.playerConfig = playerConfig;
-        //create player based on player config.
-        //wv classic -> MediaPlayerWrapper.
-        // everything else -> ExoPlayerWrapper.
-        //set eventListener.
+    public void prepare(@NonNull PlayerConfig.Media playerConfig) {
         Uri sourceUri = Uri.parse(playerConfig.getMediaEntry().getSources().get(0).getUrl());
         boolean shouldAutoplay = playerConfig.isAutoPlay();
         player.load(sourceUri, shouldAutoplay);
-
     }
 
     @Override
-    public void update(PlayerConfig playerConfig) {
-
+    public void release() {
+        Log.d(TAG, "release");
+        player.release();
     }
 
     @Override
@@ -108,6 +105,11 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public long getBufferedPosition() {
+        return player.getBufferedPosition();
+    }
+
+    @Override
     public void seekTo(long position) {
         Log.d(TAG, "seek to " + position);
         player.seekTo(position);
@@ -123,7 +125,6 @@ public class PlayerController implements Player {
     public void setAutoPlay(boolean autoPlay) {
         Log.d(TAG, "setAutoPlay => " + autoPlay);
         player.setAutoPlay(autoPlay);
-
     }
 
     @Override
@@ -139,12 +140,13 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void prepareNext(@NonNull PlayerConfig playerConfig) {
+    public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
         Log.d(TAG, "prepareNext");
+        prepare(mediaConfig);
     }
 
     @Override
-    public void loadNext() {
+    public void skip() {
         Log.d(TAG, "loadNext");
     }
 
@@ -160,7 +162,12 @@ public class PlayerController implements Player {
         stateChangeListeners.add(listener);
     }
 
-    public PlayerConfig getPlayerConfig() {
-        return playerConfig;
+    @Override
+    public void restore() {
+        Log.d(TAG, "on resume");
+        player.setEventListener(eventTrigger);
+        player.setStateChangedListener(stateChangedTrigger);
+        player.resume();
+        prepare(mediaConfig);
     }
 }

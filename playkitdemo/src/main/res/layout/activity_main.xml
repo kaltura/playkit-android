@@ -6,20 +6,26 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.kaltura.playkitdemo.MainActivity"
-    android:gravity="center">
+    android:gravity="center"
+    >
 
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinner"
+        />
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="360dp"
-        android:layout_height="220dp"
+        android:layout_height="200dp"
         android:id="@+id/player_root"
 
         />
 
-    <include
+    <com.kaltura.playkitdemo.PlaybackControlsView
         android:id="@+id/playerControls"
-        layout="@layout/playback_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         />

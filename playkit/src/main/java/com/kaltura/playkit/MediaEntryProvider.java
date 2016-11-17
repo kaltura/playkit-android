@@ -1,5 +1,8 @@
 package com.kaltura.playkit;
 
+import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
+
 public interface MediaEntryProvider {
-    PKMediaEntry getMediaEntry();
+
+    void load(OnMediaLoadCompletion completion);
 }
