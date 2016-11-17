@@ -15,7 +15,6 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.Youbora.YouboraPlugin;
 
 import org.json.JSONException;
@@ -36,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean nowPlaying;
 
     private void registerPlugins() {
-        PlayKitManager.registerPlugins(SamplePlugin.factory, YouboraPlugin.factory);
+        PlayKitManager.registerPlugins(YouboraPlugin.factory);
     }
 
     @Override
@@ -97,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void configurePlugins(PlayerConfig.Plugins config) {
         try {
-            config.setPluginConfig("Sample", new JSONObject().put("delay", 4200));
+            config.setPluginConfig("Youbora", new JSONObject().put("delay", 4200));
         } catch (JSONException e) {
             e.printStackTrace();
         }

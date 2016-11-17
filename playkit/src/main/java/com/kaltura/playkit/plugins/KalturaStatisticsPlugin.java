@@ -2,11 +2,13 @@ package com.kaltura.playkit.plugins;
 
 import android.content.Context;
 
+import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKPlugin;
-import com.kaltura.playkit.PlayKit;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
+
+import org.json.JSONObject;
 
 /**
  * Created by zivilan on 02/11/2016.
@@ -22,13 +24,13 @@ public class KalturaStatisticsPlugin extends PKPlugin {
         }
 
         @Override
-        public PKPlugin newInstance(PlayKit playKit) {
+        public PKPlugin newInstance() {
             return new KalturaStatisticsPlugin();
         }
     };
 
     @Override
-    protected void load(Player player, PlayerConfig playerConfig, Context context) {
+    protected void load(Player player, PlayerConfig.Media mediaConfig, JSONObject pluginConfig, MessageBus messageBus, Context context) {
         player.addEventListener(mEventListener);
     }
 
@@ -38,7 +40,7 @@ public class KalturaStatisticsPlugin extends PKPlugin {
     }
 
     @Override
-    protected void update(Player player, PlayerConfig playerConfig, Context context) {
+    protected void update(PlayerConfig playerConfig) {
 
     }
 

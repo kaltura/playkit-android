@@ -3,8 +3,8 @@ package com.kaltura.playkit.plugins;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKPlugin;
-import com.kaltura.playkit.PlayKit;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
@@ -29,7 +29,8 @@ public class TVPAPIAnalyticsPlugin extends PKPlugin {
     private int mMediaHitInterval = -1;
     private int mFileId = -1;
     private long mContinueTime;
-    private PlayerConfig mPlayerConfig;
+    private PlayerConfig.Media mMediaConfig;
+    private JSONObject mPluginConfig;
     private Context mContext;
     private Player mPlayer;
     private boolean mPlayFromContinue = false;
@@ -44,24 +45,25 @@ public class TVPAPIAnalyticsPlugin extends PKPlugin {
         }
 
         @Override
-        public PKPlugin newInstance(PlayKit playKitManager) {
+        public PKPlugin newInstance() {
             return new TVPAPIAnalyticsPlugin();
         }
     };
 
     @Override
-    protected void update(Player player, PlayerConfig playerConfig, Context context){
+    protected void update(PlayerConfig playerConfig){
 
     }
 
     @Override
-    protected void load(Player player, PlayerConfig playerConfig, Context context) {
+    protected void load(Player player, PlayerConfig.Media mediaConfig, JSONObject pluginConfig, MessageBus messageBus, Context context) {
         player.addEventListener(mEventListener);
-        this.mPlayerConfig = playerConfig;
-        this.mContext = context;
+        this.mMediaConfig = mediaConfig;
         this.mPlayer = player;
-        if (mPlayerConfig.getStartPosition() != -1){
-            this.mContinueTime = mPlayerConfig.getStartPosition();
+        this.mPluginConfig = pluginConfig;
+        this.mContext = context;
+        if (mMediaConfig.getStartPosition() != -1){
+            this.mContinueTime = mMediaConfig.getStartPosition();
             this.mPlayFromContinue = true;
         }
     }
@@ -151,7 +153,7 @@ public class TVPAPIAnalyticsPlugin extends PKPlugin {
         try {
 //            postData.put("initObj", mPlayerConfig.getInitObject());
             postData.put("mediaType", mediaType);
-            postData.put("iMediaID", mPlayerConfig.getMediaEntry().getId());
+            postData.put("iMediaID", mMediaConfig.getMediaEntry().getId());
             postData.put("iFileID", mFileId);
             postData.put("iLocation", mPlayer.getCurrentPosition());
         } catch (JSONException e) {
