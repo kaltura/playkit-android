@@ -169,7 +169,9 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
             return;
         }
         this.currentState = newState;
-        stateChangedListener.onStateChanged(previousState, currentState);
+        if (stateChangedListener != null) {
+            stateChangedListener.onStateChanged(previousState, currentState);
+        }
     }
 
     private void sendEvent(PlayerEvent newEvent) {

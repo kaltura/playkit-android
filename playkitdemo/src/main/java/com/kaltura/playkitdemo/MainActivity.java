@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKEvent;
@@ -19,6 +20,11 @@ import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.plugins.SamplePlugin;
+import com.kaltura.playkit.plugins.ads.AdsConfig;
+import com.kaltura.playkit.plugins.ads.ima.IMASimplePlugin;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -35,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void registerPlugins() {
         PlayKitManager.registerPlugins(SamplePlugin.factory);
+        PlayKitManager.registerPlugins(IMASimplePlugin.factory);
     }
 
     @Override
@@ -73,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
         PlayerConfig config = new PlayerConfig();
 
         config.media.setMediaEntry(mediaEntry);
+
+
         if(player == null){
 
             configurePlugins(config.plugins);
@@ -95,6 +104,18 @@ public class MainActivity extends AppCompatActivity {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("delay", 4200);
         config.setPluginConfig("Sample", jsonObject);
+        addIMAPluginConfig(config);
+    }
+
+    private void addIMAPluginConfig(PlayerConfig.Plugins config){
+        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
+        List<String> videoMimeTypes = new ArrayList<>();
+        videoMimeTypes.add(MimeTypes.APPLICATION_MP4);
+        videoMimeTypes.add(MimeTypes.APPLICATION_M3U8);
+        AdsConfig adsConfig = new AdsConfig("en", false, true, 60000, videoMimeTypes, adTagUrl);
+        config.setPluginConfig(IMASimplePlugin.factory.getName(), adsConfig.toJSONObject());
+
+
     }
 
     @Override
