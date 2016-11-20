@@ -6,6 +6,9 @@ import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.google.gson.JsonObject;
+import com.kaltura.playkit.MediaEntryProvider;
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
@@ -14,7 +17,6 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
-import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.plugins.SamplePlugin;
 
@@ -28,11 +30,13 @@ import static com.kaltura.playkitdemo.MockParams.MediaId;
 
 public class MainActivity extends AppCompatActivity {
 
+
+    public static final boolean AUTO_PLAY_ON_RESUME = false;
+
     private static final String TAG = "MainActivity";
 
-    private Player mPlayer;
-    private PhoenixMediaProvider phoenixMediaProvider;
-    private MockMediaProvider mockProvider;
+    private Player player;
+    private MediaEntryProvider mediaProvider;
     private PlaybackControlsView controlsView;
     private boolean nowPlaying;
 
@@ -47,11 +51,11 @@ public class MainActivity extends AppCompatActivity {
 
         registerPlugins();
 
-        mockProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash+xml");
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
 
-        phoenixMediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
+//        mediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
 
-        mockProvider.load(new OnMediaLoadCompletion() {
+        mediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(final ResultElement<PKMediaEntry> response) {
                 runOnUiThread(new Runnable() {
@@ -76,65 +80,53 @@ public class MainActivity extends AppCompatActivity {
         PlayerConfig config = new PlayerConfig();
 
         config.media.setMediaEntry(mediaEntry);
-        if(mPlayer == null){
+        if(player == null){
 
-        configurePlugins(config.plugins);
+            configurePlugins(config.plugins);
 
+            player = PlayKitManager.loadPlayer(config, this);
 
-        mPlayer = PlayKitManager.loadPlayer(config, this);
+            Log.d(TAG, "Player: " + player.getClass());
+            addPlayerListeners();
 
-        Log.d(TAG, "Player: " + mPlayer.getClass());
-        addPlayerListeners();
+            LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
+            layout.addView(player.getView());
 
-        LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
-        layout.addView(mPlayer.getView());
-
-        controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
-        controlsView.setPlayer(mPlayer);
-        }else {
-            mPlayer.prepare(config.media);
+            controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
+            controlsView.setPlayer(player);
         }
+        player.prepare(config.media);
     }
 
     private void configurePlugins(PlayerConfig.Plugins config) {
-        try {
-            config.setPluginConfig("Sample", new JSONObject().put("delay", 4200));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("delay", 4200);
+        config.setPluginConfig("Sample", jsonObject);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         controlsView.release();
-        mPlayer.release();
-
+        player.release();
     }
 
     private void addPlayerListeners() {
-        mPlayer.addEventListener(new PlayerEvent.Listener() {
+        player.addEventListener(new PKEvent.Listener() {
             @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
-
+            public void onEvent(PKEvent event) {
+                nowPlaying = true;
             }
-        }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
-        
-        mPlayer.addEventListener(new PlayerEvent.Listener() {
+        }, PlayerEvent.PLAY);
+
+        player.addEventListener(new PKEvent.Listener() {
             @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
-                switch (event) {
-                    case PLAY:
-                        nowPlaying = true;
-                        break;
-                    case PAUSE:
-                        nowPlaying = false;
-                        break;
-                }
+            public void onEvent(PKEvent event) {
+                nowPlaying = false;
             }
-        }, PlayerEvent.PLAYING);
+        }, PlayerEvent.PAUSE);
 
-        mPlayer.addStateChangeListener(new PlayerState.Listener() {
+        player.addStateChangeListener(new PlayerState.Listener() {
             @Override
             public void onPlayerStateChanged(Player player, PlayerState newState) {
                 if(controlsView != null){
@@ -147,10 +139,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(mPlayer != null){
-            mPlayer.restore();
-            if (nowPlaying) {
-                mPlayer.play();
+        if(player != null){
+            player.restore();
+            if (nowPlaying && AUTO_PLAY_ON_RESUME) {
+                player.play();
             }
         }
         if(controlsView != null){
