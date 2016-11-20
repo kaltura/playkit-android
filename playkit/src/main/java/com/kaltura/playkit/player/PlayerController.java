@@ -119,7 +119,7 @@ public class PlayerController implements Player {
     public void restore() {
         Log.d(TAG, "on resume");
         if(wasReleased){
-            player.resume();
+            player.restore();
             prepare(mediaConfig);
             player.setEventListener(eventTrigger);
             player.setStateChangedListener(stateChangedTrigger);

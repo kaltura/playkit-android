@@ -172,7 +172,9 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
             return;
         }
         this.currentState = newState;
-        stateChangedListener.onStateChanged(previousState, currentState);
+        if(stateChangedListener != null){
+            stateChangedListener.onStateChanged(previousState, currentState);
+        }
     }
 
     private void sendEvent(PlayerEvent newEvent) {
@@ -400,10 +402,10 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
     @Override
-    public void resume() {
+    public void restore() {
         Log.d(TAG, "resume");
         initializePlayer();
-        
+
         if (isTimelineStatic) {
             if (playerPosition == C.TIME_UNSET) {
                 player.seekToDefaultPosition(playerWindow);

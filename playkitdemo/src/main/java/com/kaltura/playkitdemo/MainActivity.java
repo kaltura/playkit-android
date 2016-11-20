@@ -20,13 +20,6 @@ import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.plugins.SamplePlugin;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import static com.kaltura.playkitdemo.MockParams.Format;
-import static com.kaltura.playkitdemo.MockParams.MediaId;
-
-
 
 public class MainActivity extends AppCompatActivity {
 
