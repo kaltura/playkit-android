@@ -76,7 +76,7 @@ public class MainActivity extends AbsPlayerDemoActivity implements RootMenuFragm
 
 
     protected int getLayoutId() {
-        return R.layout.activity_app_main;
+        return R.layout.activity_main;
     }
 
 

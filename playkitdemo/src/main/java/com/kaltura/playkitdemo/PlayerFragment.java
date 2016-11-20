@@ -1,6 +1,7 @@
 package com.kaltura.playkitdemo;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -13,6 +14,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
@@ -30,24 +32,29 @@ import com.kaltura.playkitdemo.jsonConverters.ConverterSubMenu;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static android.R.attr.configure;
 import static android.content.ContentValues.TAG;
 import static com.kaltura.playkitdemo.MockParams.Format;
 import static com.kaltura.playkitdemo.MockParams.MediaId;
+import static com.kaltura.playkitdemo.MockParams.MediaId3;
+import static com.kaltura.playkitdemo.MockParams.sessionProvider;
 
 
 public class PlayerFragment extends Fragment {
 
 
-    private Player mPlayer;
+    private PlaybackControlsView mControlsView;
+    private LinearLayout mPlayerContainer;
+
 
     private ConverterSubMenu mConverterSubMenu;
+
     private boolean mIsCardExpanded;
-    private TextView mCardTitleView;
     private RelativeLayout mFeatureTitleContainer;
-    private LinearLayout mPlayerContainer;
+    private TextView mCardTitleView;
     private TextView mFeatureTitle;
     private TextView mFeatureDescription;
-    //private PlaybackControlsView controlsView;
+
 
 
     public PlayerFragment() {
@@ -87,6 +94,7 @@ public class PlayerFragment extends Fragment {
         mPlayerContainer = (LinearLayout) fragmentView.findViewById(R.id.player_container);
         mFeatureTitle = (TextView) fragmentView.findViewById(R.id.feature_title);
         mFeatureDescription = (TextView) fragmentView.findViewById(R.id.feature_description);
+        mControlsView = (PlaybackControlsView) fragmentView.findViewById(R.id.playerControls);
 
         mFeatureTitleContainer.setOnClickListener(new View.OnClickListener() {
 
@@ -110,6 +118,31 @@ public class PlayerFragment extends Fragment {
 
         mFeatureTitle.setText(mConverterSubMenu.getSubMenuTitle());
         mFeatureDescription.setText(mConverterSubMenu.getAboutFeature());
+
+        configurePlayer(mConverterSubMenu.getFeatureVariants().get(0).getPlayerConfigLink());
+
+    }
+
+
+    // TODO duplication of code with StandalonePlayerActivity
+    private void configurePlayer(String playerConfigLink) {
+
+        PlayerProvider.getPlayer(playerConfigLink, getActivity(), new PlayerProvider.OnPlayerReadyListener() {
+            @Override
+            public void onPlayerRead(Player player) {
+                startPlay(player);
+            }
+        });
+    }
+
+
+    private void startPlay(Player player) {
+
+        mPlayerContainer.addView(player.getView());
+        mControlsView.setPlayer(player);
+        mControlsView.resume();
+
+        player.play();
     }
 
 

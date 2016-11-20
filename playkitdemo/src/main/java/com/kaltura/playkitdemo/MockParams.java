@@ -14,7 +14,7 @@ public class MockParams {
     public static final int PartnerId = 198;
 
     //result of login with : [username: albert@gmail.com, pass: 123456]
-    public static final String KS = "djJ8MTk4fPjQkM96OQ7N4GBL73vbOrbUMx7QNMEdoJ5kc6pLFCbgoTHIOAAmIO3ny2Ro0MnKMqGEGpRGM2fq5schRQ8PzqODmb0yegckE6qH5j9hqNig";
+    public static final String KS = "djJ8MTk4fMI0OxiZUQP-0BBUEQQXgx-RZ6GZT6DDhOj3t6XqqfN7_17JNPLn77XTODAybpK1jDeHzMoxtoOH9w5rDDHT5YDu3bP5oMGxL5B4jq2VCUBi";
 
     public static final String MediaId = "258656";//frozen
     public static final String MediaId2 = "437800";//vild

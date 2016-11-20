@@ -16,7 +16,7 @@ import java.net.URL;
  * Created by itanbarpeled on 18/11/2016.
  */
 
-public class JsonTask extends AsyncTask<String, String, String> {
+public class JsonFetchTask extends AsyncTask<String, String, String> {
 
 
     private OnJsonFetchedListener mJsonFetchedListener;
@@ -30,12 +30,12 @@ public class JsonTask extends AsyncTask<String, String, String> {
 
 
 
-    public JsonTask(Context context, OnJsonFetchedListener jsonFetchedListener) {
+    public JsonFetchTask(Context context, OnJsonFetchedListener jsonFetchedListener) {
         this(context, false, jsonFetchedListener);
     }
 
 
-    public JsonTask(Context context, boolean showSpinner, OnJsonFetchedListener jsonFetchedListener) {
+    public JsonFetchTask(Context context, boolean showSpinner, OnJsonFetchedListener jsonFetchedListener) {
         mJsonFetchedListener = jsonFetchedListener;
         mShowSpinner = showSpinner;
         mSpinner = new ProgressDialog(context);

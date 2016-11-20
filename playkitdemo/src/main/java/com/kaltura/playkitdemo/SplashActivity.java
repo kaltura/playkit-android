@@ -7,7 +7,7 @@ import android.os.Bundle;
 import com.google.gson.Gson;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.plugins.SamplePlugin;
-import com.kaltura.playkitdemo.data.JsonTask;
+import com.kaltura.playkitdemo.data.JsonFetchTask;
 import com.kaltura.playkitdemo.jsonConverters.ConverterPlayKitApp;
 
 import java.util.Date;
@@ -47,7 +47,7 @@ public class SplashActivity extends AppCompatActivity {
 
         final Date startTime = new Date();
 
-        new JsonTask(SplashActivity.this, new JsonTask.OnJsonFetchedListener() {
+        new JsonFetchTask(SplashActivity.this, new JsonFetchTask.OnJsonFetchedListener() {
 
             @Override
             public void onJsonFetched(String json) {
