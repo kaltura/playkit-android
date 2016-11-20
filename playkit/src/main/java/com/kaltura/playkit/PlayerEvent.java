@@ -18,6 +18,11 @@ public enum PlayerEvent implements PKEvent {
     FIRST_PLAY; // Sent when the playback of the media started to play for the first time.
 
 
+    @Override
+    public Object eventId() {
+        return this;
+    }
+
     public interface Listener {
         void onPlayerEvent(Player player, PlayerEvent event);
     }
