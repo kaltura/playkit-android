@@ -17,6 +17,13 @@
         app:popupTheme="@style/AppTheme.Toolbar"/>
 
 
+    <FrameLayout
+        android:id="@+id/player_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="16dp"/>
+
+    <!--
     <fragment
         class="com.kaltura.playkitdemo.PlayerFragment"
         android:id="@+id/player_fragment"
@@ -24,5 +31,6 @@
         android:layout_width="match_parent"
         tools:layout="@layout/fragment_player"
         android:layout_marginBottom="16dp"/>
+    -->
 
 </LinearLayout>

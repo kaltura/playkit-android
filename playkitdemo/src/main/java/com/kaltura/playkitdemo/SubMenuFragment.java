@@ -5,14 +5,20 @@ import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import com.kaltura.playkitdemo.jsonConverters.ConverterSubMenu;
+
 import java.util.ArrayList;
 
 
 public class SubMenuFragment extends AbsMenuFragment {
 
 
+    private static final String ROOT_MENU_POSITION = "ROOT_MENU_POSITION";
 
+    private ArrayList<ConverterSubMenu> mConverterSubMenuList;
     private OnSubMenuInteractionListener mListener;
+    private int mRootMenuPosition;
+
 
 
     public SubMenuFragment() {
@@ -20,26 +26,29 @@ public class SubMenuFragment extends AbsMenuFragment {
     }
 
 
-    public static SubMenuFragment newInstance(/*String param1, String param2*/) {
+    public static SubMenuFragment newInstance(int rootMenuPosition, ArrayList<ConverterSubMenu> converterSubMenuList) {
+
         SubMenuFragment fragment = new SubMenuFragment();
+
         Bundle args = new Bundle();
-        /*
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        */
+        args.putParcelableArrayList(MainActivity.CONVERTER_SUB_MENU_LIST, converterSubMenuList);
+        args.putInt(ROOT_MENU_POSITION, rootMenuPosition);
         fragment.setArguments(args);
+
         return fragment;
     }
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            /*
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-            */
+
+        Bundle arguments = getArguments();
+
+        if (arguments != null) {
+            mConverterSubMenuList = arguments.getParcelableArrayList(MainActivity.CONVERTER_SUB_MENU_LIST);
+            mRootMenuPosition = arguments.getInt(ROOT_MENU_POSITION);
         }
     }
 
@@ -76,8 +85,8 @@ public class SubMenuFragment extends AbsMenuFragment {
     protected RecyclerView.Adapter getAdapter() {
         return new MenuRecyclerAdapter(getDataSet(), new MenuRecyclerAdapter.MenuClickListener() {
             @Override
-            public void onItemClick(int position, View v) {
-                mListener.onSubMenuInteraction(position);
+            public void onItemClick(int subMenuPosition, View v) {
+                mListener.onSubMenuInteraction(mRootMenuPosition, subMenuPosition);
             }
         }, false);
     }
@@ -86,14 +95,15 @@ public class SubMenuFragment extends AbsMenuFragment {
 
 
     @Override
-    protected ArrayList<CardData> getDataSet() {
-        String[] titles = new String[] {"DRM", "Live", "Offline", "Audio Only", "Multi Audio Track",
-                "Captions", "Bitrate Selection"};
-        ArrayList<CardData> results = new ArrayList<>();
-        for (int index = 0; index < titles.length; index++) {
-            results.add(new CardData(titles[index]));
+    protected ArrayList<String> getDataSet() {
+
+        ArrayList<String> subMenuTitles = new ArrayList<>();
+
+        for (ConverterSubMenu subMenu : mConverterSubMenuList) {
+            subMenuTitles.add(subMenu.getSubMenuTitle());
         }
-        return results;
+
+        return subMenuTitles;
     }
 
 
@@ -103,17 +113,7 @@ public class SubMenuFragment extends AbsMenuFragment {
     }
 
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnSubMenuInteractionListener {
-        void onSubMenuInteraction(int position);
+        void onSubMenuInteraction(int rootMenuPosition, int subMenuPosition);
     }
 }

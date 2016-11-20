@@ -6,6 +6,7 @@
     <string name="feature_about_title">About this feature</string>
     <string name="more_info">For more info go to:</string>
     <string name="more_info_url">www.kaltura.com/kalturakit</string>
+    <string name="feature_on">(ON)</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

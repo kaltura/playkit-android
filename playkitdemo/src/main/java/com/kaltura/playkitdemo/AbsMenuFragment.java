@@ -11,10 +11,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.kaltura.playkitdemo.data.CardData;
+
 import java.util.ArrayList;
 
 import static android.content.ContentValues.TAG;
-import static java.security.AccessController.getContext;
 
 /**
  * Created by itanbarpeled on 14/11/2016.
@@ -70,7 +71,7 @@ public abstract class AbsMenuFragment extends Fragment {
     abstract protected int getDivider();
 
 
-    abstract protected ArrayList<CardData>  getDataSet();
+    abstract protected ArrayList getDataSet();
 
 
     abstract protected RecyclerView.Adapter getAdapter();

@@ -1,181 +1,131 @@
 package com.kaltura.playkitdemo;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
-import android.widget.LinearLayout;
-import android.widget.Toast;
 
-import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PlayKitManager;
-import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
-import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
-import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.plugins.SamplePlugin;
+import com.kaltura.playkitdemo.jsonConverters.ConverterPlayKitApp;
+import com.kaltura.playkitdemo.jsonConverters.ConverterSubMenu;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.util.ArrayList;
 
-import static com.kaltura.playkitdemo.MockParams.Format;
-import static com.kaltura.playkitdemo.MockParams.MediaId;
+import static com.kaltura.playkitdemo.R.id.player_fragment;
 
 
 
-public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity";
+public class MainActivity extends AbsPlayerDemoActivity implements RootMenuFragment.OnRootMenuInteractionListener, SubMenuFragment.OnSubMenuInteractionListener {
 
-    private Player mPlayer;
-    private PhoenixMediaProvider phoenixMediaProvider;
-    private PlaybackControlsView controlsView;
-    private boolean nowPlaying;
 
-    private void registerPlugins() {
-        PlayKitManager.registerPlugins(SamplePlugin.factory);
-    }
+
+    public static final String TAG = "PLAY_KIT";
+    public static final String CONVERTER_SUB_MENU = "CONVERTER_SUB_MENU";
+    public static final String CONVERTER_SUB_MENU_LIST = "CONVERTER_SUB_MENU_LIST";
+
+    private ExpandableMenuFragment mExpandableMenuFragment;
+    private PlayerFragment mPlayerFragment;
+    private RootMenuFragment mRootMenuFragment;
+    private SubMenuFragment mSubMenuFragment;
+    private ConverterPlayKitApp mConverterPlayKitApp;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        registerPlugins();
+        Intent intent = getIntent();
+        mConverterPlayKitApp = intent.getParcelableExtra(SplashActivity.CONVERTER_PLAY_KIT_APP);
 
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
-        //mockProvider = new MockMediaProvider("mock/entries.playkit.json", this, "1_1h1vsv3z");
-        phoenixMediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
+        if (findViewById(player_fragment) != null) { // tablet
 
+            mExpandableMenuFragment = ExpandableMenuFragment.newInstance();
+            //mPlayerFragment = PlayerFragment.newInstance();
 
+            transaction.add(R.id.expanded_menu_fragment, mExpandableMenuFragment);
+            //transaction.add(R.id.player_fragment, mPlayerFragment);
+            transaction.addToBackStack(null).commit();
 
-    }
+        } else { // smartphone
 
-    @Override
-    protected void onStart() {
-        super.onStart();
+            mRootMenuFragment = RootMenuFragment.newInstance(mConverterPlayKitApp);
+            transaction.add(R.id.smartphone_menu_container, mRootMenuFragment);
+            transaction.addToBackStack(null).commit();
 
+        }
 
         /*
-        mockProvider.load(new OnMediaLoadCompletion() {
-            @Override
-            public void onComplete(ResultElement<PKMediaEntry> response) {
-                if (response.isSuccess()) {
-                    onMediaLoaded(response.getResponse());
-                }
-            }
+        ConverterRootMenu converterRootMenu0 = converterPlayKitApp.getConverterRootMenuList().get(0);
+        ConverterRootMenu converterRootMenu3 = converterPlayKitApp.getConverterRootMenuList().get(3);
 
-        });
+        Log.v(MainActivity.TAG, "MainActivity " + converterRootMenu0.getRootMenuTitle());
+        Log.v(MainActivity.TAG, "MainActivity " + converterRootMenu0.getSubMenu().get(0).getSubMenuTitle());
+        Log.v(MainActivity.TAG, "MainActivity " + converterRootMenu0.getSubMenu().get(1).getSubMenuTitle());
+        Log.v(MainActivity.TAG, "MainActivity " + converterRootMenu0.getSubMenu().get(1).getFeatureVariants().get(0).getFeatureTitle());
+        Log.v(MainActivity.TAG, "MainActivity " + converterRootMenu0.getSubMenu().get(1).getFeatureVariants().get(1).getFeatureTitle());
+        Log.v(MainActivity.TAG, "MainActivity " + converterRootMenu3.getSubMenu().get(0).getFeatureId());
         */
 
-
-
-        phoenixMediaProvider.load(new OnMediaLoadCompletion() {
-            @Override
-            public void onComplete(final ResultElement<PKMediaEntry> response) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (response.isSuccess()) {
-                            onMediaLoaded(response.getResponse());
-                        } else {
-
-                            Toast.makeText(MainActivity.this, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""), Toast.LENGTH_LONG).show();
-                            Log.e(TAG, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
-                        }
-                    }
-                });
-            }
-        });
-
     }
 
-    private void onMediaLoaded(PKMediaEntry mediaEntry){
-
-        PlayerConfig config = new PlayerConfig();
-
-        config.media.setMediaEntry(mediaEntry);
-        if(mPlayer == null){
-
-        configurePlugins(config.plugins);
 
 
-        mPlayer = PlayKitManager.loadPlayer(config, this);
-
-        Log.d(TAG, "Player: " + mPlayer.getClass());
-        addPlayerListeners();
-
-        LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
-        layout.addView(mPlayer.getView());
-
-        controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
-        controlsView.setPlayer(mPlayer);
-        }else {
-            mPlayer.prepare(config.media);
-        }
+    protected int getLayoutId() {
+        return R.layout.activity_app_main;
     }
 
-    private void configurePlugins(PlayerConfig.Plugins config) {
-        try {
-            config.setPluginConfig("Sample", new JSONObject().put("delay", 4200));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
+
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        controlsView.release();
-        mPlayer.release();
+    public void onRootMenuInteraction(int rootMenuPosition) {
 
+        Log.v(TAG, "MainActivity onRootMenuInteraction rootMenuPosition " + rootMenuPosition);
+
+        ArrayList<ConverterSubMenu> converterSubMenuList = getSubMenuList(rootMenuPosition);
+
+        /*
+        if there is only one sub menu item, we show directly
+        the PlayerActivity, instead of showing SubMenuFragment, and then PlayerActivity
+         */
+        if (converterSubMenuList.size() == 1) {
+          startPlayerActivity(rootMenuPosition, 0);
+        } else {
+            mSubMenuFragment = SubMenuFragment.newInstance(rootMenuPosition, converterSubMenuList);
+            FragmentTransaction transaction  = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.smartphone_menu_container, mSubMenuFragment);
+            transaction.addToBackStack(null).commit();
+        }
     }
 
-    private void addPlayerListeners() {
-        mPlayer.addEventListener(new PlayerEvent.Listener() {
-            @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
-
-            }
-        }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
-        
-        mPlayer.addEventListener(new PlayerEvent.Listener() {
-            @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
-                switch (event) {
-                    case PLAY:
-                        nowPlaying = true;
-                        break;
-                    case PAUSE:
-                        nowPlaying = false;
-                        break;
-                }
-            }
-        }, PlayerEvent.PLAYING);
-
-        mPlayer.addStateChangeListener(new PlayerState.Listener() {
-            @Override
-            public void onPlayerStateChanged(Player player, PlayerState newState) {
-                if(controlsView != null){
-                    controlsView.setPlayerState(newState);
-                }
-            }
-        });
-    }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        if(mPlayer != null){
-            mPlayer.restore();
-            if (nowPlaying) {
-                mPlayer.play();
-            }
-        }
-        if(controlsView != null){
-            controlsView.resume();
-        }
+    public void onSubMenuInteraction(int rootMenuPosition, int subMenuPosition) {
+
+        Log.v(TAG, "MainActivity onSubMenuInteraction rootMenuPosition " + rootMenuPosition + " subMenuPosition " + subMenuPosition);
+
+        startPlayerActivity(rootMenuPosition, subMenuPosition);
+
     }
+
+
+    private ArrayList<ConverterSubMenu> getSubMenuList(int rootMenuPosition) {
+        return new ArrayList<>(mConverterPlayKitApp.getConverterRootMenuList().get(rootMenuPosition).getSubMenu());
+    }
+
+
+    private void startPlayerActivity(int rootMenuPosition, int subMenuPosition) {
+
+        ArrayList<ConverterSubMenu> converterSubMenuList = getSubMenuList(rootMenuPosition);
+
+        Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
+        intent.putExtra(CONVERTER_SUB_MENU, converterSubMenuList.get(subMenuPosition));
+        startActivity(intent);
+    }
+
+
 }

@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.kaltura.playkitdemo.data.CardData;
+
 import java.util.ArrayList;
 
 /**
@@ -15,12 +17,12 @@ import java.util.ArrayList;
 
 class SubMenuRecyclerAdapter extends RecyclerView.Adapter<SubMenuRecyclerAdapter.DataObjectHolder> {
 
-    private ArrayList<CardData> mDataSet;
+    private ArrayList<String> mDataSet;
     private MenuRecyclerAdapter.MenuClickListener mClickListener;
 
 
 
-    SubMenuRecyclerAdapter(ArrayList<CardData> myDataSet, MenuRecyclerAdapter.MenuClickListener clickListener) {
+    SubMenuRecyclerAdapter(ArrayList<String> myDataSet, MenuRecyclerAdapter.MenuClickListener clickListener) {
         mDataSet = myDataSet;
         mClickListener = clickListener;
     }
@@ -36,7 +38,7 @@ class SubMenuRecyclerAdapter extends RecyclerView.Adapter<SubMenuRecyclerAdapter
 
     @Override
     public void onBindViewHolder(DataObjectHolder holder, int position) {
-        holder.subMenuTitle.setText(mDataSet.get(position).getTitle());
+        holder.subMenuTitle.setText(mDataSet.get(position));
     }
 
 

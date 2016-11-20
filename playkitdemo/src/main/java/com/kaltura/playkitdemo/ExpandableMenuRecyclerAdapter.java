@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.kaltura.playkitdemo.data.CardData;
+
 import java.util.ArrayList;
 
 /**
@@ -22,13 +24,13 @@ import java.util.ArrayList;
 public class ExpandableMenuRecyclerAdapter extends RecyclerView.Adapter<ExpandableMenuRecyclerAdapter.DataObjectHolder> {
 
 
-    private ArrayList<CardData> mDataSet;
+    private ArrayList<String> mDataSet;
     private MenuRecyclerAdapter.MenuClickListener mClickListener;
     private int[] drawableArray;
 
 
 
-    ExpandableMenuRecyclerAdapter(ArrayList<CardData> myDataSet, MenuRecyclerAdapter.MenuClickListener clickListener) {
+    ExpandableMenuRecyclerAdapter(ArrayList<String> myDataSet, MenuRecyclerAdapter.MenuClickListener clickListener) {
         mDataSet = myDataSet;
         drawableArray = new int[] {R.drawable.bullet_orange, R.drawable.bullet_yellow,
                 R.drawable.bullet_green, R.drawable.bullet_red};
@@ -47,7 +49,7 @@ public class ExpandableMenuRecyclerAdapter extends RecyclerView.Adapter<Expandab
 
     @Override
     public void onBindViewHolder(ExpandableMenuRecyclerAdapter.DataObjectHolder holder, int position) {
-        holder.rootMenuTitle.setText(mDataSet.get(position).getTitle());
+        holder.rootMenuTitle.setText(mDataSet.get(position));
         setBulletDrawable(holder, position);
     }
 
@@ -144,7 +146,12 @@ public class ExpandableMenuRecyclerAdapter extends RecyclerView.Adapter<Expandab
         }
 
 
-        private ArrayList<CardData> getDataSet() {
+        private ArrayList<String> getDataSet() {
+
+            ArrayList<String> subMenuTitles = new ArrayList<>();
+            return subMenuTitles;
+
+            /*
             String[] titles = new String[] {"DRM", "Live", "Offline", "Audio Only", "Multi Audio Track",
                     "Captions", "Bitrate Selection"};
             ArrayList<CardData> results = new ArrayList<>();
@@ -152,6 +159,7 @@ public class ExpandableMenuRecyclerAdapter extends RecyclerView.Adapter<Expandab
                 results.add(new CardData(titles[index]));
             }
             return results;
+            */
         }
 
     }

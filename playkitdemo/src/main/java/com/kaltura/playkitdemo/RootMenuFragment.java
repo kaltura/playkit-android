@@ -7,19 +7,17 @@ import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import com.kaltura.playkitdemo.jsonConverters.ConverterPlayKitApp;
+import com.kaltura.playkitdemo.jsonConverters.ConverterRootMenu;
+
 import java.util.ArrayList;
 
 
 public class RootMenuFragment extends AbsMenuFragment {
 
 
-    /*
-    private RecyclerView mRecyclerView;
-    private RecyclerView.Adapter mAdapter;
-    private LinearLayoutManager mLayoutManager;
-    */
-
     private OnRootMenuInteractionListener mListener;
+    private ConverterPlayKitApp mConverterPlayKitApp;
 
 
 
@@ -28,14 +26,14 @@ public class RootMenuFragment extends AbsMenuFragment {
     }
 
 
-    public static RootMenuFragment newInstance(/*String param1, String param2*/) {
+    public static RootMenuFragment newInstance(ConverterPlayKitApp converterPlayKitApp) {
+
         RootMenuFragment fragment = new RootMenuFragment();
+
         Bundle args = new Bundle();
-        /*
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        */
+        args.putParcelable(SplashActivity.CONVERTER_PLAY_KIT_APP, converterPlayKitApp);
         fragment.setArguments(args);
+
         return fragment;
     }
 
@@ -43,72 +41,19 @@ public class RootMenuFragment extends AbsMenuFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            /*
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-            */
+        Bundle bundle = getArguments();
+
+        if (bundle != null) {
+            mConverterPlayKitApp = bundle.getParcelable(SplashActivity.CONVERTER_PLAY_KIT_APP);
         }
     }
 
-    /*
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        View fragmentView = inflater.inflate(R.layout.fragment_root_menu, container, false);
-        mRecyclerView = (RecyclerView) fragmentView.findViewById(R.id.recycler_view);
-
-        return fragmentView;
-    }
-    */
 
 
     @Override
     protected int getLayoutID() {
         return R.layout.fragment_root_menu;
     }
-
-
-    /*
-    @Override
-    public void onActivityCreated (Bundle savedInstanceState) {
-
-        super.onActivityCreated(savedInstanceState);
-
-        setRecyclerView();
-    }
-    */
-
-
-    /*
-    private void setRecyclerView() {
-
-        mLayoutManager = new LinearLayoutManager(getContext());
-        mAdapter = new MenuRecyclerAdapter(getDataSet(), mMenuClickListener, true);
-
-
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.setAdapter(mAdapter);
-
-        // TODO - return back after upgrading to 25.0.0
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(), mLayoutManager.getOrientation());
-        dividerItemDecoration.setDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.divider_big));
-        mRecyclerView.addItemDecoration(dividerItemDecoration);
-
-    }
-    */
-
-
-
-    /*
-    MenuRecyclerAdapter.MenuClickListener mMenuClickListener = new MenuRecyclerAdapter.MenuClickListener() {
-        @Override
-        public void onItemClick(int position, View v) {
-            Log.v(AppMainActivity.TAG, "RootMenuFragment position " + position);
-        }
-    };
-    */
 
 
     @Override
@@ -129,13 +74,15 @@ public class RootMenuFragment extends AbsMenuFragment {
 
 
     @Override
-    protected ArrayList<CardData> getDataSet() {
-        String[] titles = new String[] {"Playback options", "Monetization", "Cast", "Analytics"};
-        ArrayList<CardData> results = new ArrayList<>();
-        for (int index = 0; index < titles.length; index++) {
-            results.add(new CardData(titles[index]));
+    protected ArrayList<String> getDataSet() {
+
+        ArrayList<String> rootMenuTitles = new ArrayList<>();
+
+        for (ConverterRootMenu rootMenu : mConverterPlayKitApp.getConverterRootMenuList()) {
+            rootMenuTitles.add(rootMenu.getRootMenuTitle());
         }
-        return results;
+
+        return rootMenuTitles;
     }
 
     @Override
@@ -163,16 +110,6 @@ public class RootMenuFragment extends AbsMenuFragment {
     }
 
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnRootMenuInteractionListener {
         void onRootMenuInteraction(int  position);
     }

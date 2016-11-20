@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import com.kaltura.playkitdemo.data.CardData;
+import com.kaltura.playkitdemo.jsonConverters.ConverterSubMenu;
+
 import java.util.ArrayList;
 
 
@@ -146,13 +149,26 @@ public class ExpandableMenuFragment extends AbsMenuFragment {
 
 
     @Override
-    protected ArrayList<CardData> getDataSet() {
+    protected ArrayList<String> getDataSet() {
+
+        /*
         String[] titles = new String[] {"Playback options", "Monetization", "Cast", "Analytics"};
         ArrayList<CardData> results = new ArrayList<>();
         for (int index = 0; index < titles.length; index++) {
             results.add(new CardData(titles[index]));
         }
         return results;
+        */
+
+        ArrayList<String> subMenuTitles = new ArrayList<>();
+
+        /*
+        for (ConverterSubMenu subMenu : mConverterRootMenu.getSubMenu()) {
+            subMenuTitles.add(subMenu.getSubMenuTitle());
+        }
+        */
+
+        return subMenuTitles;
     }
 
 
@@ -162,27 +178,7 @@ public class ExpandableMenuFragment extends AbsMenuFragment {
     }
 
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
-
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
 }

@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.kaltura.playkitdemo.data.CardData;
+
 import java.util.ArrayList;
 
 /**
@@ -18,14 +20,14 @@ import java.util.ArrayList;
 
  class MenuRecyclerAdapter extends RecyclerView.Adapter<MenuRecyclerAdapter.DataObjectHolder> {
 
-    private ArrayList<CardData> mDataSet;
+    private ArrayList<String> mDataSet;
     private MenuClickListener mClickListener;
     private int[] drawableArray;
     private boolean mShowBullet;
 
 
 
-    MenuRecyclerAdapter(ArrayList<CardData> myDataSet, MenuClickListener clickListener, boolean showBullet) {
+    MenuRecyclerAdapter(ArrayList<String> myDataSet, MenuClickListener clickListener, boolean showBullet) {
         mDataSet = myDataSet;
         drawableArray = new int[] {R.drawable.bullet_orange, R.drawable.bullet_yellow,
                 R.drawable.bullet_green, R.drawable.bullet_red};
@@ -44,7 +46,7 @@ import java.util.ArrayList;
 
     @Override
     public void onBindViewHolder(DataObjectHolder holder, int position) {
-        holder.titleTextView.setText(mDataSet.get(position).getTitle());
+        holder.titleTextView.setText(mDataSet.get(position));
         setBulletDrawable(holder, position);
     }
 
