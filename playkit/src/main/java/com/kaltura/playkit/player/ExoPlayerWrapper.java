@@ -12,11 +12,14 @@ import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroup;
+import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
@@ -255,6 +258,41 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     @Override
     public void onTrackSelectionsChanged(TrackSelections<? extends MappingTrackSelector.MappedTrackInfo> trackSelections) {
         Log.d(TAG, "onTrackSelectionsChanged");
+
+        MappingTrackSelector.MappedTrackInfo trackInfo = trackSelections.info;
+
+        String formatType;
+        for(int k = 0; k < 3; k++){
+            TrackGroupArray trackGroups = trackInfo.getTrackGroups(k);
+        if(k == 0){
+            formatType = "video";
+
+        }else if (k == 1){
+            formatType = "auidio";
+        }else{
+            formatType = "subtitle";
+        }
+            for (int i = 0; i < trackGroups.length; i++) {
+                TrackGroup trackGroup = trackGroups.get(i);
+                for (int j = 0; j < trackGroup.length; j++) {
+
+                    Format format = trackGroup.getFormat(j);
+                    Log.e(TAG, "Format type " + formatType + " format at index " + j + " bitrate " + format.bitrate);
+                    Log.e(TAG, "Format type " + formatType + "format at index " + j + " sampleMimeType " + format.sampleMimeType);
+                    Log.e(TAG, "Format type " + formatType + "format at index " + j + " codecs " + format.codecs);
+                    Log.e(TAG, "format at index " + j + " language " + format.language);
+                    Log.e(TAG, "format at index " + j + " frameRate " + format.frameRate);
+                    Log.e(TAG, "format at index " + j + " channelCount " + format.channelCount);
+                    Log.e(TAG, "format at index " + j + " pixelWidthHeightRatio " + format.pixelWidthHeightRatio);
+                    Log.e(TAG, "format at index " + j + " width " + format.width);
+                    Log.e(TAG, "format at index " + j + " height " + format.height);
+                    Log.e(TAG, "format at index " + j + " channel count " + format.channelCount);
+                    Log.e(TAG, "format at index " + j + " containerMimeType " + format.containerMimeType);
+                    Log.e(TAG, "format at index " + j + " id " + format.id);
+                    Log.e(TAG, "format at index " + j + " sample rate " + format.sampleRate);
+                }
+            }
+        }
     }
 
     @Override
