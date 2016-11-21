@@ -22,49 +22,33 @@ public class AssetService extends PhoenixService {
                 .method("POST")
                 .url(baseUrl)
                 .tag("asset-get")
-                .params(getAssetGetReqParams(ks, assetId, referenceType, partnerId));
+                .params(getAssetGetReqParams(ks, assetId, referenceType));
     }
 
     static RequestBuilder assetGet(String baseUrl, int partnerId, String assetId, String referenceType) {
         return new MultiRequestBuilder(OttUserService.anonymousLogin(baseUrl, partnerId),
-                new RequestBuilder().params(getAssetGetReqParams("{1:result:ks}", assetId, referenceType, partnerId)))
+                new RequestBuilder()
+                        .params(getAssetGetReqParams("{1:result:ks}", assetId, referenceType)) //on http://52.210.223.65:8080/v4_0/api_v3 its without the {}
+                        .addParam("service","asset")
+                        .addParam("action","get"))
                 .method("POST")
-                .tag("asset-multi-get");
+                .tag("asset-multi-get")
+                .url(baseUrl)
+                .service("multirequest");
     }
 
 
-    /*private static JsonObject getAssetMultiParams(int partnerId, String assetId, String referenceType) {
-        JsonObject body = new JsonObject();
-        anonymousLogin
-        body.add("1", getAnonymousReqParams(partnerId).params);
-        String ks = "{1:result:ks}";
-        body.add("2", getAssetGetReqParams(ks, assetId, referenceType));
-        return body;
-    }*/
-
-    private static JsonObject getAssetGetReqParams(String ks, String assetId, String referenceType, int partnerId) {
+    private static JsonObject getAssetGetReqParams(String ks, String assetId, String referenceType) {
         JsonObject getParams = getPhoenixParams();
         getParams.addProperty("ks", ks);
         getParams.addProperty("id", assetId);
         getParams.addProperty("assetReferenceType", referenceType);
-        getParams.addProperty("", partnerId);
+        getParams.addProperty("type", referenceType); // sometimes request expect type as property sometimes assetReferenceType
 
-        /*"with"    :  [
-        {
-           "type": "files",
-           "objectType": "KalturaCatalogWithHolder"
-        }
-     ]*/
+        // needed to make sure response will retrieve the media file no matter if apiVersion property supplied or not
+        getParams.addProperty("with","[{\"type\": \"files\"}]");/*"objectType": "KalturaCatalogWithHolder"*/
 
         return getParams;
     }
-
-    /*private static JsonObject getAnonymousReqParams(int partnerId) {
-        JsonObject params = new JsonObject();
-        params.addProperty("service", "ottUser");
-        params.addProperty("action", "anonymousLogin");
-        params.addProperty("partnerId", partnerId);
-        return params;
-    }*/
 
 }

@@ -19,7 +19,7 @@ public class OttUserService extends PhoenixService {
                 .action("login")
                 .method("POST")
                 .url(baseUrl)
-                .tag("asset-multi-get")
+                .tag("ottuser-login")
                 .params(getLoginReqParams(partnerId, username, password, udid));
     }
 
@@ -29,7 +29,7 @@ public class OttUserService extends PhoenixService {
                 .action("anonymousLogin")
                 .method("POST")
                 .url(baseUrl)
-                .tag("asset-multi-get")
+                .tag("ottuser-anonymous-login")
                 .params(getAnonymousReqParams(partnerId));
     }
 
