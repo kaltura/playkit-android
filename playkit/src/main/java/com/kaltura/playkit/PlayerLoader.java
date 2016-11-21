@@ -2,9 +2,11 @@ package com.kaltura.playkit;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
-import org.json.JSONObject;
+import com.google.gson.JsonObject;
+import com.kaltura.playkit.player.PlayerController;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -33,26 +35,22 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     PlayerLoader(Context context) {
         this.context = context;
-        messageBus = new MessageBus(context);
+        this.messageBus = new MessageBus(context);
     }
     
-    private List<String> getPluginNames(PlayerConfig.Plugins pluginsConfig) {
-
-        List<String> plugins = new ArrayList<>();
-        for (Map.Entry<String, JSONObject> pluginConfig : pluginsConfig.getPluginConfigMap().entrySet()) {
-            String name = pluginConfig.getKey();
-            plugins.add(name);
-        }
-        return plugins;
-    }
-
     public void load(@NonNull PlayerConfig playerConfig) {
-        Player player = new POCPlayer(context);
-        player.prepare(playerConfig.media);
+        PlayerController playerController = new PlayerController(context, playerConfig.media);
+        
+        playerController.setEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                messageBus.post(event);
+            }
+        });
 
-        PlayerDecorator selectedDecorator = null;
+        Player player = playerController;
 
-        for (Map.Entry<String, JSONObject> pluginConfig : playerConfig.plugins.getPluginConfigMap().entrySet()) {
+        for (Map.Entry<String, JsonObject> pluginConfig : playerConfig.plugins.getPluginConfigMap().entrySet()) {
             String name = pluginConfig.getKey();
             PKPlugin plugin = loadPlugin(name, player, playerConfig, messageBus, context);
 
@@ -64,40 +62,33 @@ class PlayerLoader extends PlayerDecoratorBase {
             // Check if the plugin provides a PlayerDecorator.
             PlayerDecorator decorator = plugin.getPlayerDecorator();
             if (decorator != null) {
-                if (selectedDecorator != null) {
-                    throw new IllegalStateException("Only one decorator allowed");
-                }
-                selectedDecorator = decorator;
-                selectedDecorator.setPlayer(player);
+                decorator.setPlayer(player);
+                player = decorator;
             }
 
             loadedPlugins.put(name, new LoadedPlugin(plugin, decorator));
         }
 
-        if (selectedDecorator != null) {
-            player = selectedDecorator;
-        }
         setPlayer(player);
     }
 
-//    public void update(@NonNull PlayerConfig playerConfig) {
-//        
-//        // Handle the simple case: same list of plugins (same order)
-//        if (getPluginNames(playerConfig.plugins).equals(new ArrayList<>(mLoadedPlugins.keySet()))) {
-//            updatePluginConfig(playerConfig);
-//        } else {
-//            // reload everything.
-//            releasePlugins();
-//            releasePlayer();
-//            
-//            load(playerConfig);
-//        }
-//    }
+    @Override
+    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
+        LoadedPlugin loadedPlugin = loadedPlugins.get(pluginName);
+        if (loadedPlugin != null) {
+            loadedPlugin.plugin.onUpdateConfig(key, value);
+        }
+    }
 
     @Override
     public void release() {
         releasePlugins();
         releasePlayer();
+    }
+
+    @Override
+    public void restore() {
+        getPlayer().restore();
     }
 
     private void releasePlayer() {
@@ -124,25 +115,35 @@ class PlayerLoader extends PlayerDecoratorBase {
             }
             
             // Release the plugin
-            loadedPlugin.plugin.release();
+            loadedPlugin.plugin.onDestroy();
             loadedPlugins.remove(pluginEntry.getKey());
         }
         
         setPlayer(currentLayer);
     }
 
-    private void updatePluginConfig(PlayerConfig playerConfig) {
-        for (Map.Entry<String, LoadedPlugin> entry : loadedPlugins.entrySet()) {
-            entry.getValue().plugin.update(playerConfig);
-        }
-    }
-
     private PKPlugin loadPlugin(String name, Player player, PlayerConfig config, MessageBus messageBus, Context context) {
         PKPlugin plugin = PlayKitManager.createPlugin(name);
         if (plugin != null) {
-            plugin.load(player, config.media, config.plugins.getPluginConfig(name), messageBus, context);
+            plugin.onLoad(player, config.media, config.plugins.getPluginConfig(name), messageBus, context);
         }
         return plugin;
     }
 
+    @Override
+    public void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events) {
+        messageBus.listen(listener, events);
+    }
+
+    @Override
+    public void addStateChangeListener(@NonNull final PlayerState.Listener listener) {
+        messageBus.listen(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                if (event instanceof PlayerState.Event) {
+                    listener.onPlayerStateChanged(PlayerLoader.this, ((PlayerState.Event)event).newState);
+                }
+            }
+        }, PlayerState.EVENT_TYPE);
+    }
 }

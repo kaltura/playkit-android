@@ -36,4 +36,8 @@ public class Assert {
         }
         return string;
     }
+
+    public static void shouldNeverHappen() {
+        failState("Should never happen");
+    }
 }

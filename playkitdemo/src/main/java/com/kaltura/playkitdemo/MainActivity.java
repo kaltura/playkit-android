@@ -6,6 +6,9 @@ import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.google.gson.JsonObject;
+import com.kaltura.playkit.MediaEntryProvider;
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
@@ -14,26 +17,21 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
-import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.plugins.SamplePlugin;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import static com.kaltura.playkitdemo.MockParams.Format;
-import static com.kaltura.playkitdemo.MockParams.MediaId;
-
 
 public class MainActivity extends AppCompatActivity {
+    
+    
+    public static final boolean AUTO_PLAY_ON_RESUME = false;
 
     private static final String TAG = "MainActivity";
 
-    //private PlayKit mPlayKit;
-    private MockMediaProvider mockProvider;
-    private Player mPlayer;
-    private PhoenixMediaProvider phoenixMediaProvider;
-
+    private Player player;
+    private MediaEntryProvider mediaProvider;
+    private PlaybackControlsView controlsView;
+    private boolean nowPlaying;
 
     private void registerPlugins() {
         PlayKitManager.registerPlugins(SamplePlugin.factory);
@@ -46,27 +44,11 @@ public class MainActivity extends AppCompatActivity {
 
         registerPlugins();
 
-        //mockProvider = new MockMediaProvider("mock/entries.playkit.json", this, "1_1h1vsv3z");
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
 
-        phoenixMediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
+//        mediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
 
-
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        /*mockProvider.load(new OnMediaLoadCompletion() {
-            @Override
-            public void onComplete(ResultElement<PKMediaEntry> response) {
-                if (response.isSuccess()) {
-                    onMediaLoaded(response.getResponse());
-                }
-            }
-
-        });*/
-
-        phoenixMediaProvider.load(new OnMediaLoadCompletion() {
+        mediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(final ResultElement<PKMediaEntry> response) {
                 runOnUiThread(new Runnable() {
@@ -83,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
+
     }
 
     private void onMediaLoaded(PKMediaEntry mediaEntry){
@@ -90,46 +73,73 @@ public class MainActivity extends AppCompatActivity {
         PlayerConfig config = new PlayerConfig();
 
         config.media.setMediaEntry(mediaEntry);
-        configurePlugins(config.plugins);
+        if(player == null){
 
+            configurePlugins(config.plugins);
+            
+            player = PlayKitManager.loadPlayer(config, this);
 
-        mPlayer = PlayKitManager.loadPlayer(config, this);
+            Log.d(TAG, "Player: " + player.getClass());
+            addPlayerListeners();
 
-        Log.d(TAG, "Player: " + mPlayer.getClass());
+            LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
+            layout.addView(player.getView());
 
-        mPlayer.addEventListener(new PlayerEvent.Listener() {
-            @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
-
-            }
-        }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
-
-        mPlayer.addStateChangeListener(new PlayerState.Listener() {
-            @Override
-            public void onPlayerStateChanged(Player player, PlayerState newState) {
-
-            }
-        });
-
-        LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
-        layout.addView(mPlayer.getView());
-
-
-        mPlayer.play();
+            controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
+            controlsView.setPlayer(player);
+        }
+        player.prepare(config.media);
     }
 
     private void configurePlugins(PlayerConfig.Plugins config) {
-        try {
-            config.setPluginConfig("Sample", new JSONObject().put("delay", 4200));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("delay", 4200);
+        config.setPluginConfig("Sample", jsonObject);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        controlsView.release();
+        player.release();
+    }
 
-        mPlayer.release();
+    private void addPlayerListeners() {
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                nowPlaying = true;
+            }
+        }, PlayerEvent.PLAY);
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                nowPlaying = false;
+            }
+        }, PlayerEvent.PAUSE);
+
+        player.addStateChangeListener(new PlayerState.Listener() {
+            @Override
+            public void onPlayerStateChanged(Player player, PlayerState newState) {
+                if(controlsView != null){
+                    controlsView.setPlayerState(newState);
+                }
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(player != null){
+            player.restore();
+            if (nowPlaying && AUTO_PLAY_ON_RESUME) {
+                player.play();
+            }
+        }
+        if(controlsView != null){
+            controlsView.resume();
+        }
     }
 }
