@@ -1,5 +1,6 @@
 package com.kaltura.playkitdemo;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -24,9 +25,11 @@ import static android.content.ContentValues.TAG;
 public abstract class AbsMenuFragment extends Fragment {
 
 
+
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private LinearLayoutManager mLayoutManager;
+
 
 
 
@@ -53,6 +56,7 @@ public abstract class AbsMenuFragment extends Fragment {
 
     protected void setRecyclerView() {
 
+
         mLayoutManager = new LinearLayoutManager(getContext());
         mAdapter = getAdapter();
 
@@ -61,12 +65,16 @@ public abstract class AbsMenuFragment extends Fragment {
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
 
-        // TODO - return back after upgrading to 25.0.0
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(), mLayoutManager.getOrientation());
-        dividerItemDecoration.setDrawable(ContextCompat.getDrawable(getContext(), getDivider()));
-        mRecyclerView.addItemDecoration(dividerItemDecoration);
 
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(), mLayoutManager.getOrientation());
+            dividerItemDecoration.setDrawable(ContextCompat.getDrawable(getContext(), getDivider()));
+            mRecyclerView.addItemDecoration(dividerItemDecoration);
+        }
     }
+
+
 
     abstract protected int getDivider();
 

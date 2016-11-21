@@ -64,6 +64,15 @@ public class MainActivity extends AbsPlayKitAppActivity implements RootMenuFragm
 
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        //setBackButtonVisibility(false);
+    }
+
+
+
+    @Override
     protected int getLayoutId() {
         return R.layout.activity_main;
     }
@@ -83,6 +92,9 @@ public class MainActivity extends AbsPlayKitAppActivity implements RootMenuFragm
         if (converterSubMenuList.size() == 1) {
           startPlayerActivity(rootMenuPosition, 0);
         } else {
+
+            setBackButtonVisibility(true);
+
             mSubMenuFragment = SubMenuFragment.newInstance(rootMenuPosition, converterSubMenuList);
             FragmentTransaction transaction  = getSupportFragmentManager().beginTransaction();
             transaction.replace(R.id.smartphone_menu_container, mSubMenuFragment);

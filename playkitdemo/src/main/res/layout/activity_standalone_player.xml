@@ -8,14 +8,6 @@
     android:fitsSystemWindows="true">
 
 
-    <!--
-    <Spinner
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/spinner"
-        />
-        -->
-
     <LinearLayout
         android:id="@+id/player_root"
         android:layout_width="0dp"

@@ -43,11 +43,21 @@ abstract class AbsPlayKitAppActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
 
         if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowHomeEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
+            setBackButtonVisibility(true);
         }
         //getSupportActionBar().setWindowTitle("BLIII");
+    }
+
+
+
+    protected void setBackButtonVisibility(boolean toShow) {
+        ActionBar actionBar = getSupportActionBar();
+
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(toShow);
+            actionBar.setDisplayShowHomeEnabled(toShow);
+        }
     }
 
 

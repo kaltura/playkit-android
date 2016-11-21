@@ -220,7 +220,7 @@ public class PlayerProvider {
 
         media.setStartPosition(converterMedia.getStartPosition());
         media.setAutoPlay(converterMedia.isAutoPlay());
-        
+
     }
 
 

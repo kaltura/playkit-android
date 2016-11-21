@@ -8,7 +8,8 @@
     <color name="yellow">#fcd00d</color>
     <color name="green">#aad12c</color>
     <color name="red">#d4001c</color>
-    <color name="light_grey">#e4e4e4</color>
+    <color name="very_light_grey">#e4e4e4</color>
+    <color name="light_grey">#FFE0E0E0</color>
     <!--<color name="colorAccent">#FF4081</color>-->
     <!--<color name="backgroundC">#FFFFFF</color>-->
 </resources>

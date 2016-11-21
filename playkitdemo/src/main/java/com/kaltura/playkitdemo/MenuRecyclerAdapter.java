@@ -69,17 +69,6 @@ import java.util.ArrayList;
     }
 
 
-    /*
-    public void addItem(DataObject dataObj, int index) {
-        mDataSet.add(index, dataObj);
-        notifyItemInserted(index);
-    }
-
-    public void deleteItem(int index) {
-        mDataSet.remove(index);
-        notifyItemRemoved(index);
-    }
-    */
 
     @Override
     public int getItemCount() {
