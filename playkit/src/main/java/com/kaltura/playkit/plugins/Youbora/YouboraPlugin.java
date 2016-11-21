@@ -2,13 +2,15 @@ package com.kaltura.playkit.plugins.Youbora;
 
 import android.content.Context;
 
+import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
+import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.PlayerState;
 import com.npaw.youbora.youboralib.data.Options;
-
-import org.json.JSONObject;
 
 import java.util.Map;
 
@@ -21,9 +23,10 @@ public class YouboraPlugin extends PKPlugin {
 
     private static YouboraLibraryManager mPluginManager;
     private PlayerConfig.Media mMediaConfig;
-    private JSONObject mPluginConfig;
+    private JsonObject mPluginConfig;
     private Context mContext;
     private Player mPlayer;
+    private MessageBus mMessageBus;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -37,24 +40,31 @@ public class YouboraPlugin extends PKPlugin {
         }
     };
 
+
     @Override
-    protected void update(PlayerConfig playerConfig){
+    protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
 
     }
 
     @Override
-    protected void load(Player player, PlayerConfig.Media mediaConfig, JSONObject pluginConfig, MessageBus messageBus, Context context) {
+    protected void onUpdateConfig(String key, Object value) {
+
+    }
+
+    @Override
+    public void onDestroy() {
+        stopMonitoring();
+    }
+
+    @Override
+    protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
         this.mMediaConfig = mediaConfig;
         this.mPlayer = player;
         this.mPluginConfig = pluginConfig;
         this.mContext = context;
+        this.mMessageBus = messageBus;
         mPluginManager = new YouboraLibraryManager(new Options());
         startMonitoring(mPlayer);
-    }
-
-    @Override
-    public void release() {
-        stopMonitoring();
     }
 
     public void startMonitoring(Player player) {
@@ -69,8 +79,8 @@ public class YouboraPlugin extends PKPlugin {
         mPluginManager.setOptions(opt);
 
         mPluginManager.startMonitoring(player);
-        player.addEventListener(mPluginManager.getEventListener());
-        player.addStateChangeListener(mPluginManager.getStateChangeListener());
+        mMessageBus.listen(mPluginManager.getEventListener(), (PKEvent[]) PlayerEvent.values());
+        mMessageBus.listen(mPluginManager.getStateChangeListener(), PlayerState.EVENT_TYPE);
     }
 
     public void stopMonitoring() {

@@ -1,6 +1,6 @@
 package com.kaltura.playkit.plugins.Youbora;
 
-import com.kaltura.playkit.Player;
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.npaw.youbora.plugins.PluginGeneric;
@@ -18,6 +18,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     private Double lastReportedBitrate = super.getBitrate();
     private Double lastReportedthroughput = super.getThroughput();
     private static final long MONITORING_INTERVAL = 200L;
+    private boolean isFirstPlay = true;
 
     public YouboraLibraryManager(String options) throws JSONException {
         super(options);
@@ -33,78 +34,82 @@ public class YouboraLibraryManager extends PluginGeneric {
         ViewManager.setMonitoringInterval(MONITORING_INTERVAL);
     }
 
-    public PlayerState.Listener getStateChangeListener(){ return mStateChangeListener;}
+    public PKEvent.Listener getStateChangeListener(){ return mStateChangeListener;}
 
-    private PlayerState.Listener mStateChangeListener = new PlayerState.Listener() {
+    private PKEvent.Listener mStateChangeListener = new PKEvent.Listener() {
         @Override
-        public void onPlayerStateChanged(Player player, PlayerState newState) {
-            switch (newState){
-                case IDLE:
+        public void onEvent(PKEvent event) {
+            if (event instanceof PlayerState.Event) {
+                switch (((PlayerState.Event) event).newState) {
+                    case IDLE:
 
-                    break;
-                case LOADING:
+                        break;
+                    case LOADING:
 
-                    break;
-                case READY:
-                    playHandler();
-                    joinHandler();
-                    bufferedHandler();
-                    break;
-                case BUFFERING:
-                    bufferingHandler();
-                    break;
-            }
-            if (player.getAutoPlay()) {
-                resumeHandler();
-            } else {
-                pauseHandler();
+                        break;
+                    case READY:
+                        playHandler();
+                        joinHandler();
+                        bufferedHandler();
+                        break;
+                    case BUFFERING:
+                        bufferingHandler();
+                        break;
+                }
             }
         }
     };
 
-    public PlayerEvent.Listener getEventListener(){
+    public PKEvent.Listener getEventListener(){
         return mEventListener;
     }
 
-    private PlayerEvent.Listener mEventListener = new PlayerEvent.Listener() {
+    private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
-        public void onPlayerEvent(Player player, PlayerEvent event) {
-            switch (event){
-                case CAN_PLAY:
-                    playHandler();
-                    joinHandler();
-                    bufferedHandler();
-                    break;
-                case DURATION_CHANGE:
+        public void onEvent(PKEvent event) {
+            if (event instanceof PlayerEvent) {
+                switch ((PlayerEvent) event) {
+                    case CAN_PLAY:
+                        playHandler();
+                        joinHandler();
+                        bufferedHandler();
+                        break;
+                    case DURATION_CHANGE:
 
-                    break;
-                case ENDED:
-                    endedHandler();
-                    break;
-                case ERROR:
+                        break;
+                    case ENDED:
+                        endedHandler();
+                        break;
+                    case ERROR:
+                        errorHandler(event.eventId().toString());
+                        break;
+                    case LOADED_METADATA:
 
-                    break;
-                case LOADED_METADATA:
+                        break;
+                    case PAUSE:
+                        pauseHandler();
+                        break;
+                    case PLAY:
+                        if (!isFirstPlay) {
+                            resumeHandler();
+                        } else {
+                            isFirstPlay = false;
+                            playHandler();
+                        }
+                        break;
+                    case PLAYING:
+                        playingHandler();
+                        break;
+                    case SEEKED:
+                        seekedHandler();
+                        break;
+                    case SEEKING:
+                        seekingHandler();
+                        break;
+                    default:
 
-                    break;
-                case PAUSE:
-                    pauseHandler();
-                    break;
-                case PLAY:
-                    playHandler();
-                    break;
-                case PLAYING:
-
-                    break;
-                case SEEKED:
-
-                    break;
-                case SEEKING:
-
-                    break;
-                default:
-
-                    break;
+                        break;
+                }
             }
         }
     };

@@ -3,7 +3,7 @@ package com.kaltura.playkit.plugins.Youbora;
 import android.content.Context;
 import android.util.Log;
 
-import org.json.JSONObject;
+import com.google.gson.JsonObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -124,7 +124,7 @@ public class YouboraConfig {
         }
     }
 
-    public static Map<String, Object> getYouboraConfig(Context context, JSONObject pluginConfig) {
+    public static Map<String, Object> getYouboraConfig(Context context, JsonObject pluginConfig) {
         if (youboraConfig == null) {
             // load from json
             File file = new File(context.getFilesDir(), "youbora_config_map");

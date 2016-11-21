@@ -3,7 +3,9 @@ package com.kaltura.playkit.plugins;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
@@ -36,7 +38,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private int mFileId = -1;
     private long mContinueTime;
     private PlayerConfig.Media mMediaConfig;
-    private JSONObject mPluginConfig;
+    private JsonObject mPluginConfig;
     private Context mContext;
     private Player mPlayer;
     private boolean mPlayFromContinue = false;
@@ -57,79 +59,86 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     };
 
     @Override
-    protected void update(PlayerConfig playerConfig){
+    protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
 
     }
 
     @Override
-    protected void load(Player player, PlayerConfig.Media mediaConfig, JSONObject pluginConfig, MessageBus messageBus, Context context) {
-        player.addEventListener(mEventListener);
+    protected void onUpdateConfig(String key, Object value) {
+
+    }
+
+    @Override
+    public void onDestroy() {
+
+    }
+
+    @Override
+    protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
         this.mMediaConfig = mediaConfig;
         this.mPlayer = player;
         this.mPluginConfig = pluginConfig;
         this.mContext = context;
+        messageBus.listen(mEventListener);
         if (mMediaConfig.getStartPosition() != -1){
             this.mContinueTime = mMediaConfig.getStartPosition();
             this.mPlayFromContinue = true;
         }
     }
 
-    @Override
-    public void release() {
-
-    }
-
-    private PlayerEvent.Listener mEventListener = new PlayerEvent.Listener() {
+    private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
-        public void onPlayerEvent(Player player, PlayerEvent event) {
-            switch (event){
-                case CAN_PLAY:
-                    mDidFirstPlay = false;
+        public void onEvent(PKEvent event) {
+            if (event instanceof PlayerEvent) {
+                switch ((PlayerEvent) event) {
+                    case CAN_PLAY:
+                        mDidFirstPlay = false;
 //                    mFileId = mPlayerConfig.getFileId();
-                    break;
-                case DURATION_CHANGE:
+                        break;
+                    case DURATION_CHANGE:
 
-                    break;
-                case ENDED:
-                    mIsPlaying = false;
-                    setMessageParams(PhoenixActionType.FINISH);
-                    break;
-                case ERROR:
-                    setMessageParams(PhoenixActionType.ERROR);
-                    break;
-                case LOADED_METADATA:
-                    setMessageParams(PhoenixActionType.LOAD);
-                    break;
-                case PAUSE:
-                    mIsPlaying = false;
-                    if (mDidFirstPlay){
-                        setMessageParams(PhoenixActionType.PAUSE);
-                    }
-                    break;
-                case PLAY:
-                    if (!mDidFirstPlay){
-                        mDidFirstPlay = true;
-                        mIsPlaying = true;
-                        setMessageParams(PhoenixActionType.FIRST_PLAY);
-                    } else {
-                        mIsPlaying = true;
-                        startMediaHitInterval();
-                        setMessageParams(PhoenixActionType.PLAY);
-                    }
+                        break;
+                    case ENDED:
+                        mIsPlaying = false;
+                        setMessageParams(PhoenixActionType.FINISH);
+                        break;
+                    case ERROR:
+                        setMessageParams(PhoenixActionType.ERROR);
+                        break;
+                    case LOADED_METADATA:
+                        setMessageParams(PhoenixActionType.LOAD);
+                        break;
+                    case PAUSE:
+                        mIsPlaying = false;
+                        if (mDidFirstPlay) {
+                            setMessageParams(PhoenixActionType.PAUSE);
+                        }
+                        break;
+                    case PLAY:
+                        if (!mDidFirstPlay) {
+                            mDidFirstPlay = true;
+                            mIsPlaying = true;
+                            setMessageParams(PhoenixActionType.FIRST_PLAY);
+                        } else {
+                            mIsPlaying = true;
+                            startMediaHitInterval();
+                            setMessageParams(PhoenixActionType.PLAY);
+                        }
 
-                    break;
-                case PLAYING:
+                        break;
+                    case PLAYING:
 
-                    break;
-                case SEEKED:
+                        break;
+                    case SEEKED:
 
-                    break;
-                case SEEKING:
+                        break;
+                    case SEEKING:
 
-                    break;
-                default:
+                        break;
+                    default:
 
-                    break;
+                        break;
+                }
             }
         }
     };
