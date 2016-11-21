@@ -8,6 +8,7 @@ import android.widget.LinearLayout;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.plugins.SamplePlugin;
 
@@ -84,8 +85,7 @@ public class StandalonePlayerActivity extends AppCompatActivity {
 
         mControlsView.setPlayer(mPlayer);
         mControlsView.resume();
-
-        //mPlayer.play();
+        
     }
 
 

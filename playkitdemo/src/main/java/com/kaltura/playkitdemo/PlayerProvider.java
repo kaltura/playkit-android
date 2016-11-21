@@ -191,18 +191,12 @@ public class PlayerProvider {
         configurePlugins(config.plugins, converterPlayerConfig != null ? converterPlayerConfig.getPlugins() : null);
 
         Player player = PlayKitManager.loadPlayer(config, context);
+        player.prepare(config.media);
 
         addPlayerListeners(player);
 
         onPlayerReadyListener.onPlayerReady(player);
 
-
-        /*
-        if (mPlayer == null) {
-        } else {
-            mPlayer.prepare(config.media);
-        }
-        */
     }
 
 
