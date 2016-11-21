@@ -36,7 +36,7 @@ public class YouboraConfig {
         youboraConfig.put("enableNiceBuffer", true);
         youboraConfig.put("enableNiceSeek", true);
         youboraConfig.put("accountCode", "kaltura");
-        youboraConfig.put("service", "");
+        youboraConfig.put("service", "nqs.nice264.com");
         youboraConfig.put("username", "");
         youboraConfig.put("transactionCode", "");
         youboraConfig.put("isBalanced", "0");
@@ -143,7 +143,7 @@ public class YouboraConfig {
                 resetPreferences(context);
             }
         }
-        return youboraConfig;
+        return defaultYouboraConfig;
     }
 
     public static Map<String, Object> resetPreferences(Context context) {

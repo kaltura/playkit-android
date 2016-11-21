@@ -12,16 +12,22 @@ import com.kaltura.playkit.PlayerEvent;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static com.kaltura.playkit.plugins.TVPAPIAnalyticsPlugin.TVPAPIEventType.MEDIAMARK;
-
 /**
  * Created by zivilan on 02/11/2016.
  */
 
-public class TVPAPIAnalyticsPlugin extends PKPlugin {
-    enum TVPAPIEventType{
-        MEDIAMARK,
-        MEDIAHIT;
+public class PhoenixAnalyticsPlugin extends PKPlugin {
+    enum PhoenixActionType{
+        HIT,
+        PLAY,
+        STOP,
+        PAUSE,
+        FIRST_PLAY,
+        SWOOSH,
+        LOAD,
+        FINISH,
+        BITRATE_CHANGE,
+        ERROR
     }
     private boolean mIsPlaying = false;
     private boolean mIsConcurrent = false;
@@ -36,17 +42,17 @@ public class TVPAPIAnalyticsPlugin extends PKPlugin {
     private boolean mPlayFromContinue = false;
 
 
-    private static final String TAG = "TVPAPIAnalytics";
+    private static final String TAG = "PhoenixAnalytics";
 
     public static final Factory factory = new Factory() {
         @Override
         public String getName() {
-            return "TVPAPIAnalytics";
+            return "PhoenixAnalytics";
         }
 
         @Override
         public PKPlugin newInstance() {
-            return new TVPAPIAnalyticsPlugin();
+            return new PhoenixAnalyticsPlugin();
         }
     };
 
@@ -86,29 +92,29 @@ public class TVPAPIAnalyticsPlugin extends PKPlugin {
                     break;
                 case ENDED:
                     mIsPlaying = false;
-                    setMessageParams(MEDIAMARK, "finish");
+                    setMessageParams(PhoenixActionType.FINISH);
                     break;
                 case ERROR:
-
+                    setMessageParams(PhoenixActionType.ERROR);
                     break;
                 case LOADED_METADATA:
-                    setMessageParams(MEDIAMARK, "load");
+                    setMessageParams(PhoenixActionType.LOAD);
                     break;
                 case PAUSE:
                     mIsPlaying = false;
                     if (mDidFirstPlay){
-                        setMessageParams(MEDIAMARK, "pause");
+                        setMessageParams(PhoenixActionType.PAUSE);
                     }
                     break;
                 case PLAY:
                     if (!mDidFirstPlay){
                         mDidFirstPlay = true;
                         mIsPlaying = true;
-                        setMessageParams(MEDIAMARK, "first_play");
+                        setMessageParams(PhoenixActionType.FIRST_PLAY);
                     } else {
                         mIsPlaying = true;
                         startMediaHitInterval();
-                        setMessageParams(MEDIAMARK, "play");
+                        setMessageParams(PhoenixActionType.PLAY);
                     }
 
                     break;
@@ -136,11 +142,11 @@ public class TVPAPIAnalyticsPlugin extends PKPlugin {
 
     }
 
-    private void setMessageParams(TVPAPIEventType eventType, String eventContent){
+    private void setMessageParams(PhoenixActionType eventType){
+
         JSONObject baseParams = getBaseParams();
         try {
-            baseParams.put("Action", eventContent);
-            baseParams.put("MethodName", eventType.toString());
+            baseParams.put("Action", eventType);
             sendMessage(eventType,baseParams);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -162,7 +168,7 @@ public class TVPAPIAnalyticsPlugin extends PKPlugin {
         return postData;
     }
 
-    private String sendMessage(TVPAPIEventType service, JSONObject postData){
+    private String sendMessage(PhoenixActionType service, JSONObject postData){
 //        URL url = mPlayerConfig.getApiBaseUrl();
         if (service != null && postData != null) {
             String messageUrl = buildUrl(service.toString(), postData);

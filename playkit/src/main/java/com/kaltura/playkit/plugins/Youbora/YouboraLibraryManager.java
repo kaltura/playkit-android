@@ -88,7 +88,7 @@ public class YouboraLibraryManager extends PluginGeneric {
 
                     break;
                 case PAUSE:
-
+                    pauseHandler();
                     break;
                 case PLAY:
                     playHandler();

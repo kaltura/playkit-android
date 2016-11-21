@@ -59,6 +59,11 @@ public class YouboraPlugin extends PKPlugin {
 
     public void startMonitoring(Player player) {
         Map<String, Object> opt = YouboraConfig.getYouboraConfig(mContext.getApplicationContext(), mPluginConfig);
+        Map<String, Object> media = (Map<String, Object>) opt.get("media");
+
+        media.put("resource", mMediaConfig.getMediaEntry().getId());
+        media.put("title", mMediaConfig.getMediaEntry().getId()); //name?
+        media.put("duration", mMediaConfig.getMediaEntry().getDuration());
 
         // Set options
         mPluginManager.setOptions(opt);

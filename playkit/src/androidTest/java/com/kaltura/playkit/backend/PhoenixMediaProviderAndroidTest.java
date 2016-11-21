@@ -55,7 +55,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest{
     public static final String Format = "Mobile_Devices_Main_HD";
     public static final String Format2 = "Mobile_Devices_Main_SD";
     public static String FrozenAssetInfo = "mock/phoenix.asset.get.258656.json";
-    public static final int PartberId = 198;
+    public static final int PartnerId = 198;
 
     SessionProvider sessionProvider = new SessionProvider() {
         @Override
@@ -70,7 +70,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest{
 
         @Override
         public int partnerId() {
-            return PartberId;
+            return PartnerId;
         }
     };
 
