@@ -3,17 +3,13 @@ package com.kaltura.playkit.backend;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.kaltura.playkit.BaseTest;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
+import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.phoenix.data.AssetInfo;
-import com.kaltura.playkit.backend.phoenix.data.AssetResult;
-import com.kaltura.playkit.backend.phoenix.data.ResultAdapter;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
@@ -31,7 +27,6 @@ import org.junit.runner.RunWith;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -42,17 +37,14 @@ import static org.junit.Assert.assertTrue;
  */
 
 @RunWith(AndroidJUnit4.class)
-public class PhoenixMediaProviderAndroidTest extends BaseTest {
+public class OvpMediaProviderAndroidTest extends BaseTest {
 
-    public static final String BaseUrl = "http://52.210.223.65:8080/v4_1/api_v3/";//"http://52.210.223.65:8080/v4_0/api_v3/";
-    public static final String KS = "djJ8MTk4fN86RC6KBjyHtmG9bIBounF1ewb1SMnFNtAvaxKIAfHUwW0rT4GAYQf8wwUKmmRAh7G0olZ7IyFS1FTpwskuqQPVQwrSiy_J21kLxIUl_V9J";
-    public static final String MediaId = "258656";//frozen
-    public static final String MediaId2 = "437800";//vild
-    public static final String MediaId3 = "259295";//the salt of earth
-    public static final String Format = "Mobile_Devices_Main_HD";
-    public static final String Format2 = "Mobile_Devices_Main_SD";
-    public static String FrozenAssetInfo = "mock/phoenix.asset.get.258656.json";
-    public static final int PartnerId = 198;
+    public static final String BaseUrl = "http://www.kaltura.com/api_v3/"; //login at: http://kmc.kaltura.com/index.php/kmc/kmc4#content|manage
+    public static final String KS = "djJ8MjIwOTU5MXzmCXI2UMvSAFJsHqm6rGgKFJ-pVSTVTY4ngtX-ER2VxIVBZxMK2d5MusI5Z_nIaLSos_sc-XiSBLL7yJM8xuhsrNmnzNTLp4CmfTgFErAVnWxd7h6rrXdkpqF4Wd0Nz2pu1YCK8FtaOoSNFB2yTe6Y";
+    public static final String EntryId = "1_1h1vsv3z";
+    public static final String EntryId2 = "1_ztdp5s5d";
+    public static final int PartnerId = 2209591;
+    public static String EntryInfo = "mock/ovp.multirequest..1_1h1vsv3z.json";
 
 
     SessionProvider ksSessionProvider = new SessionProvider() {
@@ -92,9 +84,9 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
     RequestQueue testExecutor;
 
-    PhoenixMediaProvider phoenixMediaProvider;
+    KalturaOvpMediaProvider kalturaOvpMediaProvider;
 
-    public PhoenixMediaProviderAndroidTest() {
+    public OvpMediaProviderAndroidTest() {
     }
 
     @Before
@@ -107,26 +99,26 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     @Test
     public void testResponseParsing() {
 
-        phoenixMediaProvider = new PhoenixMediaProvider().setSessionProvider(ksSessionProvider).setAssetId(MediaId).setReferenceType("media").setFormats(Format).setRequestExecutor(testExecutor);
-        phoenixMediaProvider.load(new OnMediaLoadCompletion() {
+        kalturaOvpMediaProvider = new KalturaOvpMediaProvider(ksSessionProvider, EntryId).setRequestExecutor(testExecutor);
+        kalturaOvpMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
                 // resume();
                 assertTrue(response.isSuccess());
                 assertTrue(response.getResponse() != null);
-                assertTrue(response.getResponse().getId().equals(MediaId));
-                assertTrue(response.getResponse().getSources().size() == 1);
-                assertTrue(response.getResponse().getDuration() == 2237);
-                //PhoenixMediaProviderAndroidTest.this.wait(1);
+                assertTrue(response.getResponse().getId().equals(EntryId));
+                assertTrue(response.getResponse().getSources().size() == 6);
+                assertTrue(response.getResponse().getDuration() == 102000);
+                //kalturaOvpMediaProviderAndroidTest.this.wait(1);
 
-                phoenixMediaProvider.setFormats(Format, Format2).setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
+                kalturaOvpMediaProvider.setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
                     @Override
                     public void onComplete(ResultElement<PKMediaEntry> response) {
                         if (response.isSuccess()) {
                             assertTrue(response.getResponse() != null);
-                            assertTrue(response.getResponse().getId().equals(MediaId));
-                            assertTrue(response.getResponse().getSources().size() == 1);
-                            assertTrue(response.getResponse().getDuration() == 2237);
+                            assertTrue(response.getResponse().getId().equals(EntryId));
+                            assertTrue(response.getResponse().getSources().size() == 6);
+                            assertTrue(response.getResponse().getDuration() == 102000);
 
                         } else {
                             assertNotNull(response.getError());
@@ -134,8 +126,8 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                         }
 
 
-                        //phoenixMediaProvider.setAssetId(MediaId2).setFormat(Format2)
-                        PhoenixMediaProviderAndroidTest.this.resume();
+                        //kalturaOvpMediaProvider.setAssetId(MediaId2).setFormat(Format2)
+                        OvpMediaProviderAndroidTest.this.resume();
 
                     }
                 });
@@ -154,13 +146,13 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         final JsonReader jsonReader;
         try {
             jsonReader = new JsonReader(new InputStreamReader(
-                    InstrumentationRegistry.getTargetContext().getAssets().open(FrozenAssetInfo)));
-
-            AssetResult assetResult = new GsonBuilder().registerTypeAdapter(AssetResult.class, new ResultAdapter()).create().fromJson(jsonReader, AssetResult.class);
-            assetInfo = assetResult.asset;
+                    InstrumentationRegistry.getTargetContext().getAssets().open(EntryInfo)));
+//KalturaOvpMediaProvider.KalturaOvpParser.parseMultiresponse(jsonReader.)
+            /*AssetResult assetResult = new GsonBuilder().registerTypeAdapter(AssetResult.class, new OvpResultAdapter()).create().fromJson(jsonReader, AssetResult.class);
+            assetInfo = assetResult.mediaAsset;
             assertNotNull(assetInfo);
-            mediaEntry = PhoenixMediaProvider.getMediaEntry(assetInfo, Arrays.asList(Format, Format2));
-
+            mediaEntry = kalturaOvpMediaProvider.getMediaEntry(assetInfo, Arrays.asList(Format, Format2));
+*/
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -171,9 +163,9 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     }
 
 
-    @Test
+    /*@Test
     public void testAnonymousFetch() {
-        new PhoenixMediaProvider().setSessionProvider(AnonymSessionProvider).setAssetId(MediaId).setReferenceType("media").setFormats(Format).load(new OnMediaLoadCompletion() {
+        new kalturaOvpMediaProvider(AnonymSessionProvider, MediaId, "media", Format).load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
                 assertTrue(response.isSuccess());
@@ -181,7 +173,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                 assertTrue(response.getResponse() instanceof PKMediaEntry);
             }
         });
-    }
+    }*/
 
     @Test
     public void testErrorHandling() {
@@ -259,25 +251,11 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
                     if (request.getBody() != null) {
                         JsonParser parser = new JsonParser();
-                        JsonElement body = parser.parse(request.getBody());
+                        //JsonElement body = parser.parse(request.getBody());
                         //parsing from response -> String assetId = body.getAsJsonObject().getAsJsonObject("result").getAsJsonPrimitive("id").getAsString();
-                        String identifier ="";
+                        String assetId = EntryId;//body.getAsJsonObject().getAsJsonPrimitive("id").getAsString();
 
-                        if(body.getAsJsonObject().has("id")) {
-                            identifier = body.getAsJsonObject().getAsJsonPrimitive("id").getAsString();
-
-                        } else if (service.equals("multirequest")) {
-                            if(body.getAsJsonObject().getAsJsonObject("1").getAsJsonPrimitive("service").getAsString().equals("licensedUrl")){
-                                identifier = "licensedLinks";
-                            }
-                        }
-
-                        if(identifier.equals("")){
-                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, ErrorElement.MediaNotFound.message("mock file can't be traced from data")));
-                            return;
-                        }
-                        //assertNotNull(assetId);
-                        String inputFile = "mock/phoenix." + service + "." + action + "." + identifier + ".json";
+                        String inputFile = "mock/ovp." + service + "." + action + "." + assetId + (request.getBody().contains("startWidgetSession")? "" : ".ks")+".json";
 
                         try {
                             final JsonReader jsonReader = new JsonReader(new InputStreamReader(InstrumentationRegistry.getTargetContext().getAssets().open(inputFile)));

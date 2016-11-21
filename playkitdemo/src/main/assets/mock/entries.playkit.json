@@ -1,42 +1,41 @@
 {
-    "dash+xml": {
-      "duration": 60000,
-      "id": "m001",
-      "name": "demo1",
-      "sources": [
-        {
-          "id": "m001s001",
-          "mimeType": "application/dash+xml",
-          "url": "http://cfvod.kaltura.com/dasha/p/1851571/sp/185157100/serveFlavor/entryId/0_pl5lbfo0/v/2/flavorId/0_,zwq3l44r,otmaqpnf,ywkmqnkg,/forceproxy/true/name/a.mp4.urlset/manifest.mpd"
-        }
-      ]
-    }
+  "dash": {
+    "duration": 102000,
+    "id": "1_1h1vsv3z",
+    "name": "DASH: Kaltura Video Solutions for Media Companies",
+    "sources": [
+      {
+        "id": "1_1h1vsv3z_dash",
+        "mimeType": "application/dash+xml",
+        "url": "http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/mpegdash/protocol/http/a.mpd"
+      }
+    ]
+  }
 ,
-    "mp4": {
-      "duration": 102000,
-      "id": "1_1h1vsv3z",
-      "name": "Kaltura Video Solutions for Media Companies",
-      "sources": [
-        {
-          "id": "1_ude4l5pb",
-          "mimeType": "application/mp4",
-          "url":"http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/url/protocol/http/a.mp4/flavorIds/0_,1_ude4l5pb,1_izgi81qa,1_3l6wh2jz,1_fafwf2t7,1_k6gs4dju,1_nzen8kfl"
-        }
-      ]
+  "mp4": {
+    "duration": 102000,
+    "id": "1_1h1vsv3z",
+    "name": "MP4: Kaltura Video Solutions for Media Companies",
+    "sources": [
+      {
+        "id": "1_1h1vsv3z_mp4",
+        "mimeType": "video/mp4",
+        "url":"http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/url/protocol/http/a.mp4"
+      }
+    ]
 
   }
-  ,
-      "x-mpegURL": {
-        "duration": 102000,
-          "id": "0_cg1wmv2s",
-          "name": "HLS",
-          "sources": [
-            {
-              "id": "0_cg1wmv2s",
-              "mimeType": "application/x-mpegURL",
-              "url": "http://cdnapi.kaltura.com/p/1982551/sp/198255100/playManifest/entryId/0_cg1wmv2s/format/applehttp/tags/iphonenew/protocol/http/f/a.m3u8"
-            }
-          ]
-
-    }
+,
+  "hls": {
+    "duration": 102000,
+    "id": "1_1h1vsv3z",
+    "name": "HLS: Kaltura Video Solutions for Media Companies",
+    "sources": [
+      {
+        "id": "1_1h1vsv3z_hls",
+        "mimeType": "application/x-mpegURL",
+        "url": "http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/applehttp/protocol/http/a.m3u8"
+      }
+    ]
+  }
 }

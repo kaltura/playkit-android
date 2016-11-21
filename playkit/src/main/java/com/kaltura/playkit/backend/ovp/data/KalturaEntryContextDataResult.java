@@ -1,7 +1,5 @@
 package com.kaltura.playkit.backend.ovp.data;
 
-import com.kaltura.playkit.PKMediaSource;
-
 import java.util.ArrayList;
 
 /**
@@ -10,15 +8,11 @@ import java.util.ArrayList;
 
 public class KalturaEntryContextDataResult {
 
-    ArrayList<PKMediaSource> sources;
+    ArrayList<KalturaSource> sources;
     ArrayList<FlavorAsset> flavorAssets;
 
     public ArrayList<FlavorAsset> getFlavorAssets() {
         return flavorAssets;
-    }
-
-    public void setFlavorAssets(ArrayList<FlavorAsset> flavorAssets) {
-        this.flavorAssets = flavorAssets;
     }
 
     public FlavorAsset containsFlavor(int flavorId) {
@@ -35,11 +29,8 @@ public class KalturaEntryContextDataResult {
         return null;
     }
 
-    public ArrayList<PKMediaSource> getSources() {
+    public ArrayList<KalturaSource> getSources() {
         return sources;
     }
 
-    public void setSources(ArrayList<PKMediaSource> sources) {
-        this.sources = sources;
-    }
 }
