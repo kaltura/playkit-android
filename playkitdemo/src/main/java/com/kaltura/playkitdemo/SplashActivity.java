@@ -1,8 +1,13 @@
 package com.kaltura.playkitdemo;
 
 import android.content.Intent;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.view.menu.MenuView;
+import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
+import android.widget.ImageView;
 
 import com.google.gson.Gson;
 import com.kaltura.playkit.PlayKitManager;
@@ -11,6 +16,8 @@ import com.kaltura.playkitdemo.data.JsonFetchTask;
 import com.kaltura.playkitdemo.jsonConverters.ConverterPlayKitApp;
 
 import java.util.Date;
+
+import static com.kaltura.playkitdemo.R.id.toolbar;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -52,6 +59,12 @@ public class SplashActivity extends AppCompatActivity {
             @Override
             public void onJsonFetched(String json) {
 
+                if (TextUtils.isEmpty(json)) {
+                    showMessage(R.string.something_went_wrong);
+                    return;
+                }
+
+
                 final ConverterPlayKitApp playKitApp = new Gson().fromJson(json, ConverterPlayKitApp.class);
 
                 Date currentTime = new Date();
@@ -80,6 +93,13 @@ public class SplashActivity extends AppCompatActivity {
 
             }
         }).execute(url);
+    }
+
+
+    private void showMessage(int string) {
+        ImageView itemView = (ImageView) findViewById(R.id.imageView);
+        Snackbar snackbar = Snackbar.make(itemView, string, Snackbar.LENGTH_LONG);
+        snackbar.show();
     }
 
 }

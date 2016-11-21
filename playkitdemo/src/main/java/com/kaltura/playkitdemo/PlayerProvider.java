@@ -32,6 +32,7 @@ import com.kaltura.playkitdemo.jsonConverters.JsonStandalonePlayer;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.content.ContentValues.TAG;
 import static com.kaltura.playkitdemo.jsonConverters.ConverterStandalonePlayer.MediaProviderTypes.KALTURA_OVP_MEDIA_PROVIDER;
 import static com.kaltura.playkitdemo.jsonConverters.ConverterStandalonePlayer.MediaProviderTypes.PHOENIX_MEDIA_PROVIDER;
 
@@ -219,7 +220,7 @@ public class PlayerProvider {
 
         media.setStartPosition(converterMedia.getStartPosition());
         media.setAutoPlay(converterMedia.isAutoPlay());
-
+        
     }
 
 
@@ -248,27 +249,26 @@ public class PlayerProvider {
 
     private static void addPlayerListeners(Player player) {
 
+
+        /*
         player.addEventListener(new PlayerEvent.Listener() {
             @Override
             public void onPlayerEvent(Player player, PlayerEvent event) {
+
 
             }
         }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
+        */
 
 
         player.addEventListener(new PlayerEvent.Listener() {
+
             @Override
             public void onPlayerEvent(Player player, PlayerEvent event) {
-                switch (event) {
-                    case PLAY:
-                        //nowPlaying = true;
-                        break;
-                    case PAUSE:
-                        //nowPlaying = false;
-                        break;
-                }
+                Log.v(MainActivity.TAG, "" + event.name());
             }
-        }, PlayerEvent.PLAYING);
+
+        }, PlayerEvent.PLAYING, PlayerEvent.PAUSE, PlayerEvent.CAN_PLAY, PlayerEvent.SEEKING, PlayerEvent.SEEKED);
 
 
         /*
@@ -287,30 +287,3 @@ public class PlayerProvider {
 }
 
 
-
-/*
-    @Override
-    protected void onStop() {
-        super.onStop();
-        mControlsView.release();
-        if (mPlayer != null) {
-            mPlayer.release();
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (mPlayer != null) {
-            mPlayer.restore();
-            if (nowPlaying) {
-                mPlayer.play();
-            }
-        }
-
-        if(mControlsView != null){
-            mControlsView.resume();
-        }
-
-    }
-*/

@@ -1,48 +1,25 @@
 package com.kaltura.playkitdemo;
 
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
+import android.app.Activity;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.kaltura.playkit.MediaEntryProvider;
-import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
-import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.Utils;
-import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.backend.mock.MockMediaProvider;
-import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
-import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkitdemo.jsonConverters.ConverterSubMenu;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import static android.R.attr.configure;
-import static android.content.ContentValues.TAG;
-import static com.kaltura.playkitdemo.MockParams.Format;
-import static com.kaltura.playkitdemo.MockParams.MediaId;
-import static com.kaltura.playkitdemo.MockParams.MediaId3;
-import static com.kaltura.playkitdemo.MockParams.sessionProvider;
 
 
 public class PlayerFragment extends Fragment {
 
 
+    private Player mPlayer;
     private PlaybackControlsView mControlsView;
     private LinearLayout mPlayerContainer;
 
@@ -82,6 +59,8 @@ public class PlayerFragment extends Fragment {
         if (arguments != null) {
             mConverterSubMenu = arguments.getParcelable(MainActivity.CONVERTER_SUB_MENU);
         }
+
+        //getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
 
@@ -119,7 +98,7 @@ public class PlayerFragment extends Fragment {
         mFeatureTitle.setText(mConverterSubMenu.getSubMenuTitle());
         mFeatureDescription.setText(mConverterSubMenu.getAboutFeature());
 
-        configurePlayer(mConverterSubMenu.getFeatureVariants().get(0).getPlayerConfigLink());
+        configurePlayer(mConverterSubMenu.getFeatureVariants().get(0).getPlayerConfigURL());
 
     }
 
@@ -130,20 +109,73 @@ public class PlayerFragment extends Fragment {
         PlayerProvider.getPlayer(playerConfigLink, getActivity(), new PlayerProvider.OnPlayerReadyListener() {
             @Override
             public void onPlayerRead(Player player) {
-                startPlay(player);
+                mPlayer = player;
+                startPlay();
             }
         });
     }
 
 
-    private void startPlay(Player player) {
+    private void startPlay() {
 
-        mPlayerContainer.addView(player.getView());
-        mControlsView.setPlayer(player);
+        if (mPlayer == null) {
+            return;
+        }
+
+        mPlayerContainer.addView(mPlayer.getView());
+
+        mControlsView.setPlayer(mPlayer);
         mControlsView.resume();
 
-        player.play();
+        //mPlayer.play();
     }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (mPlayer != null) {
+            mPlayer.restore();
+            mControlsView.resume();
+        }
+    }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (mPlayer != null) {
+            mPlayer.release();
+            mControlsView.release();
+        }
+    }
+
+
+    /*
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        Activity activity = getActivity();
+
+        switch(newConfig.orientation) {
+
+            case Configuration.ORIENTATION_LANDSCAPE:
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                break;
+
+            case Configuration.ORIENTATION_PORTRAIT:
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                break;
+
+            default:
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        }
+    }
+    */
+
 
 
 }

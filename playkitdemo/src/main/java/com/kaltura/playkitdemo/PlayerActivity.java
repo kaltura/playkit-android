@@ -7,7 +7,7 @@ import android.support.v4.app.FragmentTransaction;
 import com.kaltura.playkitdemo.jsonConverters.ConverterSubMenu;
 
 
-public class PlayerActivity extends AbsPlayerDemoActivity {
+public class PlayerActivity extends AbsPlayKitAppActivity {
 
     private ConverterSubMenu mConverterSubMenu;
     private PlayerFragment mPlayerFragment;

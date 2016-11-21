@@ -85,7 +85,7 @@ public class StandalonePlayerActivity extends AppCompatActivity {
         mControlsView.setPlayer(mPlayer);
         mControlsView.resume();
 
-        mPlayer.play();
+        //mPlayer.play();
     }
 
 
@@ -110,11 +110,6 @@ public class StandalonePlayerActivity extends AppCompatActivity {
             mControlsView.release();
         }
     }
-
-
-
-
-
 
 
 }

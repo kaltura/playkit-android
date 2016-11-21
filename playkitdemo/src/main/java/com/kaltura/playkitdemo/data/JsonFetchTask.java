@@ -39,6 +39,7 @@ public class JsonFetchTask extends AsyncTask<String, String, String> {
         mJsonFetchedListener = jsonFetchedListener;
         mShowSpinner = showSpinner;
         mSpinner = new ProgressDialog(context);
+        mSpinner.setCancelable(false);
     }
 
 

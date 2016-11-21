@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.View;
 
 import com.kaltura.playkitdemo.jsonConverters.ConverterPlayKitApp;
 import com.kaltura.playkitdemo.jsonConverters.ConverterSubMenu;
@@ -15,7 +16,7 @@ import static com.kaltura.playkitdemo.R.id.player_fragment;
 
 
 
-public class MainActivity extends AbsPlayerDemoActivity implements RootMenuFragment.OnRootMenuInteractionListener, SubMenuFragment.OnSubMenuInteractionListener {
+public class MainActivity extends AbsPlayKitAppActivity implements RootMenuFragment.OnRootMenuInteractionListener, SubMenuFragment.OnSubMenuInteractionListener {
 
 
 
@@ -58,27 +59,14 @@ public class MainActivity extends AbsPlayerDemoActivity implements RootMenuFragm
             transaction.addToBackStack(null).commit();
 
         }
-
-        /*
-        ConverterRootMenu converterRootMenu0 = converterPlayKitApp.getConverterRootMenuList().get(0);
-        ConverterRootMenu converterRootMenu3 = converterPlayKitApp.getConverterRootMenuList().get(3);
-
-        Log.v(MainActivity.TAG, "MainActivity " + converterRootMenu0.getRootMenuTitle());
-        Log.v(MainActivity.TAG, "MainActivity " + converterRootMenu0.getSubMenu().get(0).getSubMenuTitle());
-        Log.v(MainActivity.TAG, "MainActivity " + converterRootMenu0.getSubMenu().get(1).getSubMenuTitle());
-        Log.v(MainActivity.TAG, "MainActivity " + converterRootMenu0.getSubMenu().get(1).getFeatureVariants().get(0).getFeatureTitle());
-        Log.v(MainActivity.TAG, "MainActivity " + converterRootMenu0.getSubMenu().get(1).getFeatureVariants().get(1).getFeatureTitle());
-        Log.v(MainActivity.TAG, "MainActivity " + converterRootMenu3.getSubMenu().get(0).getFeatureId());
-        */
-
     }
 
 
 
+    @Override
     protected int getLayoutId() {
         return R.layout.activity_main;
     }
-
 
 
     @Override

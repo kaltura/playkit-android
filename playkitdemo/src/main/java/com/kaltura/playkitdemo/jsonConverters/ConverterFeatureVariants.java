@@ -10,15 +10,15 @@ import android.os.Parcelable;
 public class ConverterFeatureVariants implements Parcelable {
 
     String featureTitle;
-    String playerConfigLink;
+    String playerConfigURL;
 
 
     public String getFeatureTitle() {
         return featureTitle;
     }
 
-    public String getPlayerConfigLink() {
-        return playerConfigLink;
+    public String getPlayerConfigURL() {
+        return playerConfigURL;
     }
 
 
@@ -30,7 +30,7 @@ public class ConverterFeatureVariants implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.featureTitle);
-        dest.writeString(this.playerConfigLink);
+        dest.writeString(this.playerConfigURL);
     }
 
     public ConverterFeatureVariants() {
@@ -38,7 +38,7 @@ public class ConverterFeatureVariants implements Parcelable {
 
     protected ConverterFeatureVariants(Parcel in) {
         this.featureTitle = in.readString();
-        this.playerConfigLink = in.readString();
+        this.playerConfigURL = in.readString();
     }
 
     public static final Parcelable.Creator<ConverterFeatureVariants> CREATOR = new Parcelable.Creator<ConverterFeatureVariants>() {

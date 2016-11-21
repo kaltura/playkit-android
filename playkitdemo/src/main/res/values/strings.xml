@@ -7,6 +7,10 @@
     <string name="more_info">For more info go to:</string>
     <string name="more_info_url">www.kaltura.com/kalturakit</string>
     <string name="feature_on">(ON)</string>
+    <string name="feature_not_developed">This feature wasn\'t developed yet</string>
+    <string name="sdk_version">SDK Version: %1$s</string>
+    <string name="app_version">App Version: %1$s</string>
+    <string name="something_went_wrong">Something went wrong, check your internet connection</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

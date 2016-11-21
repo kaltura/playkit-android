@@ -11,7 +11,7 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="@dimen/toolbar_height"
         android:elevation="4dp"
         app:theme="@style/AppTheme.Toolbar"
         app:popupTheme="@style/AppTheme.Toolbar"/>
@@ -23,14 +23,5 @@
         android:layout_height="match_parent"
         android:layout_marginBottom="16dp"/>
 
-    <!--
-    <fragment
-        class="com.kaltura.playkitdemo.PlayerFragment"
-        android:id="@+id/player_fragment"
-        android:layout_height="match_parent"
-        android:layout_width="match_parent"
-        tools:layout="@layout/fragment_player"
-        android:layout_marginBottom="16dp"/>
-    -->
 
 </LinearLayout>
