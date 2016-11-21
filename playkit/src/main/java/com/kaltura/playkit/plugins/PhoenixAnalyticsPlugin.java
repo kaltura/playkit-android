@@ -1,7 +1,7 @@
 package com.kaltura.playkit.plugins;
 
 import android.content.Context;
-import android.text.TextUtils;
+import android.util.Log;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
@@ -10,9 +10,15 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.backend.phoenix.services.BookmarkService;
+import com.kaltura.playkit.connect.APIOkRequestsExecutor;
+import com.kaltura.playkit.connect.OnRequestCompletion;
+import com.kaltura.playkit.connect.RequestBuilder;
+import com.kaltura.playkit.connect.RequestQueue;
+import com.kaltura.playkit.connect.ResponseElement;
+import com.kaltura.playkit.connect.SessionProvider;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.util.TimerTask;
 
 /**
  * Created by zivilan on 02/11/2016.
@@ -42,7 +48,26 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private Context mContext;
     private Player mPlayer;
     private boolean mPlayFromContinue = false;
+    private RequestQueue requestsExecutor;
+    private java.util.Timer timer = new java.util.Timer();
 
+
+    SessionProvider ksSessionProvider = new SessionProvider() {
+        @Override
+        public String baseUrl() {
+            return "http://52.210.223.65:8080/v4_0/api_v3/";
+        }
+
+        @Override
+        public String getKs() {
+            return "djJ8MTk4fN86RC6KBjyHtmG9bIBounF1ewb1SMnFNtAvaxKIAfHUwW0rT4GAYQf8wwUKmmRAh7G0olZ7IyFS1FTpwskuqQPVQwrSiy_J21kLxIUl_V9J";
+        }
+
+        @Override
+        public int partnerId() {
+            return 198;
+        }
+    };
 
     private static final String TAG = "PhoenixAnalytics";
 
@@ -76,10 +101,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
         this.mMediaConfig = mediaConfig;
+        this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.mPlayer = player;
         this.mPluginConfig = pluginConfig;
         this.mContext = context;
-        messageBus.listen(mEventListener);
+        messageBus.listen(mEventListener, (PKEvent[]) PlayerEvent.values());
         if (mMediaConfig.getStartPosition() != -1){
             this.mContinueTime = mMediaConfig.getStartPosition();
             this.mPlayFromContinue = true;
@@ -93,16 +119,17 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                 switch ((PlayerEvent) event) {
                     case CAN_PLAY:
                         mDidFirstPlay = false;
-//                    mFileId = mPlayerConfig.getFileId();
                         break;
                     case DURATION_CHANGE:
 
                         break;
                     case ENDED:
+                        timer.cancel();
                         mIsPlaying = false;
                         setMessageParams(PhoenixActionType.FINISH);
                         break;
                     case ERROR:
+                        timer.cancel();
                         setMessageParams(PhoenixActionType.ERROR);
                         break;
                     case LOADED_METADATA:
@@ -119,6 +146,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             mDidFirstPlay = true;
                             mIsPlaying = true;
                             setMessageParams(PhoenixActionType.FIRST_PLAY);
+                            startMediaHitInterval();
                         } else {
                             mIsPlaying = true;
                             startMediaHitInterval();
@@ -143,59 +171,27 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
     };
 
-    private void bindContinueToTime(){
-
-    }
-
     private void startMediaHitInterval(){
-
+        java.util.Timer timer = new java.util.Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                setMessageParams(PhoenixActionType.HIT);
+            }
+        }, 0, 30000); // Get media hit interval from plugin config
     }
 
     private void setMessageParams(PhoenixActionType eventType){
+        RequestBuilder requestBuilder = BookmarkService.actionAdd(ksSessionProvider.baseUrl(), ksSessionProvider.partnerId(), ksSessionProvider.getKs(),
+                "media", "258656", eventType.name(), mPlayer.getCurrentPosition(), "464302");
 
-        JSONObject baseParams = getBaseParams();
-        try {
-            baseParams.put("Action", eventType);
-            sendMessage(eventType,baseParams);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private JSONObject getBaseParams(){
-        int mediaType = 0;
-        JSONObject postData = new JSONObject();
-        try {
-//            postData.put("initObj", mPlayerConfig.getInitObject());
-            postData.put("mediaType", mediaType);
-            postData.put("iMediaID", mMediaConfig.getMediaEntry().getId());
-            postData.put("iFileID", mFileId);
-            postData.put("iLocation", mPlayer.getCurrentPosition());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return postData;
-    }
-
-    private String sendMessage(PhoenixActionType service, JSONObject postData){
-//        URL url = mPlayerConfig.getApiBaseUrl();
-        if (service != null && postData != null) {
-            String messageUrl = buildUrl(service.toString(), postData);
-            return messageUrl;
-        } else {
-            return "";
-        }
-    }
-
-    private static String buildUrl(String original, JSONObject postData) {
-        if (postData != null) {
-            String methodName = postData.optString("MethodName");
-            if (!TextUtils.isEmpty(methodName)) {
-                postData.remove("MethodName");
-                return original.concat(methodName);
+        requestBuilder.completion(new OnRequestCompletion() {
+            @Override
+            public void onComplete(ResponseElement response) {
+                Log.d(TAG, "onComplete: ");
             }
-        }
-        return original;
+        });
+        requestsExecutor.queue(requestBuilder.build());
     }
 
 }
