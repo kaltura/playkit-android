@@ -21,6 +21,7 @@ import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.ads.AdsConfig;
+import com.kaltura.playkit.plugins.ads.ima.IMAEvents;
 import com.kaltura.playkit.plugins.ads.ima.IMASimplePlugin;
 
 import java.util.ArrayList;
@@ -96,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
             controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
             controlsView.setPlayer(player);
+            //controlsView.setVisibility(View.INVISIBLE);
         }
         player.prepare(config.media);
     }
@@ -126,6 +128,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addPlayerListeners() {
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                Log.d(TAG, "Ad Event AD_CONTENT_PAUSE_REQUESTED");
+            }
+        }, IMAEvents.AD_CONTENT_PAUSE_REQUESTED);
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {

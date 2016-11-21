@@ -48,7 +48,8 @@ import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
-import com.kaltura.playkit.plugins.ads.AdsPlugin;
+import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.plugins.ads.AdsProvider;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,7 +60,7 @@ import java.util.List;
  * Created by gilad.nadav on 17/11/2016.
  */
 
-public class IMAPlugin extends PKPlugin implements AdsPlugin, ExoPlayer.EventListener, TrackSelector.EventListener<MappingTrackSelector.MappedTrackInfo> {
+public class IMAPlugin extends PKPlugin implements AdsProvider, ExoPlayer.EventListener, TrackSelector.EventListener<MappingTrackSelector.MappedTrackInfo> {
 
     private static final String TAG = "IMAPlugin";
 
@@ -122,11 +123,19 @@ public class IMAPlugin extends PKPlugin implements AdsPlugin, ExoPlayer.EventLis
 //        } catch (JSONException e) {
 //            e.printStackTrace();
 //        }
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+
+            }
+        }, PlayerEvent.ENDED);
 
         messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
                 Log.d(TAG, "PlayerEvent:" + event);
+
+
             }
         });
     }
@@ -177,6 +186,11 @@ public class IMAPlugin extends PKPlugin implements AdsPlugin, ExoPlayer.EventLis
     @Override
     public void contentCompleted() {
 
+    }
+
+    @Override
+    public boolean isAdDisplayed() {
+        return false;
     }
 
     ///////////END Ads Plugin

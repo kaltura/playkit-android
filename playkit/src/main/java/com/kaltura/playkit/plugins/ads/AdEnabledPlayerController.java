@@ -6,7 +6,6 @@ import android.util.Log;
 
 import com.kaltura.playkit.PKAdInfo;
 import com.kaltura.playkit.PlayerDecorator;
-import com.kaltura.playkit.plugins.ads.ima.IMASimplePlugin;
 
 /**
  * Created by gilad.nadav on 20/11/2016.
@@ -15,10 +14,11 @@ import com.kaltura.playkit.plugins.ads.ima.IMASimplePlugin;
 public class AdEnabledPlayerController extends PlayerDecorator {
     public final String  TAG = "AdEnablController";
 
-    IMASimplePlugin imaSimplePlugin;
-    public AdEnabledPlayerController(IMASimplePlugin imaSimplePlugin) {
+    //IMASimplePlugin imaSimplePlugin;
+    AdsProvider adsProvider;
+    public AdEnabledPlayerController(AdsProvider adsProvider) {//(IMASimplePlugin imaSimplePlugin) {
         Log.d(TAG, "Init AdEnabledPlayerController");
-        this.imaSimplePlugin = imaSimplePlugin;
+        this.adsProvider = adsProvider;
     }
 
     @Override
@@ -38,10 +38,9 @@ public class AdEnabledPlayerController extends PlayerDecorator {
 
     @Override
     public void play() {
-        if (!imaSimplePlugin.ismIsAdDisplayed()) {
+        if (!adsProvider.isAdDisplayed()) {
             //super.play();
         }
-
     }
 
     @Override
