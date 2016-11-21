@@ -1,24 +1,21 @@
 package com.kaltura.playkitdemo;
 
 import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.kaltura.playkit.MediaEntryProvider;
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.connect.SessionProvider;
-import com.kaltura.playkitdemo.MainActivity;
-import com.kaltura.playkitdemo.StandalonePlayerActivity;
 import com.kaltura.playkitdemo.data.JsonFetchTask;
 import com.kaltura.playkitdemo.jsonConverters.ConverterKalturaOvpMediaProvider;
 import com.kaltura.playkitdemo.jsonConverters.ConverterMedia;
@@ -32,7 +29,6 @@ import com.kaltura.playkitdemo.jsonConverters.JsonStandalonePlayer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.content.ContentValues.TAG;
 import static com.kaltura.playkitdemo.jsonConverters.ConverterStandalonePlayer.MediaProviderTypes.KALTURA_OVP_MEDIA_PROVIDER;
 import static com.kaltura.playkitdemo.jsonConverters.ConverterStandalonePlayer.MediaProviderTypes.PHOENIX_MEDIA_PROVIDER;
 
@@ -44,7 +40,7 @@ public class PlayerProvider {
 
 
     public interface OnPlayerReadyListener {
-        void onPlayerRead(Player player);
+        void onPlayerReady(Player player);
     }
 
 
@@ -176,7 +172,7 @@ public class PlayerProvider {
                             String error = "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : "");
                             Toast.makeText(context, error, Toast.LENGTH_LONG).show();
                             Log.e(MainActivity.TAG, error);
-                            onPlayerReadyListener.onPlayerRead(null);
+                            onPlayerReadyListener.onPlayerReady(null);
                         }
                     }
                 });
@@ -198,7 +194,7 @@ public class PlayerProvider {
 
         addPlayerListeners(player);
 
-        onPlayerReadyListener.onPlayerRead(player);
+        onPlayerReadyListener.onPlayerReady(player);
 
 
         /*
@@ -250,25 +246,13 @@ public class PlayerProvider {
     private static void addPlayerListeners(Player player) {
 
 
-        /*
-        player.addEventListener(new PlayerEvent.Listener() {
+        player.addEventListener(new PKEvent.Listener() {
             @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
-
-
+            public void onEvent(PKEvent event) {
+                Log.v(MainActivity.TAG, "" + event.eventId());
             }
-        }, PlayerEvent.DURATION_CHANGE, PlayerEvent.CAN_PLAY);
-        */
-
-
-        player.addEventListener(new PlayerEvent.Listener() {
-
-            @Override
-            public void onPlayerEvent(Player player, PlayerEvent event) {
-                Log.v(MainActivity.TAG, "" + event.name());
-            }
-
         }, PlayerEvent.PLAYING, PlayerEvent.PAUSE, PlayerEvent.CAN_PLAY, PlayerEvent.SEEKING, PlayerEvent.SEEKED);
+
 
 
         /*
@@ -281,7 +265,6 @@ public class PlayerProvider {
             }
         });
         */
-
 
     }
 }

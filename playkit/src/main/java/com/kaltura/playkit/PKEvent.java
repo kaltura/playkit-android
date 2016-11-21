@@ -1,6 +1,10 @@
 package com.kaltura.playkit;
 
 public interface PKEvent {
-    String name();
+    Object eventId();
+
+    interface Listener {
+        void onEvent(PKEvent event);
+    }
 }
 

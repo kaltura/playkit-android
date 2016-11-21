@@ -81,14 +81,14 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         window = new Timeline.Window();
     }
 
-    private void initializePlayer(final boolean shouldAutoplay) {
+    private void initializePlayer() {
         eventLogger = new EventLogger();
         DefaultTrackSelector trackSelector = initializeTrackSelector();
 
         player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), null, false); // TODO check if we need DRM Session manager.
         setPlayerListeners();
         exoPlayerView.setPlayer(player);
-        player.setPlayWhenReady(shouldAutoplay);
+        player.setPlayWhenReady(false);
     }
 
     private void setPlayerListeners() {
@@ -169,7 +169,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
             return;
         }
         this.currentState = newState;
-        stateChangedListener.onStateChanged(currentState);
+        stateChangedListener.onStateChanged(previousState, currentState);
     }
 
     private void sendEvent(PlayerEvent newEvent) {
@@ -261,10 +261,10 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
     @Override
-    public void load(Uri mediaSourceUri, boolean shouldAutoPlay) {
-        Log.d(TAG, "load should autoplay => " + shouldAutoPlay);
+    public void load(Uri mediaSourceUri) {
+        Log.d(TAG, "load");
         if (player == null) {
-            initializePlayer(shouldAutoPlay);
+            initializePlayer();
         }
 
         preparePlayer(mediaSourceUri);
@@ -353,7 +353,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     @Override
     public void resume() {
         Log.d(TAG, "resume");
-        initializePlayer(false);
+        initializePlayer();
         
         if (isTimelineStatic) {
             if (playerPosition == C.TIME_UNSET) {

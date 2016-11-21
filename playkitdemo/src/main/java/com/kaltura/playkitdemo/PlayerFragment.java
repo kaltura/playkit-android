@@ -168,7 +168,7 @@ public class PlayerFragment extends Fragment {
 
         PlayerProvider.getPlayer(standalonePlayerUrl, getActivity(), new PlayerProvider.OnPlayerReadyListener() {
             @Override
-            public void onPlayerRead(Player player) {
+            public void onPlayerReady(Player player) {
                 releasePlayer();
                 mPlayer = player;
                 startPlay();

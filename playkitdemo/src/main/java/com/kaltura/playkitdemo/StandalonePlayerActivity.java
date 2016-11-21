@@ -54,7 +54,7 @@ public class StandalonePlayerActivity extends AppCompatActivity {
 
             PlayerProvider.getPlayer(url, StandalonePlayerActivity.this, new PlayerProvider.OnPlayerReadyListener() {
                 @Override
-                public void onPlayerRead(Player player) {
+                public void onPlayerReady(Player player) {
                     mPlayer = player;
                     startPlay();
                 }
@@ -66,7 +66,7 @@ public class StandalonePlayerActivity extends AppCompatActivity {
 
             PlayerProvider.getPlayer(mediaEntryProvider, StandalonePlayerActivity.this, new PlayerProvider.OnPlayerReadyListener() {
                 @Override
-                public void onPlayerRead(Player player) {
+                public void onPlayerReady(Player player) {
                     mPlayer = player;
                     startPlay();
                 }

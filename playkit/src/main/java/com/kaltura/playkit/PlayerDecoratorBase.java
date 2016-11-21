@@ -1,9 +1,10 @@
 package com.kaltura.playkit;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.View;
 
-public abstract class PlayerDecoratorBase implements Player {
+public class PlayerDecoratorBase implements Player {
     
     @Override
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
@@ -23,16 +24,6 @@ public abstract class PlayerDecoratorBase implements Player {
     @Override
     public void seekTo(long position) {
         player.seekTo(position);
-    }
-
-    @Override
-    public boolean getAutoPlay() {
-        return player.getAutoPlay();
-    }
-
-    @Override
-    public void setAutoPlay(boolean autoPlay) {
-        player.setAutoPlay(autoPlay);
     }
 
     @Override
@@ -71,7 +62,7 @@ public abstract class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void addEventListener(@NonNull PlayerEvent.Listener listener, PlayerEvent... events) {
+    public void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events) {
         player.addEventListener(listener, events);
     }
 
@@ -93,5 +84,15 @@ public abstract class PlayerDecoratorBase implements Player {
     @Override
     public void restore() {
         player.restore();
+    }
+
+    @Override
+    public PKAdInfo getAdInfo() {
+        return player.getAdInfo();
+    }
+
+    @Override
+    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
+        player.updatePluginConfig(pluginName, key, value);
     }
 }

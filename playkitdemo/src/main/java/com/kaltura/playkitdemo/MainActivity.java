@@ -90,7 +90,7 @@ public class MainActivity extends AbsPlayKitAppActivity implements RootMenuFragm
         the PlayerActivity, instead of showing SubMenuFragment, and then PlayerActivity
          */
         if (converterSubMenuList.size() == 1) {
-          startPlayerActivity(rootMenuPosition, 0);
+            startPlayerActivity(rootMenuPosition, 0);
         } else {
 
             setBackButtonVisibility(true);
