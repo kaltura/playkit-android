@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.kaltura.playkit.PKMediaFormat;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -152,6 +153,8 @@ public class AdsConfig {
                 String mimeType = gson.fromJson(jsonElement, String.class);
                 videoMimeTypes.add(mimeType);
             }
+        } else {
+            videoMimeTypes.add(PKMediaFormat.mp4_clear.mimeType);
         }
         return new AdsConfig(language, enableBackgroundPlayback, autoPlayAdBreaks, videoBitrate, videoMimeTypes, adTagUrl);
     }

@@ -26,6 +26,8 @@ import com.kaltura.playkit.plugins.ads.AdEnabledPlayerController;
 import com.kaltura.playkit.plugins.ads.AdsConfig;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 
+import java.util.List;
+
 
 /**
  * Created by gilad.nadav on 17/11/2016.
@@ -45,7 +47,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
     private Player player;
     private Context context;
     private String adTagURL;
-
+    private List<String> mimeTypes;
     //////////////////////
 
 
@@ -65,6 +67,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
 
     // Whether an ad is displayed.
     private boolean mIsAdDisplayed;
+    private boolean mIsAdIsPaused;
     ////////////////////
     private MessageBus messageBus;
 
@@ -115,7 +118,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
         //----------------------------//
         AdsConfig adConfig = AdsConfig.fromJsonObject(pluginConfig);
         adTagURL = adConfig.getAdTagUrl();//pluginConfig.getAsJsonPrimitive(AdsConfig.AD_TAG_URL).getAsString();
-
+        mimeTypes = adConfig.getVideoMimeTypes();
         mAdUiContainer = (ViewGroup)player.getView();
         requestAd();
     }
@@ -156,6 +159,10 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
 
                 mAdsManager.addAdErrorListener(IMASimplePlugin.this);
                 mAdsManager.addAdEventListener(IMASimplePlugin.this);
+
+                //AdsRenderingSettings renderingSettings = ImaSdkFactory.getInstance().createAdsRenderingSettings();
+                //renderingSettings.setMimeTypes(mimeTypes);
+                //renderingSettings.setUiElements(Collections.<UiElement>emptySet());
                 mAdsManager.init();
             }
         });
@@ -215,7 +222,14 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
 
     @Override
     public boolean isAdDisplayed() {
+        Log.d(TAG, "IMASimplePlugin isAdDisplayed: " + mIsAdDisplayed);
         return mIsAdDisplayed;
+    }
+
+    @Override
+    public boolean isAdPaused() {
+        Log.d(TAG, "IMASimplePlugin isAdPaused: " + mIsAdIsPaused);
+        return  mIsAdIsPaused;
     }
 
     @Override
@@ -223,64 +237,64 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
         Log.e(TAG, "Ad Error: " + adErrorEvent.getError().getMessage());
         switch (adErrorEvent.getError().getErrorCode()) {
             case INTERNAL_ERROR:
-                messageBus.post(IMAEvents.AD_INTERNAL_ERROR);
+                messageBus.post(IMAEvents.IMA_INTERNAL_ERROR);
                 break;
             case VAST_MALFORMED_RESPONSE:
-                messageBus.post(IMAEvents.AD_VAST_MALFORMED_RESPONSE);
+                messageBus.post(IMAEvents.IMA_VAST_MALFORMED_RESPONSE);
                 break;
             case UNKNOWN_AD_RESPONSE:
-                messageBus.post(IMAEvents.AD_UNKNOWN_AD_RESPONSE);
+                messageBus.post(IMAEvents.IMA_UNKNOWN_AD_RESPONSE);
                 break;
             case VAST_LOAD_TIMEOUT:
-                messageBus.post(IMAEvents.AD_VAST_LOAD_TIMEOUT);
+                messageBus.post(IMAEvents.IMA_VAST_LOAD_TIMEOUT);
                 break;
             case VAST_TOO_MANY_REDIRECTS:
-                messageBus.post(IMAEvents.AD_VAST_TOO_MANY_REDIRECTS);
+                messageBus.post(IMAEvents.IMA_VAST_TOO_MANY_REDIRECTS);
                 break;
             case VIDEO_PLAY_ERROR:
-                messageBus.post(IMAEvents.AD_VIDEO_PLAY_ERROR);
+                messageBus.post(IMAEvents.IMA_VIDEO_PLAY_ERROR);
                 break;
             case VAST_MEDIA_LOAD_TIMEOUT:
-                messageBus.post(IMAEvents.AD_VAST_MEDIA_LOAD_TIMEOUT);
+                messageBus.post(IMAEvents.IMA_VAST_MEDIA_LOAD_TIMEOUT);
                 break;
             case VAST_LINEAR_ASSET_MISMATCH:
-                messageBus.post(IMAEvents.AD_VAST_LINEAR_ASSET_MISMATCH);
+                messageBus.post(IMAEvents.IMA_VAST_LINEAR_ASSET_MISMATCH);
                 break;
             case OVERLAY_AD_PLAYING_FAILED:
-                messageBus.post(IMAEvents.AD_OVERLAY_AD_PLAYING_FAILED);
+                messageBus.post(IMAEvents.IMA_OVERLAY_AD_PLAYING_FAILED);
                 break;
             case OVERLAY_AD_LOADING_FAILED:
-                messageBus.post(IMAEvents.AD_OVERLAY_AD_LOADING_FAILED);
+                messageBus.post(IMAEvents.IMA_OVERLAY_AD_LOADING_FAILED);
                 break;
             case VAST_NONLINEAR_ASSET_MISMATCH:
-                messageBus.post(IMAEvents.AD_VAST_NONLINEAR_ASSET_MISMATCH);
+                messageBus.post(IMAEvents.IMA_VAST_NONLINEAR_ASSET_MISMATCH);
                 break;
             case COMPANION_AD_LOADING_FAILED:
-                messageBus.post(IMAEvents.AD_COMPANION_AD_LOADING_FAILED);
+                messageBus.post(IMAEvents.IMA_COMPANION_AD_LOADING_FAILED);
                 break;
             case UNKNOWN_ERROR:
-                messageBus.post(IMAEvents.AD_UNKNOWN_ERROR);
+                messageBus.post(IMAEvents.IMA_UNKNOWN_ERROR);
                 break;
             case VAST_EMPTY_RESPONSE:
-                messageBus.post(IMAEvents.AD_VAST_EMPTY_RESPONSE);
+                messageBus.post(IMAEvents.IMA_VAST_EMPTY_RESPONSE);
                 break;
             case FAILED_TO_REQUEST_ADS:
-                messageBus.post(IMAEvents.AD_FAILED_TO_REQUEST_ADS);
+                messageBus.post(IMAEvents.IMA_FAILED_TO_REQUEST_ADS);
                 break;
             case VAST_ASSET_NOT_FOUND:
-                messageBus.post(IMAEvents.AD_VAST_ASSET_NOT_FOUND);
+                messageBus.post(IMAEvents.IMA_VAST_ASSET_NOT_FOUND);
                 break;
             case ADS_REQUEST_NETWORK_ERROR:
-                messageBus.post(IMAEvents.AD_ADS_REQUEST_NETWORK_ERROR);
+                messageBus.post(IMAEvents.IMA_ADS_REQUEST_NETWORK_ERROR);
                 break;
             case INVALID_ARGUMENTS:
-                messageBus.post(IMAEvents.AD_INVALID_ARGUMENTS);
+                messageBus.post(IMAEvents.IMA_INVALID_ARGUMENTS);
                 break;
             case PLAYLIST_NO_CONTENT_TRACKING:
-                messageBus.post(IMAEvents.AD_PLAYLIST_NO_CONTENT_TRACKING);
+                messageBus.post(IMAEvents.IMA_PLAYLIST_NO_CONTENT_TRACKING);
                 break;
             default:
-                messageBus.post(IMAEvents.AD_UNKNOWN_ERROR);
+                messageBus.post(IMAEvents.IMA_UNKNOWN_ERROR);
         }
         player.play();
     }
@@ -293,77 +307,81 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
         }
         switch (adEvent.getType()) {
             case STARTED:
-                messageBus.post(IMAEvents.AD_STARTED);
+                mIsAdIsPaused = false;
+                messageBus.post(IMAEvents.IMA_STARTED);
                 break;
             case PAUSED:
-                messageBus.post(IMAEvents.AD_PAUSED);
+                mIsAdIsPaused = true;
+                messageBus.post(IMAEvents.IMA_PAUSED);
                 break;
             case RESUMED:
-                messageBus.post(IMAEvents.AD_RESUMED);
+                mIsAdIsPaused = false;
+                messageBus.post(IMAEvents.IMA_RESUMED);
                 break;
             case COMPLETED:
-                messageBus.post(IMAEvents.AD_COMPLETED);
+                messageBus.post(IMAEvents.IMA_COMPLETED);
                 break;
             case FIRST_QUARTILE:
-                messageBus.post(IMAEvents.AD_FIRST_QUARTILE);
+                messageBus.post(IMAEvents.IMA_FIRST_QUARTILE);
                 break;
             case MIDPOINT:
-                messageBus.post(IMAEvents.AD_MIDPOINT);
+                messageBus.post(IMAEvents.IMA_MIDPOINT);
                 break;
             case THIRD_QUARTILE:
-                messageBus.post(IMAEvents.AD_THIRD_QUARTILE);
+                messageBus.post(IMAEvents.IMA_THIRD_QUARTILE);
                 break;
             case SKIPPED:
-                messageBus.post(IMAEvents.AD_SKIPPED);
+                messageBus.post(IMAEvents.IMA_SKIPPED);
                 break;
             case CLICKED:
-                messageBus.post(IMAEvents.AD_CLICKED);
+                 mIsAdIsPaused = true;
+                messageBus.post(IMAEvents.IMA_CLICKED);
                 break;
             case TAPPED:
-                messageBus.post(IMAEvents.AD_TAPPED);
+                messageBus.post(IMAEvents.IMA_TAPPED);
                 break;
             case ICON_TAPPED:
-                messageBus.post(IMAEvents.AD_ICON_TAPPED);
+                messageBus.post(IMAEvents.IMA_ICON_TAPPED);
                 break;
             case AD_BREAK_READY:
-                messageBus.post(IMAEvents.AD_AD_BREAK_READY);
+                messageBus.post(IMAEvents.IMA_AD_BREAK_READY);
                 break;
             case AD_PROGRESS:
-                messageBus.post(IMAEvents.AD_AD_PROGRESS);
+                messageBus.post(IMAEvents.IMA_AD_PROGRESS);
                 break;
             case AD_BREAK_STARTED:
-                messageBus.post(IMAEvents.AD_AD_BREAK_STARTED);
+                messageBus.post(IMAEvents.IMA_AD_BREAK_STARTED);
                 break;
             case  AD_BREAK_ENDED:
-                messageBus.post(IMAEvents.AD_AD_BREAK_ENDED);
+                messageBus.post(IMAEvents.IMA_AD_BREAK_ENDED);
                 break;
             case  CUEPOINTS_CHANGED:
-                messageBus.post(IMAEvents.AD_CUEPOINTS_CHANGED);
+                messageBus.post(IMAEvents.IMA_CUEPOINTS_CHANGED);
                 break;
             case LOADED:
                 // AdEventType.LOADED will be fired when ads are ready to be played.
                 // AdsManager.start() begins ad playback. This method is ignored for VMAP or
                 // ad rules playlists, as the SDK will automatically start executing the
                 // playlist.
-                messageBus.post(IMAEvents.AD_LOADED);
+                messageBus.post(IMAEvents.IMA_LOADED);
                 mAdsManager.start();
                 break;
             case CONTENT_PAUSE_REQUESTED:
                 // AdEventType.CONTENT_PAUSE_REQUESTED is fired immediately before a video
                 // ad is played.
-                messageBus.post(IMAEvents.AD_CONTENT_PAUSE_REQUESTED);
+                messageBus.post(IMAEvents.IMA_CONTENT_PAUSE_REQUESTED);
                 mIsAdDisplayed = true;
                 player.pause();
                 break;
             case CONTENT_RESUME_REQUESTED:
                 // AdEventType.CONTENT_RESUME_REQUESTED is fired when the ad is completed
                 // and you should start playing your content.
-                messageBus.post(IMAEvents.AD_CONTENT_PAUSE_REQUESTED);
+                messageBus.post(IMAEvents.IMA_CONTENT_PAUSE_REQUESTED);
                 mIsAdDisplayed = false;
                 player.play();
                 break;
             case ALL_ADS_COMPLETED:
-                messageBus.post(IMAEvents.AD_ALL_ADS_COMPLETED);
+                messageBus.post(IMAEvents.IMA_ALL_ADS_COMPLETED);
                 if (mAdsManager != null) {
                     mAdsManager.destroy();
                     mAdsManager = null;

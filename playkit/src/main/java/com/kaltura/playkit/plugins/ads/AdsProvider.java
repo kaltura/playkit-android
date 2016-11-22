@@ -11,5 +11,6 @@ public interface AdsProvider {
     void pause();
     void contentCompleted();
     boolean isAdDisplayed();
+    boolean isAdPaused();
 
 }

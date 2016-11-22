@@ -193,6 +193,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, ExoPlayer.EventL
         return false;
     }
 
+    @Override
+    public boolean isAdPaused() {
+        return false;
+    }
+
     ///////////END Ads Plugin
 
 
