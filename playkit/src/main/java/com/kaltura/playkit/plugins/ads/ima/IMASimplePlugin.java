@@ -94,28 +94,28 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
         this.messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                Log.d(TAG, "PlayerEvent:" + event);
-                Log.d(TAG, "PlayerEvent:PlayerEvent.PLAY-" + event);
+                Log.d(TAG, "onLoad:PlayerEvent:" + event);
             }
         }, PlayerEvent.PLAY);
 
         this.messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                Log.d(TAG, "PlayerEvent:" + event);
-                Log.d(TAG, "PlayerEvent:PlayerEvent.PAUSE-" + event);
+                Log.d(TAG, "onLoad:PlayerEvent:" + event);
+
             }
         }, PlayerEvent.PAUSE);
         this.messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                Log.d(TAG, "PlayerEvent:" + event);
-                Log.d(TAG, "PlayerEvent:PlayerEvent.ENDED-" + event);
+                Log.d(TAG, "onLoad:PlayerEvent:PlayerEvent.ENDED-" + event);
             }
         }, PlayerEvent.ENDED);
 
         //----------------------------//
-        adTagURL = pluginConfig.getAsJsonPrimitive(AdsConfig.AD_TAG_URL).getAsString();
+        AdsConfig adConfig = AdsConfig.fromJsonObject(pluginConfig);
+        adTagURL = adConfig.getAdTagUrl();//pluginConfig.getAsJsonPrimitive(AdsConfig.AD_TAG_URL).getAsString();
+
         mAdUiContainer = (ViewGroup)player.getView();
         requestAd();
     }
@@ -153,6 +153,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
                 mAdsManager = adsManagerLoadedEvent.getAdsManager();
 
                 //Attach event and error event listeners.
+
                 mAdsManager.addAdErrorListener(IMASimplePlugin.this);
                 mAdsManager.addAdEventListener(IMASimplePlugin.this);
                 mAdsManager.init();

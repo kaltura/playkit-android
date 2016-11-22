@@ -116,16 +116,9 @@ public class MainActivity extends AppCompatActivity {
         videoMimeTypes.add(MimeTypes.APPLICATION_M3U8);
         AdsConfig adsConfig = new AdsConfig("en", false, true, 60000, videoMimeTypes, adTagUrl);
         config.setPluginConfig(IMASimplePlugin.factory.getName(), adsConfig.toJSONObject());
-
-
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        controlsView.release();
-        player.release();
-    }
+
 
     private void addPlayerListeners() {
         player.addEventListener(new PKEvent.Listener() {
@@ -159,6 +152,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+
+        super.onPause();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         if(player != null){
@@ -170,5 +169,12 @@ public class MainActivity extends AppCompatActivity {
         if(controlsView != null){
             controlsView.resume();
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        controlsView.release();
+        player.release();
     }
 }

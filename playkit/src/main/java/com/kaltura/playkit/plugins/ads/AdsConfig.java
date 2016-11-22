@@ -2,9 +2,12 @@ package com.kaltura.playkit.plugins.ads;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -12,24 +15,25 @@ import java.util.List;
  */
 
 public class AdsConfig {
-
-    public static final String AD_TAG_URL = "adTagURL";
-    public static final String ENABLE_BG_PLAYBACK = "enableBackgroundPlayback";
-    public static final String AUTO_PLAY_AD_BREAK = "autoPlayAdBreaks";
-    public static final String AD_VIDEO_BITRATE = "videoBitrate";
-    public static final String VIDEO_MIME_TYPES = "videoMimeTypes";
+    public static final String AD_TAG_LANGUAGE     = "language";
+    public static final String AD_TAG_URL          = "adTagURL";
+    public static final String ENABLE_BG_PLAYBACK  = "enableBackgroundPlayback";
+    public static final String AUTO_PLAY_AD_BREAK  = "autoPlayAdBreaks";
+    public static final String AD_VIDEO_BITRATE    = "videoBitrate";
+    public static final String VIDEO_MIME_TYPES    = "videoMimeTypes";
 
     private String language = "en";
+    private String adTagUrl;
     private boolean enableBackgroundPlayback = true;
     private boolean autoPlayAdBreaks = false;
-    private long videoBitrate;
+    private int videoBitrate;
     private List<String> videoMimeTypes;
-    private String adTagUrl;
+
     //private String tagsTimes;
     //View companionView;
     //ViewGroup uiControlsContainer;
 
-    public AdsConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, long videoBitrate, List<String> videoMimeTypes, String adTagUrl) {//}, String tagsTimes, View companionView, ViewGroup uiControlsContainer) {
+    public AdsConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate, List<String> videoMimeTypes, String adTagUrl) {//}, String tagsTimes, View companionView, ViewGroup uiControlsContainer) {
         this.language = language;
         this.enableBackgroundPlayback = enableBackgroundPlayback;
         this.autoPlayAdBreaks = autoPlayAdBreaks;
@@ -70,7 +74,7 @@ public class AdsConfig {
         return videoBitrate;
     }
 
-    public void setVideoBitrate(long videoBitrate) {
+    public void setVideoBitrate(int videoBitrate) {
         this.videoBitrate = videoBitrate;
     }
 
@@ -127,8 +131,29 @@ public class AdsConfig {
             JsonPrimitive element = new JsonPrimitive(mimeType);
             jArray.add(element);
         }
-        jsonObject.addProperty(VIDEO_MIME_TYPES, gson.toJson(jArray));
+        jsonObject.add(VIDEO_MIME_TYPES, jArray);
         return jsonObject;
+    }
+
+    public static AdsConfig fromJsonObject(JsonObject adsConfigJson) {
+        String language = (adsConfigJson.getAsJsonPrimitive(AdsConfig.AD_TAG_LANGUAGE) != null) ? adsConfigJson.getAsJsonPrimitive(AdsConfig.AD_TAG_LANGUAGE).getAsString() : "en";
+        String adTagUrl = (adsConfigJson.getAsJsonPrimitive(AdsConfig.AD_TAG_URL) != null) ? adsConfigJson.getAsJsonPrimitive(AdsConfig.AD_TAG_URL).getAsString() : "";
+        boolean enableBackgroundPlayback = (adsConfigJson.getAsJsonPrimitive(AdsConfig.ENABLE_BG_PLAYBACK) != null) ? adsConfigJson.getAsJsonPrimitive(AdsConfig.ENABLE_BG_PLAYBACK).getAsBoolean() : false;
+        boolean autoPlayAdBreaks = (adsConfigJson.getAsJsonPrimitive(AdsConfig.AUTO_PLAY_AD_BREAK) != null) ? adsConfigJson.getAsJsonPrimitive(AdsConfig.AUTO_PLAY_AD_BREAK).getAsBoolean() : true;
+        int videoBitrate = (adsConfigJson.getAsJsonPrimitive(AdsConfig.AD_VIDEO_BITRATE) != null) ? adsConfigJson.getAsJsonPrimitive(AdsConfig.AD_VIDEO_BITRATE).getAsInt() : -1;
+        JsonArray mimeTypesJsonArray = adsConfigJson.getAsJsonArray(AdsConfig.VIDEO_MIME_TYPES);
+        List<String> videoMimeTypes = new ArrayList<>();
+
+        if (mimeTypesJsonArray != null && mimeTypesJsonArray.size() > 0) {
+            Gson gson = new Gson();
+            Iterator<JsonElement> iterator = mimeTypesJsonArray.iterator();
+            while (iterator.hasNext()) {
+                JsonPrimitive jsonElement = (JsonPrimitive) iterator.next();
+                String mimeType = gson.fromJson(jsonElement, String.class);
+                videoMimeTypes.add(mimeType);
+            }
+        }
+        return new AdsConfig(language, enableBackgroundPlayback, autoPlayAdBreaks, videoBitrate, videoMimeTypes, adTagUrl);
     }
 }
 
