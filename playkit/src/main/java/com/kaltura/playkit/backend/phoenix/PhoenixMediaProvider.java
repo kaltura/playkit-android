@@ -17,12 +17,9 @@ import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.phoenix.data.AssetInfo;
 import com.kaltura.playkit.backend.phoenix.data.AssetResult;
 import com.kaltura.playkit.backend.phoenix.data.BaseResult;
-import com.kaltura.playkit.backend.phoenix.data.LicensedUrl;
 import com.kaltura.playkit.backend.phoenix.data.MediaFile;
 import com.kaltura.playkit.backend.phoenix.data.ResultAdapter;
 import com.kaltura.playkit.backend.phoenix.services.AssetService;
-import com.kaltura.playkit.backend.phoenix.services.LicensedUrlService;
-import com.kaltura.playkit.backend.phoenix.services.PhoenixService;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
@@ -46,7 +43,7 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
     private RequestQueue requestsExecutor;
     private SessionProvider sessionProvider;
     private MediaAsset mediaAsset;
-    private boolean alwaysFetchLicense;
+    //private boolean alwaysFetchLicense;
 
 
     private class MediaAsset {
@@ -68,7 +65,7 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
     public PhoenixMediaProvider() {
         this.mediaAsset = new MediaAsset();
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
-        this.alwaysFetchLicense = true;
+        //this.alwaysFetchLicense = true;
     }
 
     public PhoenixMediaProvider setSessionProvider(@NonNull SessionProvider ksProvider) {
@@ -111,10 +108,10 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
         return this;
     }
 
-    public PhoenixMediaProvider setAlwaysFetchLicense(boolean alwaysFetchLicense) {
+    /*public PhoenixMediaProvider setAlwaysFetchLicense(boolean alwaysFetchLicense) {
         this.alwaysFetchLicense = alwaysFetchLicense;
         return this;
-    }
+    }*/
 
     public PhoenixMediaProvider setRequestExecutor(@NonNull RequestQueue executor) {
         this.requestsExecutor = executor;
@@ -202,24 +199,16 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
             if (asset != null) {
                 mediaEntry = PhoenixParser.getMedia(asset, mediaAsset.formats);
             }
-            /*if (asset != null) {
-                        if(alwaysFetchLicense){
-                            fetchLicenseLinks(asset, completion);
-                            return;
 
-                        } else {
-                            mediaEntry = PhoenixParser.getMedia(asset, mediaAsset.formats);
-                        }
-            }*/
-
-        } else {
+         } else {
             error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
         }
 
-        if (error == null && alwaysFetchLicense) {
+        /*if (error == null && alwaysFetchLicense) {
             fetchLicenseLinks(mediaEntry, completion);
 
-        } else if (completion != null) {
+        } else*/
+        if (completion != null) {
             completion.onComplete(Accessories.buildResult(mediaEntry, error));
         }
     }
@@ -228,7 +217,7 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
         return PhoenixParser.getMedia(assetInfo, formats);
     }
 
-    private void fetchLicenseLinks(PKMediaEntry mediaEntry, OnMediaLoadCompletion completion) {
+    /*private void fetchLicenseLinks(PKMediaEntry mediaEntry, OnMediaLoadCompletion completion) {
         //TODO: create request to the BE to fetch licenses to the sources within mediaEntry
         switch (mediaAsset.referenceType) { // or on asset.type?)
             case APIDefines.AssetReferenceType.Media:
@@ -245,17 +234,17 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
             //?? in case of recording - how can we distinguish recording from Epg/media
         }
 
-    }
+    }*/
 
 
     /**
      * Builds a {@link MultiRequestBuilder} construct on licensedUrl/get request on each source in the
      * media entry. Multirequest is used in order to pass all licensedUrl/get requests in one pass to the BE.
      *
-     * @param mediaEntry - contains the sources for the requests
-     * @param completion - the provided {@link OnMediaLoadCompletion} implementation.
+     * //@param mediaEntry - contains the sources for the requests
+     * //@param completion - the provided {@link OnMediaLoadCompletion} implementation.
      */
-    void fetchLicensedLinksForMedia(final PKMediaEntry mediaEntry, final OnMediaLoadCompletion completion) {
+    /*void fetchLicensedLinksForMedia(final PKMediaEntry mediaEntry, final OnMediaLoadCompletion completion) {
 
         MultiRequestBuilder requestBuilder = (MultiRequestBuilder) PhoenixService.getMultirequest(sessionProvider.baseUrl(), sessionProvider.getKs()).tag("licensedLinks-multi-"+mediaEntry.getSources().size());
         for (PKMediaSource source : mediaEntry.getSources()) {
@@ -300,7 +289,7 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
 
         requestsExecutor.queue(requestBuilder.build());
     }
-
+*/
 
     static class PhoenixParser {
 
