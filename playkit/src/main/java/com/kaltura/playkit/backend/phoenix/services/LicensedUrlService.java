@@ -19,15 +19,6 @@ public class LicensedUrlService extends PhoenixService {
      * @return
      */
     public static RequestBuilder getForMedia(String baseUrl, String ks, String assetId, String mediaId, String mediaBaseUrl) {
-        /*KalturaLicensedUrlMediaRequest - contentId (mediaFile id), baseUrl(current provided url)
-        *KalturaLicensedUrlEpgRequest - streamType [catchup, startover, trick_play ]- enum, startDate (long)
-        * KalturaLicensedUrlRecordingRequest- fileType
-        *
-        * request format:
-        * request: {
-		objectType: "KalturaLicensedUrlBaseRequest",
-		assetId: "value"
-	}*/
         JsonObject requestProperty = new JsonObject();
         requestProperty.addProperty("objectType", "KalturaLicensedUrlMediaRequest");
         requestProperty.addProperty("contentId", mediaId);
@@ -37,8 +28,6 @@ public class LicensedUrlService extends PhoenixService {
         return getLicensedLinksRequestBuilder(baseUrl, ks, "licensedlink-media-get", requestProperty);
     }
 
-
-
     /**
      * @param baseUrl
      * @param ks
@@ -47,41 +36,31 @@ public class LicensedUrlService extends PhoenixService {
      * @return
      */
     public static RequestBuilder getForShiftedLive(String baseUrl, String ks, String assetId, String streamType, long startDate) {
-        JsonObject reqParams = getPhoenixParams();
-        reqParams.addProperty("request:objectType", "KalturaLicensedUrlEpgRequest");
-        reqParams.addProperty("request:streamType", streamType);
-        reqParams.addProperty("request:startDate", startDate);
-        reqParams.addProperty("request:assetId", assetId);
-        reqParams.addProperty("ks", ks);
 
-        return new RequestBuilder()
-                .service("licensedUrl")
-                .action("get")
-                .method("POST")
-                .url(baseUrl)
-                .tag("licensedlink-epg-get")
-                .params(reqParams);
+        JsonObject requestProperty = new JsonObject();
+        requestProperty.addProperty("objectType", "KalturaLicensedUrlEpgRequest");
+        requestProperty.addProperty("streamType", streamType);
+        requestProperty.addProperty("startDate", startDate);
+        requestProperty.addProperty("assetId", assetId);
+
+        return getLicensedLinksRequestBuilder(baseUrl, ks, "licensedlink-epg-get", requestProperty);
     }
 
     public static RequestBuilder getForRecording(String baseUrl, String ks, String assetId, String fileType) {
-        JsonObject reqParams = getPhoenixParams();
-        reqParams.addProperty("request:objectType", "KalturaLicensedUrlMediaRequest");
-        reqParams.addProperty("request:fileType", fileType); //file format (HD,SD...)
-        reqParams.addProperty("request:assetId", assetId);
-        reqParams.addProperty("ks", ks);
 
-        return new RequestBuilder()
-                .service("licensedUrl")
-                .action("get")
-                .method("POST")
-                .url(baseUrl)
-                .tag("licensedlink-rec-get")
-                .params(reqParams);
+        JsonObject requestProperty = new JsonObject();
+        requestProperty.addProperty("objectType", "KalturaLicensedUrlEpgRequest");
+        requestProperty.addProperty("fileType", fileType); //file format (HD,SD...)
+        requestProperty.addProperty("assetId", assetId);
+
+        return getLicensedLinksRequestBuilder(baseUrl, ks, "licensedlink-rec-get", requestProperty);
     }
 
     private static RequestBuilder getLicensedLinksRequestBuilder(String baseUrl, String ks, String tag, JsonObject requestProperty) {
         JsonObject reqParams = getPhoenixParams();
-        reqParams.addProperty("ks", ks);
+        if(!ks.equals("")) {
+            reqParams.addProperty("ks", ks);
+        }
         reqParams.add("request", requestProperty);
 
         return new RequestBuilder()

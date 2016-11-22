@@ -1,9 +1,6 @@
 package com.kaltura.playkit.backend.phoenix.services;
 
-import android.text.TextUtils;
-
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.connect.MultiRequestBuilder;
 import com.kaltura.playkit.connect.RequestBuilder;
 
 /**
@@ -12,10 +9,10 @@ import com.kaltura.playkit.connect.RequestBuilder;
 
 public class AssetService extends PhoenixService {
 
-    public static RequestBuilder assetGet(String baseUrl, int partnerId, String ks, String assetId, String referenceType) {
-        if(TextUtils.isEmpty(ks)){
+    public static RequestBuilder assetGet(String baseUrl, /*int partnerId,*/ String ks, String assetId, String referenceType) {
+        /*if(TextUtils.isEmpty(ks)){
             return assetGet(baseUrl, partnerId, assetId, referenceType);
-        }
+        }*/
         return new RequestBuilder()
                 .service("asset")
                 .action("get")
@@ -25,7 +22,7 @@ public class AssetService extends PhoenixService {
                 .params(getAssetGetReqParams(ks, assetId, referenceType));
     }
 
-    static RequestBuilder assetGet(String baseUrl, int partnerId, String assetId, String referenceType) {
+    /*static RequestBuilder assetGet(String baseUrl, int partnerId, String assetId, String referenceType) {
         return new MultiRequestBuilder(OttUserService.anonymousLogin(baseUrl, partnerId),
                 new RequestBuilder()
                         .params(getAssetGetReqParams("{1:result:ks}", assetId, referenceType)) //on http://52.210.223.65:8080/v4_0/api_v3 its without the {}
@@ -35,7 +32,7 @@ public class AssetService extends PhoenixService {
                 .tag("asset-multi-get")
                 .url(baseUrl)
                 .service("multirequest");
-    }
+    }*/
 
 
     private static JsonObject getAssetGetReqParams(String ks, String assetId, String referenceType) {

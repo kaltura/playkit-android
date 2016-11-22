@@ -2,6 +2,7 @@ package com.kaltura.playkit.backend;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
+import android.util.Log;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -45,10 +46,12 @@ import static org.junit.Assert.assertTrue;
 public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
     public static final String BaseUrl = "http://52.210.223.65:8080/v4_1/api_v3/";//"http://52.210.223.65:8080/v4_0/api_v3/";
-    public static final String KS = "djJ8MTk4fN86RC6KBjyHtmG9bIBounF1ewb1SMnFNtAvaxKIAfHUwW0rT4GAYQf8wwUKmmRAh7G0olZ7IyFS1FTpwskuqQPVQwrSiy_J21kLxIUl_V9J";
+    public static final String KS = "djJ8MTk4fAZXObQaPfvkEqBWfZkZfbruAO1V3CYGwE4OdvqojvsjaNMeN8yYtqgCvtpFiKblOayM9Xq5d2wHFCBAkbf7ju9-H4CrWrxOg7qhIRQUzqPz";
     public static final String MediaId = "258656";//frozen
+    public static final String MediaId4 = "258655";//shrek
     public static final String MediaId2 = "437800";//vild
     public static final String MediaId3 = "259295";//the salt of earth
+    public static final String MediaId5 = "258574";//gladiator  HD id- 508408  SD id- 397243
     public static final String Format = "Mobile_Devices_Main_HD";
     public static final String Format2 = "Mobile_Devices_Main_SD";
     public static String FrozenAssetInfo = "mock/phoenix.asset.get.258656.json";
@@ -119,18 +122,18 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                 assertTrue(response.getResponse().getDuration() == 2237);
                 //PhoenixMediaProviderAndroidTest.this.wait(1);
 
-                phoenixMediaProvider.setFormats(Format, Format2).setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
+                phoenixMediaProvider.setAssetId(MediaId5).setFormats(Format, Format2).setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
                     @Override
                     public void onComplete(ResultElement<PKMediaEntry> response) {
                         if (response.isSuccess()) {
                             assertTrue(response.getResponse() != null);
-                            assertTrue(response.getResponse().getId().equals(MediaId));
-                            assertTrue(response.getResponse().getSources().size() == 1);
-                            assertTrue(response.getResponse().getDuration() == 2237);
+                            assertTrue(response.getResponse().getId().equals(MediaId5));
+                            assertTrue(response.getResponse().getSources().size() == 2);
+                            //assertTrue(response.getResponse().getDuration() == 2237);
 
                         } else {
                             assertNotNull(response.getError());
-
+                            Log.e("PhoenixMediaProvider", "asset can't be played: "+response.getError().getMessage());
                         }
 
 
@@ -268,7 +271,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
                         } else if (service.equals("multirequest")) {
                             if(body.getAsJsonObject().getAsJsonObject("1").getAsJsonPrimitive("service").getAsString().equals("licensedUrl")){
-                                identifier = "licensedLinks";
+                                identifier = "licensedUrl";
                             }
                         }
 

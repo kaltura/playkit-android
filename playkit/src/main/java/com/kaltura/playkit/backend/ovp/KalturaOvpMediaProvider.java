@@ -46,10 +46,8 @@ public class KalturaOvpMediaProvider implements MediaEntryProvider {
     private int maxBitrate;
 
 
-    public KalturaOvpMediaProvider(SessionProvider sessionProvider, String entryId) {
+    public KalturaOvpMediaProvider() {
         requestsExecutor =  APIOkRequestsExecutor.getSingleton();
-        this.sessionProvider = sessionProvider;
-        this.entryId = entryId;
     }
 
 
@@ -70,7 +68,16 @@ public class KalturaOvpMediaProvider implements MediaEntryProvider {
 
     @Override
     public void load(final OnMediaLoadCompletion completion) {
-        final RequestBuilder entryRequest = (MultiRequestBuilder) BaseEntryService.entryInfo(sessionProvider.baseUrl(), sessionProvider.getKs(), sessionProvider.partnerId(), entryId)
+
+        ErrorElement error = validateKs();
+        if (error != null || (error = validateEntry()) != null) {
+            if (completion != null) {
+                completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
+            }
+            return;
+        }
+
+        final RequestBuilder entryRequest = (MultiRequestBuilder) BaseEntryService.entryInfo(sessionProvider.baseUrl(), sessionProvider.getKs(), /*sessionProvider.partnerId(),*/ entryId)
                 .completion( new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
@@ -79,6 +86,19 @@ public class KalturaOvpMediaProvider implements MediaEntryProvider {
         });
         requestsExecutor.queue(entryRequest.build());
     }
+
+    private ErrorElement validateKs() {
+        return TextUtils.isEmpty(this.sessionProvider.getKs()) ?
+                ErrorElement.BadRequestError.message(ErrorElement.BadRequestError +": SessionProvider should provide a valid KS token") :
+                null;
+    }
+
+    private ErrorElement validateEntry() {
+        return TextUtils.isEmpty(this.entryId) ?
+                ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": Missing required parameters, entryId") :
+                null;
+    }
+
 
     private void onEntryInfoMultiResponse(ResponseElement response, OnMediaLoadCompletion completion) {
         ErrorElement error = null;

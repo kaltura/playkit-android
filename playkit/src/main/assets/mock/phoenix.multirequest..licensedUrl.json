@@ -1,0 +1,10 @@
+{
+  "executionTime": 0.2267188,
+  "result": [
+    {
+      "objectType": "KalturaLicensedUrl",
+      "altUrl": "",
+      "mainUrl": "http://62.42.236.193:5555/shss/LIVE$CUP001/2.ism/Manifest?start=LIVE&end=END&device=HSS_PC_CLR_RB_HD"
+    }
+  ]
+}

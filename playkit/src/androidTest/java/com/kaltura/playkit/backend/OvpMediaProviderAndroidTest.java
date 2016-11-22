@@ -99,7 +99,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     @Test
     public void testResponseParsing() {
 
-        kalturaOvpMediaProvider = new KalturaOvpMediaProvider(ksSessionProvider, EntryId).setRequestExecutor(testExecutor);
+        kalturaOvpMediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ksSessionProvider).setEntryId(EntryId).setRequestExecutor(testExecutor);
         kalturaOvpMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
