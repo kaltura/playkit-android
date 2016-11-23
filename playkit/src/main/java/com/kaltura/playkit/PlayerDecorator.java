@@ -21,12 +21,12 @@ public abstract class PlayerDecorator extends PlayerDecoratorBase {
     }
 
     @Override
-    final public void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events) {
+    final public void addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
         super.addEventListener(listener, events);
     }
 
     @Override
-    final public void addStateChangeListener(@NonNull PlayerState.Listener listener) {
+    final public void addStateChangeListener(@NonNull PKEvent.Listener listener) {
         super.addStateChangeListener(listener);
     }
 
