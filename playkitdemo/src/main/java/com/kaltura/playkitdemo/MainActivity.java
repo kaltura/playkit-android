@@ -15,7 +15,6 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
@@ -33,7 +32,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
     
     
-    public static final boolean AUTO_PLAY_ON_RESUME = false;
+    public static final boolean AUTO_PLAY_ON_RESUME = true;
 
     private static final String TAG = "MainActivity";
 
@@ -138,14 +137,14 @@ public class MainActivity extends AppCompatActivity {
             public void onEvent(PKEvent event) {
                 nowPlaying = true;
             }
-        }, PlayerEvent.PLAY);
+        }, PlayerEvent.Type.PLAY);
 
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
                 nowPlaying = false;
             }
-        }, PlayerEvent.PAUSE);
+        }, PlayerEvent.Type.PAUSE);
 
         player.addEventListener(new PKEvent.Listener() {
             @Override
@@ -153,11 +152,17 @@ public class MainActivity extends AppCompatActivity {
                 nowPlaying = true;
             }
         }, PKAdEvents.AD_STARTED);
-        player.addStateChangeListener(new PlayerState.Listener() {
+
+        player.addStateChangeListener(new PKEvent.Listener() {
             @Override
-            public void onPlayerStateChanged(Player player, PlayerState newState) {
-                if(controlsView != null){
-                    controlsView.setPlayerState(newState);
+            public void onEvent(PKEvent event) {
+                if (event instanceof PlayerEvent.StateChanged) {
+                    PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
+                    Log.d(TAG, "State changed from " + stateChanged.oldState + " to " + stateChanged.newState);
+
+                    if(controlsView != null){
+                        controlsView.setPlayerState(stateChanged.newState);
+                    }
                 }
             }
         });

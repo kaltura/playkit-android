@@ -29,16 +29,16 @@ import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelections;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DataSource.Factory;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
-import com.google.android.exoplayer2.upstream.DataSource.Factory;
 import com.google.android.exoplayer2.util.Util;
-import com.kaltura.playkit.player.PlayerController.EventListener;
-import com.kaltura.playkit.player.PlayerController.StateChangedListener;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.player.PlayerController.EventListener;
+import com.kaltura.playkit.player.PlayerController.StateChangedListener;
 import com.kaltura.playkit.utils.EventLogger;
 
 
@@ -57,7 +57,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     private SimpleExoPlayer player;
     private CustomExoPlayerView exoPlayerView;
 
-    private PlayerEvent currentEvent;
+    private PlayerEvent.Type currentEvent;
     private PlayerState currentState = PlayerState.IDLE, previousState;
 
     private Handler mainHandler = new Handler();
@@ -174,7 +174,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         }
     }
 
-    private void sendEvent(PlayerEvent newEvent) {
+    private void sendEvent(PlayerEvent.Type newEvent) {
         if (newEvent.equals(currentEvent)) {
             return;
         }
@@ -208,28 +208,28 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
                 Log.d(TAG, "onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.READY);
                 if (!previousState.equals(PlayerState.READY)) {
-                    sendEvent(PlayerEvent.CAN_PLAY);
+                    sendEvent(PlayerEvent.Type.CAN_PLAY);
                 }
 
                 if (isSeeking) {
                     isSeeking = false;
-                    sendEvent(PlayerEvent.SEEKED);
+                    sendEvent(PlayerEvent.Type.SEEKED);
                 }
 
                 if (playWhenReady) {
                     if (firstPlay) {
                         firstPlay = false;
-                        sendEvent(PlayerEvent.FIRST_PLAY);
+                        sendEvent(PlayerEvent.Type.FIRST_PLAY);
                     }
 
-                    sendEvent(PlayerEvent.PLAYING);
+                    sendEvent(PlayerEvent.Type.PLAYING);
                 }
 
                 break;
             case ExoPlayer.STATE_ENDED:
                 Log.d(TAG, "onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
-                sendEvent(PlayerEvent.ENDED);
+                sendEvent(PlayerEvent.Type.ENDED);
                 break;
             default:
                 break;
@@ -249,7 +249,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     public void onPlayerError(ExoPlaybackException error) {
 
         Log.d(TAG, "onPlayerError error type => " + error.type);
-        sendEvent(PlayerEvent.ERROR);
+        sendEvent(PlayerEvent.Type.ERROR);
     }
 
     @Override
@@ -284,7 +284,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
             return;
         }
         
-        sendEvent(PlayerEvent.PLAY);
+        sendEvent(PlayerEvent.Type.PLAY);
         
         player.setPlayWhenReady(true);
     }
@@ -294,7 +294,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         if (!player.getPlayWhenReady()) {
             return;
         }
-        sendEvent(PlayerEvent.PAUSE);
+        sendEvent(PlayerEvent.Type.PAUSE);
         player.setPlayWhenReady(false);
     }
 
@@ -306,7 +306,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     @Override
     public void seekTo(long position) {
         isSeeking = true;
-        sendEvent(PlayerEvent.SEEKING);
+        sendEvent(PlayerEvent.Type.SEEKING);
         player.seekTo(position);
     }
 
