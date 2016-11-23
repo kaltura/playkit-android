@@ -322,7 +322,11 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     @Override
     public long getDuration() {
-        return player.getDuration();
+        if (player != null) {
+            return player.getDuration();
+        } else {
+            return 0;
+        }
     }
 
     @Override

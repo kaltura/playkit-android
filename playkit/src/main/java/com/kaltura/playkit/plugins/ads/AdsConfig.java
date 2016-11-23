@@ -4,12 +4,17 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import com.google.gson.reflect.TypeToken;
 import com.kaltura.playkit.PKMediaFormat;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by gilad.nadav on 17/11/2016.
@@ -22,6 +27,7 @@ public class AdsConfig {
     public static final String AUTO_PLAY_AD_BREAK  = "autoPlayAdBreaks";
     public static final String AD_VIDEO_BITRATE    = "videoBitrate";
     public static final String VIDEO_MIME_TYPES    = "videoMimeTypes";
+    public static final String AD_TAG_TIMES        = "tagsTimes";
 
     private String language = "en";
     private String adTagUrl;
@@ -29,19 +35,24 @@ public class AdsConfig {
     private boolean autoPlayAdBreaks = false;
     private int videoBitrate;
     private List<String> videoMimeTypes;
-
-    //private String tagsTimes;
+    private Map<Double,String> tagsTimes; // <AdTime,URL_to_execute>
     //View companionView;
     //ViewGroup uiControlsContainer;
 
-    public AdsConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate, List<String> videoMimeTypes, String adTagUrl) {//}, String tagsTimes, View companionView, ViewGroup uiControlsContainer) {
+    public AdsConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate, List<String> videoMimeTypes, String adTagUrl, Map<Double,String> tagTimes) {//}, String tagsTimes, View companionView, ViewGroup uiControlsContainer) {
         this.language = language;
         this.enableBackgroundPlayback = enableBackgroundPlayback;
         this.autoPlayAdBreaks = autoPlayAdBreaks;
         this.videoBitrate = videoBitrate;
+        if (videoMimeTypes == null) {
+            videoMimeTypes = new ArrayList<>();
+        }
         this.videoMimeTypes = videoMimeTypes;
         this.adTagUrl = adTagUrl;
-        //this.tagsTimes = tagsTimes;
+        if (tagTimes == null) {
+            tagTimes = new HashMap<>();
+        }
+        this.tagsTimes = tagTimes;
         //this.companionView = companionView;
         //this.uiControlsContainer = uiControlsContainer;
     }
@@ -55,7 +66,7 @@ public class AdsConfig {
         this.language = language;
     }
 
-    public boolean isEnableBackgroundPlayback() {
+    public boolean getEnableBackgroundPlayback() {
         return enableBackgroundPlayback;
     }
 
@@ -63,7 +74,7 @@ public class AdsConfig {
         this.enableBackgroundPlayback = enableBackgroundPlayback;
     }
 
-    public boolean isAutoPlayAdBreaks() {
+    public boolean getAutoPlayAdBreaks() {
         return autoPlayAdBreaks;
     }
 
@@ -95,14 +106,14 @@ public class AdsConfig {
         this.adTagUrl = adTagUrl;
     }
 
-//    public String getTagsTimes() {
-//        return tagsTimes;
-//    }
-//
-//    public void setTagsTimes(String tagsTimes) {
-//        this.tagsTimes = tagsTimes;
-//    }
-//
+    public Map<Double, String> getTagsTimes() {
+        return tagsTimes;
+    }
+
+    public void setTagsTimes(Map<Double, String> tagsTimes) {
+        this.tagsTimes = tagsTimes;
+    }
+
 //    public View getCompanionView() {
 //        return companionView;
 //    }
@@ -133,10 +144,21 @@ public class AdsConfig {
             jArray.add(element);
         }
         jsonObject.add(VIDEO_MIME_TYPES, jArray);
+
+        String tagsTimesJsonString = gson.toJson(tagsTimes);
+        if (tagsTimesJsonString != null && !tagsTimesJsonString.isEmpty()) {
+            JsonParser parser = new JsonParser();
+            JsonObject tagsTimesJsonObject = parser.parse(tagsTimesJsonString).getAsJsonObject();
+            jsonObject.add(AD_TAG_TIMES, tagsTimesJsonObject);
+        } else {
+            jsonObject.add(AD_TAG_TIMES, new JsonObject());
+        }
+
         return jsonObject;
     }
 
     public static AdsConfig fromJsonObject(JsonObject adsConfigJson) {
+        Gson gson = new Gson();
         String language = (adsConfigJson.getAsJsonPrimitive(AdsConfig.AD_TAG_LANGUAGE) != null) ? adsConfigJson.getAsJsonPrimitive(AdsConfig.AD_TAG_LANGUAGE).getAsString() : "en";
         String adTagUrl = (adsConfigJson.getAsJsonPrimitive(AdsConfig.AD_TAG_URL) != null) ? adsConfigJson.getAsJsonPrimitive(AdsConfig.AD_TAG_URL).getAsString() : "";
         boolean enableBackgroundPlayback = (adsConfigJson.getAsJsonPrimitive(AdsConfig.ENABLE_BG_PLAYBACK) != null) ? adsConfigJson.getAsJsonPrimitive(AdsConfig.ENABLE_BG_PLAYBACK).getAsBoolean() : false;
@@ -146,7 +168,6 @@ public class AdsConfig {
         List<String> videoMimeTypes = new ArrayList<>();
 
         if (mimeTypesJsonArray != null && mimeTypesJsonArray.size() > 0) {
-            Gson gson = new Gson();
             Iterator<JsonElement> iterator = mimeTypesJsonArray.iterator();
             while (iterator.hasNext()) {
                 JsonPrimitive jsonElement = (JsonPrimitive) iterator.next();
@@ -156,7 +177,11 @@ public class AdsConfig {
         } else {
             videoMimeTypes.add(PKMediaFormat.mp4_clear.mimeType);
         }
-        return new AdsConfig(language, enableBackgroundPlayback, autoPlayAdBreaks, videoBitrate, videoMimeTypes, adTagUrl);
+
+        Map<Double,String> tagTimes = new HashMap<>();
+        Type type = new TypeToken<Map<Double, String>>(){}.getType();
+        tagTimes = gson.fromJson(adsConfigJson.getAsJsonObject(AdsConfig.AD_TAG_TIMES).getAsJsonObject(), type);
+        return new AdsConfig(language, enableBackgroundPlayback, autoPlayAdBreaks, videoBitrate, videoMimeTypes, adTagUrl, tagTimes);
     }
 }
 

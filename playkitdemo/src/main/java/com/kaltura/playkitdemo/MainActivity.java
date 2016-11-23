@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MediaEntryProvider;
+import com.kaltura.playkit.PKAdInfo;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
@@ -20,11 +21,13 @@ import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.ads.AdsConfig;
-import com.kaltura.playkit.plugins.ads.ima.IMAEvents;
+import com.kaltura.playkit.plugins.ads.PKAdEvents;
 import com.kaltura.playkit.plugins.ads.ima.IMASimplePlugin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -109,11 +112,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addIMAPluginConfig(PlayerConfig.Plugins config){
-        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
+        //String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
+        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpost&cmsid=496&vid=short_onecue&correlator=";
         List<String> videoMimeTypes = new ArrayList<>();
         //videoMimeTypes.add(MimeTypes.APPLICATION_MP4);
         //videoMimeTypes.add(MimeTypes.APPLICATION_M3U8);
-        AdsConfig adsConfig = new AdsConfig("en", false, true, 60000, videoMimeTypes, adTagUrl);
+        Map<Double,String> tagTimesMap = new HashMap<>();
+        //tagTimesMap.put(2.0,"GILAD");
+        AdsConfig adsConfig = new AdsConfig("en", false, true, 60000, videoMimeTypes, adTagUrl,tagTimesMap);
         config.setPluginConfig(IMASimplePlugin.factory.getName(), adsConfig.toJSONObject());
     }
 
@@ -124,8 +130,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onEvent(PKEvent event) {
                 Log.d(TAG, "Ad Event AD_CONTENT_PAUSE_REQUESTED");
+                PKAdInfo adInfo = player.getAdInfo();
             }
-        }, IMAEvents.IMA_CONTENT_PAUSE_REQUESTED);
+        }, PKAdEvents.AD_CONTENT_PAUSE_REQUESTED);
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
@@ -140,6 +147,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }, PlayerEvent.PAUSE);
 
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                nowPlaying = true;
+            }
+        }, PKAdEvents.AD_STARTED);
         player.addStateChangeListener(new PlayerState.Listener() {
             @Override
             public void onPlayerStateChanged(Player player, PlayerState newState) {

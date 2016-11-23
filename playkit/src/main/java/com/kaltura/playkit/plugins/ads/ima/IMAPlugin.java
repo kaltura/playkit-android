@@ -44,11 +44,13 @@ import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKAdInfo;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.plugins.ads.AdsConfig;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 
 import java.io.IOException;
@@ -164,6 +166,16 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, ExoPlayer.EventL
     ////////Ads Plugin
 
     @Override
+    public String getPluginName() {
+        return IMAPlugin.factory.getName();
+    }
+
+    @Override
+    public AdsConfig getAdsConfig() {
+        return null;
+    }
+
+    @Override
     public void requestAd() {
 
     }
@@ -189,12 +201,22 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, ExoPlayer.EventL
     }
 
     @Override
+    public PKAdInfo getAdInfo() {
+        return null;
+    }
+
+    @Override
     public boolean isAdDisplayed() {
         return false;
     }
 
     @Override
     public boolean isAdPaused() {
+        return false;
+    }
+
+    @Override
+    public boolean isAdRequested() {
         return false;
     }
 

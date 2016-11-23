@@ -7,6 +7,15 @@ import android.util.Log;
 import com.kaltura.playkit.PKAdInfo;
 import com.kaltura.playkit.PlayerDecorator;
 
+import java.util.List;
+
+import static com.kaltura.playkit.plugins.ads.AdsConfig.AD_TAG_LANGUAGE;
+import static com.kaltura.playkit.plugins.ads.AdsConfig.AD_TAG_URL;
+import static com.kaltura.playkit.plugins.ads.AdsConfig.AD_VIDEO_BITRATE;
+import static com.kaltura.playkit.plugins.ads.AdsConfig.AUTO_PLAY_AD_BREAK;
+import static com.kaltura.playkit.plugins.ads.AdsConfig.ENABLE_BG_PLAYBACK;
+import static com.kaltura.playkit.plugins.ads.AdsConfig.VIDEO_MIME_TYPES;
+
 /**
  * Created by gilad.nadav on 20/11/2016.
  */
@@ -39,10 +48,15 @@ public class AdEnabledPlayerController extends PlayerDecorator {
     @Override
     public void play() {
         Log.d(TAG, "AdEnabledPlayerController PLAY");
-        if (!adsProvider.isAdDisplayed()) {
+        if (!adsProvider.isAdDisplayed() && adsProvider.isAdRequested()) {
             super.play();
+        } else if (adsProvider.isAdDisplayed()) {
+            adsProvider.start(false);
         } else {
             super.pause();
+            if (!adsProvider.isAdRequested()) {
+                adsProvider.requestAd();
+            }
         }
     }
 
@@ -51,6 +65,8 @@ public class AdEnabledPlayerController extends PlayerDecorator {
         Log.d(TAG, "AdEnabledPlayerController PAUSE");
         if (!adsProvider.isAdDisplayed()) {
             super.pause();
+        } else {
+            adsProvider.pause();
         }
     }
 
@@ -64,11 +80,29 @@ public class AdEnabledPlayerController extends PlayerDecorator {
 
     @Override
     public PKAdInfo getAdInfo() {
-        return super.getAdInfo();
+        return adsProvider.getAdInfo();
     }
 
     @Override
     public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
-        super.updatePluginConfig(pluginName, key, value);
+        if (value == null) {
+            return;
+        }
+        if (adsProvider.getPluginName().equals(pluginName)) {
+            if (key.equals(AD_TAG_LANGUAGE)) {
+                adsProvider.getAdsConfig().setLanguage((String) value);
+            } else if (key.equals(AD_TAG_URL)) {
+                adsProvider.getAdsConfig().setAdTagUrl((String) value);
+            } else if (key.equals(ENABLE_BG_PLAYBACK)) {
+                adsProvider.getAdsConfig().setEnableBackgroundPlayback((boolean) value);
+            } else if (key.equals(AUTO_PLAY_AD_BREAK)) {
+                adsProvider.getAdsConfig().setAutoPlayAdBreaks((boolean) value);
+            } else if (key.equals(AD_VIDEO_BITRATE)) {
+                adsProvider.getAdsConfig().setVideoBitrate((int) value);
+            } else if (key.equals(VIDEO_MIME_TYPES)) {
+                adsProvider.getAdsConfig().setVideoMimeTypes((List<String>) value);
+            }
+            adsProvider.requestAd();
+        }
     }
 }

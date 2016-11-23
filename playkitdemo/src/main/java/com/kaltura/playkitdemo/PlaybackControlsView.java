@@ -1,6 +1,7 @@
 package com.kaltura.playkitdemo;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -156,8 +157,12 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
         switch (v.getId()) {
             case R.id.play:
                 player.play();
+                v.setBackgroundColor(Color.RED);
+                findViewById(R.id.pause).setBackgroundColor(Color.GREEN);
                 break;
             case R.id.pause:
+                v.setBackgroundColor(Color.RED);
+                findViewById(R.id.play).setBackgroundColor(Color.GREEN);
                 player.pause();
                 break;
             case R.id.ffwd:
