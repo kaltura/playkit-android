@@ -52,9 +52,9 @@ public interface Player {
      */
     void skip();
     
-    void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events);
+    void addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
 
-    void addStateChangeListener(@NonNull PlayerState.Listener listener);
+    void addStateChangeListener(@NonNull PKEvent.Listener listener);
 
     void restore();
     
