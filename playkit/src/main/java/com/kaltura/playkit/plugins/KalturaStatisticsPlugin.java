@@ -26,61 +26,91 @@ import java.util.TimerTask;
  */
 
 public class KalturaStatisticsPlugin extends PKPlugin {
+    /*
+         * Kaltura event types that are presently not usable in the
+		 *  player at this point in time:
+		 *
+		 * OPEN_EDIT = 8;
+		 * OPEN_VIRAL = 9;
+		 * OPEN_DOWNLOAD = 10;
+		 * OPEN_REPORT = 11;
+		 * OPEN_UPLOAD = 18;
+		 * SAVE_PUBLISH = 19;
+		 * CLOSE_EDITOR = 20;
+		 *
+		 * PRE_BUMPER_PLAYED = 21;
+		 * POST_BUMPER_PLAYED = 22;
+		 * BUMPER_CLICKED = 23;
+		 */
+
+    public enum KStatsEvent {
+        WIDGET_LOADED(1),
+        MEDIA_LOADED(2),
+        PLAY(3),
+        PLAY_REACHED_25(4),
+        PLAY_REACHED_50(5),
+        PLAY_REACHED_75(6),
+        PLAY_REACHED_100(7),
+        OPEN_EDIT(8),
+        OPEN_VIRAL(9),
+        OPEN_DOWNLOAD(10),
+        OPEN_REPORT(11),
+        BUFFER_START(12),
+        BUFFER_END(13),
+        OPEN_FULL_SCREEN(14),
+        CLOSE_FULL_SCREEN(15),
+        REPLAY(16),
+        SEEK(17),
+        OPEN_UPLOAD(18),
+        SAVE_PUBLISH(19),
+        CLOSE_EDITOR(20),
+        PRE_BUMPER_PLAYED(21),
+        POST_BUMPER_PLAYED(22),
+        BUMPER_CLICKED(23),
+        PREROLL_STARTED(24),
+        MIDROLL_STARTED(25),
+        POSTROLL_STARTED(26),
+        OVERLAY_STARTED(27),
+        PREROLL_CLICKED(28),
+        MIDROLL_CLICKED(29),
+        POSTROLL_CLICKED(30),
+        OVERLAY_CLICKED(31),
+        PREROLL_25(32),
+        PREROLL_50(33),
+        PREROLL_75(34),
+        MIDROLL_25(35),
+        MIDROLL_50(36),
+        MIDROLL_75(37),
+        POSTROLL_25(38),
+        POSTROLL_50(39),
+        POSTROLL_75(40),
+        ERROR(99);
+
+        private final int value;
+
+        KStatsEvent(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
 
     private Player player;
     private PlayerConfig.Media mediaConfig;
     private JsonObject pluginConfig;
     private RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
+    private float seekPercent = 0;
+    private boolean playReached25 = false;
+    private boolean playReached50 = false;
+    private boolean playReached75 = false;
+    private boolean playReached100 = false;
+    private boolean isBuffering = false;
+    private boolean intervalOn = false;
+    private static final int TimerInterval = 10000;
 
-
-    public enum KStatsEvent {
-        WIDGET_LOADED (1),
-        MEDIA_LOADED (2),
-        PLAY (3),
-        PLAY_REACHED_25 (4),
-        PLAY_REACHED_50 (5),
-        PLAY_REACHED_75 (6),
-        PLAY_REACHED_100 (7),
-        OPEN_EDIT (8),
-        OPEN_VIRAL (9),
-        OPEN_DOWNLOAD (10),
-        OPEN_REPORT (11),
-        BUFFER_START (12),
-        BUFFER_END (13),
-        OPEN_FULL_SCREEN (14),
-        CLOSE_FULL_SCREEN (15),
-        REPLAY (16),
-        SEEK (17),
-        OPEN_UPLOAD (18),
-        SAVE_PUBLISH (19),
-        CLOSE_EDITOR (20),
-        PRE_BUMPER_PLAYED (21),
-        POST_BUMPER_PLAYED (22),
-        BUMPER_CLICKED (23),
-        PREROLL_STARTED (24),
-        MIDROLL_STARTED (25),
-        POSTROLL_STARTED (26),
-        OVERLAY_STARTED (27),
-        PREROLL_CLICKED (28),
-        MIDROLL_CLICKED (29),
-        POSTROLL_CLICKED (30),
-        OVERLAY_CLICKED (31),
-        PREROLL_25 (32),
-        PREROLL_50 (33),
-        PREROLL_75 (34),
-        MIDROLL_25 (35),
-        MIDROLL_50 (36),
-        MIDROLL_75 (37),
-        POSTROLL_25 (38),
-        POSTROLL_50 (39),
-        POSTROLL_75 (40),
-        ERROR (99);
-
-        private final int value;
-        KStatsEvent(int value) { this.value = value; }
-        public int getValue() { return value; }
-    }
 
     SessionProvider ksSessionProvider = new SessionProvider() {
         @Override
@@ -95,7 +125,7 @@ public class KalturaStatisticsPlugin extends PKPlugin {
 
         @Override
         public int partnerId() {
-            return 1656501;
+            return 2219681;
         }
     };
 
@@ -125,7 +155,8 @@ public class KalturaStatisticsPlugin extends PKPlugin {
 
     @Override
     public void onDestroy() {
-
+        intervalOn = false;
+        timer.cancel();
     }
 
     @Override
@@ -144,15 +175,29 @@ public class KalturaStatisticsPlugin extends PKPlugin {
             if (event instanceof PlayerState.Event) {
                 switch (((PlayerState.Event) event).newState) {
                     case IDLE:
-
+                        setMessageParams(KStatsEvent.WIDGET_LOADED);
                         break;
                     case LOADING:
-
+                        if (isBuffering) {
+                            isBuffering = false;
+                            setMessageParams(KStatsEvent.BUFFER_END);
+                        }
                         break;
                     case READY:
-                        startTimeObservorInterval();
+                        if (!isBuffering) {
+                            setMessageParams(KStatsEvent.MEDIA_LOADED);
+                        } else {
+                            isBuffering = false;
+                            setMessageParams(KStatsEvent.BUFFER_END);
+                        }
+                        if (!intervalOn) {
+                            intervalOn = true;
+                            startTimeObservorInterval();
+                        }
                         break;
                     case BUFFERING:
+                        isBuffering = true;
+                        setMessageParams(KStatsEvent.BUFFER_START);
                         break;
                 }
             }
@@ -189,6 +234,7 @@ public class KalturaStatisticsPlugin extends PKPlugin {
 
                         break;
                     case SEEKED:
+                        seekPercent = (float) player.getCurrentPosition() / player.getDuration();
                         setMessageParams(KStatsEvent.SEEK);
                         break;
                     case SEEKING:
@@ -202,26 +248,42 @@ public class KalturaStatisticsPlugin extends PKPlugin {
         }
     };
 
-    private void startTimeObservorInterval(){
-        java.util.Timer timer = new java.util.Timer();
+    private void startTimeObservorInterval() {
+        if (timer == null) {
+            timer = new java.util.Timer();
+        }
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                    float progress = (float) player.getCurrentPosition() / player.getDuration();
-                    if (progress == 0.25) {
-
-                    } else if (progress == 0.5) {
-
-                    } else if (progress == 0.75) {
-
-                    }
+                float progress = (float) player.getCurrentPosition() / player.getDuration();
+                if (progress >= 0.25 && !playReached25 && seekPercent <= 0.25) {
+                    playReached25 = true;
+                    setMessageParams(KStatsEvent.PLAY_REACHED_25);
+                } else if (progress >= 0.5 && !playReached50 && seekPercent < 0.5) {
+                    playReached50 = true;
+                    setMessageParams(KStatsEvent.PLAY_REACHED_50);
+                } else if (progress >= 0.75 && !playReached75 && seekPercent <= 0.75) {
+                    playReached75 = true;
+                    setMessageParams(KStatsEvent.PLAY_REACHED_75);
+                } else if (progress >= 0.98 && !playReached100 && seekPercent < 1) {
+                    playReached100 = true;
+                    setMessageParams(KStatsEvent.PLAY_REACHED_100);
                 }
-        }, 0, 10000); // Get media hit interval from plugin config
+            }
+        }, 0, TimerInterval);
     }
 
-    private void setMessageParams(KStatsEvent eventType){
+//    private String signature(KalturaParams kparams) throws KalturaApiException {
+//        String md5 = new String(Hex.encodeHex(DigestUtils.md5(kparams.toString())));;
+//        return md5;
+//    }
+
+    private void setMessageParams(KStatsEvent eventType) {
+        // Parameters for the request -
+        //        String baseUrl, int partnerId, int eventType, String clientVer, long duration,
+        //        String sessionId, long position, String uiConfId, String entryId, String widgetId, String kalsig, boolean isSeek, String referrer
         RequestBuilder requestBuilder = StatsService.sendStatsEvent(ksSessionProvider.baseUrl(), ksSessionProvider.partnerId(), eventType.getValue(), "2.5", player.getDuration(),
-               "b3460681-b994-6fad-cd8b-f0b65736e837" , player.getCurrentPosition(), "24997472", "0_x0p2fm30", "_" + ksSessionProvider.partnerId(), ksSessionProvider.getKs(),
+                "b3460681-b994-6fad-cd8b-f0b65736e837", player.getCurrentPosition(), "24997472", "1_y4gjn527", "_" + ksSessionProvider.partnerId(), ksSessionProvider.getKs(),
                 eventType == KStatsEvent.SEEK, "");
 
         requestBuilder.completion(new OnRequestCompletion() {

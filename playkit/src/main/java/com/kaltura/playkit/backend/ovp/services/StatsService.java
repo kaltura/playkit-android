@@ -4,6 +4,9 @@ import android.net.Uri;
 
 import com.kaltura.playkit.connect.RequestBuilder;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Date;
 
 /**
@@ -22,7 +25,7 @@ public class StatsService {
     private static String getOvpUrl(String baseUrl, int partnerId, int eventType, String clientVer, long duration,
                                     String sessionId, long position, String uiConfId, String entryId, String widgetId, String kalsig, boolean isSeek, String referrer) {
         Uri.Builder builder = new Uri.Builder();
-        builder.scheme("http")
+        builder.scheme("https")
                 .authority(baseUrl)
                 .path("/api_v3/index.php")
                 .appendQueryParameter("service", "stats")
@@ -48,7 +51,14 @@ public class StatsService {
                 .appendQueryParameter("event:referrer", referrer)
                 .appendQueryParameter("kalsig", kalsig);
 
+        try {
+            URL url =  new URL(URLDecoder.decode(builder.build().toString(), "UTF-8"));
+            return url.toString();
+        } catch (java.io.UnsupportedEncodingException ex){
 
+        } catch (MalformedURLException rx){
+
+        }
         return builder.build().toString();
     }
 }

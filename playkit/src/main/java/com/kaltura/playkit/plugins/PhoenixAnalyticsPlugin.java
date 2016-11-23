@@ -40,6 +40,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private boolean mIsPlaying = false;
     private boolean mIsConcurrent = false;
     private boolean mDidFirstPlay = false;
+    private boolean intervalOn = false;
     private int mMediaHitInterval = -1;
     private int mFileId = -1;
     private long mContinueTime;
@@ -50,7 +51,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private boolean mPlayFromContinue = false;
     private RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
-
+    private final static int MediaHitInterval = 30000;
 
     SessionProvider ksSessionProvider = new SessionProvider() {
         @Override
@@ -95,7 +96,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     public void onDestroy() {
-
+        setMessageParams(PhoenixActionType.STOP);
     }
 
     @Override
@@ -142,14 +143,16 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         }
                         break;
                     case PLAY:
+                        if (!intervalOn){
+                            startMediaHitInterval();
+                            intervalOn = true;
+                        }
                         if (!mDidFirstPlay) {
                             mDidFirstPlay = true;
                             mIsPlaying = true;
                             setMessageParams(PhoenixActionType.FIRST_PLAY);
-                            startMediaHitInterval();
                         } else {
                             mIsPlaying = true;
-                            startMediaHitInterval();
                             setMessageParams(PhoenixActionType.PLAY);
                         }
 
@@ -172,13 +175,15 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     };
 
     private void startMediaHitInterval(){
-        java.util.Timer timer = new java.util.Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 setMessageParams(PhoenixActionType.HIT);
+                if ((float) mPlayer.getCurrentPosition() / mPlayer.getDuration() > 0.98){
+                    setMessageParams(PhoenixActionType.FINISH);
+                }
             }
-        }, 0, 30000); // Get media hit interval from plugin config
+        }, 0, MediaHitInterval); // Get media hit interval from plugin config
     }
 
     private void setMessageParams(PhoenixActionType eventType){
