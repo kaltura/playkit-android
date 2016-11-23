@@ -20,7 +20,7 @@ import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.ads.AdsConfig;
-import com.kaltura.playkit.plugins.ads.PKAdEvents;
+import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.ima.IMASimplePlugin;
 
 import java.util.ArrayList;
@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Ad Event AD_CONTENT_PAUSE_REQUESTED");
                 PKAdInfo adInfo = player.getAdInfo();
             }
-        }, PKAdEvents.AD_CONTENT_PAUSE_REQUESTED);
+        }, AdEvent.Type.AD_CONTENT_PAUSE_REQUESTED);
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
@@ -151,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
             public void onEvent(PKEvent event) {
                 nowPlaying = true;
             }
-        }, PKAdEvents.AD_STARTED);
+        }, AdEvent.Type.AD_STARTED);
 
         player.addStateChangeListener(new PKEvent.Listener() {
             @Override

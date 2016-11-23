@@ -130,7 +130,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, ExoPlayer.EventL
             public void onEvent(PKEvent event) {
 
             }
-        }, PlayerEvent.ENDED);
+        }, PlayerEvent.Type.ENDED);
 
         messageBus.listen(new PKEvent.Listener() {
             @Override

@@ -6,7 +6,6 @@ import android.view.ViewGroup;
 
 import com.google.ads.interactivemedia.v3.api.AdDisplayContainer;
 import com.google.ads.interactivemedia.v3.api.AdErrorEvent;
-import com.google.ads.interactivemedia.v3.api.AdEvent;
 import com.google.ads.interactivemedia.v3.api.AdPodInfo;
 import com.google.ads.interactivemedia.v3.api.AdsLoader;
 import com.google.ads.interactivemedia.v3.api.AdsManager;
@@ -29,7 +28,7 @@ import com.kaltura.playkit.plugins.ads.AdEnabledPlayerController;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdsConfig;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
-import com.kaltura.playkit.plugins.ads.PKAdEvents;
+import com.kaltura.playkit.plugins.ads.AdEvent;
 
 import java.util.List;
 
@@ -38,7 +37,7 @@ import java.util.List;
  * Created by gilad.nadav on 17/11/2016.
  */
 
-public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.AdEventListener, AdErrorEvent.AdErrorListener  {
+public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google.ads.interactivemedia.v3.api.AdEvent.AdEventListener, AdErrorEvent.AdErrorListener  {
 
     private static final String TAG = "IMASimplePlugin";
 
@@ -109,7 +108,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
             public void onEvent(PKEvent event) {
                 Log.d(TAG, "XXXXX onLoad:PlayerEvent:" + event);
             }
-        }, PlayerEvent.PLAY);
+        }, PlayerEvent.Type.PLAY);
 
         this.messageBus.listen(new PKEvent.Listener() {
             @Override
@@ -117,13 +116,13 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
                 Log.d(TAG, "onLoad:PlayerEvent:" + event);
 
             }
-        }, PlayerEvent.PAUSE);
+        }, PlayerEvent.Type.PAUSE);
         this.messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
                 Log.d(TAG, "onLoad:PlayerEvent:PlayerEvent.ENDED-" + event);
             }
-        }, PlayerEvent.ENDED);
+        }, PlayerEvent.Type.ENDED);
 
         //----------------------------//
         adConfig = AdsConfig.fromJsonObject(pluginConfig);
@@ -289,64 +288,64 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
         Log.e(TAG, "Ad Error: " + adErrorEvent.getError().getMessage());
         switch (adErrorEvent.getError().getErrorCode()) {
             case INTERNAL_ERROR:
-                messageBus.post(PKAdEvents.AD_INTERNAL_ERROR);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_INTERNAL_ERROR));
                 break;
             case VAST_MALFORMED_RESPONSE:
-                messageBus.post(PKAdEvents.AD_VAST_MALFORMED_RESPONSE);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_VAST_MALFORMED_RESPONSE));
                 break;
             case UNKNOWN_AD_RESPONSE:
-                messageBus.post(PKAdEvents.AD_UNKNOWN_AD_RESPONSE);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_UNKNOWN_AD_RESPONSE));
                 break;
             case VAST_LOAD_TIMEOUT:
-                messageBus.post(PKAdEvents.AD_VAST_LOAD_TIMEOUT);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_VAST_LOAD_TIMEOUT));
                 break;
             case VAST_TOO_MANY_REDIRECTS:
-                messageBus.post(PKAdEvents.AD_VAST_TOO_MANY_REDIRECTS);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_VAST_TOO_MANY_REDIRECTS));
                 break;
             case VIDEO_PLAY_ERROR:
-                messageBus.post(PKAdEvents.AD_VIDEO_PLAY_ERROR);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_VIDEO_PLAY_ERROR));
                 break;
             case VAST_MEDIA_LOAD_TIMEOUT:
-                messageBus.post(PKAdEvents.AD_VAST_MEDIA_LOAD_TIMEOUT);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_VAST_MEDIA_LOAD_TIMEOUT));
                 break;
             case VAST_LINEAR_ASSET_MISMATCH:
-                messageBus.post(PKAdEvents.AD_VAST_LINEAR_ASSET_MISMATCH);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_VAST_LINEAR_ASSET_MISMATCH));
                 break;
             case OVERLAY_AD_PLAYING_FAILED:
-                messageBus.post(PKAdEvents.AD_OVERLAY_AD_PLAYING_FAILED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_OVERLAY_AD_PLAYING_FAILED));
                 break;
             case OVERLAY_AD_LOADING_FAILED:
-                messageBus.post(PKAdEvents.AD_OVERLAY_AD_LOADING_FAILED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_OVERLAY_AD_LOADING_FAILED));
                 break;
             case VAST_NONLINEAR_ASSET_MISMATCH:
-                messageBus.post(PKAdEvents.AD_VAST_NONLINEAR_ASSET_MISMATCH);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_VAST_NONLINEAR_ASSET_MISMATCH));
                 break;
             case COMPANION_AD_LOADING_FAILED:
-                messageBus.post(PKAdEvents.AD_COMPANION_AD_LOADING_FAILED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_COMPANION_AD_LOADING_FAILED));
                 break;
             case UNKNOWN_ERROR:
-                messageBus.post(PKAdEvents.AD_UNKNOWN_ERROR);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_UNKNOWN_ERROR));
                 break;
             case VAST_EMPTY_RESPONSE:
-                messageBus.post(PKAdEvents.AD_VAST_EMPTY_RESPONSE);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_VAST_EMPTY_RESPONSE));
                 break;
             case FAILED_TO_REQUEST_ADS:
-                messageBus.post(PKAdEvents.AD_FAILED_TO_REQUEST_ADS);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_FAILED_TO_REQUEST_ADS));
                 break;
             case VAST_ASSET_NOT_FOUND:
-                messageBus.post(PKAdEvents.AD_VAST_ASSET_NOT_FOUND);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_VAST_ASSET_NOT_FOUND));
                 break;
             case ADS_REQUEST_NETWORK_ERROR:
-                messageBus.post(PKAdEvents.AD_ADS_REQUEST_NETWORK_ERROR);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_ADS_REQUEST_NETWORK_ERROR));
                 break;
             case INVALID_ARGUMENTS:
-                messageBus.post(PKAdEvents.AD_INVALID_ARGUMENTS);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_INVALID_ARGUMENTS));
                 break;
             case PLAYLIST_NO_CONTENT_TRACKING:
-                messageBus.post(PKAdEvents.AD_PLAYLIST_NO_CONTENT_TRACKING);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_PLAYLIST_NO_CONTENT_TRACKING));
                 break;
             default:
-                messageBus.post(PKAdEvents.AD_UNKNOWN_ERROR);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_UNKNOWN_ERROR));
         }
         if (player != null) {
             player.play();
@@ -354,7 +353,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
     }
 
     @Override
-    public void onAdEvent(AdEvent adEvent) {
+    public void onAdEvent(com.google.ads.interactivemedia.v3.api.AdEvent adEvent) {
         Log.i(TAG, "Event: " + adEvent.getType());
         if (adEvent.getAdData() != null) {
             Log.i(TAG, "Event: " + adEvent.getAdData().toString());
@@ -362,56 +361,56 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
         switch (adEvent.getType()) {
             case STARTED:
                 mIsAdIsPaused = false;
-                messageBus.post(PKAdEvents.AD_STARTED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_STARTED));
                 break;
             case PAUSED:
                 mIsAdIsPaused = true;
-                messageBus.post(PKAdEvents.AD_PAUSED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_PAUSED));
                 break;
             case RESUMED:
                 mIsAdIsPaused = false;
-                messageBus.post(PKAdEvents.AD_RESUMED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_RESUMED));
                 break;
             case COMPLETED:
-                messageBus.post(PKAdEvents.AD_COMPLETED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_COMPLETED));
                 break;
             case FIRST_QUARTILE:
-                messageBus.post(PKAdEvents.AD_FIRST_QUARTILE);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_FIRST_QUARTILE));
                 break;
             case MIDPOINT:
-                messageBus.post(PKAdEvents.AD_MIDPOINT);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_MIDPOINT));
                 break;
             case THIRD_QUARTILE:
-                messageBus.post(PKAdEvents.AD_THIRD_QUARTILE);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_THIRD_QUARTILE));
                 break;
             case SKIPPED:
-                messageBus.post(PKAdEvents.AD_SKIPPED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_SKIPPED));
                 break;
             case CLICKED:
                  mIsAdIsPaused = true;
-                messageBus.post(PKAdEvents.AD_CLICKED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CLICKED));
                 break;
             case TAPPED:
-                messageBus.post(PKAdEvents.AD_TAPPED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_TAPPED));
                 break;
             case ICON_TAPPED:
-                messageBus.post(PKAdEvents.AD_ICON_TAPPED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_ICON_TAPPED));
                 break;
             case AD_BREAK_READY:
                 mAdsManager.start();
-                messageBus.post(PKAdEvents.AD_AD_BREAK_READY);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_AD_BREAK_READY));
                 break;
             case AD_PROGRESS:
-                messageBus.post(PKAdEvents.AD_AD_PROGRESS);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_AD_PROGRESS));
                 break;
             case AD_BREAK_STARTED:
-                messageBus.post(PKAdEvents.AD_AD_BREAK_STARTED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_AD_BREAK_STARTED));
                 break;
             case  AD_BREAK_ENDED:
-                messageBus.post(PKAdEvents.AD_AD_BREAK_ENDED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_AD_BREAK_ENDED));
                 break;
             case  CUEPOINTS_CHANGED:
-                messageBus.post(PKAdEvents.AD_CUEPOINTS_CHANGED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CUEPOINTS_CHANGED));
                 break;
             case LOADED:
                 // AdEventType.LOADED will be fired when ads are ready to be played.
@@ -447,13 +446,13 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
                         adCuePoints);
 
 
-                messageBus.post(PKAdEvents.AD_LOADED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_LOADED));
                 mAdsManager.start();
                 break;
             case CONTENT_PAUSE_REQUESTED:
                 // AdEventType.CONTENT_PAUSE_REQUESTED is fired immediately before a video
                 // ad is played.
-                messageBus.post(PKAdEvents.AD_CONTENT_PAUSE_REQUESTED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CONTENT_PAUSE_REQUESTED));
                 mIsAdDisplayed = true;
                 if (player != null) {
                     player.pause();
@@ -462,14 +461,14 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, AdEvent.Ad
             case CONTENT_RESUME_REQUESTED:
                 // AdEventType.CONTENT_RESUME_REQUESTED is fired when the ad is completed
                 // and you should start playing your content.
-                messageBus.post(PKAdEvents.AD_CONTENT_PAUSE_REQUESTED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CONTENT_PAUSE_REQUESTED));
                 mIsAdDisplayed = false;
                 if (player != null) {
                     player.play();
                 }
                 break;
             case ALL_ADS_COMPLETED:
-                messageBus.post(PKAdEvents.AD_ALL_ADS_COMPLETED);
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_ALL_ADS_COMPLETED));
                 if (mAdsManager != null) {
                     mAdsManager.destroy();
                     mAdsManager = null;
