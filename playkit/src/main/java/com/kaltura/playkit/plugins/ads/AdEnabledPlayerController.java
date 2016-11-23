@@ -2,9 +2,9 @@ package com.kaltura.playkit.plugins.ads;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.kaltura.playkit.PKAdInfo;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerDecorator;
 
 import java.util.List;
@@ -21,12 +21,13 @@ import static com.kaltura.playkit.plugins.ads.AdsConfig.VIDEO_MIME_TYPES;
  */
 
 public class AdEnabledPlayerController extends PlayerDecorator {
-    public final String  TAG = "AdEnablController";
+    public static final String  TAG = "AdEnablController";
+    private static final PKLog log = PKLog.get(TAG);
 
     //IMASimplePlugin imaSimplePlugin;
     AdsProvider adsProvider;
     public AdEnabledPlayerController(AdsProvider adsProvider) {//(IMASimplePlugin imaSimplePlugin) {
-        Log.d(TAG, "Init AdEnabledPlayerController");
+        log.d("Init AdEnabledPlayerController");
         this.adsProvider = adsProvider;
     }
 
@@ -47,7 +48,7 @@ public class AdEnabledPlayerController extends PlayerDecorator {
 
     @Override
     public void play() {
-        Log.d(TAG, "AdEnabledPlayerController PLAY");
+        log.d("AdEnabledPlayerController PLAY");
         if (!adsProvider.isAdDisplayed() && adsProvider.isAdRequested()) {
             super.play();
         } else if (adsProvider.isAdDisplayed()) {
@@ -62,7 +63,7 @@ public class AdEnabledPlayerController extends PlayerDecorator {
 
     @Override
     public void pause() {
-        Log.d(TAG, "AdEnabledPlayerController PAUSE");
+        log.d("AdEnabledPlayerController PAUSE");
         if (!adsProvider.isAdDisplayed()) {
             super.pause();
         } else {
@@ -73,7 +74,7 @@ public class AdEnabledPlayerController extends PlayerDecorator {
     @Override
     public void restore() {
         if (!adsProvider.isAdPaused()) {
-            Log.d(TAG, "AdEnabledPlayerController RESTORE");
+            log.d("AdEnabledPlayerController RESTORE");
             super.restore();
         }
     }

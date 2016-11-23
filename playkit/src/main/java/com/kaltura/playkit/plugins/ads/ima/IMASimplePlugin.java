@@ -1,7 +1,6 @@
 package com.kaltura.playkit.plugins.ads.ima;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.ViewGroup;
 
 import com.google.ads.interactivemedia.v3.api.AdDisplayContainer;
@@ -19,16 +18,17 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKAdInfo;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdEnabledPlayerController;
+import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdsConfig;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
-import com.kaltura.playkit.plugins.ads.AdEvent;
 
 import java.util.List;
 
@@ -40,6 +40,8 @@ import java.util.List;
 public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google.ads.interactivemedia.v3.api.AdEvent.AdEventListener, AdErrorEvent.AdErrorListener  {
 
     private static final String TAG = "IMASimplePlugin";
+    private static final PKLog log = PKLog.get(TAG);
+
 
 
     @Override
@@ -98,7 +100,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
     protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
         this.player = player;
         if (player == null) {
-            Log.e(TAG, "Error, player instance is null.");
+            log.e("Error, player instance is null.");
             return;
         }
         this.context = context;
@@ -106,21 +108,21 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
         this.messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                Log.d(TAG, "XXXXX onLoad:PlayerEvent:" + event);
+                log.d("XXXXX onLoad:PlayerEvent:" + event);
             }
         }, PlayerEvent.Type.PLAY);
 
         this.messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                Log.d(TAG, "onLoad:PlayerEvent:" + event);
+                log.d("onLoad:PlayerEvent:" + event);
 
             }
         }, PlayerEvent.Type.PAUSE);
         this.messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                Log.d(TAG, "onLoad:PlayerEvent:PlayerEvent.ENDED-" + event);
+                log.d("onLoad:PlayerEvent:PlayerEvent.ENDED-" + event);
             }
         }, PlayerEvent.Type.ENDED);
 
@@ -267,25 +269,25 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
 
     @Override
     public boolean isAdDisplayed() {
-        Log.d(TAG, "IMASimplePlugin isAdDisplayed: " + mIsAdDisplayed);
+        log.d("IMASimplePlugin isAdDisplayed: " + mIsAdDisplayed);
         return mIsAdDisplayed;
     }
 
     @Override
     public boolean isAdPaused() {
-        Log.d(TAG, "IMASimplePlugin isAdPaused: " + mIsAdIsPaused);
+        log.d("IMASimplePlugin isAdPaused: " + mIsAdIsPaused);
         return  mIsAdIsPaused;
     }
 
     @Override
     public boolean isAdRequested() {
-        Log.d(TAG, "IMASimplePlugin isAdRequested: " + mIsAdRequested);
+        log.d("IMASimplePlugin isAdRequested: " + mIsAdRequested);
         return mIsAdRequested;
     }
 
     @Override
     public void onAdError(AdErrorEvent adErrorEvent) {
-        Log.e(TAG, "Ad Error: " + adErrorEvent.getError().getMessage());
+        log.e("Ad Error: " + adErrorEvent.getError().getMessage());
         switch (adErrorEvent.getError().getErrorCode()) {
             case INTERNAL_ERROR:
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_INTERNAL_ERROR));
@@ -354,9 +356,9 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
 
     @Override
     public void onAdEvent(com.google.ads.interactivemedia.v3.api.AdEvent adEvent) {
-        Log.i(TAG, "Event: " + adEvent.getType());
+        log.i("Event: " + adEvent.getType());
         if (adEvent.getAdData() != null) {
-            Log.i(TAG, "Event: " + adEvent.getAdData().toString());
+            log.i("Event: " + adEvent.getAdData().toString());
         }
         switch (adEvent.getType()) {
             case STARTED:
