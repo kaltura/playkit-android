@@ -15,15 +15,15 @@ import java.util.Date;
 
 public class StatsService {
     public static RequestBuilder sendStatsEvent(String baseUrl, int partnerId, int eventType, String clientVer, long duration,
-                                                String sessionId, long position, String uiConfId, String entryId, String widgetId, String kalsig, boolean isSeek, String referrer) {
+                                                String sessionId, long position, String uiConfId, String entryId, String widgetId,  boolean isSeek, String referrer) {
         return new RequestBuilder()
                 .method("GET")
-                .url(getOvpUrl(baseUrl, partnerId, eventType, clientVer, duration, sessionId, position, uiConfId, entryId, widgetId, kalsig, isSeek, referrer))
+                .url(getOvpUrl(baseUrl, partnerId, eventType, clientVer, duration, sessionId, position, uiConfId, entryId, widgetId, isSeek, referrer))
                 .tag("stats-send");
     }
 
     private static String getOvpUrl(String baseUrl, int partnerId, int eventType, String clientVer, long duration,
-                                    String sessionId, long position, String uiConfId, String entryId, String widgetId, String kalsig, boolean isSeek, String referrer) {
+                                    String sessionId, long position, String uiConfId, String entryId, String widgetId, boolean isSeek, String referrer) {
         Uri.Builder builder = new Uri.Builder();
         builder.scheme("https")
                 .authority(baseUrl)
@@ -48,8 +48,7 @@ public class StatsService {
                 .appendQueryParameter("event:seek", Boolean.toString(isSeek))
                 .appendQueryParameter("event:entryId", entryId)
                 .appendQueryParameter("event:widgetId", widgetId)
-                .appendQueryParameter("event:referrer", referrer)
-                .appendQueryParameter("kalsig", kalsig);
+                .appendQueryParameter("event:referrer", referrer);
 
         try {
             URL url =  new URL(URLDecoder.decode(builder.build().toString(), "UTF-8"));

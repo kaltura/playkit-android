@@ -26,6 +26,7 @@ import java.util.TimerTask;
  */
 
 public class KalturaStatisticsPlugin extends PKPlugin {
+
     /*
          * Kaltura event types that are presently not usable in the
 		 *  player at this point in time:
@@ -109,8 +110,19 @@ public class KalturaStatisticsPlugin extends PKPlugin {
     private boolean playReached100 = false;
     private boolean isBuffering = false;
     private boolean intervalOn = false;
+    private boolean hasSeeked = false;
     private static final int TimerInterval = 10000;
 
+    private JsonObject examplePluginConfig;
+
+    public JsonObject getExamplePluginConfig() {
+        examplePluginConfig = new JsonObject();
+        examplePluginConfig.addProperty("clientVer","2.5");
+        examplePluginConfig.addProperty("sessionId","b3460681-b994-6fad-cd8b-f0b65736e837");
+        examplePluginConfig.addProperty("uiconfId","24997472");
+        examplePluginConfig.addProperty("IsFriendlyIframe",);
+        return examplePluginConfig;
+    }
 
     SessionProvider ksSessionProvider = new SessionProvider() {
         @Override
@@ -161,7 +173,7 @@ public class KalturaStatisticsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
-
+        resetPlayerFlags();
     }
 
     @Override
@@ -219,7 +231,7 @@ public class KalturaStatisticsPlugin extends PKPlugin {
 
                         break;
                     case ERROR:
-
+                        setMessageParams(KStatsEvent.ERROR);
                         break;
                     case LOADED_METADATA:
 
@@ -234,6 +246,7 @@ public class KalturaStatisticsPlugin extends PKPlugin {
 
                         break;
                     case SEEKED:
+                        hasSeeked = true;
                         seekPercent = (float) player.getCurrentPosition() / player.getDuration();
                         setMessageParams(KStatsEvent.SEEK);
                         break;
@@ -247,6 +260,15 @@ public class KalturaStatisticsPlugin extends PKPlugin {
             }
         }
     };
+
+    private void resetPlayerFlags(){
+        seekPercent = 0;
+        playReached25 = false;
+        playReached50 = false;
+        playReached75 = false;
+        playReached100 = false;
+        hasSeeked = false;
+    }
 
     private void startTimeObservorInterval() {
         if (timer == null) {
@@ -273,18 +295,13 @@ public class KalturaStatisticsPlugin extends PKPlugin {
         }, 0, TimerInterval);
     }
 
-//    private String signature(KalturaParams kparams) throws KalturaApiException {
-//        String md5 = new String(Hex.encodeHex(DigestUtils.md5(kparams.toString())));;
-//        return md5;
-//    }
-
     private void setMessageParams(KStatsEvent eventType) {
         // Parameters for the request -
         //        String baseUrl, int partnerId, int eventType, String clientVer, long duration,
         //        String sessionId, long position, String uiConfId, String entryId, String widgetId, String kalsig, boolean isSeek, String referrer
         RequestBuilder requestBuilder = StatsService.sendStatsEvent(ksSessionProvider.baseUrl(), ksSessionProvider.partnerId(), eventType.getValue(), "2.5", player.getDuration(),
-                "b3460681-b994-6fad-cd8b-f0b65736e837", player.getCurrentPosition(), "24997472", "1_y4gjn527", "_" + ksSessionProvider.partnerId(), ksSessionProvider.getKs(),
-                eventType == KStatsEvent.SEEK, "");
+                "b3460681-b994-6fad-cd8b-f0b65736e837", player.getCurrentPosition(), "24997472", mediaConfig.getMediaEntry().getId(), "_" + ksSessionProvider.partnerId(),
+                hasSeeked, "");
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
