@@ -22,7 +22,7 @@ public class MessageBus {
     
     public void post(PKEvent event) {
 
-        Set<PKEvent.Listener> listeners = this.listeners.get(event.eventId());
+        Set<PKEvent.Listener> listeners = this.listeners.get(event.eventType());
         if (listeners != null) {
             for (PKEvent.Listener listener : listeners) {
                 listener.onEvent(event);
@@ -30,17 +30,16 @@ public class MessageBus {
         }
     }
     
-    public void listen(PKEvent.Listener listener, PKEvent... events) {
-        for (PKEvent event : events) {
-            Set<PKEvent.Listener> listenerSet = listeners.get(event.eventId());
+    public void listen(PKEvent.Listener listener, Enum... eventTypes) {
+        for (Enum eventType : eventTypes) {
+            Set<PKEvent.Listener> listenerSet = listeners.get(eventType);
             if (listenerSet == null) {
                 listenerSet = new HashSet<>();
                 listenerSet.add(listener);
-                listeners.put(event, listenerSet);
+                listeners.put(eventType, listenerSet);
             } else {
                 listenerSet.add(listener);
             }
         }
-        
     }
 }

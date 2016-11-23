@@ -131,19 +131,12 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     @Override
-    public void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events) {
+    public void addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
         messageBus.listen(listener, events);
     }
 
     @Override
-    public void addStateChangeListener(@NonNull final PlayerState.Listener listener) {
-        messageBus.listen(new PKEvent.Listener() {
-            @Override
-            public void onEvent(PKEvent event) {
-                if (event instanceof PlayerState.Event) {
-                    listener.onPlayerStateChanged(PlayerLoader.this, ((PlayerState.Event)event).newState);
-                }
-            }
-        }, PlayerState.EVENT_TYPE);
+    public void addStateChangeListener(@NonNull final PKEvent.Listener listener) {
+        messageBus.listen(listener, PlayerEvent.Type.STATE_CHANGED);
     }
 }
