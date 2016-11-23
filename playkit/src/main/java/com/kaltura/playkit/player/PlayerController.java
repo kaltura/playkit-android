@@ -52,10 +52,10 @@ public class PlayerController implements Player {
                 // TODO: use specific event class
                 switch (eventType) {
                     case DURATION_CHANGE:
-                        event = new PlayerEvent.DurationChanged(PlayerController.this, getDuration());
+                        event = new PlayerEvent.DurationChanged(getDuration());
                         break;
                     default:
-                        event = new PlayerEvent.Generic(PlayerController.this, eventType);
+                        event = new PlayerEvent.Generic(eventType);
                 }
                 
                 eventListener.onEvent(event);
@@ -67,7 +67,7 @@ public class PlayerController implements Player {
         @Override
         public void onStateChanged(PlayerState oldState, PlayerState newState) {
             if (eventListener != null) {
-                eventListener.onEvent(new PlayerEvent.StateChanged(PlayerController.this, newState, oldState));
+                eventListener.onEvent(new PlayerEvent.StateChanged(newState, oldState));
             }
         }
     };

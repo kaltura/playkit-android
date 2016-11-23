@@ -8,8 +8,8 @@ package com.kaltura.playkit;
 public class PlayerEvent implements PKEvent {
     
     public static class Generic extends PlayerEvent {
-        public Generic(Player player, Type type) {
-            super(player, type);
+        public Generic(Type type) {
+            super(type);
         }
     }
 
@@ -17,8 +17,8 @@ public class PlayerEvent implements PKEvent {
         public final PlayerState newState;
         public final PlayerState oldState;
 
-        public StateChanged(Player player, PlayerState newState, PlayerState oldState) {
-            super(player, Type.STATE_CHANGED);
+        public StateChanged(PlayerState newState, PlayerState oldState) {
+            super(Type.STATE_CHANGED);
             this.newState = newState;
             this.oldState = oldState;
         }
@@ -28,17 +28,15 @@ public class PlayerEvent implements PKEvent {
 
         public final long duration;
 
-        public DurationChanged(Player player, long duration) {
-            super(player, Type.DURATION_CHANGE);
+        public DurationChanged(long duration) {
+            super(Type.DURATION_CHANGE);
             this.duration = duration;
         }
     }
 
-    public final Player player;
     public final Type type;
 
-    private PlayerEvent(Player player, Type type) {
-        this.player = player;
+    private PlayerEvent(Type type) {
         this.type = type;
     }
 
