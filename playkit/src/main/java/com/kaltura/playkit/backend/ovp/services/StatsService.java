@@ -15,7 +15,7 @@ import java.util.Date;
 
 public class StatsService {
     public static RequestBuilder sendStatsEvent(String baseUrl, int partnerId, int eventType, String clientVer, long duration,
-                                                String sessionId, long position, String uiConfId, String entryId, String widgetId,  boolean isSeek, String referrer) {
+                                                String sessionId, long position, int uiConfId, String entryId, String widgetId,  boolean isSeek, String referrer) {
         return new RequestBuilder()
                 .method("GET")
                 .url(getOvpUrl(baseUrl, partnerId, eventType, clientVer, duration, sessionId, position, uiConfId, entryId, widgetId, isSeek, referrer))
@@ -23,7 +23,7 @@ public class StatsService {
     }
 
     private static String getOvpUrl(String baseUrl, int partnerId, int eventType, String clientVer, long duration,
-                                    String sessionId, long position, String uiConfId, String entryId, String widgetId, boolean isSeek, String referrer) {
+                                    String sessionId, long position, int uiConfId, String entryId, String widgetId, boolean isSeek, String referrer) {
         Uri.Builder builder = new Uri.Builder();
         builder.scheme("https")
                 .authority(baseUrl)
@@ -44,7 +44,7 @@ public class StatsService {
                 .appendQueryParameter("event:objectType", "KalturaStatsEvent")
                 .appendQueryParameter("event:partnerId", Integer.toString(partnerId))
                 .appendQueryParameter("event:sessionId", sessionId)
-                .appendQueryParameter("event:uiconfId", uiConfId)
+                .appendQueryParameter("event:uiconfId", Integer.toString(uiConfId))
                 .appendQueryParameter("event:seek", Boolean.toString(isSeek))
                 .appendQueryParameter("event:entryId", entryId)
                 .appendQueryParameter("event:widgetId", widgetId)

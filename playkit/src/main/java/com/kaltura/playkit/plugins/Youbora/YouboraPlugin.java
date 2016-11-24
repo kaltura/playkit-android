@@ -4,12 +4,10 @@ import android.content.Context;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
-import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
 import com.npaw.youbora.youboralib.data.Options;
 
 import java.util.Map;
@@ -79,8 +77,7 @@ public class YouboraPlugin extends PKPlugin {
         mPluginManager.setOptions(opt);
 
         mPluginManager.startMonitoring(player);
-        mMessageBus.listen(mPluginManager.getEventListener(), (PKEvent[]) PlayerEvent.values());
-        mMessageBus.listen(mPluginManager.getStateChangeListener(), PlayerState.EVENT_TYPE);
+        mMessageBus.listen(mPluginManager.getEventListener(), (PlayerEvent.Type[]) PlayerEvent.Type.values());
     }
 
     public void stopMonitoring() {

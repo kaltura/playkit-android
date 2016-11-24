@@ -2,7 +2,6 @@ package com.kaltura.playkit.plugins.Youbora;
 
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.managers.ViewManager;
 
@@ -34,33 +33,27 @@ public class YouboraLibraryManager extends PluginGeneric {
         ViewManager.setMonitoringInterval(MONITORING_INTERVAL);
     }
 
-    public PKEvent.Listener getStateChangeListener(){ return mStateChangeListener;}
 
-    private PKEvent.Listener mStateChangeListener = new PKEvent.Listener() {
-        @Override
-        public void onEvent(PKEvent event) {
-            if (event instanceof PlayerState.Event) {
-                switch (((PlayerState.Event) event).newState) {
-                    case IDLE:
+    public void onEvent(PlayerEvent.StateChanged event) {
+        switch (event.newState) {
+            case IDLE:
 
-                        break;
-                    case LOADING:
+                break;
+            case LOADING:
 
-                        break;
-                    case READY:
-                        playHandler();
-                        joinHandler();
-                        bufferedHandler();
-                        break;
-                    case BUFFERING:
-                        bufferingHandler();
-                        break;
-                }
-            }
+                break;
+            case READY:
+                playHandler();
+                joinHandler();
+                bufferedHandler();
+                break;
+            case BUFFERING:
+                bufferingHandler();
+                break;
         }
-    };
+    }
 
-    public PKEvent.Listener getEventListener(){
+    public PKEvent.Listener getEventListener() {
         return mEventListener;
     }
 
@@ -68,7 +61,10 @@ public class YouboraLibraryManager extends PluginGeneric {
         @Override
         public void onEvent(PKEvent event) {
             if (event instanceof PlayerEvent) {
-                switch ((PlayerEvent) event) {
+                switch (((PlayerEvent) event).type) {
+                    case STATE_CHANGED:
+                        YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
+                        break;
                     case CAN_PLAY:
                         playHandler();
                         joinHandler();
@@ -81,7 +77,7 @@ public class YouboraLibraryManager extends PluginGeneric {
                         endedHandler();
                         break;
                     case ERROR:
-                        errorHandler(event.eventId().toString());
+                        errorHandler(event.eventType().toString());
                         break;
                     case LOADED_METADATA:
 

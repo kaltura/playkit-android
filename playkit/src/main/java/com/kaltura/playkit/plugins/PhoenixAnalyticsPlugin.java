@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.google.gson.JsonObject;
+import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKPlugin;
@@ -52,6 +53,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
     private final static int MediaHitInterval = 30000;
+    private MessageBus messageBus;
 
     SessionProvider ksSessionProvider = new SessionProvider() {
         @Override
@@ -106,7 +108,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.mPlayer = player;
         this.mPluginConfig = pluginConfig;
         this.mContext = context;
-        messageBus.listen(mEventListener, (PKEvent[]) PlayerEvent.values());
+        this.messageBus = messageBus;
+        messageBus.listen(mEventListener, (PlayerEvent.Type[]) PlayerEvent.Type.values());
         if (mMediaConfig.getStartPosition() != -1){
             this.mContinueTime = mMediaConfig.getStartPosition();
             this.mPlayFromContinue = true;
@@ -117,7 +120,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         @Override
         public void onEvent(PKEvent event) {
             if (event instanceof PlayerEvent) {
-                switch ((PlayerEvent) event) {
+                switch (((PlayerEvent) event).type) {
                     case CAN_PLAY:
                         mDidFirstPlay = false;
                         break;
@@ -186,7 +189,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }, 0, MediaHitInterval); // Get media hit interval from plugin config
     }
 
-    private void setMessageParams(PhoenixActionType eventType){
+    private void setMessageParams(final PhoenixActionType eventType){
         RequestBuilder requestBuilder = BookmarkService.actionAdd(ksSessionProvider.baseUrl(), ksSessionProvider.partnerId(), ksSessionProvider.getKs(),
                 "media", "258656", eventType.name(), mPlayer.getCurrentPosition(), "464302");
 
@@ -194,6 +197,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             @Override
             public void onComplete(ResponseElement response) {
                 Log.d(TAG, "onComplete: ");
+                messageBus.post(new LogEvent(TAG + " " + eventType.name()));
             }
         });
         requestsExecutor.queue(requestBuilder.build());
