@@ -84,8 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
         config.media.setMediaEntry(mediaEntry);
 
-
-        if(player == null){
+        if (player == null) {
 
             configurePlugins(config.plugins);
             
@@ -111,16 +110,23 @@ public class MainActivity extends AppCompatActivity {
         addIMAPluginConfig(config);
     }
 
-    private void addIMAPluginConfig(PlayerConfig.Plugins config){
+    private void addIMAPluginConfig(PlayerConfig.Plugins config) {
         //String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpost&cmsid=496&vid=short_onecue&correlator=";
         List<String> videoMimeTypes = new ArrayList<>();
         //videoMimeTypes.add(MimeTypes.APPLICATION_MP4);
         //videoMimeTypes.add(MimeTypes.APPLICATION_M3U8);
-        Map<Double,String> tagTimesMap = new HashMap<>();
+        Map<Double, String> tagTimesMap = new HashMap<>();
         //tagTimesMap.put(2.0,"GILAD");
-        AdsConfig adsConfig = new AdsConfig("en", false, true, 60000, videoMimeTypes, adTagUrl,tagTimesMap);
+        AdsConfig adsConfig = new AdsConfig("en", false, true, 60000, videoMimeTypes, adTagUrl, tagTimesMap);
         config.setPluginConfig(IMASimplePlugin.factory.getName(), adsConfig.toJSONObject());
+
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        controlsView.release();
+        player.onApplicationPaused();
     }
 
 
@@ -170,16 +176,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
-
-        super.onPause();
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
         if(player != null){
-            player.restore();
+            player.onApplicationResumed();
             if (nowPlaying && AUTO_PLAY_ON_RESUME) {
                 player.play();
             }
@@ -187,12 +187,5 @@ public class MainActivity extends AppCompatActivity {
         if(controlsView != null){
             controlsView.resume();
         }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        controlsView.release();
-        player.release();
     }
 }

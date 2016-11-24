@@ -72,11 +72,18 @@ public class AdEnabledPlayerController extends PlayerDecorator {
     }
 
     @Override
-    public void restore() {
+    public void onApplicationResumed() {
+        super.onApplicationResumed();
         if (!adsProvider.isAdPaused()) {
-            log.d("AdEnabledPlayerController RESTORE");
-            super.restore();
+            log.d("AdEnabledPlayerController onApplicationResumed");
+
         }
+    }
+
+    @Override
+    public void onApplicationPaused() {
+        log.d("AdEnabledPlayerController onApplicationPaused");
+        super.onApplicationPaused();
     }
 
     @Override
