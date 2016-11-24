@@ -117,7 +117,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void addIMAPluginConfig(PlayerConfig.Plugins config) {
         //String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
-        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpost&cmsid=496&vid=short_onecue&correlator=";
+        //String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpost&cmsid=496&vid=short_onecue&correlator=";
+        //String adTagUrl = "http://in-viacom18.videoplaza.tv/proxy/distributor/v2?s=f02975fb-074a-4620-81f1-48e3c7819ab3&tt=p&rt=vast_2.0&rnd=1323343&xaid=8f4577cb-be0c-4df9-b253-d723d95e1f10&pf=fl_11";
+        //String adTagUrl = "http://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/15466288/KSAT/App/Newsreader/Video&ciu_szs&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=&correlator=1467792979717";
+        String adTagUrl = "http://pubads.g.doubleclick.net/gampad/ads?sz=640x360&iu=/6062/iab_vast_samples/skippable&ciu_szs=300x250,728x90&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&correlator=[timestamp]";//https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/276136803/Euro.Android.Replay_640x480v&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         List<String> videoMimeTypes = new ArrayList<>();
         //videoMimeTypes.add(MimeTypes.APPLICATION_MP4);
         //videoMimeTypes.add(MimeTypes.APPLICATION_M3U8);
@@ -153,6 +156,14 @@ public class MainActivity extends AppCompatActivity {
                 appProgressBar.setVisibility(View.INVISIBLE);
             }
         }, AdEvent.Type.AD_STARTED);
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                log.d("Ad Event AD_RESUMED");
+                PKAdInfo adInfo = player.getAdInfo();
+                appProgressBar.setVisibility(View.INVISIBLE);
+            }
+        }, AdEvent.Type.AD_RESUMED);
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
