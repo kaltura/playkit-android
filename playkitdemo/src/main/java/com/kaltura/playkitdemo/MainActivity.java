@@ -45,8 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
         mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
 
-//        mediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
-
+//      mediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
         mediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(final ResultElement<PKMediaEntry> response) {
