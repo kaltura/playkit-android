@@ -106,7 +106,6 @@ public class YouboraLibraryManager extends PluginGeneric {
                         seekingHandler();
                         break;
                     default:
-
                         break;
                 }
             }

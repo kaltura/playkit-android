@@ -298,7 +298,7 @@ public class KalturaStatisticsPlugin extends PKPlugin {
     private void setMessageParams(final KStatsEvent eventType) {
         String clientVer = examplePluginConfig.has("clientVer")? examplePluginConfig.get("clientVer").toString(): "";
         String sessionId = examplePluginConfig.has("sessionId")? examplePluginConfig.get("sessionId").toString(): "";
-        int uiconfId = examplePluginConfig.has("uiconfId")? Integer.getInteger(examplePluginConfig.get("uiconfId").toString()): 0;
+        int uiconfId = examplePluginConfig.has("uiconfId")? Integer.valueOf(examplePluginConfig.get("uiconfId").toString()): 0;
         String referrer = examplePluginConfig.has("IsFriendlyIframe")? examplePluginConfig.get("IsFriendlyIframe").toString(): "";
 
 

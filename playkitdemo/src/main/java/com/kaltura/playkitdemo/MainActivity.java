@@ -95,6 +95,8 @@ public class MainActivity extends AppCompatActivity {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("delay", 4200);
         config.setPluginConfig("KalturaStatistics", jsonObject);
+        config.setPluginConfig("PhoenixAnalytics", jsonObject);
+        config.setPluginConfig("Youbora", jsonObject);
     }
 
     @Override
