@@ -45,8 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
         mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
 
-//        mediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
-
+//      mediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
         mediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(final ResultElement<PKMediaEntry> response) {
@@ -72,7 +71,8 @@ public class MainActivity extends AppCompatActivity {
         PlayerConfig config = new PlayerConfig();
 
         config.media.setMediaEntry(mediaEntry);
-        if(player == null){
+        config.media.setStartPosition(30000);
+        if (player == null) {
 
             configurePlugins(config.plugins);
             
@@ -97,10 +97,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
         controlsView.release();
-        player.release();
+        player.onApplicationPaused();
     }
 
     private void addPlayerListeners() {
@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if(player != null){
-            player.restore();
+            player.onApplicationResumed();
             if (nowPlaying && AUTO_PLAY_ON_RESUME) {
                 player.play();
             }

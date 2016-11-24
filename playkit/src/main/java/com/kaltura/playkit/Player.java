@@ -11,7 +11,7 @@ public interface Player {
 
     void prepare(@NonNull PlayerConfig.Media playerConfig);
     
-    void release();
+    void destroy();
 
     /**
      * The Player's View.
@@ -56,10 +56,13 @@ public interface Player {
 
     void addStateChangeListener(@NonNull PKEvent.Listener listener);
 
-    void restore();
-    
     PKAdInfo getAdInfo();
     
     void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value);
+
+    void onApplicationPaused();
+
+    void onApplicationResumed();
+
 }
 

@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.google.android.exoplayer2.C;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerState;
 
@@ -84,8 +85,8 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
 
 
     private void updateProgress() {
-        long duration = 0;
-        long position = 0;
+        long duration = C.TIME_UNSET;
+        long position = C.POSITION_UNSET;
         long bufferedPosition = 0;
         if(player != null){
             duration = player.getDuration();
@@ -93,11 +94,12 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
             bufferedPosition = player.getBufferedPosition();
         }
 
-        tvTime.setText(stringForTime(duration));
-        if (!dragging) {
-            tvCurTime.setText(stringForTime(position));
+        if(duration != C.TIME_UNSET){
+            tvTime.setText(stringForTime(duration));
         }
-        if (!dragging) {
+
+        if (!dragging && position != C.POSITION_UNSET && duration != C.TIME_UNSET) {
+            tvCurTime.setText(stringForTime(position));
             seekBar.setProgress(progressBarValue(position));
         }
 

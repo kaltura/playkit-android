@@ -81,18 +81,23 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     @Override
-    public void release() {
+    public void destroy() {
         releasePlugins();
         releasePlayer();
     }
 
     @Override
-    public void restore() {
-        getPlayer().restore();
+    public void onApplicationResumed() {
+        getPlayer().onApplicationResumed();
+    }
+
+    @Override
+    public void onApplicationPaused() {
+        getPlayer().onApplicationPaused();
     }
 
     private void releasePlayer() {
-        getPlayer().release();
+        getPlayer().destroy();
     }
 
     private void releasePlugins() {
