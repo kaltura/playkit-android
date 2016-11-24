@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         controlsView.release();
-        player.release();
+        player.onApplicationPaused();
     }
 
     private void addPlayerListeners() {
@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if(player != null){
-            player.restore();
+            player.onApplicationResumed();
             if (nowPlaying && AUTO_PLAY_ON_RESUME) {
                 player.play();
             }

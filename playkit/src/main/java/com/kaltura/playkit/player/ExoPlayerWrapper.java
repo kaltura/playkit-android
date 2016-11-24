@@ -342,7 +342,6 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
                 playerPosition = player.getCurrentPosition();
             }
 
-            this.eventLogger = null;
             player.release();
             player = null;
             eventLogger = null;
@@ -361,6 +360,17 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
                 player.seekTo(playerWindow, playerPosition);
             }
         }
+    }
+
+    @Override
+    public void destroy() {
+        Log.d(TAG, "release");
+        player.release();
+        window = null;
+        player = null;
+        eventLogger = null;
+        exoPlayerView = null;
+        lastPlayedSource = null;
     }
 
     public void setEventListener(final EventListener eventTrigger) {

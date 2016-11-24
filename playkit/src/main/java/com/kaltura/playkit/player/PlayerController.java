@@ -88,19 +88,22 @@ public class PlayerController implements Player {
         startPlaybackFrom(mediaConfig.getStartPosition());
     }
 
+    @Override
+    public void destroy() {
+        Log.e(TAG, "destroy");
+        player.destroy();
+        togglePlayerListeners(false);
+        player = null;
+        mediaConfig = null;
+        eventListener = null;
+    }
+
     private void startPlaybackFrom(long startPosition) {
         if(!wasReleased){
             togglePlayerListeners(false);
             player.seekTo(startPosition);
             togglePlayerListeners(true);
         }
-    }
-
-    public void release() {
-        Log.d(TAG, "release");
-        player.release();
-        togglePlayerListeners(false);
-        wasReleased = true;
     }
 
     public View getView() {
@@ -136,16 +139,6 @@ public class PlayerController implements Player {
     public void pause() {
         Log.d(TAG, "pause");
         player.pause();
-    }
-
-    public void restore() {
-        Log.d(TAG, "on resume");
-        if(wasReleased){
-            player.restore();
-            prepare(mediaConfig);
-            togglePlayerListeners(true);
-            wasReleased = false;
-        }
     }
 
     private void togglePlayerListeners(boolean enable) {
@@ -186,5 +179,24 @@ public class PlayerController implements Player {
     @Override
     public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
         Assert.shouldNeverHappen();
+    }
+
+    @Override
+    public void onApplicationPaused() {
+        Log.d(TAG, "onApplicationPaused");
+        player.release();
+        togglePlayerListeners(false);
+        wasReleased = true;
+    }
+
+    @Override
+    public void onApplicationResumed() {
+        Log.d(TAG, "onApplicationResumed");
+        if(wasReleased){
+            player.restore();
+            prepare(mediaConfig);
+            togglePlayerListeners(true);
+            wasReleased = false;
+        }
     }
 }
