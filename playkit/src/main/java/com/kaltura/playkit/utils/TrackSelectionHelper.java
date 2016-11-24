@@ -43,14 +43,14 @@ public class TrackSelectionHelper {
     private final TrackSelection.Factory adaptiveVideoTrackSelectionFactory;
 
     private MappingTrackSelector.MappedTrackInfo trackInfo;
-    private int rendererIndex;
+    private int trackType;
     private TrackGroupArray trackGroups;
     private boolean[] trackGroupsAdaptive;
     private boolean isDisabled;
     private MappingTrackSelector.SelectionOverride override;
 
     private TrackData trackData;
-    boolean[] isAdaptiveList;
+    private boolean[] isAdaptiveList;
 
     /**
      * @param selector                           The track selector.
@@ -139,12 +139,12 @@ public class TrackSelectionHelper {
 
     public void changeTrack(int trackType, int position, MappedTrackInfo trackInfo) {
         Log.e(TAG, "track type " + trackType + " position " + position);
-        this.rendererIndex = trackType;
-        trackGroups = trackInfo.getTrackGroups(rendererIndex);
-        isDisabled = selector.getRendererDisabled(rendererIndex);
-        override = selector.getSelectionOverride(rendererIndex, trackGroups);
+        this.trackType = trackType;
+        trackGroups = trackInfo.getTrackGroups(this.trackType);
+        isDisabled = selector.getRendererDisabled(this.trackType);
+        override = selector.getSelectionOverride(this.trackType, trackGroups);
 
-        if (isAdaptiveList[rendererIndex]) {
+        if (isAdaptiveList[this.trackType]) {
             override = new MappingTrackSelector.SelectionOverride(FIXED_FACTORY, 0, position);
         } else {
             override = new MappingTrackSelector.SelectionOverride(FIXED_FACTORY, position, 0);
@@ -152,11 +152,11 @@ public class TrackSelectionHelper {
 
 
         //last part
-        selector.setRendererDisabled(rendererIndex, isDisabled);
+        selector.setRendererDisabled(this.trackType, isDisabled);
         if (override != null) {
-            selector.setSelectionOverride(rendererIndex, trackGroups, override);
+            selector.setSelectionOverride(this.trackType, trackGroups, override);
         } else {
-            selector.clearSelectionOverrides(rendererIndex);
+            selector.clearSelectionOverrides(this.trackType);
         }
     }
 
@@ -205,63 +205,14 @@ public class TrackSelectionHelper {
                         case TRACK_VIDEO:
                             videoTrackData = new VideoTrackData(format.bitrate, format.width, format.height, format.id);
                             videoTrackDataList.add(videoTrackData);
-                            Log.e(TAG, " VIDEO ====> bitrate " + format.bitrate + " width " + format.width + " height " + format.height + " id " + format.id);
-                            Log.e(TAG, "format at index " + trackIndex + " bitrate " + format.bitrate);
-                            Log.e(TAG, "fotmat at index " + trackIndex + " sampleMimeType " + format.sampleMimeType);
-                            Log.e(TAG, "format at index " + trackIndex + " codecs " + format.codecs);
-                            Log.e(TAG, "format at index " + trackIndex + " language " + format.language);
-                            Log.e(TAG, "format at index " + trackIndex + " frameRate " + format.frameRate);
-                            Log.e(TAG, "format at index " + trackIndex + " channelCount " + format.channelCount);
-                            Log.e(TAG, "format at index " + trackIndex + " pixelWidthHeightRatio " + format.pixelWidthHeightRatio);
-                            Log.e(TAG, "format at index " + trackIndex + " width " + format.width);
-                            Log.e(TAG, "format at index " + trackIndex + " height " + format.height);
-                            Log.e(TAG, "format at index " + trackIndex + " channel count " + format.channelCount);
-                            Log.e(TAG, "format at index " + trackIndex + " containerMimeType " + format.containerMimeType);
-                            Log.e(TAG, "format at index " + trackIndex + " id " + format.id);
-                            Log.e(TAG, "format at index " + trackIndex + " sample rate " + format.sampleRate);
-                            Log.e(TAG, "is adaptive " + isAdaptive);
-                            Log.e(TAG, " ------------------------------------------------------------------------------------------------------------------------");
                             break;
                         case TRACK_AUDIO:
                             audioTrackData = new AudioTrackData(format.language, format.id);
                             audioTrackDataList.add(audioTrackData);
-                            Log.e(TAG, " AUDIO ====> language " + format.language + " id " + format.id);
-                            Log.e(TAG, "format at index " + trackIndex + " bitrate " + format.bitrate);
-                            Log.e(TAG, "fotmat at index " + trackIndex + " sampleMimeType " + format.sampleMimeType);
-                            Log.e(TAG, "format at index " + trackIndex + " codecs " + format.codecs);
-                            Log.e(TAG, "format at index " + trackIndex + " language " + format.language);
-                            Log.e(TAG, "format at index " + trackIndex + " frameRate " + format.frameRate);
-                            Log.e(TAG, "format at index " + trackIndex + " channelCount " + format.channelCount);
-                            Log.e(TAG, "format at index " + trackIndex + " pixelWidthHeightRatio " + format.pixelWidthHeightRatio);
-                            Log.e(TAG, "format at index " + trackIndex + " width " + format.width);
-                            Log.e(TAG, "format at index " + trackIndex + " height " + format.height);
-                            Log.e(TAG, "format at index " + trackIndex + " channel count " + format.channelCount);
-                            Log.e(TAG, "format at index " + trackIndex + " containerMimeType " + format.containerMimeType);
-                            Log.e(TAG, "format at index " + trackIndex + " id " + format.id);
-                            Log.e(TAG, "format at index " + trackIndex + " sample rate " + format.sampleRate);
-                            Log.e(TAG, "is adaptive " + isAdaptive);
-                            Log.e(TAG, " ------------------------------------------------------------------------------------------------------------------------");
-
                             break;
                         case TRACK_SUBTITLE:
                             subtitleTrackData = new SubtitleTrackData(format.language, format.id);
                             subtitleTrackDataList.add(subtitleTrackData);
-                            Log.e(TAG, " SUBTITLE ====> language " + format.language + " id " + format.id);
-                            Log.e(TAG, "format at index " + trackIndex + " bitrate " + format.bitrate);
-                            Log.e(TAG, "fotmat at index " + trackIndex + " sampleMimeType " + format.sampleMimeType);
-                            Log.e(TAG, "format at index " + trackIndex + " codecs " + format.codecs);
-                            Log.e(TAG, "format at index " + trackIndex + " language " + format.language);
-                            Log.e(TAG, "format at index " + trackIndex + " frameRate " + format.frameRate);
-                            Log.e(TAG, "format at index " + trackIndex + " channelCount " + format.channelCount);
-                            Log.e(TAG, "format at index " + trackIndex + " pixelWidthHeightRatio " + format.pixelWidthHeightRatio);
-                            Log.e(TAG, "format at index " + trackIndex + " width " + format.width);
-                            Log.e(TAG, "format at index " + trackIndex + " height " + format.height);
-                            Log.e(TAG, "format at index " + trackIndex + " channel count " + format.channelCount);
-                            Log.e(TAG, "format at index " + trackIndex + " containerMimeType " + format.containerMimeType);
-                            Log.e(TAG, "format at index " + trackIndex + " id " + format.id);
-                            Log.e(TAG, "format at index " + trackIndex + " sample rate " + format.sampleRate);
-                            Log.e(TAG, "is adaptive " + isAdaptive);
-                            Log.e(TAG, " ------------------------------------------------------------------------------------------------------------------------");
                             break;
                     }
                 }
