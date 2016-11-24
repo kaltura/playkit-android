@@ -1,11 +1,11 @@
 package com.kaltura.playkit.plugins;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
@@ -18,6 +18,7 @@ import com.kaltura.playkit.PlayerDecorator;
 public class SamplePlugin extends PKPlugin {
 
     private static final String TAG = "SamplePlugin";
+    private static final PKLog log = PKLog.get("SamplePlugin");
 
     private Player player;
     private Context context;
@@ -37,14 +38,16 @@ public class SamplePlugin extends PKPlugin {
 
     @Override
     protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
+        log.i("Loading");
         this.player = player;
         this.context = context;
         delay = pluginConfig.getAsJsonPrimitive("delay").getAsInt();
-
+        log.v("delay=" + delay);
+        
         messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                Log.d(TAG, "PlayerEvent:" + event);
+                log.d("onEvent: " + event);
             }
         });
     }

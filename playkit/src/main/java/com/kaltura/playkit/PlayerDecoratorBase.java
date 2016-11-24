@@ -62,12 +62,12 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events) {
+    public void addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
         player.addEventListener(listener, events);
     }
 
     @Override
-    public void addStateChangeListener(@NonNull PlayerState.Listener listener) {
+    public void addStateChangeListener(@NonNull PKEvent.Listener listener) {
         player.addStateChangeListener(listener);
     }
 

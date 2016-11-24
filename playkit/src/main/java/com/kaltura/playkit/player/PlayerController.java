@@ -38,7 +38,7 @@ public class PlayerController implements Player {
     }
 
     public interface EventListener {
-        void onEvent(PlayerEvent event);
+        void onEvent(PlayerEvent.Type event);
     }
 
     public interface StateChangedListener {
@@ -47,8 +47,20 @@ public class PlayerController implements Player {
 
     private EventListener eventTrigger = new EventListener() {
         @Override
-        public void onEvent(PlayerEvent event) {
+        public void onEvent(PlayerEvent.Type eventType) {
             if (eventListener != null) {
+                
+                PlayerEvent event;
+                
+                // TODO: use specific event class
+                switch (eventType) {
+                    case DURATION_CHANGE:
+                        event = new PlayerEvent.DurationChanged(getDuration());
+                        break;
+                    default:
+                        event = new PlayerEvent.Generic(eventType);
+                }
+                
                 eventListener.onEvent(event);
             }
         }
@@ -58,7 +70,7 @@ public class PlayerController implements Player {
         @Override
         public void onStateChanged(PlayerState oldState, PlayerState newState) {
             if (eventListener != null) {
-                eventListener.onEvent(new PlayerState.Event(oldState, newState));
+                eventListener.onEvent(new PlayerEvent.StateChanged(newState, oldState));
             }
         }
     };
@@ -151,12 +163,12 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events) {
+    public void addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
         Assert.shouldNeverHappen();
     }
 
     @Override
-    public void addStateChangeListener(@NonNull PlayerState.Listener listener) {
+    public void addStateChangeListener(@NonNull PKEvent.Listener listener) {
         Assert.shouldNeverHappen();
     }
 
