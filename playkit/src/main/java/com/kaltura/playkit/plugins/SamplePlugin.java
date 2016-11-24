@@ -40,7 +40,7 @@ public class SamplePlugin extends PKPlugin {
         this.player = player;
         this.context = context;
         delay = pluginConfig.getAsJsonPrimitive("delay").getAsInt();
-        
+
         messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {

@@ -6,35 +6,22 @@ package com.kaltura.playkit;
 public class VideoTrackData {
 
     private long bitrate;
-    private String mimeType;
-    private String codecs;
     private int width;
     private int height;
-    private int id;
-    private float pixelWidthHeightRation;
+    private String id;
 
 
-    public VideoTrackData(long bitrate, String mimeType, String codecs, int width, int height, int id, float pixelWidthHeightRation) {
+    public VideoTrackData(long bitrate, int width, int height, String id) {
         this.bitrate = bitrate;
-        this.mimeType = mimeType;
-        this.codecs = codecs;
         this.width = width;
         this.height = height;
         this.id = id;
-        this.pixelWidthHeightRation = pixelWidthHeightRation;
     }
 
     public long getBitrate() {
         return bitrate;
     }
 
-    public String getMimeType() {
-        return mimeType;
-    }
-
-    public String getCodecs() {
-        return codecs;
-    }
 
     public int getWidth() {
         return width;
@@ -44,11 +31,8 @@ public class VideoTrackData {
         return height;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public float getPixelWidthHeightRation() {
-        return pixelWidthHeightRation;
-    }
 }

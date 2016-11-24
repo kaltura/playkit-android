@@ -3,13 +3,15 @@ package com.kaltura.playkit.player;
 import android.net.Uri;
 import android.view.View;
 
+import com.kaltura.playkit.TrackData;
+
 /**
  * Created by anton.afanasiev on 01/11/2016.
  */
 
 public interface PlayerEngine {
 
-    void load(Uri mediaSourceUri);
+    void load(Uri mediaSourceUri, long startPosition);
 
     View getView();
 
@@ -20,10 +22,6 @@ public interface PlayerEngine {
     long getCurrentPosition();
 
     void seekTo(long position);
-
-    boolean shouldAutoPlay();
-
-    void setAutoPlay(boolean shouldAutoplay);
 
     void setEventListener(PlayerController.EventListener eventTrigger);
 
@@ -36,4 +34,8 @@ public interface PlayerEngine {
     void release();
 
     void restore();
+
+    TrackData getTrackData();
+
+    void changeTrack(int trackType, int position);
 }

@@ -12,14 +12,11 @@ import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.TrackGroup;
-import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
@@ -38,11 +35,13 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.upstream.DataSource.Factory;
 import com.google.android.exoplayer2.util.Util;
+import com.kaltura.playkit.TrackData;
 import com.kaltura.playkit.player.PlayerController.EventListener;
 import com.kaltura.playkit.player.PlayerController.StateChangedListener;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.utils.EventLogger;
+import com.kaltura.playkit.utils.TrackSelectionHelper;
 
 
 /**
@@ -75,6 +74,10 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     private Timeline.Window window;
     private boolean isTimelineStatic;
 
+    private MappingTrackSelector trackSelector;
+
+    private TrackSelectionHelper trackSelectionHelper;
+    private boolean didTrackDataLoaded = false;
 
 
     public ExoPlayerWrapper(Context context) {
@@ -86,9 +89,10 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     private void initializePlayer() {
         eventLogger = new EventLogger();
-        DefaultTrackSelector trackSelector = initializeTrackSelector();
 
-        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), null, false); // TODO check if we need DRM Session manager.
+        initializeTrackSelector();
+        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl());
+
         setPlayerListeners();
         exoPlayerView.setPlayer(player);
         player.setPlayWhenReady(false);
@@ -104,13 +108,13 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         }
     }
 
-    private DefaultTrackSelector initializeTrackSelector() {
+    private void initializeTrackSelector() {
         TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveVideoTrackSelection.Factory(BANDWIDTH_METER);
-        DefaultTrackSelector trackSelector = new DefaultTrackSelector(mainHandler, videoTrackSelectionFactory);
+        trackSelector = new DefaultTrackSelector(mainHandler, videoTrackSelectionFactory);
         trackSelector.addListener(this);
         trackSelector.addListener(eventLogger);
 
-        return trackSelector;
+        trackSelectionHelper = new TrackSelectionHelper(trackSelector, videoTrackSelectionFactory);
     }
 
     private void preparePlayer(Uri mediaSourceUri) {
@@ -172,7 +176,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
             return;
         }
         this.currentState = newState;
-        if(stateChangedListener != null){
+        if (stateChangedListener != null) {
             stateChangedListener.onStateChanged(previousState, currentState);
         }
     }
@@ -261,49 +265,30 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         Log.d(TAG, "onTrackSelectionsChanged");
 
         MappingTrackSelector.MappedTrackInfo trackInfo = trackSelections.info;
-
-        String formatType;
-        for(int k = 0; k < 3; k++){
-            TrackGroupArray trackGroups = trackInfo.getTrackGroups(k);
-        if(k == 0){
-            formatType = "video";
-
-        }else if (k == 1){
-            formatType = "auidio";
-        }else{
-            formatType = "subtitle";
+        if (trackInfo.hasOnlyUnplayableTracks(C.TRACK_TYPE_VIDEO)) {
+            Log.e(TAG, "Error unsupported video");
         }
-            for (int i = 0; i < trackGroups.length; i++) {
-                TrackGroup trackGroup = trackGroups.get(i);
-                for (int j = 0; j < trackGroup.length; j++) {
+        if (trackInfo.hasOnlyUnplayableTracks(C.TRACK_TYPE_AUDIO)) {
+            Log.e(TAG, "Error unsupported audio");
+        }
 
-                    Format format = trackGroup.getFormat(j);
-                    Log.e(TAG, "Format type " + formatType + " format at index " + j + " bitrate " + format.bitrate);
-                    Log.e(TAG, "Format type " + formatType + "format at index " + j + " sampleMimeType " + format.sampleMimeType);
-                    Log.e(TAG, "Format type " + formatType + "format at index " + j + " codecs " + format.codecs);
-                    Log.e(TAG, "format at index " + j + " language " + format.language);
-                    Log.e(TAG, "format at index " + j + " frameRate " + format.frameRate);
-                    Log.e(TAG, "format at index " + j + " channelCount " + format.channelCount);
-                    Log.e(TAG, "format at index " + j + " pixelWidthHeightRatio " + format.pixelWidthHeightRatio);
-                    Log.e(TAG, "format at index " + j + " width " + format.width);
-                    Log.e(TAG, "format at index " + j + " height " + format.height);
-                    Log.e(TAG, "format at index " + j + " channel count " + format.channelCount);
-                    Log.e(TAG, "format at index " + j + " containerMimeType " + format.containerMimeType);
-                    Log.e(TAG, "format at index " + j + " id " + format.id);
-                    Log.e(TAG, "format at index " + j + " sample rate " + format.sampleRate);
-                }
-            }
+
+        if(!didTrackDataLoaded){
+            didTrackDataLoaded = true;
+            trackSelectionHelper.prepareTrackData(trackSelector.getCurrentSelections().info);
+            sendEvent(PlayerEvent.TRACKS_AVAILABLE);
         }
     }
 
     @Override
-    public void load(Uri mediaSourceUri) {
+    public void load(Uri mediaSourceUri, long startPosition) {
         Log.d(TAG, "load");
         if (player == null) {
             initializePlayer();
         }
 
         preparePlayer(mediaSourceUri);
+        startFrom(startPosition);
     }
 
     @Override
@@ -338,8 +323,8 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     @Override
     public long getCurrentPosition() {
-        if(player != null){
-           return player.getCurrentPosition();
+        if (player != null) {
+            return player.getCurrentPosition();
         }
         return C.POSITION_UNSET;
     }
@@ -352,21 +337,8 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
     @Override
-    public boolean shouldAutoPlay() {
-        if(player != null){
-            player.getPlayWhenReady();
-        }
-        return false;
-    }
-
-    @Override
-    public void setAutoPlay(boolean shouldAutoplay) {
-        player.setPlayWhenReady(shouldAutoplay);
-    }
-
-    @Override
     public long getDuration() {
-        if(player != null){
+        if (player != null) {
             return player.getDuration();
         }
         return C.TIME_UNSET;
@@ -374,7 +346,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     @Override
     public long getBufferedPosition() {
-        if(player != null){
+        if (player != null) {
             return player.getBufferedPosition();
         }
         return C.POSITION_UNSET;
@@ -392,11 +364,11 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
                 playerPosition = player.getCurrentPosition();
             }
 
-            this.eventListener = null;
-            this.stateChangedListener = null;
             this.eventLogger = null;
             player.release();
             player = null;
+            trackSelector = null;
+            trackSelectionHelper = null;
             eventLogger = null;
         }
     }
@@ -413,6 +385,21 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
                 player.seekTo(playerWindow, playerPosition);
             }
         }
+    }
+
+    @Override
+    public TrackData getTrackData() {
+        return trackSelectionHelper.getTrackData();
+    }
+
+    @Override
+    public void changeTrack(int trackType, int position) {
+        trackSelectionHelper.changeTrack(trackType, position, trackSelector.getCurrentSelections().info);
+
+    }
+
+    public void startFrom(long startPosition) {
+        player.seekTo(startPosition);
     }
 
     public void setEventListener(final EventListener eventTrigger) {

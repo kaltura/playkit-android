@@ -95,4 +95,14 @@ public class PlayerDecoratorBase implements Player {
     public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
         player.updatePluginConfig(pluginName, key, value);
     }
+
+    @Override
+    public TrackData getTrackData() {
+        return player.getTrackData();
+    }
+
+    @Override
+    public void changeTrack(int trackType, int position) {
+        player.changeTrack(trackType, position);
+    }
 }
