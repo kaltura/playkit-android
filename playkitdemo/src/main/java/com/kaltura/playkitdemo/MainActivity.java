@@ -9,6 +9,7 @@ import android.widget.Toast;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
@@ -25,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     
     public static final boolean AUTO_PLAY_ON_RESUME = true;
 
-    private static final String TAG = "MainActivity";
+    private static final PKLog log = PKLog.get("MainActivity");
 
     private Player player;
     private MediaEntryProvider mediaProvider;
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
 
                             Toast.makeText(MainActivity.this, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""), Toast.LENGTH_LONG).show();
-                            Log.e(TAG, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
+                            log.e("failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
                         }
                     }
                 });
@@ -72,13 +73,14 @@ public class MainActivity extends AppCompatActivity {
         PlayerConfig config = new PlayerConfig();
 
         config.media.setMediaEntry(mediaEntry);
-        if(player == null){
+        config.media.setStartPosition(30000);
+        if (player == null) {
 
             configurePlugins(config.plugins);
             
             player = PlayKitManager.loadPlayer(config, this);
 
-            Log.d(TAG, "Player: " + player.getClass());
+            log.d("Player: " + player.getClass());
             addPlayerListeners();
 
             LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
@@ -97,10 +99,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
         controlsView.release();
-        player.release();
+        player.onApplicationPaused();
     }
 
     private void addPlayerListeners() {
@@ -123,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
             public void onEvent(PKEvent event) {
                 if (event instanceof PlayerEvent.StateChanged) {
                     PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
-                    Log.d(TAG, "State changed from " + stateChanged.oldState + " to " + stateChanged.newState);
+                    log.d("State changed from " + stateChanged.oldState + " to " + stateChanged.newState);
 
                     if(controlsView != null){
                         controlsView.setPlayerState(stateChanged.newState);
@@ -137,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if(player != null){
-            player.restore();
+            player.onApplicationResumed();
             if (nowPlaying && AUTO_PLAY_ON_RESUME) {
                 player.play();
             }

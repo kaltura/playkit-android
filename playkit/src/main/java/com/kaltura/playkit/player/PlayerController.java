@@ -10,10 +10,12 @@ import android.view.View;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKAdInfo;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.TrackData;
 
 /**
  * Created by anton.afanasiev on 01/11/2016.
@@ -21,15 +23,18 @@ import com.kaltura.playkit.PlayerState;
 
 public class PlayerController implements Player {
 
-    private static final String TAG = PlayerController.class.getSimpleName();
+    private static final PKLog log = PKLog.get("PlayerController");
+
 
     private PlayerEngine player;
     private Context context;
-    
-    private PlayerConfig.Media mediaConfig;
 
-    private PKEvent.Listener eventListener; 
-    
+    private PlayerConfig.Media mediaConfig;
+    private boolean wasReleased = false;
+
+
+    private PKEvent.Listener eventListener;
+
     public void setEventListener(PKEvent.Listener eventListener) {
         this.eventListener = eventListener;
     }
@@ -76,18 +81,31 @@ public class PlayerController implements Player {
         this.context = context;
         this.mediaConfig = mediaConfig;
         player = new ExoPlayerWrapper(context);
-        player.setEventListener(eventTrigger);
-        player.setStateChangedListener(stateChangedTrigger);
+        togglePlayerListeners(true);
     }
-    
+
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
         Uri sourceUri = Uri.parse(mediaConfig.getMediaEntry().getSources().get(0).getUrl());
         player.load(sourceUri);
+        startPlaybackFrom(mediaConfig.getStartPosition());
     }
 
-    public void release() {
-        Log.d(TAG, "release");
-        player.release();
+    @Override
+    public void destroy() {
+        log.e("destroy");
+        player.destroy();
+        togglePlayerListeners(false);
+        player = null;
+        mediaConfig = null;
+        eventListener = null;
+    }
+
+    private void startPlaybackFrom(long startPosition) {
+        if(!wasReleased){
+            togglePlayerListeners(false);
+            player.seekTo(startPosition);
+            togglePlayerListeners(true);
+        }
     }
 
     public View getView() {
@@ -96,13 +114,13 @@ public class PlayerController implements Player {
     }
 
     public long getDuration() {
-        Log.d(TAG, "getDuration " + player.getDuration());
+//        Log.d(TAG, "getDuration " + player.getDuration());
 
         return player.getDuration();
     }
 
     public long getCurrentPosition() {
-        Log.d(TAG, "getPosition " + player.getCurrentPosition());
+//        Log.d(TAG, "getPosition " + player.getCurrentPosition());
         return player.getCurrentPosition();
     }
 
@@ -111,26 +129,28 @@ public class PlayerController implements Player {
     }
 
     public void seekTo(long position) {
-        Log.d(TAG, "seek to " + position);
+        log.d("seek to " + position);
         player.seekTo(position);
     }
 
     public void play() {
-        Log.d(TAG, "play");
+        log.d("play");
         player.play();
     }
 
     public void pause() {
-        Log.d(TAG, "pause");
+        log.d("pause");
         player.pause();
     }
 
-    public void restore() {
-        Log.d(TAG, "on resume");
-        player.setEventListener(eventTrigger);
-        player.setStateChangedListener(stateChangedTrigger);
-        player.resume();
-        prepare(mediaConfig);
+    private void togglePlayerListeners(boolean enable) {
+        if(enable){
+            player.setEventListener(eventTrigger);
+            player.setStateChangedListener(stateChangedTrigger);
+        }else {
+            player.setEventListener(null);
+            player.setStateChangedListener(null);
+        }
     }
 
     @Override
@@ -153,7 +173,6 @@ public class PlayerController implements Player {
         Assert.shouldNeverHappen();
     }
 
-    @Override
     public PKAdInfo getAdInfo() {
         Assert.shouldNeverHappen();
         return null;
@@ -162,5 +181,24 @@ public class PlayerController implements Player {
     @Override
     public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
         Assert.shouldNeverHappen();
+    }
+
+    @Override
+    public void onApplicationPaused() {
+        log.d("onApplicationPaused");
+        player.release();
+        togglePlayerListeners(false);
+        wasReleased = true;
+    }
+
+    @Override
+    public void onApplicationResumed() {
+        log.d("onApplicationResumed");
+        if(wasReleased){
+            player.restore();
+            prepare(mediaConfig);
+            togglePlayerListeners(true);
+            wasReleased = false;
+        }
     }
 }

@@ -6,8 +6,8 @@ import android.view.View;
 
 public abstract class PlayerDecorator extends PlayerDecoratorBase {
     @Override
-    public final void release() {
-        super.release();
+    public final void destroy() {
+        super.destroy();
     }
 
     @Override

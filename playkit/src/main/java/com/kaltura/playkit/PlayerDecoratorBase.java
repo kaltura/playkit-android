@@ -47,8 +47,8 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void release() {
-        player.release();
+    public void destroy() {
+        player.destroy();
     }
 
     @Override
@@ -82,8 +82,13 @@ public class PlayerDecoratorBase implements Player {
     private Player player;
 
     @Override
-    public void restore() {
-        player.restore();
+    public void onApplicationResumed() {
+        player.onApplicationResumed();
+    }
+
+    @Override
+    public void onApplicationPaused() {
+        player.onApplicationPaused();
     }
 
     @Override
@@ -95,4 +100,6 @@ public class PlayerDecoratorBase implements Player {
     public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
         player.updatePluginConfig(pluginName, key, value);
     }
+
+
 }
