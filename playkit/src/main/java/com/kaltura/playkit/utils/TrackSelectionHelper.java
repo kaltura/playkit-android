@@ -1,7 +1,6 @@
 package com.kaltura.playkit.utils;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
@@ -14,6 +13,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedTrackInfo;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.kaltura.playkit.AudioTrackData;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.SubtitleTrackData;
 import com.kaltura.playkit.TrackData;
 import com.kaltura.playkit.VideoTrackData;
@@ -30,7 +30,9 @@ import java.util.Locale;
 
 public class TrackSelectionHelper {
 
+    private static final PKLog log = PKLog.get("TrackSelectionHelper");
     private static final String TAG = TrackSelectionHelper.class.getSimpleName();
+
 
     private static final TrackSelection.Factory FIXED_FACTORY = new FixedTrackSelection.Factory();
     private static final TrackSelection.Factory RANDOM_FACTORY = new RandomTrackSelection.Factory();
@@ -138,7 +140,7 @@ public class TrackSelectionHelper {
     }
 
     public void changeTrack(int trackType, int position, MappedTrackInfo trackInfo) {
-        Log.e(TAG, "track type " + trackType + " position " + position);
+        log.e(TAG, "track type " + trackType + " position " + position);
         this.trackType = trackType;
         trackGroups = trackInfo.getTrackGroups(this.trackType);
         isDisabled = selector.getRendererDisabled(this.trackType);

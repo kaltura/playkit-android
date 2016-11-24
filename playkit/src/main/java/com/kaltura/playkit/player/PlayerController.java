@@ -10,6 +10,7 @@ import android.view.View;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKAdInfo;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
@@ -22,7 +23,8 @@ import com.kaltura.playkit.TrackData;
 
 public class PlayerController implements Player {
 
-    private static final String TAG = PlayerController.class.getSimpleName();
+    private static final PKLog log = PKLog.get("PlayerController");
+
 
     private PlayerEngine player;
     private Context context;
@@ -90,7 +92,7 @@ public class PlayerController implements Player {
 
     @Override
     public void destroy() {
-        Log.e(TAG, "destroy");
+        log.e("destroy");
         player.destroy();
         togglePlayerListeners(false);
         player = null;
@@ -127,17 +129,17 @@ public class PlayerController implements Player {
     }
 
     public void seekTo(long position) {
-        Log.d(TAG, "seek to " + position);
+        log.d("seek to " + position);
         player.seekTo(position);
     }
 
     public void play() {
-        Log.d(TAG, "play");
+        log.d("play");
         player.play();
     }
 
     public void pause() {
-        Log.d(TAG, "pause");
+        log.d("pause");
         player.pause();
     }
 
@@ -183,7 +185,7 @@ public class PlayerController implements Player {
 
     @Override
     public void onApplicationPaused() {
-        Log.d(TAG, "onApplicationPaused");
+        log.d("onApplicationPaused");
         player.release();
         togglePlayerListeners(false);
         wasReleased = true;
@@ -191,7 +193,7 @@ public class PlayerController implements Player {
 
     @Override
     public void onApplicationResumed() {
-        Log.d(TAG, "onApplicationResumed");
+        log.d("onApplicationResumed");
         if(wasReleased){
             player.restore();
             prepare(mediaConfig);

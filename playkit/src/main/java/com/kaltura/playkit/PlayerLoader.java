@@ -3,7 +3,6 @@ package com.kaltura.playkit;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.player.PlayerController;
@@ -27,7 +26,10 @@ class LoadedPlugin {
 }
 
 class PlayerLoader extends PlayerDecoratorBase {
-    private static final String TAG = "PlayerLoader";
+
+
+    private static final PKLog log = PKLog.get("PlayerLoader");
+
     private Context context;
     private MessageBus messageBus;
     
@@ -55,7 +57,7 @@ class PlayerLoader extends PlayerDecoratorBase {
             PKPlugin plugin = loadPlugin(name, player, playerConfig, messageBus, context);
 
             if (plugin == null) {
-                Log.w(TAG, "Plugin not found: " + name);
+                log.w("Plugin not found: " + name);
                 continue;
             }
             
