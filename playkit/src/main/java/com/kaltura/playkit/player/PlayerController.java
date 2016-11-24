@@ -201,4 +201,14 @@ public class PlayerController implements Player {
             wasReleased = false;
         }
     }
+
+    @Override
+    public TrackData getTrackData() {
+        return player.getTrackData();
+    }
+
+    @Override
+    public void changeTrack(int trackType, int position) {
+        player.changeTrack(trackType, position);
+    }
 }

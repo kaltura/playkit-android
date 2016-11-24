@@ -3,7 +3,11 @@ package com.kaltura.playkitdemo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
@@ -15,13 +19,15 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.TrackData;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.plugins.SamplePlugin;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     
     
     public static final boolean AUTO_PLAY_ON_RESUME = true;
@@ -32,6 +38,13 @@ public class MainActivity extends AppCompatActivity {
     private MediaEntryProvider mediaProvider;
     private PlaybackControlsView controlsView;
     private boolean nowPlaying;
+
+    private static final int TRACK_TYPE_UNKNOWN = -1;
+    private static final int TRACK_TYPE_VIDEO = 0;
+    private static final int TRACK_TYPE_AUDIO = 1;
+    private static final int TRACK_TYPE_CC = 2;
+
+    private Spinner videoSpinner, audioSpinner, ccSpiner;
 
     private void registerPlugins() {
         PlayKitManager.registerPlugins(SamplePlugin.factory);
@@ -88,8 +101,18 @@ public class MainActivity extends AppCompatActivity {
 
             controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
             controlsView.setPlayer(player);
+            initSpinners();
         }
         player.prepare(config.media);
+    }
+
+    private void initSpinners() {
+        videoSpinner = (Spinner) this.findViewById(R.id.videoSpinner);
+        audioSpinner = (Spinner) this.findViewById(R.id.audioSpinner);
+        ccSpiner = (Spinner) this.findViewById(R.id.ccSpinner);
+        ccSpiner.setOnItemSelectedListener(this);
+        audioSpinner.setOnItemSelectedListener(this);
+        videoSpinner.setOnItemSelectedListener(this);
     }
 
     private void configurePlugins(PlayerConfig.Plugins config) {
@@ -120,19 +143,39 @@ public class MainActivity extends AppCompatActivity {
             }
         }, PlayerEvent.Type.PAUSE);
 
-        player.addStateChangeListener(new PKEvent.Listener() {
+        player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                if (event instanceof PlayerEvent.StateChanged) {
-                    PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
-                    log.d("State changed from " + stateChanged.oldState + " to " + stateChanged.newState);
 
-                    if(controlsView != null){
-                        controlsView.setPlayerState(stateChanged.newState);
-                    }
+                TrackData trackData = player.getTrackData();
+                String[] videoData = new String[trackData.getVideoTrackData().size()];
+
+                for (int i = 0; i < videoData.length; i++) {
+                    videoData[i] = String.valueOf(trackData.getVideoTrackData().get(i).getId());
                 }
+                videoSpinner.setAdapter(new ArrayAdapter<>(getApplicationContext(),
+                        android.R.layout.simple_spinner_item, videoData));
+
+                String[] audioData = new String[trackData.getAudioTrackData().size()];
+
+                for (int i = 0; i < audioData.length; i++) {
+                    audioData[i] = String.valueOf(trackData.getAudioTrackData().get(i).getId());
+                }
+                audioSpinner.setAdapter(new ArrayAdapter<>(getApplicationContext(),
+                        android.R.layout.simple_spinner_item, audioData));
+
+                String[] ccData = new String[trackData.getSubtitleTrackData().size()];
+
+                for (int i = 0; i < ccData.length; i++) {
+                    ccData[i] = String.valueOf(trackData.getSubtitleTrackData().get(i).getId());
+                }
+                ccSpiner.setAdapter(new ArrayAdapter<>(getApplicationContext(),
+                        android.R.layout.simple_spinner_item, ccData));
             }
-        });
+        }, PlayerEvent.Type.TRACKS_AVAILABLE);
+
+
+
     }
 
     @Override
@@ -147,5 +190,31 @@ public class MainActivity extends AppCompatActivity {
         if(controlsView != null){
             controlsView.resume();
         }
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        int trackType = TRACK_TYPE_UNKNOWN;
+
+        switch (parent.getId()) {
+            case R.id.videoSpinner:
+                trackType = TRACK_TYPE_VIDEO;
+                break;
+            case R.id.audioSpinner:
+                trackType = TRACK_TYPE_AUDIO;
+                break;
+            case R.id.ccSpinner:
+                trackType = TRACK_TYPE_CC;
+                break;
+
+        }
+
+        log.e("on item selected " + parent.getItemAtPosition(position).toString());
+        player.changeTrack(trackType, position);
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
     }
 }

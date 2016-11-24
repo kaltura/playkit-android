@@ -3,6 +3,8 @@ package com.kaltura.playkit.player;
 import android.net.Uri;
 import android.view.View;
 
+import com.kaltura.playkit.TrackData;
+
 
 /**
  * Created by anton.afanasiev on 01/11/2016.
@@ -35,4 +37,8 @@ public interface PlayerEngine {
     void restore();
 
     void destroy();
+
+    void changeTrack(int trackType, int position);
+
+    TrackData getTrackData();
 }

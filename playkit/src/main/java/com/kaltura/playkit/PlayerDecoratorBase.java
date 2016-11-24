@@ -87,6 +87,16 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public TrackData getTrackData() {
+        return player.getTrackData();
+    }
+
+    @Override
+    public void changeTrack(int trackType, int position) {
+        player.changeTrack(trackType, position);
+    }
+
+    @Override
     public void onApplicationPaused() {
         player.onApplicationPaused();
     }

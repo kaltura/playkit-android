@@ -52,7 +52,8 @@ public class PlayerEvent implements PKEvent {
         PLAYING,   //  Sent when the media begins to play (either for the first time, after having been paused, or after ending and then restarting).
         SEEKED,   //  Sent when a seek operation completes.
         SEEKING,   //  Sent when a seek operation begins.
-        FIRST_PLAY; // Sent when the playback of the media started to play for the first time.
+        FIRST_PLAY, // Sent when the playback of the media started to play for the first time.
+        TRACKS_AVAILABLE; // Sent when track info is available.
     }
 
     @Override
