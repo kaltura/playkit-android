@@ -1,7 +1,6 @@
 package com.kaltura.playkit.utils;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
@@ -14,6 +13,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedTrackInfo;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.kaltura.playkit.AudioTrackData;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.SubtitleTrackData;
 import com.kaltura.playkit.TrackData;
 import com.kaltura.playkit.VideoTrackData;
@@ -30,7 +30,9 @@ import java.util.Locale;
 
 public class TrackSelectionHelper {
 
+    private static final PKLog log = PKLog.get("TrackSelectionHelper");
     private static final String TAG = TrackSelectionHelper.class.getSimpleName();
+
 
     private static final TrackSelection.Factory FIXED_FACTORY = new FixedTrackSelection.Factory();
     private static final TrackSelection.Factory RANDOM_FACTORY = new RandomTrackSelection.Factory();
@@ -43,14 +45,14 @@ public class TrackSelectionHelper {
     private final TrackSelection.Factory adaptiveVideoTrackSelectionFactory;
 
     private MappingTrackSelector.MappedTrackInfo trackInfo;
-    private int rendererIndex;
+    private int trackType;
     private TrackGroupArray trackGroups;
     private boolean[] trackGroupsAdaptive;
     private boolean isDisabled;
     private MappingTrackSelector.SelectionOverride override;
 
     private TrackData trackData;
-    boolean[] isAdaptiveList;
+    private boolean[] isAdaptiveList;
 
     /**
      * @param selector                           The track selector.
@@ -138,13 +140,13 @@ public class TrackSelectionHelper {
     }
 
     public void changeTrack(int trackType, int position, MappedTrackInfo trackInfo) {
-        Log.e(TAG, "track type " + trackType + " position " + position);
-        this.rendererIndex = trackType;
-        trackGroups = trackInfo.getTrackGroups(rendererIndex);
-        isDisabled = selector.getRendererDisabled(rendererIndex);
-        override = selector.getSelectionOverride(rendererIndex, trackGroups);
+        log.e(TAG, "track type " + trackType + " position " + position);
+        this.trackType = trackType;
+        trackGroups = trackInfo.getTrackGroups(this.trackType);
+        isDisabled = selector.getRendererDisabled(this.trackType);
+        override = selector.getSelectionOverride(this.trackType, trackGroups);
 
-        if (isAdaptiveList[rendererIndex]) {
+        if (isAdaptiveList[this.trackType]) {
             override = new MappingTrackSelector.SelectionOverride(FIXED_FACTORY, 0, position);
         } else {
             override = new MappingTrackSelector.SelectionOverride(FIXED_FACTORY, position, 0);
@@ -152,11 +154,11 @@ public class TrackSelectionHelper {
 
 
         //last part
-        selector.setRendererDisabled(rendererIndex, isDisabled);
+        selector.setRendererDisabled(this.trackType, isDisabled);
         if (override != null) {
-            selector.setSelectionOverride(rendererIndex, trackGroups, override);
+            selector.setSelectionOverride(this.trackType, trackGroups, override);
         } else {
-            selector.clearSelectionOverrides(rendererIndex);
+            selector.clearSelectionOverrides(this.trackType);
         }
     }
 
