@@ -43,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
     private MediaEntryProvider mediaProvider;
     private PlaybackControlsView controlsView;
     private boolean nowPlaying;
-    boolean isFirstLaunch = true;
     ProgressBar progressBar;
 
     private void registerPlugins() {
@@ -194,14 +193,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         log.d("Ad Event onResume");
         super.onResume();
-        if (isFirstLaunch) {
-            isFirstLaunch = false;
-            return;
-        }
         if(player != null){
             player.onApplicationResumed();
             if (nowPlaying && AUTO_PLAY_ON_RESUME) {
-                //player.getAdInfo();
                 player.play();
             }
         }
