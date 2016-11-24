@@ -71,7 +71,6 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     private Uri lastPlayedSource;
     private Timeline.Window window;
     private boolean isTimelineStatic;
-    private boolean shouldAutoPlay;
 
 
     public ExoPlayerWrapper(Context context) {
@@ -264,14 +263,14 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
     @Override
-    public void load(Uri mediaSourceUri, long startPosition) {
+    public void load(Uri mediaSourceUri) {
         Log.d(TAG, "load");
         if (player == null) {
             initializePlayer();
         }
 
         preparePlayer(mediaSourceUri);
-        startFrom(startPosition);
+
     }
 
     @Override
@@ -362,10 +361,6 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
                 player.seekTo(playerWindow, playerPosition);
             }
         }
-    }
-
-    public void startFrom(long startPosition) {
-        player.seekTo(startPosition);
     }
 
     public void setEventListener(final EventListener eventTrigger) {

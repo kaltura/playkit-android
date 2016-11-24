@@ -11,7 +11,7 @@ import com.kaltura.playkit.TrackData;
 
 public interface PlayerEngine {
 
-    void load(Uri mediaSourceUri, long startPosition);
+    void load(Uri mediaSourceUri);
 
     View getView();
 
