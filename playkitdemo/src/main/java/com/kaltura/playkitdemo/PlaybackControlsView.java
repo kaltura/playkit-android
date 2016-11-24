@@ -11,6 +11,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.google.android.exoplayer2.C;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerState;
 
@@ -24,6 +25,7 @@ import java.util.Locale;
 public class PlaybackControlsView extends LinearLayout implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
     private static final String TAG = PlaybackControlsView.class.getSimpleName();
+    private static final PKLog log = PKLog.get(TAG);
     private static final int PROGRESS_BAR_MAX = 100;
 
     private Player player;
@@ -96,10 +98,12 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
         }
 
         if(duration != C.TIME_UNSET){
+            log.d("XXXXX Set Duration:" + duration);
             tvTime.setText(stringForTime(duration));
         }
 
         if (!dragging && position != C.POSITION_UNSET && duration != C.TIME_UNSET) {
+            log.d("XXXXX Set Position:" + position);
             tvCurTime.setText(stringForTime(position));
             seekBar.setProgress(progressBarValue(position));
         }
@@ -118,7 +122,9 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
         int progressValue = 0;
         if(player != null){
             long duration = player.getDuration();
-            progressValue =(int) ((position * PROGRESS_BAR_MAX) / duration);
+            if (duration > 0) {
+                progressValue = (int) ((position * PROGRESS_BAR_MAX) / duration);
+            }
         }
 
         return progressValue;

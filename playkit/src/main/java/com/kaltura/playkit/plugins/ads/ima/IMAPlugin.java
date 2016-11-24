@@ -220,6 +220,16 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, ExoPlayer.EventL
         return false;
     }
 
+    @Override
+    public long getDuration() {
+        return 0;
+    }
+
+    @Override
+    public long getCurrentPosition() {
+        return 0;
+    }
+
     ///////////END Ads Plugin
 
 

@@ -2,7 +2,9 @@ package com.kaltura.playkitdemo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
@@ -41,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     private MediaEntryProvider mediaProvider;
     private PlaybackControlsView controlsView;
     private boolean nowPlaying;
+    boolean isFirstLaunch = true;
+    ProgressBar progressBar;
 
     private void registerPlugins() {
         PlayKitManager.registerPlugins(SamplePlugin.factory);
@@ -51,7 +55,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.INVISIBLE);
         registerPlugins();
 
         mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
@@ -91,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
             player = PlayKitManager.loadPlayer(config, this);
 
             log.d("Player: " + player.getClass());
-            addPlayerListeners();
+            addPlayerListeners(progressBar);
 
             LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
             layout.addView(player.getView());
@@ -101,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
             //controlsView.setVisibility(View.INVISIBLE);
         }
         player.prepare(config.media);
+        //player.play();
     }
 
     private void configurePlugins(PlayerConfig.Plugins config) {
@@ -131,14 +137,23 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    private void addPlayerListeners() {
+    private void addPlayerListeners(final ProgressBar appProgressBar) {
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
                 log.d("Ad Event AD_CONTENT_PAUSE_REQUESTED");
                 PKAdInfo adInfo = player.getAdInfo();
+                appProgressBar.setVisibility(View.VISIBLE);
             }
         }, AdEvent.Type.AD_CONTENT_PAUSE_REQUESTED);
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                log.d("Ad Event AD_STARTED");
+                PKAdInfo adInfo = player.getAdInfo();
+                appProgressBar.setVisibility(View.INVISIBLE);
+            }
+        }, AdEvent.Type.AD_STARTED);
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
@@ -177,10 +192,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        log.d("Ad Event onResume");
         super.onResume();
+        if (isFirstLaunch) {
+            isFirstLaunch = false;
+            return;
+        }
         if(player != null){
             player.onApplicationResumed();
             if (nowPlaying && AUTO_PLAY_ON_RESUME) {
+                //player.getAdInfo();
                 player.play();
             }
         }

@@ -18,5 +18,7 @@ public interface AdsProvider {
     boolean isAdDisplayed();
     boolean isAdPaused();
     boolean isAdRequested();
+    long getDuration();
+    long getCurrentPosition();
 
 }

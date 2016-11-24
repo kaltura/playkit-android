@@ -6,10 +6,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import com.google.gson.reflect.TypeToken;
 import com.kaltura.playkit.PKMediaFormat;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -179,8 +177,8 @@ public class AdsConfig {
         }
 
         Map<Double,String> tagTimes = new HashMap<>();
-        Type type = new TypeToken<Map<Double, String>>(){}.getType();
-        tagTimes = gson.fromJson(adsConfigJson.getAsJsonObject(AdsConfig.AD_TAG_TIMES).getAsJsonObject(), type);
+ //       Type type = new TypeToken<Map<Double, String>>(){}.getType();
+ //       tagTimes = gson.fromJson(adsConfigJson.getAsJsonObject(AdsConfig.AD_TAG_TIMES).getAsJsonObject(), type);
         return new AdsConfig(language, enableBackgroundPlayback, autoPlayAdBreaks, videoBitrate, videoMimeTypes, adTagUrl, tagTimes);
     }
 }

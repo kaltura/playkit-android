@@ -33,12 +33,23 @@ public class AdEnabledPlayerController extends PlayerDecorator {
 
     @Override
     public long getDuration() {
-        return super.getDuration();
+        if (adsProvider.isAdDisplayed()) {
+            log.d("XXXXXXXXXXXXXXXXXXXXXX " + adsProvider.getDuration());
+           return adsProvider.getDuration();
+        } else {
+            return super.getDuration();
+        }
     }
 
     @Override
     public long getCurrentPosition() {
-        return super.getCurrentPosition();
+
+        if (adsProvider.isAdDisplayed()) {
+            log.d("XXXXXXXXXXXXXXXXXXXXXX " + adsProvider.getCurrentPosition());
+            return adsProvider.getCurrentPosition();
+        } else {
+            return super.getCurrentPosition();
+        }
     }
 
     @Override
@@ -48,11 +59,11 @@ public class AdEnabledPlayerController extends PlayerDecorator {
 
     @Override
     public void play() {
-        log.d("AdEnabledPlayerController PLAY");
+        log.d("Ad Event AdEnabledPlayerController PLAY isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused());
         if (!adsProvider.isAdDisplayed() && adsProvider.isAdRequested()) {
             super.play();
         } else if (adsProvider.isAdDisplayed()) {
-            adsProvider.start(false);
+            adsProvider.resume();//start(false);
         } else {
             super.pause();
             if (!adsProvider.isAdRequested()) {
@@ -63,26 +74,30 @@ public class AdEnabledPlayerController extends PlayerDecorator {
 
     @Override
     public void pause() {
-        log.d("AdEnabledPlayerController PAUSE");
-        if (!adsProvider.isAdDisplayed()) {
-            super.pause();
-        } else {
+        log.d("Ad Event AdEnabledPlayerController PAUSE isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused());
+        if (adsProvider.isAdDisplayed()) {
             adsProvider.pause();
+        } else {
+            super.pause();
         }
     }
 
     @Override
     public void onApplicationResumed() {
         super.onApplicationResumed();
-        if (!adsProvider.isAdPaused()) {
+        if (adsProvider.isAdDisplayed()) {
             log.d("AdEnabledPlayerController onApplicationResumed");
-
+            adsProvider.resume();
         }
+
     }
 
     @Override
     public void onApplicationPaused() {
         log.d("AdEnabledPlayerController onApplicationPaused");
+        if (adsProvider.isAdDisplayed()) {
+            adsProvider.pause();
+        }
         super.onApplicationPaused();
     }
 
@@ -110,6 +125,7 @@ public class AdEnabledPlayerController extends PlayerDecorator {
             } else if (key.equals(VIDEO_MIME_TYPES)) {
                 adsProvider.getAdsConfig().setVideoMimeTypes((List<String>) value);
             }
+            log.d("XXXXX Before RequestAd");
             adsProvider.requestAd();
         }
     }

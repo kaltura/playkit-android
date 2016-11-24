@@ -9,6 +9,7 @@ import com.google.ads.interactivemedia.v3.api.AdPodInfo;
 import com.google.ads.interactivemedia.v3.api.AdsLoader;
 import com.google.ads.interactivemedia.v3.api.AdsManager;
 import com.google.ads.interactivemedia.v3.api.AdsManagerLoadedEvent;
+import com.google.ads.interactivemedia.v3.api.AdsRenderingSettings;
 import com.google.ads.interactivemedia.v3.api.AdsRequest;
 import com.google.ads.interactivemedia.v3.api.ImaSdkFactory;
 import com.google.ads.interactivemedia.v3.api.ImaSdkSettings;
@@ -128,8 +129,6 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
 
         //----------------------------//
         adConfig = AdsConfig.fromJsonObject(pluginConfig);
-        //adTagURL = adConfig.getAdTagUrl();//pluginConfig.getAsJsonPrimitive(AdsConfig.AD_TAG_URL).getAsString();
-        //mimeTypes = adConfig.getVideoMimeTypes();
         mAdUiContainer = (ViewGroup) player.getView();
         //requestAd();
     }
@@ -164,6 +163,8 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
 
     @Override
     public void requestAd() {
+        log.d("XXXXX Inside RequestAd");
+
         mIsAdRequested = true;
         ImaSdkSettings imaSdkSettings = new ImaSdkSettings();
         // Tell the SDK we want to control ad break playback.
@@ -186,80 +187,105 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                 mAdsManager.addAdErrorListener(IMASimplePlugin.this);
                 mAdsManager.addAdEventListener(IMASimplePlugin.this);
 
-                //AdsRenderingSettings renderingSettings = ImaSdkFactory.getInstance().createAdsRenderingSettings();
-                //renderingSettings.setMimeTypes(mimeTypes);
-                //renderingSettings.setUiElements(Collections.<UiElement>emptySet());
+                AdsRenderingSettings renderingSettings = ImaSdkFactory.getInstance().createAdsRenderingSettings();
+                if (adConfig.getVideoMimeTypes().size() > 0) {
+                    renderingSettings.setMimeTypes(adConfig.getVideoMimeTypes());
+                }
+
+//                if (adConfig.addAdAtribution() || adConfig.addAdCountDown()) {
+//                    Set<UiElement> set = new HashSet<UiElement>();
+//                    set.add(UiElement.AD_ATTRIBUTION);
+//                    //set.add(UiElement.COUNTDOWN);
+//                    //renderingSettings.setUiElements(set);
+//                } else {
+//                    renderingSettings.setUiElements(Collections.<UiElement>emptySet());
+//                }
                 mAdsManager.init();
             }
         });
         if (adConfig != null) {
-            requestAds(adConfig.getAdTagUrl());
+            requestAdsFromIMA(adConfig.getAdTagUrl());
         }
     }
 
-    private void requestAds(String adTagUrl) {
+    private void requestAdsFromIMA(String adTagUrl) {
+        log.d("XXXXX DO requestAdsFromIMA");
         AdDisplayContainer adDisplayContainer = mSdkFactory.createAdDisplayContainer();
         adDisplayContainer.setAdContainer(mAdUiContainer);
 
         // Create the ads request.
-        AdsRequest request = mSdkFactory.createAdsRequest();
+        final AdsRequest request = mSdkFactory.createAdsRequest();
         request.setAdTagUrl(adTagUrl);
         request.setAdDisplayContainer(adDisplayContainer);
         request.setContentProgressProvider(new ContentProgressProvider() {
             @Override
             public VideoProgressUpdate getContentProgress() {
+
                 if (mIsAdDisplayed || player == null || (player != null && player.getDuration() <= 0)) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
+                //log.e("XXXXXXXXXXXXXXXXXXXXXXXXX ADProgress " + mAdsManager.getAdProgress().getCurrentTime() + "/" + mAdsManager.getAdProgress().getDuration());
 
-                return new VideoProgressUpdate(player.getCurrentPosition(),
-                            player.getDuration());
+                VideoProgressUpdate videoProgress = new VideoProgressUpdate(player.getCurrentPosition(),
+                        player.getDuration());
+                //log.e("XXXXXXXXXXXXXXXXXXXXXXXXX getContentProgress " + videoProgress.getCurrentTime() + "/" + videoProgress.getDuration());
+                return videoProgress;
             }
         });
 
         // Request the ad. After the ad is loaded, onAdsManagerLoaded() will be called.
+
         mAdsLoader.requestAds(request);
+        //return request;
     }
 
     @Override
     public boolean start(boolean showLoadingView) {
         if (mAdsManager != null && mIsAdDisplayed) {
             mAdsManager.resume();
-        } else {
-            if (player != null) {
-                player.play();
-            }
+//        } else {
+//            if (player != null) {
+//                player.play();
+//            }
         }
         return true;
     }
 
     @Override
     public void resume() {
-        if (mAdsManager != null && mIsAdDisplayed) {
-            mAdsManager.resume();
-        } else {
-            if (player != null) {
-                player.play();
+        log.e("AD Event pause mIsAdDisplayed = " + mIsAdDisplayed);
+        if (mAdsManager != null) {
+            if (mIsAdDisplayed) {
+                mAdsManager.resume();
+//            } else {
+//                if (player != null) {
+//                    player.play();
+//                }
             }
         }
     }
 
     @Override
     public void pause() {
+        log.e("AD Event pause mIsAdDisplayed = " + mIsAdDisplayed);
         if (mAdsManager != null && mIsAdDisplayed) {
             mAdsManager.pause();
-        } else {
-            if (player != null) {
-                player.pause();
-            }
+//        } else {
+//            if (player != null) {
+//                player.pause();
+//            }
         }
     }
 
     @Override
     public void contentCompleted() {
-        if (player != null) {
-            player.play();
+        if (mAdsManager != null) {
+            mAdsManager.destroy();
+            mAdsManager = null;
         }
+//        if (player != null) {
+//            player.play();
+//        }
     }
 
     @Override
@@ -283,6 +309,141 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
     public boolean isAdRequested() {
         log.d("IMASimplePlugin isAdRequested: " + mIsAdRequested);
         return mIsAdRequested;
+    }
+
+    @Override
+    public long getDuration() {
+        return  (long)mAdsManager.getAdProgress().getDuration();
+    }
+
+    @Override
+    public long getCurrentPosition() {
+        return (long)mAdsManager.getAdProgress().getCurrentTime();
+    }
+
+
+
+    @Override
+    public void onAdEvent(com.google.ads.interactivemedia.v3.api.AdEvent adEvent) {
+        log.i("Event: " + adEvent.getType());
+        if (adEvent.getAdData() != null) {
+            log.i("Event: " + adEvent.getAdData().toString());
+        }
+        switch (adEvent.getType()) {
+
+            case LOADED:
+                // AdEventType.LOADED will be fired when ads are ready to be played.
+                // AdsManager.start() begins ad playback. This method is ignored for VMAP or
+                // ad rules playlists, as the SDK will automatically start executing the
+                // playlist.
+
+
+                String adSescription      = adEvent.getAd().getDescription();
+                double adDuration         = adEvent.getAd().getDuration();
+                String adTitle            = adEvent.getAd().getTitle();
+                boolean isAdSkippable     = adEvent.getAd().isSkippable();
+                String contentType        = adEvent.getAd().getContentType();
+                String adId               = adEvent.getAd().getAdId();
+                String adSystem           = adEvent.getAd().getAdSystem();
+                int adHeight              = adEvent.getAd().getHeight();
+                int adWidth               = adEvent.getAd().getWidth();
+                String traffickingParameters = adEvent.getAd().getTraffickingParameters();
+                AdPodInfo adPodInfo          =  adEvent.getAd().getAdPodInfo();
+                List<Float> adCuePoints      =  mAdsManager.getAdCuePoints();
+
+                adInfo = new  AdInfo(adSescription, adDuration,
+                        adTitle, isAdSkippable,
+                        contentType, adId,
+                        adSystem, adHeight,
+                        adWidth, traffickingParameters,
+                        adPodInfo, adCuePoints);
+
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_LOADED));
+                mAdsManager.start();
+                break;
+            case CONTENT_PAUSE_REQUESTED:
+                // AdEventType.CONTENT_PAUSE_REQUESTED is fired immediately before a video
+                // ad is played.
+                log.d("XXXXX AD REQUEST AD_CONTENT_PAUSE_REQUESTED = play ");
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CONTENT_PAUSE_REQUESTED));
+                mIsAdDisplayed = true;
+                if (player != null) {
+                    player.pause();
+                }
+                break;
+            case CONTENT_RESUME_REQUESTED:
+                // AdEventType.CONTENT_RESUME_REQUESTED is fired when the ad is completed
+                // and you should start playing your content.
+                log.d("XXXXX AD REQUEST AD_CONTENT_RESUME_REQUESTED = play ");
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CONTENT_RESUME_REQUESTED));
+                mIsAdDisplayed = false;
+                if (player != null) {
+                    player.play();
+                }
+                break;
+            case ALL_ADS_COMPLETED:
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_ALL_ADS_COMPLETED));
+                if (mAdsManager != null) {
+                    contentCompleted();
+
+                }
+                break;
+            case STARTED:
+                mIsAdIsPaused = false;
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_STARTED));
+                break;
+            case PAUSED:
+                mIsAdIsPaused = true;
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_PAUSED));
+                break;
+            case RESUMED:
+                mIsAdIsPaused = false;
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_RESUMED));
+                break;
+            case COMPLETED:
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_COMPLETED));
+                break;
+            case FIRST_QUARTILE:
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_FIRST_QUARTILE));
+                break;
+            case MIDPOINT:
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_MIDPOINT));
+                break;
+            case THIRD_QUARTILE:
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_THIRD_QUARTILE));
+                break;
+            case SKIPPED:
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_SKIPPED));
+                break;
+            case CLICKED:
+                mIsAdIsPaused = true;
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CLICKED));
+                break;
+            case TAPPED:
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_TAPPED));
+                break;
+            case ICON_TAPPED:
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_ICON_TAPPED));
+                break;
+            case AD_BREAK_READY:
+                mAdsManager.start();
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_AD_BREAK_READY));
+                break;
+            case AD_PROGRESS:
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_AD_PROGRESS));
+                break;
+            case AD_BREAK_STARTED:
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_AD_BREAK_STARTED));
+                break;
+            case  AD_BREAK_ENDED:
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_AD_BREAK_ENDED));
+                break;
+            case  CUEPOINTS_CHANGED:
+                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CUEPOINTS_CHANGED));
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
@@ -351,133 +512,6 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
         }
         if (player != null) {
             player.play();
-        }
-    }
-
-    @Override
-    public void onAdEvent(com.google.ads.interactivemedia.v3.api.AdEvent adEvent) {
-        log.i("Event: " + adEvent.getType());
-        if (adEvent.getAdData() != null) {
-            log.i("Event: " + adEvent.getAdData().toString());
-        }
-        switch (adEvent.getType()) {
-            case STARTED:
-                mIsAdIsPaused = false;
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_STARTED));
-                break;
-            case PAUSED:
-                mIsAdIsPaused = true;
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_PAUSED));
-                break;
-            case RESUMED:
-                mIsAdIsPaused = false;
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_RESUMED));
-                break;
-            case COMPLETED:
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_COMPLETED));
-                break;
-            case FIRST_QUARTILE:
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_FIRST_QUARTILE));
-                break;
-            case MIDPOINT:
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_MIDPOINT));
-                break;
-            case THIRD_QUARTILE:
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_THIRD_QUARTILE));
-                break;
-            case SKIPPED:
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_SKIPPED));
-                break;
-            case CLICKED:
-                 mIsAdIsPaused = true;
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CLICKED));
-                break;
-            case TAPPED:
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_TAPPED));
-                break;
-            case ICON_TAPPED:
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_ICON_TAPPED));
-                break;
-            case AD_BREAK_READY:
-                mAdsManager.start();
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_AD_BREAK_READY));
-                break;
-            case AD_PROGRESS:
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_AD_PROGRESS));
-                break;
-            case AD_BREAK_STARTED:
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_AD_BREAK_STARTED));
-                break;
-            case  AD_BREAK_ENDED:
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_AD_BREAK_ENDED));
-                break;
-            case  CUEPOINTS_CHANGED:
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CUEPOINTS_CHANGED));
-                break;
-            case LOADED:
-                // AdEventType.LOADED will be fired when ads are ready to be played.
-                // AdsManager.start() begins ad playback. This method is ignored for VMAP or
-                // ad rules playlists, as the SDK will automatically start executing the
-                // playlist.
-
-
-                String adSescription      = adEvent.getAd().getDescription();
-                double adDuration         = adEvent.getAd().getDuration();
-                String adTitle            = adEvent.getAd().getTitle();
-                boolean isAdSkippable     = adEvent.getAd().isSkippable();
-                String contentType        = adEvent.getAd().getContentType();
-                String adId               = adEvent.getAd().getAdId();
-                String adSystem           = adEvent.getAd().getAdSystem();
-                int adHeight              = adEvent.getAd().getHeight();
-                int adWidth               = adEvent.getAd().getWidth();
-                String traffickingParameters = adEvent.getAd().getTraffickingParameters();
-                AdPodInfo adPodInfo          =  adEvent.getAd().getAdPodInfo();
-                List<Float> adCuePoints      =  mAdsManager.getAdCuePoints();
-
-                adInfo = new  AdInfo(adSescription,
-                        adDuration,
-                        adTitle,
-                        isAdSkippable,
-                        contentType,
-                        adId,
-                        adSystem,
-                        adHeight,
-                        adWidth,
-                        traffickingParameters,
-                        adPodInfo,
-                        adCuePoints);
-
-
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_LOADED));
-                mAdsManager.start();
-                break;
-            case CONTENT_PAUSE_REQUESTED:
-                // AdEventType.CONTENT_PAUSE_REQUESTED is fired immediately before a video
-                // ad is played.
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CONTENT_PAUSE_REQUESTED));
-                mIsAdDisplayed = true;
-                if (player != null) {
-                    player.pause();
-                }
-                break;
-            case CONTENT_RESUME_REQUESTED:
-                // AdEventType.CONTENT_RESUME_REQUESTED is fired when the ad is completed
-                // and you should start playing your content.
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CONTENT_PAUSE_REQUESTED));
-                mIsAdDisplayed = false;
-                if (player != null) {
-                    player.play();
-                }
-                break;
-            case ALL_ADS_COMPLETED:
-                messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_ALL_ADS_COMPLETED));
-                if (mAdsManager != null) {
-                    mAdsManager.destroy();
-                    mAdsManager = null;
-                }
-                break;
-            default:
-                break;
         }
     }
 
