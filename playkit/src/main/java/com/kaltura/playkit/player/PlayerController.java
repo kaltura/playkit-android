@@ -181,14 +181,4 @@ public class PlayerController implements Player {
     public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
         Assert.shouldNeverHappen();
     }
-
-    @Override
-    public TrackData getTrackData() {
-        return player.getTrackData();
-    }
-
-    @Override
-    public void changeTrack(int trackType, int position) {
-        player.changeTrack(trackType, position);
-    }
 }

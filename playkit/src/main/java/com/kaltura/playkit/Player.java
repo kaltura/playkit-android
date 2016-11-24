@@ -62,8 +62,5 @@ public interface Player {
     
     void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value);
 
-    TrackData getTrackData();
-
-    void changeTrack(int trackType, int position);
 }
 

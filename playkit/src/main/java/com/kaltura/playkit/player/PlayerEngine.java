@@ -34,8 +34,4 @@ public interface PlayerEngine {
     void release();
 
     void restore();
-
-    TrackData getTrackData();
-
-    void changeTrack(int trackType, int position);
 }

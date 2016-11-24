@@ -316,16 +316,6 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
     @Override
-    public boolean shouldAutoPlay() {
-        return player.getPlayWhenReady();
-    }
-
-    @Override
-    public void setAutoPlay(boolean shouldAutoplay) {
-        player.setPlayWhenReady(shouldAutoplay);
-    }
-
-    @Override
     public long getDuration() {
         if (player != null) {
             return player.getDuration();
