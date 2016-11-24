@@ -4,11 +4,11 @@ import android.content.Context;
 import android.util.Log;
 
 import com.google.gson.JsonObject;
+import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PlayerConfig;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,9 +20,15 @@ import java.util.Map;
  */
 
 public class YouboraConfig {
+    private static final PKLog log = PKLog.get("YouboraConfig");
+
     private static Map<String, Object> youboraConfig = null;
 
     private static final Map<String, Object> defaultYouboraConfig;
+    private static final Map<String, Object> mediaObject;
+    private static final Map<String, Object> youboraConfigObject;
+    private static final Map<String, Object> propertiesObject;
+    private static final Map<String, Object> extraParamsObject;
 
     static {
 
@@ -42,6 +48,7 @@ public class YouboraConfig {
         youboraConfig.put("isBalanced", "0");
         youboraConfig.put("isResumed", "0");
         youboraConfig.put("haltOnError", true);
+        youboraConfigObject = youboraConfig;
 
         Map<String, Object> network = new HashMap<>(2);
         network.put("ip", "");
@@ -59,6 +66,7 @@ public class YouboraConfig {
         media.put("duration", null);
         media.put("cdn", null);
         youboraConfig.put("media", media);
+        mediaObject = media;
 
         Map<String, Object> ads = new HashMap<>(6);
         ads.put("adsExpected", false);
@@ -87,6 +95,7 @@ public class YouboraConfig {
         properties.put("device", null);
         properties.put("quality", null);
         youboraConfig.put("properties", properties);
+        propertiesObject = properties;
 
         Map<String, Object> extraParams = new HashMap<>(10);
         extraParams.put("param1", "Param 1 value");
@@ -100,6 +109,7 @@ public class YouboraConfig {
         extraParams.put("param9", "Param 9 value");
         extraParams.put("param10", "Param 10 value");
         youboraConfig.put("extraParams", extraParams);
+        extraParamsObject = extraParams;
 
         defaultYouboraConfig = Collections.unmodifiableMap(youboraConfig);
     }
@@ -124,26 +134,23 @@ public class YouboraConfig {
         }
     }
 
-    public static Map<String, Object> getYouboraConfig(Context context, JsonObject pluginConfig) {
+    public static Map<String, Object> getYouboraConfig(JsonObject pluginConfig, PlayerConfig.Media mediaConfig) {
         if (youboraConfig == null) {
             // load from json
-            File file = new File(context.getFilesDir(), "youbora_config_map");
-            if (file.exists()) {
-                try {
-                    ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
-                    youboraConfig = (Map) inputStream.readObject();
-                    inputStream.close();
-                    Log.i("YouboraConfigManager", "loaded youbora config from file");
-                } catch (Exception e) {
-                    Log.wtf("YouboraConfigManager", "exception when loading config to file: " + e.toString());
-                }
-            }
-            // if not stored yet, reset
-            if (youboraConfig == null) {
-                resetPreferences(context);
-            }
+            setYouboraConfig(pluginConfig, mediaConfig);
         }
-        return defaultYouboraConfig;
+        return youboraConfig;
+    }
+
+    private static void setYouboraConfig(JsonObject pluginConfig, PlayerConfig.Media mediaConfig){
+        youboraConfig = defaultYouboraConfig;
+        if (mediaConfig != null) {
+            mediaObject.put("resource", mediaConfig.getMediaEntry().getId());
+            mediaObject.put("title", mediaConfig.getMediaEntry().getId()); //name?
+            mediaObject.put("duration", mediaConfig.getMediaEntry().getDuration());
+            youboraConfig.remove("media");
+            youboraConfig.put("media", mediaConfig);
+        }
     }
 
     public static Map<String, Object> resetPreferences(Context context) {

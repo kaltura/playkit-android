@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
@@ -18,6 +19,8 @@ import java.util.Map;
 
 public class YouboraPlugin extends PKPlugin {
     private static final String TAG = "YouboraPlugin";
+    private static final PKLog log = PKLog.get("YouboraPlugin");
+
 
     private static YouboraLibraryManager mPluginManager;
     private PlayerConfig.Media mMediaConfig;
@@ -65,22 +68,17 @@ public class YouboraPlugin extends PKPlugin {
         startMonitoring(mPlayer);
     }
 
-    public void startMonitoring(Player player) {
-        Map<String, Object> opt = YouboraConfig.getYouboraConfig(mContext.getApplicationContext(), mPluginConfig);
-        Map<String, Object> media = (Map<String, Object>) opt.get("media");
+    private void startMonitoring(Player player) {
 
-        media.put("resource", mMediaConfig.getMediaEntry().getId());
-        media.put("title", mMediaConfig.getMediaEntry().getId()); //name?
-        media.put("duration", mMediaConfig.getMediaEntry().getDuration());
-
+        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(mPluginConfig, mMediaConfig);
         // Set options
         mPluginManager.setOptions(opt);
 
         mPluginManager.startMonitoring(player);
-        mMessageBus.listen(mPluginManager.getEventListener(), (PlayerEvent.Type[]) PlayerEvent.Type.values());
+        mMessageBus.listen(mPluginManager.getEventListener(), (Enum[]) PlayerEvent.Type.values());
     }
 
-    public void stopMonitoring() {
+    private void stopMonitoring() {
         mPluginManager.stopMonitoring();
     }
 }

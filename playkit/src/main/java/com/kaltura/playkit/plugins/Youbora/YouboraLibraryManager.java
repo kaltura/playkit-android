@@ -1,6 +1,7 @@
 package com.kaltura.playkit.plugins.Youbora;
 
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEvent;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.managers.ViewManager;
@@ -14,6 +15,8 @@ import java.util.Map;
  */
 
 public class YouboraLibraryManager extends PluginGeneric {
+    private static final PKLog log = PKLog.get("YouboraLibraryManager");
+
     private Double lastReportedBitrate = super.getBitrate();
     private Double lastReportedthroughput = super.getThroughput();
     private static final long MONITORING_INTERVAL = 200L;

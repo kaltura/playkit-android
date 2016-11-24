@@ -1,12 +1,12 @@
 package com.kaltura.playkit.plugins;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
@@ -26,7 +26,9 @@ import java.util.TimerTask;
  */
 
 public class PhoenixAnalyticsPlugin extends PKPlugin {
-    enum PhoenixActionType{
+    private static final PKLog log = PKLog.get("YouboraLibraryManager");
+
+    private enum PhoenixActionType{
         HIT,
         PLAY,
         STOP,
@@ -43,19 +45,18 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private boolean mDidFirstPlay = false;
     private boolean intervalOn = false;
     private int mMediaHitInterval = -1;
-    private int mFileId = -1;
     private long mContinueTime;
-    private PlayerConfig.Media mMediaConfig;
-    private JsonObject mPluginConfig;
+    private PlayerConfig.Media mediaConfig;
+    private JsonObject pluginConfig;
     private Context mContext;
-    private Player mPlayer;
-    private boolean mPlayFromContinue = false;
+    private Player player;
+    private boolean playFromContinue = false;
     private RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
     private final static int MediaHitInterval = 30000;
     private MessageBus messageBus;
 
-    SessionProvider ksSessionProvider = new SessionProvider() {
+    private SessionProvider ksSessionProvider = new SessionProvider() {
         @Override
         public String baseUrl() {
             return "http://52.210.223.65:8080/v4_0/api_v3/";
@@ -103,16 +104,16 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
-        this.mMediaConfig = mediaConfig;
+        this.mediaConfig = mediaConfig;
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
-        this.mPlayer = player;
-        this.mPluginConfig = pluginConfig;
+        this.player = player;
+        this.pluginConfig = pluginConfig;
         this.mContext = context;
         this.messageBus = messageBus;
-        messageBus.listen(mEventListener, (PlayerEvent.Type[]) PlayerEvent.Type.values());
-        if (mMediaConfig.getStartPosition() != -1){
-            this.mContinueTime = mMediaConfig.getStartPosition();
-            this.mPlayFromContinue = true;
+        messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
+        if (this.mediaConfig.getStartPosition() != -1){
+            this.mContinueTime = this.mediaConfig.getStartPosition();
+            this.playFromContinue = true;
         }
     }
 
@@ -182,7 +183,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             @Override
             public void run() {
                 setMessageParams(PhoenixActionType.HIT);
-                if ((float) mPlayer.getCurrentPosition() / mPlayer.getDuration() > 0.98){
+                if ((float) player.getCurrentPosition() / player.getDuration() > 0.98){
                     setMessageParams(PhoenixActionType.FINISH);
                 }
             }
@@ -191,12 +192,12 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     private void setMessageParams(final PhoenixActionType eventType){
         RequestBuilder requestBuilder = BookmarkService.actionAdd(ksSessionProvider.baseUrl(), ksSessionProvider.partnerId(), ksSessionProvider.getKs(),
-                "media", "258656", eventType.name(), mPlayer.getCurrentPosition(), "464302");
+                "media", mediaConfig.getMediaEntry().getId(), eventType.name(), player.getCurrentPosition(), /*mediaConfig.getMediaEntry().getFileId()*/ "464302");
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
-                Log.d(TAG, "onComplete: ");
+                log.d("onComplete: ");
                 messageBus.post(new LogEvent(TAG + " " + eventType.name()));
             }
         });

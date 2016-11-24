@@ -1,12 +1,12 @@
 package com.kaltura.playkit.plugins;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
@@ -26,6 +26,7 @@ import java.util.TimerTask;
  */
 
 public class KalturaStatisticsPlugin extends PKPlugin {
+    private static final PKLog log = PKLog.get("KalturaStatisticsPlugin");
 
     /*
          * Kaltura event types that are presently not usable in the
@@ -157,7 +158,7 @@ public class KalturaStatisticsPlugin extends PKPlugin {
 
     @Override
     protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
-        messageBus.listen(mEventListener, (PlayerEvent.Type[]) PlayerEvent.Type.values());
+        messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
         this.mediaConfig = mediaConfig;
@@ -311,7 +312,7 @@ public class KalturaStatisticsPlugin extends PKPlugin {
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
-                Log.d(TAG, "onComplete: " + eventType.toString());
+                log.d("onComplete: " + eventType.toString());
                 messageBus.post(new LogEvent(TAG + " " + eventType.toString()));
             }
         });
