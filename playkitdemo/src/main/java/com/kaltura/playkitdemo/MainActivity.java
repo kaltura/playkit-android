@@ -126,7 +126,8 @@ public class MainActivity extends AppCompatActivity {
         //videoMimeTypes.add(MimeTypes.APPLICATION_M3U8);
         Map<Double, String> tagTimesMap = new HashMap<>();
         //tagTimesMap.put(2.0,"GILAD");
-        AdsConfig adsConfig = new AdsConfig("en", false, true, 60000, videoMimeTypes, adTagUrl, tagTimesMap);
+
+        AdsConfig adsConfig = new AdsConfig("en", false, true, 60000, videoMimeTypes, adTagUrl,false, false, tagTimesMap);
         config.setPluginConfig(IMASimplePlugin.factory.getName(), adsConfig.toJSONObject());
 
     }

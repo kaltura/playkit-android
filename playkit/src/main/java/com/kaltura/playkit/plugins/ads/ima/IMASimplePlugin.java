@@ -13,6 +13,7 @@ import com.google.ads.interactivemedia.v3.api.AdsRenderingSettings;
 import com.google.ads.interactivemedia.v3.api.AdsRequest;
 import com.google.ads.interactivemedia.v3.api.ImaSdkFactory;
 import com.google.ads.interactivemedia.v3.api.ImaSdkSettings;
+import com.google.ads.interactivemedia.v3.api.UiElement;
 import com.google.ads.interactivemedia.v3.api.player.ContentProgressProvider;
 import com.google.ads.interactivemedia.v3.api.player.VideoProgressUpdate;
 import com.google.gson.JsonObject;
@@ -31,7 +32,10 @@ import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdsConfig;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -191,15 +195,18 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                 if (adConfig.getVideoMimeTypes().size() > 0) {
                     renderingSettings.setMimeTypes(adConfig.getVideoMimeTypes());
                 }
-
-//                if (adConfig.addAdAtribution() || adConfig.addAdCountDown()) {
-//                    Set<UiElement> set = new HashSet<UiElement>();
-//                    set.add(UiElement.AD_ATTRIBUTION);
-//                    //set.add(UiElement.COUNTDOWN);
-//                    //renderingSettings.setUiElements(set);
-//                } else {
-//                    renderingSettings.setUiElements(Collections.<UiElement>emptySet());
-//                }
+                if (adConfig.getAdAttribution() || adConfig.getAdCountDown()) {
+                    Set<UiElement> set = new HashSet<UiElement>();
+                    if (adConfig.getAdAttribution()) {
+                        set.add(UiElement.AD_ATTRIBUTION);
+                    }
+                    if (adConfig.getAdCountDown()) {
+                        set.add(UiElement.COUNTDOWN);
+                    }
+                    renderingSettings.setUiElements(set);
+                } else {
+                    renderingSettings.setUiElements(Collections.<UiElement>emptySet());
+                }
                 mAdsManager.init();
             }
         });
@@ -224,19 +231,15 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                 if (mIsAdDisplayed || player == null || (player != null && player.getDuration() <= 0)) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
-                //log.e("XXXXXXXXXXXXXXXXXXXXXXXXX ADProgress " + mAdsManager.getAdProgress().getCurrentTime() + "/" + mAdsManager.getAdProgress().getDuration());
-
                 VideoProgressUpdate videoProgress = new VideoProgressUpdate(player.getCurrentPosition(),
                         player.getDuration());
-                //log.e("XXXXXXXXXXXXXXXXXXXXXXXXX getContentProgress " + videoProgress.getCurrentTime() + "/" + videoProgress.getDuration());
+                //log.e("THE CONTENT PLAYER PROGRESS: getContentProgress " + videoProgress.getCurrentTime() + "/" + videoProgress.getDuration());
                 return videoProgress;
             }
         });
 
         // Request the ad. After the ad is loaded, onAdsManagerLoaded() will be called.
-
         mAdsLoader.requestAds(request);
-        //return request;
     }
 
     @Override
@@ -374,7 +377,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
             case CONTENT_RESUME_REQUESTED:
                 // AdEventType.CONTENT_RESUME_REQUESTED is fired when the ad is completed
                 // and you should start playing your content.
-                log.d("XXXXX AD REQUEST AD_CONTENT_RESUME_REQUESTED = play ");
+                log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED = play ");
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CONTENT_RESUME_REQUESTED));
                 mIsAdDisplayed = false;
                 if (player != null) {
@@ -382,6 +385,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                 }
                 break;
             case ALL_ADS_COMPLETED:
+                log.d("ALL_ADS_COMPLETED");
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_ALL_ADS_COMPLETED));
                 if (mAdsManager != null) {
                     contentCompleted();
@@ -389,18 +393,23 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                 }
                 break;
             case STARTED:
+                log.d("AD STARTED");
+
                 mIsAdIsPaused = false;
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_STARTED));
                 break;
             case PAUSED:
+                log.d("AD PAUSED");
                 mIsAdIsPaused = true;
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_PAUSED));
                 break;
             case RESUMED:
+                log.d("AD RESUMED");
                 mIsAdIsPaused = false;
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_RESUMED));
                 break;
             case COMPLETED:
+                log.d("AD COMPLETED");
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_COMPLETED));
                 break;
             case FIRST_QUARTILE:
