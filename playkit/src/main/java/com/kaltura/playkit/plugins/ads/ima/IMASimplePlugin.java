@@ -128,6 +128,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
             @Override
             public void onEvent(PKEvent event) {
                 log.d("onLoad:PlayerEvent:PlayerEvent.ENDED-" + event);
+                contentCompleted();
             }
         }, PlayerEvent.Type.ENDED);
 
@@ -283,12 +284,8 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
     @Override
     public void contentCompleted() {
         if (mAdsManager != null) {
-            mAdsManager.destroy();
-            mAdsManager = null;
+            mAdsLoader.contentComplete();
         }
-//        if (player != null) {
-//            player.play();
-//        }
     }
 
     @Override
@@ -388,8 +385,8 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                 log.d("ALL_ADS_COMPLETED");
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_ALL_ADS_COMPLETED));
                 if (mAdsManager != null) {
-                    contentCompleted();
-
+                    //mAdsManager.destroy();
+                    //mAdsManager = null;
                 }
                 break;
             case STARTED:
