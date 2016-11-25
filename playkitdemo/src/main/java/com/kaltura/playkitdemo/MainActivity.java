@@ -163,7 +163,15 @@ public class MainActivity extends AppCompatActivity {
                 PKAdInfo adInfo = player.getAdInfo();
                 appProgressBar.setVisibility(View.INVISIBLE);
             }
-        }, AdEvent.Type.AD_RESUMED);
+        }, AdEvent.Type.AD_STARTED);
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                log.d("Ad Event AD_ALL_ADS_COMPLETED");
+                PKAdInfo adInfo = player.getAdInfo();
+                appProgressBar.setVisibility(View.INVISIBLE);
+            }
+        }, AdEvent.Type.AD_ALL_ADS_COMPLETED);
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
