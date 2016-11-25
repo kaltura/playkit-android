@@ -35,7 +35,7 @@ public class AdEnabledPlayerController extends PlayerDecorator {
     public long getDuration() {
         if (adsProvider.isAdDisplayed()) {
             log.d("XXXXXXXXXXXXXXXXXXXXXX " + adsProvider.getDuration());
-           return adsProvider.getDuration();
+           return 1000 * adsProvider.getDuration();
         } else {
             return super.getDuration();
         }
@@ -46,7 +46,7 @@ public class AdEnabledPlayerController extends PlayerDecorator {
 
         if (adsProvider.isAdDisplayed()) {
             log.d("XXXXXXXXXXXXXXXXXXXXXX " + adsProvider.getCurrentPosition());
-            return adsProvider.getCurrentPosition();
+            return 1000 * adsProvider.getCurrentPosition();
         } else {
             return super.getCurrentPosition();
         }
@@ -54,7 +54,12 @@ public class AdEnabledPlayerController extends PlayerDecorator {
 
     @Override
     public void seekTo(long position) {
-        super.seekTo(position);
+        if (adsProvider.isAdDisplayed()) {
+            log.d("XXXXXXXXXXXXXXXXXXXXXX Seek Is not enable for AD");
+            return;
+        } else {
+            super.seekTo(position);
+        }
     }
 
     @Override
