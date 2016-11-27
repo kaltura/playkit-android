@@ -1,5 +1,7 @@
 package com.kaltura.playkit.backend.ovp.data;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
 /**
@@ -11,6 +13,7 @@ public class KalturaSource {
     int deliveryProfileId;
     String format;
     String url;
+    @SerializedName(value = "drm")
     List<Drm> drmData;
     List<String> flavors;
 

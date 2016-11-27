@@ -7,6 +7,9 @@ import java.lang.annotation.Retention;
 import static com.kaltura.playkit.backend.phoenix.APIDefines.AssetReferenceType.ExternalEpg;
 import static com.kaltura.playkit.backend.phoenix.APIDefines.AssetReferenceType.InternalEpg;
 import static com.kaltura.playkit.backend.phoenix.APIDefines.AssetReferenceType.Media;
+import static com.kaltura.playkit.backend.phoenix.APIDefines.LiveStreamType.Catchup;
+import static com.kaltura.playkit.backend.phoenix.APIDefines.LiveStreamType.StartOver;
+import static com.kaltura.playkit.backend.phoenix.APIDefines.LiveStreamType.TrickPlay;
 import static com.kaltura.playkit.backend.phoenix.APIDefines.BookmarkType.Epg;
 import static com.kaltura.playkit.backend.phoenix.APIDefines.BookmarkType.Recording;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
@@ -18,12 +21,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 public class APIDefines {
 
     @Retention(SOURCE)
-    @StringDef(value = {
-            Media,
-            InternalEpg,
-            ExternalEpg
-    })
-
+    @StringDef(value = {Media, InternalEpg, ExternalEpg})
     public @interface AssetReferenceType {
         String Media = "media";
         String InternalEpg = "epg_internal";
@@ -41,6 +39,15 @@ public class APIDefines {
         String Media = "media";
         String Epg = "epg";
         String Recording = "recording";
+    }
+
+
+    @Retention(SOURCE)
+    @StringDef(value = {Catchup, StartOver, TrickPlay})
+    public @interface LiveStreamType {
+        String Catchup = "catchup";
+        String StartOver = "startOver";
+        String TrickPlay = "trickPlay";
     }
 
 

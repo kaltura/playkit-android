@@ -1,26 +1,28 @@
 package com.kaltura.playkit.backend.ovp.data;
 
+import com.kaltura.playkit.backend.BaseResult;
+
 import java.util.ArrayList;
 
 /**
  * Created by tehilarozin on 02/11/2016.
  */
 
-public class KalturaEntryContextDataResult {
+public class KalturaEntryContextDataResult extends BaseResult {
 
     ArrayList<KalturaSource> sources;
-    ArrayList<FlavorAsset> flavorAssets;
+    ArrayList<KalturaFlavorAsset> flavorAssets;
 
-    public ArrayList<FlavorAsset> getFlavorAssets() {
+    public ArrayList<KalturaFlavorAsset> getFlavorAssets() {
         return flavorAssets;
     }
 
-    public FlavorAsset containsFlavor(int flavorId) {
+    public KalturaFlavorAsset containsFlavor(int flavorId) {
         if(flavorAssets == null || flavorAssets.size() == 0){
             return null;
         }
 
-        for(FlavorAsset flavorAsset : flavorAssets){
+        for(KalturaFlavorAsset flavorAsset : flavorAssets){
             if(flavorAsset.getFlavorParamsId() == flavorId){
                 return flavorAsset;
             }

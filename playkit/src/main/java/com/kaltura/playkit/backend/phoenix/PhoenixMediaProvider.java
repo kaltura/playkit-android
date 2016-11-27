@@ -2,29 +2,21 @@ package com.kaltura.playkit.backend.phoenix;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.JsonParseException;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.backend.phoenix.data.AssetInfo;
-import com.kaltura.playkit.backend.phoenix.data.AssetResult;
-import com.kaltura.playkit.backend.phoenix.data.BaseResult;
-import com.kaltura.playkit.backend.phoenix.data.LicensedUrl;
-import com.kaltura.playkit.backend.phoenix.data.MediaFile;
-import com.kaltura.playkit.backend.phoenix.data.ResultAdapter;
+import com.kaltura.playkit.backend.phoenix.data.KalturaMediaAsset;
+import com.kaltura.playkit.backend.phoenix.data.KalturaMediaFile;
+import com.kaltura.playkit.backend.phoenix.data.PhoenixParser;
 import com.kaltura.playkit.backend.phoenix.services.AssetService;
-import com.kaltura.playkit.backend.phoenix.services.LicensedUrlService;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
-import com.kaltura.playkit.connect.MultiRequestBuilder;
 import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
@@ -42,17 +34,18 @@ import java.util.List;
 public class PhoenixMediaProvider implements MediaEntryProvider {
 
     private RequestQueue requestsExecutor;
-    private boolean alwaysFetchLicense;
     private SessionProvider sessionProvider;
     private MediaAsset mediaAsset;
 
 
-    private class MediaAsset{
+    private class MediaAsset {
         String assetId;
-        @APIDefines.AssetReferenceType String referenceType;
+        @APIDefines.AssetReferenceType
+        String referenceType;
         List<String> formats;
-        String EpgId;
+        String epgId;
         long startDate;
+        String streamType;
 
         boolean hasFormats() {
             return formats != null && formats.size() > 0;
@@ -64,7 +57,6 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
     public PhoenixMediaProvider() {
         this.mediaAsset = new MediaAsset();
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
-        this.alwaysFetchLicense = true;
     }
 
     public PhoenixMediaProvider setSessionProvider(@NonNull SessionProvider ksProvider) {
@@ -87,13 +79,13 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
      * @param referenceType - can be one of the {@link com.kaltura.playkit.backend.phoenix.APIDefines.AssetReferenceType} values
      * @return
      */
-     public PhoenixMediaProvider setReferenceType(@NonNull String referenceType) {
+    public PhoenixMediaProvider setReferenceType(@NonNull String referenceType) {
         this.mediaAsset.referenceType = referenceType;
         return this;
     }
 
     public PhoenixMediaProvider setEpgId(@Nullable String epgId) {
-        this.mediaAsset.EpgId = epgId;
+        this.mediaAsset.epgId = epgId;
         return this;
     }
 
@@ -102,8 +94,8 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
         return this;
     }
 
-    public PhoenixMediaProvider setAlwaysFetchLicense(boolean alwaysFetchLicense) {
-        this.alwaysFetchLicense = alwaysFetchLicense;
+    public PhoenixMediaProvider setLiveStreamType(@APIDefines.LiveStreamType String streamType){
+        this.mediaAsset.streamType = streamType;
         return this;
     }
 
@@ -121,15 +113,15 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
      */
     @Override
     public void load(final OnMediaLoadCompletion completion) {
-        // Ott play must have defined format(s) in order to select the right media file to play.
-        if (!this.mediaAsset.hasFormats()) {
+        ErrorElement error = validateLoad();
+        if(error != null){
             if (completion != null) {
-                completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": media file format is required!")));
+                completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
             }
             return;
         }
 
-        RequestBuilder requestBuilder = AssetService.assetGet(sessionProvider.baseUrl(), sessionProvider.partnerId(), sessionProvider.getKs(), mediaAsset.assetId, mediaAsset.referenceType);
+        RequestBuilder requestBuilder = AssetService.assetGet(sessionProvider.baseUrl(), /*sessionProvider.partnerId(),*/ sessionProvider.getKs(), mediaAsset.assetId, mediaAsset.referenceType);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
@@ -142,130 +134,112 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
 
     }
 
+    /**
+     * validate basic parameters needed
+     * @return
+     */
+    private ErrorElement validateLoad() {
+        ErrorElement error = validateKs();
+        return error != null ? error : validateAsset();
+    }
+
+
+    /**
+     * Asset id is required for data fetching.
+     * Ott play must have defined format(s) in order to select the right media file to play.
+     * @return
+     */
+    private ErrorElement validateAsset() {
+        String error = TextUtils.isEmpty(this.mediaAsset.assetId) ? ": Missing required parameters, assetId" :
+                (!this.mediaAsset.hasFormats() ? ": at least 1 media file format is required!" : null);
+        return error != null ?
+                ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + error) :
+                null;
+    }
+
+    private ErrorElement validateKs() {
+        return TextUtils.isEmpty(this.sessionProvider.getKs()) ?
+                ErrorElement.BadRequestError.message(ErrorElement.BadRequestError +": SessionProvider should provide a valid KS token") :
+                null;
+    }
+
 
     private void onAssetGetResponse(final ResponseElement response, final OnMediaLoadCompletion completion) {
         ErrorElement error = null;
         PKMediaEntry mediaEntry = null;
 
         if (response != null && response.isSuccess()) {
-            AssetInfo asset = null;
+            KalturaMediaAsset asset = null;
 
             try {
-                AssetResult assetResult = PhoenixParser.parseAssetResult(response.getResponse());
-                if(assetResult.error != null){
-                    error = assetResult.error;
-                } else {
-                    asset = assetResult.asset;
+                //**************************
+                /* parse json string to a single object, according to a specific type - returns an object of the specific type */
+                //asset = PhoenixParser.parseResult(response.getResponse(), KalturaMediaAsset.class);
+
+                /* parse json string according to 1 or more types - returns Object, can be used for multiple response */
+                asset = (KalturaMediaAsset) PhoenixParser.parse(response.getResponse(), KalturaMediaAsset.class);
+                if (asset.error != null) {
+                    error = asset.error;
+                    asset = null;
                 }
-            } catch (JsonSyntaxException ex) {
+                //*************************
+                //*************************
+                /* parse json string to an object of type BaseResult or one of its sub classes - object type is parsed dynamically
+                   from the response according to the value of "objectType" property, if none found will be parsed to BaseResult object
+                   in case of error response - will be parsed to BaseResult with the error within */
+                BaseResult assetResult = PhoenixParser.parseObject(response.getResponse());
+                if(assetResult != null ) {
+                    if (assetResult.error == null) {
+                        asset = (KalturaMediaAsset) assetResult;
+                    } else {
+                        error = assetResult.error;
+                    }
+                } else { // response parsed to null but request to the server returned a "valid" response
+                    throw new JsonParseException("missing response object");
+                }
+                //**************************
+            } catch (JsonParseException ex) {
                 error = ErrorElement.LoadError.message("failed parsing remote response: " + ex.getMessage());
             }
 
             if (asset != null) {
-                mediaEntry = PhoenixParser.getMedia(asset, mediaAsset.formats);
+                mediaEntry = ProviderParser.getMedia(asset, mediaAsset.formats);
             }
-            /*if (asset != null) {
-                        if(alwaysFetchLicense){
-                            fetchLicenseLinks(asset, completion);
-                            return;
 
-                        } else {
-                            mediaEntry = PhoenixParser.getMedia(asset, mediaAsset.formats);
-                        }
-            }*/
-
-        } else {
+         } else {
             error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
         }
 
-        if(error == null && alwaysFetchLicense){
-            fetchLicenseLinks(mediaEntry, completion);
-
-        } else if (completion != null) {
+        if (completion != null) {
             completion.onComplete(Accessories.buildResult(mediaEntry, error));
         }
     }
 
-    private void fetchLicenseLinks(PKMediaEntry mediaEntry, OnMediaLoadCompletion completion) {
-        //TODO: create request to the BE to fetch licenses to the sources within mediaEntry
-        switch (mediaAsset.referenceType){ // or on asset.type?)
-            case APIDefines.AssetReferenceType.Media:
-                //get for media
-                fetchLicensedLinksFormMedia(mediaEntry, completion);
-                break;
-
-            case APIDefines.AssetReferenceType.InternalEpg:
-                //get for epg
-
-                break;
-
-            //?? in case of external EPG? can we call BE licensed link with that id?
-            //?? in case of recording - how can we distinguish recording from Epg/media
-        }
-
-    }
-
-   /* private void getLicensedLinksForMedia(PKMediaEntry mediaEntry, OnMediaLoadCompletion completion) {
-
-        new FetcherTask(mediaEntry, )
-        getForMedia(sessionProvider.baseUrl(), sessionProvider.getKs(), mediaAsset.assetId, mediaAsset)
-    }*/
-
-    public static PKMediaEntry getMediaEntry(AssetInfo assetInfo, List<String> formats) {
-        return PhoenixParser.getMedia(assetInfo, formats);
+    public static PKMediaEntry getMediaEntry(KalturaMediaAsset assetInfo, List<String> formats) {
+        return ProviderParser.getMedia(assetInfo, formats);
     }
 
 
 
+    static class ProviderParser {
 
-     void fetchLicensedLinksFormMedia(PKMediaEntry mediaEntry, final OnMediaLoadCompletion callback ){
-            //countdown = sources.size();
-            MultiRequestBuilder requestBuilder = (MultiRequestBuilder) new MultiRequestBuilder().service("multirequest").method("POST").url(sessionProvider.baseUrl());
-            for(PKMediaSource source : mediaEntry.getSources()){
-                requestBuilder.add(LicensedUrlService.getForMedia(sessionProvider.baseUrl(), sessionProvider.getKs(), mediaAsset.assetId, source.getId(), source.getUrl()));
-
-            }
-            requestBuilder.completion(new OnRequestCompletion() {
-                @Override
-                public void onComplete(ResponseElement response) {
-                    if(response.isSuccess()) {
-                        List<Object> responses = PhoenixParser.parseMultiresponse(response.getResponse(), 0, new Class[]{LicensedUrl.class});
-                        for(Object responseObject : responses){
-                            LicensedUrl licensedUrl = (LicensedUrl)responseObject;
-
-                        }
-
-                    } else {
-                        callback.onComplete(Accessories.<PKMediaEntry>buildResult(null, response.getError()));
-                    }
-                }
-            });
-
-            requestsExecutor.queue(requestBuilder.build());
+        static PKMediaEntry getMedia(KalturaMediaAsset assetInfo, List<String> formats) {
+            return getMedia(assetInfo.getId() + "", assetInfo.getFiles(), formats);
         }
 
-
-
-
-    static class PhoenixParser {
-
-        static PKMediaEntry getMedia(AssetInfo assetInfo, List<String> formats) {
-            return getMedia(assetInfo.getId()+"", assetInfo.getFiles(), formats);
-        }
-
-        static PKMediaEntry getMedia(String id, List<MediaFile> mediaFiles) {
+        static PKMediaEntry getMedia(String id, List<KalturaMediaFile> mediaFiles) {
             return getMedia(id, mediaFiles, null);
         }
 
-        private static PKMediaEntry getMedia(String assetId, List<MediaFile> mediaFiles, List<String> formats){
+        private static PKMediaEntry getMedia(String assetId, List<KalturaMediaFile> mediaFiles, List<String> formats) {
             PKMediaEntry mediaEntry = new PKMediaEntry();
             mediaEntry.setId("" + assetId);
 
             ArrayList<PKMediaSource> sources = new ArrayList<>();
             long maxDuration = 0;
-            if(mediaFiles != null) {
+            if (mediaFiles != null) {
                 // if provided, only the "formats" matching MediaFiles should be parsed and added to the PKMediaEntry media sources
-                for (MediaFile file : mediaFiles) {
+                for (KalturaMediaFile file : mediaFiles) {
                     if (formats == null || formats.contains(file.getType())) {
                         sources.add(new PKMediaSource().setId(file.getId() + "").setUrl(file.getUrl()));
                         maxDuration = Math.max(file.getDuration(), maxDuration);
@@ -273,31 +247,6 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
                 }
             }
             return mediaEntry.setDuration(maxDuration).setSources(sources);
-        }
-
-        static AssetResult parseAssetResult(String json) throws JsonSyntaxException {
-            return new GsonBuilder().registerTypeAdapter(AssetResult.class, new ResultAdapter()).create().fromJson(json, AssetResult.class);
-        }
-
-        static List<Object> parseMultiresponse(String response, int parseFromIdx, @NonNull Class...types) throws JsonSyntaxException {
-
-            JsonParser parser = new JsonParser();
-            JsonElement responseElement = parser.parse(response);
-            ArrayList<Object> responsesObjects = new ArrayList<>();
-            if(responseElement.isJsonArray()){
-                JsonArray responses = responseElement.getAsJsonArray();
-                Gson gson = new GsonBuilder().registerTypeAdapter(BaseResult.class, new ResultAdapter()).create();
-                int tIdx = 0;
-                Class claz;
-                for(int i = parseFromIdx; i <= responses.size() /*&& tIdx < types.length*/; i++){
-                    claz = types[tIdx];
-                    responsesObjects.add(gson.fromJson(responses.get(i), claz));
-                    if(tIdx < types.length){
-                        tIdx++;
-                    }
-                }
-            }
-            return responsesObjects;
         }
     }
 }

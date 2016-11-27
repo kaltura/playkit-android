@@ -5,7 +5,9 @@ package com.kaltura.playkit.connect;
  */
 public interface ResponseElement extends ResultElement<String> {
 
-    int getCode();
+    public static String Ok = "200";
+
+    String getCode();
 
     String getRequestId();
 

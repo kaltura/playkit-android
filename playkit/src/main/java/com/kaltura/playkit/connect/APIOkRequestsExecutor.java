@@ -99,7 +99,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
     }
 
 
-    @Override
+    /*@Override
     public String queue(final ParamsRequestElement action) {
         final Request request = buildRestRequest(action, new BodyBuilder() {
             @Override
@@ -115,7 +115,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
             }
         });
         return queue(request, action);
-    }
+    }*/
 
     private RequestBody buildMultipartBody(HashMap<String, String> params) {
         MultipartBody.Builder bodyBuilder = new MultipartBody.Builder();
@@ -134,9 +134,9 @@ public class APIOkRequestsExecutor implements RequestQueue {
     }
 
     @Override
-    public String queue(final RequestElement action) {
-        final Request request = buildRestRequest(action, BodyBuilder.Default);
-        return queue(request, action);
+    public String queue(final RequestElement requestElement) {
+        final Request request = buildRestRequest(requestElement, BodyBuilder.Default);
+        return queue(request, requestElement);
     }
 
     private String queue(final Request request, final RequestElement action) {

@@ -16,7 +16,7 @@ public class IdInterceptor implements Interceptor {
 
         Request request = chain.request();
         String taggedAction = request.tag() instanceof String ? (String) request.tag() : null;
-        if (taggedAction != null){
+        if(taggedAction != null){
             request = request.newBuilder().tag(UUID.randomUUID().toString()+"::"+taggedAction).build();
         }
 

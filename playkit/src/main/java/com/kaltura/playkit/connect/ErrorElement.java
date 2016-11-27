@@ -15,15 +15,19 @@ public class ErrorElement {
     public static ErrorElement BadRequestError = new ErrorElement("Invalid or missing request params", 400);
 
     private String message;
-    private int code;
+    private String code;
     private Object extra;
 
-    public ErrorElement(String message, int code, Object extra) {
+    public ErrorElement(String message, String code, Object extra) {
         this(message, code);
         this.extra = extra;
     }
 
     public ErrorElement(String message, int code) {
+        this(message, code+"");
+    }
+
+    public ErrorElement(String message, String code) {
         this.message = message;
         this.code = code;
     }
@@ -42,7 +46,12 @@ public class ErrorElement {
         return this;
     }
 
-    public int getCode() {
+    public ErrorElement addMessage(String message){
+        this.message += "; " + message;
+        return this;
+    }
+
+    public String getCode() {
         return code;
     }
 

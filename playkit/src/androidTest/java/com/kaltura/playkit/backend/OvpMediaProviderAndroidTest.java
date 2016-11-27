@@ -9,11 +9,10 @@ import com.kaltura.playkit.BaseTest;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
-import com.kaltura.playkit.backend.phoenix.data.AssetInfo;
+import com.kaltura.playkit.backend.phoenix.data.KalturaMediaAsset;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
-import com.kaltura.playkit.connect.ParamsRequestElement;
 import com.kaltura.playkit.connect.RequestElement;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
@@ -99,7 +98,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     @Test
     public void testResponseParsing() {
 
-        kalturaOvpMediaProvider = new KalturaOvpMediaProvider(ksSessionProvider, EntryId).setRequestExecutor(testExecutor);
+        kalturaOvpMediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ksSessionProvider).setEntryId(EntryId).setRequestExecutor(testExecutor);
         kalturaOvpMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
@@ -107,9 +106,8 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
                 assertTrue(response.isSuccess());
                 assertTrue(response.getResponse() != null);
                 assertTrue(response.getResponse().getId().equals(EntryId));
-                assertTrue(response.getResponse().getSources().size() == 6);
+                assertTrue(response.getResponse().getSources().size() == 5);
                 assertTrue(response.getResponse().getDuration() == 102000);
-                //kalturaOvpMediaProviderAndroidTest.this.wait(1);
 
                 kalturaOvpMediaProvider.setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
                     @Override
@@ -117,7 +115,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
                         if (response.isSuccess()) {
                             assertTrue(response.getResponse() != null);
                             assertTrue(response.getResponse().getId().equals(EntryId));
-                            assertTrue(response.getResponse().getSources().size() == 6);
+                            assertTrue(response.getResponse().getSources().size() == 5);
                             assertTrue(response.getResponse().getDuration() == 102000);
 
                         } else {
@@ -142,7 +140,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     @Test
     public void testPreFetchedAsset() {
         PKMediaEntry mediaEntry = null;
-        AssetInfo assetInfo = null;
+        KalturaMediaAsset assetInfo = null;
         final JsonReader jsonReader;
         try {
             jsonReader = new JsonReader(new InputStreamReader(
@@ -165,7 +163,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
 
     /*@Test
     public void testAnonymousFetch() {
-        new kalturaOvpMediaProvider(AnonymSessionProvider, MediaId, "media", Format).load(new OnMediaLoadCompletion() {
+        new kalturaOvpMediaProvider(InvalidSessionProvider, MediaId, "media", Format).load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
                 assertTrue(response.isSuccess());
@@ -184,9 +182,32 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
         * invalid response structure
         * check server error object handling*/
 
-
+        String multiresponseWithError= "[\n" +
+                "  {\n" +
+                "    \"partnerId\": 2209591,\n" +
+                "    \"ks\": \"djJ8MjIwOTU5MXwKyMTAkPT_yYS2zVNweHck77yCGu25hdaflLaUwwjFSrF-7gQD9Z0xFC_g6o7HySRqSsPM5bU8Y8VpunwR4K4dxfuv10aQE8gG6lbQg4RZGA==\",\n" +
+                "    \"userId\": 0,\n" +
+                "    \"objectType\": \"KalturaStartWidgetSessionResponse\"\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"code\": \"ENTRY_ID_NOT_FOUND\",\n" +
+                "    \"message\": \"Entry id \\\"1_1h1vsv3z\\\" not found\",\n" +
+                "    \"objectType\": \"KalturaAPIException\",\n" +
+                "    \"args\": {\n" +
+                "      \"ENTRY_ID\": \"1_1h1vsv3z\"\n" +
+                "    }\n" +
+                "  }\n" +
+                "]";
     }
 
+    @Test
+    public void testPrimitiveResponseParsing(){
+        String response = "true";
+        String sameRequestError = "{\n" +
+                "  \"executionTime\": 0.2519926,\n" +
+                "  \"result\": true\n" +
+                "}";
+    }
 
     /**
      * mock executor that reads precreated files that includes the mediaAsset/get response as if retrieved
@@ -198,13 +219,8 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     class Executor implements RequestQueue {
 
         @Override
-        public String queue(RequestElement request) {
-            new RequestHandler(request).run();
-            return null;
-        }
-
-        @Override
-        public String queue(ParamsRequestElement action) {
+        public String queue(RequestElement requestElement) {
+            new RequestHandler(requestElement).run();
             return null;
         }
 

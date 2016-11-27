@@ -1,7 +1,5 @@
 package com.kaltura.playkit.backend.ovp.services;
 
-import android.text.TextUtils;
-
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.backend.ovp.APIDefines;
 import com.kaltura.playkit.connect.MultiRequestBuilder;
@@ -14,17 +12,13 @@ import com.kaltura.playkit.connect.RequestBuilder;
 
 public class BaseEntryService extends OvpService {
 
-    public static RequestBuilder entryInfo(String baseUrl, String ks, int partnerId,  String entryId) {
+    public static RequestBuilder entryInfo(String baseUrl, String ks/*, int partnerId*/,  String entryId) {
 
-        MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) new MultiRequestBuilder().method("POST")
-                .tag("mediaAsset-multi-get")
-                .url(baseUrl)
-                .service("multirequest");
-
-        if(TextUtils.isEmpty(ks)){
+        MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks).tag("mediaAsset-multi-get");
+        /*if(TextUtils.isEmpty(ks)){
             multiRequestBuilder.add(SessionService.widgetSession(baseUrl, partnerId));
             ks = "{1:result:ks}";
-        }
+        }*/
 
         return multiRequestBuilder.add(list(baseUrl, ks, entryId), contextData(baseUrl, ks, entryId));
     }
@@ -41,7 +35,7 @@ public class BaseEntryService extends OvpService {
     }
 
     private static JsonObject getEntryListReqParams(String entryId, String ks){
-        JsonObject params = new JsonObject();
+        JsonObject params = OvpService.getOvpParams();
         params.addProperty("filter.redirectFromEntryId", entryId);
         params.addProperty("responseProfile.type", APIDefines.ResponseProfileType.IncludeFields); // in order to define which of the properties we want to "include"(1) in the response
         params.addProperty("responseProfile.fields", "id,name,duration,msDuration,flavorParamsIds");
@@ -60,7 +54,7 @@ public class BaseEntryService extends OvpService {
 
 
     private static JsonObject getContextDataReqParams(String entryId, String ks){
-        JsonObject params = new JsonObject();
+        JsonObject params = OvpService.getOvpParams();
         params.addProperty("entryId", entryId);
         params.addProperty("ks", ks);
         params.addProperty("contextDataParams.objectType", "KalturaEntryContextDataParams");
