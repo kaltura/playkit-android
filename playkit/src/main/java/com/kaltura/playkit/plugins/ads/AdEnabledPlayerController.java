@@ -122,7 +122,7 @@ public class AdEnabledPlayerController extends PlayerDecorator {
                     adsProvider.getAdsConfig().setLanguage((String) value);
                 } else if (key.equals(AD_TAG_URL)) {
                     adsProvider.getAdsConfig().setAdTagUrl((String) value);
-                    adsProvider.resetProvider();
+                    //on update config?
                 } else if (key.equals(ENABLE_BG_PLAYBACK)) {
                     adsProvider.getAdsConfig().setEnableBackgroundPlayback((boolean) value);
                 } else if (key.equals(AUTO_PLAY_AD_BREAK)) {
