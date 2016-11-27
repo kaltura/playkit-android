@@ -19,7 +19,7 @@ import java.util.TimerTask;
  * Created by zivilan on 02/11/2016.
  */
 
-public class KalturaLiveStatisticsPlugin extends PKPlugin {
+public class KalturaLiveStatsPlugin extends PKPlugin {
     public enum KLiveStatsEvent {
         LIVE(1),
         DVR(2);
@@ -43,24 +43,26 @@ public class KalturaLiveStatisticsPlugin extends PKPlugin {
     private MessageBus messageBus;
     private RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
-    private static final int TimerInterval = 10000;
     private int eventIdx = 0;
+    private int currentBitrate = -1;
+    private int bufferTime = 0;
     private boolean isLive = false;
+    private boolean isFirstPlay = true;
 
-    private JsonObject examplePluginConfig;
+    private static final int TimerInterval = 10000;
 
     private void setExamplePluginConfig() {
-        examplePluginConfig = new JsonObject();
-        examplePluginConfig.addProperty("clientVer", "2.5");
-        examplePluginConfig.addProperty("sessionId", "b3460681-b994-6fad-cd8b-f0b65736e837");
-        examplePluginConfig.addProperty("uiconfId", 24997472);
-        examplePluginConfig.addProperty("IsFriendlyIframe","" );
+        pluginConfig = new JsonObject();
+        pluginConfig.addProperty("clientVer", "2.5");
+        pluginConfig.addProperty("sessionId", "b3460681-b994-6fad-cd8b-f0b65736e837");
+        pluginConfig.addProperty("deliveryType", 24997472);
+        pluginConfig.addProperty("IframeParentUrl","" );
     }
 
     private SessionProvider OVPSessionProvider = new SessionProvider() {
         @Override
         public String baseUrl() {
-            return "stats.kaltura.com";
+            return "livestats.kaltura.com";
         }
 
         @Override
@@ -82,13 +84,13 @@ public class KalturaLiveStatisticsPlugin extends PKPlugin {
 
         @Override
         public PKPlugin newInstance() {
-            return new KalturaLiveStatisticsPlugin();
+            return new KalturaLiveStatsPlugin();
         }
     };
 
     @Override
     protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
-        messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
+        messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED);
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
         this.mediaConfig = mediaConfig;
@@ -104,7 +106,7 @@ public class KalturaLiveStatisticsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
-
+        eventIdx = 0;
     }
 
     @Override
@@ -117,45 +119,34 @@ public class KalturaLiveStatisticsPlugin extends PKPlugin {
         public void onEvent(PKEvent event) {
             if (event instanceof PlayerEvent) {
                 switch (((PlayerEvent) event).type) {
-                    case CAN_PLAY:
-
-                        break;
-                    case DURATION_CHANGE:
-
-                        break;
-                    case ENDED:
-
-                        break;
-                    case ERROR:
-
-                        break;
-                    case LOADED_METADATA:
-
-                        break;
-                    case PAUSE:
-
-                        break;
-                    case PLAY:
-
-                        break;
-                    case PLAYING:
-
-                        break;
-                    case SEEKED:
-
-                        break;
-                    case SEEKING:
-
+                    case STATE_CHANGED:
+                        KalturaLiveStatsPlugin.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
                     default:
-
                         break;
                 }
             }
         }
     };
 
-    private void startTimeObservorInterval() {
+    public void onEvent(PlayerEvent.StateChanged event) {
+        switch (event.newState) {
+            case IDLE:
+
+                break;
+            case LOADING:
+
+                break;
+            case READY:
+                startTimerInterval();
+                break;
+            case BUFFERING:
+
+                break;
+        }
+    }
+
+    private void startTimerInterval() {
         if (timer == null) {
             timer = new java.util.Timer();
         }
@@ -169,10 +160,10 @@ public class KalturaLiveStatisticsPlugin extends PKPlugin {
 
     /*
     private void setMessageParams(final KalturaStatisticsPlugin.KStatsEvent eventType) {
-        String clientVer = examplePluginConfig.has("clientVer")? examplePluginConfig.get("clientVer").toString(): "";
-        String sessionId = examplePluginConfig.has("sessionId")? examplePluginConfig.get("sessionId").toString(): "";
-        int uiconfId = examplePluginConfig.has("uiconfId")? Integer.getInteger(examplePluginConfig.get("uiconfId").toString()): 0;
-        String referrer = examplePluginConfig.has("IsFriendlyIframe")? examplePluginConfig.get("IsFriendlyIframe").toString(): "";
+        String clientVer = pluginConfig.has("clientVer")? pluginConfig.get("clientVer").toString(): "";
+        String sessionId = pluginConfig.has("sessionId")? pluginConfig.get("sessionId").toString(): "";
+        int uiconfId = pluginConfig.has("uiconfId")? Integer.getInteger(pluginConfig.get("uiconfId").toString()): 0;
+        String referrer = pluginConfig.has("IsFriendlyIframe")? pluginConfig.get("IsFriendlyIframe").toString(): "";
 
 
         // Parameters for the request -

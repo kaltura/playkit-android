@@ -25,8 +25,9 @@ import java.util.TimerTask;
  * Created by zivilan on 02/11/2016.
  */
 
-public class KalturaStatisticsPlugin extends PKPlugin {
+public class KalturaStatsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("KalturaStatisticsPlugin");
+    private static final String TAG = "KalturaStatisticsPlugin";
 
     /*
          * Kaltura event types that are presently not usable in the
@@ -45,7 +46,7 @@ public class KalturaStatisticsPlugin extends PKPlugin {
 		 * BUMPER_CLICKED = 23;
 		 */
 
-    public enum KStatsEvent {
+    private enum KStatsEvent {
         WIDGET_LOADED(1),
         MEDIA_LOADED(2),
         PLAY(3),
@@ -105,6 +106,7 @@ public class KalturaStatisticsPlugin extends PKPlugin {
     private MessageBus messageBus;
     private RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
+
     private float seekPercent = 0;
     private boolean playReached25 = false;
     private boolean playReached50 = false;
@@ -113,16 +115,15 @@ public class KalturaStatisticsPlugin extends PKPlugin {
     private boolean isBuffering = false;
     private boolean intervalOn = false;
     private boolean hasSeeked = false;
+
     private static final int TimerInterval = 10000;
 
-    private JsonObject examplePluginConfig;
-
     private void setExamplePluginConfig() {
-        examplePluginConfig = new JsonObject();
-        examplePluginConfig.addProperty("clientVer", "2.5");
-        examplePluginConfig.addProperty("sessionId", "b3460681-b994-6fad-cd8b-f0b65736e837");
-        examplePluginConfig.addProperty("uiconfId", 24997472);
-        examplePluginConfig.addProperty("IsFriendlyIframe","" );
+        pluginConfig = new JsonObject();
+        pluginConfig.addProperty("clientVer", "2.5");
+        pluginConfig.addProperty("sessionId", "b3460681-b994-6fad-cd8b-f0b65736e837");
+        pluginConfig.addProperty("uiconfId", 24997472);
+        pluginConfig.addProperty("IsFriendlyIframe","" );
     }
 
     private SessionProvider OVPSessionProvider = new SessionProvider() {
@@ -142,7 +143,6 @@ public class KalturaStatisticsPlugin extends PKPlugin {
         }
     };
 
-    private static final String TAG = "KalturaStatisticsPlugin";
 
     public static final Factory factory = new Factory() {
         @Override
@@ -152,7 +152,7 @@ public class KalturaStatisticsPlugin extends PKPlugin {
 
         @Override
         public PKPlugin newInstance() {
-            return new KalturaStatisticsPlugin();
+            return new KalturaStatsPlugin();
         }
     };
 
@@ -219,7 +219,7 @@ public class KalturaStatisticsPlugin extends PKPlugin {
             if (event instanceof PlayerEvent) {
                 switch (((PlayerEvent) event).type) {
                     case STATE_CHANGED:
-                        KalturaStatisticsPlugin.this.onEvent((PlayerEvent.StateChanged) event);
+                        KalturaStatsPlugin.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
                     case CAN_PLAY:
 
@@ -296,10 +296,10 @@ public class KalturaStatisticsPlugin extends PKPlugin {
     }
 
     private void setMessageParams(final KStatsEvent eventType) {
-        String clientVer = examplePluginConfig.has("clientVer")? examplePluginConfig.get("clientVer").toString(): "";
-        String sessionId = examplePluginConfig.has("sessionId")? examplePluginConfig.get("sessionId").toString(): "";
-        int uiconfId = examplePluginConfig.has("uiconfId")? Integer.valueOf(examplePluginConfig.get("uiconfId").toString()): 0;
-        String referrer = examplePluginConfig.has("IsFriendlyIframe")? examplePluginConfig.get("IsFriendlyIframe").toString(): "";
+        String clientVer = pluginConfig.has("clientVer")? pluginConfig.get("clientVer").toString(): "";
+        String sessionId = pluginConfig.has("sessionId")? pluginConfig.get("sessionId").toString(): "";
+        int uiconfId = pluginConfig.has("uiconfId")? Integer.valueOf(pluginConfig.get("uiconfId").toString()): 0;
+        String referrer = pluginConfig.has("IsFriendlyIframe")? pluginConfig.get("IsFriendlyIframe").toString(): "";
 
 
         // Parameters for the request -

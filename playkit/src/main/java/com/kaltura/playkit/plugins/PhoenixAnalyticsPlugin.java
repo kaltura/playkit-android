@@ -27,6 +27,7 @@ import java.util.TimerTask;
 
 public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("YouboraLibraryManager");
+    private static final String TAG = "PhoenixAnalytics";
 
     private enum PhoenixActionType{
         HIT,
@@ -40,21 +41,18 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         BITRATE_CHANGE,
         ERROR
     }
-    private boolean mIsPlaying = false;
-    private boolean mIsConcurrent = false;
     private boolean mDidFirstPlay = false;
     private boolean intervalOn = false;
-    private int mMediaHitInterval = -1;
     private long mContinueTime;
     private PlayerConfig.Media mediaConfig;
     private JsonObject pluginConfig;
     private Context mContext;
     private Player player;
-    private boolean playFromContinue = false;
     private RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
-    private final static int MediaHitInterval = 30000;
     private MessageBus messageBus;
+
+    private final static int MediaHitInterval = 30000; //Should be provided in plugin config
 
     private SessionProvider ksSessionProvider = new SessionProvider() {
         @Override
@@ -73,7 +71,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
     };
 
-    private static final String TAG = "PhoenixAnalytics";
 
     public static final Factory factory = new Factory() {
         @Override
@@ -113,7 +110,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
         if (this.mediaConfig.getStartPosition() != -1){
             this.mContinueTime = this.mediaConfig.getStartPosition();
-            this.playFromContinue = true;
         }
     }
 
@@ -130,7 +126,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         break;
                     case ENDED:
                         timer.cancel();
-                        mIsPlaying = false;
                         setMessageParams(PhoenixActionType.FINISH);
                         break;
                     case ERROR:
@@ -141,7 +136,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         setMessageParams(PhoenixActionType.LOAD);
                         break;
                     case PAUSE:
-                        mIsPlaying = false;
                         if (mDidFirstPlay) {
                             setMessageParams(PhoenixActionType.PAUSE);
                         }
@@ -153,10 +147,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         }
                         if (!mDidFirstPlay) {
                             mDidFirstPlay = true;
-                            mIsPlaying = true;
                             setMessageParams(PhoenixActionType.FIRST_PLAY);
                         } else {
-                            mIsPlaying = true;
                             setMessageParams(PhoenixActionType.PLAY);
                         }
 
