@@ -4,7 +4,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 
 import com.google.android.exoplayer2.C;
@@ -35,13 +34,14 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.upstream.DataSource.Factory;
 import com.google.android.exoplayer2.util.Util;
-import com.kaltura.playkit.TrackData;
+import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.TracksInfo;
 import com.kaltura.playkit.player.PlayerController.EventListener;
 import com.kaltura.playkit.player.PlayerController.StateChangedListener;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.utils.EventLogger;
-import com.kaltura.playkit.utils.TrackSelectionHelper;
+import com.kaltura.playkit.TrackSelectionHelper;
 
 
 
@@ -49,7 +49,9 @@ import com.kaltura.playkit.utils.TrackSelectionHelper;
  * Created by anton.afanasiev on 31/10/2016.
  */
 public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSelector.EventListener<MappingTrackSelector.MappedTrackInfo> {
-    private static final String TAG = ExoPlayerWrapper.class.getSimpleName();
+
+    private static final PKLog log = PKLog.get("ExoPlayerWrapper");
+
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
 
     private EventLogger eventLogger;
@@ -78,7 +80,21 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     private MappingTrackSelector trackSelector;
 
     private TrackSelectionHelper trackSelectionHelper;
-    private boolean didTrackDataLoaded = false;
+    private boolean shouldGetTrackInfo = false;
+    private TracksInfo tracksInfo;
+
+    public interface TrackInfoReadyListener{
+       void onTrackInfoReady(TracksInfo tracksInfo);
+    }
+
+    private TrackInfoReadyListener trackInfoReadyListener = new TrackInfoReadyListener() {
+        @Override
+        public void onTrackInfoReady(TracksInfo tracksInfoReady) {
+            //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
+            tracksInfo = tracksInfoReady;
+            sendEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+        }
+    };
 
 
     public ExoPlayerWrapper(Context context) {
@@ -116,10 +132,12 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         trackSelector.addListener(eventLogger);
 
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, videoTrackSelectionFactory);
+        trackSelectionHelper.setTrackReadyListener(trackInfoReadyListener);
     }
 
     private void preparePlayer(Uri mediaSourceUri) {
         firstPlay = !mediaSourceUri.equals(lastPlayedSource);
+        shouldGetTrackInfo = firstPlay;
         this.lastPlayedSource = mediaSourceUri;
         changeState(PlayerState.LOADING);
         MediaSource mediaSource = buildMediaSource(mediaSourceUri, null);
@@ -195,25 +213,25 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     @Override
     public void onLoadingChanged(boolean isLoading) {
-        Log.d(TAG, "onLoadingChanged. isLoading => " + isLoading);
+        log.d("onLoadingChanged. isLoading => " + isLoading);
     }
 
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         switch (playbackState) {
             case ExoPlayer.STATE_IDLE:
-                Log.d(TAG, "onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
+                log.d("onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
                 if (isSeeking) {
                     isSeeking = false;
                 }
                 break;
             case ExoPlayer.STATE_BUFFERING:
-                Log.d(TAG, "onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
+                log.d("onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.BUFFERING);
                 break;
             case ExoPlayer.STATE_READY:
-                Log.d(TAG, "onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
+                log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.READY);
 
                 if (isSeeking) {
@@ -231,7 +249,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
                 break;
             case ExoPlayer.STATE_ENDED:
-                Log.d(TAG, "onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
+                log.d("onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
                 sendEvent(PlayerEvent.Type.ENDED);
                 break;
@@ -244,46 +262,44 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
-        Log.d(TAG, "onTimelineChanged");
+        log.d("onTimelineChanged");
         isTimelineStatic = timeline != null && timeline.getWindowCount() > 0
                 && !timeline.getWindow(timeline.getWindowCount() - 1, window).isDynamic;
     }
 
     @Override
     public void onPlayerError(ExoPlaybackException error) {
-
-        Log.d(TAG, "onPlayerError error type => " + error.type);
+        log.d("onPlayerError error type => " + error.type);
         sendEvent(PlayerEvent.Type.ERROR);
     }
 
     @Override
     public void onPositionDiscontinuity() {
-        Log.d(TAG, "onPositionDiscontinuity");
+        log.d("onPositionDiscontinuity");
     }
 
     @Override
     public void onTrackSelectionsChanged(TrackSelections<? extends MappingTrackSelector.MappedTrackInfo> trackSelections) {
-        Log.d(TAG, "onTrackSelectionsChanged");
+        log.d("onTrackSelectionsChanged");
 
         MappingTrackSelector.MappedTrackInfo trackInfo = trackSelections.info;
         if (trackInfo.hasOnlyUnplayableTracks(C.TRACK_TYPE_VIDEO)) {
-            Log.e(TAG, "Error unsupported video");
+            log.e("Error unsupported video");
         }
         if (trackInfo.hasOnlyUnplayableTracks(C.TRACK_TYPE_AUDIO)) {
-            Log.e(TAG, "Error unsupported audio");
+            log.e("Error unsupported audio");
         }
 
-
-        if(!didTrackDataLoaded){
-            didTrackDataLoaded = true;
-            trackSelectionHelper.prepareTrackData(trackSelector.getCurrentSelections().info);
-            sendEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+        //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
+        if(shouldGetTrackInfo){
+            shouldGetTrackInfo = false;
+            trackSelectionHelper.sortTrackInfo(trackSelector.getCurrentSelections().info);
         }
     }
 
     @Override
     public void load(Uri mediaSourceUri) {
-        Log.d(TAG, "load");
+        log.d("load");
         if (player == null) {
             initializePlayer();
         }
@@ -298,7 +314,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     @Override
     public void play() {
-        Log.d(TAG, "play");
+        log.d("play");
         if (player.getPlayWhenReady()) {
             return;
         }
@@ -354,7 +370,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     @Override
     public void release() {
-        Log.d(TAG, "release");
+        log.d("release");
         if (player != null) {
 
             playerWindow = player.getCurrentWindowIndex();
@@ -375,7 +391,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     @Override
     public void restore() {
-        Log.d(TAG, "resume");
+        log.d("resume");
         initializePlayer();
 
         if (isTimelineStatic) {
@@ -393,17 +409,12 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
     @Override
-    public TrackData getTrackData() {
-        return trackSelectionHelper.getTrackData();
-    }
-
-    @Override
     public void changeTrack(int trackType, int position) {
         trackSelectionHelper.changeTrack(trackType, position, trackSelector.getCurrentSelections().info);
     }
 
-    public void startFrom(long startPosition) {
-        player.seekTo(startPosition);
+    public TracksInfo getTracksInfo() {
+        return this.tracksInfo;
     }
 
     public void setEventListener(final EventListener eventTrigger) {
@@ -413,5 +424,4 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     public void setStateChangedListener(StateChangedListener stateChangedTrigger) {
         this.stateChangedListener = stateChangedTrigger;
     }
-
 }

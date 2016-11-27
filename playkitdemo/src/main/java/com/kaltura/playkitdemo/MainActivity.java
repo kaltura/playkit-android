@@ -2,7 +2,6 @@ package com.kaltura.playkitdemo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -11,6 +10,8 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
+import com.kaltura.playkit.AudioTrackInfo;
+import com.kaltura.playkit.BaseTrackInfo;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -19,12 +20,16 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.TrackData;
+import com.kaltura.playkit.SubtitleTrackInfo;
+import com.kaltura.playkit.TrackSelectionHelper;
+import com.kaltura.playkit.TracksInfo;
+import com.kaltura.playkit.VideoTrackInfo;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.plugins.SamplePlugin;
+
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
@@ -39,12 +44,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private PlaybackControlsView controlsView;
     private boolean nowPlaying;
 
-    private static final int TRACK_TYPE_UNKNOWN = -1;
-    private static final int TRACK_TYPE_VIDEO = 0;
-    private static final int TRACK_TYPE_AUDIO = 1;
-    private static final int TRACK_TYPE_CC = 2;
 
-    private Spinner videoSpinner, audioSpinner, ccSpiner;
+    private Spinner videoSpinner, audioSpinner, subtitleSpinner;
 
     private void registerPlugins() {
         PlayKitManager.registerPlugins(SamplePlugin.factory);
@@ -109,8 +110,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void initSpinners() {
         videoSpinner = (Spinner) this.findViewById(R.id.videoSpinner);
         audioSpinner = (Spinner) this.findViewById(R.id.audioSpinner);
-        ccSpiner = (Spinner) this.findViewById(R.id.ccSpinner);
-        ccSpiner.setOnItemSelectedListener(this);
+        subtitleSpinner = (Spinner) this.findViewById(R.id.subtitleSpinner);
+        subtitleSpinner.setOnItemSelectedListener(this);
         audioSpinner.setOnItemSelectedListener(this);
         videoSpinner.setOnItemSelectedListener(this);
     }
@@ -146,37 +147,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
+                //When the track data available, this event occurs. It brings the info object with it.
+                PlayerEvent.TrackAvailable trackAvailable = (PlayerEvent.TrackAvailable) event;
+                populateSpinnersWithTrackInfo(trackAvailable.getTracksInfo());
 
-                TrackData trackData = player.getTrackData();
-                String[] videoData = new String[trackData.getVideoTrackData().size()];
-
-                for (int i = 0; i < videoData.length; i++) {
-                    videoData[i] = String.valueOf(trackData.getVideoTrackData().get(i).getId());
-                }
-                videoSpinner.setAdapter(new ArrayAdapter<>(getApplicationContext(),
-                        android.R.layout.simple_spinner_item, videoData));
-
-                String[] audioData = new String[trackData.getAudioTrackData().size()];
-
-                for (int i = 0; i < audioData.length; i++) {
-                    audioData[i] = String.valueOf(trackData.getAudioTrackData().get(i).getId());
-                }
-                audioSpinner.setAdapter(new ArrayAdapter<>(getApplicationContext(),
-                        android.R.layout.simple_spinner_item, audioData));
-
-                String[] ccData = new String[trackData.getSubtitleTrackData().size()];
-
-                for (int i = 0; i < ccData.length; i++) {
-                    ccData[i] = String.valueOf(trackData.getSubtitleTrackData().get(i).getId());
-                }
-                ccSpiner.setAdapter(new ArrayAdapter<>(getApplicationContext(),
-                        android.R.layout.simple_spinner_item, ccData));
             }
         }, PlayerEvent.Type.TRACKS_AVAILABLE);
-
-
-
     }
+
+
 
     @Override
     protected void onResume() {
@@ -192,24 +171,86 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+    /**
+     * populating spinners with track info.
+     * @param tracksInfo - the track info.
+     */
+    private void populateSpinnersWithTrackInfo(TracksInfo tracksInfo) {
+
+        //Retrieve info that describes available tracks.(video/audio/subtitle).
+        String[] videoData = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_VIDEO, tracksInfo.getVideoTrackInfo());
+        //populate spinner with this info.
+        applyAdapterOnSpinner(videoSpinner, videoData);
+
+        String[] audioData = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_AUDIO, tracksInfo.getAudioTrackInfo());
+        applyAdapterOnSpinner(audioSpinner, audioData);
+
+        String[] subtitlesData = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_SUBTITLE, tracksInfo.getSubtitleTrackInfo());
+        applyAdapterOnSpinner(subtitleSpinner, subtitlesData);
+
+    }
+
+    /**
+     * Obtain info that user is interested in.
+     * For example if user want to display in UI bitrate of the available tracks,
+     * he can do it, by obtaining the tackType of video, and getting the getBitrate() from videoTrackInfo.
+     * @param trackType - tyoe of the track you are interested in.
+     * @param trackInfos - all availables tracks.
+     * @return
+     */
+    private String[] obtainRelevantTrackInfo(int trackType, List<BaseTrackInfo> trackInfos) {
+        String[] trackInfo = new String[trackInfos.size()];
+        switch (trackType){
+            case TrackSelectionHelper.TRACK_VIDEO:
+                //run throug all the tracks in this type.
+                for (int i = 0; i < trackInfos.size(); i++) {
+                    //cast each object to the videoInfo.
+                    VideoTrackInfo videoTrackInfo = (VideoTrackInfo) trackInfos.get(i);
+                    //obtain the desired info. (uniqueId/bitrate/width/language e.t.c).
+                    trackInfo[i] = String.valueOf(videoTrackInfo.getUniqueId());
+                }
+
+                break;
+            case TrackSelectionHelper.TRACK_AUDIO:
+                for (int i = 0; i < trackInfos.size(); i++) {
+                    AudioTrackInfo audioTrackInfo = (AudioTrackInfo) trackInfos.get(i);
+                    trackInfo[i] = String.valueOf(audioTrackInfo.getUniqueId());
+                }
+                break;
+            case TrackSelectionHelper.TRACK_SUBTITLE:
+                for (int i = 0; i < trackInfos.size(); i++) {
+                    SubtitleTrackInfo subtitleTrackInfo = (SubtitleTrackInfo) trackInfos.get(i);
+                    trackInfo[i] = String.valueOf(subtitleTrackInfo.getUniqueId());
+                }
+                break;
+        }
+        return trackInfo;
+    }
+
+    private void applyAdapterOnSpinner(Spinner spinner, String[] trackInfo) {
+        spinner.setAdapter(new ArrayAdapter<>(getApplicationContext(),
+                android.R.layout.simple_spinner_item, trackInfo));
+    }
+
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        int trackType = TRACK_TYPE_UNKNOWN;
-
+        int trackType = TrackSelectionHelper.TRACK_TYPE_UNKNOWN;
+        //decide which spinner was activated by user.
         switch (parent.getId()) {
             case R.id.videoSpinner:
-                trackType = TRACK_TYPE_VIDEO;
+                trackType = TrackSelectionHelper.TRACK_VIDEO;
                 break;
             case R.id.audioSpinner:
-                trackType = TRACK_TYPE_AUDIO;
+                trackType = TrackSelectionHelper.TRACK_AUDIO;
                 break;
-            case R.id.ccSpinner:
-                trackType = TRACK_TYPE_CC;
+            case R.id.subtitleSpinner:
+                trackType = TrackSelectionHelper.TRACK_SUBTITLE;
                 break;
 
         }
 
-        log.e("on item selected " + parent.getItemAtPosition(position).toString());
+        log.d("track info item selected => " + parent.getItemAtPosition(position).toString());
+        //tell to the player, to switch track based on the user selection.
         player.changeTrack(trackType, position);
     }
 

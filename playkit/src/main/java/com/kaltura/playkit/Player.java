@@ -64,11 +64,7 @@ public interface Player {
 
     void onApplicationResumed();
 
-    TrackData getTrackData();
-
     void changeTrack(int trackType, int position);
-
-
 
 }
 

@@ -3,25 +3,23 @@ package com.kaltura.playkit;
 /**
  * Created by anton.afanasiev on 17/11/2016.
  */
-public class VideoTrackData {
+public class VideoTrackInfo extends BaseTrackInfo{
 
-    private long bitrate;
     private int width;
     private int height;
-    private String id;
+    private long bitrate;
 
 
-    public VideoTrackData(long bitrate, int width, int height, String id) {
+    public VideoTrackInfo(long bitrate, int width, int height, String uniqueId, int groupIndex, int trackIndex) {
+        super(uniqueId, groupIndex, trackIndex);
         this.bitrate = bitrate;
         this.width = width;
         this.height = height;
-        this.id = id;
     }
 
     public long getBitrate() {
         return bitrate;
     }
-
 
     public int getWidth() {
         return width;
@@ -30,9 +28,4 @@ public class VideoTrackData {
     public int getHeight() {
         return height;
     }
-
-    public String getId() {
-        return id;
-    }
-
 }

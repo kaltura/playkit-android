@@ -3,7 +3,7 @@ package com.kaltura.playkit.player;
 import android.net.Uri;
 import android.view.View;
 
-import com.kaltura.playkit.TrackData;
+import com.kaltura.playkit.TracksInfo;
 
 
 /**
@@ -40,5 +40,5 @@ public interface PlayerEngine {
 
     void changeTrack(int trackType, int position);
 
-    TrackData getTrackData();
+    TracksInfo getTracksInfo();
 }
