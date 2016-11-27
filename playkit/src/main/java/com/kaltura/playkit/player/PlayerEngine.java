@@ -3,6 +3,7 @@ package com.kaltura.playkit.player;
 import android.net.Uri;
 import android.view.View;
 
+
 /**
  * Created by anton.afanasiev on 01/11/2016.
  */
@@ -21,10 +22,6 @@ public interface PlayerEngine {
 
     void seekTo(long position);
 
-    boolean shouldAutoPlay();
-
-    void setAutoPlay(boolean shouldAutoplay);
-
     void setEventListener(PlayerController.EventListener eventTrigger);
 
     void setStateChangedListener(PlayerController.StateChangedListener stateChangedTrigger);
@@ -35,5 +32,7 @@ public interface PlayerEngine {
 
     void release();
 
-    void resume();
+    void restore();
+
+    void destroy();
 }

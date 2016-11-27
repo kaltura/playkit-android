@@ -11,7 +11,7 @@ public interface Player {
 
     void prepare(@NonNull PlayerConfig.Media playerConfig);
     
-    void release();
+    void destroy();
 
     /**
      * The Player's View.
@@ -52,14 +52,17 @@ public interface Player {
      */
     void skip();
     
-    void addEventListener(@NonNull PKEvent.Listener listener, PKEvent... events);
+    void addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
 
-    void addStateChangeListener(@NonNull PlayerState.Listener listener);
+    void addStateChangeListener(@NonNull PKEvent.Listener listener);
 
-    void restore();
-    
     PKAdInfo getAdInfo();
     
     void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value);
+
+    void onApplicationPaused();
+
+    void onApplicationResumed();
+
 }
 
