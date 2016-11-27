@@ -153,20 +153,18 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     public void onEvent(PlayerEvent.StateChanged event) {
         switch (event.newState) {
             case IDLE:
-                setMessageParams(KalturaStatsPlugin.KStatsEvent.WIDGET_LOADED);
+
                 break;
             case LOADING:
                 if (isBuffering) {
                     isBuffering = false;
-                    setMessageParams(KalturaStatsPlugin.KStatsEvent.BUFFER_END);
                 }
                 break;
             case READY:
                 if (!isBuffering) {
-                    setMessageParams(KalturaStatsPlugin.KStatsEvent.MEDIA_LOADED);
+
                 } else {
                     isBuffering = false;
-                    setMessageParams(KalturaStatsPlugin.KStatsEvent.BUFFER_END);
                 }
                 if (!intervalOn) {
                     intervalOn = true;
@@ -175,7 +173,6 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
                 break;
             case BUFFERING:
                 isBuffering = true;
-                setMessageParams(KalturaStatsPlugin.KStatsEvent.BUFFER_START);
                 break;
         }
     }
@@ -186,7 +183,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
             if (event instanceof PlayerEvent) {
                 switch (((PlayerEvent) event).type) {
                     case STATE_CHANGED:
-                        KalturaStatsPlugin.this.onEvent((PlayerEvent.StateChanged) event);
+                        KalturaAnalyticsPlugin.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
                     case CAN_PLAY:
 
@@ -198,16 +195,16 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
 
                         break;
                     case ERROR:
-                        setMessageParams(KalturaStatsPlugin.KStatsEvent.ERROR);
+
                         break;
                     case LOADED_METADATA:
 
                         break;
                     case PAUSE:
-
+                        setMessageParams(KAnalonyEvents.PAUSE);
                         break;
                     case PLAY:
-                        setMessageParams(KalturaStatsPlugin.KStatsEvent.PLAY);
+                        setMessageParams(KAnalonyEvents.PLAY);
                         break;
                     case PLAYING:
 
@@ -215,7 +212,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
                     case SEEKED:
                         hasSeeked = true;
                         seekPercent = (float) player.getCurrentPosition() / player.getDuration();
-                        setMessageParams(KalturaStatsPlugin.KStatsEvent.SEEK);
+                        setMessageParams(KAnalonyEvents.SEEK);
                         break;
                     case SEEKING:
 
@@ -247,22 +244,22 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
                 float progress = (float) player.getCurrentPosition() / player.getDuration();
                 if (progress >= 0.25 && !playReached25 && seekPercent <= 0.25) {
                     playReached25 = true;
-                    setMessageParams(KalturaStatsPlugin.KStatsEvent.PLAY_REACHED_25);
+                    setMessageParams(KAnalonyEvents.PLAY_25PERCENT);
                 } else if (progress >= 0.5 && !playReached50 && seekPercent < 0.5) {
                     playReached50 = true;
-                    setMessageParams(KalturaStatsPlugin.KStatsEvent.PLAY_REACHED_50);
+                    setMessageParams(KAnalonyEvents.PLAY_25PERCENT);
                 } else if (progress >= 0.75 && !playReached75 && seekPercent <= 0.75) {
                     playReached75 = true;
-                    setMessageParams(KalturaStatsPlugin.KStatsEvent.PLAY_REACHED_75);
+                    setMessageParams(KAnalonyEvents.PLAY_25PERCENT);
                 } else if (progress >= 0.98 && !playReached100 && seekPercent < 1) {
                     playReached100 = true;
-                    setMessageParams(KalturaStatsPlugin.KStatsEvent.PLAY_REACHED_100);
+                    setMessageParams(KAnalonyEvents.PLAY_25PERCENT);
                 }
             }
         }, 0, TimerInterval);
     }
 
-    private void setMessageParams(final KalturaStatsPlugin.KStatsEvent eventType) {
+    private void setMessageParams(final KAnalonyEvents eventType) {
         String clientVer = pluginConfig.has("clientVer")? pluginConfig.get("clientVer").toString(): "";
         String sessionId = pluginConfig.has("sessionId")? pluginConfig.get("sessionId").toString(): "";
         int uiconfId = pluginConfig.has("uiconfId")? Integer.valueOf(pluginConfig.get("uiconfId").toString()): 0;
