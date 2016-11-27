@@ -154,6 +154,7 @@ public class AdsConfig {
 
     public JsonObject toJSONObject() {
         JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty(AD_TAG_LANGUAGE, language);
         jsonObject.addProperty(AD_TAG_URL, adTagUrl);
         jsonObject.addProperty(ENABLE_BG_PLAYBACK, enableBackgroundPlayback);
         jsonObject.addProperty(AUTO_PLAY_AD_BREAK, autoPlayAdBreaks);
