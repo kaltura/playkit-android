@@ -1,5 +1,7 @@
 package com.kaltura.playkit.plugins.Youbora;
 
+import com.kaltura.playkit.LogEvent;
+import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEvent;
@@ -16,18 +18,22 @@ import java.util.Map;
 
 public class YouboraLibraryManager extends PluginGeneric {
     private static final PKLog log = PKLog.get("YouboraLibraryManager");
+    private static final String TAG = "YouboraPlugin";
+
 
     private Double lastReportedBitrate = super.getBitrate();
     private Double lastReportedthroughput = super.getThroughput();
     private static final long MONITORING_INTERVAL = 200L;
     private boolean isFirstPlay = true;
+    private MessageBus messageBus;
 
     public YouboraLibraryManager(String options) throws JSONException {
         super(options);
     }
 
-    public YouboraLibraryManager(Map<String, Object> options) {
+    public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus) {
         super(options);
+        this.messageBus = messageBus;
     }
 
     protected void init() {
@@ -54,6 +60,9 @@ public class YouboraLibraryManager extends PluginGeneric {
                 bufferingHandler();
                 break;
         }
+        log.d(event.newState.toString());
+        messageBus.post(new LogEvent(TAG + " " + event.newState.toString()));
+
     }
 
     public PKEvent.Listener getEventListener() {
@@ -107,6 +116,10 @@ public class YouboraLibraryManager extends PluginGeneric {
                         break;
                     default:
                         break;
+                }
+                log.d(event.eventType().name());
+                if (((PlayerEvent) event).type != PlayerEvent.Type.STATE_CHANGED){
+                    messageBus.post(new LogEvent(TAG + " " + ((PlayerEvent) event).type.toString()));
                 }
             }
         }

@@ -148,8 +148,6 @@ public class YouboraConfig {
             mediaObject.put("resource", mediaConfig.getMediaEntry().getId());
             mediaObject.put("title", mediaConfig.getMediaEntry().getId()); //name?
             mediaObject.put("duration", mediaConfig.getMediaEntry().getDuration());
-            youboraConfig.remove("media");
-            youboraConfig.put("media", mediaConfig);
         }
     }
 

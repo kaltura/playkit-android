@@ -64,7 +64,7 @@ public class YouboraPlugin extends PKPlugin {
         this.mPluginConfig = pluginConfig;
         this.mContext = context;
         this.mMessageBus = messageBus;
-        mPluginManager = new YouboraLibraryManager(new Options());
+        mPluginManager = new YouboraLibraryManager(new Options(), messageBus);
         startMonitoring(mPlayer);
     }
 
