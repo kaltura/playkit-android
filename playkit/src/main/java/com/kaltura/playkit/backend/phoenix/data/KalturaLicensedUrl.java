@@ -2,11 +2,13 @@ package com.kaltura.playkit.backend.phoenix.data;
 
 import android.text.TextUtils;
 
+import com.kaltura.playkit.backend.BaseResult;
+
 /**
  * Created by tehilarozin on 20/11/2016.
  */
 
-public class LicensedUrl extends BaseResult{
+public class KalturaLicensedUrl extends BaseResult {
     String mainUrl = "";
     String altUrl = "";
 

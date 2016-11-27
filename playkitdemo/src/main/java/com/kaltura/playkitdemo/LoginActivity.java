@@ -29,7 +29,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.google.gson.GsonBuilder;
-import com.kaltura.playkit.backend.phoenix.data.ResultAdapter;
+import com.kaltura.playkit.backend.phoenix.data.OttResultAdapter;
 import com.kaltura.playkit.backend.phoenix.services.OttUserService;
 import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
@@ -321,7 +321,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 @Override
                 public void onComplete(ResponseElement response) {
                     if(response.isSuccess()){
-                        LoginResult loginResult = new GsonBuilder().registerTypeAdapter(LoginResult.class, new ResultAdapter()).create().fromJson(response.getResponse(), LoginResult.class);
+                        LoginResult loginResult = new GsonBuilder().registerTypeAdapter(LoginResult.class, new OttResultAdapter()).create().fromJson(response.getResponse(), LoginResult.class);
                         if(loginResult.error == null){
                             DemoSessionProvider.getSessionProvider().setKs(loginResult.getKs());
                         }

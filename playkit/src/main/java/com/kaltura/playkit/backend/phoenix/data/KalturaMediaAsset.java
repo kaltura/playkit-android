@@ -1,16 +1,18 @@
 package com.kaltura.playkit.backend.phoenix.data;
 
+import com.kaltura.playkit.backend.BaseResult;
+
 import java.util.List;
 
 /**
  * Created by tehilarozin on 04/11/2016.
  */
 
-public class AssetInfo {
+public class KalturaMediaAsset extends BaseResult {
     int id;
     int type;
     String name;
-    List<MediaFile> mediaFiles;
+    List<KalturaMediaFile> mediaFiles;
 
     public int getId() {
         return id;
@@ -20,7 +22,7 @@ public class AssetInfo {
         return type;
     }
 
-    public List<MediaFile> getFiles() {
+    public List<KalturaMediaFile> getFiles() {
         return mediaFiles;
     }
 

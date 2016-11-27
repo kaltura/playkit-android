@@ -6,7 +6,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.kaltura.playkit.backend.phoenix.data.BaseResult;
+import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.connect.ErrorElement;
 
 import java.lang.reflect.Type;
@@ -21,7 +21,7 @@ import java.lang.reflect.Type;
  * under {@link BaseResult#error} member, in case of success the result will be available in the specific class member.
  * (exp: {@link com.kaltura.playkit.backend.phoenix.data.AssetResult#asset})
  *
- * usage: new GsonBuilder().registerTypeAdapter(AssetResult.class, new ResultAdapter()).create().fromJson(json, AssetResult.class);
+ * usage: new GsonBuilder().registerTypeAdapter(AssetResult.class, new OttResultAdapter()).create().fromJson(json, AssetResult.class);
  */
 public class OvpResultAdapter implements JsonDeserializer<BaseResult> {
     @Override
@@ -34,6 +34,14 @@ public class OvpResultAdapter implements JsonDeserializer<BaseResult> {
             String objectType=  result.getAsJsonPrimitive("objectType").getAsString();
             if(objectType.equals("KalturaAPIException")) {
                 baseResult.error = new Gson().fromJson(result, ErrorElement.class);
+            } else {
+                try {
+                    String clzName  = getClass().getPackage().getName()+"."+objectType;
+                    Class clz = Class.forName(clzName);
+                    baseResult = (BaseResult) new Gson().fromJson(json, clz);
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return baseResult;

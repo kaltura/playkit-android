@@ -12,13 +12,12 @@ import com.kaltura.playkit.BaseTest;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
-import com.kaltura.playkit.backend.phoenix.data.AssetInfo;
+import com.kaltura.playkit.backend.phoenix.data.KalturaMediaAsset;
 import com.kaltura.playkit.backend.phoenix.data.AssetResult;
-import com.kaltura.playkit.backend.phoenix.data.ResultAdapter;
+import com.kaltura.playkit.backend.phoenix.data.OttResultAdapter;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
-import com.kaltura.playkit.connect.ParamsRequestElement;
 import com.kaltura.playkit.connect.RequestElement;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
@@ -35,6 +34,7 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -46,7 +46,7 @@ import static org.junit.Assert.assertTrue;
 public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
     public static final String BaseUrl = "http://52.210.223.65:8080/v4_1/api_v3/";//"http://52.210.223.65:8080/v4_0/api_v3/";
-    public static final String KS = "djJ8MTk4fAZXObQaPfvkEqBWfZkZfbruAO1V3CYGwE4OdvqojvsjaNMeN8yYtqgCvtpFiKblOayM9Xq5d2wHFCBAkbf7ju9-H4CrWrxOg7qhIRQUzqPz";
+    public static final String KS = "jJ8MTk4fAZXObQaPfvkEqBWfZkZfbruAO1V3CYGwE4OdvqojvsjaNMeN8yYtqgCvtpFiKblOayM9Xq5d2wHFCBAkbf7ju9-H4CrWrxOg7qhIRQUzqPz";
     public static final String MediaId = "258656";//frozen
     public static final String MediaId4 = "258655";//shrek
     public static final String MediaId2 = "437800";//vild
@@ -75,7 +75,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         }
     };
 
-    SessionProvider AnonymSessionProvider = new SessionProvider() {
+    SessionProvider InvalidSessionProvider = new SessionProvider() {
         @Override
         public String baseUrl() {
             return BaseUrl;
@@ -103,8 +103,6 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     @Before
     public void setUp() {
         testExecutor = new Executor();
-
-
     }
 
     @Test
@@ -114,13 +112,12 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         phoenixMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
-                // resume();
+
                 assertTrue(response.isSuccess());
                 assertTrue(response.getResponse() != null);
                 assertTrue(response.getResponse().getId().equals(MediaId));
                 assertTrue(response.getResponse().getSources().size() == 1);
                 assertTrue(response.getResponse().getDuration() == 2237);
-                //PhoenixMediaProviderAndroidTest.this.wait(1);
 
                 phoenixMediaProvider.setAssetId(MediaId5).setFormats(Format, Format2).setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
                     @Override
@@ -129,15 +126,12 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                             assertTrue(response.getResponse() != null);
                             assertTrue(response.getResponse().getId().equals(MediaId5));
                             assertTrue(response.getResponse().getSources().size() == 2);
-                            //assertTrue(response.getResponse().getDuration() == 2237);
 
                         } else {
                             assertNotNull(response.getError());
                             Log.e("PhoenixMediaProvider", "asset can't be played: "+response.getError().getMessage());
                         }
 
-
-                        //phoenixMediaProvider.setAssetId(MediaId2).setFormat(Format2)
                         PhoenixMediaProviderAndroidTest.this.resume();
 
                     }
@@ -153,13 +147,13 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     @Test
     public void testPreFetchedAsset() {
         PKMediaEntry mediaEntry = null;
-        AssetInfo assetInfo = null;
+        KalturaMediaAsset assetInfo = null;
         final JsonReader jsonReader;
         try {
             jsonReader = new JsonReader(new InputStreamReader(
                     InstrumentationRegistry.getTargetContext().getAssets().open(FrozenAssetInfo)));
 
-            AssetResult assetResult = new GsonBuilder().registerTypeAdapter(AssetResult.class, new ResultAdapter()).create().fromJson(jsonReader, AssetResult.class);
+            AssetResult assetResult = new GsonBuilder().registerTypeAdapter(AssetResult.class, new OttResultAdapter()).create().fromJson(jsonReader, AssetResult.class);
             assetInfo = assetResult.asset;
             assertNotNull(assetInfo);
             mediaEntry = PhoenixMediaProvider.getMediaEntry(assetInfo, Arrays.asList(Format, Format2));
@@ -175,16 +169,65 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
 
     @Test
-    public void testAnonymousFetch() {
-        new PhoenixMediaProvider().setSessionProvider(AnonymSessionProvider).setAssetId(MediaId).setReferenceType("media").setFormats(Format).load(new OnMediaLoadCompletion() {
+    public void testInvalidSession() {
+        new PhoenixMediaProvider().setSessionProvider(InvalidSessionProvider).setAssetId(MediaId).setReferenceType("media").setFormats(Format).load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
-                assertTrue(response.isSuccess());
-                assertNotNull(response.getResponse());
-                assertTrue(response.getResponse() instanceof PKMediaEntry);
+                assertFalse(response.isSuccess());
+                assertNotNull(response.getError());
             }
         });
     }
+
+    @Test
+    public void testMultiresponseParsing(){
+        String multiresponseWithError = "{\n" +
+                "  \"executionTime\": 0.1118046,\n" +
+                "  \"result\": [\n" +
+                "    {\n" +
+                "      \"objectType\": \"KalturaLoginSession\",\n" +
+                "      \"refreshToken\": \"03e6b38cee2041baa089fabe3f86fe1d\",\n" +
+                "      \"ks\": \"djJ8MTk4fJk--dJo2deSWHQ4Dtb60UlyCE86jgz_Y38N0CV6j0yzMjtolKkSaOjfyol_asfuP1-Fxdmmv_qHPtNJbraA3tZiahqeCI9ddec9p5pFB2pz\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"error\": {\n" +
+                "        \"objectType\": \"KalturaAPIException\",\n" +
+                "        \"message\": \"KS expired\",\n" +
+                "        \"code\": \"500016\"\n" +
+                "      }\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+
+        String multiresponseSuccess = "{\n" +
+                "  \"executionTime\": 0.1415303,\n" +
+                "  \"result\": [\n" +
+                "    {\n" +
+                "      \"objectType\": \"KalturaLoginSession\",\n" +
+                "      \"refreshToken\": \"fe7de6d35f7a421181632e3ec64d5a8f\",\n" +
+                "      \"ks\": \"djJ8MTk4fITddhHq4H7GYSJ78X7wR-A7z6NdHtjn-RUdDUmkG7xcLY-iu4WJmGAWGo2O9n9_YvVU9Q4sdsAs6Ste2TffDGvaZiNSY3SOjBduBH_U-_eA\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"objectType\": \"KalturaLicensedUrl\",\n" +
+                "      \"altUrl\": \"\",\n" +
+                "      \"mainUrl\": \"http://62.42.236.193:5555/shss/LIVE$CUP001/2.ism/Manifest?start=LIVE&end=END&device=HSS_PC_CLR_RB_HD\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+    }
+
+    @Test
+    public void testStringResponseParsing(){
+        String response = "{\n" +
+                "  \"executionTime\": 0.2519926,\n" +
+                "  \"result\": true\n" +
+                "}";
+        String sameRequestError = "{\n" +
+                "  \"executionTime\": 0.2519926,\n" +
+                "  \"result\": true\n" +
+                "}";
+    }
+
 
     @Test
     public void testErrorHandling() {
@@ -209,13 +252,8 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     class Executor implements RequestQueue {
 
         @Override
-        public String queue(RequestElement request) {
-            new RequestHandler(request).run();
-            return null;
-        }
-
-        @Override
-        public String queue(ParamsRequestElement action) {
+        public String queue(RequestElement requestElement) {
+            new RequestHandler(requestElement).run();
             return null;
         }
 

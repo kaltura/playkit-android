@@ -39,11 +39,6 @@ public class RequestBuilder {
         return this;
     }
 
-    /*public RequestBuilder body(String body){
-        this.body = body;
-        return this;
-    }*/
-
     public RequestBuilder id(String id){
         this.id = id;
         return this;

@@ -1,6 +1,6 @@
 package com.kaltura.playkitdemo.data;
 
-import com.kaltura.playkit.backend.phoenix.data.BaseResult;
+import com.kaltura.playkit.backend.BaseResult;
 
 /**
  * Created by tehilarozin on 16/11/2016.
