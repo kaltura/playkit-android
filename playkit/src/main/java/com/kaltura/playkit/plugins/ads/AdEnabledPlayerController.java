@@ -116,19 +116,22 @@ public class AdEnabledPlayerController extends PlayerDecorator {
         if (value == null) {
             return;
         }
-        if (adsProvider.getPluginName().equals(pluginName)) {
-            if (key.equals(AD_TAG_LANGUAGE)) {
-                adsProvider.getAdsConfig().setLanguage((String) value);
-            } else if (key.equals(AD_TAG_URL)) {
-                adsProvider.getAdsConfig().setAdTagUrl((String) value);
-            } else if (key.equals(ENABLE_BG_PLAYBACK)) {
-                adsProvider.getAdsConfig().setEnableBackgroundPlayback((boolean) value);
-            } else if (key.equals(AUTO_PLAY_AD_BREAK)) {
-                adsProvider.getAdsConfig().setAutoPlayAdBreaks((boolean) value);
-            } else if (key.equals(AD_VIDEO_BITRATE)) {
-                adsProvider.getAdsConfig().setVideoBitrate((int) value);
-            } else if (key.equals(VIDEO_MIME_TYPES)) {
-                adsProvider.getAdsConfig().setVideoMimeTypes((List<String>) value);
+        if (adsProvider != null) {
+            if (adsProvider.getPluginName().equals(pluginName)) {
+                if (key.equals(AD_TAG_LANGUAGE)) {
+                    adsProvider.getAdsConfig().setLanguage((String) value);
+                } else if (key.equals(AD_TAG_URL)) {
+                    adsProvider.getAdsConfig().setAdTagUrl((String) value);
+                    adsProvider.resetProvider();
+                } else if (key.equals(ENABLE_BG_PLAYBACK)) {
+                    adsProvider.getAdsConfig().setEnableBackgroundPlayback((boolean) value);
+                } else if (key.equals(AUTO_PLAY_AD_BREAK)) {
+                    adsProvider.getAdsConfig().setAutoPlayAdBreaks((boolean) value);
+                } else if (key.equals(AD_VIDEO_BITRATE)) {
+                    adsProvider.getAdsConfig().setVideoBitrate((int) value);
+                } else if (key.equals(VIDEO_MIME_TYPES)) {
+                    adsProvider.getAdsConfig().setVideoMimeTypes((List<String>) value);
+                }
             }
         }
     }

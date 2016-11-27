@@ -139,17 +139,24 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
 
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
-
+        mIsAdRequested = false;
+        mIsAdDisplayed = false;
     }
 
     @Override
     protected void onUpdateConfig(String key, Object value) {
-
+        mIsAdRequested = false;
+        mIsAdDisplayed = false;
     }
 
     @Override
     protected void onDestroy() {
-
+        if (mAdsManager != null) {
+            mAdsManager.destroy();
+        }
+        if (mAdsLoader != null) {
+            mAdsLoader.contentComplete();
+        }
     }
 
 
