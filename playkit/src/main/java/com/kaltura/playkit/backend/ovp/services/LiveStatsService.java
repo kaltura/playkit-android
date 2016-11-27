@@ -13,16 +13,16 @@ import java.net.URLDecoder;
  */
 
 public class LiveStatsService {
-    public static RequestBuilder sendLiveStatsEvent(String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
-                                                String sessionId, String startTime,  String entryId,  boolean isLive, String referrer) {
+    public static RequestBuilder sendLiveStatsEvent(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, int bitrate,
+                                                String sessionId, long startTime,  String entryId,  boolean isLive, String referrer) {
         return new RequestBuilder()
                 .method("GET")
                 .url(getOvpUrl(baseUrl, partnerId, eventType, eventIndex, bufferTime, bitrate, sessionId, startTime,  entryId,  isLive, referrer))
                 .tag("stats-send");
     }
 
-    private static String getOvpUrl(String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
-                                    String sessionId, String startTime,  String entryId,  boolean isLive, String referrer) {
+    private static String getOvpUrl(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, int bitrate,
+                                    String sessionId, long startTime,  String entryId,  boolean isLive, String referrer) {
         Uri.Builder builder = new Uri.Builder();
         builder.scheme("https")
                 .authority(baseUrl)
@@ -36,11 +36,11 @@ public class LiveStatsService {
                 .appendQueryParameter("event:eventType", Integer.toString(eventType))
                 .appendQueryParameter("event:sessionId", sessionId)
                 .appendQueryParameter("event:eventIndex", Integer.toString(eventIndex))
-                .appendQueryParameter("event:bufferTime", Integer.toString(bufferTime))
+                .appendQueryParameter("event:bufferTime", Long.toString(bufferTime))
                 .appendQueryParameter("event:bitrate", Integer.toString(bitrate))
                 .appendQueryParameter("event:referrer", referrer)
                 .appendQueryParameter("event:isLive", Boolean.toString(isLive))
-                .appendQueryParameter("event:startTime", startTime)
+                .appendQueryParameter("event:startTime", Long.toString(startTime))
                 .appendQueryParameter("event:entryId", entryId)
                 .appendQueryParameter("event:deliveryType", "");
 

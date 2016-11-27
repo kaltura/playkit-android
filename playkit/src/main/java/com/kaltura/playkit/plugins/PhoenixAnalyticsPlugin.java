@@ -140,6 +140,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             setMessageParams(PhoenixActionType.PAUSE);
                         }
                         break;
+                    case FIRST_PLAY:
                     case PLAY:
                         if (!intervalOn){
                             startMediaHitInterval();
