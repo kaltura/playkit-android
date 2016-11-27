@@ -160,8 +160,27 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
      * @return A new HttpDataSource factory.
      */
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
-        return new DefaultHttpDataSourceFactory(Util.getUserAgent(context, "PlayKit"), useBandwidthMeter ? BANDWIDTH_METER : null);
+        return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? BANDWIDTH_METER : null);
     }
+
+
+    public static String getUserAgent(Context context) {
+        String applicationName;
+        try {
+            String packageName = context.getPackageName();
+            PackageInfo info = context.getPackageManager().getPackageInfo(packageName, 0);
+            applicationName = packageName + "/" + info.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            applicationName = "?";
+        }
+        
+        String sdkName = "PlayKit/" + BuildConfig.VERSION_NAME;
+        
+        return sdkName + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE
+                + ") " + "ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
+    }
+
+
 
     private void changeState(PlayerState newState) {
         previousState = currentState;
@@ -383,3 +402,5 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
 }
+
+
