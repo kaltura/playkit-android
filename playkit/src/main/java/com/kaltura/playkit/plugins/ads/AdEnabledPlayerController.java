@@ -34,7 +34,7 @@ public class AdEnabledPlayerController extends PlayerDecorator {
     @Override
     public long getDuration() {
         if (adsProvider.isAdDisplayed()) {
-            log.d("XXXXXXXXXXXXXXXXXXXXXX " + adsProvider.getDuration());
+            log.d("getDuration: " + adsProvider.getDuration());
            return 1000 * adsProvider.getDuration();
         } else {
             return super.getDuration();
@@ -43,9 +43,8 @@ public class AdEnabledPlayerController extends PlayerDecorator {
 
     @Override
     public long getCurrentPosition() {
-
         if (adsProvider.isAdDisplayed()) {
-            log.d("XXXXXXXXXXXXXXXXXXXXXX " + adsProvider.getCurrentPosition());
+            log.d("getCurrentPosition = " + adsProvider.getCurrentPosition());
             return 1000 * adsProvider.getCurrentPosition();
         } else {
             return super.getCurrentPosition();
@@ -55,7 +54,7 @@ public class AdEnabledPlayerController extends PlayerDecorator {
     @Override
     public void seekTo(long position) {
         if (adsProvider.isAdDisplayed()) {
-            log.d("XXXXXXXXXXXXXXXXXXXXXX Seek Is not enable for AD");
+            log.d("seekTo: ss not enabled during AD playback");
             return;
         } else {
             super.seekTo(position);
@@ -65,16 +64,17 @@ public class AdEnabledPlayerController extends PlayerDecorator {
     @Override
     public void play() {
         log.d("Ad Event AdEnabledPlayerController PLAY isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused());
-        if (!adsProvider.isAdDisplayed() && adsProvider.isAdRequested()) {
-            super.play();
-        } else if (adsProvider.isAdDisplayed()) {
-            adsProvider.resume();//start(false);
-        } else {
-            super.pause();
+        if (adsProvider != null) {
             if (!adsProvider.isAdRequested()) {
                 adsProvider.requestAd();
+                return;
+            } else if (adsProvider.isAdDisplayed()) {
+                adsProvider.resume();
+                return;
             }
         }
+        super.play();
+
     }
 
     @Override
@@ -130,8 +130,6 @@ public class AdEnabledPlayerController extends PlayerDecorator {
             } else if (key.equals(VIDEO_MIME_TYPES)) {
                 adsProvider.getAdsConfig().setVideoMimeTypes((List<String>) value);
             }
-            log.d("XXXXX Before RequestAd");
-            adsProvider.requestAd();
         }
     }
 }

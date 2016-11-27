@@ -113,7 +113,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
         this.messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                log.d("XXXXX onLoad:PlayerEvent:" + event);
+                log.d("onLoad:PlayerEvent:" + event);
             }
         }, PlayerEvent.Type.PLAY);
 
@@ -135,7 +135,6 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
         //----------------------------//
         adConfig = AdsConfig.fromJsonObject(pluginConfig);
         mAdUiContainer = (ViewGroup) player.getView();
-        //requestAd();
     }
 
     @Override
@@ -168,7 +167,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
 
     @Override
     public void requestAd() {
-        log.d("XXXXX Inside RequestAd");
+        log.d("Start RequestAd");
 
         mIsAdRequested = true;
         ImaSdkSettings imaSdkSettings = new ImaSdkSettings();
@@ -217,7 +216,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
     }
 
     private void requestAdsFromIMA(String adTagUrl) {
-        log.d("XXXXX DO requestAdsFromIMA");
+        log.d("Do requestAdsFromIMA");
         AdDisplayContainer adDisplayContainer = mSdkFactory.createAdDisplayContainer();
         adDisplayContainer.setAdContainer(mAdUiContainer);
 
@@ -364,7 +363,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
             case CONTENT_PAUSE_REQUESTED:
                 // AdEventType.CONTENT_PAUSE_REQUESTED is fired immediately before a video
                 // ad is played.
-                log.d("XXXXX AD REQUEST AD_CONTENT_PAUSE_REQUESTED = play ");
+                log.d("AD_CONTENT_PAUSE_REQUESTED");
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CONTENT_PAUSE_REQUESTED));
                 mIsAdDisplayed = true;
                 if (player != null) {
@@ -374,7 +373,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
             case CONTENT_RESUME_REQUESTED:
                 // AdEventType.CONTENT_RESUME_REQUESTED is fired when the ad is completed
                 // and you should start playing your content.
-                log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED = play ");
+                log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED");
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CONTENT_RESUME_REQUESTED));
                 mIsAdDisplayed = false;
                 if (player != null) {
@@ -382,7 +381,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                 }
                 break;
             case ALL_ADS_COMPLETED:
-                log.d("ALL_ADS_COMPLETED");
+                log.d("AD_ALL_ADS_COMPLETED");
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_ALL_ADS_COMPLETED));
                 if (mAdsManager != null) {
                     //mAdsManager.destroy();
@@ -391,7 +390,6 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                 break;
             case STARTED:
                 log.d("AD STARTED");
-
                 mIsAdIsPaused = false;
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_STARTED));
                 break;

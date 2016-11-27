@@ -56,8 +56,6 @@ public class AdInfo implements PKAdInfo{
         this.contnentType = contnentType;
     }
 
-
-
     public void setAdDuration(double adDuration) {
         this.adDuration = adDuration;
     }
