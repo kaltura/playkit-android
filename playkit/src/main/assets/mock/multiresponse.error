@@ -1,0 +1,19 @@
+{
+  "executionTime": 0.4012556,
+  "result": [
+    {
+      "error": {
+        "objectType": "KalturaAPIException",
+        "message": "error",
+        "code": "1"
+      }
+    },
+    {
+      "error": {
+        "objectType": "KalturaAPIException",
+        "message": "error",
+        "code": "1"
+      }
+    }
+  ]
+}

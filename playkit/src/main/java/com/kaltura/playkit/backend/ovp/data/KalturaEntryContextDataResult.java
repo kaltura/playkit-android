@@ -1,6 +1,6 @@
 package com.kaltura.playkit.backend.ovp.data;
 
-import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.backend.BaseResult;
 
 import java.util.ArrayList;
 
@@ -8,25 +8,21 @@ import java.util.ArrayList;
  * Created by tehilarozin on 02/11/2016.
  */
 
-public class KalturaEntryContextDataResult {
+public class KalturaEntryContextDataResult extends BaseResult {
 
-    ArrayList<PKMediaSource> sources;
-    ArrayList<FlavorAsset> flavorAssets;
+    ArrayList<KalturaSource> sources;
+    ArrayList<KalturaFlavorAsset> flavorAssets;
 
-    public ArrayList<FlavorAsset> getFlavorAssets() {
+    public ArrayList<KalturaFlavorAsset> getFlavorAssets() {
         return flavorAssets;
     }
 
-    public void setFlavorAssets(ArrayList<FlavorAsset> flavorAssets) {
-        this.flavorAssets = flavorAssets;
-    }
-
-    public FlavorAsset containsFlavor(int flavorId) {
+    public KalturaFlavorAsset containsFlavor(int flavorId) {
         if(flavorAssets == null || flavorAssets.size() == 0){
             return null;
         }
 
-        for(FlavorAsset flavorAsset : flavorAssets){
+        for(KalturaFlavorAsset flavorAsset : flavorAssets){
             if(flavorAsset.getFlavorParamsId() == flavorId){
                 return flavorAsset;
             }
@@ -35,11 +31,8 @@ public class KalturaEntryContextDataResult {
         return null;
     }
 
-    public ArrayList<PKMediaSource> getSources() {
+    public ArrayList<KalturaSource> getSources() {
         return sources;
     }
 
-    public void setSources(ArrayList<PKMediaSource> sources) {
-        this.sources = sources;
-    }
 }

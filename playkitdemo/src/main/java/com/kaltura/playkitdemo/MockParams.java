@@ -1,6 +1,6 @@
 package com.kaltura.playkitdemo;
 
-import com.kaltura.playkit.connect.SessionProvider;
+import com.kaltura.playkit.backend.SessionProvider;
 
 import java.util.ArrayList;
 
@@ -10,14 +10,14 @@ import java.util.ArrayList;
 
 public class MockParams {
 
-    public static final String PhoenixBaseUrl = "http://52.210.223.65:8080/v4_0/api_v3/";
+    public static final String PhoenixBaseUrl = "http://52.210.223.65:8080/v4_1/api_v3/";
     public static final int PartnerId = 198;
 
     //result of login with : [username: albert@gmail.com, pass: 123456]
     public static final String KS = "djJ8MTk4fPjQkM96OQ7N4GBL73vbOrbUMx7QNMEdoJ5kc6pLFCbgoTHIOAAmIO3ny2Ro0MnKMqGEGpRGM2fq5schRQ8PzqODmb0yegckE6qH5j9hqNig";
 
     public static final String MediaId = "258656";//frozen
-    public static final String MediaId2 = "437800";//vild
+    public static final String MediaId2 = "437800";//vild-wV
     public static final String MediaId3 = "259295";//the salt of earth
 
     public static final String MediaType = "media";
