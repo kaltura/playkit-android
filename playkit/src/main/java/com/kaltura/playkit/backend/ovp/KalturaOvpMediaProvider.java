@@ -1,5 +1,7 @@
 package com.kaltura.playkit.backend.ovp;
 
+import android.text.TextUtils;
+
 import com.google.gson.JsonSyntaxException;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKDrmParams;
@@ -10,6 +12,7 @@ import com.kaltura.playkit.backend.SessionProvider;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.data.KalturaBaseEntryListResponse;
 import com.kaltura.playkit.backend.ovp.data.KalturaEntryContextDataResult;
+import com.kaltura.playkit.backend.ovp.data.KalturaFlavorAsset;
 import com.kaltura.playkit.backend.ovp.data.KalturaMediaEntry;
 import com.kaltura.playkit.backend.ovp.data.KalturaSource;
 import com.kaltura.playkit.backend.ovp.services.BaseEntryService;
@@ -148,9 +151,9 @@ public class KalturaOvpMediaProvider implements MediaEntryProvider {
 
             PKMediaEntry mediaEntry = new PKMediaEntry();
             ArrayList<KalturaSource> kalturaSources = contextData.getSources();
-            ArrayList<PKMediaSource> sources = new ArrayList<>();
+            List<PKMediaSource> sources = new ArrayList<>();
 
-            if(kalturaSources != null) {
+            if (kalturaSources != null) {
                 //sources with multiple drm data should be split to mediasource per drm
                 for (KalturaSource kalturaSource : kalturaSources) {
                     List<KalturaSource.Drm> drmData = kalturaSource.getDrmData();
@@ -163,11 +166,89 @@ public class KalturaOvpMediaProvider implements MediaEntryProvider {
                         sources.add(new PKMediaSource().setUrl(kalturaSource.getUrl()).setId(kalturaSource.getId() + ""));
                     }
                 }
+            } else {
+                sources = parseSourceFromFlavors(entry, contextData);
             }
 
             return mediaEntry.setId(entry.getId()).setSources(sources).setDuration(entry.getMsDuration());
         }
 //!! PKMediaSource id is not unique - if contains more than 1 drm each of the drm will be converted to a source
 //!! AndroidCharacter will have the same id.
+
+
+        static List<PKMediaSource> parseSourceFromFlavors(KalturaMediaEntry entry, KalturaEntryContextDataResult contextData) {
+
+            ArrayList<KalturaFlavorAsset> supportedFlavors = new ArrayList<>();
+            ArrayList<PKMediaSource> sources = new ArrayList<>();
+
+            if (contextData != null) {
+                int[] flavorParamsIdsArr = entry.getFlavorParamsIdsArr();
+                if (flavorParamsIdsArr != null && flavorParamsIdsArr.length > 0) {
+                    String flavorIds = "";
+
+                    for (int i = 0; i < flavorParamsIdsArr.length; i++) {
+                        KalturaFlavorAsset flavor;
+                        if(flavorParamsIdsArr[i] == 0){
+                            flavorIds += "0_";
+                            continue;
+                        }
+                        if ((flavor = contextData.containsFlavor(flavorParamsIdsArr[i])) != null) {
+                            flavorIds += (flavorIds.length() > 0 ? "," : "") + flavor.getId();
+                            supportedFlavors.add(flavor);
+                        }
+                    }
+                    if (flavorIds.length() > 0) {
+                        PKMediaSource mediaSource = new PKMediaSource();
+                        mediaSource.setId(entry.getId());
+                        mediaSource.setUrl(formatFlavoredUrl(entry.getDataUrl(), flavorIds));
+                        sources.add(mediaSource);
+                    }
+                }
+            }
+
+            return sources;
+        }
+
+        //          "url":"http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/url/protocol/http/a.mp4/flavorIds/0_,1_ude4l5pb,1_izgi81qa,1_3l6wh2jz,1_fafwf2t7,1_k6gs4dju,1_nzen8kfl"
+
+        private static String formatFlavoredUrl(String url, String flavorIds) {
+            return TextUtils.isEmpty(url) ? url : url + "/flavorIds/" + flavorIds;
+        }
     }
+
 }
+
+/*
+*     public void parseMediaEntry(ArrayList<KalturaMediaEntry> mediaEntries, KalturaEntryContextDataResult contextData){
+
+        MediaEntry mediaEntry = new MediaEntry();
+
+        for(KalturaMediaEntry entry : mediaEntries){
+            ArrayList<FlavorAsset> supportedFlavors = new ArrayList<>();
+
+            if(contextData != null){
+                int[] flavorParamsIdsArr = entry.getFlavorParamsIdsArr();
+                if(flavorParamsIdsArr != null && flavorParamsIdsArr.length > 0 ) {
+                    String flavorIds = "";
+
+                    for(int i = 0 ; i <flavorParamsIdsArr.length; i++){
+                        FlavorAsset flavor;
+                        if((flavor = contextData.containsFlavor(flavorParamsIdsArr[i])) != null){
+                            flavorIds += (flavorIds.length() > 0 ? "," : "") + flavor.getId();
+                            supportedFlavors.add(flavor);
+                        }
+                    }
+                    if(flavorIds.length() > 0){
+                        MediaSource mediaSource = new MediaSource();
+                        mediaSource.setId(entry.getId());
+                        mediaSource.setMimeType(entry.);
+                    }
+                }
+            }
+        }
+
+        mediaEntry.setSources();
+    }
+
+*
+* */

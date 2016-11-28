@@ -101,7 +101,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
                     assertTrue(response.getResponse() != null);
                     assertTrue(response.getResponse().getId().equals(EntryId));
                     //assertTrue(response.getResponse().getSources().size() == 5);
-                    assertTrue(response.getResponse().getSources().size() == 0); // currently getContextData request doesn't return sources array
+                    assertTrue(response.getResponse().getSources().size() == 1); // currently getContextData request doesn't return sources array
                     assertTrue(response.getResponse().getDuration() == 102000);
 
                 } else {
