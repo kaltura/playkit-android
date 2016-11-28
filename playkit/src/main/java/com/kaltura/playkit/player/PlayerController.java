@@ -88,8 +88,8 @@ public class PlayerController implements Player {
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
 //               Uri sourceUri = Uri.parse(mediaConfig.getMediaEntry().getSources().get(0).getUrl());
 //        Uri sourceUri = Uri.parse("https://tungsten.aaplimg.com/VOD/bipbop_adv_example_v2/master.m3u8");
-        Uri sourceUri = Uri.parse("https://devimages.apple.com.edgekey.net/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8");
-//        Uri sourceUri = Uri.parse("http://cdnapi.kaltura.com/p/243342/sp/24334200/playManifest/entryId/0_uka1msg4/flavorIds/1_vqhfu6uy,1_80sohj7p/format/applehttp/protocol/http/a.m3u8");// Uri.parse(playerConfig.getMediaEntry().getSources().get(0).getUrl());
+//        Uri sourceUri = Uri.parse("https://devimages.apple.com.edgekey.net/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8");
+        Uri sourceUri = Uri.parse("http://cdnapi.kaltura.com/p/243342/sp/24334200/playManifest/entryId/0_uka1msg4/flavorIds/1_vqhfu6uy,1_80sohj7p/format/applehttp/protocol/http/a.m3u8");// Uri.parse(playerConfig.getMediaEntry().getSources().get(0).getUrl());
         player.load(sourceUri);
         startPlaybackFrom(mediaConfig.getStartPosition());
     }

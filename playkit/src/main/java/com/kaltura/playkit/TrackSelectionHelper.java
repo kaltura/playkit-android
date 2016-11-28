@@ -49,6 +49,15 @@ public class TrackSelectionHelper {
 
     private boolean isDisabled;
 
+
+    public interface OnTrackInfoChanged {
+        void customizeTrackInfo(int trackType, String[] updatedInfo);
+    }
+
+    //When application want to display only part of available tracks, or change their order, it should notify us
+    // with this interface and pass the tracks it is interested in.
+    private OnTrackInfoChanged onTrackInfoChanged = initOnTackInfoChanged();
+
     /**
      * @param selector                           The track selector.
      * @param adaptiveTrackSelectionFactory A factory for adaptive video {@link TrackSelection}s,
@@ -86,7 +95,7 @@ public class TrackSelectionHelper {
 
         switch (trackType) {
             case TRACK_VIDEO:
-                // buil ovveride object with which we will actually change the current one.
+                // build override object with which we will actually change the current one.
                 VideoTrackInfo videoTrackInfo = videoMap.get(videoMap.keySet().toArray()[position]);
                 override = new MappingTrackSelector.SelectionOverride(FIXED_FACTORY, videoTrackInfo.getGroupIndex(), videoTrackInfo.getTrackIndex());
                 break;
@@ -210,7 +219,8 @@ public class TrackSelectionHelper {
         return new TracksInfo(
                 new ArrayList(videoMap.values()),
                 audioTrackInfos,
-                new ArrayList(subtitleMap.values()));
+                new ArrayList(subtitleMap.values()),
+                onTrackInfoChanged);
     }
 
 
@@ -256,4 +266,74 @@ public class TrackSelectionHelper {
     public void setTrackReadyListener(ExoPlayerWrapper.TrackInfoReadyListener trackReadyListener) {
         this.trackReadyListener = trackReadyListener;
     }
+
+
+    public void release() {
+        trackReadyListener = null;
+        onTrackInfoChanged = null;
+        videoMap.clear();
+        audioMap.clear();
+        subtitleMap.clear();
+    }
+
+    private OnTrackInfoChanged initOnTackInfoChanged() {
+        return new OnTrackInfoChanged() {
+            @Override
+            public void customizeTrackInfo(int trackType, String[] updatedInfo) {
+
+                switch (trackType){
+                    case TRACK_VIDEO:
+                        LinkedHashMap<String, VideoTrackInfo> newVideoMap = new LinkedHashMap<>();
+                        // iterate through all the items in map, and leave items that application is interested in.
+                        // the index order of the items will be the same as in application.
+                        for (String anUpdatedInfo : updatedInfo) {
+                            for (int i = 0; i < videoMap.keySet().size(); i++) {
+                                VideoTrackInfo videoTrackInfo = videoMap.get(videoMap.keySet().toArray()[i]);
+                                if (anUpdatedInfo.equals(videoTrackInfo.getUniqueId())
+                                        ||
+                                        anUpdatedInfo.equals(String.valueOf(videoTrackInfo.getBitrate()))
+                                        ||
+                                        anUpdatedInfo.equals(String.valueOf(videoTrackInfo.getWidth()))
+                                        ||
+                                        anUpdatedInfo.equals(String.valueOf(videoTrackInfo.getHeight()))) {
+                                    newVideoMap.put(videoTrackInfo.getUniqueId(), videoTrackInfo);
+                                }
+                            }
+                        }
+                        videoMap = newVideoMap;
+                        break;
+                    case TRACK_AUDIO:
+                        LinkedHashMap<String, List<AudioTrackInfo>> newAudioMap = new LinkedHashMap<>();
+
+                        for (String anUpdatedInfo : updatedInfo) {
+                            for (int i = 0; i < audioMap.keySet().size(); i++) {
+                                List<AudioTrackInfo> audioTrackInfo = audioMap.get(audioMap.keySet().toArray()[i]);
+                                if (anUpdatedInfo.equals(audioTrackInfo.get(0).getUniqueId())
+                                        ||
+                                        anUpdatedInfo.equals(String.valueOf(audioTrackInfo.get(0).getLanguage()))) {
+                                    newAudioMap.put(audioTrackInfo.get(0).getUniqueId(), audioTrackInfo);
+                                }
+                            }
+                        }
+                        audioMap = newAudioMap;
+                        break;
+                    case TRACK_SUBTITLE:
+                        LinkedHashMap<String, SubtitleTrackInfo> newSubtitleMap = new LinkedHashMap<>();
+
+                        for (String anUpdatedInfo : updatedInfo) {
+                            for (int i = 0; i < subtitleMap.keySet().size(); i++) {
+                                SubtitleTrackInfo subtitleTrackInfo = subtitleMap.get(subtitleMap.keySet().toArray()[i]);
+                                if (anUpdatedInfo.equals(subtitleTrackInfo.getUniqueId()) ||
+                                        anUpdatedInfo.equals(subtitleTrackInfo.getLanguage())) {
+                                    newSubtitleMap.put(subtitleTrackInfo.getUniqueId(), subtitleTrackInfo);
+                                }
+                            }
+                        }
+                        subtitleMap = newSubtitleMap;
+                        break;
+                }
+            }
+        };
+    }
+
 }
