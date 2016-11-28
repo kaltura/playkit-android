@@ -29,12 +29,7 @@ public class APIDefines {
     }
 
     @Retention(SOURCE)
-    @StringDef(value = {
-            Media,
-            Epg,
-            Recording
-    })
-
+    @StringDef(value = {Media, Epg, Recording})
     public @interface BookmarkType {
         String Media = "media";
         String Epg = "epg";
@@ -55,3 +50,4 @@ public class APIDefines {
 
 
 }
+
