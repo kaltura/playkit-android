@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
@@ -27,6 +28,9 @@ import java.util.TimerTask;
  */
 
 public class KalturaLiveStatsPlugin extends PKPlugin {
+    private static final PKLog log = PKLog.get("KalturaLiveStatsPlugin");
+    private static final String TAG = "KalturaLiveStatsPlugin";
+
     private boolean isBuffering = false;
 
     public enum KLiveStatsEvent {
@@ -44,7 +48,6 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         }
     }
 
-    private static final String TAG = "KalturaLiveStatsPlugin";
 
     private Player player;
     private PlayerConfig.Media mediaConfig;
@@ -76,7 +79,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
         @Override
         public String getKs() {
-            return "djJ8MjIxOTY4MXzAAQiLqlMdKikGdTFiGfnsMLUrAO7_E2zPIlHY9ujBkStzvj9rpgGYW1tA-qC8SNJeTdvES6YeB5ToOsgwAmu_0B2U5OXKQlJqpT2cZGfKG8PP7Zodjl3SYtzoSDe4e_cmiTyWtwo_Dknoh8L6X9_Q";
+            return "";
         }
 
         @Override
@@ -211,10 +214,9 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         timer.cancel();
     }
 
-
     private void sendLiveEvent(long bufferTime) {
-        String sessionId = pluginConfig.has("sessionId")? pluginConfig.get("sessionId").toString(): "";
-        String referrer = pluginConfig.has("IsFriendlyIframe")? pluginConfig.get("IsFriendlyIframe").toString(): "";
+        String sessionId = pluginConfig.has("sessionId")? pluginConfig.getAsJsonPrimitive("sessionId").getAsString(): "";
+        String referrer = pluginConfig.has("IsFriendlyIframe")? pluginConfig.getAsJsonPrimitive("IsFriendlyIframe").getAsString(): "";
 
         // Parameters for the request -
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
