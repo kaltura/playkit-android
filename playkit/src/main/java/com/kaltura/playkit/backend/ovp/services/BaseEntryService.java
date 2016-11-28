@@ -12,7 +12,7 @@ import com.kaltura.playkit.connect.RequestBuilder;
 
 public class BaseEntryService extends OvpService {
 
-    public static RequestBuilder entryInfo(String baseUrl, String ks/*, int partnerId*/,  String entryId) {
+    public static RequestBuilder entryInfo(String baseUrl, String ks, String entryId) {
 
         MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks).tag("mediaAsset-multi-get");
         /*if(TextUtils.isEmpty(ks)){
@@ -34,7 +34,7 @@ public class BaseEntryService extends OvpService {
                 .params(getEntryListReqParams(ks, entryId));
     }
 
-    private static JsonObject getEntryListReqParams(String entryId, String ks){
+    private static JsonObject getEntryListReqParams(String ks,  String entryId){
         JsonObject params = OvpService.getOvpParams();
         params.addProperty("filter.redirectFromEntryId", entryId);
         params.addProperty("responseProfile.type", APIDefines.ResponseProfileType.IncludeFields); // in order to define which of the properties we want to "include"(1) in the response
@@ -53,7 +53,7 @@ public class BaseEntryService extends OvpService {
     }
 
 
-    private static JsonObject getContextDataReqParams(String entryId, String ks){
+    private static JsonObject getContextDataReqParams(String ks, String entryId){
         JsonObject params = OvpService.getOvpParams();
         params.addProperty("entryId", entryId);
         params.addProperty("ks", ks);

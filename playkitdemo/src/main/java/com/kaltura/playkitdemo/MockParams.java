@@ -1,6 +1,6 @@
 package com.kaltura.playkitdemo;
 
-import com.kaltura.playkit.connect.SessionProvider;
+import com.kaltura.playkit.backend.SessionProvider;
 
 import java.util.ArrayList;
 

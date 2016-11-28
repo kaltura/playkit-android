@@ -1,5 +1,8 @@
 package com.kaltura.playkit.backend.phoenix.services;
 
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
+
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.backend.phoenix.PhoenixConfigs;
 import com.kaltura.playkit.connect.MultiRequestBuilder;
@@ -17,9 +20,11 @@ public class PhoenixService {
         return params;
     }
 
-    public static MultiRequestBuilder getMultirequest(String baseUrl, String ks){
+    public static MultiRequestBuilder getMultirequest(String baseUrl, @Nullable String ks){
         JsonObject params = getPhoenixParams();
-        params.addProperty("ks", ks);
+        if(!TextUtils.isEmpty(ks)) {
+            params.addProperty("ks", ks);
+        }
         return (MultiRequestBuilder) new MultiRequestBuilder().service("multirequest").method("POST").url(baseUrl).params(params);
     }
 }

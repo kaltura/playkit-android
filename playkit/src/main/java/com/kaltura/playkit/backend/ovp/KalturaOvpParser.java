@@ -4,11 +4,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.kaltura.playkit.backend.ovp.data.OvpResultAdapter;
+import com.google.gson.stream.JsonReader;
 import com.kaltura.playkit.backend.BaseResult;
+import com.kaltura.playkit.backend.ovp.data.OvpResultAdapter;
 import com.kaltura.playkit.connect.GsonParser;
-
-import java.util.List;
 
 /**
  * Created by tehilarozin on 24/11/2016.
@@ -16,30 +15,31 @@ import java.util.List;
 
 public class KalturaOvpParser {
 
-    public static Object parse(String response, Class...types) throws JsonSyntaxException {
+    public static Object parse(String response, Class... types) throws JsonSyntaxException {
         JsonParser parser = new JsonParser();
         JsonElement resultElement = parser.parse(response);
         return GsonParser.parse(resultElement, new GsonBuilder().registerTypeHierarchyAdapter(BaseResult.class, new OvpResultAdapter()).create(), types);
     }
 
-    public static BaseResult parseObject(String response) throws JsonSyntaxException {
+    public static <T> T parse(JsonReader reader) throws JsonSyntaxException {
         JsonParser parser = new JsonParser();
-        JsonElement resultElement = parser.parse(response);//.get("result");
-        if(resultElement.isJsonObject()){
-            return GsonParser.parseObject(resultElement, BaseResult.class, new GsonBuilder().registerTypeHierarchyAdapter(BaseResult.class, new OvpResultAdapter()).create());
+        return parse(parser.parse(reader));
+    }
+
+    public static <T> T parse(String response) throws JsonSyntaxException {
+        JsonParser parser = new JsonParser();
+        return parse(parser.parse(response));
+    }
+
+    public static <T> T parse(JsonElement resultElement) throws JsonSyntaxException {
+
+        if (resultElement.isJsonObject()) {
+            return (T) GsonParser.parseObject(resultElement, BaseResult.class, new GsonBuilder().registerTypeHierarchyAdapter(BaseResult.class, new OvpResultAdapter()).create());
+        } else if (resultElement.isJsonArray()) {
+            return (T) GsonParser.parseArray(resultElement, new GsonBuilder().registerTypeHierarchyAdapter(BaseResult.class, new OvpResultAdapter()).create(), BaseResult.class);
+        } else if (resultElement.isJsonPrimitive()) {
+            return (T) resultElement.getAsJsonPrimitive().getAsString();
         }
         return null;
     }
-
-    public static <T extends BaseResult> List<T> parseArray(String response) throws JsonSyntaxException {
-
-        JsonParser parser = new JsonParser();
-        JsonElement resultElement = parser.parse(response);//.get("result");
-
-        if (resultElement.isJsonArray()) {
-            return GsonParser.parseArray(resultElement, BaseResult.class, new GsonBuilder().registerTypeHierarchyAdapter(BaseResult.class, new OvpResultAdapter()).create());
-        }
-        return null;
-    }
-
 }
