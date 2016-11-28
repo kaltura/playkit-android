@@ -20,7 +20,6 @@ public class YouboraLibraryManager extends PluginGeneric {
     private static final PKLog log = PKLog.get("YouboraLibraryManager");
     private static final String TAG = "YouboraPlugin";
 
-
     private Double lastReportedBitrate = super.getBitrate();
     private Double lastReportedthroughput = super.getThroughput();
     private static final long MONITORING_INTERVAL = 200L;
@@ -42,7 +41,6 @@ public class YouboraLibraryManager extends PluginGeneric {
         ViewManager.setMonitoringInterval(MONITORING_INTERVAL);
     }
 
-
     public void onEvent(PlayerEvent.StateChanged event) {
         switch (event.newState) {
             case IDLE:
@@ -62,7 +60,6 @@ public class YouboraLibraryManager extends PluginGeneric {
         }
         log.d(event.newState.toString());
         messageBus.post(new LogEvent(TAG + " " + event.newState.toString()));
-
     }
 
     public PKEvent.Listener getEventListener() {
@@ -81,9 +78,6 @@ public class YouboraLibraryManager extends PluginGeneric {
                         playHandler();
                         joinHandler();
                         bufferedHandler();
-                        break;
-                    case DURATION_CHANGE:
-
                         break;
                     case ENDED:
                         endedHandler();

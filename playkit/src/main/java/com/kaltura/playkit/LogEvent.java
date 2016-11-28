@@ -9,7 +9,7 @@ public class LogEvent implements PKEvent {
     public final LogType type;
 
     public enum LogType
-    {LogEvent};
+    {LogEvent}; //Plan to separate it to different log events for each plugin
 
     public LogEvent(String log) {
         this.type = LogType.LogEvent;

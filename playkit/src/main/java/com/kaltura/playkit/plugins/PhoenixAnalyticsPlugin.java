@@ -26,7 +26,7 @@ import java.util.TimerTask;
  */
 
 public class PhoenixAnalyticsPlugin extends PKPlugin {
-    private static final PKLog log = PKLog.get("YouboraLibraryManager");
+    private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
     private static final String TAG = "PhoenixAnalytics";
 
     private enum PhoenixActionType{
@@ -86,7 +86,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
-
+        mDidFirstPlay = false;
     }
 
     @Override
@@ -96,7 +96,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     public void onDestroy() {
-        setMessageParams(PhoenixActionType.STOP);
+        sendAnalyticsEvent(PhoenixActionType.STOP);
+        timer.cancel();
     }
 
     @Override
@@ -121,23 +122,20 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                     case CAN_PLAY:
                         mDidFirstPlay = false;
                         break;
-                    case DURATION_CHANGE:
-
-                        break;
                     case ENDED:
                         timer.cancel();
-                        setMessageParams(PhoenixActionType.FINISH);
+                        sendAnalyticsEvent(PhoenixActionType.FINISH);
                         break;
                     case ERROR:
                         timer.cancel();
-                        setMessageParams(PhoenixActionType.ERROR);
+                        sendAnalyticsEvent(PhoenixActionType.ERROR);
                         break;
                     case LOADED_METADATA:
-                        setMessageParams(PhoenixActionType.LOAD);
+                        sendAnalyticsEvent(PhoenixActionType.LOAD);
                         break;
                     case PAUSE:
                         if (mDidFirstPlay) {
-                            setMessageParams(PhoenixActionType.PAUSE);
+                            sendAnalyticsEvent(PhoenixActionType.PAUSE);
                         }
                         break;
                     case FIRST_PLAY:
@@ -148,19 +146,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         }
                         if (!mDidFirstPlay) {
                             mDidFirstPlay = true;
-                            setMessageParams(PhoenixActionType.FIRST_PLAY);
+                            sendAnalyticsEvent(PhoenixActionType.FIRST_PLAY);
                         } else {
-                            setMessageParams(PhoenixActionType.PLAY);
+                            sendAnalyticsEvent(PhoenixActionType.PLAY);
                         }
-
-                        break;
-                    case PLAYING:
-
-                        break;
-                    case SEEKED:
-
-                        break;
-                    case SEEKING:
 
                         break;
                     default:
@@ -175,17 +164,19 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                setMessageParams(PhoenixActionType.HIT);
+                sendAnalyticsEvent(PhoenixActionType.HIT);
                 if ((float) player.getCurrentPosition() / player.getDuration() > 0.98){
-                    setMessageParams(PhoenixActionType.FINISH);
+                    sendAnalyticsEvent(PhoenixActionType.FINISH);
                 }
             }
         }, 0, MediaHitInterval); // Get media hit interval from plugin config
     }
 
-    private void setMessageParams(final PhoenixActionType eventType){
+    private void sendAnalyticsEvent(final PhoenixActionType eventType){
+        String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"464302";
+
         RequestBuilder requestBuilder = BookmarkService.actionAdd(ksSessionProvider.baseUrl(), ksSessionProvider.partnerId(), ksSessionProvider.getKs(),
-                "media", mediaConfig.getMediaEntry().getId(), eventType.name(), player.getCurrentPosition(), /*mediaConfig.getMediaEntry().getFileId()*/ "464302");
+                "media", mediaConfig.getMediaEntry().getId(), eventType.name(), player.getCurrentPosition(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override

@@ -23,12 +23,12 @@ public class YouboraConfig {
     private static final PKLog log = PKLog.get("YouboraConfig");
 
     private static Map<String, Object> youboraConfig = null;
-
     private static final Map<String, Object> defaultYouboraConfig;
     private static final Map<String, Object> mediaObject;
     private static final Map<String, Object> youboraConfigObject;
     private static final Map<String, Object> propertiesObject;
     private static final Map<String, Object> extraParamsObject;
+    private static final Map<String, Object> adsObject;
 
     static {
 
@@ -76,6 +76,8 @@ public class YouboraConfig {
         ads.put("position", null);
         ads.put("duration", null);
         youboraConfig.put("ads", ads);
+        adsObject = ads;
+
 
         Map<String, Object> properties = new HashMap<>(16);
         properties.put("contentId", null);
@@ -114,9 +116,7 @@ public class YouboraConfig {
         defaultYouboraConfig = Collections.unmodifiableMap(youboraConfig);
     }
 
-    private YouboraConfig() {
-    }
-
+    private YouboraConfig() {}
 
     public static void saveYouboraConfig(Context context, Map<String, Object> config){
         youboraConfig = config;
@@ -148,6 +148,23 @@ public class YouboraConfig {
             mediaObject.put("resource", mediaConfig.getMediaEntry().getId());
             mediaObject.put("title", mediaConfig.getMediaEntry().getId()); //name?
             mediaObject.put("duration", mediaConfig.getMediaEntry().getDuration());
+        }
+        if (pluginConfig != null){
+            if (pluginConfig.has("service")){
+                youboraConfigObject.put("service",pluginConfig.getAsJsonPrimitive("service").getAsString());
+            }
+            if (pluginConfig.has("title")){
+                mediaObject.put("title",pluginConfig.getAsJsonPrimitive("title").getAsString());
+            }
+            if (pluginConfig.has("genre")){
+                propertiesObject.put("genre",pluginConfig.getAsJsonPrimitive("genre").getAsString());
+            }
+            if (pluginConfig.has("param1")){
+                extraParamsObject.put("param1",pluginConfig.getAsJsonPrimitive("param1").getAsString());
+            }
+            if (pluginConfig.has("adsAnalytics")){
+                adsObject.put("adsExpected", pluginConfig.getAsJsonPrimitive("adsAnalytics").getAsBoolean());
+            }
         }
     }
 

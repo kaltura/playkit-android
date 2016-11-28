@@ -96,12 +96,12 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     private SessionProvider OVPSessionProvider = new SessionProvider() {
         @Override
         public String baseUrl() {
-            return "stats.kaltura.com";
+            return "analytics.kaltura.com";
         }
 
         @Override
         public String getKs() {
-            return "djJ8MjIxOTY4MXzAAQiLqlMdKikGdTFiGfnsMLUrAO7_E2zPIlHY9ujBkStzvj9rpgGYW1tA-qC8SNJeTdvES6YeB5ToOsgwAmu_0B2U5OXKQlJqpT2cZGfKG8PP7Zodjl3SYtzoSDe4e_cmiTyWtwo_Dknoh8L6X9_Q";
+            return "";
         }
 
         @Override
@@ -114,7 +114,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     public static final Factory factory = new Factory() {
         @Override
         public String getName() {
-            return "KalturaStatistics";
+            return "KalturaAnalytics";
         }
 
         @Override

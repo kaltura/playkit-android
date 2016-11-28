@@ -21,7 +21,6 @@ public class YouboraPlugin extends PKPlugin {
     private static final String TAG = "YouboraPlugin";
     private static final PKLog log = PKLog.get("YouboraPlugin");
 
-
     private static YouboraLibraryManager mPluginManager;
     private PlayerConfig.Media mMediaConfig;
     private JsonObject mPluginConfig;
@@ -69,11 +68,9 @@ public class YouboraPlugin extends PKPlugin {
     }
 
     private void startMonitoring(Player player) {
-
         Map<String, Object> opt  = YouboraConfig.getYouboraConfig(mPluginConfig, mMediaConfig);
         // Set options
         mPluginManager.setOptions(opt);
-
         mPluginManager.startMonitoring(player);
         mMessageBus.listen(mPluginManager.getEventListener(), (Enum[]) PlayerEvent.Type.values());
     }
