@@ -65,9 +65,11 @@ public class YouboraPlugin extends PKPlugin {
         this.mMessageBus = messageBus;
         mPluginManager = new YouboraLibraryManager(new Options(), messageBus);
         startMonitoring(mPlayer);
+        log.d("onLoad");
     }
 
     private void startMonitoring(Player player) {
+        log.d("start monitoring");
         Map<String, Object> opt  = YouboraConfig.getYouboraConfig(mPluginConfig, mMediaConfig);
         // Set options
         mPluginManager.setOptions(opt);
@@ -76,6 +78,7 @@ public class YouboraPlugin extends PKPlugin {
     }
 
     private void stopMonitoring() {
+        log.d("stop monitoring");
         mPluginManager.stopMonitoring();
     }
 }

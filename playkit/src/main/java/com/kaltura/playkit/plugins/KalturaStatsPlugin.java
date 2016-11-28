@@ -145,11 +145,13 @@ public class KalturaStatsPlugin extends PKPlugin {
         this.mediaConfig = mediaConfig;
         this.pluginConfig = pluginConfig;
         this.messageBus = messageBus;
+        log.d("onLoad finished");
 //        setExamplePluginConfig(); // Until full implementation of config object
     }
 
     @Override
     public void onDestroy() {
+        log.d("onDestroy");
         intervalOn = false;
         timer.cancel();
     }
@@ -165,6 +167,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     }
 
     public void onEvent(PlayerEvent.StateChanged event) {
+        log.d(event.newState.toString());
         switch (event.newState) {
             case IDLE:
                 sendAnalyticsEvent(KStatsEvent.WIDGET_LOADED);
@@ -198,6 +201,7 @@ public class KalturaStatsPlugin extends PKPlugin {
         @Override
         public void onEvent(PKEvent event) {
             if (event instanceof PlayerEvent) {
+                log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
                     case STATE_CHANGED:
                         KalturaStatsPlugin.this.onEvent((PlayerEvent.StateChanged) event);
@@ -273,7 +277,7 @@ public class KalturaStatsPlugin extends PKPlugin {
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
-                log.d("onComplete: " + eventType.toString());
+                log.d("onComplete send event: " + eventType.toString());
                 messageBus.post(new LogEvent(TAG + " " + eventType.toString()));
             }
         });

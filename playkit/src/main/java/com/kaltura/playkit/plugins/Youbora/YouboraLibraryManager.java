@@ -42,6 +42,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public void onEvent(PlayerEvent.StateChanged event) {
+        log.d(event.newState.toString());
         switch (event.newState) {
             case IDLE:
 
@@ -70,6 +71,7 @@ public class YouboraLibraryManager extends PluginGeneric {
         @Override
         public void onEvent(PKEvent event) {
             if (event instanceof PlayerEvent) {
+                log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
                     case STATE_CHANGED:
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
@@ -120,12 +122,14 @@ public class YouboraLibraryManager extends PluginGeneric {
     };
 
     public void startMonitoring(Object player) {
+        log.d("startMonitoring");
         super.startMonitoring(player);
         this.lastReportedBitrate = super.getBitrate();
         this.enableSeekMonitor();
     }
 
     public void stopMonitoring() {
+        log.d("stopMonitoring");
         super.stopMonitoring();
     }
 

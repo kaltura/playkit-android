@@ -17,7 +17,6 @@ import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
-import com.kaltura.playkit.backend.SessionProvider;
 
 import java.util.TimerTask;
 
@@ -54,24 +53,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     private final static int MediaHitInterval = 30000; //Should be provided in plugin config
 
-    private SessionProvider ksSessionProvider = new SessionProvider() {
-        @Override
-        public String baseUrl() {
-            return "http://52.210.223.65:8080/v4_0/api_v3/";
-        }
-
-        @Override
-        public String getKs() {
-            return "djJ8MTk4fN86RC6KBjyHtmG9bIBounF1ewb1SMnFNtAvaxKIAfHUwW0rT4GAYQf8wwUKmmRAh7G0olZ7IyFS1FTpwskuqQPVQwrSiy_J21kLxIUl_V9J";
-        }
-
-        @Override
-        public int partnerId() {
-            return 198;
-        }
-    };
-
-
     public static final Factory factory = new Factory() {
         @Override
         public String getName() {
@@ -90,12 +71,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onUpdateConfig(String key, Object value) {
-
-    }
+    protected void onUpdateConfig(String key, Object value) {}
 
     @Override
     public void onDestroy() {
+        log.d("onDestroy");
         sendAnalyticsEvent(PhoenixActionType.STOP);
         timer.cancel();
     }
@@ -112,12 +92,14 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         if (this.mediaConfig.getStartPosition() != -1){
             this.mContinueTime = this.mediaConfig.getStartPosition();
         }
+        log.d("onLoad");
     }
 
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
             if (event instanceof PlayerEvent) {
+                log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
                     case CAN_PLAY:
                         mDidFirstPlay = false;
@@ -161,6 +143,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     };
 
     private void startMediaHitInterval(){
+        log.d("timer interval");
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -174,14 +157,18 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     private void sendAnalyticsEvent(final PhoenixActionType eventType){
         String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"464302";
+        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://52.210.223.65:8080/v4_0/api_v3/";
+        String ks = pluginConfig.has("ks")? pluginConfig.getAsJsonPrimitive("ks").getAsString():"djJ8MTk4fN86RC6KBjyHtmG9bIBounF1ewb1SMnFNtAvaxKIAfHUwW0rT4GAYQf8wwUKmmRAh7G0olZ7IyFS1FTpwskuqQPVQwrSiy_J21kLxIUl_V9J";
+        int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt():198;
 
-        RequestBuilder requestBuilder = BookmarkService.actionAdd(ksSessionProvider.baseUrl(), ksSessionProvider.partnerId(), ksSessionProvider.getKs(),
+
+        RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
                 "media", mediaConfig.getMediaEntry().getId(), eventType.name(), player.getCurrentPosition(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
-                log.d("onComplete: ");
+                log.d("onComplete send event: ");
                 messageBus.post(new LogEvent(TAG + " " + eventType.name()));
             }
         });
