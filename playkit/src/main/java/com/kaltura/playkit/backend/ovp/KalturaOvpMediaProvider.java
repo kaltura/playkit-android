@@ -13,7 +13,6 @@ import com.kaltura.playkit.backend.ovp.data.KalturaEntryContextDataResult;
 import com.kaltura.playkit.backend.ovp.data.KalturaMediaEntry;
 import com.kaltura.playkit.backend.ovp.data.KalturaSource;
 import com.kaltura.playkit.backend.ovp.services.BaseEntryService;
-import com.kaltura.playkit.backend.phoenix.data.PhoenixParser;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
@@ -104,7 +103,7 @@ public class KalturaOvpMediaProvider implements MediaEntryProvider {
 
                 /* in this option, in case of error response, the type of the parsed response will be BaseResult, and not the expected object type,
                    since we parse the type dynamically from the result and we get "KalturaAPIException" objectType */
-                List<BaseResult> responses = PhoenixParser.parse(response.getResponse());//, TextUtils.isEmpty(sessionProvider.getKs()) ? 1 : 0, KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
+                List<BaseResult> responses = KalturaOvpParser.parse(response.getResponse());//, TextUtils.isEmpty(sessionProvider.getKs()) ? 1 : 0, KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
                 /* in this option, responses types will always be as expected, and in case of an error, the error can be reached from the typed object, since
                 * all response objects should extend BaseResult */
                 //  List<BaseResult> responses = (List<BaseResult>) KalturaOvpParser.parse(response.getResponse(), KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
@@ -151,16 +150,18 @@ public class KalturaOvpMediaProvider implements MediaEntryProvider {
             ArrayList<KalturaSource> kalturaSources = contextData.getSources();
             ArrayList<PKMediaSource> sources = new ArrayList<>();
 
-            //sources with multiple drm data should be split to mediasource per drm
-            for (KalturaSource kalturaSource : kalturaSources) {
-                List<KalturaSource.Drm> drmData = kalturaSource.getDrmData();
-                if (drmData != null && drmData.size() > 0) {
-                    for (KalturaSource.Drm drm : drmData) {
-                        PKMediaSource pkMediaSource = new PKMediaSource().setUrl(kalturaSource.getUrl()).setId(kalturaSource.getId() + ""); //!! source in mock doesn't have id - if source is per drm data - what will be the id
-                        sources.add(pkMediaSource.setDrmData(new PKDrmParams(drm.getLicenseURL())));
+            if(kalturaSources != null) {
+                //sources with multiple drm data should be split to mediasource per drm
+                for (KalturaSource kalturaSource : kalturaSources) {
+                    List<KalturaSource.Drm> drmData = kalturaSource.getDrmData();
+                    if (drmData != null && drmData.size() > 0) {
+                        for (KalturaSource.Drm drm : drmData) {
+                            PKMediaSource pkMediaSource = new PKMediaSource().setUrl(kalturaSource.getUrl()).setId(kalturaSource.getId() + ""); //!! source in mock doesn't have id - if source is per drm data - what will be the id
+                            sources.add(pkMediaSource.setDrmData(new PKDrmParams(drm.getLicenseURL())));
+                        }
+                    } else {
+                        sources.add(new PKMediaSource().setUrl(kalturaSource.getUrl()).setId(kalturaSource.getId() + ""));
                     }
-                } else {
-                    sources.add(new PKMediaSource().setUrl(kalturaSource.getUrl()).setId(kalturaSource.getId() + ""));
                 }
             }
 
