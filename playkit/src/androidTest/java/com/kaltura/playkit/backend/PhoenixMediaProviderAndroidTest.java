@@ -4,7 +4,6 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
@@ -13,8 +12,7 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.backend.phoenix.data.KalturaMediaAsset;
-import com.kaltura.playkit.backend.phoenix.data.AssetResult;
-import com.kaltura.playkit.backend.phoenix.data.OttResultAdapter;
+import com.kaltura.playkit.backend.phoenix.data.PhoenixParser;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
@@ -22,7 +20,6 @@ import com.kaltura.playkit.connect.RequestElement;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
 import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.connect.SessionProvider;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -46,7 +44,7 @@ import static org.junit.Assert.assertTrue;
 public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
     public static final String BaseUrl = "http://52.210.223.65:8080/v4_1/api_v3/";//"http://52.210.223.65:8080/v4_0/api_v3/";
-    public static final String KS = "jJ8MTk4fAZXObQaPfvkEqBWfZkZfbruAO1V3CYGwE4OdvqojvsjaNMeN8yYtqgCvtpFiKblOayM9Xq5d2wHFCBAkbf7ju9-H4CrWrxOg7qhIRQUzqPz";
+    public static final String KS = "djJ8MTk4fAZXObQaPfvkEqBWfZkZfbruAO1V3CYGwE4OdvqojvsjaNMeN8yYtqgCvtpFiKblOayM9Xq5d2wHFCBAkbf7ju9-H4CrWrxOg7qhIRQUzqPz";
     public static final String MediaId = "258656";//frozen
     public static final String MediaId4 = "258655";//shrek
     public static final String MediaId2 = "437800";//vild
@@ -153,9 +151,10 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
             jsonReader = new JsonReader(new InputStreamReader(
                     InstrumentationRegistry.getTargetContext().getAssets().open(FrozenAssetInfo)));
 
-            AssetResult assetResult = new GsonBuilder().registerTypeAdapter(AssetResult.class, new OttResultAdapter()).create().fromJson(jsonReader, AssetResult.class);
-            assetInfo = assetResult.asset;
-            assertNotNull(assetInfo);
+            BaseResult asset = PhoenixParser.parse(jsonReader);
+
+            assertNotNull(asset);
+            //assertTrue();
             mediaEntry = PhoenixMediaProvider.getMediaEntry(assetInfo, Arrays.asList(Format, Format2));
 
         } catch (IOException e) {
@@ -214,18 +213,44 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                 "    }\n" +
                 "  ]\n" +
                 "}";
+
+        Object parsed = PhoenixParser.parse(multiresponseSuccess);
+        assertTrue(parsed instanceof List);
+        assertTrue(((List)parsed).size() == 2);
+
+        parsed = PhoenixParser.parse(multiresponseWithError);
+        assertTrue(parsed instanceof List);
+        assertTrue(((List)parsed).size() == 2);
+        assertTrue(((List)parsed).get(1) instanceof BaseResult);
+        assertTrue(((BaseResult)(((List)parsed).get(1))).error != null);
     }
 
     @Test
-    public void testStringResponseParsing(){
+    public void testPrimitiveResponseParsing(){
         String response = "{\n" +
                 "  \"executionTime\": 0.2519926,\n" +
                 "  \"result\": true\n" +
                 "}";
+
         String sameRequestError = "{\n" +
-                "  \"executionTime\": 0.2519926,\n" +
-                "  \"result\": true\n" +
+                "  \"executionTime\": 0.0004225,\n" +
+                "  \"result\": {\n" +
+                "    \"error\": {\n" +
+                "      \"objectType\": \"KalturaAPIException\",\n" +
+                "      \"message\": \"Invalid KS format\",\n" +
+                "      \"code\": \"500015\"\n" +
+                "    }\n" +
+                "  }\n" +
                 "}";
+
+        Object parsed = PhoenixParser.parse(response);
+        assertTrue(parsed instanceof String);
+        assertTrue(parsed.equals("true"));
+
+        parsed = PhoenixParser.parse(sameRequestError);
+        assertTrue(parsed instanceof BaseResult);
+        assertTrue(((BaseResult)parsed).error != null);
+
     }
 
 

@@ -5,13 +5,15 @@ import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.backend.BaseResult;
+import com.kaltura.playkit.backend.SessionProvider;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.data.KalturaBaseEntryListResponse;
 import com.kaltura.playkit.backend.ovp.data.KalturaEntryContextDataResult;
 import com.kaltura.playkit.backend.ovp.data.KalturaMediaEntry;
 import com.kaltura.playkit.backend.ovp.data.KalturaSource;
 import com.kaltura.playkit.backend.ovp.services.BaseEntryService;
-import com.kaltura.playkit.backend.BaseResult;
+import com.kaltura.playkit.backend.phoenix.data.PhoenixParser;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
@@ -19,7 +21,6 @@ import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
-import com.kaltura.playkit.connect.SessionProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,42 +97,42 @@ public class KalturaOvpMediaProvider implements MediaEntryProvider {
         ErrorElement error = null;
         PKMediaEntry mediaEntry = null;
 
-        if(response != null && response.isSuccess()){
+        if (response != null && response.isSuccess()) {
 
-            try{
+            try {
                 //parse multi response from request respone
 
                 /* in this option, in case of error response, the type of the parsed response will be BaseResult, and not the expected object type,
                    since we parse the type dynamically from the result and we get "KalturaAPIException" objectType */
-                List<BaseResult> responses = KalturaOvpParser.parseArray(response.getResponse());//, TextUtils.isEmpty(sessionProvider.getKs()) ? 1 : 0, KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
+                List<BaseResult> responses = PhoenixParser.parse(response.getResponse());//, TextUtils.isEmpty(sessionProvider.getKs()) ? 1 : 0, KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
                 /* in this option, responses types will always be as expected, and in case of an error, the error can be reached from the typed object, since
                 * all response objects should extend BaseResult */
                 //  List<BaseResult> responses = (List<BaseResult>) KalturaOvpParser.parse(response.getResponse(), KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
 
-                if(responses.get(0).error != null){
+                if (responses.get(0).error != null) {
                     error = responses.get(0).error.addMessage("baseEntry/list request failed");//ErrorElement.LoadError.message("baseEntry/list request failed");
                 }
-                if(error == null && responses.get(1).error != null){
-                    error = responses.get(1).error.addMessage("baseEntry/getContextData request failed");;//ErrorElement.LoadError.message("baseEntry/getContextData request failed");
+                if (error == null && responses.get(1).error != null) {
+                    error = responses.get(1).error.addMessage("baseEntry/getContextData request failed");
+                    ;//ErrorElement.LoadError.message("baseEntry/getContextData request failed");
                 }
 
-                if(error == null) {
+                if (error == null) {
                     mediaEntry = ProviderParser.getMediaEntry(((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), (KalturaEntryContextDataResult) responses.get(1));
                 }
 
-            } catch (JsonSyntaxException ex){
-              error = ErrorElement.LoadError.message("failed parsing remote response: " + ex.getMessage());
+            } catch (JsonSyntaxException ex) {
+                error = ErrorElement.LoadError.message("failed parsing remote response: " + ex.getMessage());
             }
 
         } else {
             error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
         }
 
-        if(completion != null){
+        if (completion != null) {
             completion.onComplete(Accessories.buildResult(mediaEntry, error));
         }
     }
-
 
 
     private static class ProviderParser {

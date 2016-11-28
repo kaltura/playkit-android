@@ -21,7 +21,7 @@ import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
-import com.kaltura.playkit.connect.SessionProvider;
+import com.kaltura.playkit.backend.SessionProvider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -187,7 +187,7 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
                 /* parse json string to an object of type BaseResult or one of its sub classes - object type is parsed dynamically
                    from the response according to the value of "objectType" property, if none found will be parsed to BaseResult object
                    in case of error response - will be parsed to BaseResult with the error within */
-                BaseResult assetResult = PhoenixParser.parseObject(response.getResponse());
+                BaseResult assetResult = PhoenixParser.parse(response.getResponse());
                 if(assetResult != null ) {
                     if (assetResult.error == null) {
                         asset = (KalturaMediaAsset) assetResult;

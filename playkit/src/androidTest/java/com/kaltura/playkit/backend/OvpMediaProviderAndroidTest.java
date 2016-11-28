@@ -9,7 +9,7 @@ import com.kaltura.playkit.BaseTest;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
-import com.kaltura.playkit.backend.phoenix.data.KalturaMediaAsset;
+import com.kaltura.playkit.backend.ovp.KalturaOvpParser;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
@@ -17,7 +17,6 @@ import com.kaltura.playkit.connect.RequestElement;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
 import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.connect.SessionProvider;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +26,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -91,18 +89,39 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     @Before
     public void setUp() {
         testExecutor = new Executor();
-
-
     }
 
+
     @Test
-    public void testResponseParsing() {
+    public void testEntryInfoFetch(){
+        new KalturaOvpMediaProvider().setSessionProvider(ksSessionProvider).setEntryId(EntryId).load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                if (response.isSuccess()) {
+                    assertTrue(response.getResponse() != null);
+                    assertTrue(response.getResponse().getId().equals(EntryId));
+                    assertTrue(response.getResponse().getSources().size() == 5);
+                    assertTrue(response.getResponse().getDuration() == 102000);
+
+                } else {
+                    assertNotNull(response.getError());
+                }
+
+                OvpMediaProviderAndroidTest.this.resume();
+            }
+        });
+
+        wait(1);
+    }
+
+
+    @Test
+    public void testMockVsLiveRequest() {
 
         kalturaOvpMediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ksSessionProvider).setEntryId(EntryId).setRequestExecutor(testExecutor);
         kalturaOvpMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
-                // resume();
                 assertTrue(response.isSuccess());
                 assertTrue(response.getResponse() != null);
                 assertTrue(response.getResponse().getId().equals(EntryId));
@@ -123,55 +142,14 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
 
                         }
 
-
-                        //kalturaOvpMediaProvider.setAssetId(MediaId2).setFormat(Format2)
                         OvpMediaProviderAndroidTest.this.resume();
-
                     }
                 });
             }
         });
 
         wait(1);
-
     }
-
-
-    @Test
-    public void testPreFetchedAsset() {
-        PKMediaEntry mediaEntry = null;
-        KalturaMediaAsset assetInfo = null;
-        final JsonReader jsonReader;
-        try {
-            jsonReader = new JsonReader(new InputStreamReader(
-                    InstrumentationRegistry.getTargetContext().getAssets().open(EntryInfo)));
-//KalturaOvpMediaProvider.KalturaOvpParser.parseMultiresponse(jsonReader.)
-            /*AssetResult assetResult = new GsonBuilder().registerTypeAdapter(AssetResult.class, new OvpResultAdapter()).create().fromJson(jsonReader, AssetResult.class);
-            assetInfo = assetResult.mediaAsset;
-            assertNotNull(assetInfo);
-            mediaEntry = kalturaOvpMediaProvider.getMediaEntry(assetInfo, Arrays.asList(Format, Format2));
-*/
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        assertNotNull(mediaEntry);
-        assertEquals(2, mediaEntry.getSources().size());
-
-    }
-
-
-    /*@Test
-    public void testAnonymousFetch() {
-        new kalturaOvpMediaProvider(InvalidSessionProvider, MediaId, "media", Format).load(new OnMediaLoadCompletion() {
-            @Override
-            public void onComplete(ResultElement<PKMediaEntry> response) {
-                assertTrue(response.isSuccess());
-                assertNotNull(response.getResponse());
-                assertTrue(response.getResponse() instanceof PKMediaEntry);
-            }
-        });
-    }*/
 
     @Test
     public void testErrorHandling() {
@@ -202,11 +180,32 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
 
     @Test
     public void testPrimitiveResponseParsing(){
-        String response = "true";
-        String sameRequestError = "{\n" +
-                "  \"executionTime\": 0.2519926,\n" +
-                "  \"result\": true\n" +
+        String response = "true"; //2xUzNQszbmeucM9b_kAUUwT_0pvwxB4=
+        //!! problem parsing "="charachter, causing malform json exception
+        // -> we need to be able to parse it for the login request, we won't use parser mechanism in this case.
+        String loginResponse = "djJ8MjIwOTU5MXzsuioBfhcT5p9oIFv3BN2fXlwzC9x1A1FEZCBS1gSG4e5eQYNwhMBm2t0Ooj4h0QeYjTpQZlCInCSkSk3dLf2sRmq0joAKH8Z32xUzNQszbmeucM9b_kAUUwT_0pvwxB4=";
+        //String loginResponse = "{\"ks\":\"djJ8MjIwOTU5MXzsuioBfhcT5p9oIFv3BN2fXlwzC9x1A1FEZCBS1gSG4e5eQYNwhMBm2t0Ooj4h0QeYjTpQZlCInCSkSk3dLf2sRmq0joAKH8Z32xUzNQszbmeucM9b_kAUUwT_0pvwxB4=\"}";
+        String loginRequestError = "{\n" +
+                "  \"code\": \"USER_WRONG_PASSWORD\",\n" +
+                "  \"message\": \"Wrong password supplied\",\n" +
+                "  \"objectType\": \"KalturaAPIException\",\n" +
+                "  \"args\": []\n" +
                 "}";
+
+        Object parsed = KalturaOvpParser.parse(response);
+        assertTrue(parsed instanceof String);
+        assertTrue(Boolean.TRUE.toString().equals(response));
+
+        /*JsonReader reader = new JsonReader(new StringReader(loginResponse));
+        reader.setLenient(true);
+        parsed = KalturaOvpParser.parse(loginResponse);
+        assertTrue(parsed instanceof String);
+        assertTrue(((String)parsed).length() > 0);*/
+
+        parsed = KalturaOvpParser.parse(loginRequestError);
+        assertTrue(parsed instanceof BaseResult);
+        assertTrue(((BaseResult)parsed).error != null);
+        assertTrue(((BaseResult)parsed).error.getCode().equals("USER_WRONG_PASSWORD"));
     }
 
     /**

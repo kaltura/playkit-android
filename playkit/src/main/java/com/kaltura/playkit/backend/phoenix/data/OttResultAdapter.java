@@ -39,12 +39,16 @@ public class OttResultAdapter implements JsonDeserializer<BaseResult> {
 
         } else if(result != null && result.has("objectType")){
             String objectType=  result.getAsJsonPrimitive("objectType").getAsString();
-            try {
-                String clzName = getClass().getPackage().getName()+"."+objectType;
-                Class clz = Class.forName(clzName);
-                baseResult = (BaseResult) new Gson().fromJson(result, clz);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+            if(objectType.equals("KalturaAPIException")) {
+                baseResult.error = new Gson().fromJson(result, ErrorElement.class);
+            } else {
+                try {
+                    String clzName = getClass().getPackage().getName() + "." + objectType;
+                    Class clz = Class.forName(clzName);
+                    baseResult = (BaseResult) new Gson().fromJson(result, clz);
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return baseResult;
