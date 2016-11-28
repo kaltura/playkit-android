@@ -17,7 +17,7 @@ import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
-import com.kaltura.playkit.connect.SessionProvider;
+import com.kaltura.playkit.backend.SessionProvider;
 
 import java.util.TimerTask;
 
