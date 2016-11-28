@@ -18,7 +18,8 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.plugins.SamplePlugin;
+import com.kaltura.playkit.plugins.KalturaStatisticsPlugin;
+import com.kaltura.playkit.plugins.PhoenixAnalyticsPlugin;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -34,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean nowPlaying;
 
     private void registerPlugins() {
-        PlayKitManager.registerPlugins(SamplePlugin.factory);
+        PlayKitManager.registerPlugins(KalturaStatisticsPlugin.factory, PhoenixAnalyticsPlugin.factory);
     }
 
     @Override
@@ -77,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         if (player == null) {
 
             configurePlugins(config.plugins);
-            
+
             player = PlayKitManager.loadPlayer(config, this);
 
             log.d("Player: " + player.getClass());
@@ -95,7 +96,9 @@ public class MainActivity extends AppCompatActivity {
     private void configurePlugins(PlayerConfig.Plugins config) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("delay", 4200);
-        config.setPluginConfig("Sample", jsonObject);
+        config.setPluginConfig("KalturaStatistics", jsonObject);
+        config.setPluginConfig("PhoenixAnalytics", jsonObject);
+        config.setPluginConfig("Youbora", jsonObject);
     }
 
     @Override
