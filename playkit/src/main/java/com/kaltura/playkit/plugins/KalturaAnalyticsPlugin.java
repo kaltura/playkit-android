@@ -80,6 +80,11 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     private boolean playReached75 = false;
     private boolean playReached100 = false;
     private boolean isBuffering = false;
+    private boolean isDvr = false;
+    private int currentBitrate = -1;
+    private int bufferTime = 0;
+    private int eventIdx = 0;
+    private boolean isFirstPlay = true;
     private boolean intervalOn = false;
     private boolean hasSeeked = false;
 
@@ -142,7 +147,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
 
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
-        resetPlayerFlags();
+        isFirstPlay = true;
     }
 
     @Override
@@ -161,8 +166,9 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
                 }
                 break;
             case READY:
+                resetPlayerFlags();
                 if (!isBuffering) {
-
+                    sendAnalyticsEvent(KAnalonyEvents.IMPRESSION);
                 } else {
                     isBuffering = false;
                 }
@@ -201,18 +207,22 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
 
                         break;
                     case PAUSE:
-                        setMessageParams(KAnalonyEvents.PAUSE);
+                        sendAnalyticsEvent(KAnalonyEvents.PAUSE);
                         break;
                     case PLAY:
-                        setMessageParams(KAnalonyEvents.PLAY);
+                        sendAnalyticsEvent(KAnalonyEvents.PLAY_REQUEST);
                         break;
                     case PLAYING:
-
+                        if (isFirstPlay){
+                            sendAnalyticsEvent(KAnalonyEvents.PLAY);
+                        } else {
+                            sendAnalyticsEvent(KAnalonyEvents.RESUME);
+                        }
                         break;
                     case SEEKED:
                         hasSeeked = true;
                         seekPercent = (float) player.getCurrentPosition() / player.getDuration();
-                        setMessageParams(KAnalonyEvents.SEEK);
+                        sendAnalyticsEvent(KAnalonyEvents.SEEK, seekPercent);
                         break;
                     case SEEKING:
 
@@ -232,6 +242,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         playReached75 = false;
         playReached100 = false;
         hasSeeked = false;
+        eventIdx = 0;
     }
 
     private void startTimeObservorInterval() {
@@ -244,22 +255,22 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
                 float progress = (float) player.getCurrentPosition() / player.getDuration();
                 if (progress >= 0.25 && !playReached25 && seekPercent <= 0.25) {
                     playReached25 = true;
-                    setMessageParams(KAnalonyEvents.PLAY_25PERCENT);
+                    sendAnalyticsEvent(KAnalonyEvents.PLAY_25PERCENT);
                 } else if (progress >= 0.5 && !playReached50 && seekPercent < 0.5) {
                     playReached50 = true;
-                    setMessageParams(KAnalonyEvents.PLAY_25PERCENT);
+                    sendAnalyticsEvent(KAnalonyEvents.PLAY_25PERCENT);
                 } else if (progress >= 0.75 && !playReached75 && seekPercent <= 0.75) {
                     playReached75 = true;
-                    setMessageParams(KAnalonyEvents.PLAY_25PERCENT);
+                    sendAnalyticsEvent(KAnalonyEvents.PLAY_25PERCENT);
                 } else if (progress >= 0.98 && !playReached100 && seekPercent < 1) {
                     playReached100 = true;
-                    setMessageParams(KAnalonyEvents.PLAY_25PERCENT);
+                    sendAnalyticsEvent(KAnalonyEvents.PLAY_25PERCENT);
                 }
             }
         }, 0, TimerInterval);
     }
 
-    private void setMessageParams(final KAnalonyEvents eventType) {
+    private void sendAnalyticsEvent(final KAnalonyEvents eventType) {
         String clientVer = pluginConfig.has("clientVer")? pluginConfig.get("clientVer").toString(): "";
         String sessionId = pluginConfig.has("sessionId")? pluginConfig.get("sessionId").toString(): "";
         int uiconfId = pluginConfig.has("uiconfId")? Integer.valueOf(pluginConfig.get("uiconfId").toString()): 0;
