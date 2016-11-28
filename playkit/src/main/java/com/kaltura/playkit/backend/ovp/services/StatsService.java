@@ -2,6 +2,7 @@ package com.kaltura.playkit.backend.ovp.services;
 
 import android.net.Uri;
 
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.connect.RequestBuilder;
 
 import java.net.MalformedURLException;
@@ -14,6 +15,8 @@ import java.util.Date;
  */
 
 public class StatsService {
+    private static final PKLog log = PKLog.get("StatsService");
+
     public static RequestBuilder sendStatsEvent(String baseUrl, int partnerId, int eventType, String clientVer, long duration,
                                                 String sessionId, long position, int uiConfId, String entryId, String widgetId,  boolean isSeek, String referrer) {
         return new RequestBuilder()
@@ -53,10 +56,10 @@ public class StatsService {
         try {
             URL url =  new URL(URLDecoder.decode(builder.build().toString(), "UTF-8"));
             return url.toString();
-        } catch (java.io.UnsupportedEncodingException ex){
-
-        } catch (MalformedURLException rx){
-
+        } catch (java.io.UnsupportedEncodingException ex) {
+            log.d("UnsupportedEncodingException: ");
+        } catch (MalformedURLException rx) {
+            log.d("MalformedURLException: ");
         }
         return builder.build().toString();
     }

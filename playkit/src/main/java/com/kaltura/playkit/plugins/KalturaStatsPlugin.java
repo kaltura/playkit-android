@@ -117,14 +117,6 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     private static final int TimerInterval = 10000;
 
-    private void setExamplePluginConfig() {
-        pluginConfig = new JsonObject();
-        pluginConfig.addProperty("clientVer", "2.5");
-        pluginConfig.addProperty("sessionId", "b3460681-b994-6fad-cd8b-f0b65736e837");
-        pluginConfig.addProperty("uiconfId", 24997472);
-        pluginConfig.addProperty("IsFriendlyIframe","" );
-    }
-
     public static final Factory factory = new Factory() {
         @Override
         public String getName() {
