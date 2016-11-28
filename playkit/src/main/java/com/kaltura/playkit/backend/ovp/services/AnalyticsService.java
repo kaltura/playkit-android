@@ -1,6 +1,7 @@
 package com.kaltura.playkit.backend.ovp.services;
 
 import android.net.Uri;
+import android.util.Log;
 
 import com.kaltura.playkit.connect.RequestBuilder;
 
@@ -14,16 +15,17 @@ import java.util.Date;
  */
 
 public class AnalyticsService {
-    public static RequestBuilder sendAnalyticsEvent(String baseUrl, int partnerId, int eventType, String clientVer, long duration,
-                                                String sessionId, long position, int uiConfId, String entryId, String widgetId, boolean isSeek, String referrer) {
+    private static final String TAG = "AnalyticsService";
+    public static RequestBuilder sendAnalyticsEvent(String baseUrl, int partnerId, int eventType, String clientVer, String playbackType, String sessionId, long position
+                                                , int uiConfId, String entryId, int eventIdx, int flavourId, String referrer, int bufferTime, int actualBitrate) {
         return new RequestBuilder()
                 .method("GET")
-                .url(getAnalyticsUrl(baseUrl, partnerId, eventType, clientVer, duration, sessionId, position, uiConfId, entryId, widgetId, isSeek, referrer))
+                .url(getAnalyticsUrl(baseUrl, partnerId, eventType, clientVer, playbackType, sessionId, position, uiConfId, entryId, eventIdx, flavourId, referrer, bufferTime, actualBitrate))
                 .tag("stats-send");
     }
 
-    private static String getAnalyticsUrl(String baseUrl, int partnerId, int eventType, String clientVer, long duration,
-                                          String sessionId, long position, int uiConfId, String entryId, String widgetId, boolean isSeek, String referrer) {
+    private static String getAnalyticsUrl(String baseUrl, int deliveryType, int eventType, String clientVer, String playbackType, String sessionId, long position,
+                                           int uiConfId, String entryId, int eventIdx, int flavourId, String referrer, int bufferTime, int actualBitrate) {
         Uri.Builder builder = new Uri.Builder();
         builder.scheme("https")
                 .authority(baseUrl)
@@ -35,28 +37,28 @@ public class AnalyticsService {
                 .appendQueryParameter("format", "1")
                 .appendQueryParameter("ignoreNull", "1")
                 .appendQueryParameter("action", "trackEvent")
-                .appendQueryParameter("event:eventType", Integer.toString(eventType))
-                .appendQueryParameter("event:clientVer", clientVer)
-                .appendQueryParameter("event:currentPoint", Long.toString(position))
-                .appendQueryParameter("event:duration", Long.toString(duration))
-                .appendQueryParameter("event:eventTimeStamp", Long.toString(new Date().getTime()))
-                .appendQueryParameter("event:isFirstInSession", "false")
-                .appendQueryParameter("event:objectType", "KalturaStatsEvent")
-                .appendQueryParameter("event:partnerId", Integer.toString(partnerId))
-                .appendQueryParameter("event:sessionId", sessionId)
-                .appendQueryParameter("event:uiconfId", Integer.toString(uiConfId))
-                .appendQueryParameter("event:seek", Boolean.toString(isSeek))
-                .appendQueryParameter("event:entryId", entryId)
-                .appendQueryParameter("event:widgetId", widgetId)
-                .appendQueryParameter("event:referrer", referrer);
+                .appendQueryParameter("eventType", Integer.toString(eventType))
+                .appendQueryParameter("position", Long.toString(position))
+                .appendQueryParameter("deliveryType", Integer.toString(deliveryType))
+                .appendQueryParameter("playbackType", playbackType)
+                .appendQueryParameter("sessionStartTime", Long.toString(new Date().getTime()))
+                .appendQueryParameter("eventIndex", Integer.toString(eventIdx))
+                .appendQueryParameter("clientVer", clientVer)
+                .appendQueryParameter("flavourId", Integer.toString(flavourId))
+                .appendQueryParameter("sessionId", sessionId)
+                .appendQueryParameter("uiconfId", Integer.toString(uiConfId))
+                .appendQueryParameter("bufferTime", Integer.toString(bufferTime))
+                .appendQueryParameter("entryId", entryId)
+                .appendQueryParameter("actualBitrate", Integer.toString(actualBitrate))
+                .appendQueryParameter("eferrer", referrer);
 
         try {
             URL url = new URL(URLDecoder.decode(builder.build().toString(), "UTF-8"));
             return url.toString();
         } catch (java.io.UnsupportedEncodingException ex) {
-
+            Log.d(TAG, "UnsupportedEncodingException: ");
         } catch (MalformedURLException rx) {
-
+            Log.d(TAG, "MalformedURLException: ");
         }
         return builder.build().toString();
     }

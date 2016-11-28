@@ -11,13 +11,12 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.backend.ovp.services.StatsService;
+import com.kaltura.playkit.backend.ovp.services.AnalyticsService;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
-import com.kaltura.playkit.backend.SessionProvider;
 
 import java.util.TimerTask;
 
@@ -97,24 +96,6 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         pluginConfig.addProperty("uiconfId", 24997472);
         pluginConfig.addProperty("IsFriendlyIframe","" );
     }
-
-    private SessionProvider OVPSessionProvider = new SessionProvider() {
-        @Override
-        public String baseUrl() {
-            return "analytics.kaltura.com";
-        }
-
-        @Override
-        public String getKs() {
-            return "";
-        }
-
-        @Override
-        public int partnerId() {
-            return 2219681;
-        }
-    };
-
 
     public static final Factory factory = new Factory() {
         @Override
@@ -222,7 +203,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
                     case SEEKED:
                         hasSeeked = true;
                         seekPercent = (float) player.getCurrentPosition() / player.getDuration();
-                        sendAnalyticsEvent(KAnalonyEvents.SEEK, seekPercent);
+                        sendAnalyticsEvent(KAnalonyEvents.SEEK);
                         break;
                     case SEEKING:
 
@@ -275,14 +256,16 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         String sessionId = pluginConfig.has("sessionId")? pluginConfig.get("sessionId").toString(): "";
         int uiconfId = pluginConfig.has("uiconfId")? Integer.valueOf(pluginConfig.get("uiconfId").toString()): 0;
         String referrer = pluginConfig.has("IsFriendlyIframe")? pluginConfig.get("IsFriendlyIframe").toString(): "";
-
+        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString(): "";
+        int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt(): 0;
+        String playbackType = isDvr? "dvr":"live";
+        int flavourId = -1;
 
         // Parameters for the request -
-        //        String baseUrl, int partnerId, int eventType, String clientVer, long duration,
-        //        String sessionId, long position, String uiConfId, String entryId, String widgetId, String kalsig, boolean isSeek, String referrer
-        RequestBuilder requestBuilder = StatsService.sendStatsEvent(OVPSessionProvider.baseUrl(), OVPSessionProvider.partnerId(), eventType.getValue(), clientVer, player.getDuration(),
-                sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), "_" + OVPSessionProvider.partnerId(),
-                hasSeeked, referrer);
+//        String baseUrl, int partnerId, int eventType, String clientVer, String playbackType, String sessionId, long position
+//        ,int uiConfId, String entryId, int eventIdx, int flavourId, String referrer, int bufferTime, int actualBitrate
+        RequestBuilder requestBuilder = AnalyticsService.sendAnalyticsEvent(baseUrl, partnerId, eventType.getValue(), clientVer, playbackType,
+                sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), eventIdx++, flavourId, referrer, bufferTime, currentBitrate);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
