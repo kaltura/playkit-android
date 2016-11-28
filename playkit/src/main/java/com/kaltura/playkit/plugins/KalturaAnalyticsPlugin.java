@@ -129,6 +129,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
         isFirstPlay = true;
+        this.mediaConfig = mediaConfig;
     }
 
     @Override

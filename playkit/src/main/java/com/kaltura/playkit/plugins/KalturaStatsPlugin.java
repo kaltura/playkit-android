@@ -115,7 +115,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     private boolean intervalOn = false;
     private boolean hasSeeked = false;
 
-    private static final int TimerInterval = 10000;
+    private int TimerInterval = 10000;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -150,6 +150,7 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
+        this.mediaConfig = mediaConfig;
         resetPlayerFlags();
     }
 
@@ -227,6 +228,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     }
 
     private void startTimerInterval() {
+        TimerInterval = pluginConfig.has("timerInterval")? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt(): 30000;
         if (timer == null) {
             timer = new java.util.Timer();
         }

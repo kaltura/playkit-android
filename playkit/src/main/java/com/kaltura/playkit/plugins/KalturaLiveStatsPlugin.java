@@ -120,6 +120,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
         eventIdx = 0;
+        this.mediaConfig = mediaConfig;
     }
 
     @Override

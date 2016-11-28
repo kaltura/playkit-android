@@ -51,7 +51,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private java.util.Timer timer = new java.util.Timer();
     private MessageBus messageBus;
 
-    private final static int MediaHitInterval = 30000; //Should be provided in plugin config
+    private int MediaHitInterval = 30000; //Should be provided in plugin config
 
     public static final Factory factory = new Factory() {
         @Override
@@ -68,6 +68,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
         mDidFirstPlay = false;
+        this.mediaConfig = mediaConfig;
     }
 
     @Override
@@ -144,6 +145,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     private void startMediaHitInterval(){
         log.d("timer interval");
+        MediaHitInterval = pluginConfig.has("timerInterval")? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt(): 30000;
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -174,5 +176,4 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         });
         requestsExecutor.queue(requestBuilder.build());
     }
-
 }
