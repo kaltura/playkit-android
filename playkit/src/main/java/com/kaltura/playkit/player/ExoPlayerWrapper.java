@@ -430,7 +430,9 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     @Override
     public void destroy() {
         log.d("release");
-        player.release();
+        if(player != null){
+            player.release();
+        }
         window = null;
         player = null;
         eventLogger = null;
