@@ -89,7 +89,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
     public static final Factory factory = new Factory() {
         @Override
         public String getName() {
-            return "IMASimplePlugin";
+            return "IMA";
         }
 
         @Override
