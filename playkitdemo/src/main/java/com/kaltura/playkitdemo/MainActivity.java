@@ -150,8 +150,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onEvent(PKEvent event) {
                 //When the track data available, this event occurs. It brings the info object with it.
-                PlayerEvent.TrackAvailable trackAvailable = (PlayerEvent.TrackAvailable) event;
-                populateSpinnersWithTrackInfo(trackAvailable.getTracksInfo());
+                PlayerEvent.TracksAvailable tracksAvailable = (PlayerEvent.TracksAvailable) event;
+                populateSpinnersWithTrackInfo(tracksAvailable.getTracksInfo());
 
             }
         }, PlayerEvent.Type.TRACKS_AVAILABLE);

@@ -58,7 +58,7 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.DurationChanged(getDuration());
                         break;
                     case TRACKS_AVAILABLE:
-                        event = new PlayerEvent.TrackAvailable(player.getTracksInfo());
+                        event = new PlayerEvent.TracksAvailable(player.getTracksInfo());
                         break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
