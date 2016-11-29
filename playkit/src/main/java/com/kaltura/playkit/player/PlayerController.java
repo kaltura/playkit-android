@@ -17,8 +17,6 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 
-import java.util.List;
-
 /**
  * Created by anton.afanasiev on 01/11/2016.
  */
@@ -87,12 +85,11 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
-        List<PKMediaSource> sources = mediaConfig.getMediaEntry().getSources();
-        PKMediaSource selectedSource = sources.get(0);
-        // TODO: Source Selector -- the first source is not the best one.
 
-        Uri sourceUri = Uri.parse(selectedSource.getUrl());
-        PKDrmParams drmData = selectedSource.getDrmData();
+        PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
+
+        Uri sourceUri = Uri.parse(source.getUrl());
+        PKDrmParams drmData = source.getDrmData();
         String licenseUri = null;
         if (drmData != null) {
             licenseUri = drmData.getLicenseUri();
