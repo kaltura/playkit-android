@@ -18,6 +18,8 @@ import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
 
+import org.junit.Test;
+
 import java.util.TimerTask;
 
 /**
@@ -143,6 +145,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
     };
 
+    /**
+     * Media Hit analytics event
+     */
     private void startMediaHitInterval(){
         log.d("timer interval");
         MediaHitInterval = pluginConfig.has("timerInterval")? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt(): 30000;
@@ -157,6 +162,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }, 0, MediaHitInterval); // Get media hit interval from plugin config
     }
 
+    /**
+     * Send Bookmark/add event using Kaltura Phoenix Rest API
+     * @param eventType - Enum stating the event type to send
+     */
     private void sendAnalyticsEvent(final PhoenixActionType eventType){
         String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"464302";
         String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://52.210.223.65:8080/v4_0/api_v3/";
@@ -175,5 +184,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             }
         });
         requestsExecutor.queue(requestBuilder.build());
+    }
+
+    @Test
+    public void testPhoenixAnalyticsEvent(){
+
     }
 }

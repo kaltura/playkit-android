@@ -1,5 +1,6 @@
 package com.kaltura.playkit.plugins.Youbora;
 
+import com.google.android.exoplayer2.ExoPlayer;
 import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
@@ -28,6 +29,7 @@ public class YouboraLibraryManager extends PluginGeneric {
 
     public YouboraLibraryManager(String options) throws JSONException {
         super(options);
+
     }
 
     public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus) {
@@ -37,7 +39,8 @@ public class YouboraLibraryManager extends PluginGeneric {
 
     protected void init() {
         super.init();
-        this.pluginName = "YouboraPlugin";
+        this.pluginName = "KalturaPlayer";
+        this.pluginVersion = "5.3.0-c1.0-Kaltura";
         ViewManager.setMonitoringInterval(MONITORING_INTERVAL);
     }
 
@@ -48,7 +51,7 @@ public class YouboraLibraryManager extends PluginGeneric {
 
                 break;
             case LOADING:
-
+                playHandler();
                 break;
             case READY:
                 playHandler();
@@ -149,4 +152,7 @@ public class YouboraLibraryManager extends PluginGeneric {
         return this.lastReportedthroughput;
     }
 
+    private ExoPlayer getPlayer() {
+        return (ExoPlayer) this.player;
+    }
 }

@@ -18,6 +18,8 @@ import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
 
+import org.junit.Test;
+
 import java.util.TimerTask;
 
 /**
@@ -218,6 +220,9 @@ public class KalturaStatsPlugin extends PKPlugin {
         }
     };
 
+    /**
+     * Reset the flags in case of media change or media ended
+     */
     private void resetPlayerFlags() {
         seekPercent = 0;
         playReached25 = false;
@@ -227,6 +232,9 @@ public class KalturaStatsPlugin extends PKPlugin {
         hasSeeked = false;
     }
 
+    /**
+     * Time interval handling play reached events
+     */
     private void startTimerInterval() {
         TimerInterval = pluginConfig.has("timerInterval")? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt(): 30000;
         if (timer == null) {
@@ -253,6 +261,10 @@ public class KalturaStatsPlugin extends PKPlugin {
         }, 0, TimerInterval);
     }
 
+    /**
+     * Send stats event to Kaltura stats DB
+     * @param eventType - Enum stating Kaltura state events
+     */
     private void sendAnalyticsEvent(final KStatsEvent eventType) {
         String clientVer = pluginConfig.has("clientVer")? pluginConfig.getAsJsonPrimitive("clientVer").getAsString(): "";
         String sessionId = pluginConfig.has("sessionId")? pluginConfig.getAsJsonPrimitive("sessionId").getAsString(): "";
@@ -278,4 +290,8 @@ public class KalturaStatsPlugin extends PKPlugin {
         requestsExecutor.queue(requestBuilder.build());
     }
 
+    @Test
+    public void testSendStatsEvent(){
+
+    }
 }

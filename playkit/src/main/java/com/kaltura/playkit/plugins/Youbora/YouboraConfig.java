@@ -29,6 +29,7 @@ public class YouboraConfig {
     private static final Map<String, Object> propertiesObject;
     private static final Map<String, Object> extraParamsObject;
     private static final Map<String, Object> adsObject;
+    private static final Map<String, Object> networkObject;
 
     static {
 
@@ -41,9 +42,8 @@ public class YouboraConfig {
         youboraConfig.put("httpSecure", false);
         youboraConfig.put("enableNiceBuffer", true);
         youboraConfig.put("enableNiceSeek", true);
-        youboraConfig.put("accountCode", "kaltura");
-        youboraConfig.put("service", "nqs.nice264.com");
-        youboraConfig.put("username", "");
+        youboraConfig.put("accountCode", "demokaltura");
+        youboraConfig.put("username", "checking");
         youboraConfig.put("transactionCode", "");
         youboraConfig.put("isBalanced", "0");
         youboraConfig.put("isResumed", "0");
@@ -51,16 +51,17 @@ public class YouboraConfig {
         youboraConfigObject = youboraConfig;
 
         Map<String, Object> network = new HashMap<>(2);
-        network.put("ip", "");
+        network.put("ip", "111.111.111.15");
         network.put("isp", "");
         youboraConfig.put("network", network);
+        networkObject = network;
 
         Map<String, Object> device = new HashMap<>(1);
-        device.put("id", null);
+        device.put("id", "54");
         youboraConfig.put("device", device);
 
         Map<String, Object> media = new HashMap<>(5);
-        media.put("isLive", false);
+        media.put("isLive", true);
         media.put("resource", null);
         media.put("title", "Title");
         media.put("duration", null);
@@ -151,7 +152,7 @@ public class YouboraConfig {
         }
         if (pluginConfig != null){
             if (pluginConfig.has("service")){
-                youboraConfigObject.put("service",pluginConfig.getAsJsonPrimitive("service").getAsString());
+//                youboraConfigObject.put("service",pluginConfig.getAsJsonPrimitive("service").getAsString());
             }
             if (pluginConfig.has("title")){
                 mediaObject.put("title",pluginConfig.getAsJsonPrimitive("title").getAsString());

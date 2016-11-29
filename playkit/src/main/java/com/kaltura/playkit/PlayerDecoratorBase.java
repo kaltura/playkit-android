@@ -101,5 +101,4 @@ public class PlayerDecoratorBase implements Player {
         player.updatePluginConfig(pluginName, key, value);
     }
 
-
-}
+    }
