@@ -74,7 +74,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onUpdateConfig(String key, Object value) {}
+    protected void onUpdateConfig(String key, Object value) {
+        if (pluginConfig.has(key)){
+            pluginConfig.addProperty(key, value.toString());
+        }
+    }
 
     @Override
     public void onDestroy() {
@@ -135,7 +139,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         } else {
                             sendAnalyticsEvent(PhoenixActionType.PLAY);
                         }
-
                         break;
                     default:
 

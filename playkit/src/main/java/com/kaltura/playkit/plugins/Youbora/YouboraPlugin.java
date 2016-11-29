@@ -51,6 +51,12 @@ public class YouboraPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateConfig(String key, Object value) {
+        if (mPluginConfig.has(key)){
+            mPluginConfig.addProperty(key, value.toString());
+        }
+        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(mPluginConfig, mMediaConfig);
+        // Refresh options with updated media
+        mPluginManager.setOptions(opt);
     }
 
     @Override

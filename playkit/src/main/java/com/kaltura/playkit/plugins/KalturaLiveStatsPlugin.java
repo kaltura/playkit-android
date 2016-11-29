@@ -125,7 +125,9 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateConfig(String key, Object value) {
-
+        if (pluginConfig.has(key)){
+            pluginConfig.addProperty(key, value.toString());
+        }
     }
 
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {

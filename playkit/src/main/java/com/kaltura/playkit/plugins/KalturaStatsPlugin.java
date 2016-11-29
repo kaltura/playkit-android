@@ -158,7 +158,9 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateConfig(String key, Object value) {
-
+        if (pluginConfig.has(key)){
+            pluginConfig.addProperty(key, value.toString());
+        }
     }
 
     public void onEvent(PlayerEvent.StateChanged event) {
