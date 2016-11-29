@@ -31,8 +31,8 @@ public class Accessories {
 
         return new ResponseElement() {
             @Override
-            public int getCode() {
-                return error == null ? 200 : error.getCode();
+            public String getCode() {
+                return error == null ? ResponseElement.Ok : error.getCode();
             }
 
             @Override

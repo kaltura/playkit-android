@@ -20,10 +20,13 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
+
 import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdsConfig;
 import com.kaltura.playkit.plugins.ads.ima.IMASimplePlugin;
+import com.kaltura.playkit.plugins.KalturaStatisticsPlugin;
+import com.kaltura.playkit.plugins.PhoenixAnalyticsPlugin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,9 +34,12 @@ import java.util.List;
 import java.util.Map;
 
 
+
+
+
 public class MainActivity extends AppCompatActivity {
-    
-    
+
+
     public static final boolean AUTO_PLAY_ON_RESUME = true;
 
     private static final String TAG = "MainActivity";
@@ -48,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private void registerPlugins() {
         PlayKitManager.registerPlugins(SamplePlugin.factory);
         PlayKitManager.registerPlugins(IMASimplePlugin.factory);
+        PlayKitManager.registerPlugins(KalturaStatisticsPlugin.factory, PhoenixAnalyticsPlugin.factory);
     }
 
     @Override
@@ -91,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
         if (player == null) {
 
             configurePlugins(config.plugins);
-            
+
             player = PlayKitManager.loadPlayer(config, this);
 
             log.d("Player: " + player.getClass());
@@ -112,7 +119,12 @@ public class MainActivity extends AppCompatActivity {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("delay", 4200);
         config.setPluginConfig("Sample", jsonObject);
-        addIMAPluginConfig(config);
+        //addIMAPluginConfig(config);
+        config.setPluginConfig("IMASimplePlugin", jsonObject);
+        config.setPluginConfig("KalturaStatistics", jsonObject);
+        config.setPluginConfig("PhoenixAnalytics", jsonObject);
+        config.setPluginConfig("Youbora", jsonObject);
+
     }
 
     private void addIMAPluginConfig(PlayerConfig.Plugins config) {

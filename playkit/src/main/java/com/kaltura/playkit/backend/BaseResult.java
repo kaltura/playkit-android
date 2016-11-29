@@ -1,4 +1,4 @@
-package com.kaltura.playkit.backend.phoenix.data;
+package com.kaltura.playkit.backend;
 
 import com.kaltura.playkit.connect.ErrorElement;
 

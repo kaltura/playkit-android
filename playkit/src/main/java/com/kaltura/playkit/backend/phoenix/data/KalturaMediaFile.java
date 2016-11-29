@@ -1,10 +1,12 @@
 package com.kaltura.playkit.backend.phoenix.data;
 
+import com.kaltura.playkit.backend.BaseResult;
+
 /**
  * Created by tehilarozin on 04/11/2016.
  */
 
-public class MediaFile {
+public class KalturaMediaFile extends BaseResult{
 
     long duration;
     int id;
