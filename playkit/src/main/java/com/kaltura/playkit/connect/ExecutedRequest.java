@@ -41,9 +41,9 @@ public class ExecutedRequest implements ResponseElement {
         return this;
     }
 
-        @Override
-    public int getCode() {
-        return code;
+    @Override
+    public String getCode() {
+        return code+"";
     }
 
     @Override

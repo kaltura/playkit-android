@@ -10,23 +10,16 @@ public class KalturaMediaEntry {
     private String dataUrl;
     private String flavorParamsIds; //consider set as list
     private String id;
+    private String name;
     private int msDuration;
-    private int licenseType = -1; //UNKNOWN
+    //private int licenseType = -1; //UNKNOWN
 
     public int getMediaType() {
         return mediaType;
     }
 
-    public void setMediaType(int mediaType) {
-        this.mediaType = mediaType;
-    }
-
     public String getDataUrl() {
         return dataUrl;
-    }
-
-    public void setDataUrl(String dataUrl) {
-        this.dataUrl = dataUrl;
     }
 
     public int[] getFlavorParamsIdsArr(){
@@ -46,10 +39,6 @@ public class KalturaMediaEntry {
         return flavorParamsIds;
     }
 
-    public void setFlavorParamsIds(String flavorParamsIds) {
-        this.flavorParamsIds = flavorParamsIds;
-    }
-
     public String getId() {
         return id;
     }
@@ -62,15 +51,5 @@ public class KalturaMediaEntry {
         return msDuration;
     }
 
-    public void setMsDuration(int msDuration) {
-        this.msDuration = msDuration;
-    }
 
-    public int getLicenseType() {
-        return licenseType;
-    }
-
-    public void setLicenseType(int licenseType) {
-        this.licenseType = licenseType;
-    }
 }

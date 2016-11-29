@@ -39,11 +39,6 @@ public class RequestBuilder {
         return this;
     }
 
-    /*public RequestBuilder body(String body){
-        this.body = body;
-        return this;
-    }*/
-
     public RequestBuilder id(String id){
         this.id = id;
         return this;
@@ -74,8 +69,8 @@ public class RequestBuilder {
         return this;
     }
 
-    public MultiRequestBuilder add(RequestBuilder requestBuilder){
-        return new MultiRequestBuilder(this, requestBuilder);
+    public MultiRequestBuilder add(RequestBuilder... requestBuilder){
+        return new MultiRequestBuilder(this).add(requestBuilder);
     }
 
     public RequestElement build(){
@@ -89,7 +84,9 @@ public class RequestBuilder {
             @Override
             public String getUrl() {
                 //return TextUtils.join("/", new String[]{baseUrl,service,action});
+                if(baseUrl == null){
 
+                }
                 StringBuilder urlBuilder = new StringBuilder(baseUrl);
                 if(service != null){
                     urlBuilder.append("service/").append(service);
@@ -103,7 +100,11 @@ public class RequestBuilder {
 
             @Override
             public String getBody() {
-                return params.toString();
+                if (params != null) {
+                    return params.toString();
+                } else {
+                    return null;
+                }
             }
 
             @Override
