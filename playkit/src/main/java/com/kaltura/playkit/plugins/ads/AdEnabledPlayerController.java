@@ -66,7 +66,7 @@ public class AdEnabledPlayerController extends PlayerDecorator {
         log.d("Ad Event AdEnabledPlayerController PLAY isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused());
         if (adsProvider != null) {
             if (!adsProvider.isAdRequested()) {
-                adsProvider.requestAd();
+                adsProvider.init();
                 return;
             } else if (adsProvider.isAdDisplayed()) {
                 adsProvider.resume();

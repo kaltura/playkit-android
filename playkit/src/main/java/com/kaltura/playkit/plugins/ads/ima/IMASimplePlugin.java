@@ -137,6 +137,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
         //----------------------------//
         adConfig = AdsConfig.fromJsonObject(pluginConfig);
         mAdUiContainer = (ViewGroup) player.getView();
+        requestAd();
     }
 
     @Override
@@ -151,6 +152,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
         log.d("Start onUpdateConfig");
         mIsAdRequested = false;
         mIsAdDisplayed = false;
+        requestAd();
     }
 
     @Override
@@ -179,8 +181,6 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
     @Override
     public void requestAd() {
         log.d("Start RequestAd");
-
-        mIsAdRequested = true;
         ImaSdkSettings imaSdkSettings = new ImaSdkSettings();
         // Tell the SDK we want to control ad break playback.
         imaSdkSettings.setAutoPlayAdBreaks(adConfig.getAutoPlayAdBreaks());
@@ -218,11 +218,19 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                 } else {
                     renderingSettings.setUiElements(Collections.<UiElement>emptySet());
                 }
-                mAdsManager.init();
+
             }
         });
         if (adConfig != null) {
             requestAdsFromIMA(adConfig.getAdTagUrl());
+        }
+    }
+
+    @Override
+    public void init() {
+        mIsAdRequested = true;
+        if(mAdsManager != null) {
+            mAdsManager.init();
         }
     }
 

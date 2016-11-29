@@ -10,6 +10,7 @@ public interface AdsProvider {
     String getPluginName();
     AdsConfig getAdsConfig();
     void requestAd();
+    void init();
     boolean start(boolean showLoadingView);
     void resume();
     void pause();
