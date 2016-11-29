@@ -13,6 +13,8 @@ import java.util.UUID;
 
 /**
  * A {@link MediaDrmCallback} that makes requests using {@link HttpDataSource} instances.
+ * This class wraps the ExoPlayer-provided {@link HttpMediaDrmCallback}, allowing it to get the 
+ * license URL later -- by querying the UrlProvider.
  */
 @TargetApi(18)
 class DeferredMediaDrmCallback implements MediaDrmCallback {
@@ -26,6 +28,7 @@ class DeferredMediaDrmCallback implements MediaDrmCallback {
 
     /**
      * @param dataSourceFactory A factory from which to obtain {@link HttpDataSource} instances.
+     * @param licenseUrlProvider A callback that will provide the DRM License URL on demand. 
      */
     DeferredMediaDrmCallback(HttpDataSource.Factory dataSourceFactory, UrlProvider licenseUrlProvider) {
         this.dataSourceFactory = dataSourceFactory;

@@ -62,7 +62,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
 
-    private static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
+    static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
     
     private EventLogger eventLogger;
     private EventListener eventListener;
@@ -110,7 +110,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
         
         // TODO: check if there's any overhead involved in creating a session manager and not using it.
-        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager = null;
+        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager;
         try {
             drmSessionManager = buildDrmSessionManager(WIDEVINE_UUID);
         } catch (UnsupportedDrmException e) {
@@ -118,9 +118,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
             return;
         }
         
-
-
-        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager, false); // TODO check if we need DRM Session manager.
+        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager, false);
         setPlayerListeners();
         exoPlayerView.setPlayer(player);
         player.setPlayWhenReady(false);
@@ -130,6 +128,8 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         if (Util.SDK_INT < 18) {
             return null;
         }
+        
+        // Using the deferred callback because we don't yet have the license URL. 
         deferredMediaDrmCallback = new DeferredMediaDrmCallback(buildHttpDataSourceFactory(false), licenseUrlProvider);
         return new StreamingDrmSessionManager<>(uuid,
                 FrameworkMediaDrm.newInstance(uuid), deferredMediaDrmCallback, null, mainHandler, eventLogger);
