@@ -20,13 +20,12 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
-
+import com.kaltura.playkit.plugins.KalturaStatsPlugin;
+import com.kaltura.playkit.plugins.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdsConfig;
 import com.kaltura.playkit.plugins.ads.ima.IMASimplePlugin;
-import com.kaltura.playkit.plugins.KalturaStatisticsPlugin;
-import com.kaltura.playkit.plugins.PhoenixAnalyticsPlugin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private void registerPlugins() {
         PlayKitManager.registerPlugins(SamplePlugin.factory);
         PlayKitManager.registerPlugins(IMASimplePlugin.factory);
-        PlayKitManager.registerPlugins(KalturaStatisticsPlugin.factory, PhoenixAnalyticsPlugin.factory);
+        PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);
     }
 
     @Override
