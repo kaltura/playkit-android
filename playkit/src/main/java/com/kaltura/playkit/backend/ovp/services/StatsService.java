@@ -28,7 +28,7 @@ public class StatsService {
     private static String getOvpUrl(String baseUrl, int partnerId, int eventType, String clientVer, long duration,
                                     String sessionId, long position, int uiConfId, String entryId, String widgetId, boolean isSeek, String referrer) {
         Uri.Builder builder = new Uri.Builder();
-        builder.scheme("https")
+        builder.scheme("http")
                 .authority(baseUrl)
                 .path("/api_v3/index.php")
                 .appendQueryParameter("service", "stats")

@@ -116,6 +116,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     private boolean isBuffering = false;
     private boolean intervalOn = false;
     private boolean hasSeeked = false;
+    private boolean isWidgetLoaded = false;
 
     private int TimerInterval = 10000;
 
@@ -167,18 +168,17 @@ public class KalturaStatsPlugin extends PKPlugin {
         log.d(event.newState.toString());
         switch (event.newState) {
             case IDLE:
-                sendAnalyticsEvent(KStatsEvent.WIDGET_LOADED);
+                sendWidgetLoaded();
                 break;
             case LOADING:
+                sendWidgetLoaded();
                 if (isBuffering) {
                     isBuffering = false;
                     sendAnalyticsEvent(KStatsEvent.BUFFER_END);
                 }
                 break;
             case READY:
-                if (!isBuffering) {
-                    sendAnalyticsEvent(KStatsEvent.MEDIA_LOADED);
-                } else {
+                if (isBuffering) {
                     isBuffering = false;
                     sendAnalyticsEvent(KStatsEvent.BUFFER_END);
                 }
@@ -188,6 +188,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                 }
                 break;
             case BUFFERING:
+                sendWidgetLoaded();
                 isBuffering = true;
                 sendAnalyticsEvent(KStatsEvent.BUFFER_START);
                 break;
@@ -215,12 +216,22 @@ public class KalturaStatsPlugin extends PKPlugin {
                         seekPercent = (float) player.getCurrentPosition() / player.getDuration();
                         sendAnalyticsEvent(KStatsEvent.SEEK);
                         break;
+                    case CAN_PLAY:
+                        sendAnalyticsEvent(KStatsEvent.MEDIA_LOADED);
+                        break;
                     default:
                         break;
                 }
             }
         }
     };
+
+    private void sendWidgetLoaded(){
+        if (!isWidgetLoaded){
+            sendAnalyticsEvent(KStatsEvent.WIDGET_LOADED);
+            isWidgetLoaded = true;
+        }
+    }
 
     /**
      * Reset the flags in case of media change or media ended

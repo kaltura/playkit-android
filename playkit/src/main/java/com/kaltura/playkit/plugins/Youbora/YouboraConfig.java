@@ -42,8 +42,8 @@ public class YouboraConfig {
         youboraConfig.put("httpSecure", false);
         youboraConfig.put("enableNiceBuffer", true);
         youboraConfig.put("enableNiceSeek", true);
-        youboraConfig.put("accountCode", "demokaltura");
-        youboraConfig.put("username", "checking");
+        youboraConfig.put("accountCode", "kalturatest");
+        youboraConfig.put("username", "");
         youboraConfig.put("transactionCode", "");
         youboraConfig.put("isBalanced", "0");
         youboraConfig.put("isResumed", "0");
@@ -51,17 +51,17 @@ public class YouboraConfig {
         youboraConfigObject = youboraConfig;
 
         Map<String, Object> network = new HashMap<>(2);
-        network.put("ip", "111.111.111.15");
+        network.put("ip", "");
         network.put("isp", "");
         youboraConfig.put("network", network);
         networkObject = network;
 
         Map<String, Object> device = new HashMap<>(1);
-        device.put("id", "54");
+        device.put("id", null);
         youboraConfig.put("device", device);
 
         Map<String, Object> media = new HashMap<>(5);
-        media.put("isLive", true);
+        media.put("isLive", false);
         media.put("resource", null);
         media.put("title", "Title");
         media.put("duration", null);
