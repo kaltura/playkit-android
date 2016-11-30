@@ -2,7 +2,6 @@ package com.kaltura.playkitdemo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -18,7 +17,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.plugins.KalturaStatisticsPlugin;
+import com.kaltura.playkit.plugins.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.PhoenixAnalyticsPlugin;
 
 
@@ -35,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean nowPlaying;
 
     private void registerPlugins() {
-        PlayKitManager.registerPlugins(KalturaStatisticsPlugin.factory, PhoenixAnalyticsPlugin.factory);
+        PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);
     }
 
     @Override
@@ -45,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         registerPlugins();
 
-        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "drm1");
 
 //        mediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
 

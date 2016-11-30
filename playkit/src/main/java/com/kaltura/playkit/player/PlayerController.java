@@ -101,7 +101,7 @@ public class PlayerController implements Player {
     private void startPlaybackFrom(long startPosition) {
         if(!wasReleased){
             togglePlayerListeners(false);
-            player.seekTo(startPosition);
+            player.startFrom(startPosition);
             togglePlayerListeners(true);
         }
     }
