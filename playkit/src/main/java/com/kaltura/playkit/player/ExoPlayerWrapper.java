@@ -376,6 +376,12 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         lastPlayedSource = null;
     }
 
+    @Override
+    public void startFrom(long position) {
+        isSeeking = false;
+        player.seekTo(position);
+    }
+
     public void setEventListener(final EventListener eventTrigger) {
         this.eventListener = eventTrigger;
     }

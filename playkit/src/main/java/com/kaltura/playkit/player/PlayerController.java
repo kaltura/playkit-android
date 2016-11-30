@@ -4,7 +4,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.View;
 
 import com.kaltura.playkit.Assert;
@@ -15,7 +14,6 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.TrackData;
 
 /**
  * Created by anton.afanasiev on 01/11/2016.
@@ -103,7 +101,7 @@ public class PlayerController implements Player {
     private void startPlaybackFrom(long startPosition) {
         if(!wasReleased){
             togglePlayerListeners(false);
-            player.seekTo(startPosition);
+            player.startFrom(startPosition);
             togglePlayerListeners(true);
         }
     }
