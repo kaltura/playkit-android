@@ -297,7 +297,6 @@ public class KalturaStatsPlugin extends PKPlugin {
         String clientVer = pluginConfig.has("clientVer")? pluginConfig.getAsJsonPrimitive("clientVer").getAsString(): "";
         String sessionId = pluginConfig.has("sessionId")? pluginConfig.getAsJsonPrimitive("sessionId").getAsString(): "";
         int uiconfId = pluginConfig.has("uiconfId")? pluginConfig.getAsJsonPrimitive("uiconfId").getAsInt(): 0;
-        String referrer = pluginConfig.has("IsFriendlyIframe")? pluginConfig.getAsJsonPrimitive("IsFriendlyIframe").getAsString(): "";
         String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString(): "";
         int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt(): 0;
 
@@ -305,8 +304,7 @@ public class KalturaStatsPlugin extends PKPlugin {
         //        String baseUrl, int partnerId, int eventType, String clientVer, long duration,
         //        String sessionId, long position, String uiConfId, String entryId, String widgetId, String kalsig, boolean isSeek, String referrer
         RequestBuilder requestBuilder = StatsService.sendStatsEvent(baseUrl, partnerId, eventType.getValue(), clientVer, player.getDuration(),
-                sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), "_" + partnerId,
-                hasSeeked, referrer);
+                sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), "_" + partnerId, hasSeeked);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
