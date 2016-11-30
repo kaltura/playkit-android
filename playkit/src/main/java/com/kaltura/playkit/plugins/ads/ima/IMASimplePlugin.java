@@ -545,9 +545,8 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
             default:
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_UNKNOWN_ERROR));
         }
-        if (player != null) {
-            player.play();
-        }
+        mIsAdRequested = true;
+        mIsAdDisplayed = false;
     }
 
 
