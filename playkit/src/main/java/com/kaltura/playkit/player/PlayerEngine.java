@@ -35,4 +35,6 @@ public interface PlayerEngine {
     void restore();
 
     void destroy();
+
+    void startFrom(long position);
 }

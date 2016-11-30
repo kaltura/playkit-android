@@ -366,12 +366,20 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     @Override
     public void destroy() {
         log.d("release");
-        player.release();
+        if(player != null){
+            player.release();
+        }
         window = null;
         player = null;
         eventLogger = null;
         exoPlayerView = null;
         lastPlayedSource = null;
+    }
+
+    @Override
+    public void startFrom(long position) {
+        isSeeking = false;
+        player.seekTo(position);
     }
 
     public void setEventListener(final EventListener eventTrigger) {
