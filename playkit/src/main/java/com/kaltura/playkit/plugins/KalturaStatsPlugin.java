@@ -143,7 +143,6 @@ public class KalturaStatsPlugin extends PKPlugin {
         this.pluginConfig = pluginConfig;
         this.messageBus = messageBus;
         log.d("onLoad finished");
-//        setExamplePluginConfig(); // Until full implementation of config object
     }
 
     @Override
@@ -188,6 +187,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                     intervalOn = true;
                     startTimerInterval();
                 }
+                sendMediaLoaded();
                 break;
             case BUFFERING:
                 sendWidgetLoaded();
@@ -210,6 +210,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                         sendAnalyticsEvent(KStatsEvent.ERROR);
                         break;
                     case PLAY:
+                        sendMediaLoaded();
                         if (isFirstPlay) {
                             sendAnalyticsEvent(KStatsEvent.PLAY);
                             isFirstPlay = false;
@@ -221,10 +222,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                         sendAnalyticsEvent(KStatsEvent.SEEK);
                         break;
                     case CAN_PLAY:
-                        if (!isMediaLoaded) {
-                            sendAnalyticsEvent(KStatsEvent.MEDIA_LOADED);
-                            isMediaLoaded = true;
-                        }
+                        sendMediaLoaded();
                         break;
                     default:
                         break;
@@ -237,6 +235,13 @@ public class KalturaStatsPlugin extends PKPlugin {
         if (!isWidgetLoaded){
             sendAnalyticsEvent(KStatsEvent.WIDGET_LOADED);
             isWidgetLoaded = true;
+        }
+    }
+
+    private void sendMediaLoaded(){
+        if (!isMediaLoaded) {
+            sendAnalyticsEvent(KStatsEvent.MEDIA_LOADED);
+            isMediaLoaded = true;
         }
     }
 

@@ -1,6 +1,5 @@
 package com.kaltura.playkit.plugins.Youbora;
 
-import com.google.android.exoplayer2.ExoPlayer;
 import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
@@ -25,6 +24,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     private Double lastReportedthroughput = super.getThroughput();
     private static final long MONITORING_INTERVAL = 200L;
     private boolean isFirstPlay = true;
+    private boolean isBuffering = false;
     private MessageBus messageBus;
 
     public YouboraLibraryManager(String options) throws JSONException {
@@ -54,9 +54,13 @@ public class YouboraLibraryManager extends PluginGeneric {
 
                 break;
             case READY:
-
+                if (isBuffering) {
+                    isBuffering = false;
+                    bufferedHandler();
+                }
                 break;
             case BUFFERING:
+                isBuffering = true;
                 bufferingHandler();
                 break;
         }
@@ -78,9 +82,6 @@ public class YouboraLibraryManager extends PluginGeneric {
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
                     case CAN_PLAY:
-                        playHandler();
-                        joinHandler();
-                        bufferedHandler();
                         break;
                     case ENDED:
                         endedHandler();
@@ -100,8 +101,6 @@ public class YouboraLibraryManager extends PluginGeneric {
                         } else {
                             isFirstPlay = false;
                             playHandler();
-                            joinHandler();
-                            bufferedHandler();
                         }
                         break;
                     case PLAYING:
@@ -152,7 +151,4 @@ public class YouboraLibraryManager extends PluginGeneric {
         return this.lastReportedthroughput;
     }
 
-    private ExoPlayer getPlayer() {
-        return (ExoPlayer) this.player;
-    }
 }
