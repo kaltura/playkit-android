@@ -257,7 +257,9 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
         request.setContentProgressProvider(new ContentProgressProvider() {
             @Override
             public VideoProgressUpdate getContentProgress() {
-
+                if (mAdsManager == null) {
+                    return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
+                }
                 if (mIsAdDisplayed || player == null || (player != null && player.getDuration() <= 0)) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
@@ -418,8 +420,8 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                 log.d("AD_ALL_ADS_COMPLETED");
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_ALL_ADS_COMPLETED));
                 if (mAdsManager != null) {
-                    //mAdsManager.destroy();
-                    //mAdsManager = null;
+                    mAdsManager.destroy();
+                    mAdsManager = null;
                 }
                 break;
             case STARTED:
@@ -486,7 +488,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
 
     @Override
     public void onAdError(AdErrorEvent adErrorEvent) {
-        log.e("Ad Error: " + adErrorEvent.getError().getMessage());
+        log.e("Ad Error: " + adErrorEvent.getError().getErrorCode().name() + " " + adErrorEvent.getError().getMessage());
         mIsAdRequested = true;
         mIsAdDisplayed = false;
         if (mAdsManager == null) {
