@@ -89,6 +89,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     public void onDestroy() {
         stopLiveEvents();
         eventIdx = 0;
+        timer.cancel();
     }
 
     @Override
@@ -99,7 +100,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateConfig(String key, Object value) {
-        if (pluginConfig.has(key)){
+        if (pluginConfig.has(key)) {
             pluginConfig.addProperty(key, value.toString());
         }
     }
@@ -129,7 +130,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         switch (event.newState) {
             case READY:
                 startTimerInterval();
-                if (isBuffering){
+                if (isBuffering) {
                     isBuffering = false;
                     sendLiveEvent(calculateBuffer(false));
                 }
@@ -143,13 +144,13 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         }
     }
 
-    private long calculateBuffer(boolean isBuffering){
+    private long calculateBuffer(boolean isBuffering) {
         long currTime = new Date().getTime();
-        bufferTime =  (currTime - bufferStartTime) / 1000;
-        if (bufferTime > 10){
+        bufferTime = (currTime - bufferStartTime) / 1000;
+        if (bufferTime > 10) {
             bufferTime = 10;
         }
-        if (isBuffering){
+        if (isBuffering) {
             bufferStartTime = new Date().getTime();
         } else {
             bufferStartTime = -1;
@@ -169,11 +170,12 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         }, 0, TimerInterval);
     }
 
-    private void startLiveEvents(){
+
+    private void startLiveEvents() {
         if (!isLive) {
             startTimerInterval();
             isLive = true;
-            if (isFirstPlay){
+            if (isFirstPlay) {
                 sendLiveEvent(bufferTime);
                 isFirstPlay = false;
             }
@@ -181,20 +183,19 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         }
     }
 
-    private void stopLiveEvents(){
+    private void stopLiveEvents() {
         isLive = false;
-        timer.cancel();
     }
 
     private void sendLiveEvent(long bufferTime) {
-        String sessionId = pluginConfig.has("sessionId")? pluginConfig.getAsJsonPrimitive("sessionId").getAsString(): "";
-        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString(): "";
-        int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt(): 0;
+        String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
+        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : "";
+        int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
 
         // Parameters for the request -
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
         // String sessionId, String startTime,  String entryId,  boolean isLive, String referrer
-        RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(baseUrl, partnerId, isLive? 1:2, eventIdx++, bufferTime,
+        RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(baseUrl, partnerId, isLive ? 1 : 2, eventIdx++, bufferTime,
                 /*player.getBitrate() */ 0, sessionId, mediaConfig.getStartPosition(), mediaConfig.getMediaEntry().getId(), isLive);
 
         requestBuilder.completion(new OnRequestCompletion() {
