@@ -42,7 +42,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         BITRATE_CHANGE,
         ERROR
     }
-    private boolean mDidFirstPlay = false;
+    private boolean isFirstPlay = true;
     private boolean intervalOn = false;
     private long mContinueTime;
     private PlayerConfig.Media mediaConfig;
@@ -69,7 +69,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
-        mDidFirstPlay = false;
+        isFirstPlay = false;
         this.mediaConfig = mediaConfig;
     }
 
@@ -95,7 +95,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.pluginConfig = pluginConfig;
         this.mContext = context;
         this.messageBus = messageBus;
-        messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
+        messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA);
         if (this.mediaConfig.getStartPosition() != -1){
             this.mContinueTime = this.mediaConfig.getStartPosition();
         }
@@ -108,9 +108,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             if (event instanceof PlayerEvent) {
                 log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
-                    case CAN_PLAY:
-                        mDidFirstPlay = false;
-                        break;
                     case ENDED:
                         timer.cancel();
                         sendAnalyticsEvent(PhoenixActionType.FINISH);
@@ -123,25 +120,21 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         sendAnalyticsEvent(PhoenixActionType.LOAD);
                         break;
                     case PAUSE:
-                        if (mDidFirstPlay) {
-                            sendAnalyticsEvent(PhoenixActionType.PAUSE);
-                        }
+                        sendAnalyticsEvent(PhoenixActionType.PAUSE);
                         break;
-                    case FIRST_PLAY:
                     case PLAY:
                         if (!intervalOn){
                             startMediaHitInterval();
                             intervalOn = true;
                         }
-                        if (!mDidFirstPlay) {
-                            mDidFirstPlay = true;
+                        if (isFirstPlay) {
+                            isFirstPlay = false;
                             sendAnalyticsEvent(PhoenixActionType.FIRST_PLAY);
                         } else {
                             sendAnalyticsEvent(PhoenixActionType.PLAY);
                         }
                         break;
                     default:
-
                         break;
                 }
             }
