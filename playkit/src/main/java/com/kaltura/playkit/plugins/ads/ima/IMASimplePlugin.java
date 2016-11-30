@@ -157,11 +157,10 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
 
     @Override
     protected void onDestroy() {
+        log.d("IMA Start onDestroy");
         if (mAdsManager != null) {
             mAdsManager.destroy();
-        }
-        if (mAdsLoader != null) {
-            mAdsLoader.contentComplete();
+            mAdsManager = null;
         }
     }
 
@@ -359,6 +358,10 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
         if (adEvent.getAdData() != null) {
             log.i("Event: " + adEvent.getAdData().toString());
         }
+
+        if (mAdsManager == null) {
+            return;
+        }
         switch (adEvent.getType()) {
 
             case LOADED:
@@ -484,6 +487,12 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
     @Override
     public void onAdError(AdErrorEvent adErrorEvent) {
         log.e("Ad Error: " + adErrorEvent.getError().getMessage());
+        mIsAdRequested = true;
+        mIsAdDisplayed = false;
+        if (mAdsManager == null) {
+            return;
+        }
+
         switch (adErrorEvent.getError().getErrorCode()) {
             case INTERNAL_ERROR:
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_INTERNAL_ERROR));
@@ -545,8 +554,6 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
             default:
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_UNKNOWN_ERROR));
         }
-        mIsAdRequested = true;
-        mIsAdDisplayed = false;
     }
 
 
