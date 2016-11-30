@@ -51,12 +51,10 @@ public class YouboraLibraryManager extends PluginGeneric {
 
                 break;
             case LOADING:
-//                playHandler();
+
                 break;
             case READY:
-//                playHandler();
-//                joinHandler();
-//                bufferedHandler();
+
                 break;
             case BUFFERING:
                 bufferingHandler();

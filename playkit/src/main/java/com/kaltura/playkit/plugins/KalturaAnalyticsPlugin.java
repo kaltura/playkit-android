@@ -78,7 +78,6 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     private boolean playReached50 = false;
     private boolean playReached75 = false;
     private boolean playReached100 = false;
-    private boolean isBuffering = false;
     private boolean isDvr = false;
     private int currentBitrate = -1;
     private int bufferTime = 0;
@@ -86,6 +85,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     private boolean isFirstPlay = true;
     private boolean intervalOn = false;
     private boolean hasSeeked = false;
+    private boolean isImpression = false;
 
     private static final int TimerInterval = 10000;
 
@@ -122,6 +122,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
 
     @Override
     public void onDestroy() {
+        resetPlayerFlags();
         intervalOn = false;
         timer.cancel();
     }
@@ -130,6 +131,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
         isFirstPlay = true;
         this.mediaConfig = mediaConfig;
+        resetPlayerFlags();
     }
 
     @Override
@@ -145,16 +147,12 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
 
                 break;
             case LOADING:
-                if (isBuffering) {
-                    isBuffering = false;
-                }
+
                 break;
             case READY:
-                resetPlayerFlags();
-                if (!isBuffering) {
+                if (!isImpression){
                     sendAnalyticsEvent(KAnalonyEvents.IMPRESSION);
-                } else {
-                    isBuffering = false;
+                    isImpression = true;
                 }
                 if (!intervalOn) {
                     intervalOn = true;
@@ -162,7 +160,6 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
                 }
                 break;
             case BUFFERING:
-                isBuffering = true;
                 break;
         }
     }
@@ -198,6 +195,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
                         break;
                     case PLAYING:
                         if (isFirstPlay){
+                            isFirstPlay = false;
                             sendAnalyticsEvent(KAnalonyEvents.PLAY);
                         } else {
                             sendAnalyticsEvent(KAnalonyEvents.RESUME);
@@ -227,6 +225,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         playReached100 = false;
         hasSeeked = false;
         eventIdx = 0;
+        isFirstPlay = true;
     }
 
     private void startTimeObservorInterval() {

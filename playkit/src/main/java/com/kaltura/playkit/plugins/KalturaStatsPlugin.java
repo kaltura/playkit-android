@@ -117,6 +117,8 @@ public class KalturaStatsPlugin extends PKPlugin {
     private boolean intervalOn = false;
     private boolean hasSeeked = false;
     private boolean isWidgetLoaded = false;
+    private boolean isMediaLoaded = false;
+    private boolean isFirstPlay = true;
 
     private int TimerInterval = 10000;
 
@@ -207,9 +209,11 @@ public class KalturaStatsPlugin extends PKPlugin {
                     case ERROR:
                         sendAnalyticsEvent(KStatsEvent.ERROR);
                         break;
-
                     case PLAY:
-                        sendAnalyticsEvent(KStatsEvent.PLAY);
+                        if (isFirstPlay) {
+                            sendAnalyticsEvent(KStatsEvent.PLAY);
+                            isFirstPlay = false;
+                        }
                         break;
                     case SEEKED:
                         hasSeeked = true;
@@ -217,7 +221,10 @@ public class KalturaStatsPlugin extends PKPlugin {
                         sendAnalyticsEvent(KStatsEvent.SEEK);
                         break;
                     case CAN_PLAY:
-                        sendAnalyticsEvent(KStatsEvent.MEDIA_LOADED);
+                        if (!isMediaLoaded) {
+                            sendAnalyticsEvent(KStatsEvent.MEDIA_LOADED);
+                            isMediaLoaded = true;
+                        }
                         break;
                     default:
                         break;
@@ -243,6 +250,9 @@ public class KalturaStatsPlugin extends PKPlugin {
         playReached75 = false;
         playReached100 = false;
         hasSeeked = false;
+        isWidgetLoaded = false;
+        isMediaLoaded = false;
+        isFirstPlay = true;
     }
 
     /**
