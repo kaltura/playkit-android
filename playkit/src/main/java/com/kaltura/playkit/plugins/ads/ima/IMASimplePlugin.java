@@ -68,22 +68,22 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
     /////////////////////
 
     // The container for the ad's UI.
-    private ViewGroup mAdUiContainer;
+    private ViewGroup adUiContainer;
 
     // Factory class for creating SDK objects.
-    private ImaSdkFactory mSdkFactory;
+    private ImaSdkFactory sdkFactory;
 
     // The AdsLoader instance exposes the requestAds method.
-    private AdsLoader mAdsLoader;
-    private AdsLoader.AdsLoadedListener mAdsLoadedListener;
+    private AdsLoader adsLoader;
+    private AdsLoader.AdsLoadedListener adsLoadedListener;
 
     // AdsManager exposes methods to control ad playback and listen to ad events.
-    private AdsManager mAdsManager;
+    private AdsManager adsManager;
 
     // Whether an ad is displayed.
-    private boolean mIsAdDisplayed;
-    private boolean mIsAdIsPaused;
-    private boolean mIsAdRequested = false;
+    private boolean isAdDisplayed;
+    private boolean isAdIsPaused;
+    private boolean isAdRequested = false;
     ////////////////////
     private MessageBus messageBus;
 
@@ -136,22 +136,22 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
 
         //----------------------------//
         adConfig = AdsConfig.fromJsonObject(pluginConfig);
-        mAdUiContainer = (ViewGroup) player.getView();
+        adUiContainer = (ViewGroup) player.getView();
         requestAd();
     }
 
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
         log.d("Start onUpdateMedia");
-        mIsAdRequested = false;
-        mIsAdDisplayed = false;
+        isAdRequested = false;
+        isAdDisplayed = false;
     }
 
     @Override
     protected void onUpdateConfig(String key, Object value) {
         log.d("Start onUpdateConfig");
-        mIsAdRequested = false;
-        mIsAdDisplayed = false;
+        isAdRequested = false;
+        isAdDisplayed = false;
         requestAd();
     }
 
@@ -159,15 +159,15 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
     protected void onDestroy() {
         log.d("IMA Start onDestroy");
 
-        if (mAdsManager != null) {
-            mAdsManager.destroy();
-            mAdsManager = null;
+        if (adsManager != null) {
+            adsManager.destroy();
+            adsManager = null;
         }
-        if (mAdsLoader != null) {
-            mAdsLoader.removeAdErrorListener(this);
-            mAdsLoader.removeAdsLoadedListener(mAdsLoadedListener);
-            mAdsLoadedListener = null;
-            mAdsLoader = null;
+        if (adsLoader != null) {
+            adsLoader.removeAdErrorListener(this);
+            adsLoader.removeAdsLoadedListener(adsLoadedListener);
+            adsLoadedListener = null;
+            adsLoader = null;
         }
 
     }
@@ -192,32 +192,32 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
         // Tell the SDK we want to control ad break playback.
         imaSdkSettings.setAutoPlayAdBreaks(adConfig.getAutoPlayAdBreaks());
 
-        mSdkFactory = ImaSdkFactory.getInstance();
-        mAdsLoader = mSdkFactory.createAdsLoader(context, imaSdkSettings);
+        sdkFactory = ImaSdkFactory.getInstance();
+        adsLoader = sdkFactory.createAdsLoader(context, imaSdkSettings);
 
         // Add listeners for when ads are loaded and for errors.
-        mAdsLoader.addAdErrorListener(this);
-        mAdsLoader.addAdsLoadedListener(getAdsLoadedListener());
+        adsLoader.addAdErrorListener(this);
+        adsLoader.addAdsLoadedListener(getAdsLoadedListener());
         if (adConfig != null) {
             requestAdsFromIMA(adConfig.getAdTagUrl());
         }
     }
 
     private AdsLoader.AdsLoadedListener getAdsLoadedListener() {
-        if (mAdsLoadedListener != null) {
-            return mAdsLoadedListener;
+        if (adsLoadedListener != null) {
+            return adsLoadedListener;
         }
-        mAdsLoadedListener = new AdsLoader.AdsLoadedListener() {
+        adsLoadedListener = new AdsLoader.AdsLoadedListener() {
             @Override
             public void onAdsManagerLoaded(AdsManagerLoadedEvent adsManagerLoadedEvent) {
                 // Ads were successfully loaded, so get the AdsManager instance. AdsManager has
                 // events for ad playback and errors.
-                mAdsManager = adsManagerLoadedEvent.getAdsManager();
+                adsManager = adsManagerLoadedEvent.getAdsManager();
 
                 //Attach event and error event listeners.
 
-                mAdsManager.addAdErrorListener(IMASimplePlugin.this);
-                mAdsManager.addAdEventListener(IMASimplePlugin.this);
+                adsManager.addAdErrorListener(IMASimplePlugin.this);
+                adsManager.addAdEventListener(IMASimplePlugin.this);
 
                 AdsRenderingSettings renderingSettings = ImaSdkFactory.getInstance().createAdsRenderingSettings();
                 if (adConfig.getVideoMimeTypes().size() > 0) {
@@ -238,26 +238,26 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
 
             }
         };
-        return mAdsLoadedListener;
+        return adsLoadedListener;
     }
     @Override
     public void init() {
-        mIsAdRequested = true;
-        if(mAdsManager != null) {
-            mAdsManager.init();
+        isAdRequested = true;
+        if(adsManager != null) {
+            adsManager.init();
         }
     }
 
     private void requestAdsFromIMA(String adTagUrl) {
         log.d("Do requestAdsFromIMA");
-        AdDisplayContainer adDisplayContainer = mSdkFactory.createAdDisplayContainer();
-        adDisplayContainer.setAdContainer(mAdUiContainer);
+        AdDisplayContainer adDisplayContainer = sdkFactory.createAdDisplayContainer();
+        adDisplayContainer.setAdContainer(adUiContainer);
 
         // Set up spots for companions.
 
         ViewGroup adCompanionViewGroup = null;
         if (adCompanionViewGroup != null) {
-            CompanionAdSlot companionAdSlot = mSdkFactory.createCompanionAdSlot();
+            CompanionAdSlot companionAdSlot = sdkFactory.createCompanionAdSlot();
             companionAdSlot.setContainer(adCompanionViewGroup);
             companionAdSlot.setSize(728, 90);
             ArrayList<CompanionAdSlot> companionAdSlots = new ArrayList<CompanionAdSlot>();
@@ -266,16 +266,16 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
         }
 
         // Create the ads request.
-        final AdsRequest request = mSdkFactory.createAdsRequest();
+        final AdsRequest request = sdkFactory.createAdsRequest();
         request.setAdTagUrl(adTagUrl);
         request.setAdDisplayContainer(adDisplayContainer);
         request.setContentProgressProvider(new ContentProgressProvider() {
             @Override
             public VideoProgressUpdate getContentProgress() {
-                if (mAdsManager == null) {
+                if (adsManager == null) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
-                if (mIsAdDisplayed || player == null || (player != null && player.getDuration() <= 0)) {
+                if (isAdDisplayed || player == null || (player != null && player.getDuration() <= 0)) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
                 VideoProgressUpdate videoProgress = new VideoProgressUpdate(player.getCurrentPosition(),
@@ -286,39 +286,39 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
         });
 
         // Request the ad. After the ad is loaded, onAdsManagerLoaded() will be called.
-        mAdsLoader.requestAds(request);
+        adsLoader.requestAds(request);
     }
 
     @Override
     public boolean start() {
-        if (mAdsManager != null && mIsAdDisplayed) {
-            mAdsManager.resume();
+        if (adsManager != null && isAdDisplayed) {
+            adsManager.resume();
         }
         return true;
     }
 
     @Override
     public void resume() {
-        log.e("AD Event pause mIsAdDisplayed = " + mIsAdDisplayed);
-        if (mAdsManager != null) {
-            if (mIsAdDisplayed) {
-                mAdsManager.resume();
+        log.e("AD Event pause mIsAdDisplayed = " + isAdDisplayed);
+        if (adsManager != null) {
+            if (isAdDisplayed) {
+                adsManager.resume();
             }
         }
     }
 
     @Override
     public void pause() {
-        log.e("AD Event pause mIsAdDisplayed = " + mIsAdDisplayed);
-        if (mAdsManager != null && mIsAdDisplayed) {
-            mAdsManager.pause();
+        log.e("AD Event pause mIsAdDisplayed = " + isAdDisplayed);
+        if (adsManager != null && isAdDisplayed) {
+            adsManager.pause();
         }
     }
 
     @Override
     public void contentCompleted() {
-        if (mAdsManager != null) {
-            mAdsLoader.contentComplete();
+        if (adsManager != null) {
+            adsLoader.contentComplete();
         }
     }
 
@@ -330,29 +330,29 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
     @Override
     public boolean isAdDisplayed() {
         //log.d("isAdDisplayed: " + mIsAdDisplayed);
-        return mIsAdDisplayed;
+        return isAdDisplayed;
     }
 
     @Override
     public boolean isAdPaused() {
-        log.d("isAdPaused: " + mIsAdIsPaused);
-        return  mIsAdIsPaused;
+        log.d("isAdPaused: " + isAdIsPaused);
+        return  isAdIsPaused;
     }
 
     @Override
     public boolean isAdRequested() {
-        log.d("isAdRequested: " + mIsAdRequested);
-        return mIsAdRequested;
+        log.d("isAdRequested: " + isAdRequested);
+        return isAdRequested;
     }
 
     @Override
     public long getDuration() {
-        return  (long)mAdsManager.getAdProgress().getDuration();
+        return  (long)adsManager.getAdProgress().getDuration();
     }
 
     @Override
     public long getCurrentPosition() {
-        return (long)mAdsManager.getAdProgress().getCurrentTime();
+        return (long)adsManager.getAdProgress().getCurrentTime();
     }
 
     @Override
@@ -362,7 +362,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
             log.i("Event: " + adEvent.getAdData().toString());
         }
 
-        if (mAdsManager == null) {
+        if (adsManager == null) {
             return;
         }
         switch (adEvent.getType()) {
@@ -377,14 +377,14 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
 
 
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_LOADED));
-                mAdsManager.start();
+                adsManager.start();
                 break;
             case CONTENT_PAUSE_REQUESTED:
                 // AdEventType.CONTENT_PAUSE_REQUESTED is fired immediately before a video
                 // ad is played.
                 log.d("AD_CONTENT_PAUSE_REQUESTED");
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CONTENT_PAUSE_REQUESTED));
-                mIsAdDisplayed = true;
+                isAdDisplayed = true;
                 if (player != null) {
                     player.pause();
                 }
@@ -394,7 +394,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                 // and you should start playing your content.
                 log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED");
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CONTENT_RESUME_REQUESTED));
-                mIsAdDisplayed = false;
+                isAdDisplayed = false;
                 if (player != null) {
                     player.play();
                 }
@@ -402,24 +402,24 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
             case ALL_ADS_COMPLETED:
                 log.d("AD_ALL_ADS_COMPLETED");
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_ALL_ADS_COMPLETED));
-                if (mAdsManager != null) {
+                if (adsManager != null) {
                     log.d("AD_ALL_ADS_COMPLETED onDestroy");
                     onDestroy();
                 }
                 break;
             case STARTED:
                 log.d("AD STARTED");
-                mIsAdIsPaused = false;
+                isAdIsPaused = false;
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_STARTED));
                 break;
             case PAUSED:
                 log.d("AD PAUSED");
-                mIsAdIsPaused = true;
+                isAdIsPaused = true;
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_PAUSED));
                 break;
             case RESUMED:
                 log.d("AD RESUMED");
-                mIsAdIsPaused = false;
+                isAdIsPaused = false;
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_RESUMED));
                 break;
             case COMPLETED:
@@ -439,7 +439,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_SKIPPED));
                 break;
             case CLICKED:
-                mIsAdIsPaused = true;
+                isAdIsPaused = true;
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_CLICKED));
                 break;
             case TAPPED:
@@ -449,7 +449,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_ICON_TAPPED));
                 break;
             case AD_BREAK_READY:
-                mAdsManager.start();
+                adsManager.start();
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_AD_BREAK_READY));
                 break;
             case AD_PROGRESS:
@@ -481,7 +481,12 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
         int adWidth               = ad.getWidth();
         String traffickingParameters = ad.getTraffickingParameters();
         AdPodInfo adPodInfo          =  ad.getAdPodInfo();
-        List<Float> adCuePoints      =  mAdsManager.getAdCuePoints();
+        List<Float> adCuePoints;
+        if (adsManager != null) {
+            adCuePoints = adsManager.getAdCuePoints();
+        } else {
+            adCuePoints = new ArrayList<>();
+        }
 
         return new  AdInfo(adSescription, adDuration,
                 adTitle, isAdSkippable,
@@ -495,9 +500,9 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
     @Override
     public void onAdError(AdErrorEvent adErrorEvent) {
         log.e("Ad Error: " + adErrorEvent.getError().getErrorCode().name() + " " + adErrorEvent.getError().getMessage());
-        mIsAdRequested = true;
-        mIsAdDisplayed = false;
-        if (mAdsManager == null) {
+        isAdRequested = true;
+        isAdDisplayed = false;
+        if (adsManager == null) {
             return;
         }
 
