@@ -77,7 +77,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
 
     // AdsManager exposes methods to control ad playback and listen to ad events.
     private AdsManager mAdsManager;
-
+    private AdsLoader.AdsLoadedListener mAdsLoadedListener;
     // Whether an ad is displayed.
     private boolean mIsAdDisplayed;
     private boolean mIsAdIsPaused;
@@ -158,10 +158,18 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
     @Override
     protected void onDestroy() {
         log.d("IMA Start onDestroy");
+
         if (mAdsManager != null) {
             mAdsManager.destroy();
             mAdsManager = null;
         }
+        if (mAdsLoader != null) {
+            mAdsLoader.removeAdErrorListener(this);
+            mAdsLoader.removeAdsLoadedListener(mAdsLoadedListener);
+            mAdsLoadedListener = null;
+            mAdsLoader = null;
+        }
+
     }
 
 
@@ -189,7 +197,17 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
 
         // Add listeners for when ads are loaded and for errors.
         mAdsLoader.addAdErrorListener(this);
-        mAdsLoader.addAdsLoadedListener(new AdsLoader.AdsLoadedListener() {
+        mAdsLoader.addAdsLoadedListener(getAdsLoadedListener());
+        if (adConfig != null) {
+            requestAdsFromIMA(adConfig.getAdTagUrl());
+        }
+    }
+
+    private AdsLoader.AdsLoadedListener getAdsLoadedListener() {
+        if (mAdsLoadedListener != null) {
+            return mAdsLoadedListener;
+        }
+        mAdsLoadedListener = new AdsLoader.AdsLoadedListener() {
             @Override
             public void onAdsManagerLoaded(AdsManagerLoadedEvent adsManagerLoadedEvent) {
                 // Ads were successfully loaded, so get the AdsManager instance. AdsManager has
@@ -219,12 +237,9 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                 }
 
             }
-        });
-        if (adConfig != null) {
-            requestAdsFromIMA(adConfig.getAdTagUrl());
-        }
+        };
+        return mAdsLoadedListener;
     }
-
     @Override
     public void init() {
         mIsAdRequested = true;
@@ -420,8 +435,8 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                 log.d("AD_ALL_ADS_COMPLETED");
                 messageBus.post(new AdEvent.Generic(AdEvent.Type.AD_ALL_ADS_COMPLETED));
                 if (mAdsManager != null) {
-                    mAdsManager.destroy();
-                    mAdsManager = null;
+                    log.d("AD_ALL_ADS_COMPLETED onDestroy");
+                    onDestroy();
                 }
                 break;
             case STARTED:
