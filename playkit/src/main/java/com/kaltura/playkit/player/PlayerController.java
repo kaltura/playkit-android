@@ -8,8 +8,10 @@ import android.view.View;
 
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKAdInfo;
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
@@ -83,8 +85,17 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
-        Uri sourceUri = Uri.parse(mediaConfig.getMediaEntry().getSources().get(0).getUrl());
-        player.load(sourceUri);
+
+        PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
+
+        Uri sourceUri = Uri.parse(source.getUrl());
+        PKDrmParams drmData = source.getDrmData();
+        String licenseUri = null;
+        if (drmData != null) {
+            licenseUri = drmData.getLicenseUri();
+        }
+        
+        player.load(sourceUri, licenseUri);
         startPlaybackFrom(mediaConfig.getStartPosition());
     }
 
