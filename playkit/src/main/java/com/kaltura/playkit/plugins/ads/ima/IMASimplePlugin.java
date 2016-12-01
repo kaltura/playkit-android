@@ -101,7 +101,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
     };
 
     ////////PKPlugin
-    
+
     ///////////END PKPlugin
     @Override
     protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
@@ -290,7 +290,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
     }
 
     @Override
-    public boolean start(boolean showLoadingView) {
+    public boolean start() {
         if (mAdsManager != null && mIsAdDisplayed) {
             mAdsManager.resume();
         }

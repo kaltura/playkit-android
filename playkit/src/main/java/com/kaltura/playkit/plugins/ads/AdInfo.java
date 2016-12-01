@@ -44,20 +44,8 @@ public class AdInfo implements PKAdInfo{
         return adDescriptionc;
     }
 
-    public void setAdDescriptionc(String adDescriptionc) {
-        this.adDescriptionc = adDescriptionc;
-    }
-
     public String getContnentType() {
         return contnentType;
-    }
-
-    public void setContnentType(String contnentType) {
-        this.contnentType = contnentType;
-    }
-
-    public void setAdDuration(double adDuration) {
-        this.adDuration = adDuration;
     }
 
     public String getAdTitle() {
@@ -72,16 +60,8 @@ public class AdInfo implements PKAdInfo{
         return isAdSkippable;
     }
 
-    public void setAdSkippable(boolean adSkippable) {
-        isAdSkippable = adSkippable;
-    }
-
     public String getContentType() {
         return contnentType;
-    }
-
-    public void setTraffickingParameters(String traffickingParameters) {
-        this.traffickingParameters = traffickingParameters;
     }
 
     @Override
@@ -102,10 +82,6 @@ public class AdInfo implements PKAdInfo{
     @Override
     public double getDuration() {
         return adDuration;
-    }
-
-    public void setContentType(String contnentType) {
-        this.contnentType = contnentType;
     }
 
     @Override
@@ -140,31 +116,11 @@ public class AdInfo implements PKAdInfo{
         return null;
     }
 
-    public void setAdSystem(String adSystem) {
-        this.adSystem = adSystem;
-    }
-
-    public void setAdHeight(int adHeight) {
-        this.adHeight = adHeight;
-    }
-
-    public void setAdWidth(int adWidth) {
-        this.adWidth = adWidth;
-    }
-
     public AdPodInfo getAdPodInfo() {
         return adPodInfo;
     }
 
-    public void setAdPodInfo(AdPodInfo adPodInfo) {
-        this.adPodInfo = adPodInfo;
-    }
-
     public List<Float> getAdCuePoints() {
         return adCuePoints;
-    }
-
-    public void setAdCuePoints(List<Float> adCuePoints) {
-        this.adCuePoints = adCuePoints;
     }
 }

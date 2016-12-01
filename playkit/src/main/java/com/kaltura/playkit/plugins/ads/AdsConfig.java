@@ -42,8 +42,7 @@ public class AdsConfig {
 
     //View companionView;
 
-    public AdsConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate, List<String> videoMimeTypes, String adTagUrl, boolean adAttribution, boolean adCountDown, Map<Double,String> tagTimes) {//}, String tagsTimes, View companionView, ViewGroup uiControlsContainer) {
-        this.language = language;
+    public AdsConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate, List<String> videoMimeTypes, String adTagUrl, boolean adAttribution, boolean adCountDown, Map<Double,String> tagTimes) {
         this.enableBackgroundPlayback = enableBackgroundPlayback;
         this.autoPlayAdBreaks = autoPlayAdBreaks;
         this.videoBitrate = videoBitrate;
@@ -61,7 +60,6 @@ public class AdsConfig {
         }
         this.tagsTimes = tagTimes;
         //this.companionView = companionView;
-        //this.uiControlsContainer = uiControlsContainer;
     }
 
 
@@ -144,13 +142,6 @@ public class AdsConfig {
 //        this.companionView = companionView;
 //    }
 //
-//    public ViewGroup getUiControlsContainer() {
-//        return uiControlsContainer;
-//    }
-//
-//    public void setUiControlsContainer(ViewGroup uiControlsContainer) {
-//        this.uiControlsContainer = uiControlsContainer;
-//    }
 
     public JsonObject toJSONObject() {
         JsonObject jsonObject = new JsonObject();

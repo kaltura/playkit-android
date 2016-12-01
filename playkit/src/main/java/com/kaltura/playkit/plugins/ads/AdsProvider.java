@@ -11,7 +11,7 @@ public interface AdsProvider {
     AdsConfig getAdsConfig();
     void requestAd();
     void init();
-    boolean start(boolean showLoadingView);
+    boolean start();
     void resume();
     void pause();
     void contentCompleted();
