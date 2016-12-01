@@ -5,6 +5,7 @@ import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.backend.ovp.OvpConfigs;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.managers.ViewManager;
 
@@ -24,10 +25,12 @@ public class YouboraLibraryManager extends PluginGeneric {
     private Double lastReportedthroughput = super.getThroughput();
     private static final long MONITORING_INTERVAL = 200L;
     private boolean isFirstPlay = true;
+    private boolean isBuffering = false;
     private MessageBus messageBus;
 
     public YouboraLibraryManager(String options) throws JSONException {
         super(options);
+
     }
 
     public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus) {
@@ -37,7 +40,8 @@ public class YouboraLibraryManager extends PluginGeneric {
 
     protected void init() {
         super.init();
-        this.pluginName = "YouboraPlugin";
+        this.pluginName = OvpConfigs.ClientTag;
+        this.pluginVersion = "5.3.0-"+ OvpConfigs.ClientTag;
         ViewManager.setMonitoringInterval(MONITORING_INTERVAL);
     }
 
@@ -51,11 +55,13 @@ public class YouboraLibraryManager extends PluginGeneric {
 
                 break;
             case READY:
-                playHandler();
-                joinHandler();
-                bufferedHandler();
+                if (isBuffering) {
+                    isBuffering = false;
+                    bufferedHandler();
+                }
                 break;
             case BUFFERING:
+                isBuffering = true;
                 bufferingHandler();
                 break;
         }
@@ -77,9 +83,6 @@ public class YouboraLibraryManager extends PluginGeneric {
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
                     case CAN_PLAY:
-                        playHandler();
-                        joinHandler();
-                        bufferedHandler();
                         break;
                     case ENDED:
                         endedHandler();

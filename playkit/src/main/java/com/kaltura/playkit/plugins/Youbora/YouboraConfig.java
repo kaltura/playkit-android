@@ -6,6 +6,7 @@ import android.util.Log;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerConfig;
+import com.kaltura.playkit.backend.ovp.OvpConfigs;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,6 +30,7 @@ public class YouboraConfig {
     private static final Map<String, Object> propertiesObject;
     private static final Map<String, Object> extraParamsObject;
     private static final Map<String, Object> adsObject;
+    private static final Map<String, Object> networkObject;
 
     static {
 
@@ -41,8 +43,7 @@ public class YouboraConfig {
         youboraConfig.put("httpSecure", false);
         youboraConfig.put("enableNiceBuffer", true);
         youboraConfig.put("enableNiceSeek", true);
-        youboraConfig.put("accountCode", "kaltura");
-        youboraConfig.put("service", "nqs.nice264.com");
+        youboraConfig.put("accountCode", "kalturatest");
         youboraConfig.put("username", "");
         youboraConfig.put("transactionCode", "");
         youboraConfig.put("isBalanced", "0");
@@ -54,6 +55,7 @@ public class YouboraConfig {
         network.put("ip", "");
         network.put("isp", "");
         youboraConfig.put("network", network);
+        networkObject = network;
 
         Map<String, Object> device = new HashMap<>(1);
         device.put("id", null);
@@ -100,7 +102,7 @@ public class YouboraConfig {
         propertiesObject = properties;
 
         Map<String, Object> extraParams = new HashMap<>(10);
-        extraParams.put("param1", "Param 1 value");
+        extraParams.put("param1", OvpConfigs.ClientTag);
         extraParams.put("param2", "Param 2 value");
         extraParams.put("param3", "Param 3 value");
         extraParams.put("param4", "Param 4 value");
@@ -150,9 +152,6 @@ public class YouboraConfig {
             mediaObject.put("duration", mediaConfig.getMediaEntry().getDuration());
         }
         if (pluginConfig != null){
-            if (pluginConfig.has("service")){
-                youboraConfigObject.put("service",pluginConfig.getAsJsonPrimitive("service").getAsString());
-            }
             if (pluginConfig.has("title")){
                 mediaObject.put("title",pluginConfig.getAsJsonPrimitive("title").getAsString());
             }

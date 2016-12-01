@@ -14,17 +14,17 @@ import java.net.URLDecoder;
 
 public class LiveStatsService {
     public static RequestBuilder sendLiveStatsEvent(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, int bitrate,
-                                                String sessionId, long startTime,  String entryId,  boolean isLive, String referrer) {
+                                                String sessionId, long startTime,  String entryId,  boolean isLive) {
         return new RequestBuilder()
                 .method("GET")
-                .url(getOvpUrl(baseUrl, partnerId, eventType, eventIndex, bufferTime, bitrate, sessionId, startTime,  entryId,  isLive, referrer))
+                .url(getOvpUrl(baseUrl, partnerId, eventType, eventIndex, bufferTime, bitrate, sessionId, startTime,  entryId,  isLive))
                 .tag("stats-send");
     }
 
     private static String getOvpUrl(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, int bitrate,
-                                    String sessionId, long startTime,  String entryId,  boolean isLive, String referrer) {
+                                    String sessionId, long startTime,  String entryId,  boolean isLive) {
         Uri.Builder builder = new Uri.Builder();
-        builder.scheme("https")
+        builder.scheme("http")
                 .authority(baseUrl)
                 .path("/api_v3/index.php")
                 .appendQueryParameter("service", "stats")
@@ -38,7 +38,6 @@ public class LiveStatsService {
                 .appendQueryParameter("event:eventIndex", Integer.toString(eventIndex))
                 .appendQueryParameter("event:bufferTime", Long.toString(bufferTime))
                 .appendQueryParameter("event:bitrate", Integer.toString(bitrate))
-                .appendQueryParameter("event:referrer", referrer)
                 .appendQueryParameter("event:isLive", Boolean.toString(isLive))
                 .appendQueryParameter("event:startTime", Long.toString(startTime))
                 .appendQueryParameter("event:entryId", entryId)

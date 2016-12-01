@@ -18,15 +18,15 @@ public class AnalyticsService {
     private static final PKLog log = PKLog.get("AnalyticsService");
 
     public static RequestBuilder sendAnalyticsEvent(String baseUrl, int partnerId, int eventType, String clientVer, String playbackType, String sessionId, long position
-                                                , int uiConfId, String entryId, int eventIdx, int flavourId, String referrer, int bufferTime, int actualBitrate) {
+                                                , int uiConfId, String entryId, int eventIdx, int flavourId, int bufferTime, int actualBitrate) {
         return new RequestBuilder()
                 .method("GET")
-                .url(getAnalyticsUrl(baseUrl, partnerId, eventType, clientVer, playbackType, sessionId, position, uiConfId, entryId, eventIdx, flavourId, referrer, bufferTime, actualBitrate))
+                .url(getAnalyticsUrl(baseUrl, partnerId, eventType, clientVer, playbackType, sessionId, position, uiConfId, entryId, eventIdx, flavourId, bufferTime, actualBitrate))
                 .tag("stats-send");
     }
 
     private static String getAnalyticsUrl(String baseUrl, int deliveryType, int eventType, String clientVer, String playbackType, String sessionId, long position,
-                                           int uiConfId, String entryId, int eventIdx, int flavourId, String referrer, int bufferTime, int actualBitrate) {
+                                           int uiConfId, String entryId, int eventIdx, int flavourId, int bufferTime, int actualBitrate) {
         Uri.Builder builder = new Uri.Builder();
         builder.scheme("https")
                 .authority(baseUrl)
@@ -50,8 +50,7 @@ public class AnalyticsService {
                 .appendQueryParameter("uiconfId", Integer.toString(uiConfId))
                 .appendQueryParameter("bufferTime", Integer.toString(bufferTime))
                 .appendQueryParameter("entryId", entryId)
-                .appendQueryParameter("actualBitrate", Integer.toString(actualBitrate))
-                .appendQueryParameter("eferrer", referrer);
+                .appendQueryParameter("actualBitrate", Integer.toString(actualBitrate));
 
         try {
             URL url = new URL(URLDecoder.decode(builder.build().toString(), "UTF-8"));

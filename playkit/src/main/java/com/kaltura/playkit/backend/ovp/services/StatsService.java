@@ -18,17 +18,17 @@ public class StatsService {
     private static final PKLog log = PKLog.get("StatsService");
 
     public static RequestBuilder sendStatsEvent(String baseUrl, int partnerId, int eventType, String clientVer, long duration,
-                                                String sessionId, long position, int uiConfId, String entryId, String widgetId,  boolean isSeek, String referrer) {
+                                                String sessionId, long position, int uiConfId, String entryId, String widgetId,  boolean isSeek) {
         return new RequestBuilder()
                 .method("GET")
-                .url(getOvpUrl(baseUrl, partnerId, eventType, clientVer, duration, sessionId, position, uiConfId, entryId, widgetId, isSeek, referrer))
+                .url(getOvpUrl(baseUrl, partnerId, eventType, clientVer, duration, sessionId, position, uiConfId, entryId, widgetId, isSeek))
                 .tag("stats-send");
     }
 
     private static String getOvpUrl(String baseUrl, int partnerId, int eventType, String clientVer, long duration,
-                                    String sessionId, long position, int uiConfId, String entryId, String widgetId, boolean isSeek, String referrer) {
+                                    String sessionId, long position, int uiConfId, String entryId, String widgetId, boolean isSeek) {
         Uri.Builder builder = new Uri.Builder();
-        builder.scheme("https")
+        builder.scheme("http")
                 .authority(baseUrl)
                 .path("/api_v3/index.php")
                 .appendQueryParameter("service", "stats")
@@ -50,8 +50,7 @@ public class StatsService {
                 .appendQueryParameter("event:uiconfId", Integer.toString(uiConfId))
                 .appendQueryParameter("event:seek", Boolean.toString(isSeek))
                 .appendQueryParameter("event:entryId", entryId)
-                .appendQueryParameter("event:widgetId", widgetId)
-                .appendQueryParameter("event:referrer", referrer);
+                .appendQueryParameter("event:widgetId", widgetId);
 
         try {
             URL url =  new URL(URLDecoder.decode(builder.build().toString(), "UTF-8"));
