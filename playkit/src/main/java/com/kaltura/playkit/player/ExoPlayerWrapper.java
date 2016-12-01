@@ -81,7 +81,6 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     private boolean shouldGetTrackInfo;
     private MappingTrackSelector trackSelector;
     private TrackSelectionHelper trackSelectionHelper;
-    private int[] lastTrackSelections = {0, 0, 0}; //by default all the last known selections are at position of 0,0,0.
 
     public interface TrackInfoReadyListener{
        void onTrackInfoReady(TracksInfo tracksInfo);
@@ -92,7 +91,6 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         public void onTrackInfoReady(TracksInfo tracksInfoReady) {
             //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
             tracksInfo = tracksInfoReady;
-            tracksInfo.updateLastSelection(lastTrackSelections);
             sendEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
         }
     };
@@ -292,10 +290,9 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         }
 
         //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
-        log.e("should get track info "+ shouldGetTrackInfo);
         if(shouldGetTrackInfo){
             shouldGetTrackInfo = false;
-            trackSelectionHelper.sortTrackInfo(trackSelector.getCurrentSelections().info);
+            trackSelectionHelper.sortTracksInfo(trackSelector.getCurrentSelections().info);
         }
     }
 
@@ -411,9 +408,8 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
     @Override
-    public void changeTrack(int trackType, int position) {
-        lastTrackSelections[trackType] = position;
-        trackSelectionHelper.changeTrack(trackType, position, trackSelector.getCurrentSelections().info);
+    public void changeTrack(String uniqueId) {
+        trackSelectionHelper.changeTrack(uniqueId, trackSelector.getCurrentSelections().info);
     }
 
     public TracksInfo getTracksInfo() {
@@ -426,5 +422,13 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     public void setStateChangedListener(StateChangedListener stateChangedTrigger) {
         this.stateChangedListener = stateChangedTrigger;
+    }
+
+    @Override
+    public long getCurrentVideoBitrate(){
+        if(player.getVideoFormat() != null) {
+            return player.getVideoFormat().bitrate;
+        }
+        return -1;
     }
 }

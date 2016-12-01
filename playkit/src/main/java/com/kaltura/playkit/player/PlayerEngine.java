@@ -38,7 +38,9 @@ public interface PlayerEngine {
 
     void destroy();
 
-    void changeTrack(int trackType, int position);
+    void changeTrack(String uniqueId);
 
     TracksInfo getTracksInfo();
+
+    long getCurrentVideoBitrate();
 }

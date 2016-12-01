@@ -6,13 +6,19 @@ package com.kaltura.playkit;
 public class AudioTrackInfo extends BaseTrackInfo{
 
     private String language;
+    private long bitrate;
 
-    public AudioTrackInfo(String language, String uniqueId, int groupIndex, int trackIndex) {
-        super(uniqueId, groupIndex, trackIndex);
+    public AudioTrackInfo(String uniqueId, String language, long bitrate, boolean isAdaptive) {
+        super(uniqueId, isAdaptive);
         this.language = language;
+        this.bitrate = bitrate;
     }
 
     public String getLanguage() {
         return language;
+    }
+
+    public long getBitrate() {
+        return bitrate;
     }
 }

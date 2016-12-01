@@ -87,8 +87,13 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void changeTrack(int trackType, int position) {
-        player.changeTrack(trackType, position);
+    public void changeTrack(String uniqueId) {
+        player.changeTrack(uniqueId);
+    }
+
+    @Override
+    public long getCurrentVideoBitrate() {
+        return player.getCurrentVideoBitrate();
     }
 
     @Override

@@ -180,41 +180,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void populateSpinnersWithTrackInfo(TracksInfo tracksInfo) {
 
         //Retrieve info that describes available tracks.(video/audio/subtitle).
-        String[] videoInfo = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_VIDEO, tracksInfo.getVideoTrackInfo());
+        TrackItem[] videoTrackItems = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_VIDEO, tracksInfo.getVideoTrackInfo());
         //populate spinner with this info.
-        applyAdapterOnSpinner(videoSpinner, videoInfo);
+        applyAdapterOnSpinner(videoSpinner, videoTrackItems);
 
-        String[] audioInfo = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_AUDIO, tracksInfo.getAudioTrackInfo());
-        applyAdapterOnSpinner(audioSpinner, audioInfo);
-
-
-        String[] subtitlesInfo = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_SUBTITLE, tracksInfo.getSubtitleTrackInfo());
-        applyAdapterOnSpinner(subtitleSpinner, subtitlesInfo);
-
-        //Example where the order of the subtitle data is modified (removing first item) and flipped in their order of appearance.
-        // comment this method in order to go back to regular results.
-        flipSubtitleTracksOrder(tracksInfo, subtitlesInfo);
+        TrackItem[] audioTrackItems = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_AUDIO, tracksInfo.getAudioTrackInfo());
+        applyAdapterOnSpinner(audioSpinner, audioTrackItems);
 
 
-        //if the application went background this will restore the last track selection.
-        videoSpinner.setSelection(tracksInfo.getLastSelection(TrackSelectionHelper.TRACK_VIDEO));
-        audioSpinner.setSelection(tracksInfo.getLastSelection(TrackSelectionHelper.TRACK_AUDIO));
-        subtitleSpinner.setSelection(tracksInfo.getLastSelection(TrackSelectionHelper.TRACK_SUBTITLE));
-
+        TrackItem[] subtitlesTrackItems = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_SUBTITLE, tracksInfo.getSubtitleTrackInfo());
+        applyAdapterOnSpinner(subtitleSpinner, subtitlesTrackItems);
     }
 
-    private void flipSubtitleTracksOrder(TracksInfo tracksInfo, String[] subtitlesInfo) {
-        if (subtitlesInfo.length > 1) {
-
-            String[] flippedSubtitleInfo = new String[subtitlesInfo.length - 1];
-            for (int i = 0; i < flippedSubtitleInfo.length; i++) {
-                flippedSubtitleInfo[i] = subtitlesInfo[subtitlesInfo.length - i - 1];
-            }
-            tracksInfo.getOnTrackInfoChanged().customizeTrackInfo(TrackSelectionHelper.TRACK_SUBTITLE, flippedSubtitleInfo);
-            applyAdapterOnSpinner(subtitleSpinner, flippedSubtitleInfo);
-        }
-
-    }
 
     /**
      * Obtain info that user is interested in.
@@ -225,19 +202,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param trackInfos - all availables tracks.
      * @return
      */
-    private String[] obtainRelevantTrackInfo(int trackType, List<BaseTrackInfo> trackInfos) {
-        String[] trackInfo = new String[trackInfos.size()];
+    private TrackItem[] obtainRelevantTrackInfo(int trackType, List<BaseTrackInfo> trackInfos) {
+        TrackItem[] trackItems = new TrackItem[trackInfos.size()];
         switch (trackType) {
             case TrackSelectionHelper.TRACK_VIDEO:
                 TextView tvVideo = (TextView) this.findViewById(R.id.tvVideo);
                 changeSpinnerVisibility(videoSpinner, tvVideo, trackInfos);
 
-                //run throug all the tracks in this type.
                 for (int i = 0; i < trackInfos.size(); i++) {
-                    //cast each object to the videoInfo.
-                    VideoTrackInfo videoTrackInfo = (VideoTrackInfo) trackInfos.get(i);
-                    //obtain the desired info. (uniqueId/bitrate/width/language e.t.c).
-                    trackInfo[i] = String.valueOf(videoTrackInfo.getUniqueId());
+                        VideoTrackInfo videoTrackInfo = (VideoTrackInfo) trackInfos.get(i);
+                        if(videoTrackInfo.isAdaptive()){
+                            trackItems[i] = new TrackItem("Auto", videoTrackInfo.getUniqueId());
+                        }else{
+                            trackItems[i] = new TrackItem(String.valueOf(videoTrackInfo.getBitrate()), videoTrackInfo.getUniqueId());
+                        }
                 }
 
                 break;
@@ -247,7 +225,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 for (int i = 0; i < trackInfos.size(); i++) {
                     AudioTrackInfo audioTrackInfo = (AudioTrackInfo) trackInfos.get(i);
-                    trackInfo[i] = String.valueOf(audioTrackInfo.getUniqueId());
+                    if(audioTrackInfo.isAdaptive()){
+                        trackItems[i] = new TrackItem(audioTrackInfo.getLanguage() + " Auto", audioTrackInfo.getUniqueId());
+                    }else{
+                        trackItems[i] = new TrackItem(audioTrackInfo.getLanguage() + " " + String.valueOf(audioTrackInfo.getBitrate()), audioTrackInfo.getUniqueId());
+                    }
                 }
                 break;
             case TrackSelectionHelper.TRACK_SUBTITLE:
@@ -257,11 +239,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 for (int i = 0; i < trackInfos.size(); i++) {
 
                     SubtitleTrackInfo subtitleTrackInfo = (SubtitleTrackInfo) trackInfos.get(i);
-                    trackInfo[i] = String.valueOf(subtitleTrackInfo.getUniqueId());
+                    trackItems[i] = new TrackItem(String.valueOf(subtitleTrackInfo.getLanguage()), subtitleTrackInfo.getUniqueId());
                 }
                 break;
         }
-        return trackInfo;
+        return trackItems;
     }
 
     private void changeSpinnerVisibility(Spinner spinner, TextView textView, List<BaseTrackInfo> trackInfos) {
@@ -275,31 +257,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    private void applyAdapterOnSpinner(Spinner spinner, String[] trackInfo) {
-        spinner.setAdapter(new ArrayAdapter<>(getApplicationContext(),
-                android.R.layout.simple_spinner_item, trackInfo));
+    private void applyAdapterOnSpinner(Spinner spinner, TrackItem[] trackInfo) {
+        TrackItemAdapter trackItemAdapter = new TrackItemAdapter(this, R.layout.track_items_list_row, trackInfo);
+        spinner.setAdapter(trackItemAdapter);
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        int trackType = TrackSelectionHelper.TRACK_TYPE_UNKNOWN;
-        //decide which spinner was activated by user.
-        switch (parent.getId()) {
-            case R.id.videoSpinner:
-                trackType = TrackSelectionHelper.TRACK_VIDEO;
-                break;
-            case R.id.audioSpinner:
-                trackType = TrackSelectionHelper.TRACK_AUDIO;
-                break;
-            case R.id.subtitleSpinner:
-                trackType = TrackSelectionHelper.TRACK_SUBTITLE;
-                break;
 
-        }
-
-        log.i("track info item selected => " + parent.getItemAtPosition(position).toString());
-        //tell to the player, to switch track based on the user selection.
-        player.changeTrack(trackType, position);
+            TrackItem trackItem = (TrackItem) parent.getItemAtPosition(position);
+            //tell to the player, to switch track based on the user selection.
+            player.changeTrack(trackItem.getUniqueId());
     }
 
     @Override

@@ -8,8 +8,8 @@ public class SubtitleTrackInfo extends BaseTrackInfo{
     private String language;
 
 
-    public SubtitleTrackInfo(String language, String uniqueId, int groupIndex, int trackIndex) {
-        super(uniqueId, groupIndex, trackIndex);
+    public SubtitleTrackInfo(String uniqueId, String language) {
+        super(uniqueId, false);
         this.language = language;
     }
 

@@ -64,7 +64,9 @@ public interface Player {
 
     void onApplicationResumed();
 
-    void changeTrack(int trackType, int position);
+    void changeTrack(String uniqueId);
+
+    long getCurrentVideoBitrate();
 
 }
 

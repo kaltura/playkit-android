@@ -10,8 +10,8 @@ public class VideoTrackInfo extends BaseTrackInfo{
     private long bitrate;
 
 
-    public VideoTrackInfo(long bitrate, int width, int height, String uniqueId, int groupIndex, int trackIndex) {
-        super(uniqueId, groupIndex, trackIndex);
+    public VideoTrackInfo(String uniqueId, long bitrate, int width, int height, boolean isAdaptive) {
+        super(uniqueId, isAdaptive);
         this.bitrate = bitrate;
         this.width = width;
         this.height = height;

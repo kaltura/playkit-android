@@ -8,24 +8,18 @@ package com.kaltura.playkit;
 public abstract class BaseTrackInfo {
 
     private String uniqueId;
-    private int groupIndex;
-    private int trackIndex;
+    private boolean isAdaptive;
 
-    public BaseTrackInfo(String uniqueId, int groupIndex, int trackIndex) {
+    public BaseTrackInfo(String uniqueId, boolean isAdaptive) {
         this.uniqueId = uniqueId;
-        this.groupIndex = groupIndex;
-        this.trackIndex = trackIndex;
+        this.isAdaptive = isAdaptive;
     }
 
     public String getUniqueId() {
         return uniqueId;
     }
 
-    protected int getGroupIndex() {
-        return groupIndex;
-    }
-
-    protected int getTrackIndex() {
-        return trackIndex;
+    public boolean isAdaptive() {
+        return isAdaptive;
     }
 }
