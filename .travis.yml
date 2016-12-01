@@ -5,6 +5,8 @@ android:
   components:
   - tools
   - platform-tools
+  - extra-android-m2repository
+  - extra-google-m2repository
 cache:
   directories:
     - $HOME/.gradle/caches/
@@ -23,5 +25,6 @@ notifications:
   email:
     recipients:
       - noam.tamim@kaltura.com
+      - gilad.nadav@kaltura.com
     on_success: always
     on_failure: always
