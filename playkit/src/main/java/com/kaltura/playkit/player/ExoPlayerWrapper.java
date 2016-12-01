@@ -1,7 +1,10 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
@@ -11,8 +14,14 @@ import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.drm.DrmSessionManager;
+import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
+import com.google.android.exoplayer2.drm.FrameworkMediaDrm;
+import com.google.android.exoplayer2.drm.StreamingDrmSessionManager;
+import com.google.android.exoplayer2.drm.UnsupportedDrmException;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
@@ -34,12 +43,15 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.Util;
+import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.PlayerController.EventListener;
 import com.kaltura.playkit.player.PlayerController.StateChangedListener;
 import com.kaltura.playkit.utils.EventLogger;
+
+import java.util.UUID;
 
 
 /**
@@ -50,6 +62,8 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
 
+    static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
+    
     private EventLogger eventLogger;
     private EventListener eventListener;
     private StateChangedListener stateChangedListener;
@@ -72,6 +86,8 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     private Uri lastPlayedSource;
     private Timeline.Window window;
     private boolean isTimelineStatic;
+    private DeferredMediaDrmCallback deferredMediaDrmCallback;
+    private String licenseUri;
 
 
     public ExoPlayerWrapper(Context context) {
@@ -81,15 +97,44 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         window = new Timeline.Window();
     }
 
+    private DeferredMediaDrmCallback.UrlProvider licenseUrlProvider = new DeferredMediaDrmCallback.UrlProvider() {
+        @Override
+        public String getUrl() {
+            return licenseUri;
+        }
+    };
+    
     private void initializePlayer() {
         eventLogger = new EventLogger();
         DefaultTrackSelector trackSelector = initializeTrackSelector();
 
-        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), null, false); // TODO check if we need DRM Session manager.
+        
+        // TODO: check if there's any overhead involved in creating a session manager and not using it.
+        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager;
+        try {
+            drmSessionManager = buildDrmSessionManager(WIDEVINE_UUID);
+        } catch (UnsupportedDrmException e) {
+            // TODO: proper error
+            return;
+        }
+        
+        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager, false);
         setPlayerListeners();
         exoPlayerView.setPlayer(player);
         player.setPlayWhenReady(false);
     }
+
+    private DrmSessionManager<FrameworkMediaCrypto> buildDrmSessionManager(UUID uuid) throws UnsupportedDrmException {
+        if (Util.SDK_INT < 18) {
+            return null;
+        }
+        
+        // Using the deferred callback because we don't yet have the license URL. 
+        deferredMediaDrmCallback = new DeferredMediaDrmCallback(buildHttpDataSourceFactory(false), licenseUrlProvider);
+        return new StreamingDrmSessionManager<>(uuid,
+                FrameworkMediaDrm.newInstance(uuid), deferredMediaDrmCallback, null, mainHandler, eventLogger);
+    }
+
 
     private void setPlayerListeners() {
         if (player != null) {
@@ -110,7 +155,8 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         return trackSelector;
     }
 
-    private void preparePlayer(Uri mediaSourceUri) {
+    private void preparePlayer(Uri mediaSourceUri, String licenseUri) {
+        this.licenseUri = licenseUri;
         firstPlay = !mediaSourceUri.equals(lastPlayedSource);
         this.lastPlayedSource = mediaSourceUri;
         changeState(PlayerState.LOADING);
@@ -160,8 +206,27 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
      * @return A new HttpDataSource factory.
      */
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
-        return new DefaultHttpDataSourceFactory(Util.getUserAgent(context, "PlayKit"), useBandwidthMeter ? BANDWIDTH_METER : null);
+        return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? BANDWIDTH_METER : null);
     }
+
+
+    public static String getUserAgent(Context context) {
+        String applicationName;
+        try {
+            String packageName = context.getPackageName();
+            PackageInfo info = context.getPackageManager().getPackageInfo(packageName, 0);
+            applicationName = packageName + "/" + info.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            applicationName = "?";
+        }
+        
+        String sdkName = "PlayKit/" + BuildConfig.VERSION_NAME;
+        
+        return sdkName + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE
+                + ") " + "ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
+    }
+
+
 
     private void changeState(PlayerState newState) {
         previousState = currentState;
@@ -264,14 +329,13 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
     @Override
-    public void load(Uri mediaSourceUri) {
+    public void load(Uri mediaSourceUri, String licenseUri) {
         log.d("load");
         if (player == null) {
             initializePlayer();
         }
 
-        preparePlayer(mediaSourceUri);
-
+        preparePlayer(mediaSourceUri, licenseUri);
     }
 
     @Override
@@ -391,3 +455,5 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
 }
+
+
