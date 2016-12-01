@@ -11,12 +11,12 @@ public class TracksInfo {
 
     private List<BaseTrackInfo> audioTrackInfo;
     private List<BaseTrackInfo> videoTrackInfo;
-    private List<BaseTrackInfo> subtitleTrackInfo;
+    private List<BaseTrackInfo> textTrackInfo;
 
-    public TracksInfo(List<BaseTrackInfo> videoTrackInfo, List<BaseTrackInfo> audioTrackInfo, List<BaseTrackInfo> subtitleTrackInfo) {
+    public TracksInfo(List<BaseTrackInfo> videoTrackInfo, List<BaseTrackInfo> audioTrackInfo, List<BaseTrackInfo> textTrackInfo) {
         this.audioTrackInfo = audioTrackInfo;
         this.videoTrackInfo = videoTrackInfo;
-        this.subtitleTrackInfo = subtitleTrackInfo;
+        this.textTrackInfo = textTrackInfo;
     }
 
     public List<BaseTrackInfo> getAudioTrackInfo() {
@@ -27,8 +27,8 @@ public class TracksInfo {
         return videoTrackInfo;
     }
 
-    public List<BaseTrackInfo> getSubtitleTrackInfo() {
-        return subtitleTrackInfo;
+    public List<BaseTrackInfo> getTextTrackInfo() {
+        return textTrackInfo;
     }
 
 }

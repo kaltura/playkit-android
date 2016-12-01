@@ -10,7 +10,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.kaltura.playkit.AudioTrackInfo;
 import com.kaltura.playkit.BaseTrackInfo;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.SubtitleTrackInfo;
+import com.kaltura.playkit.TextTrackInfo;
 import com.kaltura.playkit.TracksInfo;
 import com.kaltura.playkit.VideoTrackInfo;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.SelectionOverride;
@@ -53,7 +53,7 @@ public class TrackSelectionHelper {
 
     private List<BaseTrackInfo> videoTracksInfo = new ArrayList<>();
     private List<BaseTrackInfo> audioTracksInfo = new ArrayList<>();
-    private List<BaseTrackInfo> subtitleTracksInfo = new ArrayList<>();
+    private List<BaseTrackInfo> textTracksInfo = new ArrayList<>();
 
 
     /**
@@ -121,7 +121,7 @@ public class TrackSelectionHelper {
                                 break;
 
                             case TRACK_TEXT:
-                                subtitleTracksInfo.add(new SubtitleTrackInfo(uniqueId, format.language));
+                                textTracksInfo.add(new TextTrackInfo(uniqueId, format.language));
                                 break;
                         }
                     }
@@ -129,7 +129,7 @@ public class TrackSelectionHelper {
             }
         }
 
-        return new TracksInfo(videoTracksInfo, audioTracksInfo, subtitleTracksInfo);
+        return new TracksInfo(videoTracksInfo, audioTracksInfo, textTracksInfo);
     }
 
     /**
@@ -149,7 +149,7 @@ public class TrackSelectionHelper {
                     audioTracksInfo.add(new AudioTrackInfo(uniqueId, format.language, 0, true));
                     break;
                 case TRACK_TEXT:
-                    subtitleTracksInfo.add(new SubtitleTrackInfo(uniqueId, format.language));
+                    textTracksInfo.add(new TextTrackInfo(uniqueId, format.language));
                     break;
             }
         }
@@ -319,7 +319,7 @@ public class TrackSelectionHelper {
                 }
                 break;
             case TRACK_TEXT:
-                for(BaseTrackInfo trackInfo : subtitleTracksInfo){
+                for(BaseTrackInfo trackInfo : textTracksInfo){
                     if(trackInfo.getUniqueId().equals(uniqueId)){
                         return true;
                     }
@@ -377,7 +377,7 @@ public class TrackSelectionHelper {
         tracksReadyListener = null;
         videoTracksInfo.clear();
         audioTracksInfo.clear();
-        subtitleTracksInfo.clear();
+        textTracksInfo.clear();
     }
 
 }

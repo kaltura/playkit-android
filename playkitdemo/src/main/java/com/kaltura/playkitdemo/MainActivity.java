@@ -20,7 +20,7 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.SubtitleTrackInfo;
+import com.kaltura.playkit.TextTrackInfo;
 import com.kaltura.playkit.player.TrackSelectionHelper;
 import com.kaltura.playkit.TracksInfo;
 import com.kaltura.playkit.VideoTrackInfo;
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private PlaybackControlsView controlsView;
     private boolean nowPlaying;
 
-    private Spinner videoSpinner, audioSpinner, subtitleSpinner;
+    private Spinner videoSpinner, audioSpinner, textSpinner;
 
     private void registerPlugins() {
         PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);
@@ -110,9 +110,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void initSpinners() {
         videoSpinner = (Spinner) this.findViewById(R.id.videoSpinner);
         audioSpinner = (Spinner) this.findViewById(R.id.audioSpinner);
-        subtitleSpinner = (Spinner) this.findViewById(R.id.subtitleSpinner);
+        textSpinner = (Spinner) this.findViewById(R.id.subtitleSpinner);
 
-        subtitleSpinner.setOnItemSelectedListener(this);
+        textSpinner.setOnItemSelectedListener(this);
         audioSpinner.setOnItemSelectedListener(this);
         videoSpinner.setOnItemSelectedListener(this);
     }
@@ -202,8 +202,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         applyAdapterOnSpinner(audioSpinner, audioTrackItems);
 
 
-        TrackItem[] subtitlesTrackItems = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_TEXT, tracksInfo.getSubtitleTrackInfo());
-        applyAdapterOnSpinner(subtitleSpinner, subtitlesTrackItems);
+        TrackItem[] subtitlesTrackItems = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_TEXT, tracksInfo.getTextTrackInfo());
+        applyAdapterOnSpinner(textSpinner, subtitlesTrackItems);
     }
 
 
@@ -247,13 +247,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
                 break;
             case TrackSelectionHelper.TRACK_TEXT:
-                TextView tvSubtitle = (TextView) this.findViewById(R.id.tvSubtitle);
-                changeSpinnerVisibility(subtitleSpinner, tvSubtitle, trackInfos);
+                TextView tvSubtitle = (TextView) this.findViewById(R.id.tvText);
+                changeSpinnerVisibility(textSpinner, tvSubtitle, trackInfos);
 
                 for (int i = 0; i < trackInfos.size(); i++) {
 
-                    SubtitleTrackInfo subtitleTrackInfo = (SubtitleTrackInfo) trackInfos.get(i);
-                    trackItems[i] = new TrackItem(String.valueOf(subtitleTrackInfo.getLanguage()), subtitleTrackInfo.getUniqueId());
+                    TextTrackInfo textTrackInfo = (TextTrackInfo) trackInfos.get(i);
+                    trackItems[i] = new TrackItem(String.valueOf(textTrackInfo.getLanguage()), textTrackInfo.getUniqueId());
                 }
                 break;
         }
