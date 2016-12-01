@@ -5,6 +5,7 @@ import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.backend.ovp.OvpConfigs;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.managers.ViewManager;
 
@@ -39,8 +40,8 @@ public class YouboraLibraryManager extends PluginGeneric {
 
     protected void init() {
         super.init();
-        this.pluginName = "KalturaPlayer";
-        this.pluginVersion = "5.3.0-c1.0-Kaltura";
+        this.pluginName = OvpConfigs.ClientTag;
+        this.pluginVersion = "5.3.0-"+ OvpConfigs.ClientTag;
         ViewManager.setMonitoringInterval(MONITORING_INTERVAL);
     }
 

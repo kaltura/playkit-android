@@ -11,6 +11,7 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.backend.ovp.OvpConfigs;
 import com.kaltura.playkit.backend.ovp.services.StatsService;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.OnRequestCompletion;
@@ -294,7 +295,6 @@ public class KalturaStatsPlugin extends PKPlugin {
      * @param eventType - Enum stating Kaltura state events
      */
     private void sendAnalyticsEvent(final KStatsEvent eventType) {
-        String clientVer = pluginConfig.has("clientVer")? pluginConfig.getAsJsonPrimitive("clientVer").getAsString(): "";
         String sessionId = pluginConfig.has("sessionId")? pluginConfig.getAsJsonPrimitive("sessionId").getAsString(): "";
         int uiconfId = pluginConfig.has("uiconfId")? pluginConfig.getAsJsonPrimitive("uiconfId").getAsInt(): 0;
         String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString(): "";
@@ -303,7 +303,7 @@ public class KalturaStatsPlugin extends PKPlugin {
         // Parameters for the request -
         //        String baseUrl, int partnerId, int eventType, String clientVer, long duration,
         //        String sessionId, long position, String uiConfId, String entryId, String widgetId, String kalsig, boolean isSeek, String referrer
-        RequestBuilder requestBuilder = StatsService.sendStatsEvent(baseUrl, partnerId, eventType.getValue(), clientVer, player.getDuration(),
+        RequestBuilder requestBuilder = StatsService.sendStatsEvent(baseUrl, partnerId, eventType.getValue(), OvpConfigs.ClientTag, player.getDuration(),
                 sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), "_" + partnerId, hasSeeked);
 
         requestBuilder.completion(new OnRequestCompletion() {
