@@ -1,4 +1,4 @@
-package com.kaltura.playkit;
+package com.kaltura.playkit.player;
 
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
@@ -7,12 +7,18 @@ import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.kaltura.playkit.player.ExoPlayerWrapper;
+import com.kaltura.playkit.AudioTrackInfo;
+import com.kaltura.playkit.BaseTrackInfo;
+import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.SubtitleTrackInfo;
+import com.kaltura.playkit.TracksInfo;
+import com.kaltura.playkit.VideoTrackInfo;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.SelectionOverride;
 
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Responsible for generating/sorting/holding and changing track info.
@@ -27,13 +33,18 @@ public class TrackSelectionHelper {
 
     public static final int TRACK_VIDEO = 0;
     public static final int TRACK_AUDIO = 1;
-    public static final int TRACK_SUBTITLE = 2;
-    public static final int TRACK_AUTO = Integer.MIN_VALUE;
+    public static final int TRACK_TEXT = 2;
+    public static final int TRACK_ADAPTIVE = -1;
 
     private static final int RENDERER_INDEX = 0;
     private static final int GROUP_INDEX = 1;
     private static final int TRACK_INDEX = 2;
     private static final int TRACK_RENDERERS_AMOUNT = 3;
+
+    private static final String ADAPTIVE_PREFIX = "adaptive";
+    private static final String VIDEO_PREFIX = "Video:";
+    private static final String AUDIO_PREFIX = "Audio:";
+    private static final String TEXT_PREFIX = "Text:";
 
     private final MappingTrackSelector selector;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
@@ -109,7 +120,7 @@ public class TrackSelectionHelper {
                                 audioTracksInfo.add(new AudioTrackInfo(uniqueId, format.language, format.bitrate, false));
                                 break;
 
-                            case TRACK_SUBTITLE:
+                            case TRACK_TEXT:
                                 subtitleTracksInfo.add(new SubtitleTrackInfo(uniqueId, format.language));
                                 break;
                         }
@@ -128,7 +139,7 @@ public class TrackSelectionHelper {
      * @param format - the actual format of the adaptive object.
      */
     private void maybeAddAdaptiveTrack(int rendererIndex, int groupIndex, Format format) {
-        String uniqueId = getUniqueId(rendererIndex, groupIndex, TRACK_AUTO);
+        String uniqueId = getUniqueId(rendererIndex, groupIndex, TRACK_ADAPTIVE);
         if (isAdaptive(rendererIndex, groupIndex) && !adaptiveTrackInfoAlreadyExist(uniqueId, rendererIndex)) {
             switch (rendererIndex) {
                 case TRACK_VIDEO:
@@ -137,7 +148,7 @@ public class TrackSelectionHelper {
                 case TRACK_AUDIO:
                     audioTracksInfo.add(new AudioTrackInfo(uniqueId, format.language, 0, true));
                     break;
-                case TRACK_SUBTITLE:
+                case TRACK_TEXT:
                     subtitleTracksInfo.add(new SubtitleTrackInfo(uniqueId, format.language));
                     break;
             }
@@ -152,12 +163,28 @@ public class TrackSelectionHelper {
      * @return - uniqueId that represent current track.
      */
     private String getUniqueId(int rendererIndex, int groupIndex, int trackIndex) {
-        StringBuilder uniqueStringBuilder = new StringBuilder();
+        String rendererPrefix = "";
+        switch (rendererIndex){
+            case TRACK_VIDEO:
+                rendererPrefix = VIDEO_PREFIX;
+                break;
+            case TRACK_AUDIO:
+                rendererPrefix = AUDIO_PREFIX;
+                break;
+            case TRACK_TEXT:
+                rendererPrefix = TEXT_PREFIX;
+                break;
+        }
+        StringBuilder uniqueStringBuilder = new StringBuilder(rendererPrefix);
         uniqueStringBuilder.append(rendererIndex);
         uniqueStringBuilder.append(",");
         uniqueStringBuilder.append(groupIndex);
         uniqueStringBuilder.append(",");
-        uniqueStringBuilder.append(trackIndex);
+        if(trackIndex == TRACK_ADAPTIVE){
+            uniqueStringBuilder.append(ADAPTIVE_PREFIX);
+        }else{
+            uniqueStringBuilder.append(trackIndex);
+        }
         return uniqueStringBuilder.toString();
     }
 
@@ -167,6 +194,7 @@ public class TrackSelectionHelper {
      * @param uniqueId - unique identifier of the track to apply.
      */
     public void changeTrack(String uniqueId) {
+        log.i("change track to uniqueID -> " + uniqueId);
         mappedTrackInfo = selector.getCurrentSelections().info;
         int[] uniqueTrackId = convertUniqueId(uniqueId);
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
@@ -181,10 +209,15 @@ public class TrackSelectionHelper {
      */
     private int[] convertUniqueId(String uniqueId) {
         int[] convertedUniqueId = new int[3];
-        String[] strArray = uniqueId.split(",");
+        String splitUniqueId = removePrefix(uniqueId);
+        String[] strArray = splitUniqueId.split(",");
 
         for (int i = 0; i < strArray.length; i++) {
-            convertedUniqueId[i] = Integer.parseInt(strArray[i]);
+            if(strArray[i].equals(ADAPTIVE_PREFIX)){
+                convertedUniqueId[i] = TRACK_ADAPTIVE;
+            }else {
+                convertedUniqueId[i] = Integer.parseInt(strArray[i]);
+            }
         }
         return convertedUniqueId;
     }
@@ -204,7 +237,7 @@ public class TrackSelectionHelper {
         int groupIndex = uniqueId[GROUP_INDEX];
         int trackIndex = uniqueId[TRACK_INDEX];
 
-        boolean isAdaptive = trackIndex == TRACK_AUTO ? true : false;
+        boolean isAdaptive = trackIndex == TRACK_ADAPTIVE ? true : false;
 
         if (isAdaptive) {
 
@@ -235,9 +268,9 @@ public class TrackSelectionHelper {
             }
 
             adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-            override = new MappingTrackSelector.SelectionOverride(adaptiveTrackSelectionFactory, groupIndex, adaptiveTrackIndexes);
+            override = new SelectionOverride(adaptiveTrackSelectionFactory, groupIndex, adaptiveTrackIndexes);
         } else {
-            override = new MappingTrackSelector.SelectionOverride(FIXED_FACTORY, groupIndex, trackIndex);
+            override = new SelectionOverride(FIXED_FACTORY, groupIndex, trackIndex);
         }
 
         return override;
@@ -285,7 +318,7 @@ public class TrackSelectionHelper {
                     }
                 }
                 break;
-            case TRACK_SUBTITLE:
+            case TRACK_TEXT:
                 for(BaseTrackInfo trackInfo : subtitleTracksInfo){
                     if(trackInfo.getUniqueId().equals(uniqueId)){
                         return true;
@@ -297,8 +330,20 @@ public class TrackSelectionHelper {
     }
 
     private int getIndexFromUniqueId(String uniqueId, int groupIndex) {
-        String[] strArray = uniqueId.split(",");
+        String uniqueIdWithoutPrefix = removePrefix(uniqueId);
+        String[] strArray = uniqueIdWithoutPrefix.split(Pattern.quote(","));
+        if(strArray[groupIndex].equals(TRACK_ADAPTIVE)){
+            return -1;
+        }
+
         return Integer.valueOf(strArray[groupIndex]);
+    }
+
+
+    private String removePrefix(String uniqueId) {
+        String[] strArray = uniqueId.split(":");
+        //always return the second element of the splitString.
+        return strArray[1];
     }
 
     private int[] convertAdaptiveListToArray(List<Integer> adaptiveTrackIndexesList) {

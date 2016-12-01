@@ -21,7 +21,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.SubtitleTrackInfo;
-import com.kaltura.playkit.TrackSelectionHelper;
+import com.kaltura.playkit.player.TrackSelectionHelper;
 import com.kaltura.playkit.TracksInfo;
 import com.kaltura.playkit.VideoTrackInfo;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         registerPlugins();
 
-        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "drm1");
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
 
 //        mediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
 
@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         applyAdapterOnSpinner(audioSpinner, audioTrackItems);
 
 
-        TrackItem[] subtitlesTrackItems = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_SUBTITLE, tracksInfo.getSubtitleTrackInfo());
+        TrackItem[] subtitlesTrackItems = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_TEXT, tracksInfo.getSubtitleTrackInfo());
         applyAdapterOnSpinner(subtitleSpinner, subtitlesTrackItems);
     }
 
@@ -246,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     }
                 }
                 break;
-            case TrackSelectionHelper.TRACK_SUBTITLE:
+            case TrackSelectionHelper.TRACK_TEXT:
                 TextView tvSubtitle = (TextView) this.findViewById(R.id.tvSubtitle);
                 changeSpinnerVisibility(subtitleSpinner, tvSubtitle, trackInfos);
 
