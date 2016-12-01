@@ -138,9 +138,9 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         firstPlay = !mediaSourceUri.equals(lastPlayedSource);
         shouldGetTrackInfo = true;
         this.lastPlayedSource = mediaSourceUri;
-        changeState(PlayerState.LOADING);
         MediaSource mediaSource = buildMediaSource(mediaSourceUri, null);
         player.prepare(mediaSource, isTimelineStatic, isTimelineStatic);
+        changeState(PlayerState.LOADING);
     }
 
     private MediaSource buildMediaSource(Uri uri, String overrideExtension) {
