@@ -1,8 +1,5 @@
 package com.kaltura.playkit;
 
-import android.nfc.Tag;
-import android.util.Log;
-
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.source.TrackGroup;
@@ -10,15 +7,12 @@ import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedTrackInfo;
 import com.kaltura.playkit.player.ExoPlayerWrapper;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.SelectionOverride;
 
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.google.android.exoplayer2.C.TRACK_TYPE_UNKNOWN;
 
 /**
  * Responsible for generating/sorting/holding and changing track info.
@@ -41,18 +35,14 @@ public class TrackSelectionHelper {
     private static final int TRACK_INDEX = 2;
     private static final int TRACK_RENDERERS_AMOUNT = 3;
 
-    private ExoPlayerWrapper.TrackInfoReadyListener trackReadyListener;
-
-    private TrackGroupArray trackGroups;
     private final MappingTrackSelector selector;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
     private final TrackSelection.Factory adaptiveTrackSelectionFactory;
+    private ExoPlayerWrapper.TracksInfoReadyListener tracksReadyListener;
 
     private List<BaseTrackInfo> videoTracksInfo = new ArrayList<>();
     private List<BaseTrackInfo> audioTracksInfo = new ArrayList<>();
     private List<BaseTrackInfo> subtitleTracksInfo = new ArrayList<>();
-
-    private boolean isDisabled;
 
 
     /**
@@ -66,126 +56,26 @@ public class TrackSelectionHelper {
         this.adaptiveTrackSelectionFactory = adaptiveTrackSelectionFactory;
     }
 
+
     /**
-     * Change the currently playing track.
-     *
-     * @param mappedTrackInfo
+     * Prepare {@link TracksInfo} object for application.
+     * When the object is created, notify {@link ExoPlayerWrapper} about that,
+     * and pass the {@link TracksInfo} as parameter.
      */
-    public void changeTrack(String uniqueId, MappedTrackInfo mappedTrackInfo) {
+    public void prepareTracksInfo() {
+        mappedTrackInfo = selector.getCurrentSelections().info;
+        TracksInfo tracksInfo = buildTracksInfo();
 
-        int[] uniqueTrackId = convertUniqueId(uniqueId);
-        int rendererIndex = uniqueTrackId[RENDERER_INDEX];
-        isDisabled = selector.getRendererDisabled(rendererIndex);
-        trackGroups = mappedTrackInfo.getTrackGroups(rendererIndex);
-
-        SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
-        overrideTrack(rendererIndex, override);
-    }
-
-    private int[] convertUniqueId(String uniqueId) {
-        int[] convertedUniqueId = new int[3];
-        String[] strArray = uniqueId.split(",");
-
-        for (int i = 0; i < strArray.length; i++) {
-            convertedUniqueId[i] = Integer.parseInt(strArray[i]);
-        }
-        return convertedUniqueId;
-    }
-
-    private SelectionOverride retrieveOverrideSelection(int[] uniqueId) {
-
-        SelectionOverride override;
-
-        int rendererIndex = uniqueId[RENDERER_INDEX];
-        int groupIndex = uniqueId[GROUP_INDEX];
-        int trackIndex = uniqueId[TRACK_INDEX];
-
-
-        boolean isAdaptive = trackIndex == TRACK_AUTO ? true : false;
-
-
-        if (isAdaptive) {
-
-            List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
-            int[] adaptiveTrackIndexes;
-
-            switch (rendererIndex) {
-                case TRACK_VIDEO:
-
-                    VideoTrackInfo videoTrackInfo;
-
-                    for (int i = 1; i < videoTracksInfo.size(); i++) {
-                        videoTrackInfo = (VideoTrackInfo) videoTracksInfo.get(i);
-                        if (getIndexFromUniueId(videoTrackInfo.getUniqueId(), GROUP_INDEX) == groupIndex) {
-                            adaptiveTrackIndexesList.add(getIndexFromUniueId(videoTrackInfo.getUniqueId(), TRACK_INDEX));
-                        }
-                    }
-                    break;
-                case TRACK_AUDIO:
-                    AudioTrackInfo audioTrackInfo;
-                    for (int i = 1; i < audioTracksInfo.size(); i++) {
-                        audioTrackInfo = (AudioTrackInfo) audioTracksInfo.get(i);
-                        if (getIndexFromUniueId(audioTrackInfo.getUniqueId(), GROUP_INDEX) == groupIndex) {
-                            adaptiveTrackIndexesList.add(getIndexFromUniueId(audioTrackInfo.getUniqueId(), TRACK_INDEX));
-                        }
-                    }
-                    break;
-            }
-
-            adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-            override = new MappingTrackSelector.SelectionOverride(adaptiveTrackSelectionFactory, groupIndex, adaptiveTrackIndexes);
-        } else {
-            override = new MappingTrackSelector.SelectionOverride(FIXED_FACTORY, groupIndex, trackIndex);
-        }
-
-        return override;
-    }
-
-    private int getIndexFromUniueId(String uniqueId, int groupIndex) {
-        String[] strArray = uniqueId.split(",");
-        return Integer.valueOf(strArray[groupIndex]);
-    }
-
-    private int[] convertAdaptiveListToArray(List<Integer> adaptiveTrackIndexesList) {
-        int[] adaptiveTrackIndexes = new int[adaptiveTrackIndexesList.size()];
-        for (int i = 0; i < adaptiveTrackIndexes.length; i++) {
-            adaptiveTrackIndexes[i] = adaptiveTrackIndexesList.get(i);
-        }
-
-        return adaptiveTrackIndexes;
-    }
-
-    private void overrideTrack(int trackType, SelectionOverride override) {
-        //if renderer is disabled we will hide it.
-        selector.setRendererDisabled(trackType, isDisabled);
-        if (override != null) {
-            //actually change track.
-            selector.setSelectionOverride(trackType, trackGroups, override);
-        } else {
-            //clear all the selections if the override is null.
-            selector.clearSelectionOverrides(trackType);
+        if (tracksReadyListener != null) {
+            tracksReadyListener.onTracksInfoReady(tracksInfo);
         }
     }
 
     /**
-     * Sort track info. We need it in order to have the correct representation of the tracks.
-     *
-     * @param mappedTrackInfo
+     * Actually build {@link TracksInfo} object, based on the loaded manifest into Exoplayer.
+     * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
      */
-    public void sortTracksInfo(MappedTrackInfo mappedTrackInfo) {
-
-        this.mappedTrackInfo = mappedTrackInfo;
-        TracksInfo tracksInfo = initTracksInfo();
-        //notify the ExoplayerWrapper that track info is ready.
-        if (trackReadyListener != null) {
-            trackReadyListener.onTrackInfoReady(tracksInfo);
-        }
-    }
-
-    /**
-     * Mapping the track info.
-     */
-    private TracksInfo initTracksInfo() {
+    private TracksInfo buildTracksInfo() {
         TrackGroupArray trackGroupArray;
         TrackGroup trackGroup;
         Format format;
@@ -206,7 +96,7 @@ public class TrackSelectionHelper {
 
                     // the format of the current trackGroup.
                     format = trackGroup.getFormat(trackIndex);
-                    maybeAddAutoTrack(trackGroupArray, rendererIndex, groupIndex, format);
+                    maybeAddAdaptiveTrack(rendererIndex, groupIndex, format);
 
                     //filter all the unsupported and unknown formats.
                     if (isFormatSupported(rendererIndex, groupIndex, trackIndex) && format.id != null) {
@@ -231,9 +121,15 @@ public class TrackSelectionHelper {
         return new TracksInfo(videoTracksInfo, audioTracksInfo, subtitleTracksInfo);
     }
 
-    private void maybeAddAutoTrack(TrackGroupArray trackGroupArray, int rendererIndex, int groupIndex, Format format) {
+    /**
+     * If such an option exist, this method creates an adaptive object for the specified renderer.
+     * @param rendererIndex - the index of the renderer that this adaptive object refer.
+     * @param groupIndex - the index of the group this adaptive object refer.
+     * @param format - the actual format of the adaptive object.
+     */
+    private void maybeAddAdaptiveTrack(int rendererIndex, int groupIndex, Format format) {
         String uniqueId = getUniqueId(rendererIndex, groupIndex, TRACK_AUTO);
-        if (isAdaptive(trackGroupArray, rendererIndex, groupIndex) && !adaptiveTrackInfoAlreadyExist(uniqueId, rendererIndex)) {
+        if (isAdaptive(rendererIndex, groupIndex) && !adaptiveTrackInfoAlreadyExist(uniqueId, rendererIndex)) {
             switch (rendererIndex) {
                 case TRACK_VIDEO:
                     videoTracksInfo.add(new VideoTrackInfo(uniqueId, 0, 0, 0, true));
@@ -248,6 +144,131 @@ public class TrackSelectionHelper {
         }
     }
 
+    /**
+     * Build uniqueId based on the track indexes.
+     * @param rendererIndex - renderer index of the current track.
+     * @param groupIndex - group index of the current track.
+     * @param trackIndex - actual track index.
+     * @return - uniqueId that represent current track.
+     */
+    private String getUniqueId(int rendererIndex, int groupIndex, int trackIndex) {
+        StringBuilder uniqueStringBuilder = new StringBuilder();
+        uniqueStringBuilder.append(rendererIndex);
+        uniqueStringBuilder.append(",");
+        uniqueStringBuilder.append(groupIndex);
+        uniqueStringBuilder.append(",");
+        uniqueStringBuilder.append(trackIndex);
+        return uniqueStringBuilder.toString();
+    }
+
+    /**
+     * Change currently playing track with the new one.
+     *
+     * @param uniqueId - unique identifier of the track to apply.
+     */
+    public void changeTrack(String uniqueId) {
+        mappedTrackInfo = selector.getCurrentSelections().info;
+        int[] uniqueTrackId = convertUniqueId(uniqueId);
+        int rendererIndex = uniqueTrackId[RENDERER_INDEX];
+
+        SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
+        overrideTrack(rendererIndex, override);
+    }
+
+    /**
+     * @param uniqueId - the uniqueId to convert.
+     * @return - int[] that consist from indexes that are readable to Exoplayer.
+     */
+    private int[] convertUniqueId(String uniqueId) {
+        int[] convertedUniqueId = new int[3];
+        String[] strArray = uniqueId.split(",");
+
+        for (int i = 0; i < strArray.length; i++) {
+            convertedUniqueId[i] = Integer.parseInt(strArray[i]);
+        }
+        return convertedUniqueId;
+    }
+
+    /**
+     * Build the the {@link SelectionOverride} object, based on the uniqueId. This {@link SelectionOverride}
+     * will be feeded later to the Exoplayer in order to switch to the new track.
+     * This method decide if it should create adaptive override or fixed.
+     * @param uniqueId - the unique id of the track that will override the existing one.
+     * @return - the {@link SelectionOverride} which will override the existing selection.
+     */
+    private SelectionOverride retrieveOverrideSelection(int[] uniqueId) {
+
+        SelectionOverride override;
+
+        int rendererIndex = uniqueId[RENDERER_INDEX];
+        int groupIndex = uniqueId[GROUP_INDEX];
+        int trackIndex = uniqueId[TRACK_INDEX];
+
+        boolean isAdaptive = trackIndex == TRACK_AUTO ? true : false;
+
+        if (isAdaptive) {
+
+            List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
+            int[] adaptiveTrackIndexes;
+
+            switch (rendererIndex) {
+                case TRACK_VIDEO:
+
+                    VideoTrackInfo videoTrackInfo;
+
+                    for (int i = 1; i < videoTracksInfo.size(); i++) {
+                        videoTrackInfo = (VideoTrackInfo) videoTracksInfo.get(i);
+                        if (getIndexFromUniqueId(videoTrackInfo.getUniqueId(), GROUP_INDEX) == groupIndex) {
+                            adaptiveTrackIndexesList.add(getIndexFromUniqueId(videoTrackInfo.getUniqueId(), TRACK_INDEX));
+                        }
+                    }
+                    break;
+                case TRACK_AUDIO:
+                    AudioTrackInfo audioTrackInfo;
+                    for (int i = 1; i < audioTracksInfo.size(); i++) {
+                        audioTrackInfo = (AudioTrackInfo) audioTracksInfo.get(i);
+                        if (getIndexFromUniqueId(audioTrackInfo.getUniqueId(), GROUP_INDEX) == groupIndex) {
+                            adaptiveTrackIndexesList.add(getIndexFromUniqueId(audioTrackInfo.getUniqueId(), TRACK_INDEX));
+                        }
+                    }
+                    break;
+            }
+
+            adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
+            override = new MappingTrackSelector.SelectionOverride(adaptiveTrackSelectionFactory, groupIndex, adaptiveTrackIndexes);
+        } else {
+            override = new MappingTrackSelector.SelectionOverride(FIXED_FACTORY, groupIndex, trackIndex);
+        }
+
+        return override;
+    }
+
+
+    /**
+     * Actually doing the override acrion on the track.
+     * @param rendererIndex - renderer index on which we want to apply the change.
+     * @param override - the new selection with which we want to override the currently active track.
+     */
+    private void overrideTrack(int rendererIndex, SelectionOverride override) {
+        //if renderer is disabled we will hide it.
+        boolean isRendererDisabled = selector.getRendererDisabled(rendererIndex);
+        selector.setRendererDisabled(rendererIndex, isRendererDisabled);
+        if (override != null) {
+            //actually change track.
+            TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(rendererIndex);
+            selector.setSelectionOverride(rendererIndex, trackGroups, override);
+        } else {
+            //clear all the selections if the override is null.
+            selector.clearSelectionOverrides(rendererIndex);
+        }
+    }
+
+    /**
+     * Checks if adaptive track for the specified group was created.
+     * @param uniqueId - unique id.
+     * @param rendererIndex - renderer index.
+     * @return - true, if adaptive {@link BaseTrackInfo} object already exist for this group.
+     */
     private boolean adaptiveTrackInfoAlreadyExist(String uniqueId, int rendererIndex) {
         switch (rendererIndex){
             case TRACK_VIDEO:
@@ -275,14 +296,18 @@ public class TrackSelectionHelper {
         return false;
     }
 
-    private String getUniqueId(int rendererIndex, int groupIndex, int trackIndex) {
-        StringBuilder uniqueStringBuilder = new StringBuilder();
-        uniqueStringBuilder.append(rendererIndex);
-        uniqueStringBuilder.append(",");
-        uniqueStringBuilder.append(groupIndex);
-        uniqueStringBuilder.append(",");
-        uniqueStringBuilder.append(trackIndex);
-        return uniqueStringBuilder.toString();
+    private int getIndexFromUniqueId(String uniqueId, int groupIndex) {
+        String[] strArray = uniqueId.split(",");
+        return Integer.valueOf(strArray[groupIndex]);
+    }
+
+    private int[] convertAdaptiveListToArray(List<Integer> adaptiveTrackIndexesList) {
+        int[] adaptiveTrackIndexes = new int[adaptiveTrackIndexesList.size()];
+        for (int i = 0; i < adaptiveTrackIndexes.length; i++) {
+            adaptiveTrackIndexes[i] = adaptiveTrackIndexesList.get(i);
+        }
+
+        return adaptiveTrackIndexes;
     }
 
     private boolean isFormatSupported(int rendererCount, int groupIndex, int trackIndex) {
@@ -290,20 +315,21 @@ public class TrackSelectionHelper {
                 == RendererCapabilities.FORMAT_HANDLED;
     }
 
-    public boolean isAdaptive(TrackGroupArray trackGroupArray, int rendererIndex, int groupIndex) {
+    public boolean isAdaptive(int rendererIndex, int groupIndex) {
+        TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
         return adaptiveTrackSelectionFactory != null
                 && mappedTrackInfo.getAdaptiveSupport(rendererIndex, groupIndex, false)
                 != RendererCapabilities.ADAPTIVE_NOT_SUPPORTED
                 && trackGroupArray.get(groupIndex).length > 1;
     }
 
-    public void setTrackReadyListener(ExoPlayerWrapper.TrackInfoReadyListener trackReadyListener) {
-        this.trackReadyListener = trackReadyListener;
+    public void setTracksReadyListener(ExoPlayerWrapper.TracksInfoReadyListener tracksReadyListener) {
+        this.tracksReadyListener = tracksReadyListener;
     }
 
 
     public void release() {
-        trackReadyListener = null;
+        tracksReadyListener = null;
         videoTracksInfo.clear();
         audioTracksInfo.clear();
         subtitleTracksInfo.clear();

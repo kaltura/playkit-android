@@ -95,16 +95,16 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
 
     private TracksInfo tracksInfo;
     private boolean shouldGetTrackInfo;
-    private MappingTrackSelector trackSelector;
+
     private TrackSelectionHelper trackSelectionHelper;
 
-    public interface TrackInfoReadyListener{
-       void onTrackInfoReady(TracksInfo tracksInfo);
+    public interface TracksInfoReadyListener {
+       void onTracksInfoReady(TracksInfo tracksInfo);
     }
 
-    private TrackInfoReadyListener trackInfoReadyListener = new TrackInfoReadyListener() {
+    private TracksInfoReadyListener tracksInfoReadyListener = new TracksInfoReadyListener() {
         @Override
-        public void onTrackInfoReady(TracksInfo tracksInfoReady) {
+        public void onTracksInfoReady(TracksInfo tracksInfoReady) {
             //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
             tracksInfo = tracksInfoReady;
             sendEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
@@ -129,7 +129,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     private void initializePlayer() {
         eventLogger = new EventLogger();
 
-        initializeTrackSelector();
+        MappingTrackSelector trackSelector = initializeTrackSelector();
 
 
         // TODO: check if there's any overhead involved in creating a session manager and not using it.
@@ -169,14 +169,16 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         }
     }
 
-    private void initializeTrackSelector() {
+    private MappingTrackSelector initializeTrackSelector() {
         TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveVideoTrackSelection.Factory(BANDWIDTH_METER);
-        trackSelector = new DefaultTrackSelector(mainHandler, videoTrackSelectionFactory);
+        MappingTrackSelector trackSelector = new DefaultTrackSelector(mainHandler, videoTrackSelectionFactory);
         trackSelector.addListener(this);
         trackSelector.addListener(eventLogger);
 
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, videoTrackSelectionFactory);
-        trackSelectionHelper.setTrackReadyListener(trackInfoReadyListener);
+        trackSelectionHelper.setTracksReadyListener(tracksInfoReadyListener);
+
+        return trackSelector;
     }
 
     private void preparePlayer(Uri mediaSourceUri, String licenseUri) {
@@ -357,7 +359,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
         //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
         if(shouldGetTrackInfo){
             shouldGetTrackInfo = false;
-            trackSelectionHelper.sortTracksInfo(trackSelector.getCurrentSelections().info);
+            trackSelectionHelper.prepareTracksInfo();
         }
     }
 
@@ -447,7 +449,6 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
             this.eventLogger = null;
             player.release();
             player = null;
-            trackSelector = null;
             trackSelectionHelper.release();
             trackSelectionHelper = null;
             eventLogger = null;
@@ -481,7 +482,7 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
     @Override
     public void changeTrack(String uniqueId) {
-        trackSelectionHelper.changeTrack(uniqueId, trackSelector.getCurrentSelections().info);
+        trackSelectionHelper.changeTrack(uniqueId);
     }
 
     public TracksInfo getTracksInfo() {
