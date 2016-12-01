@@ -2,6 +2,8 @@ package com.kaltura.playkitdemo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -42,6 +44,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private MediaEntryProvider mediaProvider;
     private PlaybackControlsView controlsView;
     private boolean nowPlaying;
+
+    private Spinner videoSpinner, audioSpinner, subtitleSpinner;
 
     private void registerPlugins() {
         PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);

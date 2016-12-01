@@ -24,6 +24,8 @@ public interface PlayerEngine {
 
     void seekTo(long position);
 
+    void startFrom(long position);
+
     void setEventListener(PlayerController.EventListener eventTrigger);
 
     void setStateChangedListener(PlayerController.StateChangedListener stateChangedTrigger);
