@@ -48,12 +48,6 @@ public class YouboraLibraryManager extends PluginGeneric {
     public void onEvent(PlayerEvent.StateChanged event) {
         log.d(event.newState.toString());
         switch (event.newState) {
-            case IDLE:
-
-                break;
-            case LOADING:
-
-                break;
             case READY:
                 if (isBuffering) {
                     isBuffering = false;
@@ -63,6 +57,8 @@ public class YouboraLibraryManager extends PluginGeneric {
             case BUFFERING:
                 isBuffering = true;
                 bufferingHandler();
+                break;
+            default:
                 break;
         }
         log.d(event.newState.toString());
@@ -82,16 +78,11 @@ public class YouboraLibraryManager extends PluginGeneric {
                     case STATE_CHANGED:
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
-                    case CAN_PLAY:
-                        break;
                     case ENDED:
                         endedHandler();
                         break;
                     case ERROR:
                         errorHandler(event.eventType().toString());
-                        break;
-                    case LOADED_METADATA:
-
                         break;
                     case PAUSE:
                         pauseHandler();

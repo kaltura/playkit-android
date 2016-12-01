@@ -242,13 +242,13 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
                     sendAnalyticsEvent(KAnalonyEvents.PLAY_25PERCENT);
                 } else if (progress >= 0.5 && !playReached50 && seekPercent < 0.5) {
                     playReached50 = true;
-                    sendAnalyticsEvent(KAnalonyEvents.PLAY_25PERCENT);
+                    sendAnalyticsEvent(KAnalonyEvents.PLAY_50PERCENT);
                 } else if (progress >= 0.75 && !playReached75 && seekPercent <= 0.75) {
                     playReached75 = true;
-                    sendAnalyticsEvent(KAnalonyEvents.PLAY_25PERCENT);
+                    sendAnalyticsEvent(KAnalonyEvents.PLAY_75PERCENT);
                 } else if (progress >= 0.98 && !playReached100 && seekPercent < 1) {
                     playReached100 = true;
-                    sendAnalyticsEvent(KAnalonyEvents.PLAY_25PERCENT);
+                    sendAnalyticsEvent(KAnalonyEvents.PLAY_100PERCENT);
                 }
             }
         }, 0, TimerInterval);
@@ -266,7 +266,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
 //        String baseUrl, int partnerId, int eventType, String clientVer, String playbackType, String sessionId, long position
 //        ,int uiConfId, String entryId, int eventIdx, int flavourId, String referrer, int bufferTime, int actualBitrate
         RequestBuilder requestBuilder = AnalyticsService.sendAnalyticsEvent(baseUrl, partnerId, eventType.getValue(), OvpConfigs.ClientTag, playbackType,
-                sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), eventIdx++, flavourId, bufferTime, currentBitrate);
+                sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), eventIdx++, flavourId, bufferTime, currentBitrate, "hls");
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
