@@ -84,6 +84,7 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
     private boolean isAdDisplayed;
     private boolean isAdIsPaused;
     private boolean isAdRequested = false;
+    private boolean isInitWaiting = false;
     ////////////////////
     private MessageBus messageBus;
 
@@ -236,15 +237,23 @@ public class IMASimplePlugin extends PKPlugin implements AdsProvider, com.google
                     renderingSettings.setUiElements(Collections.<UiElement>emptySet());
                 }
 
+                if (isInitWaiting) {
+                    adsManager.init();
+                    isInitWaiting = false;
+                }
+
             }
         };
         return adsLoadedListener;
     }
+
     @Override
     public void init() {
         isAdRequested = true;
         if(adsManager != null) {
             adsManager.init();
+        } else{
+            isInitWaiting = true;
         }
     }
 
