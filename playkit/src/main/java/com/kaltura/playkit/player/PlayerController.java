@@ -8,8 +8,10 @@ import android.view.View;
 
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKAdInfo;
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
@@ -86,11 +88,17 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
-               Uri sourceUri = Uri.parse(mediaConfig.getMediaEntry().getSources().get(0).getUrl());
-//        Uri sourceUri = Uri.parse("https://tungsten.aaplimg.com/VOD/bipbop_adv_example_v2/master.m3u8");
-//        Uri sourceUri = Uri.parse("https://devimages.apple.com.edgekey.net/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8");
-//        Uri sourceUri = Uri.parse("http://cdnapi.kaltura.com/p/243342/sp/24334200/playManifest/entryId/0_uka1msg4/flavorIds/1_vqhfu6uy,1_80sohj7p/format/applehttp/protocol/http/a.m3u8");// Uri.parse(playerConfig.getMediaEntry().getSources().get(0).getUrl());
-        player.load(sourceUri);
+
+        PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
+
+        Uri sourceUri = Uri.parse(source.getUrl());
+        PKDrmParams drmData = source.getDrmData();
+        String licenseUri = null;
+        if (drmData != null) {
+            licenseUri = drmData.getLicenseUri();
+        }
+
+        player.load(sourceUri, licenseUri);
         startPlaybackFrom(mediaConfig.getStartPosition());
     }
 
@@ -107,7 +115,7 @@ public class PlayerController implements Player {
     private void startPlaybackFrom(long startPosition) {
         if(!wasReleased){
             togglePlayerListeners(false);
-            player.seekTo(startPosition);
+            player.startFrom(startPosition);
             togglePlayerListeners(true);
         }
     }

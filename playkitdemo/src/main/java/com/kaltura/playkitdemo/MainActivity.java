@@ -2,9 +2,6 @@ package com.kaltura.playkitdemo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -28,7 +25,8 @@ import com.kaltura.playkit.VideoTrackInfo;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.plugins.SamplePlugin;
+import com.kaltura.playkit.plugins.KalturaStatsPlugin;
+import com.kaltura.playkit.plugins.PhoenixAnalyticsPlugin;
 
 import java.util.List;
 
@@ -45,11 +43,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private PlaybackControlsView controlsView;
     private boolean nowPlaying;
 
-
-    private Spinner videoSpinner, audioSpinner, subtitleSpinner;
-
     private void registerPlugins() {
-        PlayKitManager.registerPlugins(SamplePlugin.factory);
+        PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);
     }
 
     @Override
@@ -59,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         registerPlugins();
 
-        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "drm1");
 
 //        mediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
 
@@ -121,7 +116,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void configurePlugins(PlayerConfig.Plugins config) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("delay", 4200);
-        config.setPluginConfig("Sample", jsonObject);
+        config.setPluginConfig("KalturaStatistics", jsonObject);
+        config.setPluginConfig("PhoenixAnalytics", jsonObject);
+        config.setPluginConfig("Youbora", jsonObject);
     }
 
     @Override
@@ -146,6 +143,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         }, PlayerEvent.Type.PAUSE);
 
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                if (event instanceof PlayerEvent.StateChanged) {
+                    PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
+                    log.d("State changed from " + stateChanged.oldState + " to " + stateChanged.newState);
+
+                    if(controlsView != null){
+                        controlsView.setPlayerState(stateChanged.newState);
+                    }
+                }
+            }
+        });
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {

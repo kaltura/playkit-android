@@ -1,4 +1,4 @@
-package com.kaltura.playkit.connect;
+package com.kaltura.playkit.backend;
 
 /**
  * Created by tehilarozin on 13/11/2016.
@@ -15,4 +15,6 @@ public interface SessionProvider {
     String getKs();
 
     int partnerId();
+
+    //onSessionExpired
 }

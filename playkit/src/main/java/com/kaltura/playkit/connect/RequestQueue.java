@@ -6,9 +6,7 @@ package com.kaltura.playkit.connect;
  */
 public interface RequestQueue {
 
-    String queue(RequestElement action);
-
-    String queue(ParamsRequestElement action);
+    String queue(RequestElement requestElement);
 
     ResponseElement execute(RequestElement action);
 

@@ -4,7 +4,7 @@ package com.kaltura.playkit.backend.ovp.data;
  * Created by tehilarozin on 31/10/2016.
  */
 
-public class FlavorAsset /*implements Comparator*/ {
+public class KalturaFlavorAsset /*implements Comparator*/ {
 
     private String id;
     private int flavorParamsId;
@@ -67,7 +67,7 @@ public class FlavorAsset /*implements Comparator*/ {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        FlavorAsset that = (FlavorAsset) o;
+        KalturaFlavorAsset that = (KalturaFlavorAsset) o;
         return id != null && that.id != null && id.equals(that.id);
 
         /*if (!id.equals(that.id)) return false;
