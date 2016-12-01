@@ -38,9 +38,9 @@ public class PlayerEvent implements PKEvent {
 
         private final TracksInfo tracksInfo;
 
-        public TracksAvailable(TracksInfo trackInfo){
+        public TracksAvailable(TracksInfo tracksInfo){
             super(Type.TRACKS_AVAILABLE);
-            this.tracksInfo = trackInfo;
+            this.tracksInfo = tracksInfo;
         }
 
         public TracksInfo getTracksInfo() {
