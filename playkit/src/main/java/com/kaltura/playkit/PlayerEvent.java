@@ -36,7 +36,7 @@ public class PlayerEvent implements PKEvent {
 
     public final Type type;
 
-    private PlayerEvent(Type type) {
+    public PlayerEvent(Type type) {
         this.type = type;
     }
 

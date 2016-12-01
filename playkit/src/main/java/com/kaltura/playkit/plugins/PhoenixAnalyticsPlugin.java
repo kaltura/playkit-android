@@ -182,8 +182,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         requestsExecutor.queue(requestBuilder.build());
     }
 
+
     @Test
     public void testPhoenixAnalyticsEvent(){
-
+        
     }
 }
