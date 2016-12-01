@@ -18,6 +18,8 @@ import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
 
+import org.junit.Test;
+
 import java.util.TimerTask;
 
 /**
@@ -40,7 +42,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         BITRATE_CHANGE,
         ERROR
     }
-    private boolean mDidFirstPlay = false;
+    private boolean isFirstPlay = true;
     private boolean intervalOn = false;
     private long mContinueTime;
     private PlayerConfig.Media mediaConfig;
@@ -67,12 +69,16 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
-        mDidFirstPlay = false;
+        isFirstPlay = false;
         this.mediaConfig = mediaConfig;
     }
 
     @Override
-    protected void onUpdateConfig(String key, Object value) {}
+    protected void onUpdateConfig(String key, Object value) {
+        if (pluginConfig.has(key)){
+            pluginConfig.addProperty(key, value.toString());
+        }
+    }
 
     @Override
     public void onDestroy() {
@@ -89,7 +95,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.pluginConfig = pluginConfig;
         this.mContext = context;
         this.messageBus = messageBus;
-        messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
+        messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA);
         if (this.mediaConfig.getStartPosition() != -1){
             this.mContinueTime = this.mediaConfig.getStartPosition();
         }
@@ -102,9 +108,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             if (event instanceof PlayerEvent) {
                 log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
-                    case CAN_PLAY:
-                        mDidFirstPlay = false;
-                        break;
                     case ENDED:
                         timer.cancel();
                         sendAnalyticsEvent(PhoenixActionType.FINISH);
@@ -117,32 +120,30 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         sendAnalyticsEvent(PhoenixActionType.LOAD);
                         break;
                     case PAUSE:
-                        if (mDidFirstPlay) {
-                            sendAnalyticsEvent(PhoenixActionType.PAUSE);
-                        }
+                        sendAnalyticsEvent(PhoenixActionType.PAUSE);
                         break;
-                    case FIRST_PLAY:
                     case PLAY:
                         if (!intervalOn){
                             startMediaHitInterval();
                             intervalOn = true;
                         }
-                        if (!mDidFirstPlay) {
-                            mDidFirstPlay = true;
+                        if (isFirstPlay) {
+                            isFirstPlay = false;
                             sendAnalyticsEvent(PhoenixActionType.FIRST_PLAY);
                         } else {
                             sendAnalyticsEvent(PhoenixActionType.PLAY);
                         }
-
                         break;
                     default:
-
                         break;
                 }
             }
         }
     };
 
+    /**
+     * Media Hit analytics event
+     */
     private void startMediaHitInterval(){
         log.d("timer interval");
         MediaHitInterval = pluginConfig.has("timerInterval")? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt(): 30000;
@@ -157,6 +158,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }, 0, MediaHitInterval); // Get media hit interval from plugin config
     }
 
+    /**
+     * Send Bookmark/add event using Kaltura Phoenix Rest API
+     * @param eventType - Enum stating the event type to send
+     */
     private void sendAnalyticsEvent(final PhoenixActionType eventType){
         String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"464302";
         String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://52.210.223.65:8080/v4_0/api_v3/";
@@ -175,5 +180,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             }
         });
         requestsExecutor.queue(requestBuilder.build());
+    }
+
+    @Test
+    public void testPhoenixAnalyticsEvent(){
+
     }
 }

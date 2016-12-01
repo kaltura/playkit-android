@@ -11,12 +11,15 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.backend.ovp.OvpConfigs;
 import com.kaltura.playkit.backend.ovp.services.StatsService;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
+
+import org.junit.Test;
 
 import java.util.TimerTask;
 
@@ -114,6 +117,9 @@ public class KalturaStatsPlugin extends PKPlugin {
     private boolean isBuffering = false;
     private boolean intervalOn = false;
     private boolean hasSeeked = false;
+    private boolean isWidgetLoaded = false;
+    private boolean isMediaLoaded = false;
+    private boolean isFirstPlay = true;
 
     private int TimerInterval = 10000;
 
@@ -138,7 +144,6 @@ public class KalturaStatsPlugin extends PKPlugin {
         this.pluginConfig = pluginConfig;
         this.messageBus = messageBus;
         log.d("onLoad finished");
-//        setExamplePluginConfig(); // Until full implementation of config object
     }
 
     @Override
@@ -156,25 +161,26 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateConfig(String key, Object value) {
-
+        if (pluginConfig.has(key)){
+            pluginConfig.addProperty(key, value.toString());
+        }
     }
 
     public void onEvent(PlayerEvent.StateChanged event) {
         log.d(event.newState.toString());
         switch (event.newState) {
             case IDLE:
-                sendAnalyticsEvent(KStatsEvent.WIDGET_LOADED);
+                sendWidgetLoaded();
                 break;
             case LOADING:
+                sendWidgetLoaded();
                 if (isBuffering) {
                     isBuffering = false;
                     sendAnalyticsEvent(KStatsEvent.BUFFER_END);
                 }
                 break;
             case READY:
-                if (!isBuffering) {
-                    sendAnalyticsEvent(KStatsEvent.MEDIA_LOADED);
-                } else {
+                if (isBuffering) {
                     isBuffering = false;
                     sendAnalyticsEvent(KStatsEvent.BUFFER_END);
                 }
@@ -182,8 +188,10 @@ public class KalturaStatsPlugin extends PKPlugin {
                     intervalOn = true;
                     startTimerInterval();
                 }
+                sendMediaLoaded();
                 break;
             case BUFFERING:
+                sendWidgetLoaded();
                 isBuffering = true;
                 sendAnalyticsEvent(KStatsEvent.BUFFER_START);
                 break;
@@ -202,14 +210,20 @@ public class KalturaStatsPlugin extends PKPlugin {
                     case ERROR:
                         sendAnalyticsEvent(KStatsEvent.ERROR);
                         break;
-
                     case PLAY:
-                        sendAnalyticsEvent(KStatsEvent.PLAY);
+                        sendMediaLoaded();
+                        if (isFirstPlay) {
+                            sendAnalyticsEvent(KStatsEvent.PLAY);
+                            isFirstPlay = false;
+                        }
                         break;
                     case SEEKED:
                         hasSeeked = true;
                         seekPercent = (float) player.getCurrentPosition() / player.getDuration();
                         sendAnalyticsEvent(KStatsEvent.SEEK);
+                        break;
+                    case CAN_PLAY:
+                        sendMediaLoaded();
                         break;
                     default:
                         break;
@@ -218,6 +232,23 @@ public class KalturaStatsPlugin extends PKPlugin {
         }
     };
 
+    private void sendWidgetLoaded(){
+        if (!isWidgetLoaded){
+            sendAnalyticsEvent(KStatsEvent.WIDGET_LOADED);
+            isWidgetLoaded = true;
+        }
+    }
+
+    private void sendMediaLoaded(){
+        if (!isMediaLoaded) {
+            sendAnalyticsEvent(KStatsEvent.MEDIA_LOADED);
+            isMediaLoaded = true;
+        }
+    }
+
+    /**
+     * Reset the flags in case of media change or media ended
+     */
     private void resetPlayerFlags() {
         seekPercent = 0;
         playReached25 = false;
@@ -225,8 +256,14 @@ public class KalturaStatsPlugin extends PKPlugin {
         playReached75 = false;
         playReached100 = false;
         hasSeeked = false;
+        isWidgetLoaded = false;
+        isMediaLoaded = false;
+        isFirstPlay = true;
     }
 
+    /**
+     * Time interval handling play reached events
+     */
     private void startTimerInterval() {
         TimerInterval = pluginConfig.has("timerInterval")? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt(): 30000;
         if (timer == null) {
@@ -253,20 +290,21 @@ public class KalturaStatsPlugin extends PKPlugin {
         }, 0, TimerInterval);
     }
 
+    /**
+     * Send stats event to Kaltura stats DB
+     * @param eventType - Enum stating Kaltura state events
+     */
     private void sendAnalyticsEvent(final KStatsEvent eventType) {
-        String clientVer = pluginConfig.has("clientVer")? pluginConfig.getAsJsonPrimitive("clientVer").getAsString(): "";
         String sessionId = pluginConfig.has("sessionId")? pluginConfig.getAsJsonPrimitive("sessionId").getAsString(): "";
         int uiconfId = pluginConfig.has("uiconfId")? pluginConfig.getAsJsonPrimitive("uiconfId").getAsInt(): 0;
-        String referrer = pluginConfig.has("IsFriendlyIframe")? pluginConfig.getAsJsonPrimitive("IsFriendlyIframe").getAsString(): "";
         String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString(): "";
         int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt(): 0;
 
         // Parameters for the request -
         //        String baseUrl, int partnerId, int eventType, String clientVer, long duration,
         //        String sessionId, long position, String uiConfId, String entryId, String widgetId, String kalsig, boolean isSeek, String referrer
-        RequestBuilder requestBuilder = StatsService.sendStatsEvent(baseUrl, partnerId, eventType.getValue(), clientVer, player.getDuration(),
-                sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), "_" + partnerId,
-                hasSeeked, referrer);
+        RequestBuilder requestBuilder = StatsService.sendStatsEvent(baseUrl, partnerId, eventType.getValue(), OvpConfigs.ClientTag, player.getDuration(),
+                sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), "_" + partnerId, hasSeeked);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
@@ -278,4 +316,8 @@ public class KalturaStatsPlugin extends PKPlugin {
         requestsExecutor.queue(requestBuilder.build());
     }
 
+    @Test
+    public void testSendStatsEvent(){
+
+    }
 }
