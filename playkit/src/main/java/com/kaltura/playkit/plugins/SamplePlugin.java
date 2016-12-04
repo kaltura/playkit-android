@@ -63,6 +63,16 @@ public class SamplePlugin extends PKPlugin {
     }
 
     @Override
+    protected void onApplicationPaused() {
+
+    }
+
+    @Override
+    protected void onApplicationResumed() {
+
+    }
+
+    @Override
     public void onDestroy() {
 
     }

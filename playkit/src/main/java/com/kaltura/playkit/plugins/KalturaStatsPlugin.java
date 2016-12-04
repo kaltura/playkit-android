@@ -166,6 +166,16 @@ public class KalturaStatsPlugin extends PKPlugin {
         }
     }
 
+    @Override
+    protected void onApplicationPaused() {
+
+    }
+
+    @Override
+    protected void onApplicationResumed() {
+
+    }
+
     public void onEvent(PlayerEvent.StateChanged event) {
         log.d(event.newState.toString());
         switch (event.newState) {
