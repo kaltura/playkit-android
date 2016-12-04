@@ -498,7 +498,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         String adSystem           = ad.getAdSystem();
         int adHeight              = ad.getHeight();
         int adWidth               = ad.getWidth();
-        String traffickingParameters = ad.getTraffickingParameters();
         //AdPodInfo adPodInfo          =  ad.getAdPodInfo();
         List<Float> adCuePoints;
         if (adsManager != null) {
@@ -511,7 +510,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 adTitle, isAdSkippable,
                 contentType, adId,
                 adSystem, adHeight,
-                adWidth, traffickingParameters,
+                adWidth,
                 adCuePoints);
 
     }

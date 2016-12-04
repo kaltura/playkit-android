@@ -166,35 +166,5 @@ public class IMAConfig {
 
         return jsonObject;
     }
-
-//    public static IMAConfig fromJsonObject(JsonObject adsConfigJson) {
-//        Gson gson = new Gson();
-//        String language = (adsConfigJson.getAsJsonPrimitive(IMAConfig.AD_TAG_LANGUAGE) != null) ? adsConfigJson.getAsJsonPrimitive(IMAConfig.AD_TAG_LANGUAGE).getAsString() : "en";
-//        String adTagUrl = (adsConfigJson.getAsJsonPrimitive(IMAConfig.AD_TAG_URL) != null) ? adsConfigJson.getAsJsonPrimitive(IMAConfig.AD_TAG_URL).getAsString() : "";
-//        boolean enableBackgroundPlayback = (adsConfigJson.getAsJsonPrimitive(IMAConfig.ENABLE_BG_PLAYBACK) != null) ? adsConfigJson.getAsJsonPrimitive(IMAConfig.ENABLE_BG_PLAYBACK).getAsBoolean() : false;
-//        boolean autoPlayAdBreaks = (adsConfigJson.getAsJsonPrimitive(IMAConfig.AUTO_PLAY_AD_BREAK) != null) ? adsConfigJson.getAsJsonPrimitive(IMAConfig.AUTO_PLAY_AD_BREAK).getAsBoolean() : true;
-//        int videoBitrate = (adsConfigJson.getAsJsonPrimitive(IMAConfig.AD_VIDEO_BITRATE) != null) ? adsConfigJson.getAsJsonPrimitive(IMAConfig.AD_VIDEO_BITRATE).getAsInt() : -1;
-//        boolean adAttribution = (adsConfigJson.getAsJsonPrimitive(IMAConfig.AD_ATTRIBUTION_UIELEMENT) != null) ? adsConfigJson.getAsJsonPrimitive(IMAConfig.AD_ATTRIBUTION_UIELEMENT).getAsBoolean() : false;
-//        boolean adCountDown = (adsConfigJson.getAsJsonPrimitive(IMAConfig.AD_COUNTDOWN_UIELEMENT) != null) ? adsConfigJson.getAsJsonPrimitive(IMAConfig.AD_COUNTDOWN_UIELEMENT).getAsBoolean() : false;
-//
-//        JsonArray mimeTypesJsonArray = adsConfigJson.getAsJsonArray(IMAConfig.VIDEO_MIME_TYPES);
-//        List<String> videoMimeTypes = new ArrayList<>();
-//
-//        if (mimeTypesJsonArray != null && mimeTypesJsonArray.size() > 0) {
-//            Iterator<JsonElement> iterator = mimeTypesJsonArray.iterator();
-//            while (iterator.hasNext()) {
-//                JsonPrimitive jsonElement = (JsonPrimitive) iterator.next();
-//                String mimeType = gson.fromJson(jsonElement, String.class);
-//                videoMimeTypes.add(mimeType);
-//            }
-//        } else {
-//            videoMimeTypes.add(PKMediaFormat.mp4_clear.mimeType);
-//        }
-//
-//        Map<Double,String> tagTimes = new HashMap<>();
-// //       Type type = new TypeToken<Map<Double, String>>(){}.getType();
-// //       tagTimes = gson.fromJson(adsConfigJson.getAsJsonObject(AdsConfig.AD_TAG_TIMES).getAsJsonObject(), type);
-//        return new IMAConfig(language, enableBackgroundPlayback, autoPlayAdBreaks, videoBitrate, videoMimeTypes, adTagUrl, adAttribution, adCountDown, tagTimes);
-//    }
 }
 

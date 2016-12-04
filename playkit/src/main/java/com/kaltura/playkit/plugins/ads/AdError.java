@@ -1,7 +1,6 @@
 package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.PKEvent;
-import com.kaltura.playkit.Player;
 
 /**
  * Created by gilad.nadav on 22/11/2016.
@@ -54,8 +53,4 @@ public class AdError implements PKEvent {
     public Enum eventType() {
         return this.errorType;
     }
-    public interface Listener {
-        void onPlayerEvent(Player player, AdError.Type event, String message);
-    }
-
 }

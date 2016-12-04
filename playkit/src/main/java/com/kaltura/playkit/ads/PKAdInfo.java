@@ -10,6 +10,5 @@ public interface PKAdInfo {
     String getContentType();
     int getAdWidth();
     int getAdHeight();
-    String getTraffickingParameters();
     long getDuration();
 }

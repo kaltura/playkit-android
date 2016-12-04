@@ -19,11 +19,10 @@ public class AdInfo implements PKAdInfo{
     private String  adSystem;
     private int     adHeight;
     private int     adWidth;
-    private String  traffickingParameters;
     private List<Float> adCuePoints;
 
     public AdInfo(String adDescription, long adDuration, String adTitle, boolean isAdSkippable, String contnentType,
-                  String adId, String adSystem, int adHeight, int adWidth, String traffickingParameters,List<Float> adCuePoints) {
+                  String adId, String adSystem, int adHeight, int adWidth, List<Float> adCuePoints) {
         this.adDescription = adDescription;
         this.adDuration = adDuration;
         this.adTitle = adTitle;
@@ -33,7 +32,6 @@ public class AdInfo implements PKAdInfo{
         this.adSystem = adSystem;
         this.adHeight = adHeight;
         this.adWidth = adWidth;
-        this.traffickingParameters = traffickingParameters;
         this.adCuePoints = adCuePoints;
     }
 
@@ -69,11 +67,6 @@ public class AdInfo implements PKAdInfo{
     @Override
     public int getAdHeight() {
         return adHeight;
-    }
-
-    @Override
-    public String getTraffickingParameters() {
-        return traffickingParameters;
     }
 
     @Override
