@@ -1,7 +1,6 @@
 package com.kaltura.playkitdemo;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,8 +23,7 @@ import java.util.Locale;
 
 public class PlaybackControlsView extends LinearLayout implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
-    private static final String TAG = PlaybackControlsView.class.getSimpleName();
-    private static final PKLog log = PKLog.get(TAG);
+    private static final PKLog log = PKLog.get("PlaybackControlsView");
     private static final int PROGRESS_BAR_MAX = 100;
 
     private Player player;
@@ -98,12 +96,12 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
         }
 
         if(duration != C.TIME_UNSET){
-            log.d("XXXXX Set Duration:" + duration);
+            log.d("updateProgress Set Duration:" + duration);
             tvTime.setText(stringForTime(duration));
         }
 
         if (!dragging && position != C.POSITION_UNSET && duration != C.TIME_UNSET) {
-            log.d("XXXXX Set Position:" + position);
+            log.d("updateProgress Set Position:" + position);
             tvCurTime.setText(stringForTime(position));
             seekBar.setProgress(progressBarValue(position));
         }
@@ -165,12 +163,8 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
         switch (v.getId()) {
             case R.id.play:
                 player.play();
-                v.setBackgroundColor(Color.RED);
-                findViewById(R.id.pause).setBackgroundColor(Color.GREEN);
                 break;
             case R.id.pause:
-                v.setBackgroundColor(Color.RED);
-                findViewById(R.id.play).setBackgroundColor(Color.GREEN);
                 player.pause();
                 break;
             case R.id.ffwd:

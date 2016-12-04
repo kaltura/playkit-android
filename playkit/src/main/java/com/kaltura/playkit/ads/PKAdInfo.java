@@ -1,6 +1,4 @@
-package com.kaltura.playkit;
-
-import com.google.ads.interactivemedia.v3.api.AdPodInfo;
+package com.kaltura.playkit.ads;
 
 public interface PKAdInfo {
     public String getDescription();
@@ -13,10 +11,6 @@ public interface PKAdInfo {
     int getAdWidth();
     int getAdHeight();
     String getTraffickingParameters();
-    double getDuration();
-    AdPodInfo getAdPodInfo();
-
-    //String[] getAdWrapperIds();
-    //String[] getAdWrapperSystems();
-    //Set<UiElement> getUiElements();
+    long getDuration();
+    //AdPodInfo getAdPodInfo();
 }

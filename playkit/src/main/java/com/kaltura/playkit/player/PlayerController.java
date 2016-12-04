@@ -7,7 +7,7 @@ import android.support.annotation.Nullable;
 import android.view.View;
 
 import com.kaltura.playkit.Assert;
-import com.kaltura.playkit.PKAdInfo;
+import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;

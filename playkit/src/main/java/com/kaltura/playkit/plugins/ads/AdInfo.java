@@ -1,7 +1,6 @@
 package com.kaltura.playkit.plugins.ads;
 
-import com.google.ads.interactivemedia.v3.api.AdPodInfo;
-import com.kaltura.playkit.PKAdInfo;
+import com.kaltura.playkit.ads.PKAdInfo;
 
 import java.util.List;
 
@@ -11,8 +10,8 @@ import java.util.List;
 
 public class AdInfo implements PKAdInfo{
 
-    private String adDescriptionc;
-    private double  adDuration;
+    private String adDescription;
+    private long  adDuration;
     private String  adTitle;
     private boolean isAdSkippable;
     private String  contnentType;
@@ -21,12 +20,11 @@ public class AdInfo implements PKAdInfo{
     private int     adHeight;
     private int     adWidth;
     private String  traffickingParameters;
-    private AdPodInfo adPodInfo;
     private List<Float> adCuePoints;
 
-    public AdInfo(String adDescriptionc, double adDuration, String adTitle, boolean isAdSkippable, String contnentType,
-                  String adId, String adSystem, int adHeight, int adWidth, String traffickingParameters, AdPodInfo adPodInfo,List<Float> adCuePoints) {
-        this.adDescriptionc = adDescriptionc;
+    public AdInfo(String adDescription, long adDuration, String adTitle, boolean isAdSkippable, String contnentType,
+                  String adId, String adSystem, int adHeight, int adWidth, String traffickingParameters,List<Float> adCuePoints) {
+        this.adDescription = adDescription;
         this.adDuration = adDuration;
         this.adTitle = adTitle;
         this.isAdSkippable = isAdSkippable;
@@ -36,12 +34,11 @@ public class AdInfo implements PKAdInfo{
         this.adHeight = adHeight;
         this.adWidth = adWidth;
         this.traffickingParameters = traffickingParameters;
-        this.adPodInfo = adPodInfo;
         this.adCuePoints = adCuePoints;
     }
 
-    public String getAdDescriptionc() {
-        return adDescriptionc;
+    public String getAdDescription() {
+        return adDescription;
     }
 
     public String getContnentType() {
@@ -80,7 +77,7 @@ public class AdInfo implements PKAdInfo{
     }
 
     @Override
-    public double getDuration() {
+    public long getDuration() {
         return adDuration;
     }
 
@@ -114,10 +111,6 @@ public class AdInfo implements PKAdInfo{
     @Override
     public String getTitle() {
         return null;
-    }
-
-    public AdPodInfo getAdPodInfo() {
-        return adPodInfo;
     }
 
     public List<Float> getAdCuePoints() {
