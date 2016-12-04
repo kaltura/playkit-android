@@ -152,7 +152,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onEvent(PKEvent event) {
                 log.d("AD_STARTED");
-                PKAdInfo adInfo = player.getAdInfo();
                 appProgressBar.setVisibility(View.INVISIBLE);
             }
         }, AdEvent.Type.STARTED);
@@ -160,7 +159,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onEvent(PKEvent event) {
                 log.d("Ad Event AD_RESUMED");
-                PKAdInfo adInfo = player.getAdInfo();
                 nowPlaying = true;
                 appProgressBar.setVisibility(View.INVISIBLE);
             }

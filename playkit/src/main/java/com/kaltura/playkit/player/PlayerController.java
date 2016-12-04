@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 import android.view.View;
 
 import com.kaltura.playkit.Assert;
-import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -16,6 +15,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.ads.PKAdInfo;
 
 /**
  * Created by anton.afanasiev on 01/11/2016.
@@ -32,7 +32,6 @@ public class PlayerController implements Player {
     private PlayerConfig.Media mediaConfig;
     private boolean wasReleased = false;
 
-
     private PKEvent.Listener eventListener;
 
     public void setEventListener(PKEvent.Listener eventListener) {
@@ -48,6 +47,7 @@ public class PlayerController implements Player {
     }
 
     private EventListener eventTrigger = new EventListener() {
+
         @Override
         public void onEvent(PlayerEvent.Type eventType) {
             if (eventListener != null) {
@@ -182,6 +182,7 @@ public class PlayerController implements Player {
         Assert.shouldNeverHappen();
     }
 
+    @Override
     public PKAdInfo getAdInfo() {
         Assert.shouldNeverHappen();
         return null;

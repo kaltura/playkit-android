@@ -105,6 +105,16 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         }
     }
 
+    @Override
+    protected void onApplicationPaused() {
+
+    }
+
+    @Override
+    protected void onApplicationResumed() {
+
+    }
+
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {

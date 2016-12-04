@@ -141,9 +141,33 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     @Override
     protected void onUpdateConfig(String key, Object value) {
         log.d("Start onUpdateConfig");
-        isAdRequested = false;
-        isAdDisplayed = false;
-        requestAd();
+
+        if (key.equals(IMAConfig.AD_TAG_LANGUAGE)) {
+            getAdsConfig().setLanguage((String) value);
+        } else if (key.equals(IMAConfig.AD_TAG_URL)) {
+            getAdsConfig().setAdTagURL((String) value);
+            isAdRequested = false;
+            isAdDisplayed = false;
+            requestAd();
+        } else if (key.equals(IMAConfig.ENABLE_BG_PLAYBACK)) {
+            getAdsConfig().setEnableBackgroundPlayback((boolean) value);
+        } else if (key.equals(IMAConfig.AUTO_PLAY_AD_BREAK)) {
+            getAdsConfig().setAutoPlayAdBreaks((boolean) value);
+        } else if (key.equals(IMAConfig.AD_VIDEO_BITRATE)) {
+            getAdsConfig().setVideoBitrate((int) value);
+        } else if (key.equals(IMAConfig.VIDEO_MIME_TYPES)) {
+            getAdsConfig().setVideoMimeTypes((List<String>) value);
+        }
+    }
+
+    @Override
+    protected void onApplicationPaused() {
+        pause();
+    }
+
+    @Override
+    protected void onApplicationResumed() {
+        resume();
     }
 
     @Override
@@ -370,9 +394,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 // ad rules playlists, as the SDK will automatically start executing the
                 // playlist.
 
-                adInfo = createAdInfo(adEvent.getAd());
-
-
                 messageBus.post(new AdEvent(AdEvent.Type.LOADED));
                 adsManager.start();
                 break;
@@ -407,7 +428,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             case STARTED:
                 log.d("AD STARTED");
                 isAdIsPaused = false;
-                messageBus.post(new AdEvent(AdEvent.Type.STARTED));
+                adInfo = createAdInfo(adEvent.getAd());
+                messageBus.post(new AdEvent.AdStartedEvent(adInfo));
                 break;
             case PAUSED:
                 log.d("AD PAUSED");

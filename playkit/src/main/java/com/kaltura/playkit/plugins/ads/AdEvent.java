@@ -19,7 +19,15 @@ public class AdEvent implements PKEvent {
         this.type = type;
     }
 
+    public static class AdStartedEvent extends AdEvent {
 
+        public AdInfo adInfo;
+
+        public AdStartedEvent(AdInfo adInfo) {
+            super(Type.STARTED);
+            this.adInfo = adInfo;
+        }
+    }
     public enum Type {
         STARTED,
         PAUSED,

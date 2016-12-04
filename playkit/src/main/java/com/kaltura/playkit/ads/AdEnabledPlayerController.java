@@ -1,14 +1,8 @@
 package com.kaltura.playkit.ads;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
-import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
-
-import java.util.List;
 
 /**
  * Created by gilad.nadav on 20/11/2016.
@@ -82,49 +76,22 @@ public class AdEnabledPlayerController extends PlayerDecorator {
         }
     }
 
-    @Override
-    public void onApplicationResumed() {
-        super.onApplicationResumed();
-        if (adsProvider.isAdDisplayed()) {
-            log.d("onApplicationResumed");
-            adsProvider.resume();
-        }
-
-    }
-
-    @Override
-    public void onApplicationPaused() {
-        log.d("onApplicationPaused");
-        if (adsProvider.isAdDisplayed()) {
-            adsProvider.pause();
-        }
-        super.onApplicationPaused();
-    }
-
-    @Override
-    public PKAdInfo getAdInfo() {
-        return adsProvider.getAdInfo();
-    }
-
-    @Override
-    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
-        if (value == null) {
-            return;
-        }
-        if (adsProvider != null) {
-            if (key.equals(IMAConfig.AD_TAG_LANGUAGE)) {
-                adsProvider.getAdsConfig().setLanguage((String) value);
-            } else if (key.equals(IMAConfig.AD_TAG_URL)) {
-                adsProvider.getAdsConfig().setAdTagURL((String) value);
-            } else if (key.equals(IMAConfig.ENABLE_BG_PLAYBACK)) {
-                adsProvider.getAdsConfig().setEnableBackgroundPlayback((boolean) value);
-            } else if (key.equals(IMAConfig.AUTO_PLAY_AD_BREAK)) {
-                adsProvider.getAdsConfig().setAutoPlayAdBreaks((boolean) value);
-            } else if (key.equals(IMAConfig.AD_VIDEO_BITRATE)) {
-                adsProvider.getAdsConfig().setVideoBitrate((int) value);
-            } else if (key.equals(IMAConfig.VIDEO_MIME_TYPES)) {
-                adsProvider.getAdsConfig().setVideoMimeTypes((List<String>) value);
-            }
-        }
-    }
+//    @Override
+//    public void onApplicationResumed() {
+//        super.onApplicationResumed();
+//        if (adsProvider.isAdDisplayed()) {
+//            log.d("onApplicationResumed");
+//            adsProvider.resume();
+//        }
+//
+//    }
+//
+//    @Override
+//    public void onApplicationPaused() {
+//        log.d("onApplicationPaused");
+//        if (adsProvider.isAdDisplayed()) {
+//            adsProvider.pause();
+//        }
+//        super.onApplicationPaused();
+//    }
 }
