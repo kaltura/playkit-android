@@ -1,7 +1,6 @@
 package com.kaltura.playkit.player;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
 
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
@@ -22,7 +21,6 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * Responsible for generating/sorting/holding and changing track info.
@@ -345,7 +343,7 @@ class TrackSelectionHelper {
 
     private int getIndexFromUniqueId(String uniqueId, int groupIndex) {
         String uniqueIdWithoutPrefix = removePrefix(uniqueId);
-        String[] strArray = uniqueIdWithoutPrefix.split(Pattern.quote(","));
+        String[] strArray = uniqueIdWithoutPrefix.split(",");
         if(strArray[groupIndex].equals(ADAPTIVE_PREFIX)){
             return -1;
         }
@@ -386,7 +384,7 @@ class TrackSelectionHelper {
         if(uniqueId.contains(VIDEO_PREFIX)
                 || uniqueId.contains(AUDIO_PREFIX)
                 || uniqueId.contains(TEXT_PREFIX)
-                && uniqueId.contains(Pattern.quote(","))){
+                && uniqueId.contains(",")){
             return true;
         }
         log.e("Unique id is not valid => " + uniqueId);
