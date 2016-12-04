@@ -13,6 +13,7 @@ public class ErrorElement {
     public static ErrorElement LoadError = new ErrorElement("Failed to load data from source", 500);
     public static ErrorElement ConnectionError = new ErrorElement("Failed to connect to source", 408);
     public static ErrorElement BadRequestError = new ErrorElement("Invalid or missing request params", 400);
+    public static ErrorElement SessionError = new ErrorElement("Failed to obtain session", 601);
 
     private String message;
     private String code;

@@ -3,14 +3,15 @@ package com.kaltura.playkit.backend;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.kaltura.playkit.BaseTest;
+import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.KalturaOvpParser;
-import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.RequestElement;
@@ -40,8 +41,8 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     public static final String KS = "djJ8MjIwOTU5MXxPFV50RZYaUMbON6FvA-1iQPTPBslap3ZAXFeFq-lMcCPZsUg0Y4vGbd769dmH1lDRq-nWMe1XhOTIVhUgk-V3exyHva1QkOcwtxR6bAm9sRZD2tQrLo3r-0VqmLMWRjU=";
     public static final String EntryId = "1_1h1vsv3z";
     public static final String EntryId2 = "1_ztdp5s5d";
+    public static final String EntryId3 = "0_tb83i9pr";
     public static final int PartnerId = 2209591;
-    public static String EntryInfo = "mock/ovp.multirequest..1_1h1vsv3z.json";
 
 
     SessionProvider ksSessionProvider = new SessionProvider() {
@@ -51,8 +52,10 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public String getKs() {
-            return KS;
+        public void getKs(OnCompletion<String> completion) {
+            if(completion != null){
+                completion.onComplete(KS);
+            }
         }
 
         @Override
@@ -61,22 +64,6 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
         }
     };
 
-    SessionProvider AnonymSessionProvider = new SessionProvider() {
-        @Override
-        public String baseUrl() {
-            return BaseUrl;
-        }
-
-        @Override
-        public String getKs() {
-            return null;
-        }
-
-        @Override
-        public int partnerId() {
-            return PartnerId;
-        }
-    };
 
 
     RequestQueue testExecutor;
@@ -94,15 +81,14 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
 
     @Test
     public void testEntryInfoLiveFetch(){
-        new KalturaOvpMediaProvider().setSessionProvider(ksSessionProvider).setEntryId(EntryId).load(new OnMediaLoadCompletion() {
+        new KalturaOvpMediaProvider().setSessionProvider(ksSessionProvider).setEntryId(EntryId3).load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
                 if (response.isSuccess()) {
                     assertTrue(response.getResponse() != null);
-                    assertTrue(response.getResponse().getId().equals(EntryId));
-                    //assertTrue(response.getResponse().getSources().size() == 5);
-                    assertTrue(response.getResponse().getSources().size() == 1); // currently getContextData request doesn't return sources array
-                    assertTrue(response.getResponse().getDuration() == 102000);
+                    assertTrue(response.getResponse().getId().equals(EntryId3));
+                    assertTrue(response.getResponse().getSources().size() == 4);
+                    //assertTrue(response.getResponse().getDuration() == 102000);
 
                 } else {
                     assertNotNull(response.getError());
@@ -119,17 +105,17 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     @Test
     public void testMockVsLiveRequest() {
 
-        kalturaOvpMediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ksSessionProvider).setEntryId(EntryId).setRequestExecutor(testExecutor);
+        kalturaOvpMediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ksSessionProvider).setEntryId(EntryId3).setRequestExecutor(testExecutor);
         kalturaOvpMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
                 assertTrue(response.isSuccess());
                 assertTrue(response.getResponse() != null);
-                assertTrue(response.getResponse().getId().equals(EntryId));
-                assertTrue(response.getResponse().getSources().size() == 5);
+                assertTrue(response.getResponse().getId().equals(EntryId3));
+                assertTrue(response.getResponse().getSources().size() == 3); // format "hdnetworkmanifest" is excluded
                 assertTrue(response.getResponse().getDuration() == 102000);
 
-                kalturaOvpMediaProvider.setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
+                /*kalturaOvpMediaProvider.setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
                     @Override
                     public void onComplete(ResultElement<PKMediaEntry> response) {
                         if (response.isSuccess()) {
@@ -145,7 +131,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
 
                         OvpMediaProviderAndroidTest.this.resume();
                     }
-                });
+                });*/
             }
         });
 
@@ -263,15 +249,19 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
                     int serviceIdx = url.indexOf(SERVICE);
                     int actionIdx = url.indexOf(ACTION);
                     String service = actionIdx == -1 ? url.substring(serviceIdx + SERVICE.length()) : url.substring(serviceIdx + SERVICE.length(), actionIdx);
-                    String action = actionIdx == -1 ? "" : url.substring(actionIdx + ACTION.length());
+                    String action = actionIdx == -1 ? "_" : url.substring(actionIdx + ACTION.length());
 
                     if (request.getBody() != null) {
                         JsonParser parser = new JsonParser();
-                        //JsonElement body = parser.parse(request.getBody());
-                        //parsing from response -> String assetId = body.getAsJsonObject().getAsJsonObject("result").getAsJsonPrimitive("id").getAsString();
-                        String assetId = EntryId;//body.getAsJsonObject().getAsJsonPrimitive("id").getAsString();
+                        JsonObject body = parser.parse(request.getBody()).getAsJsonObject();
+                        String assetId = "";
+                        if(body.has("2")){
+                            assetId = body.get("2").getAsJsonObject().getAsJsonPrimitive("entryId").getAsString();
+                        }
 
-                        String inputFile = "mock/ovp." + service + "." + action + "." + assetId + (request.getBody().contains("startWidgetSession")? "" : ".ks")+".json";
+                        //String assetId = EntryId3;//body.getAsJsonObject().getAsJsonPrimitive("id").getAsString();
+
+                        String inputFile = "mock/ovp." + service + "." + action + "." + assetId + ".json";
 
                         try {
                             final JsonReader jsonReader = new JsonReader(new InputStreamReader(InstrumentationRegistry.getTargetContext().getAssets().open(inputFile)));

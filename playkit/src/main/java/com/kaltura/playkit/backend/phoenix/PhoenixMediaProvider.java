@@ -6,6 +6,7 @@ import android.text.TextUtils;
 
 import com.google.gson.JsonParseException;
 import com.kaltura.playkit.MediaEntryProvider;
+import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.backend.BaseResult;
@@ -113,7 +114,7 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
      */
     @Override
     public void load(final OnMediaLoadCompletion completion) {
-        ErrorElement error = validateLoad();
+        ErrorElement error = validateAsset();
         if(error != null){
             if (completion != null) {
                 completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
@@ -121,27 +122,39 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
             return;
         }
 
-        RequestBuilder requestBuilder = AssetService.assetGet(sessionProvider.baseUrl(), /*sessionProvider.partnerId(),*/ sessionProvider.getKs(), mediaAsset.assetId, mediaAsset.referenceType);
-
-        requestBuilder.completion(new OnRequestCompletion() {
+        sessionProvider.getKs(new OnCompletion<String>() {
             @Override
-            public void onComplete(ResponseElement response) {
-                onAssetGetResponse(response, completion);
+            public void onComplete(String response) {
+                ErrorElement error = validateKs(response);
+                if (error == null) {
+                    final String ks = response;
+                    RequestBuilder requestBuilder = AssetService.assetGet(sessionProvider.baseUrl(), ks, mediaAsset.assetId, mediaAsset.referenceType);
+
+                    requestBuilder.completion(new OnRequestCompletion() {
+                        @Override
+                        public void onComplete(ResponseElement response) {
+                            onAssetGetResponse(response, completion);
+                        }
+                    });
+
+                    requestsExecutor.queue(requestBuilder.build());
+                } else {
+                    if (completion != null) {
+                        completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
+                    }
+                }
             }
         });
-
-        requestsExecutor.queue(requestBuilder.build());
-
     }
 
     /**
      * validate basic parameters needed
      * @return
      */
-    private ErrorElement validateLoad() {
+    /*private ErrorElement validateLoad() {
         ErrorElement error = validateKs();
         return error != null ? error : validateAsset();
-    }
+    }*/
 
 
     /**
@@ -157,8 +170,8 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
                 null;
     }
 
-    private ErrorElement validateKs() {
-        return TextUtils.isEmpty(this.sessionProvider.getKs()) ?
+    private ErrorElement validateKs(String ks) {
+        return TextUtils.isEmpty(ks) ?
                 ErrorElement.BadRequestError.message(ErrorElement.BadRequestError +": SessionProvider should provide a valid KS token") :
                 null;
     }

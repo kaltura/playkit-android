@@ -1,5 +1,7 @@
 package com.kaltura.playkit.connect;
 
+import android.support.annotation.NonNull;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -152,6 +154,16 @@ public class RequestBuilder {
             this.params = new JsonObject();
         }
         this.params.addProperty(key, value);
+        return this;
+    }
+
+    public RequestBuilder removeParams(@NonNull String... keys){
+        if(params == null) return this;
+
+        for (String key : keys){
+            this.params.remove(key);
+        }
+
         return this;
     }
 }

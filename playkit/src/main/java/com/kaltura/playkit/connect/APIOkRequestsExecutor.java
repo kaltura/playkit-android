@@ -24,6 +24,10 @@ import okio.Buffer;
  */
 public class APIOkRequestsExecutor implements RequestQueue {
 
+    public interface IdFactory{
+        String factorId(String factor);
+    }
+
     public static final String TAG = "APIOkRequestsExecutor";
     static final MediaType JSON_MediaType = MediaType.parse("application/json");
 
@@ -53,6 +57,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
 
     private OkHttpClient mOkClient;
     private boolean addSig;
+    private IdFactory idFactory = new RequestIdFactory(); // default
 
     private static APIOkRequestsExecutor self;
 
@@ -63,11 +68,16 @@ public class APIOkRequestsExecutor implements RequestQueue {
         return self;
     }
 
-    private IdInterceptor idInterceptor = new IdInterceptor();
+    //private IdInterceptor idInterceptor = new IdInterceptor();
    // private GzipInterceptor gzipInterceptor = new GzipInterceptor();
 
     public APIOkRequestsExecutor(){
         getOkClient();
+    }
+
+    public APIOkRequestsExecutor setRequestIdFactory(IdFactory factory){
+        this.idFactory = factory;
+        return this;
     }
 
     private OkHttpClient getOkClient(RequestConfiguration configuration){
@@ -92,9 +102,9 @@ public class APIOkRequestsExecutor implements RequestQueue {
                 .writeTimeout(config.getWriteTimeout(), TimeUnit.MILLISECONDS)
                 .retryOnConnectionFailure(config.getRetry() > 0);
 
-        if (!builder.interceptors().contains(idInterceptor)) {
+        /*if (!builder.interceptors().contains(idInterceptor)) {
             builder.addInterceptor(idInterceptor);
-        }
+        }*/
         return builder;
     }
 
@@ -167,7 +177,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
                     action.onComplete(responseElement);
                 }
             });
-            return (String) call.request().tag();
+            return  (String) call.request().tag();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -264,18 +274,18 @@ public class APIOkRequestsExecutor implements RequestQueue {
         };
     }
 
-    private Request buildRestRequest(RequestElement action, BodyBuilder bodyBuilder) {
+    private Request buildRestRequest(RequestElement request, BodyBuilder bodyBuilder) {
 
-        String url = action.getUrl();
-        System.out.println("request url: "+url +"\nrequest body:\n"+action.getBody()+"\n");
+        String url = request.getUrl();
+        System.out.println("request url: "+url +"\nrequest body:\n"+request.getBody()+"\n");
 
-        RequestBody body = bodyBuilder.build(action);// RequestBody.create(JSON_MediaType, action.getBody().getBytes());
+        RequestBody body = bodyBuilder.build(request);// RequestBody.create(JSON_MediaType, action.getBody().getBytes());
 
         return new Request.Builder()
-                .headers(Headers.of(action.getHeaders()))
-                .method(action.getMethod(), body)
+                .headers(Headers.of(request.getHeaders()))
+                .method(request.getMethod(), body)
                 .url(url)
-                .tag(action.getTag())
+                .tag(idFactory.factorId(request.getTag()))
                 .build();
     }
 

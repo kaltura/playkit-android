@@ -37,34 +37,35 @@ public class OttUserService extends PhoenixService {
         return params;
     }
 
-    public static RequestBuilder anonymousLogin(String baseUrl, int partnerId){
+    public static RequestBuilder anonymousLogin(String baseUrl, int partnerId, @Nullable String udid){
+        JsonObject params = getPhoenixParams();
+        params.addProperty("partnerId", partnerId);
+        if(udid != null){
+            params.addProperty("udid", udid);
+        }
+
         return new RequestBuilder()
                 .service("ottUser")
                 .action("anonymousLogin")
                 .method("POST")
                 .url(baseUrl)
                 .tag("ottuser-anonymous-login")
-                .params(getAnonymousReqParams(partnerId));
+                .params(params);
     }
 
-    public static JsonObject getAnonymousReqParams(int partnerId) {
-        JsonObject params = getPhoenixParams();
-        params.addProperty("partnerId", partnerId);
-        return params;
-    }
-
-    public static RequestBuilder refreshSession(String baseUrl, String refreshToken, @Nullable String udid){
+    public static RequestBuilder refreshSession(String baseUrl, String ks, String refreshToken, @Nullable String udid){
         return new RequestBuilder()
                 .service("ottUser")
                 .action("refreshSession")
                 .method("POST")
                 .url(baseUrl)
                 .tag("ottuser-refresh-session")
-                .params(getRefreshReqParams(refreshToken, udid));
+                .params(getRefreshReqParams(ks, refreshToken, udid));
     }
 
-    private static JsonObject getRefreshReqParams(String refreshToken, String udid) {
+    private static JsonObject getRefreshReqParams(String ks, String refreshToken, String udid) {
         JsonObject params = getPhoenixParams();
+        params.addProperty("ks", ks);
         params.addProperty("refreshToken", refreshToken);
         if(!TextUtils.isEmpty(udid)) {
             params.addProperty("udid", udid);

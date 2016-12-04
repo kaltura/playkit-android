@@ -8,8 +8,9 @@ import java.util.ArrayList;
  * Created by tehilarozin on 02/11/2016.
  */
 
-public class KalturaEntryContextDataResult extends BaseResult {
+public class KalturaPlayingResult extends BaseResult {
 
+    ArrayList<KalturaPlayingSource> sources;
     ArrayList<KalturaFlavorAsset> flavorAssets;
 
 
@@ -17,5 +18,9 @@ public class KalturaEntryContextDataResult extends BaseResult {
         return flavorAssets;
     }
 
+
+    public ArrayList<KalturaPlayingSource> getSources() {
+        return sources;
+    }
 
 }

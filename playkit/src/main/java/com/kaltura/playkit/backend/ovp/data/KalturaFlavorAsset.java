@@ -4,10 +4,10 @@ package com.kaltura.playkit.backend.ovp.data;
  * Created by tehilarozin on 31/10/2016.
  */
 
-public class KalturaFlavorAsset /*implements Comparator*/ {
+public class KalturaFlavorAsset implements FlavorAssetsFilter.Filterable {
 
     private String id;
-    private int flavorParamsId;
+    private String flavorParamsId;
     private String fileExt;
     private int bitrate;
     private int width;
@@ -21,44 +21,37 @@ public class KalturaFlavorAsset /*implements Comparator*/ {
         this.id = id;
     }
 
-    public int getFlavorParamsId() {
+    public String getFlavorParamsId() {
         return flavorParamsId;
-    }
-
-    public void setFlavorParamsId(int flavorParamsId) {
-        this.flavorParamsId = flavorParamsId;
     }
 
     public String getFileExt() {
         return fileExt;
     }
 
-    public void setFileExt(String fileExt) {
-        this.fileExt = fileExt;
-    }
-
     public int getBitrate() {
         return bitrate;
-    }
-
-    public void setBitrate(int bitrate) {
-        this.bitrate = bitrate;
     }
 
     public int getWidth() {
         return width;
     }
 
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
     public int getHeight() {
         return height;
     }
 
-    public void setHeight(int height) {
-        this.height = height;
+    @Override
+    public String getMemberValue(String name){
+        switch (name){
+            case "id":
+                return id;
+            case "flavorParamsId":
+                return flavorParamsId;
+            case "bitrate":
+                return bitrate+"";
+        }
+        return null;
     }
 
 

@@ -6,6 +6,9 @@ package com.kaltura.playkit.backend.ovp;
 
 public class OvpConfigs {
 
-    public static String ClientTag = "playkit";
-    public static String ApiVersion = "3.3.0";
+    public static final String ClientTag = "playkit";
+    public static final String ApiVersion = "3.3.0";
+
+    //temporal value - will be configurable: provided by uiconf or something
+    public static final String PreferredHttpProtocol = "https";
 }

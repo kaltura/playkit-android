@@ -8,6 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.kaltura.playkit.BaseTest;
+import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
@@ -43,7 +44,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(AndroidJUnit4.class)
 public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
-    public static final String BaseUrl = "http://52.210.223.65:8080/v4_1/api_v3/";//"http://52.210.223.65:8080/v4_0/api_v3/";
+    public static final String BaseUrl = "http://api-preprod.ott.kaltura.com/api_v3/"; //"http://52.210.223.65:8080/v4_1/api_v3/"
     public static final String KS = "djJ8MTk4fAZXObQaPfvkEqBWfZkZfbruAO1V3CYGwE4OdvqojvsjaNMeN8yYtqgCvtpFiKblOayM9Xq5d2wHFCBAkbf7ju9-H4CrWrxOg7qhIRQUzqPz";
     public static final String MediaId = "258656";//frozen
     public static final String MediaId4 = "258655";//shrek
@@ -63,8 +64,10 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public String getKs() {
-            return KS;
+        public void getKs(OnCompletion<String> completion) {
+            if(completion != null){
+                completion.onComplete(KS);
+            }
         }
 
         @Override
@@ -80,8 +83,10 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public String getKs() {
-            return null;
+        public void getKs(OnCompletion<String> completion) {
+            if(completion != null){
+                completion.onComplete(null);
+            }
         }
 
         @Override
@@ -89,7 +94,6 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
             return PartnerId;
         }
     };
-
 
     RequestQueue testExecutor;
 
@@ -321,7 +325,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                     int serviceIdx = url.indexOf(SERVICE);
                     int actionIdx = url.indexOf(ACTION);
                     String service = actionIdx == -1 ? url.substring(serviceIdx + SERVICE.length()) : url.substring(serviceIdx + SERVICE.length(), actionIdx);
-                    String action = actionIdx == -1 ? "" : url.substring(actionIdx + ACTION.length());
+                    String action = actionIdx == -1 ? "_" : url.substring(actionIdx + ACTION.length());
 
                     if (request.getBody() != null) {
                         JsonParser parser = new JsonParser();
