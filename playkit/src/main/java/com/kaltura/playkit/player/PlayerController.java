@@ -39,11 +39,11 @@ public class PlayerController implements Player {
         this.eventListener = eventListener;
     }
 
-    public interface EventListener {
+     interface EventListener {
         void onEvent(PlayerEvent.Type event);
     }
 
-    public interface StateChangedListener {
+     interface StateChangedListener {
         void onStateChanged(PlayerState oldState, PlayerState newState);
     }
 
@@ -61,6 +61,9 @@ public class PlayerController implements Player {
                         break;
                     case TRACKS_AVAILABLE:
                         event = new PlayerEvent.TracksAvailable(player.getTracksInfo());
+                        break;
+                    case VOLUME_CHANGED:
+                        event = new PlayerEvent.VolumeChanged(player.getVolume());
                         break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
@@ -153,6 +156,16 @@ public class PlayerController implements Player {
     public void pause() {
         log.d("pause");
         player.pause();
+    }
+
+    @Override
+    public void replay() {
+        player.replay();
+    }
+
+    @Override
+    public void setVolume(float volume) {
+        player.setVolume(volume);
     }
 
     private void togglePlayerListeners(boolean enable) {

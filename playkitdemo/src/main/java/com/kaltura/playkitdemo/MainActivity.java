@@ -2,8 +2,12 @@ package com.kaltura.playkitdemo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -21,7 +25,6 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.TextTrackInfo;
-import com.kaltura.playkit.player.TrackSelectionHelper;
 import com.kaltura.playkit.TracksInfo;
 import com.kaltura.playkit.VideoTrackInfo;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
@@ -29,6 +32,7 @@ import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.plugins.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.PhoenixAnalyticsPlugin;
+import com.kaltura.playkit.utils.Consts;
 
 import java.util.List;
 
@@ -194,15 +198,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void populateSpinnersWithTrackInfo(TracksInfo tracksInfo) {
 
         //Retrieve info that describes available tracks.(video/audio/subtitle).
-        TrackItem[] videoTrackItems = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_VIDEO, tracksInfo.getVideoTrackInfo());
+        TrackItem[] videoTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_VIDEO, tracksInfo.getVideoTrackInfo());
         //populate spinner with this info.
         applyAdapterOnSpinner(videoSpinner, videoTrackItems);
 
-        TrackItem[] audioTrackItems = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_AUDIO, tracksInfo.getAudioTrackInfo());
+        TrackItem[] audioTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_AUDIO, tracksInfo.getAudioTrackInfo());
         applyAdapterOnSpinner(audioSpinner, audioTrackItems);
 
 
-        TrackItem[] subtitlesTrackItems = obtainRelevantTrackInfo(TrackSelectionHelper.TRACK_TEXT, tracksInfo.getTextTrackInfo());
+        TrackItem[] subtitlesTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_TEXT, tracksInfo.getTextTrackInfo());
         applyAdapterOnSpinner(textSpinner, subtitlesTrackItems);
     }
 
@@ -219,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private TrackItem[] obtainRelevantTrackInfo(int trackType, List<BaseTrackInfo> trackInfos) {
         TrackItem[] trackItems = new TrackItem[trackInfos.size()];
         switch (trackType) {
-            case TrackSelectionHelper.TRACK_VIDEO:
+            case Consts.TRACK_TYPE_VIDEO:
                 TextView tvVideo = (TextView) this.findViewById(R.id.tvVideo);
                 changeSpinnerVisibility(videoSpinner, tvVideo, trackInfos);
 
@@ -233,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
 
                 break;
-            case TrackSelectionHelper.TRACK_AUDIO:
+            case Consts.TRACK_TYPE_AUDIO:
                 TextView tvAudio = (TextView) this.findViewById(R.id.tvAudio);
                 changeSpinnerVisibility(audioSpinner, tvAudio, trackInfos);
 
@@ -246,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     }
                 }
                 break;
-            case TrackSelectionHelper.TRACK_TEXT:
+            case Consts.TRACK_TYPE_TEXT:
                 TextView tvSubtitle = (TextView) this.findViewById(R.id.tvText);
                 changeSpinnerVisibility(textSpinner, tvSubtitle, trackInfos);
 

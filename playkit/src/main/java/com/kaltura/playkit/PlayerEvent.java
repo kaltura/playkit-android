@@ -48,6 +48,20 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class VolumeChanged extends PlayerEvent {
+
+        private float volume;
+
+        public VolumeChanged(float volume) {
+            super(Type.VOLUME_CHANGED);
+            this.volume = volume;
+        }
+
+        public float getVolume() {
+            return volume;
+        }
+    }
+
     public final Type type;
 
     private PlayerEvent(Type type) {
@@ -67,7 +81,9 @@ public class PlayerEvent implements PKEvent {
         SEEKED,   //  Sent when a seek operation completes.
         SEEKING,   //  Sent when a seek operation begins.
         FIRST_PLAY, // Sent when the playback of the media started to play for the first time.
-        TRACKS_AVAILABLE; // Sent when track info is available.
+        TRACKS_AVAILABLE, // Sent when track info is available.
+        REPLAY,
+        VOLUME_CHANGED// Sent when replay button is pressed.
     }
 
     @Override

@@ -41,6 +41,10 @@ public interface Player {
      */
     void pause();
 
+    void replay();
+
+    void setVolume(float volume);
+
     /**
      * Prepare for playing the next entry. If config.shouldAutoPlay is true, the entry will automatically
      * play when it's ready and the current entry is ended.

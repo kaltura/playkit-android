@@ -1,5 +1,8 @@
 package com.kaltura.playkit.player;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.source.TrackGroup;
@@ -14,6 +17,7 @@ import com.kaltura.playkit.TextTrackInfo;
 import com.kaltura.playkit.TracksInfo;
 import com.kaltura.playkit.VideoTrackInfo;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.SelectionOverride;
+import com.kaltura.playkit.utils.Consts;
 
 
 import java.util.ArrayList;
@@ -25,16 +29,14 @@ import java.util.regex.Pattern;
  * Created by anton.afanasiev on 22/11/2016.
  */
 
-public class TrackSelectionHelper {
+class TrackSelectionHelper {
 
     private static final PKLog log = PKLog.get("TrackSelectionHelper");
 
     private static final TrackSelection.Factory FIXED_FACTORY = new FixedTrackSelection.Factory();
 
-    public static final int TRACK_VIDEO = 0;
-    public static final int TRACK_AUDIO = 1;
-    public static final int TRACK_TEXT = 2;
-    public static final int TRACK_ADAPTIVE = -1;
+
+    private static final int TRACK_ADAPTIVE = -1;
 
     private static final int RENDERER_INDEX = 0;
     private static final int GROUP_INDEX = 1;
@@ -61,8 +63,8 @@ public class TrackSelectionHelper {
      * @param adaptiveTrackSelectionFactory A factory for adaptive video {@link TrackSelection}s,
      *                                      or null if the selection helper should not support adaptive video.
      */
-    public TrackSelectionHelper(MappingTrackSelector selector,
-                                TrackSelection.Factory adaptiveTrackSelectionFactory) {
+    TrackSelectionHelper(MappingTrackSelector selector,
+                         TrackSelection.Factory adaptiveTrackSelectionFactory) {
         this.selector = selector;
         this.adaptiveTrackSelectionFactory = adaptiveTrackSelectionFactory;
     }
@@ -73,7 +75,7 @@ public class TrackSelectionHelper {
      * When the object is created, notify {@link ExoPlayerWrapper} about that,
      * and pass the {@link TracksInfo} as parameter.
      */
-    public void prepareTracksInfo() {
+    void prepareTracksInfo() {
         mappedTrackInfo = selector.getCurrentSelections().info;
         TracksInfo tracksInfo = buildTracksInfo();
 
@@ -113,14 +115,14 @@ public class TrackSelectionHelper {
                     if (isFormatSupported(rendererIndex, groupIndex, trackIndex) && format.id != null) {
                         String uniqueId = getUniqueId(rendererIndex, groupIndex, trackIndex);
                         switch (rendererIndex) {
-                            case TRACK_VIDEO:
+                            case Consts.TRACK_TYPE_VIDEO:
                                 videoTracksInfo.add(new VideoTrackInfo(uniqueId, format.bitrate, format.width, format.height, false));
                                 break;
-                            case TRACK_AUDIO:
+                            case Consts.TRACK_TYPE_AUDIO:
                                 audioTracksInfo.add(new AudioTrackInfo(uniqueId, format.language, format.bitrate, false));
                                 break;
 
-                            case TRACK_TEXT:
+                            case Consts.TRACK_TYPE_TEXT:
                                 textTracksInfo.add(new TextTrackInfo(uniqueId, format.language));
                                 break;
                         }
@@ -142,13 +144,13 @@ public class TrackSelectionHelper {
         String uniqueId = getUniqueId(rendererIndex, groupIndex, TRACK_ADAPTIVE);
         if (isAdaptive(rendererIndex, groupIndex) && !adaptiveTrackInfoAlreadyExist(uniqueId, rendererIndex)) {
             switch (rendererIndex) {
-                case TRACK_VIDEO:
+                case Consts.TRACK_TYPE_VIDEO:
                     videoTracksInfo.add(new VideoTrackInfo(uniqueId, 0, 0, 0, true));
                     break;
-                case TRACK_AUDIO:
+                case Consts.TRACK_TYPE_AUDIO:
                     audioTracksInfo.add(new AudioTrackInfo(uniqueId, format.language, 0, true));
                     break;
-                case TRACK_TEXT:
+                case Consts.TRACK_TYPE_TEXT:
                     textTracksInfo.add(new TextTrackInfo(uniqueId, format.language));
                     break;
             }
@@ -165,13 +167,13 @@ public class TrackSelectionHelper {
     private String getUniqueId(int rendererIndex, int groupIndex, int trackIndex) {
         String rendererPrefix = "";
         switch (rendererIndex){
-            case TRACK_VIDEO:
+            case Consts.TRACK_TYPE_VIDEO:
                 rendererPrefix = VIDEO_PREFIX;
                 break;
-            case TRACK_AUDIO:
+            case Consts.TRACK_TYPE_AUDIO:
                 rendererPrefix = AUDIO_PREFIX;
                 break;
-            case TRACK_TEXT:
+            case Consts.TRACK_TYPE_TEXT:
                 rendererPrefix = TEXT_PREFIX;
                 break;
         }
@@ -190,18 +192,30 @@ public class TrackSelectionHelper {
 
     /**
      * Change currently playing track with the new one.
-     *
+     * Throws {@link IllegalArgumentException} if uniqueId is null or uniqueId is not valid format.
      * @param uniqueId - unique identifier of the track to apply.
      */
-    public void changeTrack(String uniqueId) {
-        log.i("change track to uniqueID -> " + uniqueId);
-        mappedTrackInfo = selector.getCurrentSelections().info;
-        int[] uniqueTrackId = convertUniqueId(uniqueId);
-        int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
-        SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
-        overrideTrack(rendererIndex, override);
+    void changeTrack(String uniqueId) throws IllegalArgumentException{
+        if(uniqueId != null){
+            if(isUniqueIdValid(uniqueId)){
+
+                log.i("change track to uniqueID -> " + uniqueId);
+                mappedTrackInfo = selector.getCurrentSelections().info;
+                int[] uniqueTrackId = convertUniqueId(uniqueId);
+                int rendererIndex = uniqueTrackId[RENDERER_INDEX];
+
+                SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
+                overrideTrack(rendererIndex, override);
+            }else {
+                throw new IllegalArgumentException("The uniqueId is not valid");
+            }
+        }else{
+            throw new IllegalArgumentException("uniqueId is null");
+        }
     }
+
+
 
     /**
      * @param uniqueId - the uniqueId to convert.
@@ -237,7 +251,7 @@ public class TrackSelectionHelper {
         int groupIndex = uniqueId[GROUP_INDEX];
         int trackIndex = uniqueId[TRACK_INDEX];
 
-        boolean isAdaptive = trackIndex == TRACK_ADAPTIVE ? true : false;
+        boolean isAdaptive = trackIndex == TRACK_ADAPTIVE;
 
         if (isAdaptive) {
 
@@ -245,7 +259,7 @@ public class TrackSelectionHelper {
             int[] adaptiveTrackIndexes;
 
             switch (rendererIndex) {
-                case TRACK_VIDEO:
+                case Consts.TRACK_TYPE_VIDEO:
 
                     VideoTrackInfo videoTrackInfo;
 
@@ -256,7 +270,7 @@ public class TrackSelectionHelper {
                         }
                     }
                     break;
-                case TRACK_AUDIO:
+                case Consts.TRACK_TYPE_AUDIO:
                     AudioTrackInfo audioTrackInfo;
                     for (int i = 1; i < audioTracksInfo.size(); i++) {
                         audioTrackInfo = (AudioTrackInfo) audioTracksInfo.get(i);
@@ -304,21 +318,21 @@ public class TrackSelectionHelper {
      */
     private boolean adaptiveTrackInfoAlreadyExist(String uniqueId, int rendererIndex) {
         switch (rendererIndex){
-            case TRACK_VIDEO:
+            case Consts.TRACK_TYPE_VIDEO:
                 for(BaseTrackInfo trackInfo : videoTracksInfo){
                     if(trackInfo.getUniqueId().equals(uniqueId)){
                         return true;
                     }
                 }
                 break;
-            case TRACK_AUDIO:
+            case Consts.TRACK_TYPE_AUDIO:
                 for(BaseTrackInfo trackInfo : audioTracksInfo){
                     if(trackInfo.getUniqueId().equals(uniqueId)){
                         return true;
                     }
                 }
                 break;
-            case TRACK_TEXT:
+            case Consts.TRACK_TYPE_TEXT:
                 for(BaseTrackInfo trackInfo : textTracksInfo){
                     if(trackInfo.getUniqueId().equals(uniqueId)){
                         return true;
@@ -332,7 +346,7 @@ public class TrackSelectionHelper {
     private int getIndexFromUniqueId(String uniqueId, int groupIndex) {
         String uniqueIdWithoutPrefix = removePrefix(uniqueId);
         String[] strArray = uniqueIdWithoutPrefix.split(Pattern.quote(","));
-        if(strArray[groupIndex].equals(TRACK_ADAPTIVE)){
+        if(strArray[groupIndex].equals(ADAPTIVE_PREFIX)){
             return -1;
         }
 
@@ -360,7 +374,7 @@ public class TrackSelectionHelper {
                 == RendererCapabilities.FORMAT_HANDLED;
     }
 
-    public boolean isAdaptive(int rendererIndex, int groupIndex) {
+    private boolean isAdaptive(int rendererIndex, int groupIndex) {
         TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
         return adaptiveTrackSelectionFactory != null
                 && mappedTrackInfo.getAdaptiveSupport(rendererIndex, groupIndex, false)
@@ -368,7 +382,18 @@ public class TrackSelectionHelper {
                 && trackGroupArray.get(groupIndex).length > 1;
     }
 
-    public void setTracksReadyListener(ExoPlayerWrapper.TracksInfoReadyListener tracksReadyListener) {
+    private boolean isUniqueIdValid(String uniqueId) {
+        if(uniqueId.contains(VIDEO_PREFIX)
+                || uniqueId.contains(AUDIO_PREFIX)
+                || uniqueId.contains(TEXT_PREFIX)
+                && uniqueId.contains(Pattern.quote(","))){
+            return true;
+        }
+        log.e("Unique id is not valid => " + uniqueId);
+        return false;
+    }
+
+    void setTracksReadyListener(ExoPlayerWrapper.TracksInfoReadyListener tracksReadyListener) {
         this.tracksReadyListener = tracksReadyListener;
     }
 

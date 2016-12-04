@@ -37,6 +37,16 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public void replay() {
+        player.replay();
+    }
+
+    @Override
+    public void setVolume(float volume) {
+        player.setVolume(volume);
+    }
+
+    @Override
     public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
         player.prepareNext(mediaConfig);
     }
