@@ -102,7 +102,11 @@ public class RequestBuilder {
 
             @Override
             public String getBody() {
-                return params.toString();
+                if (params != null) {
+                    return params.toString();
+                } else {
+                    return null;
+                }
             }
 
             @Override

@@ -1,5 +1,6 @@
 package com.kaltura.playkitdemo;
 
+import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.backend.SessionProvider;
 
 /**
@@ -32,8 +33,10 @@ public class DemoSessionProvider implements SessionProvider {
     }
 
     @Override
-    public String getKs() {
-        return null;
+    public void getKs(OnCompletion<String> completion) {
+        if (completion!=null){
+            completion.onComplete(this.ks);
+        }
     }
 
     @Override

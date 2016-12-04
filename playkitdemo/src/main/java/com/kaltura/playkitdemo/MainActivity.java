@@ -2,7 +2,6 @@ package com.kaltura.playkitdemo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -18,7 +17,8 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.plugins.SamplePlugin;
+import com.kaltura.playkit.plugins.KalturaStatsPlugin;
+import com.kaltura.playkit.plugins.PhoenixAnalyticsPlugin;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean nowPlaying;
 
     private void registerPlugins() {
-        PlayKitManager.registerPlugins(SamplePlugin.factory);
+        PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         registerPlugins();
 
-        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "drm1");
 
 //        mediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
 
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         if (player == null) {
 
             configurePlugins(config.plugins);
-            
+
             player = PlayKitManager.loadPlayer(config, this);
 
             log.d("Player: " + player.getClass());
@@ -95,7 +95,9 @@ public class MainActivity extends AppCompatActivity {
     private void configurePlugins(PlayerConfig.Plugins config) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("delay", 4200);
-        config.setPluginConfig("Sample", jsonObject);
+        config.setPluginConfig("KalturaStatistics", jsonObject);
+        config.setPluginConfig("PhoenixAnalytics", jsonObject);
+        config.setPluginConfig("Youbora", jsonObject);
     }
 
     @Override

@@ -10,7 +10,7 @@ import android.view.View;
 
 public interface PlayerEngine {
 
-    void load(Uri mediaSourceUri);
+    void load(Uri mediaSourceUri, String licenseUri);
 
     View getView();
 
@@ -35,4 +35,6 @@ public interface PlayerEngine {
     void restore();
 
     void destroy();
+
+    void startFrom(long position);
 }
