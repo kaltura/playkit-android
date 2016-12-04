@@ -1,7 +1,10 @@
 package com.kaltura.playkit;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.View;
+
+import com.kaltura.playkit.ads.PKAdInfo;
 
 
 public abstract class PlayerDecorator extends PlayerDecoratorBase {
@@ -32,6 +35,31 @@ public abstract class PlayerDecorator extends PlayerDecoratorBase {
 
     final Player getPlayer() {
         return super.getPlayer();
+    }
+
+    @Override
+    final public void onApplicationResumed() {
+        super.onApplicationResumed();
+    }
+
+    @Override
+    final public void onApplicationPaused() {
+        super.onApplicationPaused();
+    }
+
+    @Override
+    public boolean isAutoPlay() {
+        return super.isAutoPlay();
+    }
+
+    @Override
+    final public PKAdInfo getAdInfo() {
+        return super.getAdInfo();
+    }
+
+    @Override
+    final public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
+        super.updatePluginConfig(pluginName, key, value);
     }
 
     final void setPlayer(Player player) {

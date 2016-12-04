@@ -81,6 +81,16 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     @Override
+    protected void onApplicationPaused() {
+
+    }
+
+    @Override
+    protected void onApplicationResumed() {
+
+    }
+
+    @Override
     public void onDestroy() {
         log.d("onDestroy");
         sendAnalyticsEvent(PhoenixActionType.STOP);
