@@ -12,5 +12,4 @@ public interface PKAdInfo {
     int getAdHeight();
     String getTraffickingParameters();
     long getDuration();
-    //AdPodInfo getAdPodInfo();
 }
