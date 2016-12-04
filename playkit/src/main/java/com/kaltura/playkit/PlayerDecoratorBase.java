@@ -89,6 +89,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public boolean isAutoPlay() {
+        return player.isAutoPlay();
+    }
+
+    @Override
     public void onApplicationPaused() {
         player.onApplicationPaused();
     }

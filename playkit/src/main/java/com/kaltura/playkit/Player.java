@@ -66,5 +66,6 @@ public interface Player {
 
     void onApplicationResumed();
 
+    boolean isAutoPlay();
 }
 

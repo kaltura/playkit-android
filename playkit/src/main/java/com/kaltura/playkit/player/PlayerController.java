@@ -210,4 +210,9 @@ public class PlayerController implements Player {
             wasReleased = false;
         }
     }
+
+    @Override
+    public boolean isAutoPlay() {
+        return mediaConfig.isAutoPlay();
+    }
 }
