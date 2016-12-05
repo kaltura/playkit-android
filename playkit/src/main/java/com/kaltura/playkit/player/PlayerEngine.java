@@ -44,7 +44,7 @@ interface PlayerEngine {
     void pause();
 
     /**
-     * Replay the currently playing/ended video.
+     * Replay the currently playing/ended media.
      * This method will invoke {@link #seekTo(long)} but without triggering
      * events that related to this method (like SEEK and SEEKED).
      */
@@ -57,14 +57,14 @@ interface PlayerEngine {
     long getCurrentPosition();
 
     /**
-     * @return - The total duration of current video
+     * @return - The total duration of current media
      * or {@link Consts#TIME_UNSET} if the duration is unknown or player is null.
      */
     long getDuration();
 
     /**
      *
-     * @return - The buffered position of the current video,
+     * @return - The buffered position of the current media,
      * or {@link Consts#POSITION_UNSET} if the position is unknown or player is null.
      */
     long getBufferedPosition();

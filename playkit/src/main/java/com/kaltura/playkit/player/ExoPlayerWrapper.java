@@ -60,7 +60,7 @@ import java.util.UUID;
 /**
  * Created by anton.afanasiev on 31/10/2016.
  */
-public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSelector.EventListener<MappingTrackSelector.MappedTrackInfo> {
+class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSelector.EventListener<MappingTrackSelector.MappedTrackInfo> {
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
 
