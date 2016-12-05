@@ -6,6 +6,7 @@ import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.backend.ovp.OvpConfigs;
+import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.managers.ViewManager;
 
@@ -45,7 +46,7 @@ public class YouboraLibraryManager extends PluginGeneric {
         ViewManager.setMonitoringInterval(MONITORING_INTERVAL);
     }
 
-    public void onEvent(PlayerEvent.StateChanged event) {
+    private void onEvent(PlayerEvent.StateChanged event) {
         log.d(event.newState.toString());
         switch (event.newState) {
             case READY:
@@ -111,10 +112,28 @@ public class YouboraLibraryManager extends PluginGeneric {
                 if (((PlayerEvent) event).type != PlayerEvent.Type.STATE_CHANGED){
                     messageBus.post(new LogEvent(TAG + " " + ((PlayerEvent) event).type.toString()));
                 }
+            } else if (event instanceof AdEvent){
+
             }
         }
     };
 
+    public void onEvent(AdEvent event) {
+        log.d(event.type.toString());
+        switch (event.type) {
+            case STARTED:
+                ignoringAdHandler();
+                break;
+            case SKIPPED:
+            case COMPLETED:
+                ignoredAdHandler();
+                break;
+            default:
+                break;
+        }
+        log.d(event.type.toString());
+        messageBus.post(new LogEvent(TAG + " " + event.type.toString()));
+    }
     public void startMonitoring(Object player) {
         log.d("startMonitoring");
         super.startMonitoring(player);
