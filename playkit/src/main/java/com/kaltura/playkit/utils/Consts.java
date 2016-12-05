@@ -18,6 +18,11 @@ public class Consts {
     public static final int POSITION_UNSET = -1;
 
     /**
+     * Represents an unset or unknown volume.
+     */
+    public static final float VOLUME_UNKNOWN = -1;
+
+    /**
      * Identifier of the Video track type.
      */
     public static final int TRACK_TYPE_VIDEO = 0;

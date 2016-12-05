@@ -82,7 +82,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
     private Handler mainHandler = new Handler();
     private Factory mediaDataSourceFactory;
 
-    private boolean firstPlay;
     private boolean isSeeking = false;
 
     private int playerWindow;
@@ -107,7 +106,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
         public void onTracksInfoReady(PKTracks tracksInfoReady) {
             //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
             tracksInfo = tracksInfoReady;
-            sendEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+            sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
         }
     };
 
@@ -183,7 +182,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     private void preparePlayer(Uri mediaSourceUri, String licenseUri) {
         this.licenseUri = licenseUri;
-        firstPlay = !mediaSourceUri.equals(lastPlayedSource);
         shouldGetTracksInfo = true;
         this.lastPlayedSource = mediaSourceUri;
         MediaSource mediaSource = buildMediaSource(mediaSourceUri, null);
@@ -265,18 +263,15 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
         }
     }
 
-    private void sendEvent(PlayerEvent.Type newEvent) {
+    private void sendDistinctEvent(PlayerEvent.Type newEvent) {
         if (newEvent.equals(currentEvent)) {
             return;
         }
 
-        currentEvent = newEvent;
-        if (eventListener != null) {
-            eventListener.onEvent(currentEvent);
-        }
+       sendEvent(newEvent);
     }
 
-    private void sendDuplicatedEvent(PlayerEvent.Type event) {
+    private void sendEvent(PlayerEvent.Type event) {
         currentEvent = event;
         if (eventListener != null) {
             eventListener.onEvent(currentEvent);
@@ -308,22 +303,22 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
                 if (isSeeking) {
                     isSeeking = false;
-                    sendEvent(PlayerEvent.Type.SEEKED);
+                    sendDistinctEvent(PlayerEvent.Type.SEEKED);
                 }
 
                 if (!previousState.equals(PlayerState.READY)) {
-                    sendEvent(PlayerEvent.Type.CAN_PLAY);
+                    sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
                 }
 
                 if (playWhenReady) {
-                    sendEvent(PlayerEvent.Type.PLAYING);
+                    sendDistinctEvent(PlayerEvent.Type.PLAYING);
                 }
 
                 break;
             case ExoPlayer.STATE_ENDED:
                 log.d("onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
-                sendEvent(PlayerEvent.Type.ENDED);
+                sendDistinctEvent(PlayerEvent.Type.ENDED);
                 break;
             default:
                 break;
@@ -342,7 +337,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
-        sendEvent(PlayerEvent.Type.ERROR);
+        sendDistinctEvent(PlayerEvent.Type.ERROR);
     }
 
     @Override
@@ -355,11 +350,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
         log.d("onTrackSelectionsChanged");
 
         MappingTrackSelector.MappedTrackInfo trackInfo = trackSelections.info;
-        if (trackInfo.hasOnlyUnplayableTracks(C.TRACK_TYPE_VIDEO)) {
-            log.e("Error unsupported video");
+        if (trackInfo.hasOnlyUnplayableTracks(Consts.TRACK_TYPE_VIDEO)) {
+            log.w("Error unsupported video");
         }
-        if (trackInfo.hasOnlyUnplayableTracks(C.TRACK_TYPE_AUDIO)) {
-            log.e("Error unsupported audio");
+        if (trackInfo.hasOnlyUnplayableTracks(Consts.TRACK_TYPE_AUDIO)) {
+            log.w("Error unsupported audio");
         }
 
         //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
@@ -387,57 +382,59 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
     @Override
     public void play() {
         log.d("play");
-        if (player.getPlayWhenReady()) {
+        if (player == null || player.getPlayWhenReady()) {
+            log.e("Attempt to invoke 'play()' on null instance of the exoplayer");
             return;
         }
 
-        if (firstPlay) {
-            sendEvent(PlayerEvent.Type.FIRST_PLAY);
-            firstPlay = false;
-        }
-        sendEvent(PlayerEvent.Type.PLAY);
+        sendDistinctEvent(PlayerEvent.Type.PLAY);
 
         player.setPlayWhenReady(true);
     }
 
     @Override
     public void pause() {
-        if (!player.getPlayWhenReady()) {
+        if (player == null || !player.getPlayWhenReady()) {
+            log.e("Attempt to invoke 'pause()' on null instance of the exoplayer");
             return;
         }
-        sendEvent(PlayerEvent.Type.PAUSE);
+        sendDistinctEvent(PlayerEvent.Type.PAUSE);
         player.setPlayWhenReady(false);
     }
 
     @Override
     public long getCurrentPosition() {
-        if (player != null) {
-            return player.getCurrentPosition();
+        if (player == null) {
+            return Consts.POSITION_UNSET;
         }
-        return Consts.POSITION_UNSET;
+        return player.getCurrentPosition();
     }
 
     @Override
     public void seekTo(long position) {
-        isSeeking = true;
-        sendEvent(PlayerEvent.Type.SEEKING);
-        player.seekTo(position);
+        if(player == null) {
+            log.e("Attempt to invoke 'seekTo()' on null instance of the exoplayer");
+            return;
+        }
+            isSeeking = true;
+            sendDistinctEvent(PlayerEvent.Type.SEEKING);
+            player.seekTo(position);
     }
 
     @Override
     public long getDuration() {
-        if (player != null) {
-            return player.getDuration();
+        if (player == null) {
+            return Consts.TIME_UNSET;
         }
-        return Consts.TIME_UNSET;
+        return player.getDuration();
     }
 
     @Override
     public long getBufferedPosition() {
-        if (player != null) {
-            return player.getBufferedPosition();
+        if (player == null) {
+            return Consts.POSITION_UNSET;
         }
-        return Consts.POSITION_UNSET;
+        return player.getBufferedPosition();
     }
 
     @Override
@@ -446,7 +443,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
         if (player != null) {
 
             playerWindow = player.getCurrentWindowIndex();
-            playerPosition = C.TIME_UNSET;
+            playerPosition = Consts.TIME_UNSET;
             Timeline timeline = player.getCurrentTimeline();
             if (timeline != null && timeline.getWindow(playerWindow, window).isSeekable) {
                 playerPosition = player.getCurrentPosition();
@@ -466,7 +463,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
         log.d("resume");
         initializePlayer();
         if (shouldResetPlayerPosition) {
-            if (playerPosition == C.TIME_UNSET) {
+            if (playerPosition == Consts.TIME_UNSET) {
                 player.seekToDefaultPosition(playerWindow);
             } else {
                 player.seekTo(playerWindow, playerPosition);
@@ -489,6 +486,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public void changeTrack(String uniqueId) {
+        if(trackSelectionHelper == null){
+            log.e("Attempt to invoke 'changeTrack()' on null instance of the TracksSelectionHelper");
+            return;
+        }
         trackSelectionHelper.changeTrack(uniqueId);
     }
 
@@ -498,8 +499,12 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public void startFrom(long position) {
-        isSeeking = false;
-        player.seekTo(position);
+        if(player == null) {
+            log.e("Attempt to invoke 'startFrom()' on null instance of the exoplayer");
+            return;
+        }
+            isSeeking = false;
+            player.seekTo(position);
     }
 
     public void setEventListener(final EventListener eventTrigger) {
@@ -512,33 +517,45 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public void replay() {
-        isSeeking = false;
-        player.seekTo(0);
-        sendEvent(PlayerEvent.Type.REPLAY);
+        if(player == null) {
+            log.e("Attempt to invoke 'replay()' on null instance of the exoplayer");
+            return;
+        }
+            isSeeking = false;
+            player.seekTo(0);
+            sendDistinctEvent(PlayerEvent.Type.REPLAY);
     }
 
     @Override
     public void setVolume(float volume) {
-
-        if (volume < 0) {
-            volume = 0;
-        } else if (volume > 1) {
-            volume = 1;
+        if(player == null) {
+            log.e("Attempt to invoke 'setVolume()' on null instance of the exoplayer");
+            return;
         }
 
-        if (volume != player.getVolume()) {
-            player.setVolume(volume);
-            sendDuplicatedEvent(PlayerEvent.Type.VOLUME_CHANGED);
-        }
+            if (volume < 0) {
+                volume = 0;
+            } else if (volume > 1) {
+                volume = 1;
+            }
+
+            if (volume != player.getVolume()) {
+                player.setVolume(volume);
+                sendEvent(PlayerEvent.Type.VOLUME_CHANGED);
+            }
     }
 
     @Override
     public boolean isPlaying() {
+        if(player == null) return false;
         return player.getPlayWhenReady() && currentState == PlayerState.READY;
     }
 
     @Override
     public float getVolume() {
+        if(player == null) {
+            return Consts.VOLUME_UNKNOWN;
+        }
         return player.getVolume();
     }
 }

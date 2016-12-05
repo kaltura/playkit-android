@@ -41,7 +41,7 @@ class TrackSelectionHelper {
     private static final int TRACK_INDEX = 2;
     private static final int TRACK_RENDERERS_AMOUNT = 3;
 
-    private static final String ADAPTIVE_PREFIX = "adaptive";
+    private static final String ADAPTIVE_SUFFIX = "adaptive";
     private static final String VIDEO_PREFIX = "Video:";
     private static final String AUDIO_PREFIX = "Audio:";
     private static final String TEXT_PREFIX = "Text:";
@@ -181,7 +181,7 @@ class TrackSelectionHelper {
         uniqueStringBuilder.append(groupIndex);
         uniqueStringBuilder.append(",");
         if(trackIndex == TRACK_ADAPTIVE){
-            uniqueStringBuilder.append(ADAPTIVE_PREFIX);
+            uniqueStringBuilder.append(ADAPTIVE_SUFFIX);
         }else{
             uniqueStringBuilder.append(trackIndex);
         }
@@ -200,7 +200,7 @@ class TrackSelectionHelper {
 
                 log.i("change track to uniqueID -> " + uniqueId);
                 mappedTrackInfo = selector.getCurrentSelections().info;
-                int[] uniqueTrackId = convertUniqueId(uniqueId);
+                int[] uniqueTrackId = parseUniqueId(uniqueId);
                 int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
                 SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
@@ -219,19 +219,19 @@ class TrackSelectionHelper {
      * @param uniqueId - the uniqueId to convert.
      * @return - int[] that consist from indexes that are readable to Exoplayer.
      */
-    private int[] convertUniqueId(String uniqueId) {
-        int[] convertedUniqueId = new int[3];
+    private int[] parseUniqueId(String uniqueId) {
+        int[] parsedUniqueId = new int[3];
         String splitUniqueId = removePrefix(uniqueId);
         String[] strArray = splitUniqueId.split(",");
 
         for (int i = 0; i < strArray.length; i++) {
-            if(strArray[i].equals(ADAPTIVE_PREFIX)){
-                convertedUniqueId[i] = TRACK_ADAPTIVE;
+            if(strArray[i].equals(ADAPTIVE_SUFFIX)){
+                parsedUniqueId[i] = TRACK_ADAPTIVE;
             }else {
-                convertedUniqueId[i] = Integer.parseInt(strArray[i]);
+                parsedUniqueId[i] = Integer.parseInt(strArray[i]);
             }
         }
-        return convertedUniqueId;
+        return parsedUniqueId;
     }
 
     /**
@@ -315,28 +315,24 @@ class TrackSelectionHelper {
      * @return - true, if adaptive {@link BaseTrackInfo} object already exist for this group.
      */
     private boolean adaptiveTrackInfoAlreadyExist(String uniqueId, int rendererIndex) {
+
+        List<BaseTrackInfo> trackInfoList = new ArrayList<>();
         switch (rendererIndex){
             case Consts.TRACK_TYPE_VIDEO:
-                for(BaseTrackInfo trackInfo : videoTracksInfo){
-                    if(trackInfo.getUniqueId().equals(uniqueId)){
-                        return true;
-                    }
-                }
+                trackInfoList = videoTracksInfo;
                 break;
             case Consts.TRACK_TYPE_AUDIO:
-                for(BaseTrackInfo trackInfo : audioTracksInfo){
-                    if(trackInfo.getUniqueId().equals(uniqueId)){
-                        return true;
-                    }
-                }
+                trackInfoList = audioTracksInfo;
                 break;
             case Consts.TRACK_TYPE_TEXT:
-                for(BaseTrackInfo trackInfo : textTracksInfo){
-                    if(trackInfo.getUniqueId().equals(uniqueId)){
-                        return true;
-                    }
-                }
+                trackInfoList = textTracksInfo;
                 break;
+        }
+
+        for(BaseTrackInfo trackInfo : trackInfoList){
+            if(trackInfo.getUniqueId().equals(uniqueId)){
+                return true;
+            }
         }
         return false;
     }
@@ -344,7 +340,7 @@ class TrackSelectionHelper {
     private int getIndexFromUniqueId(String uniqueId, int groupIndex) {
         String uniqueIdWithoutPrefix = removePrefix(uniqueId);
         String[] strArray = uniqueIdWithoutPrefix.split(",");
-        if(strArray[groupIndex].equals(ADAPTIVE_PREFIX)){
+        if(strArray[groupIndex].equals(ADAPTIVE_SUFFIX)){
             return -1;
         }
 
