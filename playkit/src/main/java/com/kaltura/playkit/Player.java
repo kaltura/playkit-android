@@ -93,6 +93,11 @@ public interface Player {
     void setVolume(float volume);
 
     /**
+     * @return - true if player is playing, otherwise return false;
+     */
+    boolean isPlaying();
+
+    /**
      * Add event listener to the player.
      * @param listener - event listener.
      * @param events - events the subscriber interested in.

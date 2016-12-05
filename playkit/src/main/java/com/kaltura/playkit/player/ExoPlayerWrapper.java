@@ -45,7 +45,7 @@ import com.google.android.exoplayer2.upstream.DataSource.Factory;
 import com.google.android.exoplayer2.util.Util;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.TracksInfo;
+import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.player.PlayerController.EventListener;
 import com.kaltura.playkit.player.PlayerController.StateChangedListener;
 import com.kaltura.playkit.PlayerEvent;
@@ -93,18 +93,18 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
     private DeferredMediaDrmCallback deferredMediaDrmCallback;
     private String licenseUri;
 
-    private TracksInfo tracksInfo;
+    private PKTracks tracksInfo;
     private boolean shouldGetTracksInfo;
 
     private TrackSelectionHelper trackSelectionHelper;
 
-    public interface TracksInfoReadyListener {
-        void onTracksInfoReady(TracksInfo tracksInfo);
+    interface TracksInfoReadyListener {
+        void onTracksInfoReady(PKTracks PKTracks);
     }
 
     private TracksInfoReadyListener tracksInfoReadyListener = new TracksInfoReadyListener() {
         @Override
-        public void onTracksInfoReady(TracksInfo tracksInfoReady) {
+        public void onTracksInfoReady(PKTracks tracksInfoReady) {
             //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
             tracksInfo = tracksInfoReady;
             sendEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
@@ -112,7 +112,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
     };
 
 
-    public ExoPlayerWrapper(Context context) {
+     ExoPlayerWrapper(Context context) {
         this.context = context;
         mediaDataSourceFactory = buildDataSourceFactory(true);
         exoPlayerView = new CustomExoPlayerView(context);
@@ -492,7 +492,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
         trackSelectionHelper.changeTrack(uniqueId);
     }
 
-    public TracksInfo getTracksInfo() {
+    public PKTracks getPKTracks() {
         return this.tracksInfo;
     }
 
@@ -530,6 +530,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
             player.setVolume(volume);
             sendDuplicatedEvent(PlayerEvent.Type.VOLUME_CHANGED);
         }
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return player.getPlayWhenReady() && currentState == PlayerState.READY;
     }
 
     @Override

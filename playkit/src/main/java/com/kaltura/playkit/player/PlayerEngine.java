@@ -3,7 +3,7 @@ package com.kaltura.playkit.player;
 import android.net.Uri;
 import android.view.View;
 
-import com.kaltura.playkit.TracksInfo;
+import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.utils.Consts;
 
 
@@ -78,9 +78,9 @@ interface PlayerEngine {
 
     /**
      *
-     * @return - the {@link TracksInfo} object with all the available tracks info.
+     * @return - the {@link PKTracks} object with all the available tracks info.
      */
-    TracksInfo getTracksInfo();
+    PKTracks getPKTracks();
 
     /**
      * Change current track, with specified one.
@@ -111,6 +111,11 @@ interface PlayerEngine {
      * @param volume - volume to set.
      */
     void setVolume(float volume);
+
+    /**
+     * @return - true if player is playing, otherwise return false;
+     */
+    boolean isPlaying();
 
     /**
      * Set the EventListener to the player, which will notify the

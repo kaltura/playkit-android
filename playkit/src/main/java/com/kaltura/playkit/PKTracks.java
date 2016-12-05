@@ -7,13 +7,13 @@ import java.util.List;
  * Created by anton.afanasiev on 17/11/2016.
  */
 
-public class TracksInfo {
+public class PKTracks {
 
     private List<BaseTrackInfo> videoTracksInfo;
     private List<BaseTrackInfo> audioTracksInfo;
     private List<BaseTrackInfo> textTracksInfo;
 
-    public TracksInfo(List<BaseTrackInfo> videoTracksInfo, List<BaseTrackInfo> audioTracksInfo, List<BaseTrackInfo> textTracksInfo) {
+    public PKTracks(List<BaseTrackInfo> videoTracksInfo, List<BaseTrackInfo> audioTracksInfo, List<BaseTrackInfo> textTracksInfo) {
         this.audioTracksInfo = audioTracksInfo;
         this.videoTracksInfo = videoTracksInfo;
         this.textTracksInfo = textTracksInfo;

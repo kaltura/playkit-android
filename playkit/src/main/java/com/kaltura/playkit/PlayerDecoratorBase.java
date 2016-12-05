@@ -47,6 +47,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public boolean isPlaying() {
+        return player.isPlaying();
+    }
+
+    @Override
     public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
         player.prepareNext(mediaConfig);
     }

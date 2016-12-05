@@ -21,7 +21,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.TextTrackInfo;
-import com.kaltura.playkit.TracksInfo;
+import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.VideoTrackInfo;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onEvent(PKEvent event) {
                 //When the track data available, this event occurs. It brings the info object with it.
                 PlayerEvent.TracksAvailable tracksAvailable = (PlayerEvent.TracksAvailable) event;
-                populateSpinnersWithTrackInfo(tracksAvailable.getTracksInfo());
+                populateSpinnersWithTrackInfo(tracksAvailable.getPKTracks());
 
             }
         }, PlayerEvent.Type.TRACKS_AVAILABLE);
@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      *
      * @param tracksInfo - the track info.
      */
-    private void populateSpinnersWithTrackInfo(TracksInfo tracksInfo) {
+    private void populateSpinnersWithTrackInfo(PKTracks tracksInfo) {
 
         //Retrieve info that describes available tracks.(video/audio/subtitle).
         TrackItem[] videoTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_VIDEO, tracksInfo.getVideoTracksInfo());
@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      *
      * @param trackType  - tyoe of the track you are interested in.
      * @param trackInfos - all availables tracks.
-     * @return
+     * @return 
      */
     private TrackItem[] obtainRelevantTrackInfo(int trackType, List<BaseTrackInfo> trackInfos) {
         TrackItem[] trackItems = new TrackItem[trackInfos.size()];

@@ -36,14 +36,14 @@ public class PlayerEvent implements PKEvent {
 
     public static class TracksAvailable extends PlayerEvent {
 
-        private final TracksInfo tracksInfo;
+        private final PKTracks tracksInfo;
 
-        public TracksAvailable(TracksInfo tracksInfo){
+        public TracksAvailable(PKTracks tracksInfo){
             super(Type.TRACKS_AVAILABLE);
             this.tracksInfo = tracksInfo;
         }
 
-        public TracksInfo getTracksInfo() {
+        public PKTracks getPKTracks() {
             return tracksInfo;
         }
     }

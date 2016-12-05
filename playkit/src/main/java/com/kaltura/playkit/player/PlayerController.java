@@ -60,7 +60,7 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.DurationChanged(getDuration());
                         break;
                     case TRACKS_AVAILABLE:
-                        event = new PlayerEvent.TracksAvailable(player.getTracksInfo());
+                        event = new PlayerEvent.TracksAvailable(player.getPKTracks());
                         break;
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());
@@ -166,6 +166,11 @@ public class PlayerController implements Player {
     @Override
     public void setVolume(float volume) {
         player.setVolume(volume);
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return player.isPlaying();
     }
 
     private void togglePlayerListeners(boolean enable) {

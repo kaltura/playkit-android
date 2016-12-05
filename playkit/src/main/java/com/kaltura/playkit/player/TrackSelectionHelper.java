@@ -13,7 +13,7 @@ import com.kaltura.playkit.AudioTrackInfo;
 import com.kaltura.playkit.BaseTrackInfo;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.TextTrackInfo;
-import com.kaltura.playkit.TracksInfo;
+import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.VideoTrackInfo;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.SelectionOverride;
 import com.kaltura.playkit.utils.Consts;
@@ -69,13 +69,13 @@ class TrackSelectionHelper {
 
 
     /**
-     * Prepare {@link TracksInfo} object for application.
+     * Prepare {@link PKTracks} object for application.
      * When the object is created, notify {@link ExoPlayerWrapper} about that,
-     * and pass the {@link TracksInfo} as parameter.
+     * and pass the {@link PKTracks} as parameter.
      */
     void prepareTracksInfo() {
         mappedTrackInfo = selector.getCurrentSelections().info;
-        TracksInfo tracksInfo = buildTracksInfo();
+        PKTracks tracksInfo = buildTracksInfo();
 
         if (tracksReadyListener != null) {
             tracksReadyListener.onTracksInfoReady(tracksInfo);
@@ -83,10 +83,10 @@ class TrackSelectionHelper {
     }
 
     /**
-     * Actually build {@link TracksInfo} object, based on the loaded manifest into Exoplayer.
+     * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
      */
-    private TracksInfo buildTracksInfo() {
+    private PKTracks buildTracksInfo() {
         TrackGroupArray trackGroupArray;
         TrackGroup trackGroup;
         Format format;
@@ -129,7 +129,7 @@ class TrackSelectionHelper {
             }
         }
 
-        return new TracksInfo(videoTracksInfo, audioTracksInfo, textTracksInfo);
+        return new PKTracks(videoTracksInfo, audioTracksInfo, textTracksInfo);
     }
 
     /**
