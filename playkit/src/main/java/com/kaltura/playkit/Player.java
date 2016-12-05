@@ -94,7 +94,7 @@ public interface Player {
 
     /**
      * Add event listener to the player.
-     * @param listener - event listener.
+     * @param listener - event listener.
      * @param events - events the subscriber interested in.
      */
     void addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
