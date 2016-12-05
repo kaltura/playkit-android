@@ -320,7 +320,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     public void resume() {
-        log.e("AD Event pause mIsAdDisplayed = " + isAdDisplayed);
+        log.d("AD Event resume mIsAdDisplayed = " + isAdDisplayed);
         if (adsManager != null) {
             if (isAdDisplayed) {
                 adsManager.resume();
@@ -330,7 +330,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     public void pause() {
-        log.e("AD Event pause mIsAdDisplayed = " + isAdDisplayed);
+        log.d("AD Event pause mIsAdDisplayed = " + isAdDisplayed);
         if (adsManager != null && isAdDisplayed) {
             adsManager.pause();
         }
