@@ -37,6 +37,8 @@ public class YouboraLibraryManager extends PluginGeneric {
     public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus) {
         super(options);
         this.messageBus = messageBus;
+        messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
+        messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
     }
 
     protected void init() {
@@ -64,10 +66,6 @@ public class YouboraLibraryManager extends PluginGeneric {
         }
         log.d(event.newState.toString());
         messageBus.post(new LogEvent(TAG + " " + event.newState.toString()));
-    }
-
-    public PKEvent.Listener getEventListener() {
-        return mEventListener;
     }
 
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {

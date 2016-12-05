@@ -8,8 +8,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
-import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.npaw.youbora.youboralib.data.Options;
 
 import java.util.Map;
@@ -23,11 +21,14 @@ public class YouboraPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("YouboraPlugin");
 
     private static YouboraLibraryManager pluginManager;
+    private static YouboraAdManager adsManager;
+
     private PlayerConfig.Media mediaConfig;
     private JsonObject pluginConfig;
     private Context context;
     private Player player;
     private MessageBus messageBus;
+    private boolean adAnalytics = false;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -62,12 +63,12 @@ public class YouboraPlugin extends PKPlugin {
 
     @Override
     protected void onApplicationPaused() {
-
+        stopMonitoring();
     }
 
     @Override
     protected void onApplicationResumed() {
-
+        startMonitoring(this.player);
     }
 
     @Override
@@ -84,6 +85,15 @@ public class YouboraPlugin extends PKPlugin {
         this.messageBus = messageBus;
         pluginManager = new YouboraLibraryManager(new Options(), messageBus);
         startMonitoring(this.player);
+        if (pluginConfig != null) {
+            if (pluginConfig.has("adsAnalytics")) {
+                adAnalytics = pluginConfig.getAsJsonPrimitive("adsAnalytics").getAsBoolean();
+            }
+        }
+        if (adAnalytics){
+            adsManager = new YouboraAdManager(pluginManager, messageBus);
+            adsManager.startMonitoring(this.player);
+        }
         log.d("onLoad");
     }
 
@@ -93,12 +103,16 @@ public class YouboraPlugin extends PKPlugin {
         // Set options
         pluginManager.setOptions(opt);
         pluginManager.startMonitoring(player);
-        messageBus.listen(pluginManager.getEventListener(), (Enum[]) PlayerEvent.Type.values());
-        messageBus.listen(pluginManager.getEventListener(), (Enum[]) AdEvent.Type.values());
+        if (adsManager != null){
+            adsManager.startMonitoring(player);
+        }
     }
 
     private void stopMonitoring() {
         log.d("stop monitoring");
         pluginManager.stopMonitoring();
+        if (adsManager != null){
+            adsManager.stopMonitoring();
+        }
     }
 }

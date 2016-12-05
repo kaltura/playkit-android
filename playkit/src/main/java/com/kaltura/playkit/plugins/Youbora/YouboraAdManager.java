@@ -1,0 +1,137 @@
+package com.kaltura.playkit.plugins.Youbora;
+
+import com.kaltura.playkit.LogEvent;
+import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.plugins.ads.AdEvent;
+import com.npaw.youbora.adnalyzers.AdnalyzerGeneric;
+import com.npaw.youbora.plugins.PluginGeneric;
+
+/**
+ * Created by zivilan on 05/12/2016.
+ */
+
+public class YouboraAdManager extends AdnalyzerGeneric {
+    private static final PKLog log = PKLog.get("YouboraAdManager");
+    private static final String TAG = "YouboraAdManager";
+
+    private boolean isBuffering = false;
+    private MessageBus messageBus;
+    private double adBitrate = -1;
+
+    public YouboraAdManager(PluginGeneric plugin, MessageBus messageBus) {
+        super(plugin);
+        this.messageBus = messageBus;
+        this.messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED);
+        this.messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
+
+    }
+
+    private void onEvent(PlayerEvent.StateChanged event) {
+        log.d(event.newState.toString());
+        switch (event.newState) {
+            case READY:
+                if (isBuffering) {
+                    isBuffering = false;
+                    bufferedAdHandler();
+                }
+                break;
+            case BUFFERING:
+                isBuffering = true;
+                bufferingAdHandler();
+                break;
+            default:
+                break;
+        }
+        log.d(event.newState.toString());
+        messageBus.post(new LogEvent(TAG + " " + event.newState.toString()));
+    }
+
+    private PKEvent.Listener mEventListener = new PKEvent.Listener() {
+        @Override
+        public void onEvent(PKEvent event) {
+            if (event instanceof AdEvent) {
+                log.d(((AdEvent) event).type.toString());
+                switch (((AdEvent) event).type) {
+                    case STARTED:
+                        joinAdHandler();
+                        break;
+                    case PAUSED:
+                        pauseAdHandler();
+                        break;
+                    case RESUMED:
+                        resumeAdHandler();
+                        break;
+                    case COMPLETED:
+                        endedAdHandler();
+                        break;
+                    case FIRST_QUARTILE:
+
+                        break;
+                    case MIDPOINT:
+
+                        break;
+                    case THIRD_QUARTILE:
+                        break;
+                    case SKIPPED:
+                        skipAdHandler();
+                        break;
+                    case CLICKED:
+                        break;
+                    case TAPPED:
+                        break;
+                    case ICON_TAPPED:
+                        break;
+                    case AD_BREAK_READY:
+                        break;
+                    case AD_PROGRESS:
+                        break;
+                    case AD_BREAK_STARTED:
+                        break;
+                    case AD_BREAK_ENDED:
+                        break;
+                    case CUEPOINTS_CHANGED:
+                        break;
+                    case LOADED:
+                        playAdHandler();
+                        break;
+                    case CONTENT_PAUSE_REQUESTED:
+                        break;
+                    case CONTENT_RESUME_REQUESTED:
+                        break;
+                    case ALL_ADS_COMPLETED:
+                        break;
+                }
+                log.d(event.eventType().name());
+                messageBus.post(new LogEvent(TAG + " " + ((AdEvent) event).type.toString()));
+            } else if (event instanceof PlayerEvent) {
+                switch (((PlayerEvent) event).type) {
+                    case STATE_CHANGED:
+                        YouboraAdManager.this.onEvent((PlayerEvent.StateChanged) event);
+                }
+            }
+        }
+    };
+
+
+    public void startMonitoring(Object player) {
+        log.d("startMonitoring");
+        super.startMonitoring(player);
+    }
+
+    public void stopMonitoring() {
+        log.d("stopMonitoring");
+        super.stopMonitoring();
+    }
+
+    public void setAdBitrate(Double bitrate) {
+        this.adBitrate = bitrate;
+    }
+
+    public Double getAdBitrate() {
+        return this.adBitrate;
+    }
+
+}
