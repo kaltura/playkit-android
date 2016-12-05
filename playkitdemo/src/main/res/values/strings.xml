@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PlayKit</string>
+    <string name="app_name">PlayKitSdkDemo</string>
     <string name="title_activity_login">Sign in</string>
 
     <!-- Strings related to login -->
