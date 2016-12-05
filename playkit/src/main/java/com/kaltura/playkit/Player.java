@@ -70,7 +70,5 @@ public interface Player {
 
     void changeTrack(String uniqueId);
 
-    long getCurrentVideoBitrate();
-
 }
 

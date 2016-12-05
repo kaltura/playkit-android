@@ -511,14 +511,6 @@ public class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, 
     }
 
     @Override
-    public long getCurrentVideoBitrate() {
-        if (player.getVideoFormat() != null) {
-            return player.getVideoFormat().bitrate;
-        }
-        return -1;
-    }
-
-    @Override
     public void replay() {
         isSeeking = false;
         player.seekTo(0);

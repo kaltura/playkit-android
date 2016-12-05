@@ -2,12 +2,8 @@ package com.kaltura.playkitdemo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -198,15 +194,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void populateSpinnersWithTrackInfo(TracksInfo tracksInfo) {
 
         //Retrieve info that describes available tracks.(video/audio/subtitle).
-        TrackItem[] videoTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_VIDEO, tracksInfo.getVideoTrackInfo());
+        TrackItem[] videoTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_VIDEO, tracksInfo.getVideoTracksInfo());
         //populate spinner with this info.
         applyAdapterOnSpinner(videoSpinner, videoTrackItems);
 
-        TrackItem[] audioTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_AUDIO, tracksInfo.getAudioTrackInfo());
+        TrackItem[] audioTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_AUDIO, tracksInfo.getAudioTracksInfo());
         applyAdapterOnSpinner(audioSpinner, audioTrackItems);
 
 
-        TrackItem[] subtitlesTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_TEXT, tracksInfo.getTextTrackInfo());
+        TrackItem[] subtitlesTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_TEXT, tracksInfo.getTextTracksInfo());
         applyAdapterOnSpinner(textSpinner, subtitlesTrackItems);
     }
 

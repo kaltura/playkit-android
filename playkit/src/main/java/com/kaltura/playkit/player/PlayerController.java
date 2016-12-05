@@ -231,9 +231,4 @@ public class PlayerController implements Player {
     public void changeTrack(String uniqueId) {
         player.changeTrack(uniqueId);
     }
-
-    @Override
-    public long getCurrentVideoBitrate() {
-        return player.getCurrentVideoBitrate();
-    }
 }

@@ -82,8 +82,8 @@ public class PlayerEvent implements PKEvent {
         SEEKING,   //  Sent when a seek operation begins.
         FIRST_PLAY, // Sent when the playback of the media started to play for the first time.
         TRACKS_AVAILABLE, // Sent when track info is available.
-        REPLAY,
-        VOLUME_CHANGED// Sent when replay button is pressed.
+        REPLAY, //Sent when replay happened.
+        VOLUME_CHANGED // Sent when volume is changed.
     }
 
     @Override

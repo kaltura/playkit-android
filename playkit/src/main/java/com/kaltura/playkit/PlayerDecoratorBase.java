@@ -102,11 +102,6 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public long getCurrentVideoBitrate() {
-        return player.getCurrentVideoBitrate();
-    }
-
-    @Override
     public void onApplicationPaused() {
         player.onApplicationPaused();
     }

@@ -1,6 +1,7 @@
 package com.kaltura.playkit;
 
 /**
+ * Audio track data holder.
  * Created by anton.afanasiev on 17/11/2016.
  */
 public class AudioTrackInfo extends BaseTrackInfo{
@@ -14,10 +15,18 @@ public class AudioTrackInfo extends BaseTrackInfo{
         this.bitrate = bitrate;
     }
 
+    /**
+     * Getter for the track language.
+     * @return - the language of the track.
+     */
     public String getLanguage() {
         return language;
     }
 
+    /**
+     * Getter for the track bitrate.
+     * @return - the bitrate of the track.
+     */
     public long getBitrate() {
         return bitrate;
     }
