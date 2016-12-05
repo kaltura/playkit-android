@@ -83,7 +83,7 @@ public class YouboraPlugin extends PKPlugin {
         this.pluginConfig = pluginConfig;
         this.context = context;
         this.messageBus = messageBus;
-        pluginManager = new YouboraLibraryManager(new Options(), messageBus);
+        pluginManager = new YouboraLibraryManager(new Options(), messageBus, mediaConfig);
         startMonitoring(this.player);
         if (pluginConfig != null) {
             if (pluginConfig.has("adsAnalytics")) {
