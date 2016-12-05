@@ -41,6 +41,14 @@
             />
     </LinearLayout>
 
+
+    <!--<Spinner-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/spinner"-->
+        <!--/>-->
+
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -72,13 +80,18 @@
         android:id="@+id/player_root"
         android:layout_width="360dp"
         android:layout_height="200dp"
-        android:orientation="horizontal"
+        android:orientation="horizontal" />
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@android:style/Widget.ProgressBar.Large"
         />
-
     <com.kaltura.playkitdemo.PlaybackControlsView
         android:id="@+id/playerControls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
 
 </LinearLayout>

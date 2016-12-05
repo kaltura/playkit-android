@@ -142,6 +142,16 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         }
     }
 
+    @Override
+    protected void onApplicationPaused() {
+
+    }
+
+    @Override
+    protected void onApplicationResumed() {
+
+    }
+
     public void onEvent(PlayerEvent.StateChanged event) {
         switch (event.newState) {
             case IDLE:

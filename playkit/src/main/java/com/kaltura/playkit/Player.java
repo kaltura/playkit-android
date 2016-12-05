@@ -6,10 +6,13 @@ import android.view.View;
 
 import com.kaltura.playkit.utils.Consts;
 
+import com.kaltura.playkit.ads.PKAdInfo;
+
 /**
  * Created by Noam Tamim @ Kaltura on 18/09/2016.
  */
 public interface Player {
+
 
     /**
      * Prepare the player for playback.
@@ -96,6 +99,8 @@ public interface Player {
      * @return - true if player is playing, otherwise return false;
      */
     boolean isPlaying();
+
+    boolean isAutoPlay();
 
     /**
      * Add event listener to the player.

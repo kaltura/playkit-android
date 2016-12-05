@@ -3,8 +3,10 @@ package com.kaltura.playkitdemo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.View;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,12 +22,20 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.TextTrackInfo;
 import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.VideoTrackInfo;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
+import com.kaltura.playkit.plugins.SamplePlugin;
+import com.kaltura.playkit.plugins.ads.AdEvent;
+import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
+import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
+
+import java.util.ArrayList;
+import java.util.List;
 import com.kaltura.playkit.plugins.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.utils.Consts;
@@ -44,21 +54,26 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private MediaEntryProvider mediaProvider;
     private PlaybackControlsView controlsView;
     private boolean nowPlaying;
+    ProgressBar progressBar;
 
     private Spinner videoSpinner, audioSpinner, textSpinner;
 
     private void registerPlugins() {
-        PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);
+
+        PlayKitManager.registerPlugins(SamplePlugin.factory);
+        PlayKitManager.registerPlugins(IMAPlugin.factory);
+        //PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.INVISIBLE);
         registerPlugins();
 
-        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "drm1");
 
 //        mediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
 
@@ -95,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             player = PlayKitManager.loadPlayer(config, this);
 
             log.d("Player: " + player.getClass());
-            addPlayerListeners();
+            addPlayerListeners(progressBar);
 
             LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
             layout.addView(player.getView());
@@ -120,11 +135,29 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void configurePlugins(PlayerConfig.Plugins config) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("delay", 4200);
-        config.setPluginConfig("KalturaStatistics", jsonObject);
-        config.setPluginConfig("PhoenixAnalytics", jsonObject);
-        config.setPluginConfig("Youbora", jsonObject);
+        config.setPluginConfig("Sample", jsonObject);
+        addIMAPluginConfig(config);
+        //config.setPluginConfig("IMASimplePlugin", jsonObject);
+        //config.setPluginConfig("KalturaStatistics", jsonObject);
+        //config.setPluginConfig("PhoenixAnalytics", jsonObject);
+        //config.setPluginConfig("Youbora", jsonObject);
+
     }
 
+    private void addIMAPluginConfig(PlayerConfig.Plugins config) {
+        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
+        //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
+
+        List<String> videoMimeTypes = new ArrayList<>();
+        //videoMimeTypes.add(MimeTypes.APPLICATION_MP4);
+        //videoMimeTypes.add(MimeTypes.APPLICATION_M3U8);
+        //Map<Double, String> tagTimesMap = new HashMap<>();
+        //tagTimesMap.put(2.0,"GILAD");
+
+        IMAConfig adsConfig = new IMAConfig("en", false, true, 60000, videoMimeTypes, adTagUrl,false, false);
+        config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
+
+    }
     @Override
     protected void onPause() {
         super.onPause();
@@ -132,7 +165,37 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         player.onApplicationPaused();
     }
 
-    private void addPlayerListeners() {
+    private void addPlayerListeners(final ProgressBar appProgressBar) {
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                log.d("AD_CONTENT_PAUSE_REQUESTED");
+                PKAdInfo adInfo = player.getAdInfo();
+                appProgressBar.setVisibility(View.VISIBLE);
+            }
+        }, AdEvent.Type.CONTENT_PAUSE_REQUESTED);
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                log.d("AD_STARTED");
+                appProgressBar.setVisibility(View.INVISIBLE);
+            }
+        }, AdEvent.Type.STARTED);
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                log.d("Ad Event AD_RESUMED");
+                nowPlaying = true;
+                appProgressBar.setVisibility(View.INVISIBLE);
+            }
+        }, AdEvent.Type.RESUMED);
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                log.d("Ad Event AD_ALL_ADS_COMPLETED");
+                appProgressBar.setVisibility(View.INVISIBLE);
+            }
+        }, AdEvent.Type.ALL_ADS_COMPLETED);
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
@@ -147,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         }, PlayerEvent.Type.PAUSE);
 
-        player.addEventListener(new PKEvent.Listener() {
+        player.addStateChangeListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
                 if (event instanceof PlayerEvent.StateChanged) {
@@ -174,6 +237,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     protected void onResume() {
+        log.d("Ad Event onResume");
         super.onResume();
         if (player != null) {
             player.onApplicationResumed();
@@ -214,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      *
      * @param trackType  - tyoe of the track you are interested in.
      * @param trackInfos - all availables tracks.
-     * @return 
+     * @return
      */
     private TrackItem[] obtainRelevantTrackInfo(int trackType, List<BaseTrackInfo> trackInfos) {
         TrackItem[] trackItems = new TrackItem[trackInfos.size()];

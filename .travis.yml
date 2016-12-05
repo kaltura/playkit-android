@@ -5,6 +5,8 @@ android:
   components:
   - tools
   - platform-tools
+  - extra-android-m2repository
+  - extra-google-m2repository
 cache:
   directories:
     - $HOME/.gradle/caches/
@@ -15,7 +17,7 @@ before_script:
   - mkdir -p $ANDROID_HOME/licenses
   - echo $android_sdk_license > $ANDROID_HOME/licenses/android-sdk-license
 script:
-  - ./gradlew build
+  - ./gradlew assembleDebug
 after_failure:
   - cat playkit/build/outputs/lint-results-debug.xml
   - cat playkitdemo/build/outputs/lint-results-debug.xml
@@ -23,5 +25,6 @@ notifications:
   email:
     recipients:
       - noam.tamim@kaltura.com
+      - gilad.nadav@kaltura.com
     on_success: always
     on_failure: always
