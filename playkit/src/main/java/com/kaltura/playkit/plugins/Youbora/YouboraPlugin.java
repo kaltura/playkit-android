@@ -90,9 +90,10 @@ public class YouboraPlugin extends PKPlugin {
                 adAnalytics = pluginConfig.getAsJsonPrimitive("adsAnalytics").getAsBoolean();
             }
         }
-        if (adAnalytics){
+        if (adsManager != null){
             adsManager = new YouboraAdManager(pluginManager, messageBus);
             adsManager.startMonitoring(this.player);
+            pluginManager.setAdnalyzer(adsManager);
         }
         log.d("onLoad");
     }

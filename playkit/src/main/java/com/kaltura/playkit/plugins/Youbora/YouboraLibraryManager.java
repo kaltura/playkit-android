@@ -4,6 +4,7 @@ import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.backend.ovp.OvpConfigs;
 import com.kaltura.playkit.plugins.ads.AdEvent;
@@ -28,15 +29,17 @@ public class YouboraLibraryManager extends PluginGeneric {
     private boolean isFirstPlay = true;
     private boolean isBuffering = false;
     private MessageBus messageBus;
+    private PlayerConfig.Media mediaConfig;
 
     public YouboraLibraryManager(String options) throws JSONException {
         super(options);
 
     }
 
-    public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus) {
+    public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus, PlayerConfig.Media mediaConfig) {
         super(options);
         this.messageBus = messageBus;
+        this.mediaConfig = mediaConfig;
         messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
         messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
     }
@@ -160,4 +163,19 @@ public class YouboraLibraryManager extends PluginGeneric {
         return this.lastReportedthroughput;
     }
 
+    public Double getMediaDuration() {
+        return Long.valueOf(mediaConfig.getMediaEntry().getDuration()).doubleValue();
+    }
+
+    public String getRendition() {
+        return null;
+    }
+
+    public String getPlayerVersion() {
+        return OvpConfigs.ClientTag;
+    }
+
+    public String getResource() {
+        return "unknown";
+    }
 }
