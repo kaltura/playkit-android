@@ -134,9 +134,10 @@ class TrackSelectionHelper {
 
     /**
      * If such an option exist, this method creates an adaptive object for the specified renderer.
+     *
      * @param rendererIndex - the index of the renderer that this adaptive object refer.
-     * @param groupIndex - the index of the group this adaptive object refer.
-     * @param format - the actual format of the adaptive object.
+     * @param groupIndex    - the index of the group this adaptive object refer.
+     * @param format        - the actual format of the adaptive object.
      */
     private void maybeAddAdaptiveTrack(int rendererIndex, int groupIndex, Format format) {
         String uniqueId = getUniqueId(rendererIndex, groupIndex, TRACK_ADAPTIVE);
@@ -157,14 +158,15 @@ class TrackSelectionHelper {
 
     /**
      * Build uniqueId based on the track indexes.
+     *
      * @param rendererIndex - renderer index of the current track.
-     * @param groupIndex - group index of the current track.
-     * @param trackIndex - actual track index.
+     * @param groupIndex    - group index of the current track.
+     * @param trackIndex    - actual track index.
      * @return - uniqueId that represent current track.
      */
     private String getUniqueId(int rendererIndex, int groupIndex, int trackIndex) {
         String rendererPrefix = "";
-        switch (rendererIndex){
+        switch (rendererIndex) {
             case Consts.TRACK_TYPE_VIDEO:
                 rendererPrefix = VIDEO_PREFIX;
                 break;
@@ -180,9 +182,9 @@ class TrackSelectionHelper {
         uniqueStringBuilder.append(",");
         uniqueStringBuilder.append(groupIndex);
         uniqueStringBuilder.append(",");
-        if(trackIndex == TRACK_ADAPTIVE){
+        if (trackIndex == TRACK_ADAPTIVE) {
             uniqueStringBuilder.append(ADAPTIVE_SUFFIX);
-        }else{
+        } else {
             uniqueStringBuilder.append(trackIndex);
         }
         return uniqueStringBuilder.toString();
@@ -191,28 +193,28 @@ class TrackSelectionHelper {
     /**
      * Change currently playing track with the new one.
      * Throws {@link IllegalArgumentException} if uniqueId is null or uniqueId is not valid format.
+     *
      * @param uniqueId - unique identifier of the track to apply.
      */
 
-    void changeTrack(String uniqueId) throws IllegalArgumentException{
-        if(uniqueId != null){
-            if(isUniqueIdValid(uniqueId)){
-
-                log.i("change track to uniqueID -> " + uniqueId);
-                mappedTrackInfo = selector.getCurrentSelections().info;
-                int[] uniqueTrackId = parseUniqueId(uniqueId);
-                int rendererIndex = uniqueTrackId[RENDERER_INDEX];
-
-                SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
-                overrideTrack(rendererIndex, override);
-            }else {
-                throw new IllegalArgumentException("The uniqueId is not valid");
-            }
-        }else{
+    void changeTrack(String uniqueId) throws IllegalArgumentException {
+        if (uniqueId == null) {
             throw new IllegalArgumentException("uniqueId is null");
         }
-    }
+        if (!isUniqueIdValid(uniqueId)) {
+            throw new IllegalArgumentException("The uniqueId is not valid");
+        }
 
+
+        log.i("change track to uniqueID -> " + uniqueId);
+        mappedTrackInfo = selector.getCurrentSelections().info;
+        int[] uniqueTrackId = parseUniqueId(uniqueId);
+        int rendererIndex = uniqueTrackId[RENDERER_INDEX];
+
+        SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
+        overrideTrack(rendererIndex, override);
+
+    }
 
 
     /**
@@ -225,9 +227,9 @@ class TrackSelectionHelper {
         String[] strArray = splitUniqueId.split(",");
 
         for (int i = 0; i < strArray.length; i++) {
-            if(strArray[i].equals(ADAPTIVE_SUFFIX)){
+            if (strArray[i].equals(ADAPTIVE_SUFFIX)) {
                 parsedUniqueId[i] = TRACK_ADAPTIVE;
-            }else {
+            } else {
                 parsedUniqueId[i] = Integer.parseInt(strArray[i]);
             }
         }
@@ -238,6 +240,7 @@ class TrackSelectionHelper {
      * Build the the {@link SelectionOverride} object, based on the uniqueId. This {@link SelectionOverride}
      * will be feeded later to the Exoplayer in order to switch to the new track.
      * This method decide if it should create adaptive override or fixed.
+     *
      * @param uniqueId - the unique id of the track that will override the existing one.
      * @return - the {@link SelectionOverride} which will override the existing selection.
      */
@@ -291,8 +294,9 @@ class TrackSelectionHelper {
 
     /**
      * Actually doing the override acrion on the track.
+     *
      * @param rendererIndex - renderer index on which we want to apply the change.
-     * @param override - the new selection with which we want to override the currently active track.
+     * @param override      - the new selection with which we want to override the currently active track.
      */
     private void overrideTrack(int rendererIndex, SelectionOverride override) {
         //if renderer is disabled we will hide it.
@@ -310,14 +314,15 @@ class TrackSelectionHelper {
 
     /**
      * Checks if adaptive track for the specified group was created.
-     * @param uniqueId - unique id.
+     *
+     * @param uniqueId      - unique id.
      * @param rendererIndex - renderer index.
      * @return - true, if adaptive {@link BaseTrackInfo} object already exist for this group.
      */
     private boolean adaptiveTrackInfoAlreadyExist(String uniqueId, int rendererIndex) {
 
         List<BaseTrackInfo> trackInfoList = new ArrayList<>();
-        switch (rendererIndex){
+        switch (rendererIndex) {
             case Consts.TRACK_TYPE_VIDEO:
                 trackInfoList = videoTracksInfo;
                 break;
@@ -329,8 +334,8 @@ class TrackSelectionHelper {
                 break;
         }
 
-        for(BaseTrackInfo trackInfo : trackInfoList){
-            if(trackInfo.getUniqueId().equals(uniqueId)){
+        for (BaseTrackInfo trackInfo : trackInfoList) {
+            if (trackInfo.getUniqueId().equals(uniqueId)) {
                 return true;
             }
         }
@@ -340,7 +345,7 @@ class TrackSelectionHelper {
     private int getIndexFromUniqueId(String uniqueId, int groupIndex) {
         String uniqueIdWithoutPrefix = removePrefix(uniqueId);
         String[] strArray = uniqueIdWithoutPrefix.split(",");
-        if(strArray[groupIndex].equals(ADAPTIVE_SUFFIX)){
+        if (strArray[groupIndex].equals(ADAPTIVE_SUFFIX)) {
             return -1;
         }
 
@@ -377,10 +382,10 @@ class TrackSelectionHelper {
     }
 
     private boolean isUniqueIdValid(String uniqueId) {
-        if(uniqueId.contains(VIDEO_PREFIX)
+        if (uniqueId.contains(VIDEO_PREFIX)
                 || uniqueId.contains(AUDIO_PREFIX)
                 || uniqueId.contains(TEXT_PREFIX)
-                && uniqueId.contains(",")){
+                && uniqueId.contains(",")) {
             return true;
         }
         log.e("Unique id is not valid => " + uniqueId);
