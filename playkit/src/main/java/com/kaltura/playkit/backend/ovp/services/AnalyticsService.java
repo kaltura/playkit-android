@@ -18,17 +18,18 @@ public class AnalyticsService {
     private static final PKLog log = PKLog.get("AnalyticsService");
 
     public static RequestBuilder sendAnalyticsEvent(String baseUrl, int partnerId, int eventType, String clientVer, String playbackType, String sessionId, long position
-                                                , int uiConfId, String entryId, int eventIdx, int flavourId, int bufferTime, int actualBitrate) {
+                                                , int uiConfId, String entryId, int eventIdx, int flavourId, int bufferTime, int actualBitrate, String deliveryType) {
         return new RequestBuilder()
                 .method("GET")
-                .url(getAnalyticsUrl(baseUrl, partnerId, eventType, clientVer, playbackType, sessionId, position, uiConfId, entryId, eventIdx, flavourId, bufferTime, actualBitrate))
+                .url(getAnalyticsUrl(baseUrl, partnerId, eventType, clientVer, playbackType, sessionId, position, uiConfId, entryId, eventIdx, flavourId, bufferTime,
+                        actualBitrate, deliveryType))
                 .tag("stats-send");
     }
 
-    private static String getAnalyticsUrl(String baseUrl, int deliveryType, int eventType, String clientVer, String playbackType, String sessionId, long position,
-                                           int uiConfId, String entryId, int eventIdx, int flavourId, int bufferTime, int actualBitrate) {
+    private static String getAnalyticsUrl(String baseUrl, int partnerId, int eventType, String clientVer, String playbackType, String sessionId, long position,
+                                           int uiConfId, String entryId, int eventIdx, int flavourId, int bufferTime, int actualBitrate, String deliveryType) {
         Uri.Builder builder = new Uri.Builder();
-        builder.scheme("https")
+        builder.scheme("http")
                 .authority(baseUrl)
                 .path("/api_v3/index.php")
                 .appendQueryParameter("service", "analytics")
@@ -38,19 +39,20 @@ public class AnalyticsService {
                 .appendQueryParameter("format", "1")
                 .appendQueryParameter("ignoreNull", "1")
                 .appendQueryParameter("action", "trackEvent")
-                .appendQueryParameter("eventType", Integer.toString(eventType))
-                .appendQueryParameter("position", Long.toString(position))
-                .appendQueryParameter("deliveryType", Integer.toString(deliveryType))
-                .appendQueryParameter("playbackType", playbackType)
-                .appendQueryParameter("sessionStartTime", Long.toString(new Date().getTime()))
-                .appendQueryParameter("eventIndex", Integer.toString(eventIdx))
-                .appendQueryParameter("clientVer", clientVer)
-                .appendQueryParameter("flavourId", Integer.toString(flavourId))
-                .appendQueryParameter("sessionId", sessionId)
-                .appendQueryParameter("uiconfId", Integer.toString(uiConfId))
-                .appendQueryParameter("bufferTime", Integer.toString(bufferTime))
                 .appendQueryParameter("entryId", entryId)
-                .appendQueryParameter("actualBitrate", Integer.toString(actualBitrate));
+                .appendQueryParameter("partnerId", Integer.toString(partnerId))
+                .appendQueryParameter("eventType", Integer.toString(eventType))
+                .appendQueryParameter("sessionId", sessionId)
+                .appendQueryParameter("eventIndex", Integer.toString(eventIdx))
+                .appendQueryParameter("bufferTime", Integer.toString(bufferTime))
+                .appendQueryParameter("actualBitrate", Integer.toString(actualBitrate))
+                .appendQueryParameter("flavourId", Integer.toString(flavourId))
+                .appendQueryParameter("deliveryType", deliveryType)
+                .appendQueryParameter("sessionStartTime", Long.toString(new Date().getTime()))
+                .appendQueryParameter("uiconfId", Integer.toString(uiConfId))
+                .appendQueryParameter("clientVer", clientVer)
+                .appendQueryParameter("position", Long.toString(position))
+                .appendQueryParameter("playbackType", playbackType);
 
         try {
             URL url = new URL(URLDecoder.decode(builder.build().toString(), "UTF-8"));

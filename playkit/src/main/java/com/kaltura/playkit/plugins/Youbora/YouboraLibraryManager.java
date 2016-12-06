@@ -4,8 +4,10 @@ import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.backend.ovp.OvpConfigs;
+import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.managers.ViewManager;
 
@@ -27,15 +29,19 @@ public class YouboraLibraryManager extends PluginGeneric {
     private boolean isFirstPlay = true;
     private boolean isBuffering = false;
     private MessageBus messageBus;
+    private PlayerConfig.Media mediaConfig;
 
     public YouboraLibraryManager(String options) throws JSONException {
         super(options);
 
     }
 
-    public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus) {
+    public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus, PlayerConfig.Media mediaConfig) {
         super(options);
         this.messageBus = messageBus;
+        this.mediaConfig = mediaConfig;
+        messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
+        messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
     }
 
     protected void init() {
@@ -45,15 +51,9 @@ public class YouboraLibraryManager extends PluginGeneric {
         ViewManager.setMonitoringInterval(MONITORING_INTERVAL);
     }
 
-    public void onEvent(PlayerEvent.StateChanged event) {
+    private void onEvent(PlayerEvent.StateChanged event) {
         log.d(event.newState.toString());
         switch (event.newState) {
-            case IDLE:
-
-                break;
-            case LOADING:
-
-                break;
             case READY:
                 if (isBuffering) {
                     isBuffering = false;
@@ -64,13 +64,11 @@ public class YouboraLibraryManager extends PluginGeneric {
                 isBuffering = true;
                 bufferingHandler();
                 break;
+            default:
+                break;
         }
         log.d(event.newState.toString());
         messageBus.post(new LogEvent(TAG + " " + event.newState.toString()));
-    }
-
-    public PKEvent.Listener getEventListener() {
-        return mEventListener;
     }
 
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
@@ -82,16 +80,11 @@ public class YouboraLibraryManager extends PluginGeneric {
                     case STATE_CHANGED:
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
-                    case CAN_PLAY:
-                        break;
                     case ENDED:
                         endedHandler();
                         break;
                     case ERROR:
                         errorHandler(event.eventType().toString());
-                        break;
-                    case LOADED_METADATA:
-
                         break;
                     case PAUSE:
                         pauseHandler();
@@ -120,10 +113,28 @@ public class YouboraLibraryManager extends PluginGeneric {
                 if (((PlayerEvent) event).type != PlayerEvent.Type.STATE_CHANGED){
                     messageBus.post(new LogEvent(TAG + " " + ((PlayerEvent) event).type.toString()));
                 }
+            } else if (event instanceof AdEvent){
+
             }
         }
     };
 
+    public void onEvent(AdEvent event) {
+        log.d(event.type.toString());
+        switch (event.type) {
+            case STARTED:
+                ignoringAdHandler();
+                break;
+            case SKIPPED:
+            case COMPLETED:
+                ignoredAdHandler();
+                break;
+            default:
+                break;
+        }
+        log.d(event.type.toString());
+        messageBus.post(new LogEvent(TAG + " " + event.type.toString()));
+    }
     public void startMonitoring(Object player) {
         log.d("startMonitoring");
         super.startMonitoring(player);
@@ -152,4 +163,19 @@ public class YouboraLibraryManager extends PluginGeneric {
         return this.lastReportedthroughput;
     }
 
+    public Double getMediaDuration() {
+        return Long.valueOf(mediaConfig.getMediaEntry().getDuration()).doubleValue();
+    }
+
+    public String getRendition() {
+        return null;
+    }
+
+    public String getPlayerVersion() {
+        return OvpConfigs.ClientTag;
+    }
+
+    public String getResource() {
+        return "unknown";
+    }
 }

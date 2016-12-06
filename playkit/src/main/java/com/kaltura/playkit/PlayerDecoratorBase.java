@@ -4,6 +4,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
 
+import com.kaltura.playkit.ads.PKAdInfo;
+
 public class PlayerDecoratorBase implements Player {
     
     @Override
@@ -34,6 +36,21 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public void pause() {
         player.pause();
+    }
+
+    @Override
+    public void replay() {
+        player.replay();
+    }
+
+    @Override
+    public void setVolume(float volume) {
+        player.setVolume(volume);
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return player.isPlaying();
     }
 
     @Override
@@ -84,6 +101,16 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public void onApplicationResumed() {
         player.onApplicationResumed();
+    }
+
+    @Override
+    public boolean isAutoPlay() {
+        return player.isAutoPlay();
+    }
+
+    @Override
+    public void changeTrack(String uniqueId) {
+        player.changeTrack(uniqueId);
     }
 
     @Override

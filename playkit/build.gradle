@@ -30,6 +30,9 @@ android {
 dependencies {
     compile 'com.google.android.exoplayer:exoplayer:r2.0.4'
     compile 'com.google.code.gson:gson:2.7'
+    compile 'com.google.ads.interactivemedia.v3:interactivemedia:3.5.2'
+    compile 'com.google.android.gms:play-services-ads:10.0.1'
+
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
     compile files('lib/YouboraLib-5.3.0.jar')
     compile 'junit:junit:4.12'

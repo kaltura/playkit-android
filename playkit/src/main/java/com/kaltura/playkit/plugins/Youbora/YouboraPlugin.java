@@ -8,7 +8,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
-import com.kaltura.playkit.PlayerEvent;
 import com.npaw.youbora.youboralib.data.Options;
 
 import java.util.Map;
@@ -21,12 +20,15 @@ public class YouboraPlugin extends PKPlugin {
     private static final String TAG = "YouboraPlugin";
     private static final PKLog log = PKLog.get("YouboraPlugin");
 
-    private static YouboraLibraryManager mPluginManager;
-    private PlayerConfig.Media mMediaConfig;
-    private JsonObject mPluginConfig;
-    private Context mContext;
-    private Player mPlayer;
-    private MessageBus mMessageBus;
+    private static YouboraLibraryManager pluginManager;
+    private static YouboraAdManager adsManager;
+
+    private PlayerConfig.Media mediaConfig;
+    private JsonObject pluginConfig;
+    private Context context;
+    private Player player;
+    private MessageBus messageBus;
+    private boolean adAnalytics = false;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -43,20 +45,30 @@ public class YouboraPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
-        mMediaConfig = mediaConfig;
-        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(mPluginConfig, mMediaConfig);
+        this.mediaConfig = mediaConfig;
+        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, this.mediaConfig);
         // Refresh options with updated media
-        mPluginManager.setOptions(opt);
+        pluginManager.setOptions(opt);
     }
 
     @Override
     protected void onUpdateConfig(String key, Object value) {
-        if (mPluginConfig.has(key)){
-            mPluginConfig.addProperty(key, value.toString());
+        if (pluginConfig.has(key)){
+            pluginConfig.addProperty(key, value.toString());
         }
-        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(mPluginConfig, mMediaConfig);
+        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig);
         // Refresh options with updated media
-        mPluginManager.setOptions(opt);
+        pluginManager.setOptions(opt);
+    }
+
+    @Override
+    protected void onApplicationPaused() {
+        stopMonitoring();
+    }
+
+    @Override
+    protected void onApplicationResumed() {
+        startMonitoring(this.player);
     }
 
     @Override
@@ -66,27 +78,42 @@ public class YouboraPlugin extends PKPlugin {
 
     @Override
     protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
-        this.mMediaConfig = mediaConfig;
-        this.mPlayer = player;
-        this.mPluginConfig = pluginConfig;
-        this.mContext = context;
-        this.mMessageBus = messageBus;
-        mPluginManager = new YouboraLibraryManager(new Options(), messageBus);
-        startMonitoring(mPlayer);
+        this.mediaConfig = mediaConfig;
+        this.player = player;
+        this.pluginConfig = pluginConfig;
+        this.context = context;
+        this.messageBus = messageBus;
+        pluginManager = new YouboraLibraryManager(new Options(), messageBus, mediaConfig);
+        startMonitoring(this.player);
+        if (pluginConfig != null) {
+            if (pluginConfig.has("adsAnalytics")) {
+                adAnalytics = pluginConfig.getAsJsonPrimitive("adsAnalytics").getAsBoolean();
+            }
+        }
+        if (adsManager != null){
+            adsManager = new YouboraAdManager(pluginManager, messageBus);
+            adsManager.startMonitoring(this.player);
+            pluginManager.setAdnalyzer(adsManager);
+        }
         log.d("onLoad");
     }
 
     private void startMonitoring(Player player) {
         log.d("start monitoring");
-        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(mPluginConfig, mMediaConfig);
+        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig);
         // Set options
-        mPluginManager.setOptions(opt);
-        mPluginManager.startMonitoring(player);
-        mMessageBus.listen(mPluginManager.getEventListener(), (Enum[]) PlayerEvent.Type.values());
+        pluginManager.setOptions(opt);
+        pluginManager.startMonitoring(player);
+        if (adsManager != null){
+            adsManager.startMonitoring(player);
+        }
     }
 
     private void stopMonitoring() {
         log.d("stop monitoring");
-        mPluginManager.stopMonitoring();
+        pluginManager.stopMonitoring();
+        if (adsManager != null){
+            adsManager.stopMonitoring();
+        }
     }
 }
