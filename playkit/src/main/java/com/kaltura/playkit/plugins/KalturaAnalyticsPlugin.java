@@ -38,19 +38,9 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         PLAY_50PERCENT(12),
         PLAY_75PERCENT(13),
         PLAY_100PERCENT(14),
-        SHARE_CLICKED(21),
-        SHARE_NETWORK(22),
-        DOWNLOAD(23),
-        REPORT_CLICKED(24),
-        REPORT_SUBMITED(25),
-        ENTER_FULLSCREEN(31),
-        EXIT_FULLSCREEN(32),
         PAUSE(33),
         REPLAY(34),
         SEEK(35),
-        RELATED_CLICKED(36),
-        RELATED_SELECTED(37),
-        CAPTIONS(38),
         SOURCE_SELECTED(39),
         INFO(40),
         SPEED(41),
@@ -90,14 +80,6 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
 
     private static final int TimerInterval = 10000;
 
-    private void setExamplePluginConfig() {
-        pluginConfig = new JsonObject();
-        pluginConfig.addProperty("clientVer", "2.5");
-        pluginConfig.addProperty("sessionId", "b3460681-b994-6fad-cd8b-f0b65736e837");
-        pluginConfig.addProperty("uiconfId", 24997472);
-        pluginConfig.addProperty("IsFriendlyIframe","" );
-    }
-
     public static final Factory factory = new Factory() {
         @Override
         public String getName() {
@@ -118,7 +100,6 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         this.mediaConfig = mediaConfig;
         this.pluginConfig = pluginConfig;
         this.messageBus = messageBus;
-        setExamplePluginConfig(); // Until full implementation of config object
     }
 
     @Override
@@ -252,13 +233,13 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
                     sendAnalyticsEvent(KAnalonyEvents.PLAY_25PERCENT);
                 } else if (progress >= 0.5 && !playReached50 && seekPercent < 0.5) {
                     playReached50 = true;
-                    sendAnalyticsEvent(KAnalonyEvents.PLAY_25PERCENT);
+                    sendAnalyticsEvent(KAnalonyEvents.PLAY_50PERCENT);
                 } else if (progress >= 0.75 && !playReached75 && seekPercent <= 0.75) {
                     playReached75 = true;
-                    sendAnalyticsEvent(KAnalonyEvents.PLAY_25PERCENT);
+                    sendAnalyticsEvent(KAnalonyEvents.PLAY_75PERCENT);
                 } else if (progress >= 0.98 && !playReached100 && seekPercent < 1) {
                     playReached100 = true;
-                    sendAnalyticsEvent(KAnalonyEvents.PLAY_25PERCENT);
+                    sendAnalyticsEvent(KAnalonyEvents.PLAY_100PERCENT);
                 }
             }
         }, 0, TimerInterval);
@@ -276,7 +257,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
 //        String baseUrl, int partnerId, int eventType, String clientVer, String playbackType, String sessionId, long position
 //        ,int uiConfId, String entryId, int eventIdx, int flavourId, String referrer, int bufferTime, int actualBitrate
         RequestBuilder requestBuilder = AnalyticsService.sendAnalyticsEvent(baseUrl, partnerId, eventType.getValue(), OvpConfigs.ClientTag, playbackType,
-                sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), eventIdx++, flavourId, bufferTime, currentBitrate);
+                sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), eventIdx++, flavourId, bufferTime, currentBitrate, "hls");
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
