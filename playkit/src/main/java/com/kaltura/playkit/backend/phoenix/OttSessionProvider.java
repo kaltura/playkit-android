@@ -160,7 +160,7 @@ public class OttSessionProvider extends BaseSessionProvider {
                         @Override
                         public void onComplete(ResponseElement response) {
                             if (response != null && response.isSuccess()) {
-                                PKLog.i(TAG, "endSession: logout user session success. clearing session data.");
+                                PKLog.d(TAG, "endSession: logout user session success. clearing session data.");
                             } else {
                                 PKLog.e(TAG, "endSession: session logout failed. clearing session data. " + (response.getError() != null ? response.getError().getMessage() : ""));
                             }

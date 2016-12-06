@@ -24,7 +24,7 @@ public class BaseTest {
     protected void resume(){
         if(testWaitCount != null) {
             testWaitCount.countDown();
-            PKLog.i(TAG, "count down reduced to "+testWaitCount.getCount());
+            PKLog.d(TAG, "count down reduced to "+testWaitCount.getCount());
         }
     }
 
@@ -41,7 +41,7 @@ public class BaseTest {
         testWaitCount = new CountDownLatch(count);
         try {
             testWaitCount.await();
-            PKLog.i(TAG, "count down set for "+count);
+            PKLog.d(TAG, "count down set for "+count);
 
         } catch (InterruptedException e) {
             e.printStackTrace();

@@ -168,6 +168,12 @@ public class MockMediaProvider implements MediaEntryProvider {
 
         @Override
         protected void cancel() {
+            if (currentLoad != null && !currentLoad.isDone() && !currentLoad.isCancelled()) {
+                PKLog.v(TAG, "has running load operation, canceling current load operation - " + currentLoad.toString());
+                currentLoad.cancel(true);
+            } else {
+                //for DEBUG: PKLog.v(tag, (currentLoad != null ? currentLoad.toString() : "") + ": no need to cancel operation," + (currentLoad == null ? "operation is null" : (currentLoad.isDone() ? "operation done" : "operation canceled")));
+            }
 
         }
     }

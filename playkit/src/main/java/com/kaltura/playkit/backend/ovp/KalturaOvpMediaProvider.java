@@ -40,21 +40,15 @@ import static android.text.TextUtils.isEmpty;
  * Created by tehilarozin on 30/10/2016.
  */
 
-public class KalturaOvpMediaProvider extends BEMediaProvider /*implements MediaEntryProvider*/ {
+public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     private static final String TAG = KalturaOvpMediaProvider.class.getSimpleName();
 
-    //private RequestQueue requestsExecutor;
     private String entryId;
-    //private SessionProvider sessionProvider;
     private String uiConfId;
 
     private int maxBitrate;
     private Map<String, Object> flavorsFilter;
-
-    //private final Object syncObject = new Object();
-    //private Future<Void> currentLoad;
-    //private ExecutorService exSvc;
 
 
     public KalturaOvpMediaProvider() {
@@ -89,40 +83,10 @@ public class KalturaOvpMediaProvider extends BEMediaProvider /*implements MediaE
         return this;
     }
 
-    /*@Override
-    public void load(final OnMediaLoadCompletion completion) {
-
-        ErrorElement error = validateEntry();
-        if (error != null) {
-            if (completion != null) {
-                completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
-            }
-            return;
-        }
-
-        cancel(); // cancel prev load if has any
-
-        //synchronized (syncObject) {
-        currentLoad = exSvc.submit(factorNewLoader(completion));
-        PKLog.i(TAG, "new loader started "+currentLoad.toString());
-            //currentLoad.run();
-        //}
-    }*/
-
     @Override
     protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
         return new Loader(requestsExecutor, sessionProvider, entryId, uiConfId, completion);
     }
-
-    /*@Override
-    public synchronized void cancel() {
-        if (currentLoad != null && !currentLoad.isDone() && !currentLoad.isCancelled()) {
-            PKLog.i(TAG, "has running load operation, canceling current load operation - " + currentLoad.toString());
-            currentLoad.cancel(true);
-        } else {
-            PKLog.i(TAG, (currentLoad != null ? currentLoad.toString() : "") + ": no need to cancel operation," + (currentLoad == null ? "operation is null" : (currentLoad.isDone() ? "operation done" : "operation canceled")));
-        }
-    }*/
 
     @Override
     protected ErrorElement validateParams() {
@@ -143,7 +107,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider /*implements MediaE
             this.entryId = entryId;
             this.uiConfId = uiConfId;
 
-            PKLog.i(TAG, loadId + ": construct new Loader");
+            PKLog.v(TAG, loadId + ": construct new Loader");
         }
 
         @Override
@@ -165,34 +129,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider /*implements MediaE
             requestQueue.queue(entryRequest.build());
         }
 
-        /*@Override
-        protected void load() {
-            PKLog.i(TAG, loadId + ": load: start on get ks ");
-
-            sessionProvider.getKs(new OnCompletion<String>() {
-                @Override
-                public void onComplete(String response) {
-                    ErrorElement error = validateKs(response);
-                    if (error == null) {
-                        final String ks = response;
-                        final RequestBuilder entryRequest = BaseEntryService.entryInfo(sessionProvider.baseUrl(), ks, *//*sessionProvider.partnerId(),*//* entryId)
-                                .completion(new OnRequestCompletion() {
-                                    @Override
-                                    public void onComplete(ResponseElement response) {
-                                        onEntryInfoMultiResponse(ks, response, (OnMediaLoadCompletion) completion);
-                                    }
-                                });
-                        requestsExecutor.queue(entryRequest.build());
-
-                    } else {
-                        if (completion != null) {
-                            completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
-                        }
-                    }
-                }
-            });
-
-        }*/
 
         private void onEntryInfoMultiResponse(String ks, ResponseElement response, OnMediaLoadCompletion completion) {
             ErrorElement error = null;
@@ -232,7 +168,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider /*implements MediaE
                 error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
             }
 
-            PKLog.i(TAG, loadId + ": load operation "+(isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
+            PKLog.v(TAG, loadId + ": load operation "+(isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
 
 
             if (!isCanceled() && completion != null) {
@@ -366,21 +302,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider /*implements MediaE
             sources.add(pkMediaSource);
 
         }
-
-        /*TODO: !! comment out the parse with no source and raise some error (??)
-        !! before using the context response for source creationm, check the error field on the contextrresponse (add this filed)
-         !! format mapps to extension (not bidi)
-         !! with format set the extension - in case the format is "url" use the flavor extension definition (flavor at 0)
-
-
-         TODO:add cancel option on the provider
-         in case load activated again before previous request ends - raise error.
-
-         TODO:MediaSource will have list of DrmData - not single. (instead of creating source per drm element)
-
-
-
-         */
 
         return sources;
     }

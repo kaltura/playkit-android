@@ -207,9 +207,6 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
                 loadCancelTest2(false);
 
-
-                //resume();
-
             }
         });
 
@@ -230,10 +227,10 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
             }
         });
 
-        PKLog.i("phoenix testing", "cancel load 1");
+        PKLog.d("phoenix testing", "cancel load 1");
         phoenixMediaProvider.cancel();
 
-        PKLog.i("phoenix testing", "starting load 2:");
+        PKLog.d("phoenix testing", "starting load 2:");
         phoenixMediaProvider.setAssetId(MediaId).setFormats(Format2).load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
@@ -242,7 +239,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                     assertTrue(response.getResponse().getId().equals(MediaId));
                     assertTrue(response.getResponse().getSources().size() == 1);
 
-                    PKLog.i("phoenix testing", "starting load 3");
+                    PKLog.d("phoenix testing", "starting load 3");
                     phoenixMediaProvider.load(new OnMediaLoadCompletion() {
                         @Override
                         public void onComplete(ResultElement<PKMediaEntry> response) {
@@ -250,7 +247,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                             resume();
                         }
                     });
-                    PKLog.i("phoenix testing", "cancel load 3?");
+                    PKLog.d("phoenix testing", "cancel load 3?");
                     phoenixMediaProvider.cancel();
 
                     resume(1000);
@@ -323,7 +320,6 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
             BaseResult asset = PhoenixParser.parse(jsonReader);
 
             assertNotNull(asset);
-            //assertTrue();
             mediaEntry = PhoenixMediaProvider.getMediaEntry(assetInfo, Arrays.asList(Format, Format2));
 
         } catch (IOException e) {

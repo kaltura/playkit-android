@@ -33,16 +33,11 @@ import java.util.List;
  * Created by tehilarozin on 27/10/2016.
  */
 
-public class PhoenixMediaProvider extends BEMediaProvider /*implements MediaEntryProvider*/ {
+public class PhoenixMediaProvider extends BEMediaProvider {
 
     private static final String TAG = "PhoenixMediaProvider";
 
-    /*private ExecutorService loadExecutor;
-    private RequestQueue requestsExecutor;
-    private SessionProvider sessionProvider;*/
     private MediaAsset mediaAsset;
-    /*private final Object syncObject = new Object();
-    private Future<Void> currentLoad;*/
 
 
     private class MediaAsset {
@@ -111,30 +106,6 @@ public class PhoenixMediaProvider extends BEMediaProvider /*implements MediaEntr
         return this;
     }
 
-    /**
-     * Activates the providers data fetching process.
-     * According to previously provided arguments, a request is built and passed to the remote server.
-     * Fetching flow can ended with {@link PKMediaEntry} object if succeeded or with {@link ErrorElement} if failed.
-     *
-     * @param completion - a callback for handling the result of data fetching flow.
-     */
-    /*@Override
-    public void load(final OnMediaLoadCompletion completion) {
-
-        ErrorElement error = validateAsset();
-        if (error != null) {
-            if (completion != null) {
-                completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
-            }
-            return;
-        }
-
-        //!- in case load action is in progress and new load is activated, prev request will be canceled
-        cancel();
-        currentLoad = loadExecutor.submit(factorNewLoader(completion));
-        PKLog.i(TAG, "new loader started "+currentLoad.toString());
-    }*/
-
     @NonNull
     protected BECallableLoader factorNewLoader(OnMediaLoadCompletion completion) {
         return new Loader(requestsExecutor, sessionProvider, mediaAsset, completion);
@@ -144,22 +115,6 @@ public class PhoenixMediaProvider extends BEMediaProvider /*implements MediaEntr
         return ProviderParser.getMedia(assetInfo, formats);
     }
 
-    /*@Override
-    public synchronized void cancel() {
-        if (currentLoad != null && !currentLoad.isDone() && !currentLoad.isCancelled()) {
-            PKLog.i(TAG, "has running load operation, canceling current load operation - " + currentLoad.toString());
-            currentLoad.cancel(true);
-        } else {
-            PKLog.i(TAG, (currentLoad != null ? currentLoad.toString() : "") + ": no need to cancel operation," + (currentLoad == null ? "operation is null" : (currentLoad.isDone() ? "operation done" : "operation canceled")));
-        }
-    }*/
-
-    /**
-     * Asset id is required for data fetching.
-     * Ott play must have defined format(s) in order to select the right media file to play.
-     *
-     * @return
-     */
     @Override
     protected ErrorElement validateParams() {
         String error = TextUtils.isEmpty(this.mediaAsset.assetId) ? ": Missing required parameters, assetId" :
@@ -181,7 +136,7 @@ public class PhoenixMediaProvider extends BEMediaProvider /*implements MediaEntr
 
             this.asset = mediaAsset;
 
-            PKLog.i(TAG, loadId + ": construct new Loader");
+            PKLog.v(TAG, loadId + ": construct new Loader");
         }
 
         @Override
@@ -197,7 +152,7 @@ public class PhoenixMediaProvider extends BEMediaProvider /*implements MediaEntr
             requestBuilder.completion(new OnRequestCompletion() {
                 @Override
                 public void onComplete(ResponseElement response) {
-                    PKLog.i(TAG, loadId + ": got response to [" + loadReq + "]");
+                    PKLog.v(TAG, loadId + ": got response to [" + loadReq + "]");
                     loadReq = null;
 
                     try {
@@ -211,7 +166,7 @@ public class PhoenixMediaProvider extends BEMediaProvider /*implements MediaEntr
 
             synchronized (syncObject) {
                 loadReq = requestQueue.queue(requestBuilder.build());
-                PKLog.i(TAG, loadId + ": request queued for execution [" + loadReq + "]");
+                PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
         }
 
@@ -243,7 +198,7 @@ public class PhoenixMediaProvider extends BEMediaProvider /*implements MediaEntr
 
                     //*************************
 
-                    PKLog.i(TAG, loadId + ": parsing response  [" + Loader.this.toString() + "]");
+                    PKLog.d(TAG, loadId + ": parsing response  [" + Loader.this.toString() + "]");
                     /* 3. <T> T PhoenixParser.parse(String response): parse json string to an object of dynamically parsed type.
                        type defined by the value of "objectType" property provided in the response objects, if type wasn't found or in
                        case of error object in the response, will be parsed to BaseResult object (error if occurred will be accessible from this object)*/
