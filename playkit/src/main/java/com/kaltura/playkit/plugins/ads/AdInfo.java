@@ -109,4 +109,9 @@ public class AdInfo implements PKAdInfo{
     public List<Float> getAdCuePoints() {
         return adCuePoints;
     }
+
+    @Override
+    public String toString() {
+        return "adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + contnentType;
+    }
 }

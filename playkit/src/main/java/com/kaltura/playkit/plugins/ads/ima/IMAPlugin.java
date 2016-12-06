@@ -79,7 +79,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     // AdsManager exposes methods to control ad playback and listen to ad events.
     private AdsManager adsManager;
-
+    private AdsRenderingSettings renderingSettings;
     // Whether an ad is displayed.
     private boolean isAdDisplayed;
     private boolean isAdIsPaused;
@@ -230,7 +230,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 adsManager.addAdErrorListener(IMAPlugin.this);
                 adsManager.addAdEventListener(IMAPlugin.this);
 
-                AdsRenderingSettings renderingSettings = ImaSdkFactory.getInstance().createAdsRenderingSettings();
+                renderingSettings = ImaSdkFactory.getInstance().createAdsRenderingSettings();
                 if (adConfig.getVideoMimeTypes().size() > 0) {
                     renderingSettings.setMimeTypes(adConfig.getVideoMimeTypes());
                 }
@@ -249,7 +249,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
                 if (isInitWaiting) {
                     player.getView().setVisibility(View.VISIBLE);
-                    adsManager.init();
+                    adsManager.init(renderingSettings);
                     isInitWaiting = false;
                 }
 
@@ -263,7 +263,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         isAdRequested = true;
         if(adsManager != null) {
             player.getView().setVisibility(View.VISIBLE);
-            adsManager.init();
+            adsManager.init(renderingSettings);
         } else{
             isInitWaiting = true;
         }
@@ -489,7 +489,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     private AdInfo createAdInfo(Ad ad) {
-        String adSescription      = ad.getDescription();
+        String adDescription      = ad.getDescription();
         long adDuration         = (long)ad.getDuration();
         String adTitle            = ad.getTitle();
         boolean isAdSkippable     = ad.isSkippable();
@@ -506,12 +506,15 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             adCuePoints = new ArrayList<>();
         }
 
-        return new AdInfo(adSescription, adDuration,
+        AdInfo adInfo =  new AdInfo(adDescription, adDuration,
                 adTitle, isAdSkippable,
                 contentType, adId,
                 adSystem, adHeight,
                 adWidth,
                 adCuePoints);
+
+        log.v("AdInfo: " + adInfo.toString());
+        return adInfo;
 
     }
 
@@ -589,5 +592,4 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdError(AdError.Type.UNKNOWN_ERROR, errorMessage));
         }
     }
-
 }
