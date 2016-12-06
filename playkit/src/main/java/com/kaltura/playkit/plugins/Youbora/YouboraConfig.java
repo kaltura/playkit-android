@@ -35,7 +35,6 @@ public class YouboraConfig {
     static {
 
         HashMap<String, Object> youboraConfig = new HashMap<>(20);
-
         youboraConfig.put("enableAnalytics", true);
         youboraConfig.put("parseHLS", false);
         youboraConfig.put("parseCDNNodeHost", false);
