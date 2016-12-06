@@ -72,7 +72,7 @@ public class PhoenixLicensedLinksPlugin {
             public void onComplete(ResponseElement response) {
                 String licensedLink = null;
                 ErrorElement error = null;
-                //TODO check success and call completion with results
+                //TODO check success and call loadCompletion with results
                 if(response.isSuccess()){
                     KalturaLicensedUrl licensedUrl = parseLicensedUrl(response.getResponse());
                     if(licensedUrl.error == null) {

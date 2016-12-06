@@ -205,8 +205,8 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     class Executor implements RequestQueue {
 
         @Override
-        public String queue(RequestElement requestElement) {
-            new RequestHandler(requestElement).run();
+        public String queue(RequestElement request) {
+            new RequestHandler(request).run();
             return null;
         }
 
@@ -217,12 +217,12 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public void cancelAction(String actionId) {
+        public void cancelRequest(String reqId) {
 
         }
 
         @Override
-        public void clearActions() {
+        public void clearRequests() {
 
         }
 

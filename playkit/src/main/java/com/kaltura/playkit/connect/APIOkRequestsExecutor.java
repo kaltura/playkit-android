@@ -3,6 +3,7 @@ package com.kaltura.playkit.connect;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -193,10 +194,10 @@ public class APIOkRequestsExecutor implements RequestQueue {
     }
 
     @Override
-    public ResponseElement execute(RequestElement action) {
+    public ResponseElement execute(RequestElement request) {
         try {
-            Response response = getOkClient(action.config()).newCall(buildRestRequest(action, BodyBuilder.Default)).execute();
-            return onGotResponse(response, action);
+            Response response = getOkClient(request.config()).newCall(buildRestRequest(request, BodyBuilder.Default)).execute();
+            return onGotResponse(response, request);
 
         } catch (IOException e){
             // failure on request execution - create error response
@@ -204,21 +205,45 @@ public class APIOkRequestsExecutor implements RequestQueue {
         }
     }
 
-    @Override
-    public void cancelAction(String callId) {
+    //TODO: cancel check on executor + null check on provider
+
+    //@Override
+    public boolean hasRequest(String reqId) {
         Dispatcher dispatcher = getOkClient().dispatcher();
-        for(Call call : dispatcher.queuedCalls()) {
-            if(call.request().tag().equals(callId))
-                call.cancel();
+
+        Call call = findCall(reqId, dispatcher.queuedCalls());
+        if(call != null){
+            return true;
         }
-        for(Call call : dispatcher.runningCalls()) {
-            if(call.request().tag().equals(callId))
-                call.cancel();
-        }
+        call = findCall(reqId, dispatcher.runningCalls());
+        return call != null;
     }
 
     @Override
-    public void clearActions() {
+    public void cancelRequest(String reqId) {
+        Dispatcher dispatcher = getOkClient().dispatcher();
+
+        Call call = findCall(reqId, dispatcher.queuedCalls());
+        if(call != null){
+            call.cancel();
+        }
+        call = findCall(reqId, dispatcher.runningCalls());
+        if(call != null){
+            call.cancel();
+        }
+    }
+
+    private Call findCall(String reqId, List<Call> calls) {
+        for(Call call : calls) {
+            if(call.request().tag().equals(reqId)) {
+                return call;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void clearRequests() {
         if(mOkClient != null) {
             mOkClient.dispatcher().cancelAll();
         }

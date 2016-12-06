@@ -4,14 +4,14 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.google.gson.JsonSyntaxException;
-import com.kaltura.playkit.MediaEntryProvider;
-import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.backend.SessionProvider;
+import com.kaltura.playkit.backend.base.BECallableLoader;
+import com.kaltura.playkit.backend.base.BEMediaProvider;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.data.FlavorAssetsFilter;
 import com.kaltura.playkit.backend.ovp.data.KalturaBaseEntryListResponse;
@@ -21,7 +21,6 @@ import com.kaltura.playkit.backend.ovp.data.KalturaMediaEntry;
 import com.kaltura.playkit.backend.ovp.data.KalturaPlayingResult;
 import com.kaltura.playkit.backend.ovp.data.KalturaPlayingSource;
 import com.kaltura.playkit.backend.ovp.services.BaseEntryService;
-import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.OnRequestCompletion;
@@ -41,20 +40,25 @@ import static android.text.TextUtils.isEmpty;
  * Created by tehilarozin on 30/10/2016.
  */
 
-public class KalturaOvpMediaProvider implements MediaEntryProvider {
+public class KalturaOvpMediaProvider extends BEMediaProvider /*implements MediaEntryProvider*/ {
 
     private static final String TAG = KalturaOvpMediaProvider.class.getSimpleName();
 
-    private RequestQueue requestsExecutor;
+    //private RequestQueue requestsExecutor;
     private String entryId;
-    private SessionProvider sessionProvider;
+    //private SessionProvider sessionProvider;
     private String uiConfId;
 
     private int maxBitrate;
     private Map<String, Object> flavorsFilter;
 
+    //private final Object syncObject = new Object();
+    //private Future<Void> currentLoad;
+    //private ExecutorService exSvc;
+
+
     public KalturaOvpMediaProvider() {
-        requestsExecutor = APIOkRequestsExecutor.getSingleton();
+        super(KalturaOvpMediaProvider.TAG);
     }
 
 
@@ -85,7 +89,7 @@ public class KalturaOvpMediaProvider implements MediaEntryProvider {
         return this;
     }
 
-    @Override
+    /*@Override
     public void load(final OnMediaLoadCompletion completion) {
 
         ErrorElement error = validateEntry();
@@ -96,85 +100,149 @@ public class KalturaOvpMediaProvider implements MediaEntryProvider {
             return;
         }
 
-        sessionProvider.getKs(new OnCompletion<String>() {
-            @Override
-            public void onComplete(String response) {
-                ErrorElement error = validateKs(response);
-                if (error == null) {
-                    final String ks = response;
-                    final RequestBuilder entryRequest = BaseEntryService.entryInfo(sessionProvider.baseUrl(), ks, /*sessionProvider.partnerId(),*/ entryId)
-                            .completion(new OnRequestCompletion() {
-                                @Override
-                                public void onComplete(ResponseElement response) {
-                                    onEntryInfoMultiResponse(ks, response, completion);
-                                }
-                            });
-                    requestsExecutor.queue(entryRequest.build());
+        cancel(); // cancel prev load if has any
 
-                } else {
-                    if (completion != null) {
-                        completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
-                    }
-                }
-            }
-        });
+        //synchronized (syncObject) {
+        currentLoad = exSvc.submit(factorNewLoader(completion));
+        PKLog.i(TAG, "new loader started "+currentLoad.toString());
+            //currentLoad.run();
+        //}
+    }*/
 
+    @Override
+    protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
+        return new Loader(requestsExecutor, sessionProvider, entryId, uiConfId, completion);
     }
 
-    private ErrorElement validateKs(String ks) {
-        return isEmpty(ks) ?
-                ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token") :
-                null;
-    }
+    /*@Override
+    public synchronized void cancel() {
+        if (currentLoad != null && !currentLoad.isDone() && !currentLoad.isCancelled()) {
+            PKLog.i(TAG, "has running load operation, canceling current load operation - " + currentLoad.toString());
+            currentLoad.cancel(true);
+        } else {
+            PKLog.i(TAG, (currentLoad != null ? currentLoad.toString() : "") + ": no need to cancel operation," + (currentLoad == null ? "operation is null" : (currentLoad.isDone() ? "operation done" : "operation canceled")));
+        }
+    }*/
 
-    private ErrorElement validateEntry() {
+    @Override
+    protected ErrorElement validateParams() {
         return isEmpty(this.entryId) ?
                 ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": Missing required parameters, entryId") :
                 null;
     }
 
 
-    private void onEntryInfoMultiResponse(String ks, ResponseElement response, OnMediaLoadCompletion completion) {
-        ErrorElement error = null;
-        PKMediaEntry mediaEntry = null;
+    class Loader extends BECallableLoader {
 
-        if (response != null && response.isSuccess()) {
+        private String entryId;
+        private String uiConfId;
 
-            try {
-                //parse multi response from request respone
+        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String uiConfId, OnMediaLoadCompletion completion) {
+            super(KalturaOvpMediaProvider.TAG+"#Loader", requestsExecutor, sessionProvider, completion);
+
+            this.entryId = entryId;
+            this.uiConfId = uiConfId;
+
+            PKLog.i(TAG, loadId + ": construct new Loader");
+        }
+
+        @Override
+        protected ErrorElement validateKs(String ks) {
+            return isEmpty(ks) ?
+                    ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token") :
+                    null;
+        }
+
+        @Override
+        protected void requestRemote(final String ks) throws InterruptedException {
+            final RequestBuilder entryRequest = BaseEntryService.entryInfo(sessionProvider.baseUrl(), ks, entryId)
+            .completion(new OnRequestCompletion() {
+                @Override
+                public void onComplete(ResponseElement response) {
+                    onEntryInfoMultiResponse(ks, response, (OnMediaLoadCompletion) completion);
+                }
+            });
+            requestQueue.queue(entryRequest.build());
+        }
+
+        /*@Override
+        protected void load() {
+            PKLog.i(TAG, loadId + ": load: start on get ks ");
+
+            sessionProvider.getKs(new OnCompletion<String>() {
+                @Override
+                public void onComplete(String response) {
+                    ErrorElement error = validateKs(response);
+                    if (error == null) {
+                        final String ks = response;
+                        final RequestBuilder entryRequest = BaseEntryService.entryInfo(sessionProvider.baseUrl(), ks, *//*sessionProvider.partnerId(),*//* entryId)
+                                .completion(new OnRequestCompletion() {
+                                    @Override
+                                    public void onComplete(ResponseElement response) {
+                                        onEntryInfoMultiResponse(ks, response, (OnMediaLoadCompletion) completion);
+                                    }
+                                });
+                        requestsExecutor.queue(entryRequest.build());
+
+                    } else {
+                        if (completion != null) {
+                            completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
+                        }
+                    }
+                }
+            });
+
+        }*/
+
+        private void onEntryInfoMultiResponse(String ks, ResponseElement response, OnMediaLoadCompletion completion) {
+            ErrorElement error = null;
+            PKMediaEntry mediaEntry = null;
+
+            if (response != null && response.isSuccess()) {
+
+                try {
+                    //parse multi response from request respone
 
                 /* in this option, in case of error response, the type of the parsed response will be BaseResult, and not the expected object type,
                    since we parse the type dynamically from the result and we get "KalturaAPIException" objectType */
-                List<BaseResult> responses = KalturaOvpParser.parse(response.getResponse());//, TextUtils.isEmpty(sessionProvider.getKs()) ? 1 : 0, KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
+                    List<BaseResult> responses = KalturaOvpParser.parse(response.getResponse());//, TextUtils.isEmpty(sessionProvider.getKs()) ? 1 : 0, KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
                 /* in this option, responses types will always be as expected, and in case of an error, the error can be reached from the typed object, since
                 * all response objects should extend BaseResult */
-                //  List<BaseResult> responses = (List<BaseResult>) KalturaOvpParser.parse(response.getResponse(), KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
+                    //  List<BaseResult> responses = (List<BaseResult>) KalturaOvpParser.parse(response.getResponse(), KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
 
-                if (responses.get(0).error != null) {
-                    error = responses.get(0).error.addMessage("baseEntry/list request failed");//ErrorElement.LoadError.message("baseEntry/list request failed");
-                }
-                if (error == null && responses.get(1).error != null) {
-                    error = responses.get(1).error.addMessage("baseEntry/getPlayingData request failed");
+                    if (responses.get(0).error != null) {
+                        error = responses.get(0).error.addMessage("baseEntry/list request failed");//ErrorElement.LoadError.message("baseEntry/list request failed");
+                    }
+                    if (error == null && responses.get(1).error != null) {
+                        error = responses.get(1).error.addMessage("baseEntry/getPlayingData request failed");
+                    }
+
+                    if (error == null) {
+                        mediaEntry = ProviderParser.getMediaEntry(ks, sessionProvider.partnerId() + "", uiConfId,
+                                ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), (KalturaPlayingResult) responses.get(1));
+                    }
+
+                } catch (JsonSyntaxException ex) {
+                    error = ErrorElement.LoadError.message("failed parsing remote response: " + ex.getMessage());
+                } catch (InvalidParameterException ex) {
+                    error = ErrorElement.LoadError.message("failed to create PKMediaEntry: " + ex.getMessage());
                 }
 
-                if (error == null) {
-                    mediaEntry = ProviderParser.getMediaEntry(ks, sessionProvider.partnerId() + "", uiConfId,
-                            ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), (KalturaPlayingResult) responses.get(1));
-                }
-
-            } catch (JsonSyntaxException ex) {
-                error = ErrorElement.LoadError.message("failed parsing remote response: " + ex.getMessage());
-            } catch(InvalidParameterException ex){
-                error = ErrorElement.LoadError.message("failed to create PKMediaEntry: "+ex.getMessage());
+            } else {
+                error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
             }
 
-        } else {
-            error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
+            PKLog.i(TAG, loadId + ": load operation "+(isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
+
+
+            if (!isCanceled() && completion != null) {
+                completion.onComplete(Accessories.buildResult(mediaEntry, error));
+            }
+
+            notifyCompletion();
+
         }
 
-        if (completion != null) {
-            completion.onComplete(Accessories.buildResult(mediaEntry, error));
-        }
     }
 
 

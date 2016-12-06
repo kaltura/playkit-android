@@ -5,38 +5,44 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.google.gson.JsonParseException;
-import com.kaltura.playkit.MediaEntryProvider;
-import com.kaltura.playkit.OnCompletion;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.backend.BaseResult;
+import com.kaltura.playkit.backend.SessionProvider;
+import com.kaltura.playkit.backend.base.BECallableLoader;
+import com.kaltura.playkit.backend.base.BEMediaProvider;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.phoenix.data.KalturaMediaAsset;
 import com.kaltura.playkit.backend.phoenix.data.KalturaMediaFile;
 import com.kaltura.playkit.backend.phoenix.data.PhoenixParser;
 import com.kaltura.playkit.backend.phoenix.services.AssetService;
-import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
-import com.kaltura.playkit.backend.SessionProvider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
 /**
  * Created by tehilarozin on 27/10/2016.
  */
 
-public class PhoenixMediaProvider implements MediaEntryProvider {
+public class PhoenixMediaProvider extends BEMediaProvider /*implements MediaEntryProvider*/ {
 
+    private static final String TAG = "PhoenixMediaProvider";
+
+    /*private ExecutorService loadExecutor;
     private RequestQueue requestsExecutor;
-    private SessionProvider sessionProvider;
+    private SessionProvider sessionProvider;*/
     private MediaAsset mediaAsset;
+    /*private final Object syncObject = new Object();
+    private Future<Void> currentLoad;*/
 
 
     private class MediaAsset {
@@ -56,8 +62,8 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
     //!! add parameter for streamType - catchup/startOver/...
 
     public PhoenixMediaProvider() {
+        super(PhoenixMediaProvider.TAG);
         this.mediaAsset = new MediaAsset();
-        this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
     }
 
     public PhoenixMediaProvider setSessionProvider(@NonNull SessionProvider ksProvider) {
@@ -95,7 +101,7 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
         return this;
     }
 
-    public PhoenixMediaProvider setLiveStreamType(@APIDefines.LiveStreamType String streamType){
+    public PhoenixMediaProvider setLiveStreamType(@APIDefines.LiveStreamType String streamType) {
         this.mediaAsset.streamType = streamType;
         return this;
     }
@@ -112,57 +118,50 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
      *
      * @param completion - a callback for handling the result of data fetching flow.
      */
-    @Override
+    /*@Override
     public void load(final OnMediaLoadCompletion completion) {
+
         ErrorElement error = validateAsset();
-        if(error != null){
+        if (error != null) {
             if (completion != null) {
                 completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
             }
             return;
         }
 
-        sessionProvider.getKs(new OnCompletion<String>() {
-            @Override
-            public void onComplete(String response) {
-                ErrorElement error = validateKs(response);
-                if (error == null) {
-                    final String ks = response;
-                    RequestBuilder requestBuilder = AssetService.assetGet(sessionProvider.baseUrl(), ks, mediaAsset.assetId, mediaAsset.referenceType);
-
-                    requestBuilder.completion(new OnRequestCompletion() {
-                        @Override
-                        public void onComplete(ResponseElement response) {
-                            onAssetGetResponse(response, completion);
-                        }
-                    });
-
-                    requestsExecutor.queue(requestBuilder.build());
-                } else {
-                    if (completion != null) {
-                        completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
-                    }
-                }
-            }
-        });
-    }
-
-    /**
-     * validate basic parameters needed
-     * @return
-     */
-    /*private ErrorElement validateLoad() {
-        ErrorElement error = validateKs();
-        return error != null ? error : validateAsset();
+        //!- in case load action is in progress and new load is activated, prev request will be canceled
+        cancel();
+        currentLoad = loadExecutor.submit(factorNewLoader(completion));
+        PKLog.i(TAG, "new loader started "+currentLoad.toString());
     }*/
 
+    @NonNull
+    protected BECallableLoader factorNewLoader(OnMediaLoadCompletion completion) {
+        return new Loader(requestsExecutor, sessionProvider, mediaAsset, completion);
+    }
+
+    public static PKMediaEntry getMediaEntry(KalturaMediaAsset assetInfo, List<String> formats) {
+        return ProviderParser.getMedia(assetInfo, formats);
+    }
+
+    /*@Override
+    public synchronized void cancel() {
+        if (currentLoad != null && !currentLoad.isDone() && !currentLoad.isCancelled()) {
+            PKLog.i(TAG, "has running load operation, canceling current load operation - " + currentLoad.toString());
+            currentLoad.cancel(true);
+        } else {
+            PKLog.i(TAG, (currentLoad != null ? currentLoad.toString() : "") + ": no need to cancel operation," + (currentLoad == null ? "operation is null" : (currentLoad.isDone() ? "operation done" : "operation canceled")));
+        }
+    }*/
 
     /**
      * Asset id is required for data fetching.
      * Ott play must have defined format(s) in order to select the right media file to play.
+     *
      * @return
      */
-    private ErrorElement validateAsset() {
+    @Override
+    protected ErrorElement validateParams() {
         String error = TextUtils.isEmpty(this.mediaAsset.assetId) ? ": Missing required parameters, assetId" :
                 (!this.mediaAsset.hasFormats() ? ": at least 1 media file format is required!" : null);
         return error != null ?
@@ -170,68 +169,117 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
                 null;
     }
 
-    private ErrorElement validateKs(String ks) {
-        return TextUtils.isEmpty(ks) ?
-                ErrorElement.BadRequestError.message(ErrorElement.BadRequestError +": SessionProvider should provide a valid KS token") :
-                null;
-    }
 
 
-    private void onAssetGetResponse(final ResponseElement response, final OnMediaLoadCompletion completion) {
-        ErrorElement error = null;
-        PKMediaEntry mediaEntry = null;
+    class Loader extends BECallableLoader {
 
-        if (response != null && response.isSuccess()) {
-            KalturaMediaAsset asset = null;
+        private MediaAsset asset;
 
-            try {
-                //**************************
-                /* parse json string to a single object, according to a specific type - returns an object of the specific type */
-                //asset = PhoenixParser.parseResult(response.getResponse(), KalturaMediaAsset.class);
 
-                /* parse json string according to 1 or more types - returns Object, can be used for multiple response */
-                asset = (KalturaMediaAsset) PhoenixParser.parse(response.getResponse(), KalturaMediaAsset.class);
-                if (asset.error != null) {
-                    error = asset.error;
-                    asset = null;
-                }
-                //*************************
-                //*************************
-                /* parse json string to an object of type BaseResult or one of its sub classes - object type is parsed dynamically
-                   from the response according to the value of "objectType" property, if none found will be parsed to BaseResult object
-                   in case of error response - will be parsed to BaseResult with the error within */
-                BaseResult assetResult = PhoenixParser.parse(response.getResponse());
-                if(assetResult != null ) {
-                    if (assetResult.error == null) {
-                        asset = (KalturaMediaAsset) assetResult;
-                    } else {
-                        error = assetResult.error;
+        public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, MediaAsset mediaAsset, OnMediaLoadCompletion completion) {
+            super(PhoenixMediaProvider.TAG+"#Loader", requestsExecutor, sessionProvider, completion);
+
+            this.asset = mediaAsset;
+
+            PKLog.i(TAG, loadId + ": construct new Loader");
+        }
+
+        @Override
+        protected ErrorElement validateKs(String ks) {
+            return TextUtils.isEmpty(ks) ?
+                    ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token") :
+                    null;
+        }
+
+        @Override
+        protected void requestRemote(String ks) throws InterruptedException{
+            RequestBuilder requestBuilder = AssetService.assetGet(sessionProvider.baseUrl(), ks, asset.assetId, asset.referenceType);
+            requestBuilder.completion(new OnRequestCompletion() {
+                @Override
+                public void onComplete(ResponseElement response) {
+                    PKLog.i(TAG, loadId + ": got response to [" + loadReq + "]");
+                    loadReq = null;
+
+                    try {
+                        onAssetGetResponse(response);
+
+                    } catch (InterruptedException e) {
+                        interrupted();
                     }
-                } else { // response parsed to null but request to the server returned a "valid" response
-                    throw new JsonParseException("missing response object");
                 }
-                //**************************
-            } catch (JsonParseException ex) {
-                error = ErrorElement.LoadError.message("failed parsing remote response: " + ex.getMessage());
-            }
+            });
 
-            if (asset != null) {
-                mediaEntry = ProviderParser.getMedia(asset, mediaAsset.formats);
+            synchronized (syncObject) {
+                loadReq = requestQueue.queue(requestBuilder.build());
+                PKLog.i(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
-
-         } else {
-            error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
         }
 
-        if (completion != null) {
-            completion.onComplete(Accessories.buildResult(mediaEntry, error));
+
+        private void onAssetGetResponse(final ResponseElement response) throws InterruptedException {
+            ErrorElement error = null;
+            PKMediaEntry mediaEntry = null;
+
+            if(isCanceled()){
+                return;
+            }
+
+            if (response != null && response.isSuccess()) {
+                KalturaMediaAsset asset = null;
+
+                try {
+                    //**************************
+
+                /* ways to parse the AssetInfo from response string:
+
+                    1. <T> T PhoenixParser.parseObject: parse json string to a single object, according to a specific type - returns an object of the specific type
+                            asset = PhoenixParser.parseObject(response.getResponse(), KalturaMediaAsset.class);
+
+                    2. Object PhoenixParser.parse(String response, Class...types): parse json string according to 1 or more types (dynamic types array) - returns Object since can
+                       be single or an array of objects. cast is needed, can be used for multiple response
+                            asset = (KalturaMediaAsset) PhoenixParser.parse(response.getResponse(), KalturaMediaAsset.class);
+
+                        in case of an error - the error will be passed over the returned object (should extend BaseResult) */
+
+                    //*************************
+
+                    PKLog.i(TAG, loadId + ": parsing response  [" + Loader.this.toString() + "]");
+                    /* 3. <T> T PhoenixParser.parse(String response): parse json string to an object of dynamically parsed type.
+                       type defined by the value of "objectType" property provided in the response objects, if type wasn't found or in
+                       case of error object in the response, will be parsed to BaseResult object (error if occurred will be accessible from this object)*/
+                    BaseResult assetResult = PhoenixParser.parse(response.getResponse());
+                    if (assetResult != null) {
+                        if (assetResult.error == null) {
+                            asset = (KalturaMediaAsset) assetResult;
+                        } else {
+                            error = assetResult.error;
+                        }
+                    } else { // response parsed to null but request to the server returned a "valid" response
+                        throw new JsonParseException("missing response object");
+                    }
+
+                } catch (JsonParseException ex) {
+                    error = ErrorElement.LoadError.message("failed parsing remote response: " + ex.getMessage());
+                }
+
+                if (asset != null) {
+                    mediaEntry = ProviderParser.getMedia(asset, this.asset.formats);
+                }
+
+            } else {
+                error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
+            }
+
+            PKLog.i(TAG, loadId + ": load operation "+(isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
+
+            if (!isCanceled() && completion != null) {
+                completion.onComplete(Accessories.buildResult(mediaEntry, error));
+            }
+
+            notifyCompletion();
+
         }
     }
-
-    public static PKMediaEntry getMediaEntry(KalturaMediaAsset assetInfo, List<String> formats) {
-        return ProviderParser.getMedia(assetInfo, formats);
-    }
-
 
 
     static class ProviderParser {
@@ -263,13 +311,3 @@ public class PhoenixMediaProvider implements MediaEntryProvider {
         }
     }
 }
-/*public PhoenixMediaProvider(SessionProvider sessionProvider, String assetId, String assetReferenceType, String... formats) {
-        this.sessionProvider = sessionProvider;
-        this.assetId = assetId;
-        this.referenceType = assetReferenceType;
-        this.formats = Arrays.asList(formats);
-    }*/
-
-/*private String assetId;
-    private String referenceType;
-    private List<String> formats;*/
