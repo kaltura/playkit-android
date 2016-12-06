@@ -10,4 +10,8 @@ public class OvpConfigs {
 
     public static String ClientTag = "playkit/android-" + BuildConfig.VERSION_NAME;
     public static String ApiVersion = "3.3.0";
+
+    //temporal value - will be configurable: provided by uiconf or something
+    public static final String PreferredHttpProtocol = "https";
+
 }

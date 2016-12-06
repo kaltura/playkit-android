@@ -18,6 +18,8 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.List;
+
 /**
  * Created by anton.afanasiev on 01/11/2016.
  */
@@ -96,10 +98,10 @@ public class PlayerController implements Player {
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
         Uri sourceUri = Uri.parse(source.getUrl());
-        PKDrmParams drmData = source.getDrmData();
+        List<PKDrmParams> drmData = source.getDrmData();//PKDrmParams drmData = source.getDrmData();
         String licenseUri = null;
-        if (drmData != null) {
-            licenseUri = drmData.getLicenseUri();
+        if (drmData != null && drmData.size() > 0) {
+            licenseUri = drmData.get(0).getLicenseUri(); // ?? TODO: decide which of the drm items to take
         }
 
         player.load(sourceUri, licenseUri);

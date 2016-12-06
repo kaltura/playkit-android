@@ -16,7 +16,8 @@ public class BaseEntryService extends OvpService {
     public static RequestBuilder entryInfo(String baseUrl, String ks, String entryId) {
 
         MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks).tag("mediaAsset-multi-get");
-        return multiRequestBuilder.add(list(baseUrl, ks, entryId), contextData(baseUrl, ks, entryId));
+        return multiRequestBuilder.add(list(baseUrl, ks, entryId).removeParams("clientTag","apiVersion","ks"),
+                getPlayingData(baseUrl, ks, entryId).removeParams("clientTag","apiVersion","ks"));
     }
 
     public static RequestBuilder list(String baseUrl, String ks, String entryId) {
@@ -33,29 +34,39 @@ public class BaseEntryService extends OvpService {
 
         BaseEntryListParams baseEntryListParams = new BaseEntryListParams(ks);
         baseEntryListParams.filter.redirectFromEntryId = entryId;
-        baseEntryListParams.responseProfile.fields = "id,name,dataUrl,duration,msDuration,flavorParamsIds,mediaType";
+        baseEntryListParams.responseProfile.fields = "id,name,dataUrl,duration,msDuration,flavorParamsIds,mediaType,tags";
         baseEntryListParams.responseProfile.type = APIDefines.ResponseProfileType.IncludeFields;
 
         return new Gson().toJsonTree(baseEntryListParams).getAsJsonObject();
     }
 
-    public static RequestBuilder contextData(String baseUrl, String ks, String entryId) {
+    public static RequestBuilder getContextData(String baseUrl, String ks, String entryId) {
+        JsonObject params = OvpService.getOvpParams();
+        params.addProperty("entryId", entryId);
+        params.addProperty("ks", ks);
+        params.add("contextDataParams", new JsonObject());
+
         return new RequestBuilder().service("baseEntry")
                 .action("getContextData")
                 .method("POST")
                 .url(baseUrl)
                 .tag("baseEntry-getContextData")
-                .params(getContextDataReqParams(ks, entryId));
+                .params(params);
     }
 
-
-    private static JsonObject getContextDataReqParams(String ks, String entryId) {
+    public static RequestBuilder getPlayingData(String baseUrl, String ks, String entryId) {
         JsonObject params = OvpService.getOvpParams();
         params.addProperty("entryId", entryId);
         params.addProperty("ks", ks);
-        params.add("contextDataParams", new JsonObject());
-        return params;
+
+        return new RequestBuilder().service("baseEntry")
+                .action("getPlayingData")
+                .method("POST")
+                .url(baseUrl)
+                .tag("baseEntry-getPlayingData")
+                .params(params);
     }
+
 
 
     static class BaseEntryListParams {

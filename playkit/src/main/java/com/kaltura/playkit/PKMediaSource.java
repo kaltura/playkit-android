@@ -1,10 +1,12 @@
 package com.kaltura.playkit;
 
+import java.util.List;
+
 public class PKMediaSource {
     private String id;
     private String url;
     //private String mimeType;
-    private PKDrmParams drmData;
+    private List<PKDrmParams> drmData;
 
     public String getId() {
         return id;
@@ -33,11 +35,11 @@ public class PKMediaSource {
         return this;
     }*/
 
-    public PKDrmParams getDrmData() {
+    public List<PKDrmParams> getDrmData() {
         return drmData;
     }
 
-    public PKMediaSource setDrmData(PKDrmParams drmData) {
+    public PKMediaSource setDrmData(List<PKDrmParams> drmData) {
         this.drmData = drmData;
         return this;
     }

@@ -9,4 +9,12 @@ import com.kaltura.playkit.backend.BaseResult;
 public class KalturaLoginSession extends BaseResult {
     String refreshToken;
     String ks;
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public String getKs() {
+        return ks;
+    }
 }
