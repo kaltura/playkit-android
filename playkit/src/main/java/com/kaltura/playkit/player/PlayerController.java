@@ -16,6 +16,7 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.PKAdInfo;
+import com.kaltura.playkit.utils.Consts;
 
 /**
  * Created by anton.afanasiev on 01/11/2016.
@@ -38,11 +39,11 @@ public class PlayerController implements Player {
         this.eventListener = eventListener;
     }
 
-    public interface EventListener {
+     interface EventListener {
         void onEvent(PlayerEvent.Type event);
     }
 
-    public interface StateChangedListener {
+     interface StateChangedListener {
         void onStateChanged(PlayerState oldState, PlayerState newState);
     }
 
@@ -58,6 +59,12 @@ public class PlayerController implements Player {
                 switch (eventType) {
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
+                        break;
+                    case TRACKS_AVAILABLE:
+                        event = new PlayerEvent.TracksAvailable(player.getPKTracks());
+                        break;
+                    case VOLUME_CHANGED:
+                        event = new PlayerEvent.VolumeChanged(player.getVolume());
                         break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
@@ -94,7 +101,7 @@ public class PlayerController implements Player {
         if (drmData != null) {
             licenseUri = drmData.getLicenseUri();
         }
-        
+
         player.load(sourceUri, licenseUri);
         startPlaybackFrom(mediaConfig.getStartPosition());
     }
@@ -102,7 +109,9 @@ public class PlayerController implements Player {
     @Override
     public void destroy() {
         log.e("destroy");
-        player.destroy();
+        if(player != null){
+            player.destroy();
+        }
         togglePlayerListeners(false);
         player = null;
         mediaConfig = null;
@@ -110,6 +119,10 @@ public class PlayerController implements Player {
     }
 
     private void startPlaybackFrom(long startPosition) {
+        if(player == null){
+            log.e("Attempt to invoke 'startPlaybackFrom()' on null instance of the player engine");
+            return;
+        }
         if(!wasReleased){
             togglePlayerListeners(false);
             player.startFrom(startPosition);
@@ -118,38 +131,82 @@ public class PlayerController implements Player {
     }
 
     public View getView() {
-        //return view of the current player.
+        if(player == null){
+            return null;
+        }
         return player.getView();
     }
 
     public long getDuration() {
-//        Log.d(TAG, "getDuration " + player.getDuration());
-
+        if (player == null) {
+            return Consts.TIME_UNSET;
+        }
         return player.getDuration();
     }
 
     public long getCurrentPosition() {
-//        Log.d(TAG, "getPosition " + player.getCurrentPosition());
+        if (player == null) {
+            return Consts.POSITION_UNSET;
+        }
         return player.getCurrentPosition();
     }
 
     public long getBufferedPosition() {
+        if (player == null) {
+            return Consts.POSITION_UNSET;
+        }
         return player.getBufferedPosition();
     }
 
     public void seekTo(long position) {
         log.d("seek to " + position);
+        if(player == null){
+            log.e("Attempt to invoke 'seekTo()' on null instance of the player engine");
+            return;
+        }
         player.seekTo(position);
     }
 
     public void play() {
         log.d("play");
+        if(player == null){
+            log.e("Attempt to invoke 'play()' on null instance of the player engine");
+            return;
+        }
         player.play();
     }
 
     public void pause() {
         log.d("pause");
+        if(player == null){
+            log.e("Attempt to invoke 'pause()' on null instance of the player engine");
+            return;
+        }
         player.pause();
+    }
+
+    @Override
+    public void replay() {
+        log.d("replay");
+        if(player == null){
+            log.e("Attempt to invoke 'replay()' on null instance of the player engine");
+            return;
+        }
+        player.replay();
+    }
+
+    @Override
+    public void setVolume(float volume) {
+        if(player == null){
+            log.e("Attempt to invoke 'setVolume()' on null instance of the player engine");
+            return;
+        }
+        player.setVolume(volume);
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return player != null && player.isPlaying();
     }
 
     private void togglePlayerListeners(boolean enable) {
@@ -210,6 +267,16 @@ public class PlayerController implements Player {
             togglePlayerListeners(true);
             wasReleased = false;
         }
+    }
+
+    @Override
+    public void changeTrack(String uniqueId) {
+        if(player == null){
+            log.e("Attempt to invoke 'changeTrack()' on null instance of the player engine");
+            return;
+        }
+
+        player.changeTrack(uniqueId);
     }
 
     @Override
