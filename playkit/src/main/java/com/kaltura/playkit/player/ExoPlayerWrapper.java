@@ -132,12 +132,12 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
 
         // TODO: check if there's any overhead involved in creating a session manager and not using it.
-        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager;
+        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager = null;
         try {
             drmSessionManager = buildDrmSessionManager(WIDEVINE_UUID);
         } catch (UnsupportedDrmException e) {
             // TODO: proper error
-            return;
+            log.w("This device doesn't support widevine modular");
         }
 
         player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager, false);
