@@ -131,16 +131,16 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
         MappingTrackSelector trackSelector = initializeTrackSelector();
 
 
-        // TODO: check if there's any overhead involved in creating a session manager and not using it.
-        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager;
-        try {
-            drmSessionManager = buildDrmSessionManager(WIDEVINE_UUID);
-        } catch (UnsupportedDrmException e) {
-            // TODO: proper error
-            return;
-        }
+//        // TODO: check if there's any overhead involved in creating a session manager and not using it.
+//        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager;
+//        try {
+//            drmSessionManager = buildDrmSessionManager(WIDEVINE_UUID);
+//        } catch (UnsupportedDrmException e) {
+//            // TODO: proper error
+//            return;
+//        }
 
-        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager, false);
+        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), null, false);
         setPlayerListeners();
         exoPlayerView.setPlayer(player);
         player.setPlayWhenReady(false);
