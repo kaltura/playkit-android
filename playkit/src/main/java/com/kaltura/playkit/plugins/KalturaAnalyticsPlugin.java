@@ -21,6 +21,8 @@ import com.kaltura.playkit.connect.ResponseElement;
 
 import java.util.TimerTask;
 
+import static com.kaltura.playkit.plugins.KalturaAnalyticsPlugin.KAnalonyEvents.REPLAY;
+
 /**
  * Created by zivilan on 27/11/2016.
  */
@@ -178,6 +180,9 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
                         break;
                     case LOADED_METADATA:
 
+                        break;
+                    case REPLAY:
+                        sendAnalyticsEvent(REPLAY);
                         break;
                     case PAUSE:
                         sendAnalyticsEvent(KAnalonyEvents.PAUSE);

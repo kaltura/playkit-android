@@ -235,6 +235,9 @@ public class KalturaStatsPlugin extends PKPlugin {
                     case CAN_PLAY:
                         sendMediaLoaded();
                         break;
+                    case REPLAY:
+                        sendAnalyticsEvent(KStatsEvent.REPLAY);
+                        break;
                     default:
                         break;
                 }

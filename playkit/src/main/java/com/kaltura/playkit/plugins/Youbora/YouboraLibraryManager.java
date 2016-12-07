@@ -33,7 +33,6 @@ public class YouboraLibraryManager extends PluginGeneric {
 
     public YouboraLibraryManager(String options) throws JSONException {
         super(options);
-
     }
 
     public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus, PlayerConfig.Media mediaConfig) {
@@ -105,6 +104,9 @@ public class YouboraLibraryManager extends PluginGeneric {
                         break;
                     case SEEKING:
                         seekingHandler();
+                        break;
+                    case TRACKS_AVAILABLE:
+                        log.d("onEvent: ");
                         break;
                     default:
                         break;
