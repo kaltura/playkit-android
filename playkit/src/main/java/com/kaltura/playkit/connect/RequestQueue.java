@@ -6,13 +6,15 @@ package com.kaltura.playkit.connect;
  */
 public interface RequestQueue {
 
-    String queue(RequestElement requestElement);
+    String queue(RequestElement request);
 
-    ResponseElement execute(RequestElement action);
+    ResponseElement execute(RequestElement request);
 
-    void cancelAction(String actionId);
+    void cancelRequest(String reqId);
 
-    void clearActions();
+    //boolean hasRequest(String reqId);
+
+    void clearRequests();
 
     boolean isEmpty();
 }

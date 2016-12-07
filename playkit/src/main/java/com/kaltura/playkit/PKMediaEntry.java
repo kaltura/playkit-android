@@ -6,6 +6,7 @@ public class PKMediaEntry {
     private String id;
     private List<PKMediaSource> sources;
     private long duration;
+    private String uuid;
 
     public PKMediaEntry setId(String id) {
         this.id = id;
