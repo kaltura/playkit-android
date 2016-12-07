@@ -89,7 +89,7 @@ public class PlayerController implements Player {
     public PlayerController(Context context, PlayerConfig.Media mediaConfig){
         this.context = context;
         this.mediaConfig = mediaConfig;
-        player = new ExoPlayerWrapper(context);
+        player = new ExoPlayerWrapper(context, mediaConfig);
         togglePlayerListeners(true);
     }
 

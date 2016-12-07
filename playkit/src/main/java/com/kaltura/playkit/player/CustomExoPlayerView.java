@@ -15,6 +15,7 @@ import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SubtitleView;
+import com.kaltura.playkit.PlayerConfig;
 
 import java.util.List;
 
@@ -26,6 +27,7 @@ public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.
 
     private static final String TAG = CustomExoPlayerView.class.getSimpleName();
 
+    private final PlayerConfig.Media mediaConfig;
     private final View surfaceView;
     private final View posterView; // TODO should be changed to poster?
     private final SubtitleView subtitleLayout;
@@ -33,17 +35,17 @@ public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.
 
     private SimpleExoPlayer player;
 
-    public CustomExoPlayerView(Context context) {
-        this(context, null);
+    public CustomExoPlayerView(Context context, PlayerConfig.Media mediaConfig) {
+        this(context, mediaConfig, null);
     }
 
-    public CustomExoPlayerView(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
+    public CustomExoPlayerView(Context context, PlayerConfig.Media mediaConfig, AttributeSet attrs) {
+        this(context, mediaConfig, attrs, 0);
     }
 
-    public CustomExoPlayerView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public CustomExoPlayerView(Context context, PlayerConfig.Media mediaConfig, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-
+        this.mediaConfig = mediaConfig;
         layout = initFrameLayout();
         posterView = initPosterView();
         subtitleLayout = initSubtitleLayout();
@@ -120,6 +122,9 @@ public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.
                 player.setVideoTextureView((TextureView) surfaceView);
             } else if (surfaceView instanceof SurfaceView) {
                 player.setVideoSurfaceView((SurfaceView) surfaceView);
+                if (mediaConfig.isAutoPlay()) {
+                   hideVideoSurfaceView();
+                }
             }
             player.setVideoListener(this);
             player.setTextOutput(this);
@@ -147,5 +152,14 @@ public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.
     public void onCues(List<Cue> cues) {
         subtitleLayout.onCues(cues);
     }
+
+    public void showVideoSurfaceView() {
+        surfaceView.setVisibility(VISIBLE);
+    }
+
+    public void hideVideoSurfaceView() {
+        surfaceView.setVisibility(GONE);
+    }
+
 }
 
