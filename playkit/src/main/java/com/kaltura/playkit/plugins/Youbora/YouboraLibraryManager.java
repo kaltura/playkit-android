@@ -189,4 +189,5 @@ public class YouboraLibraryManager extends PluginGeneric {
         return Long.valueOf(player.getCurrentPosition()).doubleValue();
     }
 
+
 }
