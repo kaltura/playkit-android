@@ -39,6 +39,21 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public void replay() {
+        player.replay();
+    }
+
+    @Override
+    public void setVolume(float volume) {
+        player.setVolume(volume);
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return player.isPlaying();
+    }
+
+    @Override
     public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
         player.prepareNext(mediaConfig);
     }
@@ -91,6 +106,11 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public boolean isAutoPlay() {
         return player.isAutoPlay();
+    }
+
+    @Override
+    public void changeTrack(String uniqueId) {
+        player.changeTrack(uniqueId);
     }
 
     @Override
