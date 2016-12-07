@@ -159,7 +159,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (controlsView != null) {
             controlsView.release();
         }
-        player.onApplicationPaused();
+        if (player != null) {
+            player.onApplicationPaused();
+        }
     }
 
     private void addPlayerListeners(final ProgressBar appProgressBar) {
