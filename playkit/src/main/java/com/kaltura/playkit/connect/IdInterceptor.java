@@ -15,10 +15,11 @@ public class IdInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
 
         Request request = chain.request();
-        String taggedAction = request.tag() instanceof String ? (String) request.tag() : null;
-        if(taggedAction != null){
-            request = request.newBuilder().tag(UUID.randomUUID().toString()+"::"+taggedAction).build();
-        }
+        // if tag was not supplied to the request, the default tag is the request itself
+        String taggedAction = request.tag().equals(request) ? null : (String) request.tag();
+
+        String idTag = UUID.randomUUID().toString() + "::" + (taggedAction != null ? taggedAction : request.url().toString());
+        request = request.newBuilder().tag(idTag).build();
 
         return chain.proceed(request);
     }

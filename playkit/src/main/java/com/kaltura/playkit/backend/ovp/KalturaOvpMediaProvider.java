@@ -1,22 +1,26 @@
 package com.kaltura.playkit.backend.ovp;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.google.gson.JsonSyntaxException;
-import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKDrmParams;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.backend.SessionProvider;
+import com.kaltura.playkit.backend.base.BECallableLoader;
+import com.kaltura.playkit.backend.base.BEMediaProvider;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.backend.ovp.data.FlavorAssetsFilter;
 import com.kaltura.playkit.backend.ovp.data.KalturaBaseEntryListResponse;
 import com.kaltura.playkit.backend.ovp.data.KalturaEntryContextDataResult;
 import com.kaltura.playkit.backend.ovp.data.KalturaFlavorAsset;
 import com.kaltura.playkit.backend.ovp.data.KalturaMediaEntry;
-import com.kaltura.playkit.backend.ovp.data.KalturaSource;
+import com.kaltura.playkit.backend.ovp.data.KalturaPlayingResult;
+import com.kaltura.playkit.backend.ovp.data.KalturaPlayingSource;
 import com.kaltura.playkit.backend.ovp.services.BaseEntryService;
-import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.OnRequestCompletion;
@@ -24,8 +28,11 @@ import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static android.text.TextUtils.isEmpty;
 
@@ -33,16 +40,19 @@ import static android.text.TextUtils.isEmpty;
  * Created by tehilarozin on 30/10/2016.
  */
 
-public class KalturaOvpMediaProvider implements MediaEntryProvider {
+public class KalturaOvpMediaProvider extends BEMediaProvider {
 
-    private RequestQueue requestsExecutor;
+    private static final String TAG = KalturaOvpMediaProvider.class.getSimpleName();
+
     private String entryId;
-    private SessionProvider sessionProvider;
+    private String uiConfId;
+
     private int maxBitrate;
+    private Map<String, Object> flavorsFilter;
 
 
     public KalturaOvpMediaProvider() {
-        requestsExecutor = APIOkRequestsExecutor.getSingleton();
+        super(KalturaOvpMediaProvider.TAG);
     }
 
 
@@ -61,113 +71,141 @@ public class KalturaOvpMediaProvider implements MediaEntryProvider {
         return this;
     }
 
+    /**
+     * optional parameter
+     * will be used in media sources url
+     *
+     * @param uiConfId
+     * @return
+     */
+    public KalturaOvpMediaProvider setUiConfId(String uiConfId) {
+        this.uiConfId = uiConfId;
+        return this;
+    }
+
     @Override
-    public void load(final OnMediaLoadCompletion completion) {
-
-        ErrorElement error = validateKs();
-        if (error != null || (error = validateEntry()) != null) {
-            if (completion != null) {
-                completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
-            }
-            return;
-        }
-
-        final RequestBuilder entryRequest = BaseEntryService.entryInfo(sessionProvider.baseUrl(), sessionProvider.getKs(), /*sessionProvider.partnerId(),*/ entryId)
-                .completion(new OnRequestCompletion() {
-                    @Override
-                    public void onComplete(ResponseElement response) {
-                        onEntryInfoMultiResponse(response, completion);
-                    }
-                });
-        requestsExecutor.queue(entryRequest.build());
+    protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
+        return new Loader(requestsExecutor, sessionProvider, entryId, uiConfId, completion);
     }
 
-    private ErrorElement validateKs() {
-        return isEmpty(this.sessionProvider.getKs()) ?
-                ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token") :
-                null;
-    }
-
-    private ErrorElement validateEntry() {
+    @Override
+    protected ErrorElement validateParams() {
         return isEmpty(this.entryId) ?
                 ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": Missing required parameters, entryId") :
                 null;
     }
 
 
-    private void onEntryInfoMultiResponse(ResponseElement response, OnMediaLoadCompletion completion) {
-        ErrorElement error = null;
-        PKMediaEntry mediaEntry = null;
+    class Loader extends BECallableLoader {
 
-        if (response != null && response.isSuccess()) {
+        private String entryId;
+        private String uiConfId;
 
-            try {
-                //parse multi response from request respone
+        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String uiConfId, OnMediaLoadCompletion completion) {
+            super(KalturaOvpMediaProvider.TAG+"#Loader", requestsExecutor, sessionProvider, completion);
+
+            this.entryId = entryId;
+            this.uiConfId = uiConfId;
+
+            PKLog.v(TAG, loadId + ": construct new Loader");
+        }
+
+        @Override
+        protected ErrorElement validateKs(String ks) {
+            return isEmpty(ks) ?
+                    ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token") :
+                    null;
+        }
+
+        @Override
+        protected void requestRemote(final String ks) throws InterruptedException {
+            final RequestBuilder entryRequest = BaseEntryService.entryInfo(sessionProvider.baseUrl(), ks, entryId)
+            .completion(new OnRequestCompletion() {
+                @Override
+                public void onComplete(ResponseElement response) {
+                    onEntryInfoMultiResponse(ks, response, (OnMediaLoadCompletion) completion);
+                }
+            });
+            requestQueue.queue(entryRequest.build());
+        }
+
+
+        private void onEntryInfoMultiResponse(String ks, ResponseElement response, OnMediaLoadCompletion completion) {
+            ErrorElement error = null;
+            PKMediaEntry mediaEntry = null;
+
+            if (response != null && response.isSuccess()) {
+
+                try {
+                    //parse multi response from request respone
 
                 /* in this option, in case of error response, the type of the parsed response will be BaseResult, and not the expected object type,
                    since we parse the type dynamically from the result and we get "KalturaAPIException" objectType */
-                List<BaseResult> responses = KalturaOvpParser.parse(response.getResponse());//, TextUtils.isEmpty(sessionProvider.getKs()) ? 1 : 0, KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
+                    List<BaseResult> responses = KalturaOvpParser.parse(response.getResponse());//, TextUtils.isEmpty(sessionProvider.getKs()) ? 1 : 0, KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
                 /* in this option, responses types will always be as expected, and in case of an error, the error can be reached from the typed object, since
                 * all response objects should extend BaseResult */
-                //  List<BaseResult> responses = (List<BaseResult>) KalturaOvpParser.parse(response.getResponse(), KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
+                    //  List<BaseResult> responses = (List<BaseResult>) KalturaOvpParser.parse(response.getResponse(), KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
 
-                if (responses.get(0).error != null) {
-                    error = responses.get(0).error.addMessage("baseEntry/list request failed");//ErrorElement.LoadError.message("baseEntry/list request failed");
-                }
-                if (error == null && responses.get(1).error != null) {
-                    error = responses.get(1).error.addMessage("baseEntry/getContextData request failed");
-                    ;//ErrorElement.LoadError.message("baseEntry/getContextData request failed");
+                    if (responses.get(0).error != null) {
+                        error = responses.get(0).error.addMessage("baseEntry/list request failed");//ErrorElement.LoadError.message("baseEntry/list request failed");
+                    }
+                    if (error == null && responses.get(1).error != null) {
+                        error = responses.get(1).error.addMessage("baseEntry/getPlayingData request failed");
+                    }
+
+                    if (error == null) {
+                        mediaEntry = ProviderParser.getMediaEntry(ks, sessionProvider.partnerId() + "", uiConfId,
+                                ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), (KalturaPlayingResult) responses.get(1));
+                    }
+
+                } catch (JsonSyntaxException ex) {
+                    error = ErrorElement.LoadError.message("failed parsing remote response: " + ex.getMessage());
+                } catch (InvalidParameterException ex) {
+                    error = ErrorElement.LoadError.message("failed to create PKMediaEntry: " + ex.getMessage());
                 }
 
-                if (error == null) {
-                    mediaEntry = ProviderParser.getMediaEntry(((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), (KalturaEntryContextDataResult) responses.get(1));
-                }
-
-            } catch (JsonSyntaxException ex) {
-                error = ErrorElement.LoadError.message("failed parsing remote response: " + ex.getMessage());
+            } else {
+                error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
             }
 
-        } else {
-            error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
+            PKLog.v(TAG, loadId + ": load operation "+(isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
+
+
+            if (!isCanceled() && completion != null) {
+                completion.onComplete(Accessories.buildResult(mediaEntry, error));
+            }
+
+            notifyCompletion();
+
         }
 
-        if (completion != null) {
-            completion.onComplete(Accessories.buildResult(mediaEntry, error));
-        }
     }
 
 
     private static class ProviderParser {
 
+
         /**
          * creates {@link PKMediaEntry} from entry's data and contextData
          *
          * @param entry
-         * @param contextData
+         * @param playingResult
          * @return (in case of restriction on maxbitrate, filtering should be done by considering the flavors provided to the
          *source- if none meets the restriction, source should not be added to the mediaEntrys sources.)
          */
-        public static PKMediaEntry getMediaEntry(KalturaMediaEntry entry, KalturaEntryContextDataResult contextData) {
+        public static PKMediaEntry getMediaEntry(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlayingResult playingResult) throws InvalidParameterException {
 
             PKMediaEntry mediaEntry = new PKMediaEntry();
-            ArrayList<KalturaSource> kalturaSources = contextData.getSources();
-            List<PKMediaSource> sources = new ArrayList<>();
+            ArrayList<KalturaPlayingSource> kalturaSources = playingResult.getSources();
+            List<PKMediaSource> sources;
 
-            if (kalturaSources != null) {
-                //sources with multiple drm data should be split to mediasource per drm
-                for (KalturaSource kalturaSource : kalturaSources) {
-                    List<KalturaSource.Drm> drmData = kalturaSource.getDrmData();
-                    if (drmData != null && drmData.size() > 0) {
-                        for (KalturaSource.Drm drm : drmData) {
-                            PKMediaSource pkMediaSource = new PKMediaSource().setUrl(kalturaSource.getUrl()).setId(kalturaSource.getId() + ""); //!! source in mock doesn't have id - if source is per drm data - what will be the id
-                            sources.add(pkMediaSource.setDrmData(new PKDrmParams(drm.getLicenseURL())));
-                        }
-                    } else {
-                        sources.add(new PKMediaSource().setUrl(kalturaSource.getUrl()).setId(kalturaSource.getId() + ""));
-                    }
-                }
+            if (kalturaSources != null && kalturaSources.size() > 0) {
+                sources = parseFromSources(ks, partnerId, uiConfId, entry, playingResult);
+
             } else {
-                sources = parseSourceFromFlavors(entry, contextData);
+                PKLog.e(TAG, "failed to receive sources to play");
+                throw new InvalidParameterException("Could not create sources for media entry");
+                //sources = parseFromFlavors(ks, partnerId, uiConfId, entry, contextData);
             }
 
             return mediaEntry.setId(entry.getId()).setSources(sources).setDuration(entry.getMsDuration());
@@ -176,31 +214,38 @@ public class KalturaOvpMediaProvider implements MediaEntryProvider {
 //!! AndroidCharacter will have the same id.
 
 
-        static List<PKMediaSource> parseSourceFromFlavors(KalturaMediaEntry entry, KalturaEntryContextDataResult contextData) {
+        @NonNull
+        static List<PKMediaSource> parseFromFlavors(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaEntryContextDataResult contextData) {
 
-            ArrayList<KalturaFlavorAsset> supportedFlavors = new ArrayList<>();
             ArrayList<PKMediaSource> sources = new ArrayList<>();
 
             if (contextData != null) {
-                int[] flavorParamsIdsArr = entry.getFlavorParamsIdsArr();
-                if (flavorParamsIdsArr != null && flavorParamsIdsArr.length > 0) {
-                    String flavorIds = "";
+                //-> filter a list for flavors correspond to the list of "flavorParamsId"s received on the entry data response.
+                List<KalturaFlavorAsset> matchingFlavorAssets = FlavorAssetsFilter.filter(contextData.getFlavorAssets(), "flavorParamsId", entry.getFlavorParamsIdsList());
 
-                    for (int i = 0; i < flavorParamsIdsArr.length; i++) {
-                        KalturaFlavorAsset flavor;
-                        if(flavorParamsIdsArr[i] == 0){
-                            flavorIds += "0_";
-                            continue;
-                        }
-                        if ((flavor = contextData.containsFlavor(flavorParamsIdsArr[i])) != null) {
-                            flavorIds += (flavorIds.length() > 0 ? "," : "") + flavor.getId();
-                            supportedFlavors.add(flavor);
-                        }
-                    }
-                    if (flavorIds.length() > 0) {
-                        PKMediaSource mediaSource = new PKMediaSource();
-                        mediaSource.setId(entry.getId());
-                        mediaSource.setUrl(formatFlavoredUrl(entry.getDataUrl(), flavorIds));
+                //-> construct a string of "ids" from the filtered KalturaFlavorAsset list.
+                StringBuilder flavorIds = new StringBuilder(matchingFlavorAssets.size() > 0 ? matchingFlavorAssets.get(0).getId() : "");
+                for (int i = 1; i < matchingFlavorAssets.size(); i++) {
+                    flavorIds.append(",").append(matchingFlavorAssets.get(i).getId());
+                }
+
+                if (flavorIds.length() > 0) {
+                    //-> create PKMediaSource for every predefine extension:
+                    Set<String> extensions = PlaySourceUrlBuilder.getExtensions();
+
+                    for (String ext : extensions) {
+
+                        String playUrl = new PlaySourceUrlBuilder()
+                                .setEntryId(entry.getId())
+                                .setFlavorIds(flavorIds.toString())
+                                .setKs(ks)
+                                .setPartnerId(partnerId)
+                                .setUiConfId(uiConfId)
+                                .setExtension(ext)
+                                .setFormat(/*PlaySourceUrlBuilder.getFormatByExt(ext)*/"mp4").build(); //"mp4" - code not in use
+
+                        PKMediaSource mediaSource = new PKMediaSource().setId(entry.getId() + "_ext" + ext);
+                        mediaSource.setUrl(playUrl);
                         sources.add(mediaSource);
                     }
                 }
@@ -209,46 +254,58 @@ public class KalturaOvpMediaProvider implements MediaEntryProvider {
             return sources;
         }
 
+    }
         //          "url":"http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/url/protocol/http/a.mp4/flavorIds/0_,1_ude4l5pb,1_izgi81qa,1_3l6wh2jz,1_fafwf2t7,1_k6gs4dju,1_nzen8kfl"
 
-        private static String formatFlavoredUrl(String url, String flavorIds) {
-            return TextUtils.isEmpty(url) ? url : url + "/flavorIds/" + flavorIds;
+    @NonNull
+    private static List<PKMediaSource> parseFromSources(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlayingResult playingResult) {
+        ArrayList<PKMediaSource> sources = new ArrayList<>();
+
+        //-> create PKMediaSource-s according to sources list provided in "getContextData" response
+        for (KalturaPlayingSource kalturaSource : playingResult.getSources()) {
+            PlaySourceUrlBuilder playUrlBuilder = new PlaySourceUrlBuilder()
+                    .setEntryId(entry.getId())
+                    .setFlavorIds(TextUtils.join(",", kalturaSource.getFlavors()))
+                    .setFormat(kalturaSource.getFormat())
+                    .setKs(ks)
+                    .setPartnerId(partnerId)
+                    .setUiConfId(uiConfId)
+                    .setProtocol(kalturaSource.getProtocol(OvpConfigs.PreferredHttpProtocol));
+
+            String extension;
+            //-> find out what should be the extension: if format doesn't have mapped value, the extension will be fetched from the flavorAssets.
+            if((extension = PlaySourceUrlBuilder.getExtByFormat(kalturaSource.getFormat())) == null) {
+                List<KalturaFlavorAsset> flavorAssets = FlavorAssetsFilter.filter(playingResult.getFlavorAssets(), "id", kalturaSource.getFlavors());
+                extension = flavorAssets.size() > 0 ? flavorAssets.get(0).getFileExt() : PlaySourceUrlBuilder.getExtByFormat(kalturaSource.getFormat());
+            }
+
+            playUrlBuilder.setExtension(extension);
+
+            String playUrl = playUrlBuilder.build();
+            if(playUrl == null){
+                PKLog.w(TAG, "failed to create play url from source, discarding source:" + (entry.getId()+"_"+kalturaSource.getDeliveryProfileId())+", "+kalturaSource.getFormat());
+                continue;
+            }
+
+            //!! we don't have id for the media source
+            PKMediaSource pkMediaSource = new PKMediaSource().setUrl(playUrl).setId(entry.getId()+"_"+kalturaSource.getDeliveryProfileId());
+            //-> sources with multiple drm data are split to PKMediaSource per drm
+            List<KalturaPlayingSource.Drm> drmData = kalturaSource.getDrmData();
+            if (drmData != null) {
+                List<PKDrmParams> drmParams = new ArrayList<>();
+                for (KalturaPlayingSource.Drm drm : drmData) {
+                    drmParams.add(new PKDrmParams(drm.getLicenseURL()));
+                }
+                pkMediaSource.setDrmData(drmParams);
+            }
+
+            sources.add(pkMediaSource);
+
         }
+
+        return sources;
     }
+
 
 }
 
-/*
-*     public void parseMediaEntry(ArrayList<KalturaMediaEntry> mediaEntries, KalturaEntryContextDataResult contextData){
-
-        MediaEntry mediaEntry = new MediaEntry();
-
-        for(KalturaMediaEntry entry : mediaEntries){
-            ArrayList<FlavorAsset> supportedFlavors = new ArrayList<>();
-
-            if(contextData != null){
-                int[] flavorParamsIdsArr = entry.getFlavorParamsIdsArr();
-                if(flavorParamsIdsArr != null && flavorParamsIdsArr.length > 0 ) {
-                    String flavorIds = "";
-
-                    for(int i = 0 ; i <flavorParamsIdsArr.length; i++){
-                        FlavorAsset flavor;
-                        if((flavor = contextData.containsFlavor(flavorParamsIdsArr[i])) != null){
-                            flavorIds += (flavorIds.length() > 0 ? "," : "") + flavor.getId();
-                            supportedFlavors.add(flavor);
-                        }
-                    }
-                    if(flavorIds.length() > 0){
-                        MediaSource mediaSource = new MediaSource();
-                        mediaSource.setId(entry.getId());
-                        mediaSource.setMimeType(entry.);
-                    }
-                }
-            }
-        }
-
-        mediaEntry.setSources();
-    }
-
-*
-* */

@@ -11,11 +11,29 @@ import java.util.concurrent.CountDownLatch;
 
 public class BaseTest {
 
-    private CountDownLatch testWaitCount;
+    protected CountDownLatch testWaitCount;
+    protected String TAG = "BaseTest";
+
+    public BaseTest(){
+    }
+
+    public BaseTest(String tag){
+        this.TAG = tag;
+    }
 
     protected void resume(){
         if(testWaitCount != null) {
             testWaitCount.countDown();
+            PKLog.d(TAG, "count down reduced to "+testWaitCount.getCount());
+        }
+    }
+
+    protected void resume(int delay){
+        try {
+            Thread.sleep(delay);
+            resume();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -23,6 +41,8 @@ public class BaseTest {
         testWaitCount = new CountDownLatch(count);
         try {
             testWaitCount.await();
+            PKLog.d(TAG, "count down set for "+count);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

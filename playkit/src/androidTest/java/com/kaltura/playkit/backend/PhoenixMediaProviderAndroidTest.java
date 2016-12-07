@@ -8,8 +8,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.kaltura.playkit.BaseTest;
+import com.kaltura.playkit.OnCompletion;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.backend.base.BaseSessionProvider;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.backend.phoenix.data.KalturaMediaAsset;
 import com.kaltura.playkit.backend.phoenix.data.PhoenixParser;
@@ -35,6 +39,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Created by tehilarozin on 10/11/2016.
@@ -43,7 +48,10 @@ import static org.junit.Assert.assertTrue;
 @RunWith(AndroidJUnit4.class)
 public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
-    public static final String BaseUrl = "http://52.210.223.65:8080/v4_1/api_v3/";//"http://52.210.223.65:8080/v4_0/api_v3/";
+    public static final String Username = "albert@gmail.com";
+    public static final String Password = "123456";
+    //public static final String BaseUrl = "http://api-preprod.ott.kaltura.com/api_v3/"; //"http://52.210.223.65:8080/v4_1/api_v3/"
+    public static final String BaseUrl = "http://52.210.223.65:8080/v4_1/api_v3/";
     public static final String KS = "djJ8MTk4fAZXObQaPfvkEqBWfZkZfbruAO1V3CYGwE4OdvqojvsjaNMeN8yYtqgCvtpFiKblOayM9Xq5d2wHFCBAkbf7ju9-H4CrWrxOg7qhIRQUzqPz";
     public static final String MediaId = "258656";//frozen
     public static final String MediaId4 = "258655";//shrek
@@ -56,6 +64,8 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     public static final int PartnerId = 198;
 
 
+    OttSessionProvider testSession = new OttSessionProvider(BaseUrl, PartnerId);
+
     SessionProvider ksSessionProvider = new SessionProvider() {
         @Override
         public String baseUrl() {
@@ -63,8 +73,10 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public String getKs() {
-            return KS;
+        public void getKs(OnCompletion<String> completion) {
+            if(completion != null){
+                completion.onComplete(KS);
+            }
         }
 
         @Override
@@ -80,8 +92,10 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public String getKs() {
-            return null;
+        public void getKs(OnCompletion<String> completion) {
+            if(completion != null){
+                completion.onComplete(null);
+            }
         }
 
         @Override
@@ -90,12 +104,12 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         }
     };
 
-
     RequestQueue testExecutor;
 
     PhoenixMediaProvider phoenixMediaProvider;
 
     public PhoenixMediaProviderAndroidTest() {
+        super("PhoenixMediaProviderAndroidTest");
     }
 
     @Before
@@ -141,6 +155,158 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
     }
 
+    @Test
+    public void textRemoteLoading(){
+        phoenixMediaProvider = new PhoenixMediaProvider()
+                .setSessionProvider(ksSessionProvider)
+                .setReferenceType("media").setAssetId(MediaId5)
+                .setFormats(Format, Format2);
+
+        phoenixMediaProvider.load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                if (response.isSuccess()) {
+                    assertTrue(response.getResponse() != null);
+                    assertTrue(response.getResponse().getId().equals(MediaId5));
+                    assertTrue(response.getResponse().getSources().size() == 2);
+
+                } else {
+                    assertNotNull(response.getError());
+                    Log.e("PhoenixMediaProvider", "asset can't be played: "+response.getError().getMessage());
+                }
+
+                PhoenixMediaProviderAndroidTest.this.resume();
+
+            }
+        });
+        wait(1);
+    }
+
+    @Test
+    public void testLoadCancel(){
+
+        phoenixMediaProvider = new PhoenixMediaProvider()
+                .setSessionProvider(testSession)
+                .setReferenceType("media").setAssetId(MediaId5)
+                .setFormats(Format, Format2);
+
+        testSession.setSessionProviderListener(new BaseSessionProvider.SessionProviderListener() {
+            @Override
+            public void onError(ErrorElement error) {
+                fail("failed to start session: "+error.getMessage());
+                resume();
+            }
+
+            @Override
+            public void ready() {
+                PKLog.i("phoenix testing", "session ready start testing");
+
+                loadCancelTest1();
+
+                while (testWaitCount.getCount() > 1){}
+
+                loadCancelTest2(false);
+
+            }
+        });
+
+        testSession.startSession(Username, Password, null);
+        wait(2);
+
+    }
+
+    private void loadCancelTest1() {
+        PKLog.i("phoenix testing", "starting load 1:");
+
+        phoenixMediaProvider.load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                PKLog.e("phoenix testing", "load completion on a canceled load");
+                fail("this request should have been canceled");
+                resume();
+            }
+        });
+
+        PKLog.d("phoenix testing", "cancel load 1");
+        phoenixMediaProvider.cancel();
+
+        PKLog.d("phoenix testing", "starting load 2:");
+        phoenixMediaProvider.setAssetId(MediaId).setFormats(Format2).load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                if (response.isSuccess()) {
+                    assertTrue(response.getResponse() != null);
+                    assertTrue(response.getResponse().getId().equals(MediaId));
+                    assertTrue(response.getResponse().getSources().size() == 1);
+
+                    PKLog.d("phoenix testing", "starting load 3");
+                    phoenixMediaProvider.load(new OnMediaLoadCompletion() {
+                        @Override
+                        public void onComplete(ResultElement<PKMediaEntry> response) {
+                            fail("this request has been canceled");
+                            resume();
+                        }
+                    });
+                    PKLog.d("phoenix testing", "cancel load 3?");
+                    phoenixMediaProvider.cancel();
+
+                    resume(1000);
+
+                } else {
+                    assertNotNull(response.getError());
+                    Log.e("PhoenixMediaProvider", "MediaEntry loading failed: "+response.getError().getMessage());
+                    resume();
+                }
+
+
+            }
+        });
+    }
+
+    private void loadCancelTest2(final boolean cancelAtEnd){
+        PKLog.i("phoenix testing", "starting load 1:");
+        phoenixMediaProvider.load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                PKLog.e("phoenix testing", "load completion on a canceled load 1");
+                fail("load 1 should have been canceled");
+                resume();
+            }
+        });
+        PKLog.i("phoenix testing", "starting load 2:");
+        phoenixMediaProvider.setAssetId(MediaId5).load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                PKLog.e("phoenix testing", "load completion on a canceled load 2");
+                fail("load 2 should have been canceled");
+                resume();
+            }
+        });
+        PKLog.i("phoenix testing", "starting load 3:");
+        phoenixMediaProvider.setAssetId(MediaId2).setFormats(Format, Format2).load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                if(cancelAtEnd) {
+                    PKLog.e("phoenix testing", "load completion on a canceled load 3");
+                    fail("load 3 should have been canceled");
+                    resume();
+                } else {
+                    assertTrue(response.getResponse() != null);
+                    assertTrue(response.getResponse().getId().equals(MediaId2));
+                    assertTrue(response.getResponse().getSources().size() == 2);
+
+                    resume();
+                }
+            }
+        });
+
+        if(cancelAtEnd) {
+            phoenixMediaProvider.cancel();
+
+            resume();
+        }
+    }
+
 
     @Test
     public void testPreFetchedAsset() {
@@ -154,7 +320,6 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
             BaseResult asset = PhoenixParser.parse(jsonReader);
 
             assertNotNull(asset);
-            //assertTrue();
             mediaEntry = PhoenixMediaProvider.getMediaEntry(assetInfo, Arrays.asList(Format, Format2));
 
         } catch (IOException e) {
@@ -254,18 +419,6 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     }
 
 
-    @Test
-    public void testErrorHandling() {
-        /* TODO:
-        * invalid ks
-        * invalid assetid
-        * wrong server url
-        * invalid response structure
-        * check server error object handling*/
-
-
-    }
-
 
     /**
      * mock executor that reads precreated files that includes the mediaAsset/get response as if retrieved
@@ -277,8 +430,8 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     class Executor implements RequestQueue {
 
         @Override
-        public String queue(RequestElement requestElement) {
-            new RequestHandler(requestElement).run();
+        public String queue(RequestElement request) {
+            new RequestHandler(request).run();
             return null;
         }
 
@@ -289,12 +442,12 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public void cancelAction(String actionId) {
+        public void cancelRequest(String reqId) {
 
         }
 
         @Override
-        public void clearActions() {
+        public void clearRequests() {
 
         }
 
@@ -321,7 +474,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                     int serviceIdx = url.indexOf(SERVICE);
                     int actionIdx = url.indexOf(ACTION);
                     String service = actionIdx == -1 ? url.substring(serviceIdx + SERVICE.length()) : url.substring(serviceIdx + SERVICE.length(), actionIdx);
-                    String action = actionIdx == -1 ? "" : url.substring(actionIdx + ACTION.length());
+                    String action = actionIdx == -1 ? "_" : url.substring(actionIdx + ACTION.length());
 
                     if (request.getBody() != null) {
                         JsonParser parser = new JsonParser();

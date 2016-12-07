@@ -1,7 +1,5 @@
 package com.kaltura.playkitdemo;
 
-import com.kaltura.playkit.backend.SessionProvider;
-
 import java.util.ArrayList;
 
 /**
@@ -25,23 +23,6 @@ public class MockParams {
     public static final String Format = "Mobile_Devices_Main_HD";
     public static final String Format2 = "Mobile_Devices_Main_SD";
     public static String FrozenAssetInfo = "mock/phoenix.asset.get.258656.json";
-
-    public static SessionProvider sessionProvider = new SessionProvider() {
-        @Override
-        public String baseUrl() {
-            return PhoenixBaseUrl;
-        }
-
-        @Override
-        public String getKs() {
-            return KS;
-        }
-
-        @Override
-        public int partnerId() {
-            return PartnerId;
-        }
-    };
 
     public static class UserFactory {
 
