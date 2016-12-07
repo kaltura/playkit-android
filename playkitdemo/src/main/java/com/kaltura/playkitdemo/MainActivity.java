@@ -3,7 +3,6 @@ package com.kaltura.playkitdemo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.View;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -18,14 +17,14 @@ import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.TextTrackInfo;
-import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.VideoTrackInfo;
+import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
@@ -33,13 +32,9 @@ import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
 import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
-
-import java.util.ArrayList;
-import java.util.List;
-import com.kaltura.playkit.plugins.KalturaStatsPlugin;
-import com.kaltura.playkit.plugins.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -73,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         progressBar.setVisibility(View.INVISIBLE);
         registerPlugins();
 
-        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "drm1");
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
 
 //        mediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
 
@@ -161,8 +156,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onPause() {
         super.onPause();
-        controlsView.release();
-        player.onApplicationPaused();
+        if (controlsView != null) {
+            controlsView.release();
+        }
+        if (player != null) {
+            player.onApplicationPaused();
+        }
     }
 
     private void addPlayerListeners(final ProgressBar appProgressBar) {
