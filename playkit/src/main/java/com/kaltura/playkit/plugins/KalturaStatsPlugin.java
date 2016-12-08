@@ -18,6 +18,9 @@ import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
+import com.kaltura.playkit.plugins.ads.AdEvent;
+import com.kaltura.playkit.plugins.ads.AdInfo;
+import com.kaltura.playkit.utils.Consts;
 
 import org.junit.Test;
 
@@ -108,6 +111,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     private MessageBus messageBus;
     private RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
+    private AdInfo currentAdInfo;
 
     private float seekPercent = 0;
     private boolean playReached25 = false;
@@ -120,6 +124,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     private boolean isWidgetLoaded = false;
     private boolean isMediaLoaded = false;
     private boolean isFirstPlay = true;
+    private boolean durationValid = false;
 
     private int TimerInterval = 10000;
 
@@ -138,6 +143,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     @Override
     protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
         messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
+        messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
         this.mediaConfig = mediaConfig;
@@ -161,7 +167,7 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateConfig(String key, Object value) {
-        if (pluginConfig.has(key)){
+        if (pluginConfig.has(key)) {
             pluginConfig.addProperty(key, value.toString());
         }
     }
@@ -176,7 +182,7 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     }
 
-    public void onEvent(PlayerEvent.StateChanged event) {
+    private void onEvent(PlayerEvent.StateChanged event) {
         log.d(event.newState.toString());
         switch (event.newState) {
             case IDLE:
@@ -221,6 +227,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                         sendAnalyticsEvent(KStatsEvent.ERROR);
                         break;
                     case PLAY:
+                        sendWidgetLoaded();
                         sendMediaLoaded();
                         if (isFirstPlay) {
                             sendAnalyticsEvent(KStatsEvent.PLAY);
@@ -233,27 +240,104 @@ public class KalturaStatsPlugin extends PKPlugin {
                         sendAnalyticsEvent(KStatsEvent.SEEK);
                         break;
                     case CAN_PLAY:
+                        sendWidgetLoaded();
                         sendMediaLoaded();
                         break;
                     case REPLAY:
                         sendAnalyticsEvent(KStatsEvent.REPLAY);
                         break;
+                    case DURATION_CHANGE:
+                        long currDuration = ((PlayerEvent.DurationChanged) event).duration;
+                        if (currDuration >= 0) {
+                            durationValid = true;
+                        }
+                        break;
                     default:
                         break;
                 }
+            } else if (event instanceof AdEvent){
+                KalturaStatsPlugin.this.onEvent((AdEvent) event);
             }
         }
     };
 
-    private void sendWidgetLoaded(){
-        if (!isWidgetLoaded){
+
+    public void onEvent(AdEvent event) {
+        log.d(event.type.toString());
+        switch (event.type) {
+            case STARTED:
+                currentAdInfo = ((AdEvent.AdStartedEvent) event).adInfo;
+                sendAnalyticsEvent(KStatsEvent.PREROLL_STARTED);
+                break;
+            case PAUSED:
+
+                break;
+            case RESUMED:
+
+                break;
+            case COMPLETED:
+
+                break;
+            case FIRST_QUARTILE:
+
+                break;
+            case MIDPOINT:
+
+                break;
+            case THIRD_QUARTILE:
+                break;
+            case SKIPPED:
+
+                break;
+            case CLICKED:
+
+                break;
+            case TAPPED:
+
+                break;
+            case ICON_TAPPED:
+
+                break;
+            case AD_BREAK_READY:
+
+                break;
+            case AD_PROGRESS:
+
+                break;
+            case AD_BREAK_STARTED:
+
+                break;
+            case AD_BREAK_ENDED:
+
+                break;
+            case CUEPOINTS_CHANGED:
+
+                break;
+            case LOADED:
+
+
+                break;
+            case CONTENT_PAUSE_REQUESTED:
+                break;
+            case CONTENT_RESUME_REQUESTED:
+                break;
+            case ALL_ADS_COMPLETED:
+                break;
+        }
+        log.d(event.eventType().name());
+        messageBus.post(new LogEvent(TAG + " " + ((AdEvent) event).type.toString()));
+    }
+
+
+    private void sendWidgetLoaded() {
+        if (!isWidgetLoaded && durationValid) {
             sendAnalyticsEvent(KStatsEvent.WIDGET_LOADED);
             isWidgetLoaded = true;
         }
     }
 
-    private void sendMediaLoaded(){
-        if (!isMediaLoaded) {
+    private void sendMediaLoaded() {
+        if (!isMediaLoaded && durationValid) {
             sendAnalyticsEvent(KStatsEvent.MEDIA_LOADED);
             isMediaLoaded = true;
         }
@@ -278,7 +362,7 @@ public class KalturaStatsPlugin extends PKPlugin {
      * Time interval handling play reached events
      */
     private void startTimerInterval() {
-        TimerInterval = pluginConfig.has("timerInterval")? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt(): 30000;
+        TimerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() : 30000;
         if (timer == null) {
             timer = new java.util.Timer();
         }
@@ -305,18 +389,20 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     /**
      * Send stats event to Kaltura stats DB
+     *
      * @param eventType - Enum stating Kaltura state events
      */
     private void sendAnalyticsEvent(final KStatsEvent eventType) {
-        String sessionId = pluginConfig.has("sessionId")? pluginConfig.getAsJsonPrimitive("sessionId").getAsString(): "";
-        int uiconfId = pluginConfig.has("uiconfId")? pluginConfig.getAsJsonPrimitive("uiconfId").getAsInt(): 0;
-        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString(): "";
-        int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt(): 0;
+        String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
+        int uiconfId = pluginConfig.has("uiconfId") ? pluginConfig.getAsJsonPrimitive("uiconfId").getAsInt() : 0;
+        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : "";
+        int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
+        long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration();
 
         // Parameters for the request -
         //        String baseUrl, int partnerId, int eventType, String clientVer, long duration,
         //        String sessionId, long position, String uiConfId, String entryId, String widgetId, String kalsig, boolean isSeek, String referrer
-        RequestBuilder requestBuilder = StatsService.sendStatsEvent(baseUrl, partnerId, eventType.getValue(), OvpConfigs.ClientTag, player.getDuration(),
+        RequestBuilder requestBuilder = StatsService.sendStatsEvent(baseUrl, partnerId, eventType.getValue(), OvpConfigs.ClientTag, duration,
                 sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), "_" + partnerId, hasSeeked);
 
         requestBuilder.completion(new OnRequestCompletion() {
@@ -330,7 +416,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     }
 
     @Test
-    public void testSendStatsEvent(){
+    public void testSendStatsEvent() {
 
     }
 }
