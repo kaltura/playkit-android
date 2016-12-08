@@ -274,6 +274,10 @@ public class KalturaStatsPlugin extends PKPlugin {
                 currentAdInfo = ((AdEvent.AdStartedEvent) event).adInfo;
                 if (adCounter == 1){
                     sendAnalyticsEvent(KStatsEvent.PREROLL_STARTED);
+                } else if (adCounter == 2){
+                    sendAnalyticsEvent(KStatsEvent.MIDROLL_STARTED);
+                } else if (adCounter == 3){
+                    sendAnalyticsEvent(KStatsEvent.POSTROLL_STARTED);
                 }
                 break;
             case PAUSED:

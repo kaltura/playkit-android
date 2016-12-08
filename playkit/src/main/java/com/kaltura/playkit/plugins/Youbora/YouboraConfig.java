@@ -33,7 +33,6 @@ public class YouboraConfig {
     private static final Map<String, Object> networkObject;
 
     static {
-
         HashMap<String, Object> youboraConfig = new HashMap<>(20);
         youboraConfig.put("enableAnalytics", true);
         youboraConfig.put("parseHLS", false);
