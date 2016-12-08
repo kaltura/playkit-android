@@ -126,6 +126,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         //----------------------------//
         Gson gson = new Gson();
         adConfig =  gson.fromJson(pluginConfig, IMAConfig.class);//IMAConfig.fromJsonObject(pluginConfig);
+        // FOR TESTING adConfig.setPlayOnAdResume(true);
         adUiContainer = (ViewGroup) player.getView();
         requestAd();
     }
@@ -154,19 +155,36 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             getAdsConfig().setAutoPlayAdBreaks((boolean) value);
         } else if (key.equals(IMAConfig.AD_VIDEO_BITRATE)) {
             getAdsConfig().setVideoBitrate((int) value);
-        } else if (key.equals(IMAConfig.VIDEO_MIME_TYPES)) {
+        } else if (key.equals(IMAConfig.AD_VIDEO_MIME_TYPES)) {
             getAdsConfig().setVideoMimeTypes((List<String>) value);
         }
     }
 
     @Override
     protected void onApplicationPaused() {
-        pause();
+        log.d("IMA Start onApplicationPaused");
+        if (isAdDisplayed()) {
+            if (!adConfig.isPlayOnAdResume()) {
+                messageBus.post(new AdEvent(AdEvent.Type.APP_PAUSED_ON_AD));
+            }
+            pause();
+        } else {
+            messageBus.post(new AdEvent(AdEvent.Type.APP_PAUSED_ON_AD));
+        }
     }
 
     @Override
     protected void onApplicationResumed() {
-        resume();
+        log.d("IMA Start onApplicationResumed");
+        if (isAdDisplayed()) {
+            if (adConfig.isPlayOnAdResume()) {
+                resume();
+            } else {
+                messageBus.post(new AdEvent(AdEvent.Type.APP_RESUMED_ON_AD));
+            }
+        } else {
+            messageBus.post(new AdEvent(AdEvent.Type.APP_RESUMED_ON_AD));
+        }
     }
 
     @Override
@@ -495,7 +513,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         String adSystem           = ad.getAdSystem();
         int adHeight              = ad.getHeight();
         int adWidth               = ad.getWidth();
-        //AdPodInfo adPodInfo          =  ad.getAdPodInfo();
+        int adPodCount            =  ad.getAdPodInfo().getTotalAds();
         List<Float> adCuePoints;
         if (adsManager != null) {
             adCuePoints = adsManager.getAdCuePoints();
@@ -508,6 +526,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 contentType, adId,
                 adSystem, adHeight,
                 adWidth,
+                adPodCount,
                 adCuePoints);
 
         log.v("AdInfo: " + adInfo.toString());

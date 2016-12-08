@@ -18,10 +18,11 @@ public class IMAConfig {
     public static final String ENABLE_BG_PLAYBACK  = "enableBackgroundPlayback";
     public static final String AUTO_PLAY_AD_BREAK  = "autoPlayAdBreaks";
     public static final String AD_VIDEO_BITRATE    = "videoBitrate";
-    public static final String VIDEO_MIME_TYPES    = "videoMimeTypes";
+    public static final String AD_VIDEO_MIME_TYPES    = "videoMimeTypes";
     public static final String AD_TAG_TIMES        = "tagsTimes";
     public static final String AD_ATTRIBUTION_UIELEMENT = "adAttribution";
     public static final String AD_COUNTDOWN_UIELEMENT  = "adCountDown";
+    public static final String AD_PLAY_ON_RESUME  = "playOnResume";
 
 
     private String language = "en";
@@ -31,18 +32,21 @@ public class IMAConfig {
     private int videoBitrate;
     private boolean adAttribution;
     private boolean adCountDown;
+    private boolean playOnAdResume;
     private List<String> videoMimeTypes;
     //private Map<Double,String> tagsTimes; // <AdTime,URL_to_execute>
 
     //View companionView;
 
-    public IMAConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate, List<String> videoMimeTypes, String adTagUrl, boolean adAttribution, boolean adCountDown) {
+    public IMAConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate,
+                     List<String> videoMimeTypes, String adTagUrl, boolean adAttribution, boolean adCountDown, boolean playOnAdResume) {
         this.enableBackgroundPlayback = enableBackgroundPlayback;
         this.autoPlayAdBreaks = autoPlayAdBreaks;
         this.videoBitrate = videoBitrate;
         this.adTagURL = adTagUrl;
         this.adAttribution = adAttribution;
         this.adCountDown = adCountDown;
+        this.playOnAdResume = playOnAdResume;
 
         if (videoMimeTypes == null) {
             videoMimeTypes = new ArrayList<>();
@@ -120,7 +124,15 @@ public class IMAConfig {
         this.adCountDown = adCountDown;
     }
 
-//    public Map<Double, String> getTagsTimes() {
+    public boolean isPlayOnAdResume() {
+        return playOnAdResume;
+    }
+
+    public void setPlayOnAdResume(boolean playOnAdResume) {
+        this.playOnAdResume = playOnAdResume;
+    }
+
+    //    public Map<Double, String> getTagsTimes() {
 //        return tagsTimes;
 //    }
 //
@@ -146,6 +158,7 @@ public class IMAConfig {
         jsonObject.addProperty(AD_VIDEO_BITRATE, videoBitrate);
         jsonObject.addProperty(AD_ATTRIBUTION_UIELEMENT, adAttribution);
         jsonObject.addProperty(AD_COUNTDOWN_UIELEMENT, adCountDown);
+        jsonObject.addProperty(AD_PLAY_ON_RESUME, playOnAdResume);
 
         Gson gson = new Gson();
         JsonArray jArray = new JsonArray();
@@ -153,7 +166,7 @@ public class IMAConfig {
             JsonPrimitive element = new JsonPrimitive(mimeType);
             jArray.add(element);
         }
-        jsonObject.add(VIDEO_MIME_TYPES, jArray);
+        jsonObject.add(AD_VIDEO_MIME_TYPES, jArray);
 
 //        String tagsTimesJsonString = gson.toJson(tagsTimes);
 //        if (tagsTimesJsonString != null && !tagsTimesJsonString.isEmpty()) {

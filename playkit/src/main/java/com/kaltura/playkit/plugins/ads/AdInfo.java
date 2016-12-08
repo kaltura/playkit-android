@@ -10,8 +10,8 @@ import java.util.List;
 
 public class AdInfo implements PKAdInfo{
 
-    private String adDescription;
-    private long  adDuration;
+    private String  adDescription;
+    private long    adDuration;
     private String  adTitle;
     private boolean isAdSkippable;
     private String  contnentType;
@@ -19,10 +19,11 @@ public class AdInfo implements PKAdInfo{
     private String  adSystem;
     private int     adHeight;
     private int     adWidth;
+    int             podCount;
     private List<Float> adCuePoints;
 
     public AdInfo(String adDescription, long adDuration, String adTitle, boolean isAdSkippable, String contnentType,
-                  String adId, String adSystem, int adHeight, int adWidth, List<Float> adCuePoints) {
+                  String adId, String adSystem, int adHeight, int adWidth, int podCount, List<Float> adCuePoints) {
         this.adDescription = adDescription;
         this.adDuration = adDuration;
         this.adTitle = adTitle;
@@ -32,6 +33,7 @@ public class AdInfo implements PKAdInfo{
         this.adSystem = adSystem;
         this.adHeight = adHeight;
         this.adWidth = adWidth;
+        this.podCount = podCount;
         this.adCuePoints = adCuePoints;
     }
 
@@ -83,10 +85,6 @@ public class AdInfo implements PKAdInfo{
         return adId;
     }
 
-    public void setAdId(String adId) {
-        this.adId = adId;
-    }
-
     public String getAdSystem() {
         return adSystem;
     }
@@ -111,7 +109,12 @@ public class AdInfo implements PKAdInfo{
     }
 
     @Override
+    public int getPodCount() {
+        return podCount;
+    }
+
+    @Override
     public String toString() {
-        return "adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + contnentType;
+        return "adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + contnentType + " podCount = " + podCount;
     }
 }
