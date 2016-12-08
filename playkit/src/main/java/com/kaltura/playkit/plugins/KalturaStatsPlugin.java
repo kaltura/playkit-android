@@ -112,6 +112,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     private RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
     private AdInfo currentAdInfo;
+    private int adCounter = 1;
 
     private float seekPercent = 0;
     private boolean playReached25 = false;
@@ -204,6 +205,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                     intervalOn = true;
                     startTimerInterval();
                 }
+                sendWidgetLoaded();
                 sendMediaLoaded();
                 break;
             case BUFFERING:
@@ -217,6 +219,9 @@ public class KalturaStatsPlugin extends PKPlugin {
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
+            if (player.getDuration() < 0){
+                return;
+            }
             if (event instanceof PlayerEvent) {
                 log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
@@ -267,7 +272,9 @@ public class KalturaStatsPlugin extends PKPlugin {
         switch (event.type) {
             case STARTED:
                 currentAdInfo = ((AdEvent.AdStartedEvent) event).adInfo;
-                sendAnalyticsEvent(KStatsEvent.PREROLL_STARTED);
+                if (adCounter == 1){
+                    sendAnalyticsEvent(KStatsEvent.PREROLL_STARTED);
+                }
                 break;
             case PAUSED:
 
@@ -279,53 +286,49 @@ public class KalturaStatsPlugin extends PKPlugin {
 
                 break;
             case FIRST_QUARTILE:
-
+                if (adCounter == 1){
+                    sendAnalyticsEvent(KStatsEvent.PREROLL_25);
+                } else if (adCounter == 2){
+                    sendAnalyticsEvent(KStatsEvent.MIDROLL_25);
+                } else if (adCounter == 3){
+                    sendAnalyticsEvent(KStatsEvent.POSTROLL_25);
+                }
                 break;
             case MIDPOINT:
-
+                if (adCounter == 1){
+                    sendAnalyticsEvent(KStatsEvent.PREROLL_50);
+                } else if (adCounter == 2){
+                    sendAnalyticsEvent(KStatsEvent.MIDROLL_50);
+                } else if (adCounter == 3){
+                    sendAnalyticsEvent(KStatsEvent.POSTROLL_50);
+                }
                 break;
             case THIRD_QUARTILE:
-                break;
-            case SKIPPED:
-
+                if (adCounter == 1){
+                    sendAnalyticsEvent(KStatsEvent.PREROLL_75);
+                } else if (adCounter == 2){
+                    sendAnalyticsEvent(KStatsEvent.MIDROLL_75);
+                } else if (adCounter == 3){
+                    sendAnalyticsEvent(KStatsEvent.POSTROLL_75);
+                }
                 break;
             case CLICKED:
-
-                break;
-            case TAPPED:
-
-                break;
-            case ICON_TAPPED:
-
-                break;
-            case AD_BREAK_READY:
-
-                break;
-            case AD_PROGRESS:
-
-                break;
-            case AD_BREAK_STARTED:
-
-                break;
-            case AD_BREAK_ENDED:
-
-                break;
-            case CUEPOINTS_CHANGED:
-
-                break;
-            case LOADED:
-
-
-                break;
-            case CONTENT_PAUSE_REQUESTED:
-                break;
-            case CONTENT_RESUME_REQUESTED:
+                if (adCounter == 1){
+                    sendAnalyticsEvent(KStatsEvent.PREROLL_CLICKED);
+                } else if (adCounter == 2){
+                    sendAnalyticsEvent(KStatsEvent.MIDROLL_CLICKED);
+                } else if (adCounter == 3){
+                    sendAnalyticsEvent(KStatsEvent.POSTROLL_CLICKED);
+                }
                 break;
             case ALL_ADS_COMPLETED:
+                adCounter++;
+                break;
+            default:
                 break;
         }
         log.d(event.eventType().name());
-        messageBus.post(new LogEvent(TAG + " " + ((AdEvent) event).type.toString()));
+        messageBus.post(new LogEvent(TAG + " " + event.type.toString()));
     }
 
 
