@@ -132,12 +132,12 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
 
         // TODO: check if there's any overhead involved in creating a session manager and not using it.
-        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager;
+        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager = null;
         try {
             drmSessionManager = buildDrmSessionManager(WIDEVINE_UUID);
         } catch (UnsupportedDrmException e) {
             // TODO: proper error
-            return;
+            log.w("This device doesn't support widevine modular");
         }
 
         player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager, false);
@@ -441,14 +441,12 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
     public void release() {
         log.d("release");
         if (player != null) {
-
             playerWindow = player.getCurrentWindowIndex();
             playerPosition = Consts.TIME_UNSET;
             Timeline timeline = player.getCurrentTimeline();
             if (timeline != null && timeline.getWindow(playerWindow, window).isSeekable) {
                 playerPosition = player.getCurrentPosition();
             }
-
             this.eventLogger = null;
             player.release();
             player = null;
@@ -503,8 +501,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
             log.e("Attempt to invoke 'startFrom()' on null instance of the exoplayer");
             return;
         }
-            isSeeking = false;
-            player.seekTo(position);
+        isSeeking = false;
+        player.seekTo(position);
     }
 
     public void setEventListener(final EventListener eventTrigger) {
@@ -517,37 +515,39 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public void replay() {
-        if(player == null) {
+        if (player == null) {
             log.e("Attempt to invoke 'replay()' on null instance of the exoplayer");
             return;
         }
-            isSeeking = false;
-            player.seekTo(0);
-            sendDistinctEvent(PlayerEvent.Type.REPLAY);
+        isSeeking = false;
+        player.seekTo(0);
+        sendDistinctEvent(PlayerEvent.Type.REPLAY);
     }
 
     @Override
     public void setVolume(float volume) {
-        if(player == null) {
+        if (player == null) {
             log.e("Attempt to invoke 'setVolume()' on null instance of the exoplayer");
             return;
         }
 
-            if (volume < 0) {
-                volume = 0;
-            } else if (volume > 1) {
-                volume = 1;
-            }
+        if (volume < 0) {
+            volume = 0;
+        } else if (volume > 1) {
+            volume = 1;
+        }
 
-            if (volume != player.getVolume()) {
-                player.setVolume(volume);
-                sendEvent(PlayerEvent.Type.VOLUME_CHANGED);
-            }
+        if (volume != player.getVolume()) {
+            player.setVolume(volume);
+            sendEvent(PlayerEvent.Type.VOLUME_CHANGED);
+        }
     }
 
     @Override
     public boolean isPlaying() {
-        if(player == null) return false;
+        if(player == null) {
+            return false;
+        }
         return player.getPlayWhenReady() && currentState == PlayerState.READY;
     }
 
