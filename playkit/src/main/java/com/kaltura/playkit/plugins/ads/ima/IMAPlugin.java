@@ -84,6 +84,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private boolean isAdIsPaused;
     private boolean isAdRequested = false;
     private boolean isInitWaiting = false;
+    private boolean isPlayerPlayingBeforeBg = false;
     ////////////////////
     private MessageBus messageBus;
 
@@ -169,7 +170,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             }
             pause();
         } else {
-            messageBus.post(new AdEvent(AdEvent.Type.APP_PAUSED_ON_AD));
+            if (player.isPlaying()) {
+                isPlayerPlayingBeforeBg = true;
+            }
+            //messageBus.post(new AdEvent(AdEvent.Type.APP_PAUSED_NO_AD));
         }
     }
 
@@ -183,7 +187,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdEvent(AdEvent.Type.APP_RESUMED_ON_AD));
             }
         } else {
-            messageBus.post(new AdEvent(AdEvent.Type.APP_RESUMED_ON_AD));
+            if (isPlayerPlayingBeforeBg) {
+                player.play();
+            } else {
+                messageBus.post(new AdEvent(AdEvent.Type.APP_RESUMED_NO_AD));
+            }
+            isPlayerPlayingBeforeBg = false;
         }
     }
 
@@ -495,7 +504,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             case  AD_BREAK_ENDED:
                 messageBus.post(new AdEvent(AdEvent.Type.AD_BREAK_ENDED));
                 break;
-            case  CUEPOINTS_CHANGED:
+            case CUEPOINTS_CHANGED:
                 messageBus.post(new AdEvent(AdEvent.Type.CUEPOINTS_CHANGED));
                 break;
             default:
