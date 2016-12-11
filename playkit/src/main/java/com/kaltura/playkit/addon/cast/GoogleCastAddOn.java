@@ -15,8 +15,11 @@ import com.kaltura.playkit.backend.SessionProvider;
 import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
 import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static android.R.attr.format;
 
 /**
  * Created by itanbarpeled on 07/12/2016.
@@ -26,7 +29,8 @@ public class GoogleCastAddOn {
 
     // TODO itan - remove all this temps from here
     private static final String MOCK_DATA = "MOCK_DATA";
-    private static final String TEMP_LIB_URL = "https://kgit.html5video.org/pulls/3156/";
+    private static final String TEMP_LIB_URL_OVP = "http://player-227562931.eu-west-1.elb.amazonaws.com/v2.51.receiver.rc1/mwEmbed/";
+    private static final String TEMP_LIB_URL_OTT = "";
     private static final String MOCK_INIT_OBJECT = "{\n" +
             "\"initObj\": {\n" +
             "\"Locale\": {\n" +
@@ -56,11 +60,11 @@ public class GoogleCastAddOn {
 
         try {
 
-            embedConfig.put("lib", TEMP_LIB_URL);
-            embedConfig.put("publisherID", "198"); //243342
-            embedConfig.put("uiconfID", ""); //21099702
-            embedConfig.put("entryID", "258656"); //0_l1v5vzh3
-            embedConfig.put("flashVars", getFlashVars("", MOCK_AD_TAG_URL));
+            embedConfig.put("lib", TEMP_LIB_URL_OVP);
+            embedConfig.put("publisherID", "243342"); //"198"
+            embedConfig.put("uiconfID", "21099702"); //21099702
+            embedConfig.put("entryID", "0_l1v5vzh3"); //258656
+            //embedConfig.put("flashVars", getFlashVars("", MOCK_AD_TAG_URL));
 
             customData.put("embedConfig", embedConfig);
 
@@ -216,11 +220,11 @@ public class GoogleCastAddOn {
 
         try {
 
-            embedConfig.put("lib", TEMP_LIB_URL);
+            embedConfig.put("lib", TEMP_LIB_URL_OTT);
             embedConfig.put("publisherID", partnerId);
             embedConfig.put("uiconfID", uiConf);
             embedConfig.put("entryID", entryId);
-            embedConfig.put("flashVars", getFlashVars(ks, adTagUrl));
+            embedConfig.put("flashVars", getFlashVars(ks, adTagUrl, fileFormat));
             //setFileFormat(embedConfig, fileFormat);
 
 
@@ -250,30 +254,49 @@ public class GoogleCastAddOn {
 
 
 
-    private static JSONObject getFlashVars(String ks, String adTagUrl) {
+    private static JSONObject getFlashVars(String ks, String adTagUrl, String fileFormat) {
 
         JSONObject flashVars = new JSONObject();
 
-        try {
+        setProxyData(flashVars, ks, fileFormat);
+        setDoubleClickPlugin(flashVars, adTagUrl);
 
-            //flashVars.put("ks", "1234");
-            flashVars.put("proxyData", MOCK_INIT_OBJECT);
-
-            setDoubleClickPlugin(flashVars, adTagUrl);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return  flashVars;
-
+        return flashVars;
     }
 
 
 
 
-    private static void setDoubleClickPlugin(JSONObject flashVars, String adTagUrl) {
+    //flashVars.put("ks", "1234");
+    //flashVars.put("proxyData", MOCK_INIT_OBJECT);
 
+    private static void setProxyData(JSONObject flashVars, String ks, String fileFormat) {
+
+        JSONObject proxyData = new JSONObject();
+        JSONObject configObject = new JSONObject();
+
+        if (!TextUtils.isEmpty(ks)) {
+
+            try {
+
+
+                configObject.put("flavorassets", new JSONObject().put("filters", new JSONObject().put("include", new JSONObject().put("Format", new JSONArray().put(fileFormat)))));
+                proxyData.put("config", configObject);
+
+                proxyData.put("initObj", MOCK_INIT_OBJECT);
+                //proxyData.put("ks", ks);
+                flashVars.put("proxyData", proxyData);
+
+            } catch(JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+
+
+    private static void setDoubleClickPlugin(JSONObject flashVars, String adTagUrl) {
 
         JSONObject doubleClick = new JSONObject();
 
@@ -283,7 +306,6 @@ public class GoogleCastAddOn {
 
                 doubleClick.put("plugin", true);
                 doubleClick.put("adTagUrl", adTagUrl);
-
                 flashVars.put("doubleClick", doubleClick);
 
             } catch (JSONException e) {
@@ -291,7 +313,6 @@ public class GoogleCastAddOn {
             }
 
         }
-
 
     }
 
