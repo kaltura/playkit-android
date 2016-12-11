@@ -91,6 +91,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
     private boolean shouldResetPlayerPosition;
     private DeferredMediaDrmCallback deferredMediaDrmCallback;
     private String licenseUri;
+    private long prevDuration = Consts.TIME_UNSET;
 
     private PKTracks tracksInfo;
     private boolean shouldGetTracksInfo;
@@ -423,10 +424,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public long getDuration() {
-        if (player == null) {
-            return Consts.TIME_UNSET;
+        long currentDuration;
+        currentDuration = player == null? Consts.TIME_UNSET : player.getDuration();
+        if (prevDuration != currentDuration){
+            sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         }
-        return player.getDuration();
+        prevDuration = currentDuration;
+        return prevDuration;
     }
 
     @Override

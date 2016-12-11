@@ -30,7 +30,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
     private static final String TAG = "PhoenixAnalytics";
 
-    private enum PhoenixActionType{
+    public enum PhoenixActionType{
         HIT,
         PLAY,
         STOP,
@@ -45,13 +45,13 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private boolean isFirstPlay = true;
     private boolean intervalOn = false;
     private long mContinueTime;
-    private PlayerConfig.Media mediaConfig;
-    private JsonObject pluginConfig;
+    public PlayerConfig.Media mediaConfig;
+    public JsonObject pluginConfig;
     private Context mContext;
-    private Player player;
-    private RequestQueue requestsExecutor;
+    public Player player;
+    public RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
-    private MessageBus messageBus;
+    public MessageBus messageBus;
 
     private int MediaHitInterval = 30000; //Should be provided in plugin config
 
@@ -172,7 +172,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * Send Bookmark/add event using Kaltura Phoenix Rest API
      * @param eventType - Enum stating the event type to send
      */
-    private void sendAnalyticsEvent(final PhoenixActionType eventType){
+    protected void sendAnalyticsEvent(final PhoenixActionType eventType){
         String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"464302";
         String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://52.210.223.65:8080/v4_0/api_v3/";
         String ks = pluginConfig.has("ks")? pluginConfig.getAsJsonPrimitive("ks").getAsString():"djJ8MTk4fN86RC6KBjyHtmG9bIBounF1ewb1SMnFNtAvaxKIAfHUwW0rT4GAYQf8wwUKmmRAh7G0olZ7IyFS1FTpwskuqQPVQwrSiy_J21kLxIUl_V9J";
