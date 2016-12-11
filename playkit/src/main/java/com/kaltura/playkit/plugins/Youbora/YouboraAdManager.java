@@ -5,7 +5,9 @@ import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.backend.ovp.OvpConfigs;
 import com.kaltura.playkit.plugins.ads.AdEvent;
+import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.npaw.youbora.adnalyzers.AdnalyzerGeneric;
 import com.npaw.youbora.plugins.PluginGeneric;
 
@@ -20,6 +22,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     private boolean isBuffering = false;
     private MessageBus messageBus;
     private double adBitrate = -1;
+    private AdInfo currentAdInfo;
 
     public YouboraAdManager(PluginGeneric plugin, MessageBus messageBus) {
         super(plugin);
@@ -56,6 +59,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                 log.d(((AdEvent) event).type.toString());
                 switch (((AdEvent) event).type) {
                     case STARTED:
+                        currentAdInfo = ((AdEvent.AdStartedEvent) event).adInfo;
                         joinAdHandler();
                         break;
                     case PAUSED:
@@ -132,6 +136,26 @@ public class YouboraAdManager extends AdnalyzerGeneric {
 
     public Double getAdBitrate() {
         return this.adBitrate;
+    }
+
+    public Double getMediaPlayhead() {
+        return this.plugin.getPlayhead();
+    }
+
+    public String getAdPosition() {
+        return "unknown";
+    }
+
+    public String getAdTitle() {
+        return currentAdInfo != null? currentAdInfo.getAdTitle() : "";
+    }
+
+    public Double getAdDuration() {
+        return  currentAdInfo != null? currentAdInfo.getDuration() : 0.0D;
+    }
+
+    public String getAdPlayerVersion() {
+        return OvpConfigs.ClientTag;
     }
 
 }

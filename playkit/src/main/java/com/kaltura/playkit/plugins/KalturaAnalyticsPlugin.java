@@ -179,6 +179,9 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
                     case LOADED_METADATA:
 
                         break;
+                    case REPLAY:
+                        sendAnalyticsEvent(KAnalonyEvents.REPLAY);
+                        break;
                     case PAUSE:
                         sendAnalyticsEvent(KAnalonyEvents.PAUSE);
                         break;
