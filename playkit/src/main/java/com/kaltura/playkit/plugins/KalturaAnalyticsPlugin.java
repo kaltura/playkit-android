@@ -8,10 +8,10 @@ import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
+import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.backend.ovp.OvpConfigs;
 import com.kaltura.playkit.backend.ovp.services.AnalyticsService;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.OnRequestCompletion;
@@ -259,7 +259,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         // Parameters for the request -
 //        String baseUrl, int partnerId, int eventType, String clientVer, String playbackType, String sessionId, long position
 //        ,int uiConfId, String entryId, int eventIdx, int flavourId, String referrer, int bufferTime, int actualBitrate
-        RequestBuilder requestBuilder = AnalyticsService.sendAnalyticsEvent(baseUrl, partnerId, eventType.getValue(), OvpConfigs.ClientTag, playbackType,
+        RequestBuilder requestBuilder = AnalyticsService.sendAnalyticsEvent(baseUrl, partnerId, eventType.getValue(), PlayKitManager.CLIENT_TAG, playbackType,
                 sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), eventIdx++, flavourId, bufferTime, currentBitrate, "hls");
 
         requestBuilder.completion(new OnRequestCompletion() {
