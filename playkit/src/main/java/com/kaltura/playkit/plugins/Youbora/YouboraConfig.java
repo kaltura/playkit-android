@@ -1,10 +1,9 @@
 package com.kaltura.playkit.plugins.Youbora;
 
-import android.util.Log;
-
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayKitManager;
+import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 
 import java.util.Collections;
@@ -85,7 +84,7 @@ public class YouboraConfig {
         propertiesObject = properties;
 
         Map<String, Object> extraParams = new HashMap<>(10);
-        extraParams.put("param1", OvpConfigs.ClientTag);
+        extraParams.put("param1", PlayKitManager.CLIENT_TAG);
         youboraConfig.put("extraParams", extraParams);
         extraParamsObject = extraParams;
 
@@ -132,7 +131,7 @@ public class YouboraConfig {
         for (int i = 0; i < fieldNames.length; i++) {
             String fieldName = fieldNames[i];
             if (jsonObject.has(fieldName)) {
-                Log.d(TAG, "setYouboraConfigObject: " + fieldNames[i]);
+                log.d("setYouboraConfigObject: " + fieldNames[i]);
                 defaultJsonObject.put(fieldName, jsonObject.getAsJsonPrimitive(fieldName).getAsString());
             }
         }
@@ -140,7 +139,7 @@ public class YouboraConfig {
             for (int i = 0; i < booleanFieldNames.length; i++) {
                 String fieldName = fieldNames[i];
                 if (jsonObject.has(fieldName)) {
-                    Log.d(TAG, "setYouboraConfigObject: " + fieldNames[i]);
+                    log.d( "setYouboraConfigObject: " + fieldNames[i]);
                     defaultJsonObject.put(fieldName, jsonObject.getAsJsonPrimitive(fieldName).getAsBoolean());
                 }
             }
