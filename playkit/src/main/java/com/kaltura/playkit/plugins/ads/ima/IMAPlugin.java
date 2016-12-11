@@ -30,6 +30,7 @@ import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdEnabledPlayerController;
 import com.kaltura.playkit.ads.PKAdInfo;
+import com.kaltura.playkit.player.CustomExoPlayerView;
 import com.kaltura.playkit.plugins.ads.AdError;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
@@ -403,6 +404,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 if (player != null) {
                     player.pause();
                 }
+
+                if (adEvent.getAd().getAdPodInfo().getTotalAds() > 1) {
+                    ((CustomExoPlayerView) player.getView()).hideVideoSurfaceView();
+                }
                 break;
             case CONTENT_RESUME_REQUESTED:
                 // AdEventType.CONTENT_RESUME_REQUESTED is fired when the ad is completed
@@ -411,6 +416,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_RESUME_REQUESTED));
                 isAdDisplayed = false;
                 if (player != null) {
+                    ((CustomExoPlayerView) player.getView()).showVideoSurfaceView();
                     player.play();
                 }
                 break;
