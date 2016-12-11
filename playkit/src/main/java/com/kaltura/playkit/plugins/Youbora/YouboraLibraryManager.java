@@ -4,10 +4,10 @@ import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.backend.ovp.OvpConfigs;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.managers.ViewManager;
@@ -48,8 +48,8 @@ public class YouboraLibraryManager extends PluginGeneric {
 
     protected void init() {
         super.init();
-        this.pluginName = OvpConfigs.ClientTag;
-        this.pluginVersion = "5.3.0-"+ OvpConfigs.ClientTag;
+        this.pluginName = PlayKitManager.CLIENT_TAG;
+        this.pluginVersion = "5.3.0-"+ PlayKitManager.CLIENT_TAG;
         ViewManager.setMonitoringInterval(MONITORING_INTERVAL);
     }
 
@@ -178,7 +178,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public String getPlayerVersion() {
-        return OvpConfigs.ClientTag;
+        return PlayKitManager.CLIENT_TAG;
     }
 
     public String getResource() {
