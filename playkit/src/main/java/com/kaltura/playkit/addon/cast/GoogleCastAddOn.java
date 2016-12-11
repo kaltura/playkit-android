@@ -24,13 +24,32 @@ import org.json.JSONObject;
 public class GoogleCastAddOn {
 
 
+    // TODO itan - remove all this temps from here
     private static final String MOCK_DATA = "MOCK_DATA";
     private static final String TEMP_LIB_URL = "https://kgit.html5video.org/pulls/3156/";
+    private static final String MOCK_INIT_OBJECT = "{\n" +
+            "\"initObj\": {\n" +
+            "\"Locale\": {\n" +
+            "\"LocaleDevice\": null,\n" +
+            "\"LocaleLanguage\": \"en\",\n" +
+            "\"LocaleCountry\": null,\n" +
+            "\"LocaleUserState\": \"Unknown\"\n" +
+            "},\n" +
+            "\"UDID\": \"2345\",\n" +
+            "\"ApiUser\": \"tvpapi_198\",\n" +
+            "\"DomainID\": 362595,\n" +
+            "\"ApiPass\": \"11111\",\n" +
+            "\"SiteGuid\": \"739182\",\n" +
+            "\"Platform\": \"Web\"\n" +
+            "}\n" +
+            "}";
+    private static final String MOCK_AD_TAG_URL = "http://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=xml_vmap1&unviewed_position_start=1&cust_params=sample_ar%3Dpreonly&cmsid=496&vid=short_onecue&correlator=";
 
 
 
     // TODO itan - remove this temp method
     public static void getMediaInfoBuilder(OnCompletion<MediaInfo.Builder> completionListener) {
+
 
         JSONObject customData = new JSONObject();
         JSONObject embedConfig = new JSONObject();
@@ -38,9 +57,10 @@ public class GoogleCastAddOn {
         try {
 
             embedConfig.put("lib", TEMP_LIB_URL);
-            embedConfig.put("publisherID", "243342");
-            embedConfig.put("uiconfID", "21099702");
-            embedConfig.put("entryID", "0_l1v5vzh3");
+            embedConfig.put("publisherID", "198"); //243342
+            embedConfig.put("uiconfID", ""); //21099702
+            embedConfig.put("entryID", "258656"); //0_l1v5vzh3
+            embedConfig.put("flashVars", getFlashVars("", MOCK_AD_TAG_URL));
 
             customData.put("embedConfig", embedConfig);
 
@@ -58,6 +78,7 @@ public class GoogleCastAddOn {
         completionListener.onComplete(mediaInfoBuilder);
 
 
+
         /*
         MediaInfo.Builder mediaInfoBuilder = new MediaInfo.Builder("https://commondatastorage.googleapis.com/gtv-videos-bucket/CastVideos/hls/BigBuckBunny.m3u8")
 
@@ -66,6 +87,7 @@ public class GoogleCastAddOn {
 
         completionListener.onComplete(mediaInfoBuilder);
         */
+
 
     }
 
@@ -198,7 +220,7 @@ public class GoogleCastAddOn {
             embedConfig.put("publisherID", partnerId);
             embedConfig.put("uiconfID", uiConf);
             embedConfig.put("entryID", entryId);
-            //embedConfig.put("flashVars", getFlashVars(ks));
+            embedConfig.put("flashVars", getFlashVars(ks, adTagUrl));
             //setFileFormat(embedConfig, fileFormat);
 
 
@@ -228,20 +250,48 @@ public class GoogleCastAddOn {
 
 
 
-    private static JSONObject getFlashVars(String ks) {
+    private static JSONObject getFlashVars(String ks, String adTagUrl) {
 
         JSONObject flashVars = new JSONObject();
 
         try {
 
-            flashVars.put("ks", "1234");
-            //flashVars.put("proxyData", "initObject");
+            //flashVars.put("ks", "1234");
+            flashVars.put("proxyData", MOCK_INIT_OBJECT);
+
+            setDoubleClickPlugin(flashVars, adTagUrl);
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         return  flashVars;
+
+    }
+
+
+
+
+    private static void setDoubleClickPlugin(JSONObject flashVars, String adTagUrl) {
+
+
+        JSONObject doubleClick = new JSONObject();
+
+        if (!TextUtils.isEmpty(adTagUrl)) {
+
+            try {
+
+                doubleClick.put("plugin", true);
+                doubleClick.put("adTagUrl", adTagUrl);
+
+                flashVars.put("doubleClick", doubleClick);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+
 
     }
 
