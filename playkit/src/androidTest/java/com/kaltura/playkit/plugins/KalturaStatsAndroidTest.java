@@ -11,9 +11,7 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.player.PlayerController;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +39,7 @@ public class KalturaStatsAndroidTest {
         setMediaObject();
         messageBus = new MessageBus(context);
 
-        player = new PlayerController(context, mediaConfig);
+        player = new MockPlayer();
 
         plugin = (KalturaStatsPlugin) KalturaStatsPlugin.factory.newInstance();
         plugin.onLoad(player, mediaConfig, pluginConfig, messageBus, context);
@@ -82,8 +80,6 @@ public class KalturaStatsAndroidTest {
 
     @Test
     public void testPlugin(){
-        player.g
         messageBus.post(new PlayerEvent(PlayerEvent.Type.PLAY));
-        Assert.assertTrue(player.isPlaying());
     }
 }

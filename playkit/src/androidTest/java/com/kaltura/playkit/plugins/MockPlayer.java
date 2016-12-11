@@ -77,7 +77,7 @@ public class MockPlayer implements Player {
 
     @Override
     public long getDuration() {
-        return 0;
+        return 100;
     }
 
     @Override
