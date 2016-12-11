@@ -9,6 +9,15 @@ import java.util.Map;
  * Created by Noam Tamim @ Kaltura on 13/10/2016.
  */
 public class PlayKitManager {
+
+    public static final String VERSION_STRING = BuildConfig.VERSION_NAME;
+    public static final String CLIENT_TAG = "playkit/android-" + VERSION_STRING;
+
+    static {
+        PKLog.i("PlayKitManager", "PlayKit " + VERSION_STRING);
+    }
+    
+    
     private static Map<String, PKPlugin.Factory> sPluginFactories = new HashMap<>();
 
     public static void registerPlugins(PKPlugin.Factory ... pluginFactories) {

@@ -4,8 +4,8 @@ import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.backend.ovp.OvpConfigs;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.npaw.youbora.adnalyzers.AdnalyzerGeneric;
@@ -155,7 +155,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     }
 
     public String getAdPlayerVersion() {
-        return OvpConfigs.ClientTag;
+        return PlayKitManager.CLIENT_TAG;
     }
 
 }

@@ -4,15 +4,12 @@ import android.util.Log;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.Player;
+import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlayerConfig;
-import com.kaltura.playkit.backend.ovp.OvpConfigs;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.kaltura.playkit.backend.mock.MockMediaProvider.TAG;
 
 /**
  * Created by zivilan on 17/11/2016.
