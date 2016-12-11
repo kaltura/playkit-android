@@ -5,8 +5,8 @@ import android.util.Log;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlayerConfig;
-import com.kaltura.playkit.backend.ovp.OvpConfigs;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -100,7 +100,7 @@ public class YouboraConfig {
         propertiesObject = properties;
 
         Map<String, Object> extraParams = new HashMap<>(10);
-        extraParams.put("param1", OvpConfigs.ClientTag);
+        extraParams.put("param1", PlayKitManager.CLIENT_TAG);
         extraParams.put("param2", "Param 2 value");
         extraParams.put("param3", "Param 3 value");
         extraParams.put("param4", "Param 4 value");
