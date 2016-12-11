@@ -336,15 +336,15 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     private void sendWidgetLoaded() {
         if (!isWidgetLoaded && durationValid) {
-            sendAnalyticsEvent(KStatsEvent.WIDGET_LOADED);
             isWidgetLoaded = true;
+            sendAnalyticsEvent(KStatsEvent.WIDGET_LOADED);
         }
     }
 
     private void sendMediaLoaded() {
         if (!isMediaLoaded && durationValid) {
-            sendAnalyticsEvent(KStatsEvent.MEDIA_LOADED);
             isMediaLoaded = true;
+            sendAnalyticsEvent(KStatsEvent.MEDIA_LOADED);
         }
     }
 

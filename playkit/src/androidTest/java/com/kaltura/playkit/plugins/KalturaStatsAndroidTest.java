@@ -83,8 +83,8 @@ public class KalturaStatsAndroidTest {
 
     @Test
     public void testPlugin(){
-        player.d
+        player.seekTo(1000);
         messageBus.post(new PlayerEvent(PlayerEvent.Type.PLAY));
-        Assert.assertTrue(player.isPlaying());
+//        Assert.assertTrue(plugin.);
     }
 }
