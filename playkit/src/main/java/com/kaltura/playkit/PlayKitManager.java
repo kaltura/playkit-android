@@ -18,7 +18,7 @@ public class PlayKitManager {
         }
     }
 
-    static PKPlugin createPlugin(String name) {
+    public static PKPlugin createPlugin(String name) {
         PKPlugin.Factory pluginFactory = sPluginFactories.get(name);
         return pluginFactory == null ? null : pluginFactory.newInstance();
     }

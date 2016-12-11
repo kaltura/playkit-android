@@ -22,8 +22,6 @@ import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.utils.Consts;
 
-import org.junit.Test;
-
 import java.util.TimerTask;
 
 /**
@@ -420,10 +418,5 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
         });
         requestsExecutor.queue(requestBuilder.build());
-    }
-
-    @Test
-    public void testSendStatsEvent() {
-
     }
 }

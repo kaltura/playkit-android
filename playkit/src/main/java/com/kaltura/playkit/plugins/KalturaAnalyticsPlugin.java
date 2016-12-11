@@ -88,7 +88,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
 
         @Override
         public PKPlugin newInstance() {
-            return new KalturaStatsPlugin();
+            return new KalturaAnalyticsPlugin();
         }
     };
 
