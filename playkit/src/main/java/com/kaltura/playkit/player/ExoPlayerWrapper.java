@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -112,11 +113,19 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
     };
 
 
+
+
      ExoPlayerWrapper(Context context) {
         this.context = context;
-        mediaDataSourceFactory = buildDataSourceFactory(true);
-        exoPlayerView = new CustomExoPlayerView(context);
-        window = new Timeline.Window();
+         if (Looper.getMainLooper() == null){
+             Looper.prepareMainLooper();
+             Looper.prepare();
+         }
+
+         mainHandler = new Handler();
+         mediaDataSourceFactory = buildDataSourceFactory(true);
+         exoPlayerView = new CustomExoPlayerView(context);
+         window = new Timeline.Window();
     }
 
     private DeferredMediaDrmCallback.UrlProvider licenseUrlProvider = new DeferredMediaDrmCallback.UrlProvider() {

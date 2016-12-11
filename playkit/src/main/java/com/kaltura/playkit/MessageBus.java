@@ -29,6 +29,15 @@ public class MessageBus {
             }
         }
     }
+
+    public void remove(PKEvent.Listener listener, Enum... eventTypes){
+        for (Enum eventType : eventTypes) {
+            Set<PKEvent.Listener> listenerSet = listeners.get(eventType);
+            if (listenerSet != null) {
+                listenerSet.remove(listener);
+            }
+        }
+    }
     
     public void listen(PKEvent.Listener listener, Enum... eventTypes) {
         for (Enum eventType : eventTypes) {

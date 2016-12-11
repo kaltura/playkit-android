@@ -13,8 +13,7 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.player.PlayerController;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -83,8 +82,8 @@ public class KalturaStatsAndroidTest {
 
     @Test
     public void testPlugin(){
-        player.seekTo(1000);
+        player.g
         messageBus.post(new PlayerEvent(PlayerEvent.Type.PLAY));
-//        Assert.assertTrue(plugin.);
+        Assert.assertTrue(player.isPlaying());
     }
 }
