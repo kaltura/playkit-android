@@ -22,8 +22,6 @@ import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.utils.Consts;
 
-import org.junit.Test;
-
 import java.util.TimerTask;
 
 /**
@@ -338,15 +336,15 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     private void sendWidgetLoaded() {
         if (!isWidgetLoaded && durationValid) {
-            sendAnalyticsEvent(KStatsEvent.WIDGET_LOADED);
             isWidgetLoaded = true;
+            sendAnalyticsEvent(KStatsEvent.WIDGET_LOADED);
         }
     }
 
     private void sendMediaLoaded() {
         if (!isMediaLoaded && durationValid) {
-            sendAnalyticsEvent(KStatsEvent.MEDIA_LOADED);
             isMediaLoaded = true;
+            sendAnalyticsEvent(KStatsEvent.MEDIA_LOADED);
         }
     }
 
@@ -420,10 +418,5 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
         });
         requestsExecutor.queue(requestBuilder.build());
-    }
-
-    @Test
-    public void testSendStatsEvent() {
-
     }
 }
