@@ -113,8 +113,8 @@ public class PlayerController implements Player {
         log.e("destroy");
         if(player != null){
             player.destroy();
+            togglePlayerListeners(false);
         }
-        togglePlayerListeners(false);
         player = null;
         mediaConfig = null;
         eventListener = null;
