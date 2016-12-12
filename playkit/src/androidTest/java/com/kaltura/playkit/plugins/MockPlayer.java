@@ -16,7 +16,7 @@ import com.kaltura.playkit.ads.PKAdInfo;
 public class MockPlayer implements Player {
     private boolean isPlaying = false;
     private int duration = 100;
-    private long currentPosition;
+    private long currentPosition = 0;
 
     @Override
     public void prepare(@NonNull PlayerConfig.Media playerConfig) {
