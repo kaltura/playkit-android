@@ -3,15 +3,19 @@ package com.kaltura.playkit.plugins;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
+import android.util.Log;
 
 import com.google.gson.JsonObject;
+import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +35,14 @@ public class KalturaStatsAndroidTest {
     private PlayerConfig.Media mediaConfig;
     private MessageBus messageBus;
     private KalturaStatsPlugin plugin;
+    private int duration = 3000;
+    private long seek = 100;
+    private String entryId = "259295";
+    private int partnerId = 1281471;
+    private String widgetId = "_" + partnerId;
+    private int uiconfId = 24997472;
+    private PlayerEvent event = new PlayerEvent(PlayerEvent.Type.SEEKED);
+    private boolean isSeek = event.type == PlayerEvent.Type.SEEKED;
 
     @Before
     public void setUp(){
@@ -40,29 +52,20 @@ public class KalturaStatsAndroidTest {
         messageBus = new MessageBus(context);
 
         player = new MockPlayer();
+        ((MockPlayer) player).setDuration(duration);
+        player.seekTo(seek);
 
         plugin = (KalturaStatsPlugin) KalturaStatsPlugin.factory.newInstance();
         plugin.onLoad(player, mediaConfig, pluginConfig, messageBus, context);
-
-
-
-//        PlayKitManager.registerPlugins(KalturaStatsPlugin.factory);
-//        PlayerConfig config = new PlayerConfig();
-//        player = PlayKitManager.loadPlayer(config, context);
-//        configurePlugins(config.plugins, "KalturaStats", pluginConfig);
-
     }
 
-    private void configurePlugins(PlayerConfig.Plugins plugins, String pluginName, JsonObject pluginConfig){
-        plugins.setPluginConfig(pluginName, pluginConfig);
-    }
 
     private void setPluginConfigObject(){
         pluginConfig = new JsonObject();
         pluginConfig.addProperty("sessionId", "b3460681-b994-6fad-cd8b-f0b65736e837");
-        pluginConfig.addProperty("uiconfId", 24997472);
+        pluginConfig.addProperty("uiconfId", uiconfId);
         pluginConfig.addProperty("baseUrl", "stats.kaltura.com");
-        pluginConfig.addProperty("partnerId", 1281471);
+        pluginConfig.addProperty("partnerId", partnerId);
         pluginConfig.addProperty("timerInterval", 30000);
     }
 
@@ -73,13 +76,29 @@ public class KalturaStatsAndroidTest {
         mediaSource.setId("516109");
         ArrayList<PKMediaSource> sourceList = new ArrayList<>();
         sourceList.add(mediaSource);
-        PKMediaEntry mediaEntryProvider = new PKMediaEntry().setId("259295").setDuration(516109).setSources(sourceList);
+        PKMediaEntry mediaEntryProvider = new PKMediaEntry().setId(entryId).setDuration(duration).setSources(sourceList);
         config.media.setMediaEntry(mediaEntryProvider);
         mediaConfig = config.media;
     }
 
     @Test
     public void testPlugin(){
-        messageBus.post(new PlayerEvent(PlayerEvent.Type.PLAY));
+        messageBus.listen(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                Log.d("check","onEvent: ");
+                Assert.assertTrue(((LogEvent)event).log.contains(KalturaStatsPlugin.factory.getName()));
+                Assert.assertTrue(((LogEvent)event).log.contains("SEEK"));
+                Assert.assertTrue(((LogEvent)event).request.contains("duration=" + duration));
+                Assert.assertTrue(((LogEvent)event).request.contains("eventType=" + KalturaStatsPlugin.KStatsEvent.SEEK.getValue()));
+                Assert.assertTrue(((LogEvent)event).request.contains("currentPoint=" + seek));
+                Assert.assertTrue(((LogEvent)event).request.contains("seek=" + isSeek));
+                Assert.assertTrue(((LogEvent)event).request.contains("entryId=" + entryId));
+                Assert.assertTrue(((LogEvent)event).request.contains("uiconfId=" + uiconfId));
+                Assert.assertTrue(((LogEvent)event).request.contains("widgetId=" + widgetId));
+                Assert.assertTrue(((LogEvent)event).request.contains("partnerId=" + partnerId));
+            }
+        }, LogEvent.LogType.LogEvent);
+        messageBus.post(event);
     }
 }
