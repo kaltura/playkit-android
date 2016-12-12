@@ -164,9 +164,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     protected void onApplicationPaused() {
         log.d("IMA Start onApplicationPaused");
         if (isAdDisplayed()) {
-            if (!adConfig.isPlayOnAdResume()) {
                 messageBus.post(new AdEvent(AdEvent.Type.APP_PAUSED_ON_AD));
-            }
             pause();
         } else {
             if (player.isPlaying()) {
