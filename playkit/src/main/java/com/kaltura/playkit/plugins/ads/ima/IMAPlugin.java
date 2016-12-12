@@ -173,6 +173,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             if (player.isPlaying()) {
                 isPlayerPlayingBeforeBg = true;
             }
+            messageBus.post(new AdEvent(AdEvent.Type.APP_PAUSED_NO_AD));
         }
     }
 
