@@ -36,9 +36,8 @@ import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -259,17 +258,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 if (adConfig.getVideoMimeTypes().size() > 0) {
                     renderingSettings.setMimeTypes(adConfig.getVideoMimeTypes());
                 }
-                if (adConfig.getAdAttribution() || adConfig.getAdCountDown()) {
-                    Set<UiElement> set = new HashSet<UiElement>();
-                    if (adConfig.getAdAttribution()) {
-                        set.add(UiElement.AD_ATTRIBUTION);
-                    }
-                    if (adConfig.getAdCountDown()) {
-                        set.add(UiElement.COUNTDOWN);
-                    }
-                    renderingSettings.setUiElements(set);
+                //if both are false wwe remove the support int ad count down in ad
+                if (!adConfig.getAdAttribution() && !adConfig.getAdCountDown()) {
+                    renderingSettings.setUiElements(Collections.<UiElement>emptySet());
                 }
-
                 if (isInitWaiting) {
                     player.getView().setVisibility(View.VISIBLE);
                     adsManager.init(renderingSettings);
