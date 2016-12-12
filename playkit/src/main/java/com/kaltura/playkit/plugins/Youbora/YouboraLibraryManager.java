@@ -182,7 +182,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public String getResource() {
-        return "unknown";
+            return "unknown";
     }
 
     public Double getPlayhead() {
