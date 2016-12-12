@@ -3,6 +3,7 @@ package com.kaltura.playkit.backend.ovp.services;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.backend.ovp.APIDefines;
+import com.kaltura.playkit.backend.ovp.OvpRequestBuilder;
 import com.kaltura.playkit.connect.MultiRequestBuilder;
 import com.kaltura.playkit.connect.RequestBuilder;
 
@@ -15,13 +16,14 @@ public class BaseEntryService extends OvpService {
 
     public static RequestBuilder entryInfo(String baseUrl, String ks, String entryId) {
 
-        MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks).tag("mediaAsset-multi-get");
-        return multiRequestBuilder.add(list(baseUrl, ks, entryId).removeParams("clientTag","apiVersion","ks"),
-                getPlayingData(baseUrl, ks, entryId).removeParams("clientTag","apiVersion","ks"));
+        MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks)
+                .tag("mediaAsset-multi-get");
+
+        return multiRequestBuilder.add(list(baseUrl, ks, entryId), getContextData(baseUrl, ks, entryId)/*getPlayingData(baseUrl, ks, entryId)*/);
     }
 
-    public static RequestBuilder list(String baseUrl, String ks, String entryId) {
-        return new RequestBuilder()
+    public static OvpRequestBuilder list(String baseUrl, String ks, String entryId) {
+        return new OvpRequestBuilder()
                 .service("baseEntry")
                 .action("list")
                 .method("POST")
@@ -40,13 +42,16 @@ public class BaseEntryService extends OvpService {
         return new Gson().toJsonTree(baseEntryListParams).getAsJsonObject();
     }
 
-    public static RequestBuilder getContextData(String baseUrl, String ks, String entryId) {
-        JsonObject params = OvpService.getOvpParams();
+    public static OvpRequestBuilder getContextData(String baseUrl, String ks, String entryId) {
+        JsonObject params = new JsonObject();
         params.addProperty("entryId", entryId);
         params.addProperty("ks", ks);
-        params.add("contextDataParams", new JsonObject());
 
-        return new RequestBuilder().service("baseEntry")
+        JsonObject contextDataParams = new JsonObject();
+        contextDataParams.addProperty("objectType","KalturaContextDataParams");
+        params.add("contextDataParams", contextDataParams);
+
+        return new OvpRequestBuilder().service("baseEntry")
                 .action("getContextData")
                 .method("POST")
                 .url(baseUrl)
@@ -54,12 +59,12 @@ public class BaseEntryService extends OvpService {
                 .params(params);
     }
 
-    public static RequestBuilder getPlayingData(String baseUrl, String ks, String entryId) {
-        JsonObject params = OvpService.getOvpParams();
+    public static OvpRequestBuilder getPlayingData(String baseUrl, String ks, String entryId) {
+        JsonObject params = new JsonObject();
         params.addProperty("entryId", entryId);
         params.addProperty("ks", ks);
 
-        return new RequestBuilder().service("baseEntry")
+        return new OvpRequestBuilder().service("baseEntry")
                 .action("getPlayingData")
                 .method("POST")
                 .url(baseUrl)

@@ -3,7 +3,6 @@ package com.kaltura.playkitdemo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.View;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -15,32 +14,36 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.AudioTrackInfo;
 import com.kaltura.playkit.BaseTrackInfo;
 import com.kaltura.playkit.MediaEntryProvider;
+import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.TextTrackInfo;
-import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.VideoTrackInfo;
+import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.backend.mock.MockMediaProvider;
+import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
+import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
+import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
+import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
+import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
 import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
+import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
 import java.util.List;
-import com.kaltura.playkit.plugins.KalturaStatsPlugin;
-import com.kaltura.playkit.plugins.PhoenixAnalyticsPlugin;
-import com.kaltura.playkit.utils.Consts;
 
-import java.util.List;
+import static com.kaltura.playkitdemo.MockParams.Format;
+import static com.kaltura.playkitdemo.MockParams.MediaId;
 
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
@@ -73,36 +76,86 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         progressBar.setVisibility(View.INVISIBLE);
         registerPlugins();
 
-        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "drm1");
+//        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "drm1");
 
-//        mediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
+        //startOvpMediaLoading();
+        startOttMediaLoading();
 
-        mediaProvider.load(new OnMediaLoadCompletion() {
+    }
+
+    private void startOttMediaLoading() {
+        final OttSessionProvider ottSessionProvider = new OttSessionProvider(MockParams.PhoenixBaseUrl);
+        /* start anonymous session:
+        ottSessionProvider.startAnonymousSession(MockParams.OttPartnerId, null, new OnCompletion<PrimitiveResult>() {
+        OR
+        start user session:    */
+        MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getUser(MockParams.UserType.Ott);
+        ottSessionProvider.startSession(user.username, user.password, MockParams.OttPartnerId, null, new OnCompletion<PrimitiveResult>() {
             @Override
-            public void onComplete(final ResultElement<PKMediaEntry> response) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (response.isSuccess()) {
-                            onMediaLoaded(response.getResponse());
-                        } else {
+            public void onComplete(PrimitiveResult response) {
+                if(response.error == null) {
+                    mediaProvider = new PhoenixMediaProvider().setSessionProvider(ottSessionProvider).setAssetId(MediaId).setReferenceType(MockParams.MediaType).setFormats(Format);
 
-                            Toast.makeText(MainActivity.this, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""), Toast.LENGTH_LONG).show();
-                            log.e("failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
+                    mediaProvider.load(new OnMediaLoadCompletion() {
+                        @Override
+                        public void onComplete(final ResultElement<PKMediaEntry> response) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (response.isSuccess()) {
+                                        onMediaLoaded(response.getResponse());
+                                    } else {
+
+                                        Toast.makeText(MainActivity.this, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""), Toast.LENGTH_LONG).show();
+                                        log.e("failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
+                                    }
+                                }
+                            });
                         }
-                    }
-                });
+                    });
+                }
             }
         });
+    }
 
+    private void startOvpMediaLoading() {
+        final OvpSessionProvider ovpSessionProvider = new OvpSessionProvider(MockParams.KalturaOvpBaseUrl);
+        //ovpSessionProvider.startAnonymousSession(MockParams.OvpPartnerId, new OnCompletion<PrimitiveResult>() {
+        MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getUser(MockParams.UserType.Ovp);
+        ovpSessionProvider.startSession(user.username, user.password, MockParams.OvpPartnerId, new OnCompletion<PrimitiveResult>() {
+            @Override
+            public void onComplete(PrimitiveResult response) {
+                if(response.error == null) {
+                    mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(MockParams.EntryId);
+
+                    mediaProvider.load(new OnMediaLoadCompletion() {
+                        @Override
+                        public void onComplete(final ResultElement<PKMediaEntry> response) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (response.isSuccess()) {
+                                        onMediaLoaded(response.getResponse());
+                                    } else {
+
+                                        Toast.makeText(MainActivity.this, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""), Toast.LENGTH_LONG).show();
+                                        log.e("failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
     }
 
     private void onMediaLoaded(PKMediaEntry mediaEntry) {
 
         PlayerConfig config = new PlayerConfig();
 
-        config.media.setMediaEntry(mediaEntry);
-        config.media.setStartPosition(30000);
+        config.media.setMediaEntry(mediaEntry).setStartPosition(30000);
+
         if (player == null) {
 
             configurePlugins(config.plugins);

@@ -12,11 +12,7 @@ import com.kaltura.playkit.connect.MultiRequestBuilder;
  */
 public class PhoenixService {
 
-    public static String[] getRequestConfigKeys(){
-        return new String[]{"clientTag", "apiVersion"};
-    }
-
-    public static JsonObject getPhoenixParams(){
+    public static JsonObject getPhoenixConfigParams(){
         JsonObject params = new JsonObject();
         params.addProperty("clientTag", PhoenixConfigs.ClientTag);
         params.addProperty("apiVersion",PhoenixConfigs.ApiVersion);
@@ -25,7 +21,7 @@ public class PhoenixService {
     }
 
     public static MultiRequestBuilder getMultirequest(String baseUrl, @Nullable String ks){
-        JsonObject params = getPhoenixParams();
+        JsonObject params = getPhoenixConfigParams();
         if(!TextUtils.isEmpty(ks)) {
             params.addProperty("ks", ks);
         }

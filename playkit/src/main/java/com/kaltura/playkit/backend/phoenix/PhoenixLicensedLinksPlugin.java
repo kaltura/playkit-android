@@ -3,10 +3,12 @@ package com.kaltura.playkit.backend.phoenix;
 import com.google.gson.GsonBuilder;
 import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
 import com.kaltura.playkit.backend.phoenix.data.AssetResult;
 import com.kaltura.playkit.backend.phoenix.data.KalturaLicensedUrl;
 import com.kaltura.playkit.backend.phoenix.data.OttResultAdapter;
 import com.kaltura.playkit.backend.phoenix.services.LicensedUrlService;
+import com.kaltura.playkit.backend.phoenix.services.PhoenixService;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
@@ -28,11 +30,11 @@ public class PhoenixLicensedLinksPlugin {
 
     private void fetchShiftedLiveLicenseLinks(final String assetId, String programId, final String streamType, final long startDate, final OnCompletion<ResultElement<String>> completion) {
         //catchup/startOver/trickPlay
-        sessionProvider.getKs(new OnCompletion<String>() {
+        sessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
             @Override
-            public void onComplete(String response) {
-                if (response != null) {
-                    RequestBuilder requestBuilder = LicensedUrlService.getForShiftedLive(sessionProvider.baseUrl(), response, assetId, streamType, startDate);
+            public void onComplete(PrimitiveResult response) {
+                if (response != null && response.error == null) {
+                    RequestBuilder requestBuilder = LicensedUrlService.getForShiftedLive(sessionProvider.baseUrl(), response.getResult(), assetId, streamType, startDate);
                     execute(requestBuilder, completion);
                 }
             }
@@ -42,11 +44,11 @@ public class PhoenixLicensedLinksPlugin {
     private void fetchMediaLicenseLinks(final String assetId, final PKMediaSource fileSource, final OnCompletion<ResultElement<String>> completion) {
         // vod/channel
 
-        sessionProvider.getKs(new OnCompletion<String>() {
+        sessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
             @Override
-            public void onComplete(String response) {
-                if (response != null){
-                    RequestBuilder requestBuilder = LicensedUrlService.getForMedia(sessionProvider.baseUrl(), response, assetId, fileSource.getId(), fileSource.getUrl());
+            public void onComplete(PrimitiveResult response) {
+                if (response != null && response.error == null){
+                    PhoenixRequestBuilder requestBuilder = LicensedUrlService.getForMedia(sessionProvider.baseUrl(), response.getResult(), assetId, fileSource.getId(), fileSource.getUrl());
                     execute(requestBuilder, completion);
                 }
             }
@@ -55,11 +57,11 @@ public class PhoenixLicensedLinksPlugin {
 
     private void fetchRecordingLicenseLinks(final String assetId, final String fileFormat, final OnCompletion<ResultElement<String>> completion) {
         // recording
-        sessionProvider.getKs(new OnCompletion<String>() {
+        sessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
             @Override
-            public void onComplete(String response) {
-                if (response != null) {
-                    RequestBuilder requestBuilder = LicensedUrlService.getForRecording(sessionProvider.baseUrl(), response, assetId, fileFormat);
+            public void onComplete(PrimitiveResult response) {
+                if (response != null && response.error == null) {
+                    PhoenixRequestBuilder requestBuilder = LicensedUrlService.getForRecording(sessionProvider.baseUrl(), response.getResult(), assetId, fileFormat);
                     execute(requestBuilder, completion);
                 }
             }

@@ -1,7 +1,7 @@
 package com.kaltura.playkit.backend.phoenix.services;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.connect.RequestBuilder;
+import com.kaltura.playkit.backend.phoenix.PhoenixRequestBuilder;
 
 /**
  * Created by tehilarozin on 17/11/2016.
@@ -18,7 +18,7 @@ public class LicensedUrlService extends PhoenixService {
      * @param mediaBaseUrl
      * @return
      */
-    public static RequestBuilder getForMedia(String baseUrl, String ks, String assetId, String mediaId, String mediaBaseUrl) {
+    public static PhoenixRequestBuilder getForMedia(String baseUrl, String ks, String assetId, String mediaId, String mediaBaseUrl) {
         JsonObject requestProperty = new JsonObject();
         requestProperty.addProperty("objectType", "KalturaLicensedUrlMediaRequest");
         requestProperty.addProperty("contentId", mediaId);
@@ -35,7 +35,7 @@ public class LicensedUrlService extends PhoenixService {
      * @param startDate
      * @return
      */
-    public static RequestBuilder getForShiftedLive(String baseUrl, String ks, String assetId, String streamType, long startDate) {
+    public static PhoenixRequestBuilder getForShiftedLive(String baseUrl, String ks, String assetId, String streamType, long startDate) {
 
         JsonObject requestProperty = new JsonObject();
         requestProperty.addProperty("objectType", "KalturaLicensedUrlEpgRequest");
@@ -46,7 +46,7 @@ public class LicensedUrlService extends PhoenixService {
         return getLicensedLinksRequestBuilder(baseUrl, ks, "licensedlink-epg-get", requestProperty);
     }
 
-    public static RequestBuilder getForRecording(String baseUrl, String ks, String assetId, String fileType) {
+    public static PhoenixRequestBuilder getForRecording(String baseUrl, String ks, String assetId, String fileType) {
 
         JsonObject requestProperty = new JsonObject();
         requestProperty.addProperty("objectType", "KalturaLicensedUrlEpgRequest");
@@ -56,14 +56,14 @@ public class LicensedUrlService extends PhoenixService {
         return getLicensedLinksRequestBuilder(baseUrl, ks, "licensedlink-rec-get", requestProperty);
     }
 
-    private static RequestBuilder getLicensedLinksRequestBuilder(String baseUrl, String ks, String tag, JsonObject requestProperty) {
-        JsonObject reqParams = getPhoenixParams();
+    private static PhoenixRequestBuilder getLicensedLinksRequestBuilder(String baseUrl, String ks, String tag, JsonObject requestProperty) {
+        JsonObject reqParams = new JsonObject();
         if(!ks.equals("")) {
             reqParams.addProperty("ks", ks);
         }
         reqParams.add("request", requestProperty);
 
-        return new RequestBuilder()
+        return new PhoenixRequestBuilder()
                 .service("licensedUrl")
                 .action("get")
                 .method("POST")

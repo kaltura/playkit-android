@@ -5,6 +5,7 @@ package com.kaltura.playkit.backend;
  */
 
 import com.kaltura.playkit.OnCompletion;
+import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
 
 /**
  * provides session related configuration data to be used by who ever needs to communicate with
@@ -14,9 +15,8 @@ public interface SessionProvider {
 
     String baseUrl();
 
-    void getKs(OnCompletion<String> completion);
+    void getSessionToken(OnCompletion<PrimitiveResult> completion);
 
     int partnerId();
 
-    //onSessionExpired
 }

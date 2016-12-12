@@ -2,6 +2,7 @@ package com.kaltura.playkitdemo;
 
 import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.backend.SessionProvider;
+import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
 
 /**
  * Created by tehilarozin on 16/11/2016.
@@ -33,14 +34,14 @@ public class DemoSessionProvider implements SessionProvider {
     }
 
     @Override
-    public void getKs(OnCompletion<String> completion) {
+    public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
         if (completion!=null){
-            completion.onComplete(this.ks);
+            completion.onComplete(new PrimitiveResult(this.ks));
         }
     }
 
     @Override
     public int partnerId() {
-        return MockParams.PartnerId;
+        return MockParams.OttPartnerId;
     }
 }

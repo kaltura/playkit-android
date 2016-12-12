@@ -58,8 +58,10 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
 
         //!- in case load action is in progress and new load is activated, prev request will be canceled
         cancel();
-        currentLoad = loadExecutor.submit(factorNewLoader(completion));
-        PKLog.v(tag, "new loader started "+currentLoad.toString());
+        synchronized (syncObject) {
+            currentLoad = loadExecutor.submit(factorNewLoader(completion));
+            PKLog.v(tag, "new loader started " + currentLoad.toString());
+        }
     }
 
     @Override

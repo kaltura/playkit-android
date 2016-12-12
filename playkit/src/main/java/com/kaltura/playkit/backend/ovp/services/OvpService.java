@@ -9,7 +9,11 @@ import com.kaltura.playkit.connect.MultiRequestBuilder;
  */
 public class OvpService {
 
-    public static JsonObject getOvpParams(){
+    public static String[] getRequestConfigKeys(){
+        return new String[]{"clientTag", "apiVersion", "format"};
+    }
+
+    public static JsonObject getOvpConfigParams(){
         JsonObject params = new JsonObject();
         params.addProperty("clientTag", OvpConfigs.ClientTag);
         params.addProperty("apiVersion",OvpConfigs.ApiVersion);
@@ -19,7 +23,7 @@ public class OvpService {
     }
 
     public static MultiRequestBuilder getMultirequest(String baseUrl, String ks){
-        JsonObject ovpParams = OvpService.getOvpParams();
+        JsonObject ovpParams = OvpService.getOvpConfigParams();
         ovpParams.addProperty("ks", ks);
         return (MultiRequestBuilder) new MultiRequestBuilder().method("POST")
                 .url(baseUrl)

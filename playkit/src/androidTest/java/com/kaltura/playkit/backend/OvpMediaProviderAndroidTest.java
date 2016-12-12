@@ -12,6 +12,7 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.KalturaOvpParser;
+import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.RequestElement;
@@ -52,9 +53,9 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public void getKs(OnCompletion<String> completion) {
+        public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
             if(completion != null){
-                completion.onComplete(KS);
+                completion.onComplete(new PrimitiveResult(KS));
             }
         }
 

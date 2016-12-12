@@ -1,7 +1,5 @@
 package com.kaltura.playkit.connect;
 
-import java.net.SocketTimeoutException;
-
 /**
  * Created by tehilarozin on 06/11/2016.
  */
@@ -9,8 +7,9 @@ import java.net.SocketTimeoutException;
 public class ErrorElement {
 
     public static ErrorElement GeneralError = new ErrorElement("Something went wrong", 666);
-    public static ErrorElement MediaNotFound = new ErrorElement("Requested Media could not be located", 404);
+    public static ErrorElement NotFound = new ErrorElement("Resource not found", 404);
     public static ErrorElement LoadError = new ErrorElement("Failed to load data from source", 500);
+    public static ErrorElement ServiceUnavailableError = new ErrorElement("Requested service is unavailable", 503);
     public static ErrorElement ConnectionError = new ErrorElement("Failed to connect to source", 408);
     public static ErrorElement BadRequestError = new ErrorElement("Invalid or missing request params", 400);
     public static ErrorElement SessionError = new ErrorElement("Failed to obtain session", 601);
@@ -61,8 +60,14 @@ public class ErrorElement {
     }
 
     public static ErrorElement fromException(Exception exception) {
-        if(exception instanceof SocketTimeoutException) return ErrorElement.ConnectionError;
+        switch (exception.getClass().getSimpleName()){
+            case "SocketTimeoutException":
+            case "UnknownHostException":
+                return ErrorElement.ConnectionError;
 
-        return ErrorElement.GeneralError;
+            default:
+                return ErrorElement.GeneralError;
+
+        }
     }
 }

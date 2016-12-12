@@ -27,6 +27,10 @@ public class OvpResultAdapter implements JsonDeserializer<BaseResult> {
     @Override
     public BaseResult deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
 
+        if(json.isJsonPrimitive()){
+            return new PrimitiveResult(json.getAsString());
+        }
+
         JsonObject result = json.getAsJsonObject();
         BaseResult baseResult = new Gson().fromJson(json, typeOfT);
 

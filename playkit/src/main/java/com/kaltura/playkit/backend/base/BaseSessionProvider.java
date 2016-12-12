@@ -1,7 +1,6 @@
 package com.kaltura.playkit.backend.base;
 
 import com.kaltura.playkit.backend.SessionProvider;
-import com.kaltura.playkit.connect.ErrorElement;
 
 /**
  * Created by tehilarozin on 28/11/2016.
@@ -9,31 +8,31 @@ import com.kaltura.playkit.connect.ErrorElement;
 
 public abstract class BaseSessionProvider implements SessionProvider{
 
-
-    public interface SessionProviderListener{
+    /*public interface SessionProviderListener{
         void onError(ErrorElement error);
         void ready();
-    }
+        void ended();
+    }*/
 
     protected String baseUrl;
-    protected int partnerId;
+    //protected int partnerId;
     private String sessionToken;
     protected long expiryDate;
 
-    protected SessionProviderListener sessionListener;
+   // protected SessionProviderListener sessionListener;
 
 
-    protected BaseSessionProvider(String baseUrl, int partnerId){
+    protected BaseSessionProvider(String baseUrl){
         this.baseUrl = baseUrl;
-        this.partnerId = partnerId;
+        //this.partnerId = partnerId;
     }
 
 
-    public void setSessionProviderListener(SessionProviderListener listener){
+    /*public void setSessionProviderListener(SessionProviderListener listener){
         this.sessionListener = listener;
-    }
+    }*/
 
-    public void endSession(){
+    protected void endSession(){
         clearSession();
     }
 
@@ -44,9 +43,7 @@ public abstract class BaseSessionProvider implements SessionProvider{
 
 
     @Override
-    public int partnerId() {
-        return partnerId;
-    }
+    public abstract int partnerId();
 
     @Override
     public String baseUrl() {

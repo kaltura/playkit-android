@@ -11,8 +11,8 @@ import com.kaltura.playkit.BaseTest;
 import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.backend.base.BaseSessionProvider;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
 import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.backend.phoenix.data.KalturaMediaAsset;
@@ -50,8 +50,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
     public static final String Username = "albert@gmail.com";
     public static final String Password = "123456";
-    //public static final String BaseUrl = "http://api-preprod.ott.kaltura.com/api_v3/"; //"http://52.210.223.65:8080/v4_1/api_v3/"
-    public static final String BaseUrl = "http://52.210.223.65:8080/v4_1/api_v3/";
+    public static final String BaseUrl = "http://api-preprod.ott.kaltura.com/v4_1/api_v3/";//"http://52.210.223.65:8080/v4_1/api_v3/";
     public static final String KS = "djJ8MTk4fAZXObQaPfvkEqBWfZkZfbruAO1V3CYGwE4OdvqojvsjaNMeN8yYtqgCvtpFiKblOayM9Xq5d2wHFCBAkbf7ju9-H4CrWrxOg7qhIRQUzqPz";
     public static final String MediaId = "258656";//frozen
     public static final String MediaId4 = "258655";//shrek
@@ -73,9 +72,9 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public void getKs(OnCompletion<String> completion) {
+        public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
             if(completion != null){
-                completion.onComplete(KS);
+                completion.onComplete(new PrimitiveResult(KS));
             }
         }
 
@@ -92,7 +91,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public void getKs(OnCompletion<String> completion) {
+        public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
             if(completion != null){
                 completion.onComplete(null);
             }
@@ -190,29 +189,24 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                 .setReferenceType("media").setAssetId(MediaId5)
                 .setFormats(Format, Format2);
 
-        testSession.setSessionProviderListener(new BaseSessionProvider.SessionProviderListener() {
+        testSession.startSession(Username, Password, null, new OnCompletion<PrimitiveResult>() {
             @Override
-            public void onError(ErrorElement error) {
-                fail("failed to start session: "+error.getMessage());
-                resume();
-            }
+            public void onComplete(PrimitiveResult response) {
+                if(response.error != null){
+                    fail("failed to start session: "+response.error.getMessage());
+                    resume();
+                } else {
+                    PKLog.i("phoenix testing", "session ready start testing");
 
-            @Override
-            public void ready() {
-                PKLog.i("phoenix testing", "session ready start testing");
+                    loadCancelTest1();
 
-                loadCancelTest1();
+                    while (testWaitCount.getCount() > 1){}
 
-                while (testWaitCount.getCount() > 1){}
-
-                loadCancelTest2(false);
-
+                    loadCancelTest2(false);
+                }
             }
         });
-
-        testSession.startSession(Username, Password, null);
         wait(2);
-
     }
 
     private void loadCancelTest1() {
@@ -492,7 +486,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                         }
 
                         if(identifier.equals("")){
-                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, ErrorElement.MediaNotFound.message("mock file can't be traced from data")));
+                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, ErrorElement.NotFound.message("mock file can't be traced from data")));
                             return;
                         }
                         //assertNotNull(assetId);

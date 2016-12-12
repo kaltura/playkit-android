@@ -4,6 +4,7 @@ import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.backend.SessionProvider;
+import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.RequestQueue;
@@ -17,6 +18,7 @@ public abstract class BECallableLoader extends CallableLoader {
     protected String loadReq;
     protected RequestQueue requestQueue;
     protected SessionProvider sessionProvider;
+
 
     protected BECallableLoader(String tag, RequestQueue requestsExecutor, SessionProvider sessionProvider, OnCompletion completion){
         super(tag, completion);
@@ -33,8 +35,10 @@ public abstract class BECallableLoader extends CallableLoader {
     @Override
     protected void cancel() {
         if (loadReq != null) {
-            PKLog.i(TAG, loadId + ": canceling request execution [" + loadReq + "]");
-            requestQueue.cancelRequest(loadReq);
+            synchronized (syncObject) {
+                PKLog.i(TAG, loadId + ": canceling request execution [" + loadReq + "]");
+                requestQueue.cancelRequest(loadReq);
+            }
         } else {
             PKLog.i(TAG, loadId+": cancel: request completed ");
         }
@@ -46,13 +50,13 @@ public abstract class BECallableLoader extends CallableLoader {
 
         PKLog.i(TAG, loadId + ": load: start on get ks ");
 
-        sessionProvider.getKs(new OnCompletion<String>() {
+        sessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
             @Override
-            public void onComplete(String response) {
-                ErrorElement error = validateKs(response);
+            public void onComplete(PrimitiveResult response) {
+                ErrorElement error = response.error != null ? response.error : validateKs(response.getResult());
                 if (error == null) {
                     try {
-                        requestRemote(response);
+                        requestRemote(response.getResult());
 
                     } catch (InterruptedException e) {
                         interrupted();

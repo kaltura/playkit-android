@@ -30,9 +30,9 @@ import com.kaltura.playkit.connect.ResponseElement;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static android.text.TextUtils.isEmpty;
 
@@ -102,7 +102,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         private String uiConfId;
 
         Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String uiConfId, OnMediaLoadCompletion completion) {
-            super(KalturaOvpMediaProvider.TAG+"#Loader", requestsExecutor, sessionProvider, completion);
+            super(KalturaOvpMediaProvider.TAG + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.entryId = entryId;
             this.uiConfId = uiConfId;
@@ -120,12 +120,12 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         @Override
         protected void requestRemote(final String ks) throws InterruptedException {
             final RequestBuilder entryRequest = BaseEntryService.entryInfo(sessionProvider.baseUrl(), ks, entryId)
-            .completion(new OnRequestCompletion() {
-                @Override
-                public void onComplete(ResponseElement response) {
-                    onEntryInfoMultiResponse(ks, response, (OnMediaLoadCompletion) completion);
-                }
-            });
+                    .completion(new OnRequestCompletion() {
+                        @Override
+                        public void onComplete(ResponseElement response) {
+                            onEntryInfoMultiResponse(ks, response, (OnMediaLoadCompletion) completion);
+                        }
+                    });
             requestQueue.queue(entryRequest.build());
         }
 
@@ -141,7 +141,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
                 /* in this option, in case of error response, the type of the parsed response will be BaseResult, and not the expected object type,
                    since we parse the type dynamically from the result and we get "KalturaAPIException" objectType */
-                    List<BaseResult> responses = KalturaOvpParser.parse(response.getResponse());//, TextUtils.isEmpty(sessionProvider.getKs()) ? 1 : 0, KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
+                    List<BaseResult> responses = KalturaOvpParser.parse(response.getResponse());//, TextUtils.isEmpty(sessionProvider.getSessionToken()) ? 1 : 0, KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
                 /* in this option, responses types will always be as expected, and in case of an error, the error can be reached from the typed object, since
                 * all response objects should extend BaseResult */
                     //  List<BaseResult> responses = (List<BaseResult>) KalturaOvpParser.parse(response.getResponse(), KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
@@ -154,8 +154,13 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                     }
 
                     if (error == null) {
+
+                        KalturaPlayingResult kalturaPlayingResult = responses.get(1) instanceof KalturaPlayingResult ?
+                                (KalturaPlayingResult) responses.get(1) :
+                                new KalturaPlayingResult((KalturaEntryContextDataResult) responses.get(1));
+
                         mediaEntry = ProviderParser.getMediaEntry(ks, sessionProvider.partnerId() + "", uiConfId,
-                                ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), (KalturaPlayingResult) responses.get(1));
+                                ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), kalturaPlayingResult);
                     }
 
                 } catch (JsonSyntaxException ex) {
@@ -168,7 +173,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
             }
 
-            PKLog.v(TAG, loadId + ": load operation "+(isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
+            PKLog.v(TAG, loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
 
 
             if (!isCanceled() && completion != null) {
@@ -204,8 +209,8 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             } else {
                 PKLog.e(TAG, "failed to receive sources to play");
-                throw new InvalidParameterException("Could not create sources for media entry");
-                //sources = parseFromFlavors(ks, partnerId, uiConfId, entry, contextData);
+                //throw new InvalidParameterException("Could not create sources for media entry");
+                sources = parseFromFlavors(ks, partnerId, uiConfId, entry, playingResult);
             }
 
             return mediaEntry.setId(entry.getId()).setSources(sources).setDuration(entry.getMsDuration());
@@ -231,10 +236,10 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
                 if (flavorIds.length() > 0) {
                     //-> create PKMediaSource for every predefine extension:
-                    Set<String> extensions = PlaySourceUrlBuilder.getExtensions();
+                    Collection<String> extensions = PlaySourceUrlBuilder.getSupportedExtensions();
 
                     for (String ext : extensions) {
-
+                        String format = PlaySourceUrlBuilder.getFormatByExtension(ext);
                         String playUrl = new PlaySourceUrlBuilder()
                                 .setEntryId(entry.getId())
                                 .setFlavorIds(flavorIds.toString())
@@ -242,7 +247,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                                 .setPartnerId(partnerId)
                                 .setUiConfId(uiConfId)
                                 .setExtension(ext)
-                                .setFormat(/*PlaySourceUrlBuilder.getFormatByExt(ext)*/"mp4").build(); //"mp4" - code not in use
+                                .setFormat(format == null ? "mp4" : format).build(); //"mp4" - code not in use
 
                         PKMediaSource mediaSource = new PKMediaSource().setId(entry.getId() + "_ext" + ext);
                         mediaSource.setUrl(playUrl);
@@ -255,7 +260,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
 
     }
-        //          "url":"http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/url/protocol/http/a.mp4/flavorIds/0_,1_ude4l5pb,1_izgi81qa,1_3l6wh2jz,1_fafwf2t7,1_k6gs4dju,1_nzen8kfl"
+    //          "url":"http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/url/protocol/http/a.mp4/flavorIds/0_,1_ude4l5pb,1_izgi81qa,1_3l6wh2jz,1_fafwf2t7,1_k6gs4dju,1_nzen8kfl"
 
     @NonNull
     private static List<PKMediaSource> parseFromSources(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlayingResult playingResult) {
@@ -274,7 +279,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             String extension;
             //-> find out what should be the extension: if format doesn't have mapped value, the extension will be fetched from the flavorAssets.
-            if((extension = PlaySourceUrlBuilder.getExtByFormat(kalturaSource.getFormat())) == null) {
+            if ((extension = PlaySourceUrlBuilder.getExtByFormat(kalturaSource.getFormat())) == null) {
                 List<KalturaFlavorAsset> flavorAssets = FlavorAssetsFilter.filter(playingResult.getFlavorAssets(), "id", kalturaSource.getFlavors());
                 extension = flavorAssets.size() > 0 ? flavorAssets.get(0).getFileExt() : PlaySourceUrlBuilder.getExtByFormat(kalturaSource.getFormat());
             }
@@ -282,13 +287,13 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             playUrlBuilder.setExtension(extension);
 
             String playUrl = playUrlBuilder.build();
-            if(playUrl == null){
-                PKLog.w(TAG, "failed to create play url from source, discarding source:" + (entry.getId()+"_"+kalturaSource.getDeliveryProfileId())+", "+kalturaSource.getFormat());
+            if (playUrl == null) {
+                PKLog.w(TAG, "failed to create play url from source, discarding source:" + (entry.getId() + "_" + kalturaSource.getDeliveryProfileId()) + ", " + kalturaSource.getFormat());
                 continue;
             }
 
             //!! we don't have id for the media source
-            PKMediaSource pkMediaSource = new PKMediaSource().setUrl(playUrl).setId(entry.getId()+"_"+kalturaSource.getDeliveryProfileId());
+            PKMediaSource pkMediaSource = new PKMediaSource().setUrl(playUrl).setId(entry.getId() + "_" + kalturaSource.getDeliveryProfileId());
             //-> sources with multiple drm data are split to PKMediaSource per drm
             List<KalturaPlayingSource.Drm> drmData = kalturaSource.getDrmData();
             if (drmData != null) {

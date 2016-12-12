@@ -20,7 +20,6 @@ import com.kaltura.playkit.backend.phoenix.services.AssetService;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.OnRequestCompletion;
-import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
 
@@ -125,14 +124,13 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
 
-
     class Loader extends BECallableLoader {
 
         private MediaAsset asset;
 
 
         public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, MediaAsset mediaAsset, OnMediaLoadCompletion completion) {
-            super(PhoenixMediaProvider.TAG+"#Loader", requestsExecutor, sessionProvider, completion);
+            super(PhoenixMediaProvider.TAG + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.asset = mediaAsset;
 
@@ -147,22 +145,22 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
         @Override
-        protected void requestRemote(String ks) throws InterruptedException{
-            RequestBuilder requestBuilder = AssetService.assetGet(sessionProvider.baseUrl(), ks, asset.assetId, asset.referenceType);
-            requestBuilder.completion(new OnRequestCompletion() {
-                @Override
-                public void onComplete(ResponseElement response) {
-                    PKLog.v(TAG, loadId + ": got response to [" + loadReq + "]");
-                    loadReq = null;
+        protected void requestRemote(String ks) throws InterruptedException {
+            PhoenixRequestBuilder requestBuilder = AssetService.assetGet(sessionProvider.baseUrl(), ks, asset.assetId, asset.referenceType)
+                    .completion(new OnRequestCompletion() {
+                        @Override
+                        public void onComplete(ResponseElement response) {
+                            PKLog.v(TAG, loadId + ": got response to [" + loadReq + "]");
+                            loadReq = null;
 
-                    try {
-                        onAssetGetResponse(response);
+                            try {
+                                onAssetGetResponse(response);
 
-                    } catch (InterruptedException e) {
-                        interrupted();
-                    }
-                }
-            });
+                            } catch (InterruptedException e) {
+                                interrupted();
+                            }
+                        }
+                    });
 
             synchronized (syncObject) {
                 loadReq = requestQueue.queue(requestBuilder.build());
@@ -175,7 +173,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             ErrorElement error = null;
             PKMediaEntry mediaEntry = null;
 
-            if(isCanceled()){
+            if (isCanceled()) {
                 return;
             }
 
@@ -225,7 +223,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
             }
 
-            PKLog.i(TAG, loadId + ": load operation "+(isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
+            PKLog.i(TAG, loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
 
             if (!isCanceled() && completion != null) {
                 completion.onComplete(Accessories.buildResult(mediaEntry, error));
@@ -247,7 +245,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             return getMedia(id, mediaFiles, null);
         }
 
-        private static PKMediaEntry getMedia(String assetId, List<KalturaMediaFile> mediaFiles, List<String> formats) {
+        private synchronized static PKMediaEntry getMedia(String assetId, List<KalturaMediaFile> mediaFiles, List<String> formats) {
             PKMediaEntry mediaEntry = new PKMediaEntry();
             mediaEntry.setId("" + assetId);
 

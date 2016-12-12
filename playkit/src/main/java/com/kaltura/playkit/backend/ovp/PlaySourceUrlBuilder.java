@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class PlaySourceUrlBuilder {
         baseUrl = DefPlayUrl;
         protocol = OvpConfigs.PreferredHttpProtocol;
         format = DefFormat;
-        sessionId = UUID.randomUUID().toString();
+        sessionId = UUID.randomUUID().toString(); //!! should be created and added to the source by the player (playerConfig)
     }
 
     PlaySourceUrlBuilder(PlaySourceUrlBuilder builder) {
@@ -109,7 +110,14 @@ public class PlaySourceUrlBuilder {
         return ExtToFormatMapper.get(format);
     }
 
-
+    public static String getFormatByExtension(@NonNull String format){
+        for( Map.Entry<String, String> entry : ExtToFormatMapper.entrySet()){
+            if(entry.getValue().equals(format)){
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
 
     /**
      * we support http or https. defaults to PreferredHttpProtocol
@@ -171,7 +179,7 @@ public class PlaySourceUrlBuilder {
 
         playUrl.append("/a.").append(extension);
 
-        playUrl.append("?playSessionId=").append(sessionId);
+        //TODO: add it on player side!: playUrl.append("?playSessionId=").append(sessionId);
 
         if (hasFlavors && hasUiConfId) {
             playUrl.append("&uiConfId=").append(uiConfId);
@@ -180,7 +188,11 @@ public class PlaySourceUrlBuilder {
         return playUrl.toString();
     }
 
-    public static Set<String> getExtensions() {
+    public static Set<String> getSupportedformats() {
         return ExtToFormatMapper.keySet();
+    }
+
+    public static Collection<String> getSupportedExtensions() {
+        return ExtToFormatMapper.values();
     }
 }
