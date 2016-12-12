@@ -9,10 +9,10 @@ import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
+import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.backend.ovp.OvpConfigs;
 import com.kaltura.playkit.backend.ovp.services.LiveStatsService;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.OnRequestCompletion;
@@ -207,7 +207,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
         // String sessionId, String startTime,  String entryId,  boolean isLive, String referrer
         RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(baseUrl, partnerId, isLive ? 1 : 2, eventIdx++, bufferTime,
-                /*player.getBitrate() */ 0, sessionId, mediaConfig.getStartPosition(), mediaConfig.getMediaEntry().getId(), isLive, OvpConfigs.ClientTag, "hls");
+                /*player.getBitrate() */ 0, sessionId, mediaConfig.getStartPosition(), mediaConfig.getMediaEntry().getId(), isLive, PlayKitManager.CLIENT_TAG, "hls");
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override

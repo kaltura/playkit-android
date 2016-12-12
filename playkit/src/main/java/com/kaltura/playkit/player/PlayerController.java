@@ -103,8 +103,8 @@ public class PlayerController implements Player {
         if (drmData != null && drmData.size() > 0) {
             licenseUri = drmData.get(0).getLicenseUri(); // ?? TODO: decide which of the drm items to take
         }
-
         player.load(sourceUri, licenseUri);
+
         startPlaybackFrom(mediaConfig.getStartPosition());
     }
 

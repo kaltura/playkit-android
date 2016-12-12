@@ -4,10 +4,12 @@ import android.content.Context;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
+import com.kaltura.playkit.PlayerEvent;
 import com.npaw.youbora.youboralib.data.Options;
 
 import java.util.Map;
@@ -46,7 +48,7 @@ public class YouboraPlugin extends PKPlugin {
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
         this.mediaConfig = mediaConfig;
-        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, this.mediaConfig);
+        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, this.mediaConfig, player);
         // Refresh options with updated media
         pluginManager.setOptions(opt);
     }
@@ -56,7 +58,7 @@ public class YouboraPlugin extends PKPlugin {
         if (pluginConfig.has(key)){
             pluginConfig.addProperty(key, value.toString());
         }
-        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig);
+        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig, player);
         // Refresh options with updated media
         pluginManager.setOptions(opt);
     }
@@ -77,17 +79,21 @@ public class YouboraPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
+    protected void onLoad(final Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
         this.mediaConfig = mediaConfig;
         this.player = player;
         this.pluginConfig = pluginConfig;
         this.context = context;
         this.messageBus = messageBus;
-        pluginManager = new YouboraLibraryManager(new Options(), messageBus, mediaConfig);
+        pluginManager = new YouboraLibraryManager(new Options(), messageBus, mediaConfig, player);
+        loadPlugin();
+    }
+
+    private void loadPlugin(){
         startMonitoring(this.player);
         if (pluginConfig != null) {
-            if (pluginConfig.has("adsAnalytics")) {
-                adAnalytics = pluginConfig.getAsJsonPrimitive("adsAnalytics").getAsBoolean();
+            if (pluginConfig.getAsJsonObject("youboraConfig").has("adsAnalytics")) {
+                adAnalytics = pluginConfig.getAsJsonObject("youboraConfig").getAsJsonPrimitive("adsAnalytics").getAsBoolean();
             }
         }
         if (adsManager != null){
@@ -98,9 +104,26 @@ public class YouboraPlugin extends PKPlugin {
         log.d("onLoad");
     }
 
+    PKEvent.Listener eventListener = new PKEvent.Listener() {
+        @Override
+        public void onEvent(PKEvent event) {
+            if (player.getDuration() > 0){
+                setPluginOptions();
+            }
+        }
+    };
+
     private void startMonitoring(Player player) {
         log.d("start monitoring");
-        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig);
+        if (player.getDuration() < 0){
+            messageBus.listen(eventListener, PlayerEvent.Type.DURATION_CHANGE);
+        } else {
+            setPluginOptions();
+        }
+    }
+
+    private void setPluginOptions(){
+        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig, player);
         // Set options
         pluginManager.setOptions(opt);
         pluginManager.startMonitoring(player);

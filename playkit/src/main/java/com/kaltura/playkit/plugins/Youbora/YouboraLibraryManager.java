@@ -4,9 +4,10 @@ import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PlayKitManager;
+import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.backend.ovp.OvpConfigs;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.managers.ViewManager;
@@ -28,26 +29,27 @@ public class YouboraLibraryManager extends PluginGeneric {
     private static final long MONITORING_INTERVAL = 200L;
     private boolean isFirstPlay = true;
     private boolean isBuffering = false;
+    private Player player;
     private MessageBus messageBus;
     private PlayerConfig.Media mediaConfig;
 
     public YouboraLibraryManager(String options) throws JSONException {
         super(options);
-
     }
 
-    public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus, PlayerConfig.Media mediaConfig) {
+    public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus, PlayerConfig.Media mediaConfig, Player player) {
         super(options);
         this.messageBus = messageBus;
         this.mediaConfig = mediaConfig;
+        this.player = player;
         messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
         messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
     }
 
     protected void init() {
         super.init();
-        this.pluginName = OvpConfigs.ClientTag;
-        this.pluginVersion = "5.3.0-"+ OvpConfigs.ClientTag;
+        this.pluginName = PlayKitManager.CLIENT_TAG;
+        this.pluginVersion = "5.3.0-"+ PlayKitManager.CLIENT_TAG;
         ViewManager.setMonitoringInterval(MONITORING_INTERVAL);
     }
 
@@ -106,6 +108,9 @@ public class YouboraLibraryManager extends PluginGeneric {
                     case SEEKING:
                         seekingHandler();
                         break;
+                    case TRACKS_AVAILABLE:
+                        log.d("onEvent: ");
+                        break;
                     default:
                         break;
                 }
@@ -114,12 +119,12 @@ public class YouboraLibraryManager extends PluginGeneric {
                     messageBus.post(new LogEvent(TAG + " " + ((PlayerEvent) event).type.toString()));
                 }
             } else if (event instanceof AdEvent){
-
+                onAdEvent((AdEvent) event);
             }
         }
     };
 
-    public void onEvent(AdEvent event) {
+    private void onAdEvent(AdEvent event) {
         log.d(event.type.toString());
         switch (event.type) {
             case STARTED:
@@ -135,6 +140,7 @@ public class YouboraLibraryManager extends PluginGeneric {
         log.d(event.type.toString());
         messageBus.post(new LogEvent(TAG + " " + event.type.toString()));
     }
+
     public void startMonitoring(Object player) {
         log.d("startMonitoring");
         super.startMonitoring(player);
@@ -172,10 +178,16 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public String getPlayerVersion() {
-        return OvpConfigs.ClientTag;
+        return PlayKitManager.CLIENT_TAG;
     }
 
     public String getResource() {
-        return "unknown";
+            return "unknown";
     }
+
+    public Double getPlayhead() {
+        return Long.valueOf(player.getCurrentPosition()).doubleValue();
+    }
+
+
 }

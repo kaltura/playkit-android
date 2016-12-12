@@ -72,11 +72,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        log.i("PlayKitManager: " + PlayKitManager.CLIENT_TAG);
+
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setVisibility(View.INVISIBLE);
         registerPlugins();
 
-//        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "drm1");
+        //mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
 
         //startOvpMediaLoading();
         startOttMediaLoading();
@@ -84,13 +87,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void startOttMediaLoading() {
-        final OttSessionProvider ottSessionProvider = new OttSessionProvider(MockParams.PhoenixBaseUrl);
+        final OttSessionProvider ottSessionProvider = new OttSessionProvider(MockParams.PhoenixBaseUrl, MockParams.OttPartnerId);
         /* start anonymous session:
         ottSessionProvider.startAnonymousSession(MockParams.OttPartnerId, null, new OnCompletion<PrimitiveResult>() {
         OR
         start user session:    */
         MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getUser(MockParams.UserType.Ott);
-        ottSessionProvider.startSession(user.username, user.password, MockParams.OttPartnerId, null, new OnCompletion<PrimitiveResult>() {
+        ottSessionProvider.startSession(user.username, user.password, null, new OnCompletion<PrimitiveResult>() {
             @Override
             public void onComplete(PrimitiveResult response) {
                 if(response.error == null) {
@@ -214,8 +217,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onPause() {
         super.onPause();
-        controlsView.release();
-        player.onApplicationPaused();
+        if (controlsView != null) {
+            controlsView.release();
+        }
+        if (player != null) {
+            player.onApplicationPaused();
+        }
     }
 
     private void addPlayerListeners(final ProgressBar appProgressBar) {

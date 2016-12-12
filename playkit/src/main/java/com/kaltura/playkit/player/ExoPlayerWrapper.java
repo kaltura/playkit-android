@@ -37,22 +37,21 @@ import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelections;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DataSource.Factory;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
-import com.google.android.exoplayer2.upstream.DataSource.Factory;
 import com.google.android.exoplayer2.util.Util;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKTracks;
-import com.kaltura.playkit.player.PlayerController.EventListener;
-import com.kaltura.playkit.player.PlayerController.StateChangedListener;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.player.PlayerController.EventListener;
+import com.kaltura.playkit.player.PlayerController.StateChangedListener;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.EventLogger;
-
 
 import java.util.UUID;
 
@@ -91,6 +90,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
     private boolean shouldResetPlayerPosition;
     private DeferredMediaDrmCallback deferredMediaDrmCallback;
     private String licenseUri;
+    private long prevDuration = Consts.TIME_UNSET;
 
     private PKTracks tracksInfo;
     private boolean shouldGetTracksInfo;
@@ -111,11 +111,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
     };
 
 
+
+
      ExoPlayerWrapper(Context context) {
         this.context = context;
-        mediaDataSourceFactory = buildDataSourceFactory(true);
-        exoPlayerView = new CustomExoPlayerView(context);
-        window = new Timeline.Window();
+         mediaDataSourceFactory = buildDataSourceFactory(true);
+         exoPlayerView = new CustomExoPlayerView(context);
+         window = new Timeline.Window();
     }
 
     private DeferredMediaDrmCallback.UrlProvider licenseUrlProvider = new DeferredMediaDrmCallback.UrlProvider() {
@@ -132,12 +134,12 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
 
         // TODO: check if there's any overhead involved in creating a session manager and not using it.
-        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager;
+        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager = null;
         try {
             drmSessionManager = buildDrmSessionManager(WIDEVINE_UUID);
         } catch (UnsupportedDrmException e) {
             // TODO: proper error
-            return;
+            log.w("This device doesn't support widevine modular");
         }
 
         player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager, false);
@@ -423,10 +425,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public long getDuration() {
-        if (player == null) {
-            return Consts.TIME_UNSET;
+        long currentDuration;
+        currentDuration = player == null? Consts.TIME_UNSET : player.getDuration();
+        if (prevDuration != currentDuration){
+            sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         }
-        return player.getDuration();
+        prevDuration = currentDuration;
+        return prevDuration;
     }
 
     @Override
@@ -441,14 +446,12 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
     public void release() {
         log.d("release");
         if (player != null) {
-
             playerWindow = player.getCurrentWindowIndex();
             playerPosition = Consts.TIME_UNSET;
             Timeline timeline = player.getCurrentTimeline();
             if (timeline != null && timeline.getWindow(playerWindow, window).isSeekable) {
                 playerPosition = player.getCurrentPosition();
             }
-
             this.eventLogger = null;
             player.release();
             player = null;
@@ -503,8 +506,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
             log.e("Attempt to invoke 'startFrom()' on null instance of the exoplayer");
             return;
         }
-            isSeeking = false;
-            player.seekTo(position);
+        isSeeking = false;
+        player.seekTo(position);
     }
 
     public void setEventListener(final EventListener eventTrigger) {
@@ -517,37 +520,39 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public void replay() {
-        if(player == null) {
+        if (player == null) {
             log.e("Attempt to invoke 'replay()' on null instance of the exoplayer");
             return;
         }
-            isSeeking = false;
-            player.seekTo(0);
-            sendDistinctEvent(PlayerEvent.Type.REPLAY);
+        isSeeking = false;
+        player.seekTo(0);
+        sendDistinctEvent(PlayerEvent.Type.REPLAY);
     }
 
     @Override
     public void setVolume(float volume) {
-        if(player == null) {
+        if (player == null) {
             log.e("Attempt to invoke 'setVolume()' on null instance of the exoplayer");
             return;
         }
 
-            if (volume < 0) {
-                volume = 0;
-            } else if (volume > 1) {
-                volume = 1;
-            }
+        if (volume < 0) {
+            volume = 0;
+        } else if (volume > 1) {
+            volume = 1;
+        }
 
-            if (volume != player.getVolume()) {
-                player.setVolume(volume);
-                sendEvent(PlayerEvent.Type.VOLUME_CHANGED);
-            }
+        if (volume != player.getVolume()) {
+            player.setVolume(volume);
+            sendEvent(PlayerEvent.Type.VOLUME_CHANGED);
+        }
     }
 
     @Override
     public boolean isPlaying() {
-        if(player == null) return false;
+        if(player == null) {
+            return false;
+        }
         return player.getPlayWhenReady() && currentState == PlayerState.READY;
     }
 

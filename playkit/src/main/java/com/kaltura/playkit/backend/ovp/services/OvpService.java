@@ -1,6 +1,7 @@
 package com.kaltura.playkit.backend.ovp.services;
 
 import com.google.gson.JsonObject;
+import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.backend.ovp.OvpConfigs;
 import com.kaltura.playkit.connect.MultiRequestBuilder;
 
@@ -15,7 +16,7 @@ public class OvpService {
 
     public static JsonObject getOvpConfigParams(){
         JsonObject params = new JsonObject();
-        params.addProperty("clientTag", OvpConfigs.ClientTag);
+        params.addProperty("clientTag", PlayKitManager.CLIENT_TAG);
         params.addProperty("apiVersion",OvpConfigs.ApiVersion);
         params.addProperty("format",1); //json format
 
