@@ -258,7 +258,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 if (adConfig.getVideoMimeTypes().size() > 0) {
                     renderingSettings.setMimeTypes(adConfig.getVideoMimeTypes());
                 }
-                //if both are false wwe remove the support int ad count down in ad
+                //if both are false we remove the support int ad count down in ad
                 if (!adConfig.getAdAttribution() && !adConfig.getAdCountDown()) {
                     renderingSettings.setUiElements(Collections.<UiElement>emptySet());
                 }
