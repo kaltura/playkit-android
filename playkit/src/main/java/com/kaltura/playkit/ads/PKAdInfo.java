@@ -12,6 +12,6 @@ public interface PKAdInfo {
     int getAdWidth();
     int getAdHeight();
     int getAdPodCount();
-    long getAdDuration();
+    double getAdDuration();
     List<Float> getAdCuePoints();
 }
