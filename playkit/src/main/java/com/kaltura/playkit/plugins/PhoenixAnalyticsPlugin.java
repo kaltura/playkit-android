@@ -186,10 +186,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             @Override
             public void onComplete(ResponseElement response) {
                 log.d("onComplete send event: ");
-                messageBus.post(new LogEvent(TAG + " " + eventType.name()));
             }
         });
         requestsExecutor.queue(requestBuilder.build());
+        messageBus.post(new LogEvent(TAG + " " + eventType.toString(), requestBuilder.build().getBody()));
     }
 
 
