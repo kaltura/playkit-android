@@ -20,14 +20,14 @@ public class AdInfo implements PKAdInfo{
     private int     adHeight;
     private int     adWidth;
     int             adPodCount;
-    int             adPosition;
+    int             adPodPosition;
     double          adPodTimeOffset;
     private List<Float> adCuePoints;
 
 
     public AdInfo(String adDescription, double adDuration, String adTitle, boolean isAdSkippable, String contnentType,
                   String adId, String adSystem, int adHeight, int adWidth,
-                  int adPodCount, int adPosition, double adPodTimeOffset,
+                  int adPodCount, int adPodPosition, double adPodTimeOffset,
                   List<Float> adCuePoints) {
 
         this.adDescription = adDescription;
@@ -40,7 +40,7 @@ public class AdInfo implements PKAdInfo{
         this.adHeight    = adHeight;
         this.adWidth     = adWidth;
         this.adPodCount  = adPodCount;
-        this.adPosition  = adPosition;
+        this.adPodPosition  = adPodPosition;
         this.adPodTimeOffset = adPodTimeOffset;
         this.adCuePoints = adCuePoints;
     }
@@ -97,8 +97,8 @@ public class AdInfo implements PKAdInfo{
     }
 
     @Override
-    public int getAdPosition() {
-        return adPosition;
+    public int getAdPodPosition() {
+        return adPodPosition;
     }
 
     @Override
@@ -120,6 +120,6 @@ public class AdInfo implements PKAdInfo{
         } else {
             adType = "Pre-Roll";
         }
-        return "AdTyp=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + contnentType + " podCount = " + adPosition + "/" + adPodCount;
+        return "AdTyp=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + contnentType + " podCount = " + adPodPosition + "/" + adPodCount;
     }
 }
