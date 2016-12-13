@@ -389,7 +389,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 // AdsManager.start() begins ad playback. This method is ignored for VMAP or
                 // ad rules playlists, as the SDK will automatically start executing the
                 // playlist.
-
                 messageBus.post(new AdEvent(AdEvent.Type.LOADED));
                 adsManager.start();
                 break;
@@ -495,6 +494,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         int adHeight              = ad.getHeight();
         int adWidth               = ad.getWidth();
         int adPodCount            =  ad.getAdPodInfo().getTotalAds();
+        int adPodIndex            =  ad.getAdPodInfo().getAdPosition();
+        double adPodTimeOffset    =  ad.getAdPodInfo().getTimeOffset();
         List<Float> adCuePoints;
         if (adsManager != null) {
             adCuePoints = adsManager.getAdCuePoints();
@@ -508,6 +509,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 adSystem, adHeight,
                 adWidth,
                 adPodCount,
+                adPodIndex,
+                adPodTimeOffset,
                 adCuePoints);
 
         log.v("AdInfo: " + adInfo.toString());
