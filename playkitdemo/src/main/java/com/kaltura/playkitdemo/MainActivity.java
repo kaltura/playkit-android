@@ -27,6 +27,7 @@ import com.kaltura.playkit.TextTrackInfo;
 import com.kaltura.playkit.VideoTrackInfo;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
 import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
@@ -79,10 +80,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         progressBar.setVisibility(View.INVISIBLE);
         registerPlugins();
 
-        //mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
 
         //startOvpMediaLoading();
-        startOttMediaLoading();
+        //startOttMediaLoading();
 
     }
 
