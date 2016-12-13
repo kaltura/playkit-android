@@ -1,14 +1,17 @@
 package com.kaltura.playkit.ads;
 
+import java.util.List;
+
 public interface PKAdInfo {
-    public String getDescription();
+    public String getAdDescription();
     String getAdId();
     String getAdSystem();
-    boolean isLinear();
-    boolean isSkippable();
-    String getTitle();
-    String getContentType();
+    boolean isAdSkippable();
+    String getAdTitle();
+    String getAdContentType();
     int getAdWidth();
     int getAdHeight();
-    long getDuration();
+    int getAdPodCount();
+    long getAdDuration();
+    List<Float> getAdCuePoints();
 }

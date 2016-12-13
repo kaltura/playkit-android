@@ -10,8 +10,8 @@ import java.util.List;
 
 public class AdInfo implements PKAdInfo{
 
-    private String adDescription;
-    private long  adDuration;
+    private String  adDescription;
+    private long    adDuration;
     private String  adTitle;
     private boolean isAdSkippable;
     private String  contnentType;
@@ -19,43 +19,27 @@ public class AdInfo implements PKAdInfo{
     private String  adSystem;
     private int     adHeight;
     private int     adWidth;
+    int             adPodCount;
     private List<Float> adCuePoints;
 
     public AdInfo(String adDescription, long adDuration, String adTitle, boolean isAdSkippable, String contnentType,
-                  String adId, String adSystem, int adHeight, int adWidth, List<Float> adCuePoints) {
+                  String adId, String adSystem, int adHeight, int adWidth, int adPodCount, List<Float> adCuePoints) {
         this.adDescription = adDescription;
-        this.adDuration = adDuration;
-        this.adTitle = adTitle;
+        this.adDuration    = adDuration;
+        this.adTitle       = adTitle;
         this.isAdSkippable = isAdSkippable;
-        this.contnentType = contnentType;
-        this.adId = adId;
-        this.adSystem = adSystem;
-        this.adHeight = adHeight;
-        this.adWidth = adWidth;
+        this.contnentType  = contnentType;
+        this.adId        = adId;
+        this.adSystem    = adSystem;
+        this.adHeight    = adHeight;
+        this.adWidth     = adWidth;
+        this.adPodCount  = adPodCount;
         this.adCuePoints = adCuePoints;
     }
 
-    public String getAdDescription() {
-        return adDescription;
-    }
 
-    public String getContnentType() {
-        return contnentType;
-    }
-
-    public String getAdTitle() {
-        return adTitle;
-    }
-
-    public void setAdTitle(String adTitle) {
-        this.adTitle = adTitle;
-    }
-
-    public boolean isAdSkippable() {
-        return isAdSkippable;
-    }
-
-    public String getContentType() {
+    @Override
+    public String getAdContentType() {
         return contnentType;
     }
 
@@ -70,48 +54,47 @@ public class AdInfo implements PKAdInfo{
     }
 
     @Override
-    public long getDuration() {
+    public long getAdDuration() {
         return adDuration;
     }
 
     @Override
-    public String getDescription() {
-        return null;
+    public String getAdDescription() {
+        return adDescription;
     }
 
+    @Override
     public String getAdId() {
         return adId;
     }
 
-    public void setAdId(String adId) {
-        this.adId = adId;
+    @Override
+    public int getAdPodCount() {
+        return adPodCount;
     }
 
+    @Override
     public String getAdSystem() {
         return adSystem;
     }
 
     @Override
-    public boolean isLinear() {
-        return false;
+    public boolean isAdSkippable() {
+        return isAdSkippable;
     }
 
     @Override
-    public boolean isSkippable() {
-        return false;
+    public String getAdTitle() {
+        return adTitle;
     }
 
     @Override
-    public String getTitle() {
-        return null;
-    }
-
     public List<Float> getAdCuePoints() {
         return adCuePoints;
     }
 
     @Override
     public String toString() {
-        return "adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + contnentType;
+        return "adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + contnentType + " podCount = " + adPodCount;
     }
 }
