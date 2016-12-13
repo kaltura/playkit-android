@@ -126,7 +126,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         //----------------------------//
         Gson gson = new Gson();
         adConfig =  gson.fromJson(pluginConfig, IMAConfig.class);//IMAConfig.fromJsonObject(pluginConfig);
-        // FOR TESTING adConfig.setPlayOnAdResume(true);
+
         adUiContainer = (ViewGroup) player.getView();
         requestAd();
     }
