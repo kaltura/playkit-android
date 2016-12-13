@@ -19,7 +19,8 @@ public class BaseEntryService extends OvpService {
         MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks)
                 .tag("mediaAsset-multi-get");
 
-        return multiRequestBuilder.add(list(baseUrl, ks, entryId), getContextData(baseUrl, ks, entryId)/*getPlayingData(baseUrl, ks, entryId)*/);
+        return multiRequestBuilder.add(list(baseUrl, ks, entryId), getContextData(baseUrl, ks, entryId)
+                /*!! once api will be available change to: getPlaybackContext(baseUrl, ks, entryId)*/);
     }
 
     public static OvpRequestBuilder list(String baseUrl, String ks, String entryId) {
@@ -59,16 +60,16 @@ public class BaseEntryService extends OvpService {
                 .params(params);
     }
 
-    public static OvpRequestBuilder getPlayingData(String baseUrl, String ks, String entryId) {
+    public static OvpRequestBuilder getPlaybackContext(String baseUrl, String ks, String entryId) {
         JsonObject params = new JsonObject();
         params.addProperty("entryId", entryId);
         params.addProperty("ks", ks);
 
         return new OvpRequestBuilder().service("baseEntry")
-                .action("getPlayingData")
+                .action("getPlaybackContext")
                 .method("POST")
                 .url(baseUrl)
-                .tag("baseEntry-getPlayingData")
+                .tag("baseEntry-getPlaybackContext")
                 .params(params);
     }
 

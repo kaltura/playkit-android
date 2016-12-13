@@ -1,5 +1,8 @@
 package com.kaltura.playkit.backend.ovp;
 
+import android.support.annotation.NonNull;
+
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -34,12 +37,17 @@ public class KalturaOvpParser {
     public static <T> T parse(JsonElement resultElement) throws JsonSyntaxException {
 
         if (resultElement.isJsonObject()) {
-            return (T) GsonParser.parseObject(resultElement, BaseResult.class, new GsonBuilder().registerTypeHierarchyAdapter(BaseResult.class, new OvpResultAdapter()).create());
+            return (T) GsonParser.parseObject(resultElement, BaseResult.class, getGson());
         } else if (resultElement.isJsonArray()) {
-            return (T) GsonParser.parseArray(resultElement, new GsonBuilder().registerTypeHierarchyAdapter(BaseResult.class, new OvpResultAdapter()).create(), BaseResult.class);
+            return (T) GsonParser.parseArray(resultElement, getGson(), BaseResult.class);
         } else if (resultElement.isJsonPrimitive()) {
             return (T) resultElement.getAsJsonPrimitive().getAsString();
         }
         return null;
+    }
+
+    @NonNull
+    private static Gson getGson() {
+        return new GsonBuilder().registerTypeHierarchyAdapter(BaseResult.class, new OvpResultAdapter()).create();
     }
 }

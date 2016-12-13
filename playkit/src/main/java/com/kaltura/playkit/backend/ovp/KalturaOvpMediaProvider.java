@@ -8,6 +8,7 @@ import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.backend.SessionProvider;
 import com.kaltura.playkit.backend.base.BECallableLoader;
@@ -18,8 +19,8 @@ import com.kaltura.playkit.backend.ovp.data.KalturaBaseEntryListResponse;
 import com.kaltura.playkit.backend.ovp.data.KalturaEntryContextDataResult;
 import com.kaltura.playkit.backend.ovp.data.KalturaFlavorAsset;
 import com.kaltura.playkit.backend.ovp.data.KalturaMediaEntry;
-import com.kaltura.playkit.backend.ovp.data.KalturaPlayingResult;
-import com.kaltura.playkit.backend.ovp.data.KalturaPlayingSource;
+import com.kaltura.playkit.backend.ovp.data.KalturaPlaybackContextResult;
+import com.kaltura.playkit.backend.ovp.data.KalturaPlaybackSource;
 import com.kaltura.playkit.backend.ovp.services.BaseEntryService;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
@@ -31,6 +32,7 @@ import com.kaltura.playkit.connect.ResponseElement;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -137,7 +139,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             if (response != null && response.isSuccess()) {
 
                 try {
-                    //parse multi response from request respone
+                    //parse multi response from request response
 
                 /* in this option, in case of error response, the type of the parsed response will be BaseResult, and not the expected object type,
                    since we parse the type dynamically from the result and we get "KalturaAPIException" objectType */
@@ -147,20 +149,20 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                     //  List<BaseResult> responses = (List<BaseResult>) KalturaOvpParser.parse(response.getResponse(), KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
 
                     if (responses.get(0).error != null) {
-                        error = responses.get(0).error.addMessage("baseEntry/list request failed");//ErrorElement.LoadError.message("baseEntry/list request failed");
+                        error = responses.get(0).error.addMessage("baseEntry/list request failed");
                     }
                     if (error == null && responses.get(1).error != null) {
-                        error = responses.get(1).error.addMessage("baseEntry/getPlayingData request failed");
+                        error = responses.get(1).error.addMessage("baseEntry/getPlaybackContext request failed");
                     }
 
                     if (error == null) {
 
-                        KalturaPlayingResult kalturaPlayingResult = responses.get(1) instanceof KalturaPlayingResult ?
-                                (KalturaPlayingResult) responses.get(1) :
-                                new KalturaPlayingResult((KalturaEntryContextDataResult) responses.get(1));
+                        KalturaPlaybackContextResult kalturaPlaybackContextResult = responses.get(1) instanceof KalturaPlaybackContextResult ?
+                                (KalturaPlaybackContextResult) responses.get(1) :
+                                new KalturaPlaybackContextResult((KalturaEntryContextDataResult) responses.get(1));
 
                         mediaEntry = ProviderParser.getMediaEntry(ks, sessionProvider.partnerId() + "", uiConfId,
-                                ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), kalturaPlayingResult);
+                                ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), kalturaPlaybackContextResult);
                     }
 
                 } catch (JsonSyntaxException ex) {
@@ -198,10 +200,10 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          * @return (in case of restriction on maxbitrate, filtering should be done by considering the flavors provided to the
          *source- if none meets the restriction, source should not be added to the mediaEntrys sources.)
          */
-        public static PKMediaEntry getMediaEntry(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlayingResult playingResult) throws InvalidParameterException {
+        public static PKMediaEntry getMediaEntry(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlaybackContextResult playingResult) throws InvalidParameterException {
 
             PKMediaEntry mediaEntry = new PKMediaEntry();
-            ArrayList<KalturaPlayingSource> kalturaSources = playingResult.getSources();
+            ArrayList<KalturaPlaybackSource> kalturaSources = playingResult.getSources();
             List<PKMediaSource> sources;
 
             if (kalturaSources != null && kalturaSources.size() > 0) {
@@ -236,10 +238,10 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
                 if (flavorIds.length() > 0) {
                     //-> create PKMediaSource for every predefine extension:
-                    Collection<String> extensions = PlaySourceUrlBuilder.getSupportedExtensions();
+                    Collection<String> extensions = FormatsHelper.getSupportedExtensions();
 
                     for (String ext : extensions) {
-                        String format = PlaySourceUrlBuilder.getFormatByExtension(ext);
+                        String format = FormatsHelper.getFormatByExtension(ext);
                         String playUrl = new PlaySourceUrlBuilder()
                                 .setEntryId(entry.getId())
                                 .setFlavorIds(flavorIds.toString())
@@ -263,42 +265,56 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     //          "url":"http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/url/protocol/http/a.mp4/flavorIds/0_,1_ude4l5pb,1_izgi81qa,1_3l6wh2jz,1_fafwf2t7,1_k6gs4dju,1_nzen8kfl"
 
     @NonNull
-    private static List<PKMediaSource> parseFromSources(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlayingResult playingResult) {
+    private static List<PKMediaSource> parseFromSources(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlaybackContextResult playingResult) {
         ArrayList<PKMediaSource> sources = new ArrayList<>();
 
         //-> create PKMediaSource-s according to sources list provided in "getContextData" response
-        for (KalturaPlayingSource kalturaSource : playingResult.getSources()) {
-            PlaySourceUrlBuilder playUrlBuilder = new PlaySourceUrlBuilder()
-                    .setEntryId(entry.getId())
-                    .setFlavorIds(TextUtils.join(",", kalturaSource.getFlavors()))
-                    .setFormat(kalturaSource.getFormat())
-                    .setKs(ks)
-                    .setPartnerId(partnerId)
-                    .setUiConfId(uiConfId)
-                    .setProtocol(kalturaSource.getProtocol(OvpConfigs.PreferredHttpProtocol));
+        for (KalturaPlaybackSource playbackSource : playingResult.getSources()) {
 
-            String extension;
-            //-> find out what should be the extension: if format doesn't have mapped value, the extension will be fetched from the flavorAssets.
-            if ((extension = PlaySourceUrlBuilder.getExtByFormat(kalturaSource.getFormat())) == null) {
-                List<KalturaFlavorAsset> flavorAssets = FlavorAssetsFilter.filter(playingResult.getFlavorAssets(), "id", kalturaSource.getFlavors());
-                extension = flavorAssets.size() > 0 ? flavorAssets.get(0).getFileExt() : PlaySourceUrlBuilder.getExtByFormat(kalturaSource.getFormat());
+            if(!FormatsHelper.validateFormat(playbackSource)){ // only validated formats will be added to the sources.
+                continue;
             }
 
-            playUrlBuilder.setExtension(extension);
+            String playUrl = null;
 
-            String playUrl = playUrlBuilder.build();
+            // in case playbackSource doesn't have flavors we don't need to build the url and we'll use the provided one.(exp: live content)
+            if(playbackSource.hasFlavors()) {
+
+                PlaySourceUrlBuilder playUrlBuilder = new PlaySourceUrlBuilder()
+                        .setEntryId(entry.getId())
+                        .setFlavorIds(TextUtils.join(",", playbackSource.getFlavors()))
+                        .setFormat(playbackSource.getFormat())
+                        .setKs(ks)
+                        .setPartnerId(partnerId)
+                        .setUiConfId(uiConfId)
+                        .setProtocol(playbackSource.getProtocol(OvpConfigs.PreferredHttpProtocol));
+
+                String extension;
+                //-> find out what should be the extension: if format doesn't have mapped value, the extension will be fetched from the flavorAssets.
+                if ((extension = FormatsHelper.getExtByFormat(playbackSource.getFormat())) == null) {
+                    List<KalturaFlavorAsset> flavorAssets = FlavorAssetsFilter.filter(playingResult.getFlavorAssets(), "id", playbackSource.getFlavors());
+                    extension = flavorAssets.size() > 0 ? flavorAssets.get(0).getFileExt() : FormatsHelper.getExtByFormat(playbackSource.getFormat());
+                }
+                playUrlBuilder.setExtension(extension);
+
+                playUrl = playUrlBuilder.build();
+
+            } else {
+                playUrl = playbackSource.getUrl();
+            }
+
             if (playUrl == null) {
-                PKLog.w(TAG, "failed to create play url from source, discarding source:" + (entry.getId() + "_" + kalturaSource.getDeliveryProfileId()) + ", " + kalturaSource.getFormat());
+                PKLog.w(TAG, "failed to create play url from source, discarding source:" + (entry.getId() + "_" + playbackSource.getDeliveryProfileId()) + ", " + playbackSource.getFormat());
                 continue;
             }
 
             //!! we don't have id for the media source
-            PKMediaSource pkMediaSource = new PKMediaSource().setUrl(playUrl).setId(entry.getId() + "_" + kalturaSource.getDeliveryProfileId());
+            PKMediaSource pkMediaSource = new PKMediaSource().setUrl(playUrl).setId(entry.getId() + "_" + playbackSource.getDeliveryProfileId());
             //-> sources with multiple drm data are split to PKMediaSource per drm
-            List<KalturaPlayingSource.Drm> drmData = kalturaSource.getDrmData();
+            List<KalturaPlaybackSource.KalturaDrmEntryPlayingPluginData> drmData = playbackSource.getDrmData();
             if (drmData != null) {
                 List<PKDrmParams> drmParams = new ArrayList<>();
-                for (KalturaPlayingSource.Drm drm : drmData) {
+                for (KalturaPlaybackSource.KalturaDrmEntryPlayingPluginData drm : drmData) {
                     drmParams.add(new PKDrmParams(drm.getLicenseURL()));
                 }
                 pkMediaSource.setDrmData(drmParams);
@@ -311,6 +327,47 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         return sources;
     }
 
+
+    static class FormatsHelper {
+
+        private static final Map<String, String> SupportedFormats = new HashMap<String, String>() {{
+            put("mpegdash", "mpd");
+            put("applehttp", "m3u8"); // without drm
+            put("url", "mp4"); //if format is "url it can be mp4 or wvm - this is the default
+        }};
+
+        public static String getExtByFormat(@NonNull String format) {
+            return SupportedFormats.get(format);
+        }
+
+        public static String getFormatByExtension(@NonNull String format){
+            for( Map.Entry<String, String> entry : SupportedFormats.entrySet()){
+                if(entry.getValue().equals(format)){
+                    return entry.getKey();
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Check if format is not empty and it's supported.
+         *
+         * "applehttp" format is supported only if doesn't have drm.
+         *
+         * @param source
+         * @return - true, if format is valid and supported
+         */
+        public static boolean validateFormat(KalturaPlaybackSource source){
+            String format = source.getFormat();
+            return !isEmpty(format) && SupportedFormats.keySet().contains(format) &&
+                    (!format.equals("applehttp")  ||  Utils.isNullOrEmpty(source.getDrmData()));
+        }
+
+        public static Collection<String> getSupportedExtensions() {
+            return SupportedFormats.values();
+        }
+
+    }
 
 }
 

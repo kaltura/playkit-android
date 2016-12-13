@@ -46,6 +46,12 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     public static final int PartnerId = 2209591;
 
 
+    public static final String QABaseUrl = "http://qa-apache-testing-ubu-01.dev.kaltura.com/"; //login at: http://kmc.kaltura.com/index.php/kmc/kmc4#content|manage
+    public static final String QAKS = "MzQ0MjQ5NmJiZmJkZmI4MzUzY2U4Y2VjOGQyNzdiZmZhMWQ2MDQ4NXwyNjIxOzI2MjE7MTQ4MTYzMjk5OTswOzE0ODE1NDY1OTkuMTMyMTs7Ozs=";
+    public static final String QAEntryId = "0_q4nkfriz";
+    public static final int QAPartnerId = 2621;
+
+
     SessionProvider ksSessionProvider = new SessionProvider() {
         @Override
         public String baseUrl() {
@@ -62,6 +68,25 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
         @Override
         public int partnerId() {
             return PartnerId;
+        }
+    };
+
+    SessionProvider qaSessionProvider = new SessionProvider() {
+        @Override
+        public String baseUrl() {
+            return QABaseUrl;
+        }
+
+        @Override
+        public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
+            if(completion != null){
+                completion.onComplete(new PrimitiveResult(QAKS));
+            }
+        }
+
+        @Override
+        public int partnerId() {
+            return QAPartnerId;
         }
     };
 
@@ -106,15 +131,16 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     @Test
     public void testMockVsLiveRequest() {
 
-        kalturaOvpMediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ksSessionProvider).setEntryId(EntryId3).setRequestExecutor(testExecutor);
+        kalturaOvpMediaProvider = new KalturaOvpMediaProvider().setSessionProvider(qaSessionProvider).setEntryId(QAEntryId).setRequestExecutor(testExecutor);
         kalturaOvpMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
                 assertTrue(response.isSuccess());
                 assertTrue(response.getResponse() != null);
-                assertTrue(response.getResponse().getId().equals(EntryId3));
-                assertTrue(response.getResponse().getSources().size() == 3); // format "hdnetworkmanifest" is excluded
-                assertTrue(response.getResponse().getDuration() == 102000);
+                assertTrue(response.getResponse().getId().equals(QAEntryId));
+                assertTrue(response.getResponse().getSources().size() == 1); // format "hdnetworkmanifest" is excluded
+                assertTrue(response.getResponse().getDuration() == 136000);
+                OvpMediaProviderAndroidTest.this.resume();
 
                 /*kalturaOvpMediaProvider.setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
                     @Override

@@ -6,6 +6,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonSyntaxException;
 import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.connect.ErrorElement;
 
@@ -43,8 +44,9 @@ public class OvpResultAdapter implements JsonDeserializer<BaseResult> {
                     String clzName  = getClass().getPackage().getName()+"."+objectType;
                     Class clz = Class.forName(clzName);
                     baseResult = (BaseResult) new Gson().fromJson(json, clz);
-                } catch (ClassNotFoundException e) {
+                } catch (ClassNotFoundException | JsonSyntaxException e) {
                     e.printStackTrace();
+                    throw new JsonParseException("Adaptor failed to parse result, "+e.getMessage());
                 }
             }
         }
