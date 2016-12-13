@@ -11,4 +11,5 @@ public interface PKAdInfo {
     int getAdWidth();
     int getAdHeight();
     long getDuration();
+    int getPodCount();
 }

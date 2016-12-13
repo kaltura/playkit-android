@@ -30,6 +30,10 @@ public class AdEvent implements PKEvent {
     public enum Type {
         STARTED,
         PAUSED,
+        APP_PAUSED_ON_AD,
+        APP_RESUMED_ON_AD,
+        APP_PAUSED_NO_AD,
+        APP_RESUMED_NO_AD,
         RESUMED,
         COMPLETED,
         FIRST_QUARTILE,
