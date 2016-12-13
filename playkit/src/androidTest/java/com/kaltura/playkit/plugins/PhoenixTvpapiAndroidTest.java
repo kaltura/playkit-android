@@ -58,8 +58,6 @@ public class PhoenixTvpapiAndroidTest {
 
         phoenixAnalyticsPlugin = (PhoenixAnalyticsPlugin) PhoenixAnalyticsPlugin.factory.newInstance();
         tvpapiAnalyticsPlugin = (TVPAPIAnalyticsPlugin) TVPAPIAnalyticsPlugin.factory.newInstance();
-
-        tvpapiAnalyticsPlugin.onLoad(player, mediaConfig, tvpapiPluginConfig, messageBus, context);
     }
 
 
@@ -111,6 +109,8 @@ public class PhoenixTvpapiAndroidTest {
 
     @Test
     public void testTvpapiPlugin() {
+        tvpapiAnalyticsPlugin.onLoad(player, mediaConfig, tvpapiPluginConfig, messageBus, context);
+
         event = new PlayerEvent(PlayerEvent.Type.PAUSE);
         messageBus.listen(new PKEvent.Listener() {
             @Override
