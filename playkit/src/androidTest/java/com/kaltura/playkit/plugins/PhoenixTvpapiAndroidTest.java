@@ -41,8 +41,8 @@ public class PhoenixTvpapiAndroidTest {
     private String entryId = "259295";
     private PlayerEvent event;
     private String fileId = "464302";
+    private String siteGuid = "716158";
     private String ks = "djJ8MTk4fEyWxc4-2rcCvN4AzMimxDwdR7kMDrq1eifV9iYcWMdR2ZqjWH1eNP5YQzIW4Eq61o0zVQjQgCSfLpMYf3PqmQwdvwurjloYEeIQhrOvluwu";
-    private int eventIndex = 0;
 
     @Before
     public void setUp() {
@@ -59,9 +59,7 @@ public class PhoenixTvpapiAndroidTest {
         phoenixAnalyticsPlugin = (PhoenixAnalyticsPlugin) PhoenixAnalyticsPlugin.factory.newInstance();
         tvpapiAnalyticsPlugin = (TVPAPIAnalyticsPlugin) TVPAPIAnalyticsPlugin.factory.newInstance();
 
-        phoenixAnalyticsPlugin.onLoad(player, mediaConfig, phoenixPluginConfig, messageBus, context);
-//        tvpapiAnalyticsPlugin.onLoad(player, mediaConfig, tvpapiPluginConfig, messageBus, context);
-
+        tvpapiAnalyticsPlugin.onLoad(player, mediaConfig, tvpapiPluginConfig, messageBus, context);
     }
 
 
@@ -72,7 +70,7 @@ public class PhoenixTvpapiAndroidTest {
         tvpapiPluginConfig.addProperty("timerInterval", 30000);
 
         JsonObject initObj = new JsonObject();
-        initObj.addProperty("SiteGuid", "716158");
+        initObj.addProperty("SiteGuid", siteGuid);
         initObj.addProperty("ApiUser", "tvpapi_198");
         initObj.addProperty("DomainID", "354531");
         initObj.addProperty("UDID", "e8aa934c-eae4-314f-b6a0-f55e96498786");
@@ -112,28 +110,27 @@ public class PhoenixTvpapiAndroidTest {
     }
 
     @Test
-    public void testSeekPlugin() {
-        event = new PlayerEvent(PlayerEvent.Type.SEEKED);
+    public void testTvpapiPlugin() {
+        event = new PlayerEvent(PlayerEvent.Type.PAUSE);
         messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-//                Assert.assertTrue(((LogEvent)event).log.contains(KalturaStatsPlugin.factory.getName()));
-//                Assert.assertTrue(((LogEvent)event).log.contains("SEEK"));
-//                Assert.assertTrue(((LogEvent)event).request.contains("duration=" + duration));
-//                Assert.assertTrue(((LogEvent)event).request.contains("eventType=" + KalturaStatsPlugin.KStatsEvent.SEEK.getValue()));
-//                Assert.assertTrue(((LogEvent)event).request.contains("currentPoint=" + seek));
-//                Assert.assertTrue(((LogEvent)event).request.contains("seek=" + isSeek));
-//                Assert.assertTrue(((LogEvent)event).request.contains("entryId=" + entryId));
-//                Assert.assertTrue(((LogEvent)event).request.contains("uiconfId=" + uiconfId));
-//                Assert.assertTrue(((LogEvent)event).request.contains("widgetId=" + widgetId));
-//                Assert.assertTrue(((LogEvent)event).request.contains("partnerId=" + partnerId));
+                if (((LogEvent) event).log.contains("PAUSE")) {
+                    Assert.assertTrue(((LogEvent) event).log.contains(TVPAPIAnalyticsPlugin.factory.getName()));
+                    Assert.assertTrue(((LogEvent) event).request.contains("iLocation\":" + seek));
+                    Assert.assertTrue(((LogEvent) event).request.contains("iMediaID\":\"" + entryId));
+                    Assert.assertTrue(((LogEvent) event).request.contains( "Action\":\"pause\""));
+                    Assert.assertTrue(((LogEvent) event).request.contains("iFileID\":\"" + fileId));
+                    Assert.assertTrue(((LogEvent) event).request.contains("SiteGuid\":\"" + siteGuid));
+                }
             }
         }, LogEvent.LogType.LogEvent);
         messageBus.post(event);
     }
 
     @Test
-    public void testPhoenixPlayPlugin() {
+    public void testPhoenixPlugin() {
+        phoenixAnalyticsPlugin.onLoad(player, mediaConfig, phoenixPluginConfig, messageBus, context);
         event = new PlayerEvent(PlayerEvent.Type.PAUSE);
         messageBus.listen(new PKEvent.Listener() {
             @Override
@@ -145,7 +142,6 @@ public class PhoenixTvpapiAndroidTest {
                     Assert.assertTrue(((LogEvent) event).request.contains( "action\":\"PAUSE\""));
                     Assert.assertTrue(((LogEvent) event).request.contains("fileId\":\"" + fileId));
                     Assert.assertTrue(((LogEvent) event).request.contains("ks\":\"" + ks));
-                    eventIndex++;
                 }
             }
         }, LogEvent.LogType.LogEvent);
