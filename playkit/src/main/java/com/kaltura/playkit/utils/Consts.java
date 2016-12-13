@@ -34,5 +34,12 @@ public class Consts {
      * Identifier for the Text track type.
      */
     public static final int TRACK_TYPE_TEXT = 2;
-
+    /**
+     * Identifier for the unknown track type.
+     */
+    public static final int TRACK_TYPE_UNKNOWN = -1;
+    /**
+     * Identifier for the no value.
+     */
+    public static final long NO_VALUE = -1;
 }
