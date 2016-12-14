@@ -12,20 +12,21 @@ public class AdInfo implements PKAdInfo{
 
     private String  adDescription;
     private long    adDuration;
+
     private String  adTitle;
     private boolean isAdSkippable;
-    private String  contnentType;
+    private String  adContnentType;
     private String  adId;
     private String  adSystem;
     private int     adHeight;
     private int     adWidth;
-    int             adPodCount;
-    int             adPodPosition;
+    private int     adPodCount;
+    private int     adPodPosition;
     double          adPodTimeOffset;
     private List<Float> adCuePoints;
 
 
-    public AdInfo(String adDescription, long adDuration, String adTitle, boolean isAdSkippable, String contnentType,
+    public AdInfo(String adDescription, long adDuration, String adTitle, boolean isAdSkippable, String adContnentType,
                   String adId, String adSystem, int adHeight, int adWidth,
                   int adPodCount, int adPodPosition, double adPodTimeOffset,
                   List<Float> adCuePoints) {
@@ -34,7 +35,7 @@ public class AdInfo implements PKAdInfo{
         this.adDuration    = adDuration;
         this.adTitle       = adTitle;
         this.isAdSkippable = isAdSkippable;
-        this.contnentType  = contnentType;
+        this.adContnentType  = adContnentType;
         this.adId        = adId;
         this.adSystem    = adSystem;
         this.adHeight    = adHeight;
@@ -48,7 +49,7 @@ public class AdInfo implements PKAdInfo{
 
     @Override
     public String getAdContentType() {
-        return contnentType;
+        return adContnentType;
     }
 
     @Override
@@ -120,6 +121,6 @@ public class AdInfo implements PKAdInfo{
         } else {
             adType = "Pre-Roll";
         }
-        return "AdTyp=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + contnentType + " podCount = " + adPodPosition + "/" + adPodCount;
+        return "AdTyp=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + adContnentType + " podCount = " + adPodPosition + "/" + adPodCount;
     }
 }
