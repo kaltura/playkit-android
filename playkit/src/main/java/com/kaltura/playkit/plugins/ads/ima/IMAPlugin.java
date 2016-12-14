@@ -374,6 +374,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     @Override
+    public void skipAd() {
+        adsManager.skip();
+    }
+
+    @Override
     public void onAdEvent(com.google.ads.interactivemedia.v3.api.AdEvent adEvent) {
         log.i("Event: " + adEvent.getType());
         if (adEvent.getAdData() != null) {
