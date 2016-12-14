@@ -119,7 +119,7 @@ public class OttSessionProvider extends BaseSessionProvider {
                 // and we need this response for the expiry.
                 if (responses.get(1).error == null) { // get session data success
                     KalturaSession session = (KalturaSession) responses.get(1);
-                    setSession(session.getKs(), session.getExpiry()); // save new session
+                    setSession(session.getKs(), session.getExpiry(), session.getUserId()); // save new session
 
                     if (completion != null) {
                         completion.onComplete(new PrimitiveResult(session.getKs()));
@@ -153,17 +153,28 @@ public class OttSessionProvider extends BaseSessionProvider {
             }
         } else {
             Log.e(TAG, "Session was ended or failed to start when this was called.\nCan't recover session if not started before");
-            completion.onComplete(new PrimitiveResult().error(ErrorElement.BadRequestError.message("Can't recover session. Session should be started")));
+            completion.onComplete(new PrimitiveResult().error(ErrorElement.SessionError.message("Session expired")));
         }
     }
 
     /**
-     * in case session is active we try to logout. fails or not the saved session data is cleared.
+     * Ends current active session. if it's a {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#User} session
+     * logout, if {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#Anonymous} will return, since
+     * logout on anonymous session doesn't make the session invalid.
+     *
+     * If logout was activated, session params are cleared.
      */
     public void endSession(final OnCompletion<BaseResult> completion) {
 
-        if (isSessionActive()) {
-            //logout??
+        if (hasActiveSession()) {
+
+            if(getUserSessionType().equals(UserSessionType.Anonymous)){ //no need to logout anonymous session
+                if (completion != null) {
+                    completion.onComplete(new BaseResult(null));
+                }
+                return;
+            }
+
             APIOkRequestsExecutor.getSingleton().queue(OttUserService.logout(baseUrl, getSessionToken(), sessionParams.udid)
                     .completion(new OnRequestCompletion() {
                         @Override
@@ -172,8 +183,8 @@ public class OttSessionProvider extends BaseSessionProvider {
                             if (response != null && response.isSuccess()) {
                                 PKLog.d(TAG, "endSession: logout user session success. clearing session data.");
                             } else {
-                                PKLog.e(TAG, "endSession: session logout failed. clearing session data. " + (response.getError() != null ? response.getError().getMessage() : ""));
                                 error = response.getError() != null ? response.getError() : ErrorElement.GeneralError.message("failed to end session");
+                                PKLog.e(TAG, "endSession: session logout failed. clearing session data. " + error.getMessage());
                             }
                             OttSessionProvider.super.endSession();
                             sessionParams = null;
@@ -248,7 +259,7 @@ public class OttSessionProvider extends BaseSessionProvider {
 
                                 if (responses.get(1).error == null) {
                                     KalturaSession session = (KalturaSession) responses.get(1);
-                                    setSession(session.getKs(), session.getExpiry()); // save new session
+                                    setSession(session.getKs(), session.getExpiry(), session.getUserId()); // save new session
                                 }
 
                             }
@@ -258,10 +269,16 @@ public class OttSessionProvider extends BaseSessionProvider {
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
     }
 
+    @Override
+    protected void clearSession() {
+        super.clearSession();
+        refreshToken = null;
+        refreshDelta = TimeDelta;
+    }
 
     @Override
-    protected void setSession(String sessionToken, long expiry) {
-        super.setSession(sessionToken, expiry);
+    protected void setSession(String sessionToken, long expiry, String userId) {
+        super.setSession(sessionToken, expiry, userId);
         updateRefreshDelta(expiry);
     }
 

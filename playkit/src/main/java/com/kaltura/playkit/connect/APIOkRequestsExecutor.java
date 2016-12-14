@@ -98,7 +98,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
     }
 
     private OkHttpClient.Builder configClient(OkHttpClient.Builder builder, RequestConfiguration config){
-        builder.connectTimeout(config.getConnectTimeout(), TimeUnit.MILLISECONDS)
+        builder.followRedirects(true).connectTimeout(config.getConnectTimeout(), TimeUnit.MILLISECONDS)
                 .readTimeout(config.getReadTimeout(), TimeUnit.MILLISECONDS)
                 .writeTimeout(config.getWriteTimeout(), TimeUnit.MILLISECONDS)
                 .retryOnConnectionFailure(config.getRetry() > 0);

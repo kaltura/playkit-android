@@ -73,7 +73,7 @@ public class OvpSessionProvider extends BaseSessionProvider {
             try {
                 JsonElement responseElement = GsonParser.toJson(response.getResponse());
                 String ks = responseElement.getAsJsonObject().getAsJsonPrimitive("ks").getAsString();
-                setSession(ks, expiration);// sets a "dummy" session expiration, since we can't get the actual expiration from the server
+                setSession(ks, expiration, "0");// sets a "dummy" session expiration, since we can't get the actual expiration from the server
                 if (completion != null) {
                     completion.onComplete(new PrimitiveResult(ks));
                 }
@@ -144,7 +144,7 @@ public class OvpSessionProvider extends BaseSessionProvider {
                 if (responses.get(1).error == null) { // get session data success
                     KalturaSessionInfo session = (KalturaSessionInfo) responses.get(1);
                     String ks = ((PrimitiveResult) responses.get(0)).getResult();
-                    setSession(ks, session.getExpiry()); // save new session
+                    setSession(ks, session.getExpiry(), session.getUserId()); // save new session
 
                     if (completion != null) {
                         completion.onComplete(new PrimitiveResult(ks));
@@ -171,23 +171,36 @@ public class OvpSessionProvider extends BaseSessionProvider {
      */
     private void renewSession(OnCompletion<PrimitiveResult> completion) {
         if (sessionParams != null) {
-            if(sessionParams.username !=null) {
+            if (sessionParams.username != null) {
                 startSession(sessionParams.username, sessionParams.password, sessionParams.partnerId, completion);
             } else {
                 startAnonymousSession(sessionParams.partnerId, completion);
             }
         } else {
             Log.e(TAG, "Session was ended or failed to start when this was called.\nCan't recover session if not started before");
-            completion.onComplete(new PrimitiveResult().error(ErrorElement.BadRequestError.message("Can't recover session. Session should be started")));
+            if (completion != null) {
+                completion.onComplete(new PrimitiveResult().error(ErrorElement.SessionError.message("Session expired")));
+            }
         }
     }
 
     /**
-     * in case session is active we try to logout. fails or not the saved session data is cleared.
+     * Ends current active session. if it's a {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#User} session
+     * logout, if {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#Anonymous} will return, since
+     * logout on anonymous session doesn't make the session invalid.
+     * <p>
+     * If logout was activated, session params are cleared.
      */
     public void endSession(final OnCompletion<BaseResult> completion) {
 
-        if (isSessionActive()) {
+        if (hasActiveSession()) {
+
+            if (getUserSessionType().equals(UserSessionType.Anonymous)) {
+                if (completion != null) {
+                    completion.onComplete(new BaseResult(null));
+                }
+                return;
+            }
 
             APIOkRequestsExecutor.getSingleton().queue(
                     OvpSessionService.end(baseUrl, getSessionToken())
@@ -237,18 +250,16 @@ public class OvpSessionProvider extends BaseSessionProvider {
     protected String validateSession() {
         long currentDate = currentTimeMillis() / 1000;
         long timeLeft = expiryDate - currentDate;
-
+        String sessionToken = null;
         if (timeLeft > 0) {
+            sessionToken = getSessionToken();
 
-            if (timeLeft > ExpirationDelta) {
-                return getSessionToken();
+            if (timeLeft < ExpirationDelta) {
+                renewSession(null); // token about to expired - we need to restart session
             }
         }
 
-        // token about to / expired - we need to restart session
-        renewSession(null);
-
-        return null;
+        return sessionToken;
     }
 
 

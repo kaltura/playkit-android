@@ -12,8 +12,12 @@ public class KalturaSessionInfo extends BaseResult {
     long expiry;
     String userId;
 
+
     public long getExpiry() {
         return expiry;
     }
 
+    public String getUserId() {
+        return userId;
+    }
 }

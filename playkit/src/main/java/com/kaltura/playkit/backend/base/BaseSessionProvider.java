@@ -1,6 +1,14 @@
 package com.kaltura.playkit.backend.base;
 
+import android.support.annotation.StringDef;
+
 import com.kaltura.playkit.backend.SessionProvider;
+
+import java.lang.annotation.Retention;
+
+import static com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType.Anonymous;
+import static com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType.User;
+import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
  * Created by tehilarozin on 28/11/2016.
@@ -8,18 +16,19 @@ import com.kaltura.playkit.backend.SessionProvider;
 
 public abstract class BaseSessionProvider implements SessionProvider{
 
-    /*public interface SessionProviderListener{
-        void onError(ErrorElement error);
-        void ready();
-        void ended();
-    }*/
+    @Retention(SOURCE)
+    @StringDef(value = {User, Anonymous})
+    public @interface UserSessionType {
+        String User = "user";
+        String Anonymous = "anonymous";
+        String None = "none";
+    }
+
 
     protected String baseUrl;
-    //protected int partnerId;
     private String sessionToken;
     protected long expiryDate;
-
-   // protected SessionProviderListener sessionListener;
+    private @UserSessionType String userSessionType = UserSessionType.None;
 
 
     protected BaseSessionProvider(String baseUrl){
@@ -50,18 +59,27 @@ public abstract class BaseSessionProvider implements SessionProvider{
         return baseUrl;
     }
 
-    protected void setSession(String sessionToken, long expiry){
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
+
+    protected void setSession(String sessionToken, long expiry, String userId){
         this.sessionToken = sessionToken;
         this.expiryDate = expiry;
+        this.userSessionType = userId.equals("0") ? Anonymous : User;
     }
 
     protected String getSessionToken() {
         return sessionToken;
     }
 
-    protected boolean isSessionActive(){
+    public boolean hasActiveSession(){
         return sessionToken != null;
     }
 
     protected abstract String validateSession();
+
+    protected @UserSessionType String getUserSessionType(){
+        return userSessionType;
+    }
 }

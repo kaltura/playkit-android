@@ -9,8 +9,10 @@ import com.kaltura.playkit.backend.ovp.data.KalturaSessionInfo;
 public class KalturaSession extends KalturaSessionInfo {
 
     String ks;
+    String udid;
 
     public String getKs() {
         return ks;
     }
+
 }

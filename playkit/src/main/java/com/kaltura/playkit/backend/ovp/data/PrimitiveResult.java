@@ -34,6 +34,6 @@ public class PrimitiveResult extends BaseResult {
 
     public PrimitiveResult error(ErrorElement error) {
         this.error = error;
-        return null;
+        return this;
     }
 }

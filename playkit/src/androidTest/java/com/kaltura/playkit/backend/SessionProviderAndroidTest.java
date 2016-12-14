@@ -24,7 +24,6 @@ import com.kaltura.playkit.connect.ResultElement;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.google.ads.interactivemedia.v3.impl.aa.c.error;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
@@ -41,8 +40,10 @@ public class SessionProviderAndroidTest extends BaseTest {
     public static final int OttPartnerId = 198;
     public static final String OttUsername = "albert@gmail.com";
     public static final String OttPassword = "123456";
-    public static final String AssetId = "258574";
-    public static final String Format = "Mobile_Devices_Main_HD";
+    public static final String AssetId = "258574"; // free
+
+    public static final String FormatHd = "Mobile_Devices_Main_HD";
+    public static final String FormatSd = "Mobile_Devices_Main_SD";
 
     public static String OvpBaseUrl = "http://www.kaltura.com/api_v3/";
     public static final int OvpPartnerId = 2209591;
@@ -54,15 +55,16 @@ public class SessionProviderAndroidTest extends BaseTest {
     SessionProvider sessionProvider;
 
     @Test
-    public void testOttSessionProvider() {
+    public void testOttSessionProviderBaseFlow() {
         final OttSessionProvider ottSessionProvider = new OttSessionProvider(OttBaseUrl, OttPartnerId);
 
         ottSessionProvider.startSession(OttUsername, OttPassword, null, new OnCompletion<PrimitiveResult>() {
             @Override
             public void onComplete(PrimitiveResult response) {
-                if(response.error != null){
-                    Log.e("testOttSessionProvider", "failed to establish a session: "+response.error.getMessage());
-                } else{
+                if (response.error != null) {
+                    Log.e("testOttSessionProvider", "failed to establish a session: " + response.error.getMessage());
+                    resume();
+                } else {
                     ottSessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
                         @Override
                         public void onComplete(PrimitiveResult response) {
@@ -73,7 +75,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                                     .setSessionProvider(ottSessionProvider)
                                     .setAssetId(AssetId)
                                     .setReferenceType("media")
-                                    .setFormats(Format)
+                                    .setFormats(FormatHd)
                                     .load(new OnMediaLoadCompletion() {
                                         @Override
                                         public void onComplete(ResultElement<PKMediaEntry> response) {
@@ -95,14 +97,116 @@ public class SessionProviderAndroidTest extends BaseTest {
     }
 
     @Test
+    public void testOttAnonymousSession() {
+        final OttSessionProvider ottSessionProvider = new OttSessionProvider(OttBaseUrl, OttPartnerId);
+
+        ottSessionProvider.startAnonymousSession(null, new OnCompletion<PrimitiveResult>() {
+            @Override
+            public void onComplete(PrimitiveResult response) {
+                if (response.error != null) {
+                    Log.e("testAnonymousSession", "failed to establish anonymous session: " + response.error.getMessage());
+                    fail("Anonymous session creation failed: "+response.error.getMessage());
+
+                } else {
+                    ottSessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
+                        @Override
+                        public void onComplete(PrimitiveResult response) {
+                            assertNotNull(response.getResult());
+                            assertFalse(response.getResult().equals(""));
+
+                            Log.e("testAnonymousSession", "get ks = " + response.getResult());
+                            ottSessionProvider.endSession(new OnCompletion<BaseResult>() {
+                                @Override
+                                public void onComplete(BaseResult response) {
+                                    assertTrue(response.error == null);
+
+                                    new PhoenixMediaProvider()
+                                            .setSessionProvider(ottSessionProvider)
+                                            .setAssetId(AssetId)
+                                            .setReferenceType("media")
+                                            .setFormats(FormatHd)
+                                            .load(new OnMediaLoadCompletion() {
+                                                @Override
+                                                public void onComplete(ResultElement<PKMediaEntry> response) {
+                                                    assertTrue(response != null && response.isSuccess());
+                                                    Log.i("testOttSessionProvider", "we have mediaEntry");
+                                                    assertTrue(response.getResponse().getId().equals(AssetId));
+                                                    assertTrue(response.getResponse().getSources().size() == 1);
+
+                                                    resume();
+                                                }
+                                            });
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
+
+        wait(1);
+    }
+
+    @Test
+    public void testOttEndSession() {
+        final OttSessionProvider ottSessionProvider = new OttSessionProvider(OttBaseUrl, OttPartnerId);
+
+        ottSessionProvider.startSession(OttUsername, OttPassword, null, new OnCompletion<PrimitiveResult>() {
+            @Override
+            public void onComplete(PrimitiveResult response) {
+                if (response.error != null) {
+                    Log.e("testAnonymousSession", "failed to establish anonymous session: " + response.error.getMessage());
+
+                    if (response.error == ErrorElement.SessionError) {
+                        fail("should have logged ");
+                    }
+                } else {
+                    ottSessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
+                        @Override
+                        public void onComplete(PrimitiveResult response) {
+                            assertNotNull(response.getResult());
+                            assertFalse(response.getResult().equals(""));
+
+                            Log.e("testAnonymousSession", "get ks = " + response.getResult());
+                            ottSessionProvider.endSession(new OnCompletion<BaseResult>() {
+                                @Override
+                                public void onComplete(BaseResult response) {
+                                    assertTrue(response.error == null);
+
+                                    new PhoenixMediaProvider()
+                                            .setSessionProvider(ottSessionProvider)
+                                            .setAssetId(AssetId)
+                                            .setReferenceType("media")
+                                            .setFormats(FormatHd)
+                                            .load(new OnMediaLoadCompletion() {
+                                                @Override
+                                                public void onComplete(ResultElement<PKMediaEntry> response) {
+                                                    assertTrue(response != null && response.getError() != null);
+                                                    assertTrue(response.getError().equals(ErrorElement.SessionError));
+                                                    resume();
+                                                }
+                                            });
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
+
+        wait(1);
+    }
+
+    @Test
     public void testOvpSessionProviderBaseFlow() {
         ovpSessionProvider = new OvpSessionProvider(OvpBaseUrl);
 
         ovpSessionProvider.startSession(OvpLoginId, OvpPassword, OvpPartnerId, new OnCompletion<PrimitiveResult>() {
             @Override
             public void onComplete(PrimitiveResult response) {
-                if(response.error != null){
-                    Log.e("testOttSessionProvider", "failed to establish a session: "+response.error.getMessage());
+                if (response.error != null) {
+                    fail("failed to establish a session: " + response.error.getMessage());
+
                 } else {
                     ovpSessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
                         @Override
@@ -141,12 +245,10 @@ public class SessionProviderAndroidTest extends BaseTest {
         ovpSessionProvider.startAnonymousSession(OvpPartnerId, new OnCompletion<PrimitiveResult>() {
             @Override
             public void onComplete(PrimitiveResult response) {
-                if(response.error != null){
-                    Log.e("testAnonymousSession", "failed to establish anonymous session: "+response.error.getMessage());
+                if (response.error != null) {
+                    Log.e("testAnonymousSession", "failed to establish anonymous session: " + response.error.getMessage());
+                    fail("failed to create anonymous session: "+response.error.getMessage());
 
-                    if (response.error == ErrorElement.SessionError) {
-                        fail("should have logged ");
-                    }
                 } else {
                     ovpSessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
                         @Override
@@ -184,12 +286,21 @@ public class SessionProviderAndroidTest extends BaseTest {
         ovpSessionProvider.startSession(OvpLoginId, OvpPassword, OvpPartnerId, new OnCompletion<PrimitiveResult>() {
             @Override
             public void onComplete(PrimitiveResult response) {
-                if(response.error != null){
-                    assertNotNull(error);
-                    assertTrue(response.error == ErrorElement.ConnectionError);
-                } else {
-                    fail("server url is invalid error sould have raised");
+                if (response.error != null) {
+                    assertTrue(response.error.equals(ErrorElement.SessionError));
+                    Log.i("testOvpSPError", response.error.getCode() + ", " + response.error.getMessage());
+
+                    ovpSessionProvider.setBaseUrl("http://www.kaltura.whatever/api_v3/");
+                    ovpSessionProvider.startSession(OvpLoginId, OvpPassword, OvpPartnerId, new OnCompletion<PrimitiveResult>() {
+                        @Override
+                        public void onComplete(PrimitiveResult response) {
+                            assertNotNull(response.error);
+                            assertTrue(response.error.equals(ErrorElement.ConnectionError));
+                            resume();
+                        }
+                    });
                 }
+
             }
         });
 
@@ -201,22 +312,21 @@ public class SessionProviderAndroidTest extends BaseTest {
 
     @Test
     public void testOvpSP() {
-        ovpSessionProvider = new OvpSessionProvider(OvpBaseUrl);
 
         testOvpSessionProviderBaseFlow();
 
-        //wait(1);
-        //while (testWaitCount.getCount() > 1){}
-
-        testEndSession();
+        testOvpEndSession();
 
     }
 
 
     String testKs;
 
-    private void testEndSession() {
+    @Test
+    public void testOvpEndSession() {
 
+        assertNotNull(ovpSessionProvider);
+        assertTrue(ovpSessionProvider.hasActiveSession());
 
         ovpSessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
             @Override
@@ -245,8 +355,9 @@ public class SessionProviderAndroidTest extends BaseTest {
                                                     .load(new OnMediaLoadCompletion() {
                                                         @Override
                                                         public void onComplete(ResultElement<PKMediaEntry> response) {
-                                                            //should renew session when using the ovpSessionProvider
-                                                            assertTrue(response.getError() == null);
+                                                            //after ending session, it can't be renewed, start session should be called.
+                                                            assertNotNull(response.getError());
+                                                            assertTrue(response.getError().equals(ErrorElement.SessionError));
                                                             resume();
                                                         }
                                                     });
@@ -257,6 +368,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                         } else {
                             PKLog.i(TAG, "got an error: " + response.error.getMessage());
                             //assertTrue(error.equals(fo));
+                            resume();
                         }
                     }
                 });
