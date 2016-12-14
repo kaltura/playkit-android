@@ -151,7 +151,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     }
 
     public Double getAdDuration() {
-        return  currentAdInfo != null ? (currentAdInfo.getAdDuration() / 1000) : 0.0D;
+        return  currentAdInfo != null ? (currentAdInfo.getAdDuration() / 1000D) : 0.0D;
     }
 
     public String getAdPlayerVersion() {
