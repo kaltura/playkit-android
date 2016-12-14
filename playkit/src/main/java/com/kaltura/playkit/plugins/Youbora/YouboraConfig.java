@@ -36,7 +36,7 @@ public class YouboraConfig {
 
     private static String[] propertiesConfigFieldNames = new String[]{"genre","type","transaction_type","year","cast","director","owner","parental","price","rating","audioType","audioChannels"
                                             ,"device","quality"};
-    private static String[] extraConfigFieldNames = new String[]{"param2","param3","param4","param5","param6","param7","param8","param9","param10"};
+    private static String[] extraConfigFieldNames = new String[]{"param1","param2","param3","param4","param5","param6","param7","param8","param9","param10"};
 
     static {
         HashMap<String, Object> youboraConfig = new HashMap<>(20);
