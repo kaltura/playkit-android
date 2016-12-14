@@ -18,10 +18,10 @@ public class IMAConfig {
     public static final String ENABLE_BG_PLAYBACK  = "enableBackgroundPlayback";
     public static final String AUTO_PLAY_AD_BREAK  = "autoPlayAdBreaks";
     public static final String AD_VIDEO_BITRATE    = "videoBitrate";
-    public static final String VIDEO_MIME_TYPES    = "videoMimeTypes";
-    public static final String AD_TAG_TIMES        = "tagsTimes";
+    public static final String AD_VIDEO_MIME_TYPES      = "videoMimeTypes";
+    public static final String AD_TAG_TIMES             = "tagsTimes";
     public static final String AD_ATTRIBUTION_UIELEMENT = "adAttribution";
-    public static final String AD_COUNTDOWN_UIELEMENT  = "adCountDown";
+    public static final String AD_COUNTDOWN_UIELEMENT   = "adCountDown";
 
 
     private String language = "en";
@@ -153,7 +153,7 @@ public class IMAConfig {
             JsonPrimitive element = new JsonPrimitive(mimeType);
             jArray.add(element);
         }
-        jsonObject.add(VIDEO_MIME_TYPES, jArray);
+        jsonObject.add(AD_VIDEO_MIME_TYPES, jArray);
 
 //        String tagsTimesJsonString = gson.toJson(tagsTimes);
 //        if (tagsTimesJsonString != null && !tagsTimesJsonString.isEmpty()) {
