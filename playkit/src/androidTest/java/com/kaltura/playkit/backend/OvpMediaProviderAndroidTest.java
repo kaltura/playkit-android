@@ -12,6 +12,7 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.KalturaOvpParser;
+import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
 import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
@@ -30,6 +31,7 @@ import java.io.InputStreamReader;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Created by tehilarozin on 10/11/2016.
@@ -46,10 +48,13 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     public static final int PartnerId = 2209591;
 
 
-    public static final String QABaseUrl = "http://qa-apache-testing-ubu-01.dev.kaltura.com/"; //login at: http://kmc.kaltura.com/index.php/kmc/kmc4#content|manage
-    public static final String QAKS = "MzQ0MjQ5NmJiZmJkZmI4MzUzY2U4Y2VjOGQyNzdiZmZhMWQ2MDQ4NXwyNjIxOzI2MjE7MTQ4MTYzMjk5OTswOzE0ODE1NDY1OTkuMTMyMTs7Ozs=";
+    public static final String QABaseUrl = "http://qa-apache-testing-ubu-01.dev.kaltura.com/api_v3/"; //login at: http://kmc.kaltura.com/index.php/kmc/kmc4#content|manage
+    public static final String QAKS = "ZTU0NWY5NTM4NWM2OTg3YzY0YjJkMDU1Y2M4NjgwNjc0MDQ4YmQzOXwyNjIxOzI2MjE7MTQ4MTgxMDI3NzsyOzE0ODE3MjM4NzcuMzYzODthbGxhX2xpZGljaEB5YWhvby5jb207KixkaXNhYmxlZW50aXRsZW1lbnQ7Ow==";
     public static final String QAEntryId = "0_q4nkfriz";
     public static final int QAPartnerId = 2621;
+
+    RequestQueue testExecutor;
+    KalturaOvpMediaProvider kalturaOvpMediaProvider;
 
 
     SessionProvider ksSessionProvider = new SessionProvider() {
@@ -60,7 +65,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
 
         @Override
         public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
-            if(completion != null){
+            if (completion != null) {
                 completion.onComplete(new PrimitiveResult(KS));
             }
         }
@@ -79,7 +84,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
 
         @Override
         public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
-            if(completion != null){
+            if (completion != null) {
                 completion.onComplete(new PrimitiveResult(QAKS));
             }
         }
@@ -92,10 +97,6 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
 
 
 
-    RequestQueue testExecutor;
-
-    KalturaOvpMediaProvider kalturaOvpMediaProvider;
-
     public OvpMediaProviderAndroidTest() {
     }
 
@@ -106,7 +107,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
 
 
     @Test
-    public void testEntryInfoLiveFetch(){
+    public void testEntryInfoLiveFetch() {
         new KalturaOvpMediaProvider().setSessionProvider(ksSessionProvider).setEntryId(EntryId3).load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
@@ -166,6 +167,51 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     }
 
     @Test
+    public void testQAMachineMediaFromSources() {
+
+        KalturaOvpMediaProvider mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(qaSessionProvider).setEntryId(QAEntryId);
+        mediaProvider.load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                if (response != null && response.getError() == null) {
+                    resume();
+                } else {
+                    fail("media creation faild");
+                }
+            }
+        });
+
+        wait(1);
+    }
+
+    @Test
+    public void testMediaFromSources() {
+        final OvpSessionProvider ovpSessionProvider = new OvpSessionProvider(BaseUrl);
+        ovpSessionProvider.startSession(SessionProviderAndroidTest.OvpLoginId, SessionProviderAndroidTest.OvpPassword, SessionProviderAndroidTest.OvpPartnerId,
+                new OnCompletion<PrimitiveResult>() {
+                    @Override
+                    public void onComplete(PrimitiveResult response) {
+                        if (response != null && response.error == null) {
+                            KalturaOvpMediaProvider mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(EntryId);
+                            mediaProvider.load(new OnMediaLoadCompletion() {
+                                @Override
+                                public void onComplete(ResultElement<PKMediaEntry> response) {
+                                    if (response != null && response.getError() == null) {
+                                        resume();
+                                    } else {
+                                        fail("media creation faild");
+                                    }
+                                }
+                            });
+                        } else {
+                            fail("faild to start session");
+                        }
+                    }
+                });
+        wait(1);
+    }
+
+    @Test
     public void testErrorHandling() {
         /* TODO:
         * invalid ks
@@ -174,7 +220,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
         * invalid response structure
         * check server error object handling*/
 
-        String multiresponseWithError= "[\n" +
+        String multiresponseWithError = "[\n" +
                 "  {\n" +
                 "    \"partnerId\": 2209591,\n" +
                 "    \"ks\": \"djJ8MjIwOTU5MXwKyMTAkPT_yYS2zVNweHck77yCGu25hdaflLaUwwjFSrF-7gQD9Z0xFC_g6o7HySRqSsPM5bU8Y8VpunwR4K4dxfuv10aQE8gG6lbQg4RZGA==\",\n" +
@@ -193,7 +239,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     }
 
     @Test
-    public void testPrimitiveResponseParsing(){
+    public void testPrimitiveResponseParsing() {
         String response = "true"; //2xUzNQszbmeucM9b_kAUUwT_0pvwxB4=
         //!! problem parsing "="charachter, causing malform json exception
         // -> we need to be able to parse it for the login request, we won't use parser mechanism in this case.
@@ -218,8 +264,8 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
 
         parsed = KalturaOvpParser.parse(loginRequestError);
         assertTrue(parsed instanceof BaseResult);
-        assertTrue(((BaseResult)parsed).error != null);
-        assertTrue(((BaseResult)parsed).error.getCode().equals("USER_WRONG_PASSWORD"));
+        assertTrue(((BaseResult) parsed).error != null);
+        assertTrue(((BaseResult) parsed).error.getCode().equals("USER_WRONG_PASSWORD"));
     }
 
     /**
@@ -227,7 +273,6 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
      * from the server.
      * the mock response file name is constructed from the request and parameters.
      * [phoenix.serviceName.actionName.assetId.json]
-     *
      */
     class Executor implements RequestQueue {
 
@@ -282,7 +327,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
                         JsonParser parser = new JsonParser();
                         JsonObject body = parser.parse(request.getBody()).getAsJsonObject();
                         String assetId = "";
-                        if(body.has("2")){
+                        if (body.has("2")) {
                             assetId = body.get("2").getAsJsonObject().getAsJsonPrimitive("entryId").getAsString();
                         }
 

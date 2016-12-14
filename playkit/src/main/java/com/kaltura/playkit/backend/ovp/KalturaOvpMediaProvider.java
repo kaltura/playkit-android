@@ -1,7 +1,6 @@
 package com.kaltura.playkit.backend.ovp;
 
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import com.google.gson.JsonSyntaxException;
 import com.kaltura.playkit.PKDrmParams;
@@ -19,7 +18,7 @@ import com.kaltura.playkit.backend.ovp.data.KalturaBaseEntryListResponse;
 import com.kaltura.playkit.backend.ovp.data.KalturaEntryContextDataResult;
 import com.kaltura.playkit.backend.ovp.data.KalturaFlavorAsset;
 import com.kaltura.playkit.backend.ovp.data.KalturaMediaEntry;
-import com.kaltura.playkit.backend.ovp.data.KalturaPlaybackContextResult;
+import com.kaltura.playkit.backend.ovp.data.KalturaPlaybackContext;
 import com.kaltura.playkit.backend.ovp.data.KalturaPlaybackSource;
 import com.kaltura.playkit.backend.ovp.services.BaseEntryService;
 import com.kaltura.playkit.connect.Accessories;
@@ -152,17 +151,19 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                         error = responses.get(0).error.addMessage("baseEntry/list request failed");
                     }
                     if (error == null && responses.get(1).error != null) {
-                        error = responses.get(1).error.addMessage("baseEntry/getPlaybackContext request failed");
+                        if(responses.get(2).error != null) {
+                            error = responses.get(1).error.addMessage("baseEntry/getPlaybackContext request failed");
+                        }
                     }
 
                     if (error == null) {
 
-                        KalturaPlaybackContextResult kalturaPlaybackContextResult = responses.get(1) instanceof KalturaPlaybackContextResult ?
-                                (KalturaPlaybackContextResult) responses.get(1) :
-                                new KalturaPlaybackContextResult((KalturaEntryContextDataResult) responses.get(1));
+                        KalturaPlaybackContext kalturaPlaybackContext = responses.get(1) instanceof KalturaPlaybackContext ?
+                                (KalturaPlaybackContext) responses.get(1) :
+                                new KalturaPlaybackContext((KalturaEntryContextDataResult) responses.get(2));
 
                         mediaEntry = ProviderParser.getMediaEntry(ks, sessionProvider.partnerId() + "", uiConfId,
-                                ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), kalturaPlaybackContextResult);
+                                ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), kalturaPlaybackContext);
                     }
 
                 } catch (JsonSyntaxException ex) {
@@ -196,23 +197,23 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          * creates {@link PKMediaEntry} from entry's data and contextData
          *
          * @param entry
-         * @param playingResult
+         * @param playbackContext
          * @return (in case of restriction on maxbitrate, filtering should be done by considering the flavors provided to the
          *source- if none meets the restriction, source should not be added to the mediaEntrys sources.)
          */
-        public static PKMediaEntry getMediaEntry(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlaybackContextResult playingResult) throws InvalidParameterException {
+        public static PKMediaEntry getMediaEntry(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlaybackContext playbackContext) throws InvalidParameterException {
 
             PKMediaEntry mediaEntry = new PKMediaEntry();
-            ArrayList<KalturaPlaybackSource> kalturaSources = playingResult.getSources();
+            ArrayList<KalturaPlaybackSource> kalturaSources = playbackContext.getSources();
             List<PKMediaSource> sources;
 
             if (kalturaSources != null && kalturaSources.size() > 0) {
-                sources = parseFromSources(ks, partnerId, uiConfId, entry, playingResult);
+                sources = parseFromSources(ks, partnerId, uiConfId, entry, playbackContext);
 
             } else {
                 PKLog.e(TAG, "failed to receive sources to play");
                 //throw new InvalidParameterException("Could not create sources for media entry");
-                sources = parseFromFlavors(ks, partnerId, uiConfId, entry, playingResult);
+                sources = parseFromFlavors(ks, partnerId, uiConfId, entry, playbackContext);
             }
 
             return mediaEntry.setId(entry.getId()).setSources(sources).setDuration(entry.getMsDuration());
@@ -251,7 +252,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                                 .setExtension(ext)
                                 .setFormat(format == null ? "mp4" : format).build(); //"mp4" - code not in use
 
-                        PKMediaSource mediaSource = new PKMediaSource().setId(entry.getId() + "_ext" + ext);
+                        PKMediaSource mediaSource = new PKMediaSource().setId(entry.getId() + "_" + ext);
                         mediaSource.setUrl(playUrl);
                         sources.add(mediaSource);
                     }
@@ -265,7 +266,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     //          "url":"http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/url/protocol/http/a.mp4/flavorIds/0_,1_ude4l5pb,1_izgi81qa,1_3l6wh2jz,1_fafwf2t7,1_k6gs4dju,1_nzen8kfl"
 
     @NonNull
-    private static List<PKMediaSource> parseFromSources(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlaybackContextResult playingResult) {
+    private static List<PKMediaSource> parseFromSources(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlaybackContext playingResult) {
         ArrayList<PKMediaSource> sources = new ArrayList<>();
 
         //-> create PKMediaSource-s according to sources list provided in "getContextData" response
@@ -278,11 +279,11 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             String playUrl = null;
 
             // in case playbackSource doesn't have flavors we don't need to build the url and we'll use the provided one.(exp: live content)
-            if(playbackSource.hasFlavors()) {
+            if(playbackSource.hasFlavorIds()) {
 
                 PlaySourceUrlBuilder playUrlBuilder = new PlaySourceUrlBuilder()
                         .setEntryId(entry.getId())
-                        .setFlavorIds(TextUtils.join(",", playbackSource.getFlavors()))
+                        .setFlavorIds(playbackSource.getFlavorIds())
                         .setFormat(playbackSource.getFormat())
                         .setKs(ks)
                         .setPartnerId(partnerId)
@@ -292,7 +293,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 String extension;
                 //-> find out what should be the extension: if format doesn't have mapped value, the extension will be fetched from the flavorAssets.
                 if ((extension = FormatsHelper.getExtByFormat(playbackSource.getFormat())) == null) {
-                    List<KalturaFlavorAsset> flavorAssets = FlavorAssetsFilter.filter(playingResult.getFlavorAssets(), "id", playbackSource.getFlavors());
+                    List<KalturaFlavorAsset> flavorAssets = FlavorAssetsFilter.filter(playingResult.getFlavorAssets(), "id", playbackSource.getFlavorIdsList());
                     extension = flavorAssets.size() > 0 ? flavorAssets.get(0).getFileExt() : FormatsHelper.getExtByFormat(playbackSource.getFormat());
                 }
                 playUrlBuilder.setExtension(extension);

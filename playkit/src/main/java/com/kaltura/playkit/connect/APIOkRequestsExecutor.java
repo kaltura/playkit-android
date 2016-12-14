@@ -258,7 +258,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
         String requestId = getRequestId(response);
 
         if (!response.isSuccessful()) { // in case response has failure status
-            return new ExecutedRequest().requestId(requestId).response(response.message()).code(response.code()).success(false);
+            return new ExecutedRequest().requestId(requestId).error(ErrorElement.fromCode(response.code(), response.message())).success(false);
 
         } else {
 

@@ -6,14 +6,14 @@ import java.util.ArrayList;
  * Created by tehilarozin on 02/11/2016.
  */
 
-public class KalturaPlaybackContextResult extends KalturaEntryContextDataResult {
+public class KalturaPlaybackContext extends KalturaEntryContextDataResult {
 
     ArrayList<KalturaPlaybackSource> sources;
 
-    public KalturaPlaybackContextResult() {
+    public KalturaPlaybackContext() {
     }
 
-    public KalturaPlaybackContextResult(KalturaEntryContextDataResult contextDataResult) {
+    public KalturaPlaybackContext(KalturaEntryContextDataResult contextDataResult) {
         flavorAssets = contextDataResult.flavorAssets;
     }
 

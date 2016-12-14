@@ -19,7 +19,9 @@ public class BaseEntryService extends OvpService {
         MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks)
                 .tag("mediaAsset-multi-get");
 
-        return multiRequestBuilder.add(list(baseUrl, ks, entryId), getContextData(baseUrl, ks, entryId)
+        return multiRequestBuilder.add(list(baseUrl, ks, entryId),
+                getPlaybackContext(baseUrl, ks, entryId),
+                getContextData(baseUrl, ks, entryId)
                 /*!! once api will be available change to: getPlaybackContext(baseUrl, ks, entryId)*/);
     }
 
@@ -64,6 +66,9 @@ public class BaseEntryService extends OvpService {
         JsonObject params = new JsonObject();
         params.addProperty("entryId", entryId);
         params.addProperty("ks", ks);
+        JsonObject contextDataParams = new JsonObject();
+        contextDataParams.addProperty("objectType","KalturaContextDataParams");
+        params.add("contextDataParams", contextDataParams);
 
         return new OvpRequestBuilder().service("baseEntry")
                 .action("getPlaybackContext")

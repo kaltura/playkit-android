@@ -59,6 +59,17 @@ public class ErrorElement {
         return extra;
     }
 
+    public static ErrorElement fromCode(int code, String message){
+        switch (code){
+            case 404:
+                return ErrorElement.NotFound.message(message);
+            case 400:
+                return ErrorElement.BadRequestError.message(message);
+            default:
+                return new ErrorElement(message, code);
+        }
+    }
+
     public static ErrorElement fromException(Exception exception) {
         switch (exception.getClass().getSimpleName()){
             case "SocketTimeoutException":

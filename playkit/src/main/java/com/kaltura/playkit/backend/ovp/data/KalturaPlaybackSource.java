@@ -1,5 +1,6 @@
 package com.kaltura.playkit.backend.ovp.data;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -12,7 +13,7 @@ public class KalturaPlaybackSource {
     private String format;
     private String url;
     private String protocols; // currently list of KalturaString objects
-    private List<String> flavors; //not clear if should be list<String> or string, currently list of KalturaString objects
+    private String flavorIds; //not clear if should be list<String> or string, currently list of KalturaString objects
     private List<KalturaDrmEntryPlayingPluginData> drm;
 
 
@@ -52,12 +53,16 @@ public class KalturaPlaybackSource {
         return null;
     }*/
 
-    public List<String> getFlavors() {
-        return flavors;
+    public String getFlavorIds() {
+        return flavorIds;
     }
 
-    public boolean hasFlavors() {
-        return flavors != null && flavors.size() > 0;
+    public List<String> getFlavorIdsList() {
+        return Arrays.asList(flavorIds.split(","));
+    }
+
+    public boolean hasFlavorIds() {
+        return flavorIds != null && flavorIds.length() > 0;
     }
 
     public String getFormat() {

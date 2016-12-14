@@ -95,7 +95,6 @@ public class PlaySourceUrlBuilder {
     }
 
 
-
     /**
      * we support http or https. defaults to PreferredHttpProtocol
      *
@@ -137,8 +136,9 @@ public class PlaySourceUrlBuilder {
             return null;
         }
 
-        StringBuilder playUrl = new StringBuilder(baseUrl).append("/p/").append(partnerId).append("/sp/").append(partnerId)
-                .append("/entryId/").append(entryId).append("/protocol/").append(protocol).append("/format/").append(format);
+        StringBuilder playUrl = new StringBuilder(baseUrl).append("/p/").append(partnerId).append("/sp/")
+                .append(partnerId).append("/playManifest").append("/entryId/").append(entryId).append("/protocol/")
+                .append(protocol).append("/format/").append(format);
 
         boolean hasUiConfId = !isEmpty(uiConfId);
         boolean hasFlavors = !isEmpty(flavorIds);
