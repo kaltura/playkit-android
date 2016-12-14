@@ -11,7 +11,7 @@ import java.util.List;
 public class AdInfo implements PKAdInfo{
 
     private String  adDescription;
-    private double  adDuration;
+    private long    adDuration;
     private String  adTitle;
     private boolean isAdSkippable;
     private String  contnentType;
@@ -25,7 +25,7 @@ public class AdInfo implements PKAdInfo{
     private List<Float> adCuePoints;
 
 
-    public AdInfo(String adDescription, double adDuration, String adTitle, boolean isAdSkippable, String contnentType,
+    public AdInfo(String adDescription, long adDuration, String adTitle, boolean isAdSkippable, String contnentType,
                   String adId, String adSystem, int adHeight, int adWidth,
                   int adPodCount, int adPodPosition, double adPodTimeOffset,
                   List<Float> adCuePoints) {
