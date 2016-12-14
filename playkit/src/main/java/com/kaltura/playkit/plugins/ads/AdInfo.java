@@ -2,8 +2,6 @@ package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.ads.PKAdInfo;
 
-import java.util.List;
-
 /**
  * Created by gilad.nadav on 22/11/2016.
  */
@@ -22,28 +20,24 @@ public class AdInfo implements PKAdInfo{
     private int     adWidth;
     private int     adPodCount;
     private int     adPodPosition;
-    double          adPodTimeOffset;
-    private List<Float> adCuePoints;
-
+    private long    adPodTimeOffset;
 
     public AdInfo(String adDescription, long adDuration, String adTitle, boolean isAdSkippable, String adContnentType,
                   String adId, String adSystem, int adHeight, int adWidth,
-                  int adPodCount, int adPodPosition, double adPodTimeOffset,
-                  List<Float> adCuePoints) {
+                  int adPodCount, int adPodPosition, long adPodTimeOffset) {
 
         this.adDescription = adDescription;
         this.adDuration    = adDuration;
         this.adTitle       = adTitle;
         this.isAdSkippable = isAdSkippable;
         this.adContnentType  = adContnentType;
-        this.adId        = adId;
-        this.adSystem    = adSystem;
-        this.adHeight    = adHeight;
-        this.adWidth     = adWidth;
-        this.adPodCount  = adPodCount;
-        this.adPodPosition  = adPodPosition;
+        this.adId            = adId;
+        this.adSystem        = adSystem;
+        this.adHeight        = adHeight;
+        this.adWidth         = adWidth;
+        this.adPodCount      = adPodCount;
+        this.adPodPosition   = adPodPosition;
         this.adPodTimeOffset = adPodTimeOffset;
-        this.adCuePoints = adCuePoints;
     }
 
 
@@ -103,12 +97,8 @@ public class AdInfo implements PKAdInfo{
     }
 
     @Override
-    public double getAdPodTimeOffset() {
+    public long getAdPodTimeOffset() {
         return adPodTimeOffset;
-    }
-    @Override
-    public List<Float> getAdCuePoints() {
-        return adCuePoints;
     }
 
     @Override

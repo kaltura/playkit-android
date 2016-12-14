@@ -493,9 +493,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         String adSystem           = ad.getAdSystem();
         int adHeight              = ad.getHeight();
         int adWidth               = ad.getWidth();
-        int adPodCount            =  ad.getAdPodInfo().getTotalAds();
-        int adPodPosition         =  ad.getAdPodInfo().getAdPosition();
-        double adPodTimeOffset    =  ad.getAdPodInfo().getTimeOffset();
+        int adPodCount            = ad.getAdPodInfo().getTotalAds();
+        int adPodPosition         = ad.getAdPodInfo().getAdPosition();
+        long adPodTimeOffset      = (long)(ad.getAdPodInfo().getTimeOffset() * 1000);
         List<Float> adCuePoints;
         if (adsManager != null) {
             adCuePoints = adsManager.getAdCuePoints();
@@ -510,8 +510,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 adWidth,
                 adPodCount,
                 adPodPosition,
-                adPodTimeOffset,
-                adCuePoints);
+                adPodTimeOffset);
 
         log.v("AdInfo: " + adInfo.toString());
         return adInfo;
