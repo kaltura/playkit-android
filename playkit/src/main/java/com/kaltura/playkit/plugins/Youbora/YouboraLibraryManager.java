@@ -57,14 +57,16 @@ public class YouboraLibraryManager extends PluginGeneric {
         log.d(event.newState.toString());
         switch (event.newState) {
             case READY:
-                if (isBuffering) {
+                if (isBuffering && !isFirstPlay) {
                     isBuffering = false;
                     bufferedHandler();
                 }
                 break;
             case BUFFERING:
-                isBuffering = true;
-                bufferingHandler();
+                if (!isFirstPlay) {
+                    isBuffering = true;
+                    bufferingHandler();
+                }
                 break;
             default:
                 break;

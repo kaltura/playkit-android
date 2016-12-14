@@ -402,7 +402,7 @@ public class KalturaStatsPlugin extends PKPlugin {
         int uiconfId = pluginConfig.has("uiconfId") ? pluginConfig.getAsJsonPrimitive("uiconfId").getAsInt() : 0;
         String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : "";
         int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
-        long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration();
+        long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration() / 1000;
 
         // Parameters for the request -
         //        String baseUrl, int partnerId, int eventType, String clientVer, long duration,
