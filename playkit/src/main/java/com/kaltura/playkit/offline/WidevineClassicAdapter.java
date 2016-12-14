@@ -29,17 +29,17 @@ public class WidevineClassicAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean checkAssetStatus(@NonNull String localPath, @Nullable final LocalAssetsManager.AssetStatusListener listener) {
+    public boolean checkAssetStatus(@NonNull String localAssetPath, @Nullable final LocalAssetsManager.AssetStatusListener listener) {
         WidevineDrmClient widevineDrmClient = new WidevineDrmClient(mContext);
-        WidevineDrmClient.RightsInfo info = widevineDrmClient.getRightsInfo(localPath);
+        WidevineDrmClient.RightsInfo info = widevineDrmClient.getRightsInfo(localAssetPath);
         if (listener != null) {
-            listener.onStatus(localPath, info.expiryTime, info.availableTime);
+            listener.onStatus(localAssetPath, info.expiryTime, info.availableTime);
         }
         return true;
     }
 
     @Override
-    public boolean registerAsset(@NonNull final String localPath, @NonNull String licenseUri, @Nullable final LocalAssetsManager.AssetRegistrationListener listener) {
+    public boolean registerAsset(@NonNull final String localAssetPath, @NonNull String licenseUri, @Nullable final LocalAssetsManager.AssetRegistrationListener listener) {
         WidevineDrmClient widevineDrmClient = new WidevineDrmClient(mContext);
         widevineDrmClient.setEventListener(new WidevineDrmClient.EventListener() {
             @Override
@@ -47,7 +47,7 @@ public class WidevineClassicAdapter extends DrmAdapter {
                 log.d(event.toString());
 
                 if (listener != null) {
-                    listener.onFailed(localPath, new Exception("License acquisition failed; DRM client error code: " + event.getType()));
+                    listener.onFailed(localAssetPath, new Exception("License acquisition failed; DRM client error code: " + event.getType()));
                 }
             }
 
@@ -57,24 +57,24 @@ public class WidevineClassicAdapter extends DrmAdapter {
                 switch (event.getType()) {
                     case DrmInfoEvent.TYPE_RIGHTS_INSTALLED:
                         if (listener != null) {
-                            listener.onRegistered(localPath);
+                            listener.onRegistered(localAssetPath);
                         }
                         break;
                 }
             }
         });
-        widevineDrmClient.acquireLocalAssetRights(localPath, licenseUri);
+        widevineDrmClient.acquireLocalAssetRights(localAssetPath, licenseUri);
 
         return true;
     }
 
     @Override
-    public boolean refreshAsset(@NonNull String localPath, @NonNull String licenseUri, @Nullable LocalAssetsManager.AssetRegistrationListener listener) {
-        return registerAsset(localPath, licenseUri, listener);
+    public boolean refreshAsset(@NonNull String localAssetPath, @NonNull String licenseUri, @Nullable LocalAssetsManager.AssetRegistrationListener listener) {
+        return registerAsset(localAssetPath, licenseUri, listener);
     }
 
     @Override
-    public boolean unregisterAsset(@NonNull final String localPath, final LocalAssetsManager.AssetRemovalListener listener) {
+    public boolean unregisterAsset(@NonNull final String localAssetPath, final LocalAssetsManager.AssetRemovalListener listener) {
         WidevineDrmClient widevineDrmClient = new WidevineDrmClient(mContext);
         widevineDrmClient.setEventListener(new WidevineDrmClient.EventListener() {
             @Override
@@ -88,13 +88,13 @@ public class WidevineClassicAdapter extends DrmAdapter {
                 switch (event.getType()) {
                     case DrmInfoEvent.TYPE_RIGHTS_REMOVED:
                         if (listener != null) {
-                            listener.onRemoved(localPath);
+                            listener.onRemoved(localAssetPath);
                         }
                         break;
                 }
             }
         });
-        widevineDrmClient.removeRights(localPath);
+        widevineDrmClient.removeRights(localAssetPath);
         return true;
     }
 }

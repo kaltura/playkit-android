@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 
 import com.google.android.exoplayer2.source.MediaSource;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaSource;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,7 +25,7 @@ public class LocalAssetsManager {
     private static final PKLog log = PKLog.get("LocalAssetsManager");
 
     private static final int JSON_BYTE_LIMIT = 1024 * 1024;
-    private OfflineStorage offlineStorage;
+    private static OfflineStorage offlineStorage;
 
 
     public interface AssetRegistrationListener {
@@ -45,13 +46,13 @@ public class LocalAssetsManager {
         this.offlineStorage = offlineStorage;
     }
 
-    public static boolean registerAsset(@NonNull final Context context, @NonNull final MediaSource mediaSource,
+    public static boolean registerAsset(@NonNull final Context context, @NonNull final PKMediaSource mediaSource,
                                         @NonNull final String localAssetPath, @Nullable final AssetRegistrationListener listener) {
 
         return registerOrRefreshAsset(context, mediaSource, localAssetPath, false, listener);
     }
 
-    public static boolean refreshAsset(@NonNull final Context context, @NonNull final MediaSource mediaSource,
+    public static boolean refreshAsset(@NonNull final Context context, @NonNull final PKMediaSource mediaSource,
                                        @NonNull final String loaclAssetPath, @Nullable final AssetRegistrationListener listener) {
 
 
@@ -59,56 +60,41 @@ public class LocalAssetsManager {
 
     }
 
-    public static boolean unregisterAsset(@NonNull final Context context, @NonNull final MediaSource mediaSource,
+    public static boolean unregisterAsset(@NonNull final Context context, @NonNull final PKMediaSource mediaSource,
                                           @NonNull final String localAssetPath, final AssetRemovalListener listener) {
 
         doInBackground(new Runnable() {
             @Override
             public void run() {
                 // Remove cache
-                CacheManager cacheManager = null;
-                try {
-                    cacheManager = getCacheManager(context, entry);
-                    cacheManager.removeCachedResponse(Uri.parse(entry.getVideoURL()));
-
-                    DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, localAssetPath);
+                    DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, offlineStorage, localAssetPath);
                     drmAdapter.unregisterAsset(localAssetPath, listener);
-                } finally {
-                    if (cacheManager != null) {
-                        cacheManager.release();
-                    }
-                }
             }
         });
         return true;
     }
 
-    public static boolean checkAssetStatus(@NonNull final Context context, @NonNull final String assetPath,
+    public static boolean checkAssetStatus(@NonNull final Context context, @NonNull final String localAssetPath,
                                            @Nullable final AssetStatusListener listener) {
 
-        final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, assetPath);
+        final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, offlineStorage, localAssetPath);
 
         doInBackground(new Runnable() {
             @Override
             public void run() {
-                drmAdapter.checkAssetStatus(assetPath, listener);
+                drmAdapter.checkAssetStatus(localAssetPath, listener);
             }
         });
 
         return true;
     }
 
-    private static boolean registerOrRefreshAsset(@NonNull final Context context, @NonNull final MediaSource mediaSource,
+    private static boolean registerOrRefreshAsset(@NonNull final Context context, @NonNull final PKMediaSource mediaSource,
                                                   @NonNull final String localAssetPath, final boolean refresh, @Nullable final AssetRegistrationListener listener) {
 
         // Preflight: check that all parameters are valid.
-        checkNotNull(entry.getPartnerId(), "entry.partnerId");    // can be an empty string (but not null)
-        checkNotEmpty(entry.getServerURL(), "entry.domain");
-        checkNotEmpty(entry.getUiConfId(), "entry.uiConfId");
-        checkNotEmpty(entry.getEntryId(), "entry.entryId");
-        checkNotEmpty(entry.getLocalContentId(), "entry.localContentId");
-        checkNotEmpty(flavor, "flavor");
-        checkNotEmpty(localPath, "localPath");
+        checkNotNull(mediaSource.getUrl(), "mediaSource.url");    // can be an empty string (but not null)
+        checkNotEmpty(localAssetPath, "localAssetPath");
 
 
         if (!isOnline(context)) {
@@ -120,30 +106,18 @@ public class LocalAssetsManager {
             @Override
             public void run() {
 
-                CacheManager cacheManager = null;
                 try {
-                    cacheManager = getCacheManager(context, entry);
-                    Uri uri = Uri.parse(entry.getVideoURL());
-                    if (refresh) {
-                        cacheManager.refreshCachedResponse(uri);
-                    } else {
-                        cacheManager.cacheResponse(uri);
-                    }
 
-                    DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, localPath);
+                    DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, offlineStorage, localAssetPath);
                     DrmAdapter.DRMScheme scheme = drmAdapter.getScheme();
 
                     Uri licenseUri = prepareLicenseUri(entry, flavor, scheme);
-                    drmAdapter.registerAsset(localPath, String.valueOf(licenseUri), listener);
+                    drmAdapter.registerAsset(localAssetPath, String.valueOf(licenseUri), listener);
 
                 } catch (JSONException | IOException e) {
                     log.e("Error", e);
                     if (listener != null) {
-                        listener.onFailed(localPath, e);
-                    }
-                } finally {
-                    if (cacheManager != null) {
-                        cacheManager.release();
+                        listener.onFailed(localAssetPath, e);
                     }
                 }
 
@@ -152,17 +126,6 @@ public class LocalAssetsManager {
 
         return true;
     }
-
-
-
-    @NonNull
-    private static CacheManager getCacheManager(@NonNull Context context, @NonNull KPPlayerConfig entry) {
-        CacheManager cacheManager = new CacheManager(context.getApplicationContext());
-        cacheManager.setBaseURL(Utilities.stripLastUriPathSegment(entry.getServerURL()));
-        cacheManager.setCacheSize(entry.getCacheSize());
-        return cacheManager;
-    }
-
 
     private static Uri prepareLicenseUri(KPPlayerConfig config, @Nullable String flavor, @NonNull DrmAdapter.DRMScheme drmScheme) throws IOException, JSONException {
 

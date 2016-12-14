@@ -13,25 +13,25 @@ import java.io.IOException;
 public abstract class DrmAdapter {
 
     @NonNull
-    public static DrmAdapter getDrmAdapter(@NonNull final Context context, @NonNull OfflineStorage offlineStorage, @NonNull final String localPath) {
-        if (localPath.endsWith(".wvm")) {
+    public static DrmAdapter getDrmAdapter(@NonNull final Context context, @NonNull OfflineStorage offlineStorage, @NonNull final String localAssetPath) {
+        if (localAssetPath.endsWith(".wvm")) {
             return new WidevineClassicAdapter(context);
         }
 
-        if (localPath.endsWith(".mpd")) {
+        if (localAssetPath.endsWith(".mpd")) {
             return new WidevineModularAdapter(context, offlineStorage);
         }
 
         return new NullDrmAdapter();
     }
 
-    public abstract boolean registerAsset(@NonNull final String localPath, String licenseUri, @Nullable final LocalAssetsManager.AssetRegistrationListener listener) throws IOException;
+    public abstract boolean registerAsset(@NonNull final String localAssetPath, String licenseUri, @Nullable final LocalAssetsManager.AssetRegistrationListener listener) throws IOException;
 
-    public abstract boolean refreshAsset(@NonNull final String localPath, String licenseUri, @Nullable final LocalAssetsManager.AssetRegistrationListener listener);
+    public abstract boolean refreshAsset(@NonNull final String localAssetPath, String licenseUri, @Nullable final LocalAssetsManager.AssetRegistrationListener listener);
 
-    public abstract boolean unregisterAsset(@NonNull final String localPath, final LocalAssetsManager.AssetRemovalListener listener);
+    public abstract boolean unregisterAsset(@NonNull final String localAssetPath, final LocalAssetsManager.AssetRemovalListener listener);
 
-    public abstract boolean checkAssetStatus(@NonNull String localPath, @Nullable final LocalAssetsManager.AssetStatusListener listener);
+    public abstract boolean checkAssetStatus(@NonNull String localAssetPath, @Nullable final LocalAssetsManager.AssetStatusListener listener);
 
     public abstract DRMScheme getScheme();
 
@@ -41,9 +41,9 @@ public abstract class DrmAdapter {
 
     static class NullDrmAdapter extends DrmAdapter {
         @Override
-        public boolean checkAssetStatus(@NonNull String localPath, @Nullable LocalAssetsManager.AssetStatusListener listener) {
+        public boolean checkAssetStatus(@NonNull String localAssetPath, @Nullable LocalAssetsManager.AssetStatusListener listener) {
             if (listener != null) {
-                listener.onStatus(localPath, -1, -1);
+                listener.onStatus(localAssetPath, -1, -1);
             }
             return true;
         }
@@ -54,22 +54,22 @@ public abstract class DrmAdapter {
         }
 
         @Override
-        public boolean registerAsset(@NonNull String localPath, @NonNull String licenseUri, @Nullable LocalAssetsManager.AssetRegistrationListener listener) {
+        public boolean registerAsset(@NonNull String localAssetPath, @NonNull String licenseUri, @Nullable LocalAssetsManager.AssetRegistrationListener listener) {
             if (listener != null) {
-                listener.onRegistered(localPath);
+                listener.onRegistered(localAssetPath);
             }
             return true;
         }
 
         @Override
-        public boolean refreshAsset(@NonNull String localPath, @NonNull String licenseUri, @Nullable LocalAssetsManager.AssetRegistrationListener listener) {
-            return registerAsset(localPath, licenseUri, listener);
+        public boolean refreshAsset(@NonNull String localAssetPath, @NonNull String licenseUri, @Nullable LocalAssetsManager.AssetRegistrationListener listener) {
+            return registerAsset(localAssetPath, licenseUri, listener);
         }
 
         @Override
-        public boolean unregisterAsset(@NonNull String localPath, LocalAssetsManager.AssetRemovalListener listener) {
+        public boolean unregisterAsset(@NonNull String localAssetPath, LocalAssetsManager.AssetRemovalListener listener) {
             if (listener != null) {
-                listener.onRemoved(localPath);
+                listener.onRemoved(localAssetPath);
             }
             return true;
         }

@@ -48,17 +48,17 @@ public class WidevineModularAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean registerAsset(@NonNull String localPath, String licenseUri, @Nullable LocalAssetsManager.AssetRegistrationListener listener) {
+    public boolean registerAsset(@NonNull String localAssetPath, String licenseUri, @Nullable LocalAssetsManager.AssetRegistrationListener listener) {
 
         try {
-            boolean result = registerAsset(localPath, licenseUri);
+            boolean result = registerAsset(localAssetPath, licenseUri);
             if (listener != null) {
-                listener.onRegistered(localPath);
+                listener.onRegistered(localAssetPath);
             }
             return result;
         } catch (RegisterException e) {
             if (listener != null) {
-                listener.onFailed(localPath, e);
+                listener.onFailed(localAssetPath, e);
             }
             return false;
         }
@@ -93,16 +93,17 @@ public class WidevineModularAdapter extends DrmAdapter {
         return dashParser;
     }
 
-    private boolean registerAsset(@NonNull String localPath, String licenseUri) throws RegisterException {
+    private boolean registerAsset(@NonNull String localAssetPath, String licenseUri) throws RegisterException {
 
-        SimpleDashParser dash = parseDash(localPath);
+        SimpleDashParser dash = parseDash(localAssetPath);
 
         if (!dash.hasContentProtection) {
             // Not protected -- nothing to do.
             return true;
         }
 
-        String mimeType = dash.format.mimeType;
+        String mimeType = dash.format.sampleMimeType; //TODO should use dash.format.containerMimeType; or dash.format.sampleMimeType;
+
         byte[] initData = dash.widevineInitData;
 
         MediaDrmSession session;
@@ -173,18 +174,18 @@ public class WidevineModularAdapter extends DrmAdapter {
 
 
     @Override
-    public boolean unregisterAsset(@NonNull String localPath, LocalAssetsManager.AssetRemovalListener listener) {
+    public boolean unregisterAsset(@NonNull String localAssetPath, LocalAssetsManager.AssetRemovalListener listener) {
         // TODO
 
         try {
-            unregisterAsset(localPath);
+            unregisterAsset(localAssetPath);
             return true;
         } catch (RegisterException e) {
             Log.e(TAG, "Failed to unregister", e);
             return false;
         } finally {
             if (listener != null) {
-                listener.onRemoved(localPath);
+                listener.onRemoved(localAssetPath);
             }
         }
     }
@@ -201,17 +202,17 @@ public class WidevineModularAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean refreshAsset(@NonNull String localPath, String licenseUri, @Nullable LocalAssetsManager.AssetRegistrationListener listener) {
+    public boolean refreshAsset(@NonNull String localAssetPath, String licenseUri, @Nullable LocalAssetsManager.AssetRegistrationListener listener) {
         // TODO -- verify that we just need to register again
 
-        return registerAsset(localPath, licenseUri, listener);
+        return registerAsset(localAssetPath, licenseUri, listener);
     }
 
     @Override
-    public boolean checkAssetStatus(@NonNull String localPath, @Nullable LocalAssetsManager.AssetStatusListener listener) {
+    public boolean checkAssetStatus(@NonNull String localAssetPath, @Nullable LocalAssetsManager.AssetStatusListener listener) {
 
         try {
-            Map<String, String> assetStatus = checkAssetStatus(localPath);
+            Map<String, String> assetStatus = checkAssetStatus(localAssetPath);
             if (assetStatus != null) {
                 long licenseDurationRemaining = 0;
                 long playbackDurationRemaining = 0;
@@ -222,18 +223,18 @@ public class WidevineModularAdapter extends DrmAdapter {
                     Log.e(TAG, "Invalid integers in KeyStatus: " + assetStatus);
                 }
                 if (listener != null) {
-                    listener.onStatus(localPath, licenseDurationRemaining, playbackDurationRemaining);
+                    listener.onStatus(localAssetPath, licenseDurationRemaining, playbackDurationRemaining);
                 }
             }
         } catch (NoWidevinePSSHException e) {
             // Not a Widevine file
             if (listener != null) {
-                listener.onStatus(localPath, -1, -1);
+                listener.onStatus(localAssetPath, -1, -1);
             }
             return false;
         } catch (RegisterException e) {
             if (listener != null) {
-                listener.onStatus(localPath, 0, 0);
+                listener.onStatus(localAssetPath, 0, 0);
             }
             return false;
         }
@@ -257,7 +258,7 @@ public class WidevineModularAdapter extends DrmAdapter {
 
         MediaDrmSession session;
         try {
-            session = OfflineDrmManager.openSessionWithKeys(mediaDrm, mStore, dashParser.widevineInitData);
+            session = OfflineDrmManager.openSessionWithKeys(mediaDrm, offlineStorage, dashParser.widevineInitData);
         } catch (MediaDrmException | MediaCryptoException | FileNotFoundException e) {
             throw new RegisterException("Can't open session with keys", e);
         }

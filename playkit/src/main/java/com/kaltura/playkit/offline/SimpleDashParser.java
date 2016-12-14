@@ -3,6 +3,7 @@ package com.kaltura.playkit.offline;
 import android.net.Uri;
 import android.util.Log;
 
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.drm.DrmInitData;
 import com.google.android.exoplayer2.source.dash.manifest.AdaptationSet;
 import com.google.android.exoplayer2.source.dash.manifest.Period;
