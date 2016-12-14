@@ -68,6 +68,9 @@ public class PlayerController implements Player {
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());
                         break;
+                    case PLAYBACK_PARAMS:
+                        event = new PlayerEvent.PlaybackParams(player.getPlaybackParamsInfo());
+                        break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
                 }
