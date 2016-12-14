@@ -157,5 +157,4 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     public String getAdPlayerVersion() {
         return PlayKitManager.CLIENT_TAG;
     }
-
 }

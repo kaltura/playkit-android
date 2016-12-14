@@ -62,7 +62,7 @@ public class AdInfo implements PKAdInfo{
     }
 
     @Override
-    public double getAdDuration() {
+    public long getAdDuration() {
         return adDuration;
     }
 

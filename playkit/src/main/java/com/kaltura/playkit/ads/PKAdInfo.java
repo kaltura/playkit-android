@@ -14,6 +14,6 @@ public interface PKAdInfo {
     int getAdPodCount();
     int getAdPodPosition();
     double getAdPodTimeOffset();
-    double getAdDuration();
+    long getAdDuration();
     List<Float> getAdCuePoints();
 }
