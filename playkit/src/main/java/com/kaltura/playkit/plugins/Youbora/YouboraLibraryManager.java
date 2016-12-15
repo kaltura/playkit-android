@@ -85,10 +85,14 @@ public class YouboraLibraryManager extends PluginGeneric {
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
                     case ENDED:
-                        endedHandler();
+                        if (!isFirstPlay) {
+                            endedHandler();
+                        }
                         break;
                     case ERROR:
-                        errorHandler(event.eventType().toString());
+                        if (!isFirstPlay) {
+                            errorHandler(event.eventType().toString());
+                        }
                         break;
                     case PAUSE:
                         pauseHandler();
