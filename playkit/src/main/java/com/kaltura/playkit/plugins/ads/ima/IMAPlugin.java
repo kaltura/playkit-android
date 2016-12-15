@@ -171,7 +171,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     protected void onApplicationResumed() {
-        resume();
+
     }
 
     @Override

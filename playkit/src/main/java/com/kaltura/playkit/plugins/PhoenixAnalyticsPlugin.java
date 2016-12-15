@@ -5,6 +5,7 @@ import android.content.Context;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.OttEvent;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
@@ -17,8 +18,6 @@ import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
-
-import org.junit.Test;
 
 import java.util.TimerTask;
 
@@ -174,7 +173,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType){
         String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"464302";
-        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://52.210.223.65:8080/v4_0/api_v3/";
+        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://api-preprod.ott.kaltura.com/v4_1/api_v3/";
         String ks = pluginConfig.has("ks")? pluginConfig.getAsJsonPrimitive("ks").getAsString():"djJ8MTk4fN86RC6KBjyHtmG9bIBounF1ewb1SMnFNtAvaxKIAfHUwW0rT4GAYQf8wwUKmmRAh7G0olZ7IyFS1FTpwskuqQPVQwrSiy_J21kLxIUl_V9J";
         int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt():198;
 
@@ -185,16 +184,14 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
+                if (response.isSuccess() && response.getError() != null && response.getError().getCode().equals("4001")){
+                    messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
+                }
                 log.d("onComplete send event: ");
-                messageBus.post(new LogEvent(TAG + " " + eventType.name()));
             }
         });
         requestsExecutor.queue(requestBuilder.build());
+        messageBus.post(new LogEvent(TAG + " " + eventType.toString(), requestBuilder.build().getBody()));
     }
 
-
-    @Test
-    public void testPhoenixAnalyticsEvent(){
-        
-    }
 }
