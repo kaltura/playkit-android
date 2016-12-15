@@ -2,6 +2,7 @@ package com.kaltura.playkit.plugins;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.LogEvent;
+import com.kaltura.playkit.OttEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.backend.tvpapi.MediaMarkService;
