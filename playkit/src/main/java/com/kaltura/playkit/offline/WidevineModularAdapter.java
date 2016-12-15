@@ -18,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by anton.afanasiev on 13/12/2016.
@@ -27,6 +28,7 @@ import java.util.Map;
 public class WidevineModularAdapter extends DrmAdapter {
 
     private static final String TAG = "WidevineModularAdapter";
+    static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed"); //TODO already using it in ExoplayerWrapper should be reused!
 
     private final OfflineStorage offlineStorage;
 
@@ -242,10 +244,11 @@ public class WidevineModularAdapter extends DrmAdapter {
         return true;
     }
 
-    private Map<String, String> checkAssetStatus(@NonNull String localPath) throws RegisterException {
+    //TODO check with Noam about MediaCryptoException
+    private Map<String, String> checkAssetStatus(@NonNull String localAssetPath) throws RegisterException {
         SimpleDashParser dashParser;
         try {
-            dashParser = new SimpleDashParser().parse(localPath);
+            dashParser = new SimpleDashParser().parse(localAssetPath);
         } catch (IOException e) {
             throw new RegisterException("Can't parse dash", e);
         }
@@ -258,8 +261,15 @@ public class WidevineModularAdapter extends DrmAdapter {
 
         MediaDrmSession session;
         try {
-            session = OfflineDrmManager.openSessionWithKeys(mediaDrm, offlineStorage, dashParser.widevineInitData);
-        } catch (MediaDrmException | MediaCryptoException | FileNotFoundException e) {
+            byte[] keySetId = offlineStorage.load(dashParser.widevineInitData);
+
+            session = MediaDrmSession.open(mediaDrm);
+            session.restoreKeys(keySetId);
+
+            Map<String, String> keyStatus = session.queryKeyStatus();
+            Log.d(TAG, "keyStatus: " + keyStatus);
+//            session = OfflineDrmManager.openSessionWithKeys(mediaDrm, offlineStorage, dashParser.widevineInitData);
+        } catch (MediaDrmException | FileNotFoundException e) {
             throw new RegisterException("Can't open session with keys", e);
         }
 

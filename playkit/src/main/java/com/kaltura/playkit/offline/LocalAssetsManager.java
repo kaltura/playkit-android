@@ -24,7 +24,6 @@ public class LocalAssetsManager {
 
     private static final PKLog log = PKLog.get("LocalAssetsManager");
 
-    private static final int JSON_BYTE_LIMIT = 1024 * 1024;
     private static OfflineStorage offlineStorage;
 
 
@@ -110,11 +109,10 @@ public class LocalAssetsManager {
 
                     DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, offlineStorage, localAssetPath);
                     DrmAdapter.DRMScheme scheme = drmAdapter.getScheme();
+                    String licenseUri = mediaSource.getDrmData().get(0).getLicenseUri(); //TODO filter and select the correct drmData based on DrmAdapter.DRMScheme
+                    drmAdapter.registerAsset(localAssetPath, licenseUri, listener);
 
-                    Uri licenseUri = prepareLicenseUri(entry, flavor, scheme);
-                    drmAdapter.registerAsset(localAssetPath, String.valueOf(licenseUri), listener);
-
-                } catch (JSONException | IOException e) {
+                } catch (IOException e) {
                     log.e("Error", e);
                     if (listener != null) {
                         listener.onFailed(localAssetPath, e);
@@ -125,105 +123,6 @@ public class LocalAssetsManager {
         });
 
         return true;
-    }
-
-    private static Uri prepareLicenseUri(KPPlayerConfig config, @Nullable String flavor, @NonNull DrmAdapter.DRMScheme drmScheme) throws IOException, JSONException {
-
-        String overrideUrl = config.getConfigValueString("Kaltura.overrideDrmServerURL");
-        if (overrideUrl != null) {
-            return Uri.parse(overrideUrl);
-        }
-
-        if (drmScheme == DrmAdapter.DRMScheme.Null) {
-            return null;
-        }
-
-        // load license data
-        Uri getLicenseDataURL = prepareGetLicenseDataURL(config, flavor, drmScheme);
-        String licenseData = Utilities.loadStringFromURL(getLicenseDataURL, JSON_BYTE_LIMIT);
-
-        // parse license data
-        JSONObject licenseDataJSON = new JSONObject(licenseData);
-        if (licenseDataJSON.has("error")) {
-            throw new IOException("Error getting license data: " + licenseDataJSON.getJSONObject("error").getString("message"));
-        }
-
-        String licenseUri = licenseDataJSON.getString("licenseUri");
-
-        return Uri.parse(licenseUri);
-    }
-
-    private static Uri prepareGetLicenseDataURL(KPPlayerConfig config, String flavor, DrmAdapter.DRMScheme drmScheme) throws IOException, JSONException {
-
-        Uri serviceURL = Uri.parse(config.getServerURL());
-        // URL may either point to the root of the server or to mwEmbedFrame.php. Resolve this.
-        if (serviceURL.getPath().endsWith("/mwEmbedFrame.php")) {
-            serviceURL = Utilities.stripLastUriPathSegment(serviceURL);
-        } else {
-            serviceURL = resolvePlayerRootURL(serviceURL, config.getPartnerId(), config.getUiConfId(), config.getKS());
-        }
-
-        // Now serviceURL is something like "http://cdnapi.kaltura.com/html5/html5lib/v2.38.3".
-
-
-        String drmName = null;
-        switch (drmScheme) {
-            case WidevineCENC:
-                drmName = "wvcenc";
-                break;
-            case WidevineClassic:
-                drmName = "wvclassic";
-                break;
-        }
-
-        return serviceURL.buildUpon()
-                .appendPath("services.php")
-                .encodedQuery(config.getQueryString())
-                .appendQueryParameter("service", "getLicenseData")
-                .appendQueryParameter("drm", drmName)
-                .appendQueryParameter("flavor_id", flavor).build();
-    }
-
-    private static Uri resolvePlayerRootURL(Uri serverURL, String partnerId, String uiConfId, String ks) throws IOException, JSONException {
-        // serverURL is something like "http://cdnapi.kaltura.com";
-        // we need to get to "http://cdnapi.kaltura.com/html5/html5lib/v2.38.3".
-        // This is done by loading UIConf data, and looking at "html5Url" property.
-
-        String jsonString = loadUIConf(serverURL, partnerId, uiConfId, ks);
-        String embedLoaderUrl;
-        JSONObject uiConfJSON = new JSONObject(jsonString);
-        if (uiConfJSON.has("message")) {
-            throw new IOException("Error getting UIConf: " + uiConfJSON.getString("message"));
-        }
-        embedLoaderUrl = uiConfJSON.getString("html5Url");
-
-        Uri serviceUri;
-        if (embedLoaderUrl.startsWith("/")) {
-            serviceUri = serverURL.buildUpon()
-                    .appendEncodedPath(embedLoaderUrl)
-                    .build();
-        } else {
-            serviceUri = Uri.parse(embedLoaderUrl);
-        }
-
-        return Utilities.stripLastUriPathSegment(serviceUri);
-    }
-
-    private static String loadUIConf(Uri serverURL, String partnerId, String uiConfId, String ks) throws IOException {
-
-        Uri.Builder uriBuilder = serverURL.buildUpon()
-                .appendEncodedPath("api_v3/index.php")
-                .appendQueryParameter("service", "uiconf")
-                .appendQueryParameter("action", "get")
-                .appendQueryParameter("format", "1")
-                .appendQueryParameter("p", partnerId)
-                .appendQueryParameter("id", uiConfId);
-
-        if (ks != null) {
-            uriBuilder.appendQueryParameter("ks", ks);
-        }
-
-        return Utilities.loadStringFromURL(uriBuilder.build(), JSON_BYTE_LIMIT);
     }
 
     private static void checkArg(boolean invalid, String message) {
