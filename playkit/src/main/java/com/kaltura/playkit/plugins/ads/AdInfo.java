@@ -2,61 +2,48 @@ package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.ads.PKAdInfo;
 
-import java.util.List;
-
 /**
  * Created by gilad.nadav on 22/11/2016.
  */
 
 public class AdInfo implements PKAdInfo {
 
-    private String adDescription;
-    private long  adDuration;
+    private String  adDescription;
+    private long    adDuration;
+
     private String  adTitle;
     private boolean isAdSkippable;
-    private String  contnentType;
+    private String  adContnentType;
     private String  adId;
     private String  adSystem;
     private int     adHeight;
     private int     adWidth;
-    private List<Float> adCuePoints;
+    private int     adPodCount;
+    private int     adPodPosition;
+    private long    adPodTimeOffset;
 
-    public AdInfo(String adDescription, long adDuration, String adTitle, boolean isAdSkippable, String contnentType,
-                  String adId, String adSystem, int adHeight, int adWidth, List<Float> adCuePoints) {
+    public AdInfo(String adDescription, long adDuration, String adTitle, boolean isAdSkippable, String adContnentType,
+                  String adId, String adSystem, int adHeight, int adWidth,
+                  int adPodCount, int adPodPosition, long adPodTimeOffset) {
+
         this.adDescription = adDescription;
-        this.adDuration = adDuration;
-        this.adTitle = adTitle;
+        this.adDuration    = adDuration;
+        this.adTitle       = adTitle;
         this.isAdSkippable = isAdSkippable;
-        this.contnentType = contnentType;
-        this.adId = adId;
-        this.adSystem = adSystem;
-        this.adHeight = adHeight;
-        this.adWidth = adWidth;
-        this.adCuePoints = adCuePoints;
+        this.adContnentType  = adContnentType;
+        this.adId            = adId;
+        this.adSystem        = adSystem;
+        this.adHeight        = adHeight;
+        this.adWidth         = adWidth;
+        this.adPodCount      = adPodCount;
+        this.adPodPosition   = adPodPosition;
+        this.adPodTimeOffset = adPodTimeOffset;
     }
 
-    public String getAdDescription() {
-        return adDescription;
-    }
 
-    public String getContnentType() {
-        return contnentType;
-    }
-
-    public String getAdTitle() {
-        return adTitle;
-    }
-
-    public void setAdTitle(String adTitle) {
-        this.adTitle = adTitle;
-    }
-
-    public boolean isAdSkippable() {
-        return isAdSkippable;
-    }
-
-    public String getContentType() {
-        return contnentType;
+    @Override
+    public String getAdContentType() {
+        return adContnentType;
     }
 
     @Override
@@ -70,48 +57,60 @@ public class AdInfo implements PKAdInfo {
     }
 
     @Override
-    public long getDuration() {
+    public long getAdDuration() {
         return adDuration;
     }
 
     @Override
-    public String getDescription() {
-        return null;
+    public String getAdDescription() {
+        return adDescription;
     }
 
+    @Override
     public String getAdId() {
         return adId;
     }
 
-    public void setAdId(String adId) {
-        this.adId = adId;
+    @Override
+    public int getAdPodCount() {
+        return adPodCount;
     }
 
+    @Override
     public String getAdSystem() {
         return adSystem;
     }
 
     @Override
-    public boolean isLinear() {
-        return false;
+    public boolean isAdSkippable() {
+        return isAdSkippable;
     }
 
     @Override
-    public boolean isSkippable() {
-        return false;
+    public String getAdTitle() {
+        return adTitle;
     }
 
     @Override
-    public String getTitle() {
-        return null;
+    public int getAdPodPosition() {
+        return adPodPosition;
     }
 
-    public List<Float> getAdCuePoints() {
-        return adCuePoints;
+    @Override
+    public long getAdPodTimeOffset() {
+        return adPodTimeOffset;
     }
 
     @Override
     public String toString() {
-        return "adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + contnentType;
+        String adType = "";
+        if (adPodTimeOffset > 0 ) {
+            adType = "Mid-Roll";
+        } else if (adPodTimeOffset < 0) {
+            adType = "Post-Roll";
+        } else {
+            adType = "Pre-Roll";
+        }
+        return "AdTyp=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + adContnentType + " podCount = " + adPodPosition + "/" + adPodCount;
     }
 }
