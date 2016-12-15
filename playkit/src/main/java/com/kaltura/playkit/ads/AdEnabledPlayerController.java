@@ -8,7 +8,7 @@ import com.kaltura.playkit.plugins.ads.AdsProvider;
  * Created by gilad.nadav on 20/11/2016.
  */
 
-public class AdEnabledPlayerController extends PlayerDecorator {
+public class AdEnabledPlayerController extends PlayerDecorator implements AdController {
 
     private static final PKLog log = PKLog.get("AdEnablController");
 
@@ -74,5 +74,15 @@ public class AdEnabledPlayerController extends PlayerDecorator {
         } else {
             super.pause();
         }
+    }
+
+    @Override
+    public void skipAd() {
+        adsProvider.skipAd();
+    }
+
+    @Override
+    public AdController getAdController() {
+        return this;
     }
 }

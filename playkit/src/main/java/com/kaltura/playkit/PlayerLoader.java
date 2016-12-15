@@ -5,9 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.player.PlayerController;
-import com.kaltura.playkit.plugins.ads.AdEvent;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -36,7 +34,6 @@ class PlayerLoader extends PlayerDecoratorBase {
     private MessageBus messageBus;
     
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
-    private PKAdInfo lastAdInfo;
 
     PlayerLoader(Context context) {
         this.context = context;
@@ -53,17 +50,6 @@ class PlayerLoader extends PlayerDecoratorBase {
             }
         });
 
-
-        messageBus.listen(new PKEvent.Listener() {
-            @Override
-            public void onEvent(PKEvent event) {
-                if (event.eventType() == AdEvent.Type.STARTED) {
-                    lastAdInfo = ((AdEvent.AdStartedEvent) event).adInfo;
-                } else if (event.eventType() == AdEvent.Type.COMPLETED) {
-                    lastAdInfo = null;
-                }
-            }
-        }, AdEvent.Type.STARTED, AdEvent.Type.COMPLETED);
         Player player = playerController;
 
         for (Map.Entry<String, JsonObject> pluginConfig : playerConfig.plugins.getPluginConfigMap().entrySet()) {
@@ -123,13 +109,7 @@ class PlayerLoader extends PlayerDecoratorBase {
     public boolean isAutoPlay() {
         return getPlayer().isAutoPlay();
     }
-
-
-    @Override
-    public PKAdInfo getAdInfo() {
-        return lastAdInfo;
-    }
-
+    
     private void releasePlayer() {
         getPlayer().destroy();
     }
