@@ -15,7 +15,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.ads.PKAdInfo;
+import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.List;
@@ -169,6 +169,11 @@ public class PlayerController implements Player {
         player.seekTo(position);
     }
 
+    @Override
+    public AdController getAdController() {
+        return null;
+    }
+
     public void play() {
         log.d("play");
         if(player == null){
@@ -239,12 +244,6 @@ public class PlayerController implements Player {
     @Override
     public void addStateChangeListener(@NonNull PKEvent.Listener listener) {
         Assert.shouldNeverHappen();
-    }
-
-    @Override
-    public PKAdInfo getAdInfo() {
-        Assert.shouldNeverHappen();
-        return null;
     }
 
     @Override

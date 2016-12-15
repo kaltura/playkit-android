@@ -34,6 +34,7 @@ import com.kaltura.playkit.plugins.ads.AdError;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
+import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -364,12 +365,28 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     public long getDuration() {
-        return  (long)adsManager.getAdProgress().getDuration();
+        if (adsManager != null) {
+            return (long) adsManager.getAdProgress().getDuration();
+        } else {
+            return  Consts.TIME_UNSET;
+        }
+
     }
 
     @Override
     public long getCurrentPosition() {
-        return (long)adsManager.getAdProgress().getCurrentTime();
+        if (adsManager != null) {
+            return (long) adsManager.getAdProgress().getCurrentTime();
+        } else {
+            return  Consts.POSITION_UNSET;
+        }
+    }
+
+    @Override
+    public void skipAd() {
+        if (adsManager != null) {
+            adsManager.skip();
+        }
     }
 
     @Override
