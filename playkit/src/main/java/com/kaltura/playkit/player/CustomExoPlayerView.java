@@ -27,7 +27,7 @@ public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.
     private static final String TAG = CustomExoPlayerView.class.getSimpleName();
 
     private final View surfaceView;
-    private final View posterView; // TODO should be changed to poster?
+    private final View shutterView;
     private final SubtitleView subtitleLayout;
     private final AspectRatioFrameLayout layout;
 
@@ -45,14 +45,14 @@ public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.
         super(context, attrs, defStyleAttr);
 
         layout = initFrameLayout();
-        posterView = initPosterView();
+        shutterView = initShutterView();
         subtitleLayout = initSubtitleLayout();
 
         surfaceView = initSurfaceView();
 
         addView(layout);
         layout.addView(surfaceView, 0);
-        layout.addView(posterView);
+        layout.addView(shutterView);
         layout.addView(subtitleLayout);
     }
 
@@ -73,13 +73,13 @@ public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.
         return subtitleLayout;
     }
 
-    private View initPosterView() {
-        View posterView = new View(getContext());
+    private View initShutterView() {
+        View shutterView = new View(getContext());
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        posterView.setLayoutParams(params);
-        posterView.setBackgroundColor(Color.BLACK);
+        shutterView.setLayoutParams(params);
+        shutterView.setBackgroundColor(Color.BLACK);
 
-        return posterView;
+        return shutterView;
     }
 
     private AspectRatioFrameLayout initFrameLayout() {
@@ -123,8 +123,9 @@ public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.
             }
             player.setVideoListener(this);
             player.setTextOutput(this);
+            showShutter(true);
         } else {
-            posterView.setVisibility(VISIBLE);
+            shutterView.setVisibility(VISIBLE);
         }
     }
 
@@ -135,17 +136,26 @@ public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.
 
     @Override
     public void onRenderedFirstFrame() {
-        posterView.setVisibility(GONE);
     }
 
     @Override
     public void onVideoTracksDisabled() {
-        posterView.setVisibility(VISIBLE);
+        shutterView.setVisibility(VISIBLE);
     }
 
     @Override
     public void onCues(List<Cue> cues) {
         subtitleLayout.onCues(cues);
+    }
+
+    public void showShutter(boolean doShow) {
+        if(doShow){
+            surfaceView.setVisibility(INVISIBLE);
+            shutterView.setVisibility(VISIBLE);
+        }else{
+            surfaceView.setVisibility(VISIBLE);
+            shutterView.setVisibility(INVISIBLE);
+        }
     }
 }
 

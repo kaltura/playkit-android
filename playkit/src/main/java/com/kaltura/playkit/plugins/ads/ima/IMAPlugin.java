@@ -244,7 +244,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 }
 
                 if (isInitWaiting) {
-                    player.getView().setVisibility(View.VISIBLE);
                     adsManager.init(renderingSettings);
                     isInitWaiting = false;
                 }
@@ -258,7 +257,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     public void init() {
         isAdRequested = true;
         if(adsManager != null) {
-            player.getView().setVisibility(View.VISIBLE);
             adsManager.init(renderingSettings);
         } else{
             isInitWaiting = true;

@@ -399,6 +399,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
             return;
         }
 
+        exoPlayerView.showShutter(false);
         sendDistinctEvent(PlayerEvent.Type.PLAY);
 
         player.setPlayWhenReady(true);
