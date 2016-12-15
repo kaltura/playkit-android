@@ -14,6 +14,9 @@ import com.kaltura.playkit.ads.AdController;
  */
 
 public class MockPlayer implements Player {
+    private boolean isPlaying = false;
+    private int duration = 100;
+    private long currentPosition = 0;
 
     @Override
     public void prepare(@NonNull PlayerConfig.Media playerConfig) {
@@ -52,12 +55,12 @@ public class MockPlayer implements Player {
 
     @Override
     public void play() {
-
+        isPlaying = true;
     }
 
     @Override
     public void pause() {
-
+        isPlaying = true;
     }
 
     @Override
@@ -72,12 +75,12 @@ public class MockPlayer implements Player {
 
     @Override
     public long getCurrentPosition() {
-        return 0;
+        return currentPosition;
     }
 
     @Override
     public long getDuration() {
-        return 100;
+        return duration;
     }
 
     @Override
@@ -92,7 +95,7 @@ public class MockPlayer implements Player {
 
     @Override
     public boolean isPlaying() {
-        return false;
+        return isPlaying;
     }
 
     @Override
@@ -117,11 +120,15 @@ public class MockPlayer implements Player {
 
     @Override
     public void seekTo(long position) {
-
+        currentPosition = position;
     }
 
     @Override
     public AdController getAdController() {
         return null;
+    }
+
+    public void setDuration(int duration){
+        this.duration = duration;
     }
 }

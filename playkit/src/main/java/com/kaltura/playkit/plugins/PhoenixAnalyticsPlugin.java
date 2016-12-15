@@ -19,8 +19,6 @@ import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
 
-import org.junit.Test;
-
 import java.util.TimerTask;
 
 /**
@@ -190,15 +188,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                     messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
                 }
                 log.d("onComplete send event: ");
-                messageBus.post(new LogEvent(TAG + " " + eventType.name()));
             }
         });
         requestsExecutor.queue(requestBuilder.build());
+        messageBus.post(new LogEvent(TAG + " " + eventType.toString(), requestBuilder.build().getBody()));
     }
 
-
-    @Test
-    public void testPhoenixAnalyticsEvent(){
-        
-    }
 }
