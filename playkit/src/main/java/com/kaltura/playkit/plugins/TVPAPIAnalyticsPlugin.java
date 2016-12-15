@@ -2,6 +2,7 @@ package com.kaltura.playkit.plugins;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.LogEvent;
+import com.kaltura.playkit.OttEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.backend.tvpapi.MediaMarkService;
@@ -37,7 +38,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     @Override
     protected void sendAnalyticsEvent(final PhoenixActionType eventType){
         String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"464302";
-        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://tvpapi-preprod.ott.kaltura.com/v3_9/gateways/jsonpostgw.aspx?m=";
+        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://tvpapi-preprod.ott.kaltura.com/v3_9/gateways/jsonpostgw.aspx?";
         JsonObject initObj = pluginConfig.has("initObj")? pluginConfig.getAsJsonObject("initObj") : testInitObj;
         String action = eventType.name().toLowerCase();
         String method = action.equals("hit")? "MediaHit": "MediaMark";
@@ -49,6 +50,9 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
+                if (response.isSuccess() && response.getResponse().contains("concurrent")){
+                    messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
+                }
                 log.d("onComplete send event: ");
             }
         });
