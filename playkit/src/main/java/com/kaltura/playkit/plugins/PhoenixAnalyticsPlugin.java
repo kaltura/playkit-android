@@ -185,6 +185,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
+                if (response.isSuccess() && response.getError() != null && response.getError().getCode().equals("4001")){
+                    messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
+                }
                 log.d("onComplete send event: ");
                 messageBus.post(new LogEvent(TAG + " " + eventType.name()));
             }
