@@ -3,23 +3,21 @@ package com.kaltura.playkit.addon.cast;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import org.json.JSONObject;
-
 /**
  * Created by itanbarpeled on 14/12/2016.
  */
 
-public class OTTCastBuilder extends KCastBuilder<OTTCastBuilder> {
+public class OTTCastBuilder extends BasicCastBuilder<OTTCastBuilder> {
 
 
     public OTTCastBuilder setFormat(@NonNull String format) {
-        mKCastInfo.setFormat(format);
+        mCastInfo.setFormat(format);
         return this;
     }
 
 
     public OTTCastBuilder setInitObject(@NonNull String initObject) {
-        mKCastInfo.setInitObject(initObject);
+        mCastInfo.setInitObject(initObject);
         return this;
     }
 
@@ -33,15 +31,15 @@ public class OTTCastBuilder extends KCastBuilder<OTTCastBuilder> {
 
 
     @Override
-    protected void validate(KCastInfo kCastInfo) throws IllegalArgumentException {
+    protected void validate(CastInfo castInfo) throws IllegalArgumentException {
 
-        super.validate(kCastInfo);
+        super.validate(castInfo);
 
-        if (TextUtils.isEmpty(kCastInfo.getFormat())) {
+        if (TextUtils.isEmpty(castInfo.getFormat())) {
             throw new IllegalArgumentException();
         }
 
-        if (TextUtils.isEmpty(kCastInfo.getInitObject())) {
+        if (TextUtils.isEmpty(castInfo.getInitObject())) {
             throw new IllegalArgumentException();
         }
     }

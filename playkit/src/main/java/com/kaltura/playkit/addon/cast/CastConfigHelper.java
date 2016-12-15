@@ -2,9 +2,6 @@ package com.kaltura.playkit.addon.cast;
 
 import android.text.TextUtils;
 
-import com.kaltura.playkit.addon.cast.KCastInfo;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -17,16 +14,16 @@ abstract class CastConfigHelper {
 
 
 
-    JSONObject getCustomData(KCastInfo kCastInfo) {
+    JSONObject getCustomData(CastInfo castInfo) {
 
 
-        String uiConf = kCastInfo.getUiConfId();
-        String fileFormat = kCastInfo.getFormat();
-        String entryId = kCastInfo.getMediaEntryId();
-        String partnerId = kCastInfo.getPartnerId();
-        String adTagUrl = kCastInfo.getAdTagUrl();
-        String sessionInfo = getSessionInfo(kCastInfo);
-        String mwEmbedUrl = kCastInfo.getMwEmbedUrl();
+        String uiConf = castInfo.getUiConfId();
+        String fileFormat = castInfo.getFormat();
+        String entryId = castInfo.getMediaEntryId();
+        String partnerId = castInfo.getPartnerId();
+        String adTagUrl = castInfo.getAdTagUrl();
+        String sessionInfo = getSessionInfo(castInfo);
+        String mwEmbedUrl = castInfo.getMwEmbedUrl();
 
 
         JSONObject customData = new JSONObject();
@@ -65,7 +62,7 @@ abstract class CastConfigHelper {
     }
 
 
-    protected abstract String getSessionInfo(KCastInfo kCastInfo);
+    protected abstract String getSessionInfo(CastInfo castInfo);
 
 
     private void setFlashVars(JSONObject embedConfig, String sessionInfo, String adTagUrl,

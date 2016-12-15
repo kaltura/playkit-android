@@ -1,7 +1,5 @@
 package com.kaltura.playkit.addon.cast;
 
-import android.text.TextUtils;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,9 +13,9 @@ class OTTCastConfigHelper extends CastConfigHelper {
 
 
     @Override
-    protected String getSessionInfo(KCastInfo kCastInfo) {
+    protected String getSessionInfo(CastInfo castInfo) {
 
-        return kCastInfo.getInitObject();
+        return castInfo.getInitObject();
 
     }
 

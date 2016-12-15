@@ -15,82 +15,82 @@ import java.util.List;
  * Created by itanbarpeled on 14/12/2016.
  */
 
-public abstract class KCastBuilder<T extends KCastBuilder> {
+public abstract class BasicCastBuilder<T extends BasicCastBuilder> {
 
 
     private static final String MOCK_DATA = "MOCK_DATA";
-    KCastInfo mKCastInfo;
+    CastInfo mCastInfo;
 
 
-    public KCastBuilder() {
-        mKCastInfo = new KCastInfo();
+    public BasicCastBuilder() {
+        mCastInfo = new CastInfo();
     }
 
 
     public T setPartnerId(@NonNull String partnerId) {
-        mKCastInfo.setPartnerId(partnerId);
+        mCastInfo.setPartnerId(partnerId);
         return (T) this;
     }
 
 
     public T setUiConfId(@NonNull String uiConfId) {
-        mKCastInfo.setUiConfId(uiConfId);
+        mCastInfo.setUiConfId(uiConfId);
         return (T) this;
     }
 
 
     public T setAdTagUrl(@NonNull String adTagUrl) {
-        mKCastInfo.setAdTagUrl(adTagUrl);
+        mCastInfo.setAdTagUrl(adTagUrl);
         return (T) this;
     }
 
     public T setMediaEntryId(@NonNull String mediaEntryId) {
-        mKCastInfo.setMediaEntryId(mediaEntryId);
+        mCastInfo.setMediaEntryId(mediaEntryId);
         return (T) this;
     }
 
     public T setMetadata(@NonNull MediaMetadata mediaMetadata) {
-        mKCastInfo.setMetadata(mediaMetadata);
+        mCastInfo.setMetadata(mediaMetadata);
         return (T) this;
     }
 
     public T setMediaTrackList(@NonNull List<MediaTrack> mediaTrackList) {
-        mKCastInfo.setMediaTrackList(mediaTrackList);
+        mCastInfo.setMediaTrackList(mediaTrackList);
         return (T) this;
     }
 
     public T setTextTrackStyle(@NonNull TextTrackStyle textTrackStyle) {
-        mKCastInfo.setTextTrackStyle(textTrackStyle);
+        mCastInfo.setTextTrackStyle(textTrackStyle);
         return (T) this;
     }
 
 
     public T setMwEmbedUrl(@NonNull String mwEmbedUrl) {
-        mKCastInfo.setMwEmbedUrl(mwEmbedUrl);
+        mCastInfo.setMwEmbedUrl(mwEmbedUrl);
         return (T) this;
     }
 
 
     public MediaInfo build() {
-        return getMediaInfo(mKCastInfo);
+        return getMediaInfo(mCastInfo);
     }
 
 
 
-    private MediaInfo getMediaInfo(KCastInfo kCastInfo) {
+    private MediaInfo getMediaInfo(CastInfo castInfo) {
 
-        validate(kCastInfo);
+        validate(castInfo);
 
         CastConfigHelper castConfigHelper = getCastHelper();
 
-        JSONObject customData = castConfigHelper.getCustomData(kCastInfo);
+        JSONObject customData = castConfigHelper.getCustomData(castInfo);
 
         MediaInfo.Builder mediaInfoBuilder = new MediaInfo.Builder(MOCK_DATA)
                 .setStreamType(MediaInfo.STREAM_TYPE_NONE)
                 .setContentType(MOCK_DATA)
                 .setCustomData(customData);
 
-        setOptionalData(mediaInfoBuilder, kCastInfo);
+        setOptionalData(mediaInfoBuilder, castInfo);
 
         return mediaInfoBuilder.build();
 
@@ -101,21 +101,21 @@ public abstract class KCastBuilder<T extends KCastBuilder> {
     /*
     This method sets data that isn't mandatory, and the developer may not provide
      */
-    private void setOptionalData(MediaInfo.Builder mediaInfoBuilder, KCastInfo kCastInfo) {
+    private void setOptionalData(MediaInfo.Builder mediaInfoBuilder, CastInfo castInfo) {
 
-        MediaMetadata mediaMetadata = kCastInfo.getMetadata();
+        MediaMetadata mediaMetadata = castInfo.getMetadata();
         if (mediaMetadata != null) {
             mediaInfoBuilder.setMetadata(mediaMetadata);
         }
 
 
-        List<MediaTrack> mediaTrackList = kCastInfo.getMediaTrackList();
+        List<MediaTrack> mediaTrackList = castInfo.getMediaTrackList();
         if (mediaTrackList != null) {
             mediaInfoBuilder.setMediaTracks(mediaTrackList);
         }
 
 
-        TextTrackStyle textTrackStyle = kCastInfo.getTextTrackStyle();
+        TextTrackStyle textTrackStyle = castInfo.getTextTrackStyle();
         if (textTrackStyle != null) {
             mediaInfoBuilder.setTextTrackStyle(textTrackStyle);
         }
@@ -125,22 +125,18 @@ public abstract class KCastBuilder<T extends KCastBuilder> {
 
 
 
-    protected void validate(KCastInfo kCastInfo) throws IllegalArgumentException{
+    protected void validate(CastInfo castInfo) throws IllegalArgumentException {
 
-        if (TextUtils.isEmpty(kCastInfo.getMwEmbedUrl())) {
+        if (TextUtils.isEmpty(castInfo.getUiConfId())) {
             throw new IllegalArgumentException();
         }
 
-        if (TextUtils.isEmpty(kCastInfo.getUiConfId())) {
-            throw new IllegalArgumentException();
-        }
-
-        if (TextUtils.isEmpty(kCastInfo.getMediaEntryId())) {
+        if (TextUtils.isEmpty(castInfo.getMediaEntryId())) {
             throw new IllegalArgumentException();
         }
 
         // adTagUrl isn't mandatory, but if you set adTagUrl it must be valid
-        String adTagUrl = kCastInfo.getAdTagUrl();
+        String adTagUrl = castInfo.getAdTagUrl();
         if (adTagUrl != null && TextUtils.isEmpty(adTagUrl)) {
             throw new IllegalArgumentException();
         }

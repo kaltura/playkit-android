@@ -11,7 +11,7 @@ import java.util.List;
  * Created by itanbarpeled on 13/12/2016.
  */
 
-class KCastInfo {
+class CastInfo {
 
     private String mAdTagUrl;
     private String mMediaEntryId;
@@ -26,7 +26,7 @@ class KCastInfo {
     private String mMwEmbedUrl;
 
 
-    KCastInfo() {
+    CastInfo() {
     }
 
 
