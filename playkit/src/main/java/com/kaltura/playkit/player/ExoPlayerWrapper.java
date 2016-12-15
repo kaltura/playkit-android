@@ -9,7 +9,6 @@ import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
 
-import com.google.android.exoplayer2.BuildConfig;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -44,8 +43,10 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.Util;
+import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKTracks;
+import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.PlayerController.EventListener;
@@ -97,27 +98,34 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     private TrackSelectionHelper trackSelectionHelper;
 
-    interface TracksInfoReadyListener {
+
+    interface TracksInfoListener {
+
         void onTracksInfoReady(PKTracks PKTracks);
+
+        void onTrackChanged();
     }
 
-    private TracksInfoReadyListener tracksInfoReadyListener = new TracksInfoReadyListener() {
+    private TracksInfoListener tracksInfoListener = new TracksInfoListener() {
         @Override
         public void onTracksInfoReady(PKTracks tracksInfoReady) {
             //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
             tracksInfo = tracksInfoReady;
             sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
         }
+
+        @Override
+        public void onTrackChanged() {
+            sendEvent(PlayerEvent.Type.PLAYBACK_PARAMS);
+        }
     };
 
 
-
-
-     ExoPlayerWrapper(Context context) {
+    ExoPlayerWrapper(Context context) {
         this.context = context;
-         mediaDataSourceFactory = buildDataSourceFactory(true);
-         exoPlayerView = new CustomExoPlayerView(context);
-         window = new Timeline.Window();
+        mediaDataSourceFactory = buildDataSourceFactory(true);
+        exoPlayerView = new CustomExoPlayerView(context);
+        window = new Timeline.Window();
     }
 
     private DeferredMediaDrmCallback.UrlProvider licenseUrlProvider = new DeferredMediaDrmCallback.UrlProvider() {
@@ -167,6 +175,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
             player.setVideoDebugListener(eventLogger);
             player.setAudioDebugListener(eventLogger);
             player.setId3Output(eventLogger);
+            player.setVideoDebugListener(trackSelectionHelper);
+            player.setAudioDebugListener(trackSelectionHelper);
         }
     }
 
@@ -177,7 +187,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
         trackSelector.addListener(eventLogger);
 
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, videoTrackSelectionFactory);
-        trackSelectionHelper.setTracksReadyListener(tracksInfoReadyListener);
+        trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
         return trackSelector;
     }
@@ -270,7 +280,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
             return;
         }
 
-       sendEvent(newEvent);
+        sendEvent(newEvent);
     }
 
     private void sendEvent(PlayerEvent.Type event) {
@@ -414,20 +424,20 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public void seekTo(long position) {
-        if(player == null) {
+        if (player == null) {
             log.e("Attempt to invoke 'seekTo()' on null instance of the exoplayer");
             return;
         }
-            isSeeking = true;
-            sendDistinctEvent(PlayerEvent.Type.SEEKING);
-            player.seekTo(position);
+        isSeeking = true;
+        sendDistinctEvent(PlayerEvent.Type.SEEKING);
+        player.seekTo(position);
     }
 
     @Override
     public long getDuration() {
         long currentDuration;
-        currentDuration = player == null? Consts.TIME_UNSET : player.getDuration();
-        if (prevDuration != currentDuration){
+        currentDuration = player == null ? Consts.TIME_UNSET : player.getDuration();
+        if (prevDuration != currentDuration) {
             sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         }
         prevDuration = currentDuration;
@@ -489,7 +499,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public void changeTrack(String uniqueId) {
-        if(trackSelectionHelper == null){
+        if (trackSelectionHelper == null) {
             log.e("Attempt to invoke 'changeTrack()' on null instance of the TracksSelectionHelper");
             return;
         }
@@ -502,7 +512,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public void startFrom(long position) {
-        if(player == null) {
+        if (player == null) {
             log.e("Attempt to invoke 'startFrom()' on null instance of the exoplayer");
             return;
         }
@@ -550,7 +560,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public boolean isPlaying() {
-        if(player == null) {
+        if (player == null) {
             return false;
         }
         return player.getPlayWhenReady() && currentState == PlayerState.READY;
@@ -558,10 +568,15 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public float getVolume() {
-        if(player == null) {
+        if (player == null) {
             return Consts.VOLUME_UNKNOWN;
         }
         return player.getVolume();
+    }
+
+    @Override
+    public PlaybackParamsInfo getPlaybackParamsInfo() {
+        return new PlaybackParamsInfo(lastPlayedSource.toString(), trackSelectionHelper.getCurrentVideoBitrate(), trackSelectionHelper.getCurrentAudioBitrate());
     }
 }
 

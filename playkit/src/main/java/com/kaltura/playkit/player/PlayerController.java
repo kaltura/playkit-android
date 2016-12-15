@@ -15,7 +15,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.ads.PKAdInfo;
+import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.List;
@@ -68,6 +68,9 @@ public class PlayerController implements Player {
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());
                         break;
+                    case PLAYBACK_PARAMS:
+                        event = new PlayerEvent.PlaybackParams(player.getPlaybackParamsInfo());
+                        break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
                 }
@@ -113,8 +116,8 @@ public class PlayerController implements Player {
         log.e("destroy");
         if(player != null){
             player.destroy();
+            togglePlayerListeners(false);
         }
-        togglePlayerListeners(false);
         player = null;
         mediaConfig = null;
         eventListener = null;
@@ -167,6 +170,11 @@ public class PlayerController implements Player {
             return;
         }
         player.seekTo(position);
+    }
+
+    @Override
+    public AdController getAdController() {
+        return null;
     }
 
     public void play() {
@@ -239,12 +247,6 @@ public class PlayerController implements Player {
     @Override
     public void addStateChangeListener(@NonNull PKEvent.Listener listener) {
         Assert.shouldNeverHappen();
-    }
-
-    @Override
-    public PKAdInfo getAdInfo() {
-        Assert.shouldNeverHappen();
-        return null;
     }
 
     @Override
