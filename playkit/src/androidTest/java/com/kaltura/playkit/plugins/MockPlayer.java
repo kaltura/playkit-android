@@ -7,7 +7,7 @@ import android.view.View;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
-import com.kaltura.playkit.ads.PKAdInfo;
+import com.kaltura.playkit.ads.AdController;
 
 /**
  * Created by zivilan on 11/12/2016.
@@ -121,7 +121,7 @@ public class MockPlayer implements Player {
     }
 
     @Override
-    public PKAdInfo getAdInfo() {
+    public AdController getAdController() {
         return null;
     }
 }
