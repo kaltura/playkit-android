@@ -24,7 +24,6 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.TextTrackInfo;
 import com.kaltura.playkit.VideoTrackInfo;
-import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
@@ -172,7 +171,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onEvent(PKEvent event) {
                 log.d("AD_CONTENT_PAUSE_REQUESTED");
-                PKAdInfo adInfo = player.getAdInfo();
                 appProgressBar.setVisibility(View.VISIBLE);
             }
         }, AdEvent.Type.CONTENT_PAUSE_REQUESTED);

@@ -62,6 +62,19 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class PlaybackParams extends PlayerEvent {
+        private PlaybackParamsInfo playbackParamsInfo;
+
+        public PlaybackParams(PlaybackParamsInfo playbackParamsInfo){
+            super(Type.PLAYBACK_PARAMS);
+            this.playbackParamsInfo = playbackParamsInfo;
+        }
+
+        public PlaybackParamsInfo getPlaybackParamsInfo() {
+            return playbackParamsInfo;
+        }
+    }
+
     public final Type type;
 
     public PlayerEvent(Type type) {
@@ -82,6 +95,7 @@ public class PlayerEvent implements PKEvent {
         SEEKING,   //  Sent when a seek operation begins.
         TRACKS_AVAILABLE, // Sent when track info is available.
         REPLAY, //Sent when replay happened.
+        PLAYBACK_PARAMS, // Sent event that notify about changes in the playback parameters. When bitrate of the video or audio track changes or new media loaded. Holds the PlaybackParamsInfo.java object with relevant data.
         VOLUME_CHANGED // Sent when volume is changed.
     }
 

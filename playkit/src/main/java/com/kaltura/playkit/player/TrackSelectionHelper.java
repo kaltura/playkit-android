@@ -2,13 +2,18 @@ package com.kaltura.playkit.player;
 
 
 
+import android.view.Surface;
+
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
+import com.google.android.exoplayer2.audio.AudioRendererEventListener;
+import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
+import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import com.kaltura.playkit.AudioTrackInfo;
 import com.kaltura.playkit.BaseTrackInfo;
 import com.kaltura.playkit.PKLog;
@@ -27,7 +32,7 @@ import java.util.List;
  * Created by anton.afanasiev on 22/11/2016.
  */
 
-class TrackSelectionHelper {
+class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererEventListener {
 
     private static final PKLog log = PKLog.get("TrackSelectionHelper");
 
@@ -49,11 +54,14 @@ class TrackSelectionHelper {
     private final MappingTrackSelector selector;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
     private final TrackSelection.Factory adaptiveTrackSelectionFactory;
-    private ExoPlayerWrapper.TracksInfoReadyListener tracksReadyListener;
+    private ExoPlayerWrapper.TracksInfoListener tracksInfoListener;
 
     private List<BaseTrackInfo> videoTracksInfo = new ArrayList<>();
     private List<BaseTrackInfo> audioTracksInfo = new ArrayList<>();
     private List<BaseTrackInfo> textTracksInfo = new ArrayList<>();
+
+    private long currentVideoBitrate = Consts.NO_VALUE;
+    private long currentAudioBitrate = Consts.NO_VALUE;
 
 
     /**
@@ -77,8 +85,8 @@ class TrackSelectionHelper {
         mappedTrackInfo = selector.getCurrentSelections().info;
         PKTracks tracksInfo = buildTracksInfo();
 
-        if (tracksReadyListener != null) {
-            tracksReadyListener.onTracksInfoReady(tracksInfo);
+        if (tracksInfoListener != null) {
+            tracksInfoListener.onTracksInfoReady(tracksInfo);
         }
     }
 
@@ -392,16 +400,90 @@ class TrackSelectionHelper {
         return false;
     }
 
-    void setTracksReadyListener(ExoPlayerWrapper.TracksInfoReadyListener tracksReadyListener) {
-        this.tracksReadyListener = tracksReadyListener;
+    void setTracksInfoListener(ExoPlayerWrapper.TracksInfoListener tracksInfoListener) {
+        this.tracksInfoListener = tracksInfoListener;
     }
 
 
     public void release() {
-        tracksReadyListener = null;
+        tracksInfoListener = null;
         videoTracksInfo.clear();
         audioTracksInfo.clear();
         textTracksInfo.clear();
     }
 
+    public long getCurrentVideoBitrate() {
+        return currentVideoBitrate;
+    }
+
+
+    public long getCurrentAudioBitrate() {
+        return currentAudioBitrate;
+    }
+
+    @Override
+    public void onAudioEnabled(DecoderCounters counters) {
+
+    }
+
+    @Override
+    public void onAudioSessionId(int audioSessionId) {
+
+    }
+
+    @Override
+    public void onAudioDecoderInitialized(String decoderName, long initializedTimestampMs, long initializationDurationMs) {
+
+    }
+
+    @Override
+    public void onAudioInputFormatChanged(Format format) {
+        currentAudioBitrate = format.bitrate;
+        tracksInfoListener.onTrackChanged();
+    }
+
+    @Override
+    public void onAudioTrackUnderrun(int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
+
+    }
+
+    @Override
+    public void onAudioDisabled(DecoderCounters counters) {
+
+    }
+
+    @Override
+    public void onVideoEnabled(DecoderCounters counters) {
+
+    }
+
+    @Override
+    public void onVideoDecoderInitialized(String decoderName, long initializedTimestampMs, long initializationDurationMs) {
+
+    }
+
+    @Override
+    public void onVideoInputFormatChanged(Format format) {
+        currentVideoBitrate = format.bitrate;
+        tracksInfoListener.onTrackChanged();
+    }
+
+    @Override
+    public void onDroppedFrames(int count, long elapsedMs) {
+
+    }
+
+    @Override
+    public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
+
+    }
+
+    @Override
+    public void onRenderedFirstFrame(Surface surface) {
+    }
+
+    @Override
+    public void onVideoDisabled(DecoderCounters counters) {
+
+    }
 }

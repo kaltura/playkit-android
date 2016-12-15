@@ -4,9 +4,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
 
+import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
-
-import com.kaltura.playkit.ads.PKAdInfo;
 
 /**
  * Created by Noam Tamim @ Kaltura on 18/09/2016.
@@ -130,7 +129,6 @@ public interface Player {
      */
     void seekTo(long position);
 
-    PKAdInfo getAdInfo();
-
+    AdController getAdController();
 }
 

@@ -6,7 +6,7 @@ import com.kaltura.playkit.ads.PKAdInfo;
  * Created by gilad.nadav on 22/11/2016.
  */
 
-public class AdInfo implements PKAdInfo{
+public class AdInfo implements PKAdInfo {
 
     private String  adDescription;
     private long    adDuration;
@@ -111,6 +111,6 @@ public class AdInfo implements PKAdInfo{
         } else {
             adType = "Pre-Roll";
         }
-        return "AdTyp=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + adContnentType + " podCount = " + adPodPosition + "/" + adPodCount;
+        return "AdType=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + adContnentType + " podCount = " + adPodPosition + "/" + adPodCount;
     }
 }
