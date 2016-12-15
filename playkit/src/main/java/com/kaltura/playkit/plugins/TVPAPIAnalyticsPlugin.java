@@ -37,7 +37,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     @Override
     protected void sendAnalyticsEvent(final PhoenixActionType eventType){
         String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"464302";
-        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://tvpapi-preprod.ott.kaltura.com/v3_9/gateways/jsonpostgw.aspx?m=";
+        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://tvpapi-preprod.ott.kaltura.com/v3_9/gateways/jsonpostgw.aspx?";
         JsonObject initObj = pluginConfig.has("initObj")? pluginConfig.getAsJsonObject("initObj") : testInitObj;
         String action = eventType.name().toLowerCase();
         String method = action.equals("hit")? "MediaHit": "MediaMark";
