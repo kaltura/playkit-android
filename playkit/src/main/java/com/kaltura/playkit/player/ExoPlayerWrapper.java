@@ -149,8 +149,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
             // TODO: proper error
             log.w("This device doesn't support widevine modular");
         }
-        @SimpleExoPlayer.ExtensionRendererMode int extensionRendererMode = SimpleExoPlayer.EXTENSION_RENDERER_MODE_OFF;
-        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager, extensionRendererMode);
+        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), 
+                drmSessionManager, SimpleExoPlayer.EXTENSION_RENDERER_MODE_OFF);
         setPlayerListeners();
         exoPlayerView.setPlayer(player);
         player.setPlayWhenReady(false);
