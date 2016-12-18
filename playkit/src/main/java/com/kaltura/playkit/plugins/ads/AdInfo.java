@@ -2,6 +2,8 @@ package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.ads.PKAdInfo;
 
+import java.util.List;
+
 /**
  * Created by gilad.nadav on 22/11/2016.
  */
@@ -21,10 +23,11 @@ public class AdInfo implements PKAdInfo {
     private int     adPodCount;
     private int     adPodPosition;
     private long    adPodTimeOffset;
+    private List<Float> adCuePoints;
 
     public AdInfo(String adDescription, long adDuration, String adTitle, boolean isAdSkippable, String adContnentType,
                   String adId, String adSystem, int adHeight, int adWidth,
-                  int adPodCount, int adPodPosition, long adPodTimeOffset) {
+                  int adPodCount, int adPodPosition, long adPodTimeOffset, List<Float> adCuePoints) {
 
         this.adDescription = adDescription;
         this.adDuration    = adDuration;
@@ -38,6 +41,7 @@ public class AdInfo implements PKAdInfo {
         this.adPodCount      = adPodCount;
         this.adPodPosition   = adPodPosition;
         this.adPodTimeOffset = adPodTimeOffset;
+        this.adCuePoints = adCuePoints;
     }
 
 
@@ -99,6 +103,11 @@ public class AdInfo implements PKAdInfo {
     @Override
     public long getAdPodTimeOffset() {
         return adPodTimeOffset;
+    }
+
+    @Override
+    public List<Float> getAdCuePoints() {
+        return adCuePoints;
     }
 
     @Override
