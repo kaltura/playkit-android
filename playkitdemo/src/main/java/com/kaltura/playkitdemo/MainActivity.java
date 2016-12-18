@@ -151,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //Map<Double, String> tagTimesMap = new HashMap<>();
         //tagTimesMap.put(2.0,"ADTAG");
 
-        IMAConfig adsConfig = new IMAConfig("en", false, true, 60000, videoMimeTypes, adTagUrl,false, false);
+        IMAConfig adsConfig = new IMAConfig("en", false, true, 60000, videoMimeTypes, adTagUrl,true, true);
         config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
 
     }
