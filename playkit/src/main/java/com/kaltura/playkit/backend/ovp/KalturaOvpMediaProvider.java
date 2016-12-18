@@ -128,6 +128,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                         }
                     });
             requestQueue.queue(entryRequest.build());
+            waitCompletion();
         }
 
 
@@ -151,19 +152,27 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                         error = responses.get(0).error.addMessage("baseEntry/list request failed");
                     }
                     if (error == null && responses.get(1).error != null) {
-                        if(responses.get(2).error != null) {
+                        error = responses.get(1).error.addMessage("baseEntry/getPlaybackContext request failed");
+                        /*if(responses.get(2).error != null) {
                             error = responses.get(1).error.addMessage("baseEntry/getPlaybackContext request failed");
-                        }
+                        }*/
                     }
 
                     if (error == null) {
 
-                        KalturaPlaybackContext kalturaPlaybackContext = responses.get(1) instanceof KalturaPlaybackContext ?
+                        KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) responses.get(1);
+                        /*KalturaPlaybackContext kalturaPlaybackContext = responses.get(1) instanceof KalturaPlaybackContext ?
                                 (KalturaPlaybackContext) responses.get(1) :
-                                new KalturaPlaybackContext((KalturaEntryContextDataResult) responses.get(2));
+                                new KalturaPlaybackContext((KalturaEntryContextDataResult) responses.get(2));*/
 
-                        mediaEntry = ProviderParser.getMediaEntry(ks, sessionProvider.partnerId() + "", uiConfId,
-                                ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), kalturaPlaybackContext);
+                        if((error = hasError(kalturaPlaybackContext.getMessages())) == null) { // check for error message
+                            mediaEntry = ProviderParser.getMediaEntry(ks, sessionProvider.partnerId() + "", uiConfId,
+                                        ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), kalturaPlaybackContext);
+
+                            if(mediaEntry.getSources().size() == 0){ // makes sure there are sources available for play
+                                error = ErrorElement.RestrictionError.message("Content can't be played due to lack of sources");
+                            }
+                        }
                     }
 
                 } catch (JsonSyntaxException ex) {
@@ -176,7 +185,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
             }
 
-            PKLog.v(TAG, loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
+            PKLog.v(TAG, loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure: "+error )));
 
 
             if (!isCanceled() && completion != null) {
@@ -187,6 +196,18 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
         }
 
+    }
+
+    private ErrorElement hasError(ArrayList<KalturaPlaybackContext.KalturaAccessControlMessage> messages) {
+        ErrorElement error = null;
+        for (KalturaPlaybackContext.KalturaAccessControlMessage message : messages){
+            error = KalturaOvpErrorHelper.getErrorElement(message.getCode(), message.getMessage());
+            if(error != null){
+                return error;
+            }
+        }
+
+        return null;
     }
 
 
@@ -209,12 +230,16 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             if (kalturaSources != null && kalturaSources.size() > 0) {
                 sources = parseFromSources(ks, partnerId, uiConfId, entry, playbackContext);
-
             } else {
+                sources = new ArrayList<>();
+            }
+            /*
+            in case we need default sources creation:
+            else {
                 PKLog.e(TAG, "failed to receive sources to play");
                 //throw new InvalidParameterException("Could not create sources for media entry");
                 sources = parseFromFlavors(ks, partnerId, uiConfId, entry, playbackContext);
-            }
+            }*/
 
             return mediaEntry.setId(entry.getId()).setSources(sources).setDuration(entry.getMsDuration());
         }

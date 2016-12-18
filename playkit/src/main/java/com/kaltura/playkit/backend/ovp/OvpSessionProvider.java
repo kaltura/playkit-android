@@ -236,15 +236,20 @@ public class OvpSessionProvider extends BaseSessionProvider {
     }
 
     @Override
-    public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
-        String ks = validateSession();
-        if (ks != null) {
-            if (completion != null) {
-                completion.onComplete(new PrimitiveResult(ks));
+    public void getSessionToken(final OnCompletion<PrimitiveResult> completion) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String ks = validateSession();
+                if (ks != null) {
+                    if (completion != null) {
+                        completion.onComplete(new PrimitiveResult(ks));
+                    }
+                } else {
+                    renewSession(completion);
+                }
             }
-        } else {
-            renewSession(completion);
-        }
+        }).start();
     }
 
     protected String validateSession() {

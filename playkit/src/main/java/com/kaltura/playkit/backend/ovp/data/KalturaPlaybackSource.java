@@ -37,7 +37,8 @@ public class KalturaPlaybackSource {
             if (protocols.contains(preferred)) {
                 return preferred;
             }
-            return protocols.substring(0, protocols.indexOf(","));
+            int endIndex = protocols.indexOf(",");
+            return protocols.substring(0, endIndex >= 0 ? endIndex : protocols.length());
         }
 
         return null;

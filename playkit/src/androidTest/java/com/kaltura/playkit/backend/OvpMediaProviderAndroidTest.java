@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.kaltura.playkit.BaseTest;
 import com.kaltura.playkit.OnCompletion;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
@@ -28,7 +29,9 @@ import org.junit.runner.RunWith;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.concurrent.atomic.AtomicReference;
 
+import static com.kaltura.playkit.backend.SessionProviderAndroidTest.OvpLoginId;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -41,17 +44,22 @@ import static org.junit.Assert.fail;
 public class OvpMediaProviderAndroidTest extends BaseTest {
 
     public static final String BaseUrl = "http://www.kaltura.com/api_v3/"; //login at: http://kmc.kaltura.com/index.php/kmc/kmc4#content|manage
-    public static final String KS = "djJ8MjIwOTU5MXxPFV50RZYaUMbON6FvA-1iQPTPBslap3ZAXFeFq-lMcCPZsUg0Y4vGbd769dmH1lDRq-nWMe1XhOTIVhUgk-V3exyHva1QkOcwtxR6bAm9sRZD2tQrLo3r-0VqmLMWRjU=";
-    public static final String EntryId = "1_1h1vsv3z";
+    public static final String KS = "djJ8MjIwOTU5MXwcaDHViEJi-52CzAnb3BKDJBCwaKIntAFqGF3PlOHEWr421m_WSc9gdQi6QFBUM3C1aJIvD5kIzG-MA8mLkhLthG-3LNjx4iBQZAE4Am-71ySqC33bqF5FQbKJEqrAikJoxmrOE_uvPbwSa-nVfhtf";
+    public static final String EntryId1 = "1_1h1vsv3z";
     public static final String EntryId2 = "1_ztdp5s5d";
-    public static final String EntryId3 = "0_tb83i9pr";
+    public static final String EntryId3 = "0_tb83i9pr"; //should get error - not found
+    public static final String EntryIdEmpty = "0_5huwy2pz"; //should get error - empty content
     public static final int PartnerId = 2209591;
+    public static final String LoginId = "tehila.rozin@kaltura.com";
+    public static final String Password = "abcd1234*";
 
 
     public static final String QABaseUrl = "http://qa-apache-testing-ubu-01.dev.kaltura.com/api_v3/"; //login at: http://kmc.kaltura.com/index.php/kmc/kmc4#content|manage
     public static final String QAKS = "ZTU0NWY5NTM4NWM2OTg3YzY0YjJkMDU1Y2M4NjgwNjc0MDQ4YmQzOXwyNjIxOzI2MjE7MTQ4MTgxMDI3NzsyOzE0ODE3MjM4NzcuMzYzODthbGxhX2xpZGljaEB5YWhvby5jb207KixkaXNhYmxlZW50aXRsZW1lbnQ7Ow==";
     public static final String QAEntryId = "0_q4nkfriz";
     public static final int QAPartnerId = 2621;
+    public static final int EntryId1Duration = 102000;
+    public static final int EntryId2Duration = 100000;
 
     RequestQueue testExecutor;
     KalturaOvpMediaProvider kalturaOvpMediaProvider;
@@ -96,8 +104,8 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     };
 
 
-
     public OvpMediaProviderAndroidTest() {
+        super("OvpMediaProviderAndroidTest");
     }
 
     @Before
@@ -107,63 +115,197 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
 
 
     @Test
-    public void testEntryInfoLiveFetch() {
-        new KalturaOvpMediaProvider().setSessionProvider(ksSessionProvider).setEntryId(EntryId3).load(new OnMediaLoadCompletion() {
+    public void testEntryInfo1SuccessFetch() {
+        final OvpSessionProvider sessionProvider = new OvpSessionProvider(BaseUrl);
+        final AtomicReference<AssertionError> failure = new AtomicReference<>();
+
+        sessionProvider.startSession(LoginId, Password, PartnerId, new OnCompletion<PrimitiveResult>() {
             @Override
-            public void onComplete(ResultElement<PKMediaEntry> response) {
-                if (response.isSuccess()) {
-                    assertTrue(response.getResponse() != null);
-                    assertTrue(response.getResponse().getId().equals(EntryId3));
-                    assertTrue(response.getResponse().getSources().size() == 4);
-                    //assertTrue(response.getResponse().getDuration() == 102000);
+            public void onComplete(PrimitiveResult response) {
+                if (response.error == null) {
+                    loadMediaByEntryId(EntryId1, EntryId1Duration, 8, sessionProvider, failure);
 
                 } else {
-                    assertNotNull(response.getError());
+                    fail("failed to establish session: " + response.error);
                 }
-
-                OvpMediaProviderAndroidTest.this.resume();
             }
         });
 
         wait(1);
+
+        if (failure.get() != null) {
+            throw failure.get();
+        }
     }
 
+    @Test
+    public void testEntryInfo2SuccessFetch() {
+        final OvpSessionProvider sessionProvider = new OvpSessionProvider(BaseUrl);
+        final AtomicReference<AssertionError> failure = new AtomicReference<>();
+
+        sessionProvider.startSession(LoginId, Password, PartnerId, new OnCompletion<PrimitiveResult>() {
+            @Override
+            public void onComplete(PrimitiveResult response) {
+                if (response.error == null) {
+                    loadMediaByEntryId(EntryId2, EntryId2Duration, 8, sessionProvider, failure);
+
+                } else {
+                    fail("failed to establish session: " + response.error);
+                }
+            }
+        });
+
+        wait(1);
+
+        if (failure.get() != null) {
+            throw failure.get();
+        }
+    }
+
+    private void loadMediaByEntryId(final String entryId, final int expectedDuration, final int expectedSrcsCount, OvpSessionProvider sessionProvider, final AtomicReference<AssertionError> failure) {
+        new KalturaOvpMediaProvider().setSessionProvider(sessionProvider).setEntryId(entryId).load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                try {
+                    if (response.isSuccess()) {
+                        PKLog.d(TAG, "got PKMediaEntry object: checking content");
+                        assertTrue(response.getResponse() != null);
+                        assertTrue(response.getResponse().getId().equals(entryId));
+                        assertTrue(response.getResponse().getSources().size() == expectedSrcsCount);
+                        assertTrue(response.getResponse().getDuration() == expectedDuration);
+                        PKLog.i(TAG, "PKMediaEntry validated successfully");
+
+                    } else {
+                        assertNotNull(response.getError());
+                        PKLog.d(TAG, "got error on PKMediaEntry loading:" + response.getError());
+                        fail("failed on entry loading:" + response.getError());
+                    }
+
+                } catch (AssertionError e) {
+                    failure.set(e);
+                    fail("failed on entry validation:" + e.getMessage());
+                } finally {
+                    OvpMediaProviderAndroidTest.this.resume();
+                }
+            }
+        });
+    }
+
+    /**
+     * expected - failure since entry should not be found
+     */
+    @Test
+    public void testEntryInfoFailedFetch() {
+        final OvpSessionProvider sessionProvider = new OvpSessionProvider(BaseUrl);
+        final AtomicReference<AssertionError> failure = new AtomicReference<>();
+
+        sessionProvider.startSession(LoginId, Password, PartnerId, new OnCompletion<PrimitiveResult>() {
+            @Override
+            public void onComplete(PrimitiveResult response) {
+                if (response.error == null) {
+
+                    new KalturaOvpMediaProvider().setSessionProvider(sessionProvider).setEntryId(EntryId3).load(new OnMediaLoadCompletion() {
+                        @Override
+                        public void onComplete(ResultElement<PKMediaEntry> response) {
+                            try {
+                                assertNotNull(response);
+                                assertNotNull(response.getError());
+                                assertTrue(response.getError().getCode().equals("INVALID_ENTRY_ID")||response.getError().getCode().equals("ENTRY_ID_NOT_FOUND"));
+
+                            } catch (AssertionError e) {
+                                failure.set(e);
+                                fail("failed on entry validation:" + e.getMessage());
+                            } finally {
+                                OvpMediaProviderAndroidTest.this.resume();
+                            }
+                        }
+                    });
+
+                } else {
+                    fail("failed to establish session: " + response.error);
+                }
+            }
+        });
+        wait(1);
+        if (failure.get() != null) {
+            throw failure.get();
+        }
+    }
 
     @Test
-    public void testMockVsLiveRequest() {
+    public void testQALoadRequest() {
 
         kalturaOvpMediaProvider = new KalturaOvpMediaProvider().setSessionProvider(qaSessionProvider).setEntryId(QAEntryId).setRequestExecutor(testExecutor);
+        final AtomicReference<AssertionError> failure = new AtomicReference<>();
+
         kalturaOvpMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
-                assertTrue(response.isSuccess());
-                assertTrue(response.getResponse() != null);
-                assertTrue(response.getResponse().getId().equals(QAEntryId));
-                assertTrue(response.getResponse().getSources().size() == 1); // format "hdnetworkmanifest" is excluded
-                assertTrue(response.getResponse().getDuration() == 136000);
-                OvpMediaProviderAndroidTest.this.resume();
+                PKLog.d(TAG, "response " + response);
 
-                /*kalturaOvpMediaProvider.setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
-                    @Override
-                    public void onComplete(ResultElement<PKMediaEntry> response) {
-                        if (response.isSuccess()) {
-                            assertTrue(response.getResponse() != null);
-                            assertTrue(response.getResponse().getId().equals(EntryId));
-                            assertTrue(response.getResponse().getSources().size() == 5);
-                            assertTrue(response.getResponse().getDuration() == 102000);
+                try {
+                    assertNotNull(response);
+                    if (!response.isSuccess()) {
+                        assertNotNull(response.getError());
+                        PKLog.w(TAG, "Content can't be played:\n" + response.getError());
 
-                        } else {
-                            assertNotNull(response.getError());
-
-                        }
-
-                        OvpMediaProviderAndroidTest.this.resume();
+                    } else {
+                        assertNotNull(response.getResponse());
+                        assertTrue(response.getResponse().getId().equals(QAEntryId));
+                        assertTrue(response.getResponse().getSources().size() == 1); // format "hdnetworkmanifest" is excluded
+                        assertTrue(response.getResponse().getDuration() == 136000);
                     }
-                });*/
+
+                } catch (AssertionError e) {
+                    failure.set(e);
+                    fail("failed to assert response:" + e.getMessage());
+                } finally {
+                    OvpMediaProviderAndroidTest.this.resume();
+                }
             }
         });
-
         wait(1);
+        if (failure.get() != null) {
+            throw failure.get();
+        }
+    }
+
+    @Test
+    public void testEmptyResponseRequest() {
+
+        kalturaOvpMediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ksSessionProvider).setEntryId(EntryIdEmpty).setRequestExecutor(testExecutor);
+        final AtomicReference<AssertionError> failure = new AtomicReference<>();
+
+        kalturaOvpMediaProvider.load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                PKLog.d(TAG, "response " + response);
+
+                try {
+                    assertNotNull(response);
+                    //if (!response.isSuccess()) {
+                        assertNotNull(response.getError());
+                        PKLog.w(TAG, "Content can't be played:\n" + response.getError());
+
+                    /*} else {
+                        assertNotNull(response.getResponse());
+                        assertTrue(response.getResponse().getId().equals(QAEntryId));
+                        assertTrue(response.getResponse().getSources().size() == 1); // format "hdnetworkmanifest" is excluded
+                        assertTrue(response.getResponse().getDuration() == 136000);
+                    }*/
+
+                } catch (AssertionError e) {
+                    failure.set(e);
+                    fail("failed to assert response:" + e.getMessage());
+                } finally {
+                    OvpMediaProviderAndroidTest.this.resume();
+                }
+            }
+        });
+        wait(1);
+        if (failure.get() != null) {
+            throw failure.get();
+        }
     }
 
     @Test
@@ -187,12 +329,12 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     @Test
     public void testMediaFromSources() {
         final OvpSessionProvider ovpSessionProvider = new OvpSessionProvider(BaseUrl);
-        ovpSessionProvider.startSession(SessionProviderAndroidTest.OvpLoginId, SessionProviderAndroidTest.OvpPassword, SessionProviderAndroidTest.OvpPartnerId,
+        ovpSessionProvider.startSession(OvpLoginId, SessionProviderAndroidTest.OvpPassword, SessionProviderAndroidTest.OvpPartnerId,
                 new OnCompletion<PrimitiveResult>() {
                     @Override
                     public void onComplete(PrimitiveResult response) {
                         if (response != null && response.error == null) {
-                            KalturaOvpMediaProvider mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(EntryId);
+                            KalturaOvpMediaProvider mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(EntryId1);
                             mediaProvider.load(new OnMediaLoadCompletion() {
                                 @Override
                                 public void onComplete(ResultElement<PKMediaEntry> response) {
@@ -209,33 +351,6 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
                     }
                 });
         wait(1);
-    }
-
-    @Test
-    public void testErrorHandling() {
-        /* TODO:
-        * invalid ks
-        * invalid assetid
-        * wrong server url
-        * invalid response structure
-        * check server error object handling*/
-
-        String multiresponseWithError = "[\n" +
-                "  {\n" +
-                "    \"partnerId\": 2209591,\n" +
-                "    \"ks\": \"djJ8MjIwOTU5MXwKyMTAkPT_yYS2zVNweHck77yCGu25hdaflLaUwwjFSrF-7gQD9Z0xFC_g6o7HySRqSsPM5bU8Y8VpunwR4K4dxfuv10aQE8gG6lbQg4RZGA==\",\n" +
-                "    \"userId\": 0,\n" +
-                "    \"objectType\": \"KalturaStartWidgetSessionResponse\"\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"code\": \"ENTRY_ID_NOT_FOUND\",\n" +
-                "    \"message\": \"Entry id \\\"1_1h1vsv3z\\\" not found\",\n" +
-                "    \"objectType\": \"KalturaAPIException\",\n" +
-                "    \"args\": {\n" +
-                "      \"ENTRY_ID\": \"1_1h1vsv3z\"\n" +
-                "    }\n" +
-                "  }\n" +
-                "]";
     }
 
     @Test

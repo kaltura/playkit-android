@@ -20,9 +20,8 @@ public class BaseEntryService extends OvpService {
                 .tag("mediaAsset-multi-get");
 
         return multiRequestBuilder.add(list(baseUrl, ks, entryId),
-                getPlaybackContext(baseUrl, ks, entryId),
-                getContextData(baseUrl, ks, entryId)
-                /*!! once api will be available change to: getPlaybackContext(baseUrl, ks, entryId)*/);
+                getPlaybackContext(baseUrl, ks, entryId)
+                /*getContextData(baseUrl, ks, entryId)*/);
     }
 
     public static OvpRequestBuilder list(String baseUrl, String ks, String entryId) {

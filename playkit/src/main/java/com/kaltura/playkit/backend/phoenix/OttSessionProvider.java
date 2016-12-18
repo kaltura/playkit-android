@@ -144,7 +144,7 @@ public class OttSessionProvider extends BaseSessionProvider {
     /**
      * try to re-login with current credentials
      */
-    public void renewSession(OnCompletion<PrimitiveResult> completion) {
+    private void renewSession(OnCompletion<PrimitiveResult> completion) {
         if (sessionParams != null) {
             if(sessionParams.username !=null) {
                 startSession(sessionParams.username, sessionParams.password, sessionParams.udid, completion);
@@ -205,15 +205,20 @@ public class OttSessionProvider extends BaseSessionProvider {
     }
 
     @Override
-    public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
-        String ks = validateSession();
-        if (ks != null) {
-            if (completion != null) {
-                completion.onComplete(new PrimitiveResult(ks));
+    public void getSessionToken(final OnCompletion<PrimitiveResult> completion) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String ks = validateSession();
+                if (ks != null) {
+                    if (completion != null) {
+                        completion.onComplete(new PrimitiveResult(ks));
+                    }
+                } else {
+                    renewSession(completion);
+                }
             }
-        } else {
-            renewSession(completion);
-        }
+        }).start();
     }
 
     protected String validateSession() {

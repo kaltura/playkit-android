@@ -9,8 +9,10 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
 import com.kaltura.playkit.backend.BaseResult;
+import com.kaltura.playkit.backend.ovp.data.KalturaPlaybackContext;
 import com.kaltura.playkit.backend.ovp.data.OvpResultAdapter;
 import com.kaltura.playkit.connect.GsonParser;
+import com.kaltura.playkit.utils.RuntimeTypeAdapterFactory;
 
 /**
  * Created by tehilarozin on 24/11/2016.
@@ -47,7 +49,33 @@ public class KalturaOvpParser {
     }
 
     @NonNull
-    private static Gson getGson() {
-        return new GsonBuilder().registerTypeHierarchyAdapter(BaseResult.class, new OvpResultAdapter()).create();
+    public static Gson getGson() {
+
+        /*RuntimeTypeAdapterFactory<KalturaPlaybackContext.KalturaRuleAction> runtimeTypeAdapterFactory = RuntimeTypeAdapterFactory
+                .of(KalturaPlaybackContext.KalturaRuleAction.class, "objectType")
+                .registerSubtype(KalturaPlaybackContext.KalturaAccessControlDrmPolicyAction.class, "KalturaAccessControlDrmPolicyAction");*/
+
+        return new GsonBuilder().registerTypeHierarchyAdapter(BaseResult.class, new OvpResultAdapter())
+                .registerTypeAdapterFactory(RuntimeTypeAdapterFactory
+                        .of(KalturaPlaybackContext.KalturaRuleAction.class, "objectType")
+                        .registerSubtype(KalturaPlaybackContext.KalturaAccessControlDrmPolicyAction.class, "KalturaAccessControlDrmPolicyAction")).create();
     }
+
+    public static Gson getRuntimeGson(Class clz) {
+        RuntimeTypeAdapterFactory adapterFactory = null;
+        switch (clz.getSimpleName()){
+            case "KalturaPlaybackContext":
+                adapterFactory = RuntimeTypeAdapterFactory
+                        .of(KalturaPlaybackContext.KalturaRuleAction.class, "objectType")
+                        .registerSubtype(KalturaPlaybackContext.KalturaAccessControlDrmPolicyAction.class, "KalturaAccessControlDrmPolicyAction");
+        }
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        if(adapterFactory != null){
+            gsonBuilder.registerTypeAdapterFactory(adapterFactory);
+        }
+        return gsonBuilder.create();
+    }
+
+    //public static void registerRuntimeAdapter()
 }

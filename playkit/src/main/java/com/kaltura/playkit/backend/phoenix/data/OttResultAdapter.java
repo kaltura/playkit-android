@@ -45,7 +45,8 @@ public class OttResultAdapter implements JsonDeserializer<BaseResult> {
                 try {
                     String clzName = getClass().getPackage().getName() + "." + objectType;
                     Class clz = Class.forName(clzName);
-                    baseResult = (BaseResult) new Gson().fromJson(result, clz);
+                    baseResult = (BaseResult) context.deserialize(result, clz);
+                    //baseResult = (BaseResult) new Gson().fromJson(result, clz);
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }

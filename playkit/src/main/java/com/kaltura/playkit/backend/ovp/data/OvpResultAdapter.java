@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 import com.kaltura.playkit.backend.BaseResult;
+import com.kaltura.playkit.backend.ovp.KalturaOvpParser;
 import com.kaltura.playkit.connect.ErrorElement;
 
 import java.lang.reflect.Type;
@@ -32,23 +33,28 @@ public class OvpResultAdapter implements JsonDeserializer<BaseResult> {
             return new PrimitiveResult(json.getAsString());
         }
 
+
         JsonObject result = json.getAsJsonObject();
-        BaseResult baseResult = new Gson().fromJson(json, typeOfT);
+        BaseResult baseResult = null/*= new Gson().fromJson(json, typeOfT)*/;
 
         if(result != null && result.has("objectType")){
             String objectType=  result.getAsJsonPrimitive("objectType").getAsString();
             if(objectType.equals("KalturaAPIException")) {
-                baseResult.error = new Gson().fromJson(result, ErrorElement.class);
+                baseResult = new BaseResult(new Gson().fromJson(result, ErrorElement.class));
             } else {
                 try {
                     String clzName  = getClass().getPackage().getName()+"."+objectType;
                     Class clz = Class.forName(clzName);
-                    baseResult = (BaseResult) new Gson().fromJson(json, clz);
+
+                    baseResult = (BaseResult) KalturaOvpParser.getRuntimeGson(clz).fromJson(json, clz);
+
                 } catch (ClassNotFoundException | JsonSyntaxException e) {
                     e.printStackTrace();
                     throw new JsonParseException("Adaptor failed to parse result, "+e.getMessage());
                 }
             }
+        } else {
+            baseResult = KalturaOvpParser.getRuntimeGson(typeOfT.getClass()).fromJson(json, typeOfT);;
         }
         return baseResult;
     }

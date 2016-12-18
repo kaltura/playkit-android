@@ -287,8 +287,20 @@
       }
 
     ],
-    "actions":[],
-    "messages":[],
+    "actions":[
+      {
+        "policyId":1,
+        "type":"DRM_POLICY",
+        "objectType":"KalturaAccessControlDrmPolicyAction"
+      }
+    ],
+    "messages":[
+      /*{
+        "message":"Out of scheduling\nWe're sorry, this content is currently unavailable.",
+        "code":"SCHEDULED_RESTRICTED",
+        "objectType":"KalturaAccessControlMessage"
+      }*/
+    ],
     "objectType":"KalturaPlaybackContext"
   }
 
