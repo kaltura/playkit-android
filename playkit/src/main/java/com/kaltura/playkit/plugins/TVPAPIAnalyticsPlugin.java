@@ -43,9 +43,12 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         String action = eventType.name().toLowerCase();
         String method = action.equals("hit")? "MediaHit": "MediaMark";
 
+        if (initObj == null) {
+            return;
+        }
 
-        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObj.has("initObj")? initObj.get("initObj").getAsJsonObject() : initObj.getAsJsonObject(), action,
-                 mediaConfig.getMediaEntry().getId(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId, player.getCurrentPosition());
+        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObj, action,
+                mediaConfig.getMediaEntry().getId(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId, player.getCurrentPosition());
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
