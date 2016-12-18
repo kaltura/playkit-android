@@ -141,14 +141,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
         MappingTrackSelector trackSelector = initializeTrackSelector();
 
-        boolean useExtensionRenderers   = false;
-        boolean preferExtensionDecoders = false;
-        @SimpleExoPlayer.ExtensionRendererMode int extensionRendererMode =
-                (useExtensionRenderers)
-                        ? (preferExtensionDecoders ? SimpleExoPlayer.EXTENSION_RENDERER_MODE_PREFER
-                        : SimpleExoPlayer.EXTENSION_RENDERER_MODE_ON)
-                        : SimpleExoPlayer.EXTENSION_RENDERER_MODE_OFF;
-
         // TODO: check if there's any overhead involved in creating a session manager and not using it.
         DrmSessionManager<FrameworkMediaCrypto> drmSessionManager = null;
         try {
@@ -157,7 +149,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
             // TODO: proper error
             log.w("This device doesn't support widevine modular");
         }
-
+        @SimpleExoPlayer.ExtensionRendererMode int extensionRendererMode = SimpleExoPlayer.EXTENSION_RENDERER_MODE_OFF;
         player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager, extensionRendererMode);
         setPlayerListeners();
         exoPlayerView.setPlayer(player);
@@ -193,8 +185,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         TrackSelection.Factory videoTrackSelectionFactory =
                 new AdaptiveVideoTrackSelection.Factory(BANDWIDTH_METER);
         trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
-        trackSelectionHelper = new TrackSelectionHelper(trackSelector, videoTrackSelectionFactory);
-
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, videoTrackSelectionFactory);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
@@ -351,7 +341,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
         log.d("onTimelineChanged");
-        shouldResetPlayerPosition = !timeline.isEmpty()
+        shouldResetPlayerPosition = timeline != null && !timeline.isEmpty()
                 && !timeline.getWindow(timeline.getWindowCount() - 1, window).isDynamic;
 
     }
@@ -370,6 +360,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
     @Override
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+        log.d("onTracksChanged");
         MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo != null) {
             if (mappedTrackInfo.getTrackTypeRendererSupport(C.TRACK_TYPE_VIDEO)
@@ -471,7 +462,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
             playerWindow = player.getCurrentWindowIndex();
             playerPosition = Consts.TIME_UNSET;
             Timeline timeline = player.getCurrentTimeline();
-            if (!timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
+            if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
                 playerPosition = player.getCurrentPosition();
             }
             this.eventLogger = null;
