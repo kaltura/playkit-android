@@ -50,4 +50,17 @@
       }
     ]
   }
+,
+  "live": {
+    "duration": 102000,
+    "id": "0_f8re4ujs",
+    "name": "Live",
+    "sources": [
+      {
+        "id": "0_f8re4ujs_live",
+        "mimeType": "application/x-mpegURL",
+        "url": "http://qa-apache-testing-ubu-01.dev.kaltura.com/p/1091/sp/109100/playManifest/entryId/0_f8re4ujs/format/applehttp/protocol/http/uiConfId/15068781/a.m3u8"
+      }
+    ]
+  }
 }

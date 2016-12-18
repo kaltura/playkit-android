@@ -22,4 +22,5 @@ public interface AdsProvider {
     long getDuration();
     long getCurrentPosition();
 
+    void skipAd();
 }

@@ -2,6 +2,7 @@ package com.kaltura.playkit.plugins;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.LogEvent;
+import com.kaltura.playkit.OttEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.backend.tvpapi.MediaMarkService;
@@ -42,9 +43,12 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         String action = eventType.name().toLowerCase();
         String method = action.equals("hit")? "MediaHit": "MediaMark";
 
+        if (initObj == null) {
+            return;
+        }
 
-        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObj.get("initObj").getAsJsonObject(), action,
-                 mediaConfig.getMediaEntry().getId(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId, player.getCurrentPosition());
+        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObj, action,
+                mediaConfig.getMediaEntry().getId(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId, player.getCurrentPosition());
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
@@ -53,9 +57,9 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
                     messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
                 }
                 log.d("onComplete send event: ");
-                messageBus.post(new LogEvent(TAG + " " + eventType.name()));
             }
         });
         requestsExecutor.queue(requestBuilder.build());
+        messageBus.post(new LogEvent(TAG + " " + eventType.toString(), requestBuilder.build().getBody()));
     }
 }

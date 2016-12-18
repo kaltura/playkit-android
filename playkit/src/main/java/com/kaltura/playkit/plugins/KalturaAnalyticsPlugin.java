@@ -29,7 +29,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     private static final PKLog log = PKLog.get("KalturaAnalyticsPlugin");
     private static final String TAG = "KalturaAnalyticsPlugin";
 
-    private enum KAnalonyEvents {
+    public enum KAnalonyEvents {
         IMPRESSION(1),
         PLAY_REQUEST(2),
         PLAY(3),
@@ -266,10 +266,10 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
             @Override
             public void onComplete(ResponseElement response) {
                 log.d("onComplete: " + eventType.toString());
-                messageBus.post(new LogEvent(TAG + " " + eventType.toString()));
             }
         });
         requestsExecutor.queue(requestBuilder.build());
+        messageBus.post(new LogEvent(TAG + " " + eventType.toString(), requestBuilder.build().getUrl()));
     }
 
 }
