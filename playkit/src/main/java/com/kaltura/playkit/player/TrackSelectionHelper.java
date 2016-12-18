@@ -82,7 +82,7 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
      * and pass the {@link PKTracks} as parameter.
      */
     void prepareTracksInfo() {
-        mappedTrackInfo = selector.getCurrentSelections().info;
+        mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         PKTracks tracksInfo = buildTracksInfo();
 
         if (tracksInfoListener != null) {
@@ -215,7 +215,7 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
 
 
         log.i("change track to uniqueID -> " + uniqueId);
-        mappedTrackInfo = selector.getCurrentSelections().info;
+        mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         int[] uniqueTrackId = parseUniqueId(uniqueId);
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
