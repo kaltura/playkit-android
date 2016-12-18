@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void registerPlugins() {
 
         PlayKitManager.registerPlugins(SamplePlugin.factory);
-        PlayKitManager.registerPlugins(IMAPlugin.factory);
+        //PlayKitManager.registerPlugins(IMAPlugin.factory);
         //PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);
     }
 
@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         progressBar.setVisibility(View.INVISIBLE);
         registerPlugins();
 
-        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "hls");
 
 //        mediaProvider = new PhoenixMediaProvider(MockParams.sessionProvider, MediaId, MockParams.MediaType, Format);
 
@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         PlayerConfig config = new PlayerConfig();
 
         config.media.setMediaEntry(mediaEntry);
-        config.media.setStartPosition(30000);
+       // config.media.setStartPosition(30000);
         if (player == null) {
 
             configurePlugins(config.plugins);
@@ -117,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             initSpinners();
         }
         player.prepare(config.media);
+        player.play();
     }
 
     private void initSpinners() {
@@ -142,9 +143,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void addIMAPluginConfig(PlayerConfig.Plugins config) {
-        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
+        String adTagUrl = //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
-
+                "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
         List<String> videoMimeTypes = new ArrayList<>();
         //videoMimeTypes.add(MimeTypes.APPLICATION_MP4);
         //videoMimeTypes.add(MimeTypes.APPLICATION_M3U8);
