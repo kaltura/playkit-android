@@ -23,11 +23,11 @@ public class AdInfo implements PKAdInfo {
     private int     adPodCount;
     private int     adPodPosition;
     private long    adPodTimeOffset;
-    private List<Float> adCuePoints;
+    private List<Long> adCuePoints;
 
     public AdInfo(String adDescription, long adDuration, String adTitle, boolean isAdSkippable, String adContnentType,
                   String adId, String adSystem, int adHeight, int adWidth,
-                  int adPodCount, int adPodPosition, long adPodTimeOffset, List<Float> adCuePoints) {
+                  int adPodCount, int adPodPosition, long adPodTimeOffset, List<Long> adCuePoints) {
 
         this.adDescription = adDescription;
         this.adDuration    = adDuration;
@@ -106,7 +106,7 @@ public class AdInfo implements PKAdInfo {
     }
 
     @Override
-    public List<Float> getAdCuePoints() {
+    public List<Long> getAdCuePoints() {
         return adCuePoints;
     }
 
