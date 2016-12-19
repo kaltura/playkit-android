@@ -81,11 +81,13 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onApplicationPaused() {
+        log.d("onDestroy");
 
     }
 
     @Override
     protected void onApplicationResumed() {
+        log.d("onDestroy");
 
     }
 
@@ -132,15 +134,15 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         sendAnalyticsEvent(PhoenixActionType.PAUSE);
                         break;
                     case PLAY:
-                        if (!intervalOn){
-                            startMediaHitInterval();
-                            intervalOn = true;
-                        }
                         if (isFirstPlay) {
                             isFirstPlay = false;
                             sendAnalyticsEvent(PhoenixActionType.FIRST_PLAY);
                         } else {
                             sendAnalyticsEvent(PhoenixActionType.PLAY);
+                        }
+                        if (!intervalOn){
+                            startMediaHitInterval();
+                            intervalOn = true;
                         }
                         break;
                     default:
