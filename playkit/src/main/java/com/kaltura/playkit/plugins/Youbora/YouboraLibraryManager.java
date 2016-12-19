@@ -5,6 +5,7 @@ import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayKitManager;
+import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
@@ -24,8 +25,9 @@ public class YouboraLibraryManager extends PluginGeneric {
     private static final PKLog log = PKLog.get("YouboraLibraryManager");
     private static final String TAG = "YouboraPlugin";
 
-    private Double lastReportedBitrate = super.getBitrate();
+    private Double lastReportedBitrate = -1.0;
     private Double lastReportedthroughput = super.getThroughput();
+    private String mediaUrl = "unknown";
     private static final long MONITORING_INTERVAL = 200L;
     private boolean isFirstPlay = true;
     private boolean isBuffering = false;
@@ -83,6 +85,14 @@ public class YouboraLibraryManager extends PluginGeneric {
                 switch (((PlayerEvent) event).type) {
                     case STATE_CHANGED:
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
+                        break;
+                    case PLAYBACK_PARAMS:
+                        PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParams) event).getPlaybackParamsInfo();
+                        lastReportedBitrate = Long.valueOf(currentPlaybackParams.getVideoBitrate()).doubleValue();
+                        if (!mediaUrl.equals(currentPlaybackParams.getMediaUrl())){
+                            mediaUrl = currentPlaybackParams.getMediaUrl();
+
+                        }
                         break;
                     case ENDED:
                         if (!isFirstPlay) {
@@ -150,21 +160,13 @@ public class YouboraLibraryManager extends PluginGeneric {
     public void startMonitoring(Object player) {
         log.d("startMonitoring");
         super.startMonitoring(player);
-        this.lastReportedBitrate = super.getBitrate();
         this.enableSeekMonitor();
+        this.enableBufferMonitor();
     }
 
     public void stopMonitoring() {
         log.d("stopMonitoring");
         super.stopMonitoring();
-    }
-
-    public void setBitrate(Double bitrate) {
-        this.lastReportedBitrate = bitrate;
-    }
-
-    public void setThroughput(Double throughput) {
-        this.lastReportedthroughput = throughput;
     }
 
     public Double getBitrate() {
@@ -188,7 +190,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public String getResource() {
-            return "unknown";
+            return this.mediaUrl;
     }
 
     public Double getPlayhead() {
