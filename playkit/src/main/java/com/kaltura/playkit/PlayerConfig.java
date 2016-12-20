@@ -16,6 +16,7 @@ public class PlayerConfig {
 
     public static class Media {
         private boolean autoPlay = false;
+        private boolean isLive = false;
         private long startPosition = 0;
         private PKMediaEntry mediaEntry;
 
@@ -23,8 +24,17 @@ public class PlayerConfig {
             return autoPlay;
         }
 
+        public boolean isLive() {
+            return isLive;
+        }
+
         public Media setAutoPlay(boolean autoPlay) {
             this.autoPlay = autoPlay;
+            return this;
+        }
+
+        public Media setIsLive(boolean isLive) {
+            this.isLive = isLive;
             return this;
         }
 
