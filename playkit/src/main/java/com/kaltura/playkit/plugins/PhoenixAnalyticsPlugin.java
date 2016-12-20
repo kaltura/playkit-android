@@ -81,13 +81,13 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onApplicationPaused() {
-        log.d("onDestroy");
+        log.d("onApplicationPaused");
 
     }
 
     @Override
     protected void onApplicationResumed() {
-        log.d("onDestroy");
+        log.d("onApplicationResumed");
 
     }
 
