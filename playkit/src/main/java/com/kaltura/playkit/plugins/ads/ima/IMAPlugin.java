@@ -34,6 +34,7 @@ import com.kaltura.playkit.plugins.ads.AdError;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
+import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -170,7 +171,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     protected void onApplicationResumed() {
-        resume();
+
     }
 
     @Override
@@ -364,12 +365,28 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     public long getDuration() {
-        return  (long)adsManager.getAdProgress().getDuration();
+        if (adsManager != null) {
+            return (long) adsManager.getAdProgress().getDuration();
+        } else {
+            return  Consts.TIME_UNSET;
+        }
+
     }
 
     @Override
     public long getCurrentPosition() {
-        return (long)adsManager.getAdProgress().getCurrentTime();
+        if (adsManager != null) {
+            return (long) adsManager.getAdProgress().getCurrentTime();
+        } else {
+            return  Consts.POSITION_UNSET;
+        }
+    }
+
+    @Override
+    public void skipAd() {
+        if (adsManager != null) {
+            adsManager.skip();
+        }
     }
 
     @Override
@@ -496,11 +513,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         int adPodCount            = ad.getAdPodInfo().getTotalAds();
         int adPodPosition         = ad.getAdPodInfo().getAdPosition();
         long adPodTimeOffset      = (long)(ad.getAdPodInfo().getTimeOffset() * 1000);
-        List<Float> adCuePoints;
-        if (adsManager != null) {
-            adCuePoints = adsManager.getAdCuePoints();
-        } else {
-            adCuePoints = new ArrayList<>();
+        List<Long> adCuePoints = new ArrayList<>();
+        if (adsManager != null && adsManager.getAdCuePoints() != null) {
+            for (Float cuePoint : adsManager.getAdCuePoints()) {
+                adCuePoints.add(cuePoint.longValue() * 1000);
+            }
         }
 
         AdInfo adInfo =  new AdInfo(adDescription, adDuration,
@@ -510,7 +527,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 adWidth,
                 adPodCount,
                 adPodPosition,
-                adPodTimeOffset);
+                adPodTimeOffset,
+                adCuePoints);
 
         log.v("AdInfo: " + adInfo.toString());
         return adInfo;

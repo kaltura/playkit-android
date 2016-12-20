@@ -2,11 +2,13 @@ package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.ads.PKAdInfo;
 
+import java.util.List;
+
 /**
  * Created by gilad.nadav on 22/11/2016.
  */
 
-public class AdInfo implements PKAdInfo{
+public class AdInfo implements PKAdInfo {
 
     private String  adDescription;
     private long    adDuration;
@@ -21,10 +23,11 @@ public class AdInfo implements PKAdInfo{
     private int     adPodCount;
     private int     adPodPosition;
     private long    adPodTimeOffset;
+    private List<Long> adCuePoints;
 
     public AdInfo(String adDescription, long adDuration, String adTitle, boolean isAdSkippable, String adContnentType,
                   String adId, String adSystem, int adHeight, int adWidth,
-                  int adPodCount, int adPodPosition, long adPodTimeOffset) {
+                  int adPodCount, int adPodPosition, long adPodTimeOffset, List<Long> adCuePoints) {
 
         this.adDescription = adDescription;
         this.adDuration    = adDuration;
@@ -38,6 +41,7 @@ public class AdInfo implements PKAdInfo{
         this.adPodCount      = adPodCount;
         this.adPodPosition   = adPodPosition;
         this.adPodTimeOffset = adPodTimeOffset;
+        this.adCuePoints = adCuePoints;
     }
 
 
@@ -102,6 +106,11 @@ public class AdInfo implements PKAdInfo{
     }
 
     @Override
+    public List<Long> getAdCuePoints() {
+        return adCuePoints;
+    }
+
+    @Override
     public String toString() {
         String adType = "";
         if (adPodTimeOffset > 0 ) {
@@ -111,6 +120,6 @@ public class AdInfo implements PKAdInfo{
         } else {
             adType = "Pre-Roll";
         }
-        return "AdTyp=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + adContnentType + " podCount = " + adPodPosition + "/" + adPodCount;
+        return "AdType=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + adContnentType + " podCount = " + adPodPosition + "/" + adPodCount;
     }
 }

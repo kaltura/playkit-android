@@ -31,6 +31,7 @@ public class MockParams {
     public static final String OvpBaseUrl = "http://www.kaltura.com/api_v3/";
     public static final String NonDRMEntryId = "1_xay0wjby"; //works for user/anonymous
     public static final String DRMEntryIdUsr = "1_tmomdals"; //works for logged user
+    public static final String DRMEntryIdAnm = "1_ytsd86sc"; //works for anonymous
 
     public enum UserType{Ott, Ovp}
 

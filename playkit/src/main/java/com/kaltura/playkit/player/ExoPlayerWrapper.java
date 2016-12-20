@@ -25,6 +25,7 @@ import com.google.android.exoplayer2.drm.UnsupportedDrmException;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
@@ -34,8 +35,7 @@ import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.trackselection.TrackSelections;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSource.Factory;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
@@ -46,6 +46,7 @@ import com.google.android.exoplayer2.util.Util;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKTracks;
+import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.PlayerController.EventListener;
@@ -59,7 +60,7 @@ import java.util.UUID;
 /**
  * Created by anton.afanasiev on 31/10/2016.
  */
-class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSelector.EventListener<MappingTrackSelector.MappedTrackInfo> {
+class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
 
@@ -92,32 +93,40 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
     private String licenseUri;
     private long prevDuration = Consts.TIME_UNSET;
 
+    private DefaultTrackSelector trackSelector;
     private PKTracks tracksInfo;
     private boolean shouldGetTracksInfo;
 
     private TrackSelectionHelper trackSelectionHelper;
 
-    interface TracksInfoReadyListener {
+
+    interface TracksInfoListener {
+
         void onTracksInfoReady(PKTracks PKTracks);
+
+        void onTrackChanged();
     }
 
-    private TracksInfoReadyListener tracksInfoReadyListener = new TracksInfoReadyListener() {
+    private TracksInfoListener tracksInfoListener = new TracksInfoListener() {
         @Override
         public void onTracksInfoReady(PKTracks tracksInfoReady) {
             //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
             tracksInfo = tracksInfoReady;
             sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
         }
+
+        @Override
+        public void onTrackChanged() {
+            sendEvent(PlayerEvent.Type.PLAYBACK_PARAMS);
+        }
     };
 
 
-
-
-     ExoPlayerWrapper(Context context) {
+    ExoPlayerWrapper(Context context) {
         this.context = context;
-         mediaDataSourceFactory = buildDataSourceFactory(true);
-         exoPlayerView = new CustomExoPlayerView(context);
-         window = new Timeline.Window();
+        mediaDataSourceFactory = buildDataSourceFactory(true);
+        exoPlayerView = new CustomExoPlayerView(context);
+        window = new Timeline.Window();
     }
 
     private DeferredMediaDrmCallback.UrlProvider licenseUrlProvider = new DeferredMediaDrmCallback.UrlProvider() {
@@ -132,7 +141,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
         MappingTrackSelector trackSelector = initializeTrackSelector();
 
-
         // TODO: check if there's any overhead involved in creating a session manager and not using it.
         DrmSessionManager<FrameworkMediaCrypto> drmSessionManager = null;
         try {
@@ -141,8 +149,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
             // TODO: proper error
             log.w("This device doesn't support widevine modular");
         }
-
-        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager, false);
+        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), 
+                drmSessionManager, SimpleExoPlayer.EXTENSION_RENDERER_MODE_OFF);
         setPlayerListeners();
         exoPlayerView.setPlayer(player);
         player.setPlayWhenReady(false);
@@ -167,17 +175,18 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
             player.setVideoDebugListener(eventLogger);
             player.setAudioDebugListener(eventLogger);
             player.setId3Output(eventLogger);
+            player.setVideoDebugListener(trackSelectionHelper);
+            player.setAudioDebugListener(trackSelectionHelper);
         }
     }
 
     private MappingTrackSelector initializeTrackSelector() {
-        TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveVideoTrackSelection.Factory(BANDWIDTH_METER);
-        MappingTrackSelector trackSelector = new DefaultTrackSelector(mainHandler, videoTrackSelectionFactory);
-        trackSelector.addListener(this);
-        trackSelector.addListener(eventLogger);
 
+        TrackSelection.Factory videoTrackSelectionFactory =
+                new AdaptiveVideoTrackSelection.Factory(BANDWIDTH_METER);
+        trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, videoTrackSelectionFactory);
-        trackSelectionHelper.setTracksReadyListener(tracksInfoReadyListener);
+        trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
         return trackSelector;
     }
@@ -270,7 +279,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
             return;
         }
 
-       sendEvent(newEvent);
+        sendEvent(newEvent);
     }
 
     private void sendEvent(PlayerEvent.Type event) {
@@ -332,8 +341,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
         log.d("onTimelineChanged");
-        shouldResetPlayerPosition = timeline != null && timeline.getWindowCount() > 0
+        shouldResetPlayerPosition = timeline != null && !timeline.isEmpty()
                 && !timeline.getWindow(timeline.getWindowCount() - 1, window).isDynamic;
+
     }
 
     @Override
@@ -347,16 +357,22 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
         log.d("onPositionDiscontinuity");
     }
 
-    @Override
-    public void onTrackSelectionsChanged(TrackSelections<? extends MappingTrackSelector.MappedTrackInfo> trackSelections) {
-        log.d("onTrackSelectionsChanged");
 
-        MappingTrackSelector.MappedTrackInfo trackInfo = trackSelections.info;
-        if (trackInfo.hasOnlyUnplayableTracks(Consts.TRACK_TYPE_VIDEO)) {
-            log.w("Error unsupported video");
+    @Override
+    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+        log.d("onTracksChanged");
+        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+        if (mappedTrackInfo == null) {
+            return;
         }
-        if (trackInfo.hasOnlyUnplayableTracks(Consts.TRACK_TYPE_AUDIO)) {
-            log.w("Error unsupported audio");
+
+        if (mappedTrackInfo.getTrackTypeRendererSupport(Consts.TRACK_TYPE_VIDEO)
+                    == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
+                log.w("Error unsupported video");
+        }
+        if (mappedTrackInfo.getTrackTypeRendererSupport(Consts.TRACK_TYPE_AUDIO)
+                    == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
+                log.w("Error unsupported audio");
         }
 
         //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
@@ -414,20 +430,20 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public void seekTo(long position) {
-        if(player == null) {
+        if (player == null) {
             log.e("Attempt to invoke 'seekTo()' on null instance of the exoplayer");
             return;
         }
-            isSeeking = true;
-            sendDistinctEvent(PlayerEvent.Type.SEEKING);
-            player.seekTo(position);
+        isSeeking = true;
+        sendDistinctEvent(PlayerEvent.Type.SEEKING);
+        player.seekTo(position);
     }
 
     @Override
     public long getDuration() {
         long currentDuration;
-        currentDuration = player == null? Consts.TIME_UNSET : player.getDuration();
-        if (prevDuration != currentDuration){
+        currentDuration = player == null ? Consts.TIME_UNSET : player.getDuration();
+        if (prevDuration != currentDuration) {
             sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         }
         prevDuration = currentDuration;
@@ -449,7 +465,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
             playerWindow = player.getCurrentWindowIndex();
             playerPosition = Consts.TIME_UNSET;
             Timeline timeline = player.getCurrentTimeline();
-            if (timeline != null && timeline.getWindow(playerWindow, window).isSeekable) {
+            if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
                 playerPosition = player.getCurrentPosition();
             }
             this.eventLogger = null;
@@ -489,7 +505,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public void changeTrack(String uniqueId) {
-        if(trackSelectionHelper == null){
+        if (trackSelectionHelper == null) {
             log.e("Attempt to invoke 'changeTrack()' on null instance of the TracksSelectionHelper");
             return;
         }
@@ -502,7 +518,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public void startFrom(long position) {
-        if(player == null) {
+        if (player == null) {
             log.e("Attempt to invoke 'startFrom()' on null instance of the exoplayer");
             return;
         }
@@ -550,7 +566,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public boolean isPlaying() {
-        if(player == null) {
+        if (player == null) {
             return false;
         }
         return player.getPlayWhenReady() && currentState == PlayerState.READY;
@@ -558,10 +574,15 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, TrackSe
 
     @Override
     public float getVolume() {
-        if(player == null) {
+        if (player == null) {
             return Consts.VOLUME_UNKNOWN;
         }
         return player.getVolume();
+    }
+
+    @Override
+    public PlaybackParamsInfo getPlaybackParamsInfo() {
+        return new PlaybackParamsInfo(lastPlayedSource.toString(), trackSelectionHelper.getCurrentVideoBitrate(), trackSelectionHelper.getCurrentAudioBitrate());
     }
 }
 

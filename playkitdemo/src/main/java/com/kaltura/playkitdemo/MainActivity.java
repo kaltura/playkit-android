@@ -25,7 +25,6 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.TextTrackInfo;
 import com.kaltura.playkit.VideoTrackInfo;
-import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
@@ -127,11 +126,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getDrmUser(MockParams.UserType.Ovp);
         //MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getUser(MockParams.UserType.Ovp);
         if(user != null) {
-            ovpSessionProvider.startSession(user.username, user.password, user.partnerId, new OnCompletion<PrimitiveResult>() {
+            ovpSessionProvider.startAnonymousSession(/*user.username, user.password,*/ user.partnerId, new OnCompletion<PrimitiveResult>() {
                 @Override
                 public void onComplete(PrimitiveResult response) {
                     if (response.error == null) {
-                        mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(MockParams.DRMEntryIdUsr);
+                        mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(MockParams.DRMEntryIdAnm);
 
                         mediaProvider.load(new OnMediaLoadCompletion() {
                             @Override
@@ -179,6 +178,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             initSpinners();
         }
         player.prepare(config.media);
+        player.play();
     }
 
     private void initSpinners() {
@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void configurePlugins(PlayerConfig.Plugins config) {
         JsonObject jsonObject = new JsonObject();
-        //jsonObject.addProperty("delay", 4200);
+        jsonObject.addProperty("delay", 1200);
         config.setPluginConfig("Sample", jsonObject);
         //addIMAPluginConfig(config);
         //config.setPluginConfig("IMASimplePlugin", jsonObject);
@@ -204,16 +204,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void addIMAPluginConfig(PlayerConfig.Plugins config) {
-        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
+        String adTagUrl = //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
-
+        "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
         List<String> videoMimeTypes = new ArrayList<>();
         //videoMimeTypes.add(MimeTypes.APPLICATION_MP4);
         //videoMimeTypes.add(MimeTypes.APPLICATION_M3U8);
         //Map<Double, String> tagTimesMap = new HashMap<>();
-        //tagTimesMap.put(2.0,"GILAD");
+        //tagTimesMap.put(2.0,"ADTAG");
 
-        IMAConfig adsConfig = new IMAConfig("en", false, true, 60000, videoMimeTypes, adTagUrl,false, false);
+        IMAConfig adsConfig = new IMAConfig("en", false, true, 60000, videoMimeTypes, adTagUrl,true, true);
         config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
 
     }
@@ -233,7 +233,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onEvent(PKEvent event) {
                 log.d("AD_CONTENT_PAUSE_REQUESTED");
-                PKAdInfo adInfo = player.getAdInfo();
                 appProgressBar.setVisibility(View.VISIBLE);
             }
         }, AdEvent.Type.CONTENT_PAUSE_REQUESTED);
