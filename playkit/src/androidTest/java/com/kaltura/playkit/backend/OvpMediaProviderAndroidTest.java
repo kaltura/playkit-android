@@ -444,7 +444,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
         });
         wait(1);
         try {
-            TimeUnit.MILLISECONDS.sleep(622); // can be used to check cancel in different points of execution
+            TimeUnit.MILLISECONDS.sleep(620); // can be used to check cancel in different points of execution
             // mostly 625 milliseconds and up resulted in request finished execution, before the cancel was activated.
         } catch (InterruptedException e) {
             e.printStackTrace();
