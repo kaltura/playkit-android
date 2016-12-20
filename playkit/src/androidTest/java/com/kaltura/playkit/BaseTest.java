@@ -58,4 +58,9 @@ public class BaseTest {
     public void tearDown() {
         /*resume();*/
     }
+
+
+    public interface TestBlock<T>{
+        void execute(T data) throws AssertionError;
+    }
 }

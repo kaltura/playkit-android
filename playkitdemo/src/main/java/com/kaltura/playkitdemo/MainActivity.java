@@ -27,7 +27,6 @@ import com.kaltura.playkit.TextTrackInfo;
 import com.kaltura.playkit.VideoTrackInfo;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
 import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
@@ -80,9 +79,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         progressBar.setVisibility(View.INVISIBLE);
         registerPlugins();
 
-        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
+        //mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
 
-        //startOvpMediaLoading();
+        startOvpMediaLoading();
         //startOttMediaLoading();
 
     }
@@ -123,35 +122,38 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void startOvpMediaLoading() {
-        final OvpSessionProvider ovpSessionProvider = new OvpSessionProvider(MockParams.KalturaOvpBaseUrl);
+        final OvpSessionProvider ovpSessionProvider = new OvpSessionProvider(MockParams.OvpBaseUrl);
         //ovpSessionProvider.startAnonymousSession(MockParams.OvpPartnerId, new OnCompletion<PrimitiveResult>() {
-        MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getUser(MockParams.UserType.Ovp);
-        ovpSessionProvider.startSession(user.username, user.password, MockParams.OvpPartnerId, new OnCompletion<PrimitiveResult>() {
-            @Override
-            public void onComplete(PrimitiveResult response) {
-                if(response.error == null) {
-                    mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(MockParams.EntryId);
+        MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getDrmUser(MockParams.UserType.Ovp);
+        //MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getUser(MockParams.UserType.Ovp);
+        if(user != null) {
+            ovpSessionProvider.startSession(user.username, user.password, user.partnerId, new OnCompletion<PrimitiveResult>() {
+                @Override
+                public void onComplete(PrimitiveResult response) {
+                    if (response.error == null) {
+                        mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(MockParams.DRMEntryIdUsr);
 
-                    mediaProvider.load(new OnMediaLoadCompletion() {
-                        @Override
-                        public void onComplete(final ResultElement<PKMediaEntry> response) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (response.isSuccess()) {
-                                        onMediaLoaded(response.getResponse());
-                                    } else {
+                        mediaProvider.load(new OnMediaLoadCompletion() {
+                            @Override
+                            public void onComplete(final ResultElement<PKMediaEntry> response) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (response.isSuccess()) {
+                                            onMediaLoaded(response.getResponse());
+                                        } else {
 
-                                        Toast.makeText(MainActivity.this, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""), Toast.LENGTH_LONG).show();
-                                        log.e("failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
+                                            Toast.makeText(MainActivity.this, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""), Toast.LENGTH_LONG).show();
+                                            log.e("failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
+                                        }
                                     }
-                                }
-                            });
-                        }
-                    });
+                                });
+                            }
+                        });
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     private void onMediaLoaded(PKMediaEntry mediaEntry) {
@@ -191,9 +193,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void configurePlugins(PlayerConfig.Plugins config) {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("delay", 4200);
+        //jsonObject.addProperty("delay", 4200);
         config.setPluginConfig("Sample", jsonObject);
-        addIMAPluginConfig(config);
+        //addIMAPluginConfig(config);
         //config.setPluginConfig("IMASimplePlugin", jsonObject);
         //config.setPluginConfig("KalturaStatistics", jsonObject);
         //config.setPluginConfig("PhoenixAnalytics", jsonObject);

@@ -38,10 +38,14 @@ public abstract class BECallableLoader extends CallableLoader {
             synchronized (syncObject) {
                 PKLog.i(TAG, loadId + ": canceling request execution [" + loadReq + "]");
                 requestQueue.cancelRequest(loadReq);
+                loadReq = "CANCELED#"+loadReq;
             }
         } else {
             PKLog.i(TAG, loadId+": cancel: request completed ");
         }
+        isCanceled = true;
+        PKLog.i(TAG, loadId+": i am canceled ");
+
         notifyCompletion();
     }
 
@@ -53,13 +57,17 @@ public abstract class BECallableLoader extends CallableLoader {
         sessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
             @Override
             public void onComplete(PrimitiveResult response) {
+                if(isCanceled()){
+                    return;
+                }
+
                 ErrorElement error = response.error != null ? response.error : validateKs(response.getResult());
                 if (error == null) {
                     try {
                         requestRemote(response.getResult());
 
                     } catch (InterruptedException e) {
-                        interrupted();
+                         interrupted();
                     }
 
                 } else {

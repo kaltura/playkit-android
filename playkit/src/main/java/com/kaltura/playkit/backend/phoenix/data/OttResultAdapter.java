@@ -32,7 +32,7 @@ public class OttResultAdapter implements JsonDeserializer<BaseResult> {
             result = result.getAsJsonObject("result");
         }
 
-        BaseResult baseResult = new Gson().fromJson(result, typeOfT);
+        BaseResult baseResult = null;
 
         if(result != null && result.has("error")){
              baseResult.error = new Gson().fromJson(result.get("error"), ErrorElement.class);
@@ -40,18 +40,20 @@ public class OttResultAdapter implements JsonDeserializer<BaseResult> {
         } else if(result != null && result.has("objectType")){
             String objectType=  result.getAsJsonPrimitive("objectType").getAsString();
             if(objectType.equals("KalturaAPIException")) {
-                baseResult.error = new Gson().fromJson(result, ErrorElement.class);
+                baseResult = new BaseResult(new Gson().fromJson(result, ErrorElement.class));
             } else {
                 try {
                     String clzName = getClass().getPackage().getName() + "." + objectType;
                     Class clz = Class.forName(clzName);
-                    baseResult = (BaseResult) context.deserialize(result, clz);
-                    //baseResult = (BaseResult) new Gson().fromJson(result, clz);
+                    baseResult = (BaseResult) new Gson().fromJson(result, clz);
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
             }
+        } else {
+            baseResult = new Gson().fromJson(result, typeOfT);
         }
+
         return baseResult;
     }
 }

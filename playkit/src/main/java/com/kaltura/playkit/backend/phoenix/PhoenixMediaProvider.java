@@ -105,8 +105,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return this;
     }
 
-    @NonNull
-    protected BECallableLoader factorNewLoader(OnMediaLoadCompletion completion) {
+    protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
         return new Loader(requestsExecutor, sessionProvider, mediaAsset, completion);
     }
 
@@ -166,6 +165,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 loadReq = requestQueue.queue(requestBuilder.build());
                 PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
+            waitCompletion();
         }
 
 
@@ -174,6 +174,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             PKMediaEntry mediaEntry = null;
 
             if (isCanceled()) {
+                PKLog.v(TAG, loadId+": i am canceled, exit response parsing ");
                 return;
             }
 

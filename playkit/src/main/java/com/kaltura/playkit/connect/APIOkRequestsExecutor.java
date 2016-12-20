@@ -1,6 +1,8 @@
 package com.kaltura.playkit.connect;
 
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -226,10 +228,12 @@ public class APIOkRequestsExecutor implements RequestQueue {
         Call call = findCall(reqId, dispatcher.queuedCalls());
         if(call != null){
             call.cancel();
+            Log.d(TAG, "call canceled:"+call.request().tag());
         }
         call = findCall(reqId, dispatcher.runningCalls());
         if(call != null){
             call.cancel();
+            Log.d(TAG, "call canceled:"+call.request().tag());
         }
     }
 

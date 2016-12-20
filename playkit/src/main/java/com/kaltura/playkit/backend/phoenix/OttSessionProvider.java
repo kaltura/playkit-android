@@ -13,9 +13,9 @@ import com.kaltura.playkit.backend.phoenix.data.KalturaLoginResponse;
 import com.kaltura.playkit.backend.phoenix.data.KalturaLoginSession;
 import com.kaltura.playkit.backend.phoenix.data.KalturaSession;
 import com.kaltura.playkit.backend.phoenix.data.PhoenixParser;
-import com.kaltura.playkit.backend.phoenix.services.PhoenixSessionService;
 import com.kaltura.playkit.backend.phoenix.services.OttUserService;
 import com.kaltura.playkit.backend.phoenix.services.PhoenixService;
+import com.kaltura.playkit.backend.phoenix.services.PhoenixSessionService;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.MultiRequestBuilder;
@@ -36,7 +36,7 @@ public class OttSessionProvider extends BaseSessionProvider {
 
     private OttSessionParams sessionParams;
     private String refreshToken;
-    private long refreshDelta = 9*60*60*24;//TimeDelta;
+    private long refreshDelta = 9 * 60 * 60 * 24;//TimeDelta;
     private int partnerId = 0;
 
 
@@ -146,7 +146,7 @@ public class OttSessionProvider extends BaseSessionProvider {
      */
     private void renewSession(OnCompletion<PrimitiveResult> completion) {
         if (sessionParams != null) {
-            if(sessionParams.username !=null) {
+            if (sessionParams.username != null) {
                 startSession(sessionParams.username, sessionParams.password, sessionParams.udid, completion);
             } else {
                 startAnonymousSession(sessionParams.udid, completion);
@@ -161,14 +161,14 @@ public class OttSessionProvider extends BaseSessionProvider {
      * Ends current active session. if it's a {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#User} session
      * logout, if {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#Anonymous} will return, since
      * logout on anonymous session doesn't make the session invalid.
-     *
+     * <p>
      * If logout was activated, session params are cleared.
      */
     public void endSession(final OnCompletion<BaseResult> completion) {
 
         if (hasActiveSession()) {
 
-            if(getUserSessionType().equals(UserSessionType.Anonymous)){ //no need to logout anonymous session
+            if (getUserSessionType().equals(UserSessionType.Anonymous)) { //no need to logout anonymous session
                 if (completion != null) {
                     completion.onComplete(new BaseResult(null));
                 }
@@ -206,19 +206,14 @@ public class OttSessionProvider extends BaseSessionProvider {
 
     @Override
     public void getSessionToken(final OnCompletion<PrimitiveResult> completion) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String ks = validateSession();
-                if (ks != null) {
-                    if (completion != null) {
-                        completion.onComplete(new PrimitiveResult(ks));
-                    }
-                } else {
-                    renewSession(completion);
-                }
+        String ks = validateSession();
+        if (ks != null) {
+            if (completion != null) {
+                completion.onComplete(new PrimitiveResult(ks));
             }
-        }).start();
+        } else {
+            renewSession(completion);
+        }
     }
 
     protected String validateSession() {
@@ -288,7 +283,7 @@ public class OttSessionProvider extends BaseSessionProvider {
     }
 
     private void updateRefreshDelta(long expiry) {
-        long currentDate = System.currentTimeMillis()/1000;
+        long currentDate = System.currentTimeMillis() / 1000;
         refreshDelta = (expiry - currentDate) * DeltaPercent / 100; // 20% of total validation time
     }
 

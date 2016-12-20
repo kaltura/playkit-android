@@ -10,11 +10,10 @@ public class KalturaOvpErrorHelper {
 
     public static ErrorElement getErrorElement(String code, String message){
         switch (code){
-            case "SCHEDULED_RESTRICTED":
-                return ErrorElement.RestrictionError.message(message);
-
+            /*case "SCHEDULED_RESTRICTED":
+            case "COUNTRY_RESTRICTED":*/
             default:
-                return ErrorElement.GeneralError.message(message);
+                return ErrorElement.RestrictionError.message(message);
         }
     }
 }

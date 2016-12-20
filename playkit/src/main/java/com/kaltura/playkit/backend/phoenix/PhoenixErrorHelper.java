@@ -8,6 +8,12 @@ import com.kaltura.playkit.connect.ErrorElement;
 
 public class PhoenixErrorHelper {
 
+    /**
+     * in case specific error codes should be parsed to predefined errors.
+     * @param code
+     * @param message
+     * @return
+     */
     public static ErrorElement getErrorElement(String code, String message){
         switch (code){
             case "500016":

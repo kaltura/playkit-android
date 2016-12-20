@@ -28,11 +28,9 @@ public class MockParams {
 //---------------------------------------
 
 /*Ovp Mock params: */
-    public static final String KalturaOvpBaseUrl = "http://www.kaltura.com/api_v3/";
-    public static final int OvpPartnerId = 2209591; // sample partner id
-    public static final String OvpLoginId = "tehila.rozin@kaltura.com";
-    public static final String OvpPassword = "symbioza1*";
-    public static final String EntryId = "1_1h1vsv3z";//frozen
+    public static final String OvpBaseUrl = "http://www.kaltura.com/api_v3/";
+    public static final String NonDRMEntryId = "1_xay0wjby"; //works for user/anonymous
+    public static final String DRMEntryIdUsr = "1_tmomdals"; //works for logged user
 
     public enum UserType{Ott, Ovp}
 
@@ -59,12 +57,20 @@ public class MockParams {
             ottUsers.add(new UserLogin("albert@gmail.com", "123456", 198));
             ottUsers.add(new UserLogin("betsy@gmail.com", "123456", 198));
             ottUsers.add(new UserLogin("Alfred@gmail.com", "123456", 198));
-            ottUsers.add(new UserLogin("ziv.ilan@kaltura.com", "123456", 198));
             ottUsers.add(new UserLogin("itan@b.com", "123456", 198));
 
             ovpUsers = new ArrayList<>();
-            ovpUsers.add(new UserLogin("tehila.rozin@kaltura.com", "abcd1234*", 2209591));
-            ovpUsers.add(new UserLogin("ziv.ilan@kaltura.com", "abcd1234*", 1281471));
+            ovpUsers.add(new UserLogin("kaltura.fe@icloud.com", "abcd1234*", 2222401));
+        }
+
+        public static UserLogin getDrmUser(UserType type) {
+            switch (type){
+                case Ovp:
+                    return ovpUsers.get(0);
+
+                default:
+                    return null;
+            }
         }
 
         public static class UserLogin {

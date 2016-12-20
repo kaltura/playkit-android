@@ -9,7 +9,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
 import com.kaltura.playkit.backend.BaseResult;
-import com.kaltura.playkit.backend.ovp.data.KalturaPlaybackContext;
 import com.kaltura.playkit.backend.ovp.data.OvpResultAdapter;
 import com.kaltura.playkit.connect.GsonParser;
 import com.kaltura.playkit.utils.RuntimeTypeAdapterFactory;
@@ -50,24 +49,22 @@ public class KalturaOvpParser {
 
     @NonNull
     public static Gson getGson() {
-
-        /*RuntimeTypeAdapterFactory<KalturaPlaybackContext.KalturaRuleAction> runtimeTypeAdapterFactory = RuntimeTypeAdapterFactory
-                .of(KalturaPlaybackContext.KalturaRuleAction.class, "objectType")
-                .registerSubtype(KalturaPlaybackContext.KalturaAccessControlDrmPolicyAction.class, "KalturaAccessControlDrmPolicyAction");*/
-
-        return new GsonBuilder().registerTypeHierarchyAdapter(BaseResult.class, new OvpResultAdapter())
-                .registerTypeAdapterFactory(RuntimeTypeAdapterFactory
-                        .of(KalturaPlaybackContext.KalturaRuleAction.class, "objectType")
-                        .registerSubtype(KalturaPlaybackContext.KalturaAccessControlDrmPolicyAction.class, "KalturaAccessControlDrmPolicyAction")).create();
+        return new GsonBuilder().registerTypeHierarchyAdapter(BaseResult.class, new OvpResultAdapter()).create();
     }
 
     public static Gson getRuntimeGson(Class clz) {
         RuntimeTypeAdapterFactory adapterFactory = null;
         switch (clz.getSimpleName()){
             case "KalturaPlaybackContext":
-                adapterFactory = RuntimeTypeAdapterFactory
+                /*!! for now - since we are not using the parsed action objects, there's no need to use this runtime factory
+                  !! all items in the "actions" list will be of the base class type "KalturaRuleAction"
+                  !! once needed - set adapterFactory to the commented code and make sure to register each of the subclasses that may
+                  !! return in the response */
+                adapterFactory = null;
+                        /*RuntimeTypeAdapterFactory
                         .of(KalturaPlaybackContext.KalturaRuleAction.class, "objectType")
-                        .registerSubtype(KalturaPlaybackContext.KalturaAccessControlDrmPolicyAction.class, "KalturaAccessControlDrmPolicyAction");
+                        .registerSubtype(KalturaPlaybackContext.KalturaAccessControlDrmPolicyAction.class, "KalturaAccessControlDrmPolicyAction")
+                        .registerSubtype(KalturaPlaybackContext.KalturaAccessControlDrmPolicyAction.class, "KalturaAccessControlLimitDeliveryProfilesAction");*/
         }
 
         GsonBuilder gsonBuilder = new GsonBuilder();

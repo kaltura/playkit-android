@@ -195,6 +195,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                 if(response.error != null){
                     fail("failed to start session: "+response.error.getMessage());
                     resume();
+                    resume();
                 } else {
                     PKLog.i("phoenix testing", "session ready start testing");
 
@@ -202,11 +203,11 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
                     while (testWaitCount.getCount() > 1){}
 
-                    loadCancelTest2(false);
+                    loadCancelTest2(true);
                 }
             }
         });
-        wait(2);
+        wait(1);
     }
 
     private void loadCancelTest1() {

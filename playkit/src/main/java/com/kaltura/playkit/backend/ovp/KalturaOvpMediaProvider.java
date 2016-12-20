@@ -124,17 +124,33 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                     .completion(new OnRequestCompletion() {
                         @Override
                         public void onComplete(ResponseElement response) {
-                            onEntryInfoMultiResponse(ks, response, (OnMediaLoadCompletion) completion);
+                            PKLog.v(TAG, loadId + ": got response to [" + loadReq + "]" + " isCanceled = "+isCanceled);
+                            loadReq = null;
+
+                            try {
+                                onEntryInfoMultiResponse(ks, response, (OnMediaLoadCompletion) completion);
+                            } catch (InterruptedException e) {
+                                interrupted();
+                            }
                         }
                     });
-            requestQueue.queue(entryRequest.build());
+
+            synchronized (syncObject) {
+                loadReq = requestQueue.queue(entryRequest.build());
+                PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
+            }
             waitCompletion();
         }
 
 
-        private void onEntryInfoMultiResponse(String ks, ResponseElement response, OnMediaLoadCompletion completion) {
+        private void onEntryInfoMultiResponse(String ks, ResponseElement response, OnMediaLoadCompletion completion) throws InterruptedException {
             ErrorElement error = null;
             PKMediaEntry mediaEntry = null;
+
+            if (isCanceled()) {
+                PKLog.v(TAG, loadId+": i am canceled, exit response parsing ");
+                return;
+            }
 
             if (response != null && response.isSuccess()) {
 
@@ -165,11 +181,11 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                                 (KalturaPlaybackContext) responses.get(1) :
                                 new KalturaPlaybackContext((KalturaEntryContextDataResult) responses.get(2));*/
 
-                        if((error = hasError(kalturaPlaybackContext.getMessages())) == null) { // check for error message
+                        if ((error = hasError(kalturaPlaybackContext.getMessages())) == null) { // check for error message
                             mediaEntry = ProviderParser.getMediaEntry(ks, sessionProvider.partnerId() + "", uiConfId,
-                                        ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), kalturaPlaybackContext);
+                                    ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), kalturaPlaybackContext);
 
-                            if(mediaEntry.getSources().size() == 0){ // makes sure there are sources available for play
+                            if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
                                 error = ErrorElement.RestrictionError.message("Content can't be played due to lack of sources");
                             }
                         }
@@ -185,7 +201,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
             }
 
-            PKLog.v(TAG, loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure: "+error )));
+            PKLog.v(TAG, loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure: " + error)));
 
 
             if (!isCanceled() && completion != null) {
@@ -198,11 +214,13 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     }
 
+
+    // in case we'll want to gather errors or priorities message, loop over messages. Currently returns the first error
     private ErrorElement hasError(ArrayList<KalturaPlaybackContext.KalturaAccessControlMessage> messages) {
         ErrorElement error = null;
-        for (KalturaPlaybackContext.KalturaAccessControlMessage message : messages){
+        for (KalturaPlaybackContext.KalturaAccessControlMessage message : messages) {
             error = KalturaOvpErrorHelper.getErrorElement(message.getCode(), message.getMessage());
-            if(error != null){
+            if (error != null) {
                 return error;
             }
         }
@@ -291,20 +309,20 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     //          "url":"http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/url/protocol/http/a.mp4/flavorIds/0_,1_ude4l5pb,1_izgi81qa,1_3l6wh2jz,1_fafwf2t7,1_k6gs4dju,1_nzen8kfl"
 
     @NonNull
-    private static List<PKMediaSource> parseFromSources(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlaybackContext playingResult) {
+    private static List<PKMediaSource> parseFromSources(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlaybackContext playbackContext) {
         ArrayList<PKMediaSource> sources = new ArrayList<>();
 
         //-> create PKMediaSource-s according to sources list provided in "getContextData" response
-        for (KalturaPlaybackSource playbackSource : playingResult.getSources()) {
+        for (KalturaPlaybackSource playbackSource : playbackContext.getSources()) {
 
-            if(!FormatsHelper.validateFormat(playbackSource)){ // only validated formats will be added to the sources.
+            if (!FormatsHelper.validateFormat(playbackSource)) { // only validated formats will be added to the sources.
                 continue;
             }
 
             String playUrl = null;
 
             // in case playbackSource doesn't have flavors we don't need to build the url and we'll use the provided one.(exp: live content)
-            if(playbackSource.hasFlavorIds()) {
+            if (playbackSource.hasFlavorIds()) {
 
                 PlaySourceUrlBuilder playUrlBuilder = new PlaySourceUrlBuilder()
                         .setEntryId(entry.getId())
@@ -318,7 +336,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 String extension;
                 //-> find out what should be the extension: if format doesn't have mapped value, the extension will be fetched from the flavorAssets.
                 if ((extension = FormatsHelper.getExtByFormat(playbackSource.getFormat())) == null) {
-                    List<KalturaFlavorAsset> flavorAssets = FlavorAssetsFilter.filter(playingResult.getFlavorAssets(), "id", playbackSource.getFlavorIdsList());
+                    List<KalturaFlavorAsset> flavorAssets = FlavorAssetsFilter.filter(playbackContext.getFlavorAssets(), "id", playbackSource.getFlavorIdsList());
                     extension = flavorAssets.size() > 0 ? flavorAssets.get(0).getFileExt() : FormatsHelper.getExtByFormat(playbackSource.getFormat());
                 }
                 playUrlBuilder.setExtension(extension);
@@ -366,9 +384,9 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             return SupportedFormats.get(format);
         }
 
-        public static String getFormatByExtension(@NonNull String format){
-            for( Map.Entry<String, String> entry : SupportedFormats.entrySet()){
-                if(entry.getValue().equals(format)){
+        public static String getFormatByExtension(@NonNull String format) {
+            for (Map.Entry<String, String> entry : SupportedFormats.entrySet()) {
+                if (entry.getValue().equals(format)) {
                     return entry.getKey();
                 }
             }
@@ -377,16 +395,16 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
         /**
          * Check if format is not empty and it's supported.
-         *
+         * <p>
          * "applehttp" format is supported only if doesn't have drm.
          *
          * @param source
          * @return - true, if format is valid and supported
          */
-        public static boolean validateFormat(KalturaPlaybackSource source){
+        public static boolean validateFormat(KalturaPlaybackSource source) {
             String format = source.getFormat();
             return !isEmpty(format) && SupportedFormats.keySet().contains(format) &&
-                    (!format.equals("applehttp")  ||  Utils.isNullOrEmpty(source.getDrmData()));
+                    (!format.equals("applehttp") || Utils.isNullOrEmpty(source.getDrmData()));
         }
 
         public static Collection<String> getSupportedExtensions() {

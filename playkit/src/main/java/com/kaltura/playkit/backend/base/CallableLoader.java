@@ -19,6 +19,7 @@ public abstract class CallableLoader implements Callable<Void> {
 
     protected String TAG;
     protected final Object syncObject = new Object();
+    protected boolean isCanceled = false;
 
 
     protected CallableLoader(String tag, OnCompletion completion) {
@@ -67,7 +68,7 @@ public abstract class CallableLoader implements Callable<Void> {
     }
 
     protected boolean isCanceled() {
-        return Thread.currentThread().isInterrupted();
+        return isCanceled;// Thread.currentThread().isInterrupted();
     }
 
     protected void interrupted() {
