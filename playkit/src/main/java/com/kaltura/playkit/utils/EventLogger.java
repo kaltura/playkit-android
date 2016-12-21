@@ -9,25 +9,22 @@ import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.drm.StreamingDrmSessionManager;
+import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataRenderer;
-import com.google.android.exoplayer2.metadata.id3.Id3Frame;
 import com.google.android.exoplayer2.source.AdaptiveMediaSourceEventListener;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelections;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Created by anton.afanasiev on 31/10/2016.
  */
 
-public class EventLogger implements TrackSelector.EventListener<MappingTrackSelector.MappedTrackInfo>,
-        ExoPlayer.EventListener, AudioRendererEventListener, VideoRendererEventListener, MetadataRenderer.Output<List<Id3Frame>>,
+public class EventLogger implements ExoPlayer.EventListener, AudioRendererEventListener, VideoRendererEventListener,  MetadataRenderer.Output,
         AdaptiveMediaSourceEventListener, ExtractorMediaSource.EventListener, StreamingDrmSessionManager.EventListener {
 
 
@@ -44,6 +41,11 @@ public class EventLogger implements TrackSelector.EventListener<MappingTrackSele
 
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
+
+    }
+
+    @Override
+    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
 
     }
 
@@ -98,11 +100,6 @@ public class EventLogger implements TrackSelector.EventListener<MappingTrackSele
     }
 
     @Override
-    public void onMetadata(List<Id3Frame> metadata) {
-
-    }
-
-    @Override
     public void onLoadStarted(DataSpec dataSpec, int dataType, int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs, long mediaEndTimeMs, long elapsedRealtimeMs) {
 
     }
@@ -138,11 +135,6 @@ public class EventLogger implements TrackSelector.EventListener<MappingTrackSele
     }
 
     @Override
-    public void onTrackSelectionsChanged(TrackSelections<? extends MappingTrackSelector.MappedTrackInfo> trackSelections) {
-
-    }
-
-    @Override
     public void onVideoEnabled(DecoderCounters counters) {
 
     }
@@ -174,6 +166,11 @@ public class EventLogger implements TrackSelector.EventListener<MappingTrackSele
 
     @Override
     public void onVideoDisabled(DecoderCounters counters) {
+
+    }
+
+    @Override
+    public void onMetadata(Metadata metadata) {
 
     }
 }
