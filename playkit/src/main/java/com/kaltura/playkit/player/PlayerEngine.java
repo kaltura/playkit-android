@@ -5,6 +5,7 @@ import android.view.View;
 
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKTracks;
+import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.utils.Consts;
 
 
@@ -153,6 +154,13 @@ interface PlayerEngine {
      * All the object related data (e.g lastKnownPosition) will be lost.
      */
     void destroy();
+
+    /**
+     * Holds current media url(as String), current playing video and audio bitrates.
+     * @return the playback params data object of the current media.
+     *
+     */
+    PlaybackParamsInfo getPlaybackParamsInfo();
 
 
 }

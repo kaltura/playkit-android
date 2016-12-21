@@ -8,13 +8,14 @@ import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.backend.base.BaseSessionProvider;
+import com.kaltura.playkit.backend.PrimitiveResult;
 import com.kaltura.playkit.backend.phoenix.data.KalturaLoginResponse;
 import com.kaltura.playkit.backend.phoenix.data.KalturaLoginSession;
 import com.kaltura.playkit.backend.phoenix.data.KalturaSession;
 import com.kaltura.playkit.backend.phoenix.data.PhoenixParser;
-import com.kaltura.playkit.backend.phoenix.services.OttSessionService;
 import com.kaltura.playkit.backend.phoenix.services.OttUserService;
 import com.kaltura.playkit.backend.phoenix.services.PhoenixService;
+import com.kaltura.playkit.backend.phoenix.services.PhoenixSessionService;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.MultiRequestBuilder;
@@ -35,10 +36,13 @@ public class OttSessionProvider extends BaseSessionProvider {
 
     private OttSessionParams sessionParams;
     private String refreshToken;
-    private long refreshDelta = 9*60*60*24;//TimeDelta;
+    private long refreshDelta = 9 * 60 * 60 * 24;//TimeDelta;
+    private int partnerId = 0;
+
 
     public OttSessionProvider(String baseUrl, int partnerId) {
-        super(baseUrl, partnerId);
+        super(baseUrl);
+        this.partnerId = partnerId;
     }
 
     /**
@@ -46,16 +50,16 @@ public class OttSessionProvider extends BaseSessionProvider {
      *
      * @param udid
      */
-    public void startAnonymousSession(@Nullable String udid) {
+    public void startAnonymousSession(@Nullable String udid, final OnCompletion<PrimitiveResult> completion) {
         this.sessionParams = new OttSessionParams().setUdid(udid);
 
         MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(baseUrl, null);
-        multiRequest.add(OttUserService.anonymousLogin(baseUrl, partnerId, udid).removeParams(PhoenixService.getRequestConfigKeys()),
-                OttSessionService.get(baseUrl, "{1:result:ks}").removeParams(PhoenixService.getRequestConfigKeys())).
+        multiRequest.add(OttUserService.anonymousLogin(baseUrl, partnerId, udid),
+                PhoenixSessionService.get(baseUrl, "{1:result:ks}")).
                 completion(new OnRequestCompletion() {
                     @Override
                     public void onComplete(ResponseElement response) {
-                        handleStartSession(response);
+                        handleStartSession(response, completion);
                     }
                 });
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
@@ -68,19 +72,20 @@ public class OttSessionProvider extends BaseSessionProvider {
      * @param username
      * @param password
      * @param udid
+     * @param completion
      */
-    public void startSession(@NonNull String username, @NonNull String password, @Nullable String udid) {
+    public void startSession(@NonNull String username, @NonNull String password, @Nullable String udid, final OnCompletion<PrimitiveResult> completion) {
         // login user
         //get session data for expiration time
         this.sessionParams = new OttSessionParams().setPassword(password).setUsername(username).setUdid(udid);
 
         MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(baseUrl, null);
-        multiRequest.add(OttUserService.userLogin(baseUrl, partnerId, sessionParams.username, sessionParams.password).removeParams(PhoenixService.getRequestConfigKeys()),
-                OttSessionService.get(baseUrl, "{1:result:loginSession:ks}").removeParams(PhoenixService.getRequestConfigKeys())).
+        multiRequest.add(OttUserService.userLogin(baseUrl, partnerId, sessionParams.username, sessionParams.password),
+                PhoenixSessionService.get(baseUrl, "{1:result:loginSession:ks}")).
                 completion(new OnRequestCompletion() {
                     @Override
                     public void onComplete(ResponseElement response) {
-                        handleStartSession(response);
+                        handleStartSession(response, completion);
                     }
                 });
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
@@ -96,7 +101,7 @@ public class OttSessionProvider extends BaseSessionProvider {
     * */
 
 
-    private void handleStartSession(ResponseElement response) {
+    private void handleStartSession(ResponseElement response, OnCompletion<PrimitiveResult> completion) {
 
         ErrorElement error = null;
 
@@ -114,10 +119,10 @@ public class OttSessionProvider extends BaseSessionProvider {
                 // and we need this response for the expiry.
                 if (responses.get(1).error == null) { // get session data success
                     KalturaSession session = (KalturaSession) responses.get(1);
-                    setSession(session.getKs(), session.getExpiry()); // save new session
+                    setSession(session.getKs(), session.getExpiry(), session.getUserId()); // save new session
 
-                    if (sessionListener != null) {
-                        sessionListener.ready();
+                    if (completion != null) {
+                        completion.onComplete(new PrimitiveResult(session.getKs()));
                     }
                 } else {
                     error = ErrorElement.SessionError;
@@ -130,8 +135,8 @@ public class OttSessionProvider extends BaseSessionProvider {
 
         if (error != null) {
             clearSession(); //clears current saved data - app can try renewSession with the current credentials. or endSession/startSession
-            if (sessionListener != null) {
-                sessionListener.onError(error); // in case we can't login - app should provide a solution.
+            if (completion != null) {
+                completion.onComplete(new PrimitiveResult(error)); // in case we can't login - app should provide a solution.
             }
         }
     }
@@ -139,33 +144,53 @@ public class OttSessionProvider extends BaseSessionProvider {
     /**
      * try to re-login with current credentials
      */
-    public void renewSession() {
+    private void renewSession(OnCompletion<PrimitiveResult> completion) {
         if (sessionParams != null) {
-            startSession(sessionParams.username, sessionParams.password, sessionParams.udid);
+            if (sessionParams.username != null) {
+                startSession(sessionParams.username, sessionParams.password, sessionParams.udid, completion);
+            } else {
+                startAnonymousSession(sessionParams.udid, completion);
+            }
         } else {
-            Log.i(TAG, "Session params weren't set! ");
+            Log.e(TAG, "Session was ended or failed to start when this was called.\nCan't recover session if not started before");
+            completion.onComplete(new PrimitiveResult().error(ErrorElement.SessionError.message("Session expired")));
         }
     }
 
     /**
-     * in case session is active we try to logout. fails or not the saved session data is cleared.
+     * Ends current active session. if it's a {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#User} session
+     * logout, if {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#Anonymous} will return, since
+     * logout on anonymous session doesn't make the session invalid.
+     * <p>
+     * If logout was activated, session params are cleared.
      */
-    @Override
-    public void endSession() {
+    public void endSession(final OnCompletion<BaseResult> completion) {
 
-        if (isSessionActive()) {
-            //logout??
+        if (hasActiveSession()) {
+
+            if (getUserSessionType().equals(UserSessionType.Anonymous)) { //no need to logout anonymous session
+                if (completion != null) {
+                    completion.onComplete(new BaseResult(null));
+                }
+                return;
+            }
+
             APIOkRequestsExecutor.getSingleton().queue(OttUserService.logout(baseUrl, getSessionToken(), sessionParams.udid)
                     .completion(new OnRequestCompletion() {
                         @Override
                         public void onComplete(ResponseElement response) {
+                            ErrorElement error = null;
                             if (response != null && response.isSuccess()) {
                                 PKLog.d(TAG, "endSession: logout user session success. clearing session data.");
                             } else {
-                                PKLog.e(TAG, "endSession: session logout failed. clearing session data. " + (response.getError() != null ? response.getError().getMessage() : ""));
+                                error = response.getError() != null ? response.getError() : ErrorElement.GeneralError.message("failed to end session");
+                                PKLog.e(TAG, "endSession: session logout failed. clearing session data. " + error.getMessage());
                             }
                             OttSessionProvider.super.endSession();
                             sessionParams = null;
+                            if (completion != null) {
+                                completion.onComplete(new BaseResult(error));
+                            }
                         }
                     }).build());
 
@@ -174,16 +199,20 @@ public class OttSessionProvider extends BaseSessionProvider {
         }
     }
 
+    @Override
+    public int partnerId() {
+        return this.partnerId;
+    }
 
     @Override
-    public void getKs(OnCompletion<String> completion) {
+    public void getSessionToken(final OnCompletion<PrimitiveResult> completion) {
         String ks = validateSession();
         if (ks != null) {
             if (completion != null) {
-                completion.onComplete(ks);
+                completion.onComplete(new PrimitiveResult(ks));
             }
         } else {
-            renewSession();
+            renewSession(completion);
         }
     }
 
@@ -199,11 +228,11 @@ public class OttSessionProvider extends BaseSessionProvider {
                 // call refreshToken
                 refreshSessionToken();
             }
-        } else { // token expired - we need to relogin
+        } /*else { // token expired - we need to relogin
             //call re-login (renewSession)
-            renewSession();
+            renewSession(null);
         }
-
+*/
         return token;
     }
 
@@ -213,8 +242,8 @@ public class OttSessionProvider extends BaseSessionProvider {
         }
         // multi request needed to fetch the new expiration date.
         MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(baseUrl, null);
-        multiRequest.add(OttUserService.refreshSession(baseUrl, getSessionToken(), refreshToken, sessionParams.udid).removeParams(PhoenixService.getRequestConfigKeys()),
-                OttSessionService.get(baseUrl, "{1:result:ks}").removeParams(PhoenixService.getRequestConfigKeys()))
+        multiRequest.add(OttUserService.refreshSession(baseUrl, getSessionToken(), refreshToken, sessionParams.udid),
+                PhoenixSessionService.get(baseUrl, "{1:result:ks}"))
                 .completion(new OnRequestCompletion() {
                     @Override
                     public void onComplete(ResponseElement response) {
@@ -230,7 +259,7 @@ public class OttSessionProvider extends BaseSessionProvider {
 
                                 if (responses.get(1).error == null) {
                                     KalturaSession session = (KalturaSession) responses.get(1);
-                                    setSession(session.getKs(), session.getExpiry()); // save new session
+                                    setSession(session.getKs(), session.getExpiry(), session.getUserId()); // save new session
                                 }
 
                             }
@@ -240,15 +269,21 @@ public class OttSessionProvider extends BaseSessionProvider {
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
     }
 
+    @Override
+    protected void clearSession() {
+        super.clearSession();
+        refreshToken = null;
+        refreshDelta = TimeDelta;
+    }
 
     @Override
-    protected void setSession(String sessionToken, long expiry) {
-        super.setSession(sessionToken, expiry);
+    protected void setSession(String sessionToken, long expiry, String userId) {
+        super.setSession(sessionToken, expiry, userId);
         updateRefreshDelta(expiry);
     }
 
     private void updateRefreshDelta(long expiry) {
-        long currentDate = System.currentTimeMillis()/1000;
+        long currentDate = System.currentTimeMillis() / 1000;
         refreshDelta = (expiry - currentDate) * DeltaPercent / 100; // 20% of total validation time
     }
 

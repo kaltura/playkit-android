@@ -39,35 +39,35 @@ public class YouboraConfig {
     private static String[] extraConfigFieldNames = new String[]{"param2","param3","param4","param5","param6","param7","param8","param9","param10"};
 
     static {
-        HashMap<String, Object> youboraConfig = new HashMap<>(20);
-        youboraConfig.put("enableAnalytics", true);
-        youboraConfig.put("parseHLS", false);
-        youboraConfig.put("parseCDNNodeHost", false);
-        youboraConfig.put("hashTitle", true);
-        youboraConfig.put("httpSecure", false);
-        youboraConfig.put("enableNiceBuffer", true);
-        youboraConfig.put("enableNiceSeek", true);
-        youboraConfig.put("accountCode", "kalturatest");
-        youboraConfig.put("transactionCode", "");
-        youboraConfig.put("isBalanced", "0");
-        youboraConfig.put("isResumed", "0");
-        youboraConfig.put("haltOnError", true);
-        youboraConfigObject = youboraConfig;
+        HashMap<String, Object> youboraLocalConfig = new HashMap<>(20);
+        youboraLocalConfig.put("enableAnalytics", true);
+        youboraLocalConfig.put("parseHLS", false);
+        youboraLocalConfig.put("parseCDNNodeHost", false);
+        youboraLocalConfig.put("hashTitle", true);
+        youboraLocalConfig.put("httpSecure", false);
+        youboraLocalConfig.put("enableNiceBuffer", true);
+        youboraLocalConfig.put("enableNiceSeek", true);
+        youboraLocalConfig.put("accountCode", "kalturatest");
+        youboraLocalConfig.put("transactionCode", "");
+        youboraLocalConfig.put("isBalanced", "0");
+        youboraLocalConfig.put("isResumed", "0");
+        youboraLocalConfig.put("haltOnError", true);
+        youboraConfigObject = youboraLocalConfig;
 
         Map<String, Object> network = new HashMap<>(2);
         network.put("ip", "");
         network.put("isp", "");
-        youboraConfig.put("network", network);
+        youboraLocalConfig.put("network", network);
         networkObject = network;
 
         Map<String, Object> device = new HashMap<>(1);
         device.put("id", null);
-        youboraConfig.put("device", device);
+        youboraLocalConfig.put("device", device);
 
         Map<String, Object> media = new HashMap<>(5);
         media.put("isLive", false);
         media.put("cdn", null);
-        youboraConfig.put("media", media);
+        youboraLocalConfig.put("media", media);
         mediaObject = media;
 
         Map<String, Object> ads = new HashMap<>(6);
@@ -75,29 +75,28 @@ public class YouboraConfig {
         ads.put("resource", null);
         ads.put("position", null);
         ads.put("duration", null);
-        youboraConfig.put("ads", ads);
+        youboraLocalConfig.put("ads", ads);
         adsObject = ads;
 
 
         Map<String, Object> properties = new HashMap<>(16);
-        youboraConfig.put("properties", properties);
+        youboraLocalConfig.put("properties", properties);
         propertiesObject = properties;
 
         Map<String, Object> extraParams = new HashMap<>(10);
         extraParams.put("param1", PlayKitManager.CLIENT_TAG);
-        youboraConfig.put("extraParams", extraParams);
+        youboraLocalConfig.put("extraParams", extraParams);
         extraParamsObject = extraParams;
 
-        defaultYouboraConfig = Collections.unmodifiableMap(youboraConfig);
+        defaultYouboraConfig = Collections.unmodifiableMap(youboraLocalConfig);
     }
 
     private YouboraConfig() {}
 
     public static Map<String, Object> getYouboraConfig(JsonObject pluginConfig, PlayerConfig.Media mediaConfig, Player player) {
-        if (youboraConfig == null) {
-            // load from json
-            setYouboraConfig(pluginConfig, mediaConfig, player);
-        }
+        // load from json
+        setYouboraConfig(pluginConfig, mediaConfig, player);
+
         return youboraConfig;
     }
 
@@ -137,9 +136,9 @@ public class YouboraConfig {
         }
         if (booleanFieldNames != null) {
             for (int i = 0; i < booleanFieldNames.length; i++) {
-                String fieldName = fieldNames[i];
+                String fieldName = booleanFieldNames[i];
                 if (jsonObject.has(fieldName)) {
-                    log.d( "setYouboraConfigObject: " + fieldNames[i]);
+                    log.d( "setYouboraConfigObject: " + booleanFieldNames[i]);
                     defaultJsonObject.put(fieldName, jsonObject.getAsJsonPrimitive(fieldName).getAsBoolean());
                 }
             }

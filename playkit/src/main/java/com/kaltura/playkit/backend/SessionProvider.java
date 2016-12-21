@@ -14,9 +14,8 @@ public interface SessionProvider {
 
     String baseUrl();
 
-    void getKs(OnCompletion<String> completion);
+    void getSessionToken(OnCompletion<PrimitiveResult> completion);
 
     int partnerId();
 
-    //onSessionExpired
 }
