@@ -251,6 +251,11 @@ public class PlayerController implements Player {
     @Override
     public void onApplicationPaused() {
         log.d("onApplicationPaused");
+        if(player == null){
+            log.e("Attempt to invoke 'release()' on null instance of the player engine");
+            return;
+        }
+
         player.release();
         togglePlayerListeners(false);
         wasReleased = true;
