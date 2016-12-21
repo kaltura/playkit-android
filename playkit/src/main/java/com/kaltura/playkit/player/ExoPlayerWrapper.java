@@ -88,11 +88,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private boolean shouldResetPlayerPosition;
     private long prevDuration = Consts.TIME_UNSET;
 
-    private DefaultTrackSelector trackSelector;
-    private PKTracks tracksInfo;
-    private boolean shouldGetTracksInfo;
+    private MappingTrackSelector trackSelector;
 
-    private TrackSelectionHelper trackSelectionHelper;
 
 
     interface TracksInfoListener {
@@ -129,7 +126,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
         MappingTrackSelector trackSelector = initializeTrackSelector();
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, eventLogger, buildHttpDataSourceFactory(false));
-        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager, false);
+        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager);
         setPlayerListeners();
         exoPlayerView.setPlayer(player);
         player.setPlayWhenReady(false);
