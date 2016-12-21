@@ -20,7 +20,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.player.MediaSupport;
 
 import java.io.FileNotFoundException;
-import java.util.Map;
 
 /**
  * Created by anton.afanasiev on 18/12/2016.
@@ -126,7 +125,7 @@ public class LocalDrmSessionManager<T extends ExoMediaCrypto> implements DrmSess
      * @throws FileNotFoundException
      */
     private MediaDrmSession openSessionWithKeys(byte[] initData) throws MediaDrmException, MediaCryptoException, FileNotFoundException {
-        String key = Base64.encodeToString(initData, Base64.DEFAULT);
+        String key = Base64.encodeToString(initData, Base64.NO_WRAP);
         byte[] keySetId = drmStorage.load(key);
 
         MediaDrmSession session = MediaDrmSession.open(mediaDrm);

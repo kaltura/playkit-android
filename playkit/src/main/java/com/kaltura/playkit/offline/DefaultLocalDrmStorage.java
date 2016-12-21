@@ -27,7 +27,7 @@ public class DefaultLocalDrmStorage implements LocalDrmStorage {
 
     @Override
     public void save(String key, byte[] value) {
-        String encodedValue = Base64.encodeToString(value, Base64.DEFAULT);
+        String encodedValue = Base64.encodeToString(value, Base64.NO_WRAP);
         log.i("save to storage with key " + key + " and value " + encodedValue);
         sharedPreferences.edit()
                 .putString(key, encodedValue)
@@ -40,10 +40,10 @@ public class DefaultLocalDrmStorage implements LocalDrmStorage {
         String value = sharedPreferences.getString(key, null);
         log.i("load from storage with key " + key);
         if (value == null) {
-            throw new FileNotFoundException("Key not found in the storage" + key);
+            throw new FileNotFoundException("Key not found in the storage " + key);
         }
 
-        return Base64.decode(value, Base64.DEFAULT);
+        return Base64.decode(value, Base64.NO_WRAP);
     }
 
     @Override
