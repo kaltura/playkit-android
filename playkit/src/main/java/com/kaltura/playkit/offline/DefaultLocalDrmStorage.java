@@ -31,14 +31,13 @@ public class DefaultLocalDrmStorage implements LocalDrmStorage {
         log.i("save to storage with key " + key + " and value " + encodedValue);
         sharedPreferences.edit()
                 .putString(key, encodedValue)
-                .putString("AAAAUHBzc2gAAAAA7e+LqXnWSs6jyCfc1R0h7QAAADAIARIQk6L0G9E5OxYCYsO8xcinFxoHa2FsdHVyYSIKMV90bW9tZGFscyoFU0RfSEQ=", encodedValue)
                 .apply();
     }
 
     @Override
     public byte[] load(String key) throws FileNotFoundException {
 
-        String value = sharedPreferences.getString("AAAAUHBzc2gAAAAA7e+LqXnWSs6jyCfc1R0h7QAAADAIARIQk6L0G9E5OxYCYsO8xcinFxoHa2FsdHVyYSIKMV90bW9tZGFscyoFU0RfSEQ=", null);
+        String value = sharedPreferences.getString(key, null);
         log.i("load from storage with key " + key);
         if (value == null) {
             throw new FileNotFoundException("Key not found in the storage" + key);
