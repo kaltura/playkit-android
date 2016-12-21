@@ -36,6 +36,7 @@ import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -513,12 +514,16 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         int adPodCount            = ad.getAdPodInfo().getTotalAds();
         int adPodPosition         = ad.getAdPodInfo().getAdPosition();
         long adPodTimeOffset      = (long)(ad.getAdPodInfo().getTimeOffset() * 1000);
+
         List<Long> adCuePoints = new ArrayList<>();
         if (adsManager != null && adsManager.getAdCuePoints() != null) {
             for (Float cuePoint : adsManager.getAdCuePoints()) {
                 adCuePoints.add(cuePoint.longValue() * 1000);
             }
         }
+
+        String clickThroughUrl = getClickThroughUrl(ad);
+
 
         AdInfo adInfo =  new AdInfo(adDescription, adDuration,
                 adTitle, isAdSkippable,
@@ -528,11 +533,31 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 adPodCount,
                 adPodPosition,
                 adPodTimeOffset,
+                clickThroughUrl,
                 adCuePoints);
 
         log.v("AdInfo: " + adInfo.toString());
         return adInfo;
 
+    }
+
+    private String getClickThroughUrl(Ad ad) {
+        String clickThroughUrl = "";
+        try {
+            Class adClass = ad.getClass();
+            Field[] adClassFields = adClass.getDeclaredFields();
+            for(Field adClassField : adClassFields) {
+                adClassField.setAccessible(true);
+                if (adClassField.getName().equals("clickThroughUrl")) {
+                    clickThroughUrl = (String) adClassField.get(ad);
+                    break;
+                }
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return "";
+        }
+        return clickThroughUrl;
     }
 
     @Override
