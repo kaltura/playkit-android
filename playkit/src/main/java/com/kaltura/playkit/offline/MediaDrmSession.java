@@ -8,6 +8,8 @@ import android.media.NotProvisionedException;
 import android.os.Build;
 import android.support.annotation.NonNull;
 
+import com.google.android.exoplayer2.drm.FrameworkMediaDrm;
+
 import java.util.Map;
 
 /**
@@ -15,16 +17,16 @@ import java.util.Map;
  */
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-public class MediaDrmSession {
+class MediaDrmSession {
 
-    final MediaDrm mMediaDrm;
-    byte[] mSessionId;
+    private final FrameworkMediaDrm mMediaDrm;
+    private byte[] mSessionId;
 
-    private MediaDrmSession(@NonNull MediaDrm mediaDrm) {
+    private MediaDrmSession(@NonNull FrameworkMediaDrm mediaDrm) {
         mMediaDrm = mediaDrm;
     }
 
-    static MediaDrmSession open(@NonNull MediaDrm mediaDrm) throws MediaDrmException {
+    static MediaDrmSession open(@NonNull FrameworkMediaDrm mediaDrm) throws MediaDrmException {
         MediaDrmSession session = new MediaDrmSession(mediaDrm);
         session.mSessionId = mediaDrm.openSession();
         return session;
@@ -43,11 +45,11 @@ public class MediaDrmSession {
     }
 
 
-    public Map<String, String> queryKeyStatus() {
+     Map<String, String> queryKeyStatus() {
         return mMediaDrm.queryKeyStatus(mSessionId);
     }
 
-    MediaDrm.KeyRequest getOfflineKeyRequest(byte[] initData, String mimeType) {
+    FrameworkMediaDrm.KeyRequest getOfflineKeyRequest(byte[] initData, String mimeType) {
         try {
             return mMediaDrm.getKeyRequest(mSessionId, initData, mimeType, MediaDrm.KEY_TYPE_OFFLINE, null);
         } catch (NotProvisionedException e) {

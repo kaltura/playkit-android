@@ -3,102 +3,98 @@ package com.kaltura.playkit.offline;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.google.android.exoplayer2.source.MediaSource;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaSource;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 
 /**
+ * Responsible for managing the local(offline) assets. When offline playback of the
+ * media is required, you should first register the media files from the local storage.
+ * Note, you must have network connection, while register.
  * Created by anton.afanasiev on 13/12/2016.
  */
-
 public class LocalAssetsManager {
 
     private static final PKLog log = PKLog.get("LocalAssetsManager");
 
-    private static OfflineStorage offlineStorage;
+    private final Context context;
+    private LocalDrmStorage localDrmStorage;
 
-
+    /**
+     * Listener that notify about the result when registration flow is ended.
+     */
     public interface AssetRegistrationListener {
-        void onRegistered(String assetPath);
-        void onFailed(String assetPath, Exception error);
+        /**
+         * Will notify about success.
+         * @param localAssetPath - the path of the local asset.
+         */
+        void onRegistered(String localAssetPath);
+
+        /**
+         * Will notify if registration process was not successful.
+         * @param localAssetPath - the path of the local asset.
+         * @param error - error that occured during the registration process.
+         */
+        void onFailed(String localAssetPath, Exception error);
     }
 
+    /**
+     * Will notify about the status of the requsted asset.
+     */
     public interface AssetStatusListener {
-        void onStatus(String assetPath, long expiryTimeSeconds, long availableTimeSeconds);
+        void onStatus(String localAssetPath, long expiryTimeSeconds, long availableTimeSeconds);
     }
 
+    /**
+     * Will notify when the asset was removed from the manager.
+     */
     public interface AssetRemovalListener {
-        void onRemoved(String assetPath);
+        void onRemoved(String localAssetPath);
+    }
+
+    /**
+     * Constructor which will create {@link DefaultLocalDrmStorage}
+     * @param context - the application context.
+     */
+    public LocalAssetsManager(Context context) {
+        this.context = context;
+        this.localDrmStorage = new DefaultLocalDrmStorage(context);
+    }
+
+    /**
+     * Constructor with custom implementation of the {@link LocalDrmStorage}
+     * @param context - the application context.
+     * @param localDrmStorage - custom implementation of {@link LocalDrmStorage}
+     */
+    public LocalAssetsManager(Context context, LocalDrmStorage localDrmStorage) {
+        this.context = context;
+        this.localDrmStorage = localDrmStorage;
     }
 
 
-    public LocalAssetsManager(OfflineStorage offlineStorage){
-        this.offlineStorage = offlineStorage;
-    }
-
-    public static boolean registerAsset(@NonNull final Context context, @NonNull final PKMediaSource mediaSource,
-                                        @NonNull final String localAssetPath, @Nullable final AssetRegistrationListener listener) {
-
-        return registerOrRefreshAsset(context, mediaSource, localAssetPath, false, listener);
-    }
-
-    public static boolean refreshAsset(@NonNull final Context context, @NonNull final PKMediaSource mediaSource,
-                                       @NonNull final String loaclAssetPath, @Nullable final AssetRegistrationListener listener) {
-
-
-        return registerOrRefreshAsset(context, mediaSource, loaclAssetPath, true, listener);
-
-    }
-
-    public static boolean unregisterAsset(@NonNull final Context context, @NonNull final PKMediaSource mediaSource,
-                                          @NonNull final String localAssetPath, final AssetRemovalListener listener) {
-
-        doInBackground(new Runnable() {
-            @Override
-            public void run() {
-                // Remove cache
-                    DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, offlineStorage, localAssetPath);
-                    drmAdapter.unregisterAsset(localAssetPath, listener);
-            }
-        });
-        return true;
-    }
-
-    public static boolean checkAssetStatus(@NonNull final Context context, @NonNull final String localAssetPath,
-                                           @Nullable final AssetStatusListener listener) {
-
-        final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, offlineStorage, localAssetPath);
-
-        doInBackground(new Runnable() {
-            @Override
-            public void run() {
-                drmAdapter.checkAssetStatus(localAssetPath, listener);
-            }
-        });
-
-        return true;
-    }
-
-    private static boolean registerOrRefreshAsset(@NonNull final Context context, @NonNull final PKMediaSource mediaSource,
-                                                  @NonNull final String localAssetPath, final boolean refresh, @Nullable final AssetRegistrationListener listener) {
+    /**
+     * Register the asset. If the asset have drm protection it will store its keySetId in {@link LocalDrmStorage}
+     * @param mediaSource - the source to register.
+     * @param localAssetPath - the url of the locally stored asset.
+     * @param assetId - the asset id.
+     * @param listener - notify about the success/fail after the completion of the registration process.
+     */
+    public void registerAsset(@NonNull final PKMediaSource mediaSource, @NonNull final String localAssetPath,
+                                 @NonNull final String assetId, final AssetRegistrationListener listener) {
 
         // Preflight: check that all parameters are valid.
         checkNotNull(mediaSource.getUrl(), "mediaSource.url");    // can be an empty string (but not null)
         checkNotEmpty(localAssetPath, "localAssetPath");
-
+        checkNotEmpty(assetId, "assetId");
 
         if (!isOnline(context)) {
-            log.i("Can't register/refresh when offline");
-            return false;
+            //TODO check with noam if it is alright to return an exception at this stage.
+            listener.onFailed(localAssetPath, new Exception("Can't register/refresh when offline"));
+            return;
         }
 
         doInBackground(new Runnable() {
@@ -107,10 +103,10 @@ public class LocalAssetsManager {
 
                 try {
 
-                    DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, offlineStorage, localAssetPath);
+                    DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, localDrmStorage, localAssetPath);
                     DrmAdapter.DRMScheme scheme = drmAdapter.getScheme();
-                    String licenseUri = mediaSource.getDrmData().get(0).getLicenseUri(); //TODO filter and select the correct drmData based on DrmAdapter.DRMScheme
-                    drmAdapter.registerAsset(localAssetPath, licenseUri, listener);
+                    String licenseUri = mediaSource.getDrmData().get(0).getLicenseUri(); //TODO filter and select the correct drmData, based on DrmAdapter.DRMScheme
+                    drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, listener);
 
                 } catch (IOException e) {
                     log.e("Error", e);
@@ -121,29 +117,96 @@ public class LocalAssetsManager {
 
             }
         });
-
-        return true;
     }
 
-    private static void checkArg(boolean invalid, String message) {
+
+    /**
+     * Unregister asset. If the asset have drm protection it will be removed from {@link LocalDrmStorage}
+     * @param localAssetPath - the url of the locally stored asset.
+     * @param assetId - the asset id
+     * @param listener - notify when the asset is removed.
+     */
+    public void unregisterAsset(@NonNull final String localAssetPath,
+                                   @NonNull final String assetId, final AssetRemovalListener listener) {
+
+        doInBackground(new Runnable() {
+            @Override
+            public void run() {
+                // Remove cache
+                    DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, localDrmStorage, localAssetPath);
+                    drmAdapter.unregisterAsset(localAssetPath, assetId, listener);
+            }
+        });
+    }
+
+    /**
+     * Chek the status of the desired asset.
+     * @param localAssetPath - the url of the locally stored asset.
+     * @param assetId - the asset id.
+     * @param listener - will pass the result of the status.
+     */
+    public void checkAssetStatus(@NonNull final String localAssetPath, @NonNull final String assetId,
+                                           @Nullable final AssetStatusListener listener) {
+
+        final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, localDrmStorage, localAssetPath);
+
+        doInBackground(new Runnable() {
+            @Override
+            public void run() {
+                drmAdapter.checkAssetStatus(localAssetPath, assetId, listener);
+            }
+        });
+    }
+
+    /**
+     *
+     * @param assetId - the id of the asset.
+     * @param localAssetPath - the actual url of the video that should be played.
+     * @return - the {@link PKMediaSource} that should be passed to the player.
+     */
+    public PKMediaSource getLocalMediaSource(@NonNull final String assetId, @NonNull final String localAssetPath) {
+        return new LocalMediaSource(localDrmStorage, localAssetPath, assetId);
+    }
+
+    /**
+     * Checking arguments. if the argument is not valid, will throw an {@link IllegalArgumentException}
+     * @param invalid - the state of the argument.
+     * @param message - message to print, to the console.
+     */
+    private void checkArg(boolean invalid, String message) {
         if (invalid) {
             throw new IllegalArgumentException(message);
         }
     }
 
-    private static void checkNotNull(Object obj, String name) {
+    /**
+     * check the passed object for null.
+     * @param obj - object to check.
+     * @param name - the descriptive name of the object.
+     */
+    private void checkNotNull(Object obj, String name) {
         checkArg(obj == null, name + " must not be null");
     }
 
-    private static void checkNotEmpty(String obj, String name) {
+    /**
+     * check the passed String.
+     * @param obj - String to check.
+     * @param name - the descriptive name of the String.
+     */
+    private void checkNotEmpty(String obj, String name) {
         checkArg(obj == null || obj.length() == 0, name + " must not be empty");
     }
 
-    private static void doInBackground(Runnable runnable) {
+    private void doInBackground(Runnable runnable) {
         new Thread(runnable).start();
     }
 
-    private static boolean isOnline(Context context) {
+    /**
+     * Check if network connection is available.
+     * @param context - context.
+     * @return - true if there is network connection, otherwise - false.
+     */
+    private boolean isOnline(Context context) {
         ConnectivityManager conMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = conMgr.getActiveNetworkInfo();
         return !(netInfo == null || !netInfo.isConnected() || !netInfo.isAvailable());

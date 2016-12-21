@@ -97,13 +97,7 @@ public class PlayerController implements Player {
 
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
-        Uri sourceUri = Uri.parse(source.getUrl());
-        List<PKDrmParams> drmData = source.getDrmData();//PKDrmParams drmData = source.getDrmData();
-        String licenseUri = null;
-        if (drmData != null && drmData.size() > 0) {
-            licenseUri = drmData.get(0).getLicenseUri(); // ?? TODO: decide which of the drm items to take
-        }
-        player.load(sourceUri, licenseUri);
+        player.load(source);
 
         startPlaybackFrom(mediaConfig.getStartPosition());
     }

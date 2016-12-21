@@ -13,24 +13,24 @@ import com.kaltura.playkit.PKLog;
  * Created by anton.afanasiev on 13/12/2016.
  */
 
-public class WidevineClassicAdapter extends DrmAdapter {
+class WidevineClassicAdapter extends DrmAdapter {
 
     private static final PKLog log = PKLog.get("WidevineClassicAdapter");
 
-    private final Context mContext;
+    private final Context context;
 
     @Override
     public DRMScheme getScheme() {
         return DRMScheme.WidevineClassic;
     }
 
-    WidevineClassicAdapter(@NonNull Context context) {
-        mContext = context;
+    WidevineClassicAdapter(Context context) {
+        this.context = context;
     }
 
     @Override
-    public boolean checkAssetStatus(@NonNull String localAssetPath, @Nullable final LocalAssetsManager.AssetStatusListener listener) {
-        WidevineDrmClient widevineDrmClient = new WidevineDrmClient(mContext);
+    public boolean checkAssetStatus(String localAssetPath, String assetId, final LocalAssetsManager.AssetStatusListener listener) {
+        WidevineDrmClient widevineDrmClient = new WidevineDrmClient(context);
         WidevineDrmClient.RightsInfo info = widevineDrmClient.getRightsInfo(localAssetPath);
         if (listener != null) {
             listener.onStatus(localAssetPath, info.expiryTime, info.availableTime);
@@ -39,8 +39,8 @@ public class WidevineClassicAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean registerAsset(@NonNull final String localAssetPath, @NonNull String licenseUri, @Nullable final LocalAssetsManager.AssetRegistrationListener listener) {
-        WidevineDrmClient widevineDrmClient = new WidevineDrmClient(mContext);
+    public boolean registerAsset(final String localAssetPath, String assetId, String licenseUri, final LocalAssetsManager.AssetRegistrationListener listener) {
+        WidevineDrmClient widevineDrmClient = new WidevineDrmClient(context);
         widevineDrmClient.setEventListener(new WidevineDrmClient.EventListener() {
             @Override
             public void onError(DrmErrorEvent event) {
@@ -69,13 +69,13 @@ public class WidevineClassicAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean refreshAsset(@NonNull String localAssetPath, @NonNull String licenseUri, @Nullable LocalAssetsManager.AssetRegistrationListener listener) {
-        return registerAsset(localAssetPath, licenseUri, listener);
+    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, LocalAssetsManager.AssetRegistrationListener listener) {
+        return registerAsset(localAssetPath, assetId, licenseUri, listener);
     }
 
     @Override
-    public boolean unregisterAsset(@NonNull final String localAssetPath, final LocalAssetsManager.AssetRemovalListener listener) {
-        WidevineDrmClient widevineDrmClient = new WidevineDrmClient(mContext);
+    public boolean unregisterAsset(final String localAssetPath, String assetId, final LocalAssetsManager.AssetRemovalListener listener) {
+        WidevineDrmClient widevineDrmClient = new WidevineDrmClient(context);
         widevineDrmClient.setEventListener(new WidevineDrmClient.EventListener() {
             @Override
             public void onError(DrmErrorEvent event) {

@@ -2,58 +2,55 @@ package com.kaltura.playkit.offline;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.media.DeniedByServerException;
 import android.media.MediaCryptoException;
 import android.media.MediaDrm;
 import android.media.MediaDrmException;
 import android.media.NotProvisionedException;
-import android.media.UnsupportedSchemeException;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Base64;
-import android.util.Log;
+
+import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
+import com.google.android.exoplayer2.drm.ExoMediaDrm;
+import com.google.android.exoplayer2.drm.FrameworkMediaDrm;
+import com.google.android.exoplayer2.drm.HttpMediaDrmCallback;
+import com.google.android.exoplayer2.drm.UnsupportedDrmException;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.playkit.BuildConfig;
+import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.player.MediaSupport;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Created by anton.afanasiev on 13/12/2016.
  */
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-public class WidevineModularAdapter extends DrmAdapter {
+class WidevineModularAdapter extends DrmAdapter {
 
-    private static final String TAG = "WidevineModularAdapter";
-    static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed"); //TODO already using it in ExoplayerWrapper should be reused!
+    private static final PKLog log = PKLog.get("WidevineModularAdapter");
 
-    private final OfflineStorage offlineStorage;
-
-    public static boolean isSupported() {
-        // Make sure Widevine is supported.
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID);
-    }
+    private Context context;
+    private final LocalDrmStorage localDrmStorage;
 
 
-    WidevineModularAdapter(Context context, OfflineStorage offlineStorage) {
-        this.offlineStorage = offlineStorage;
-    }
-
-    private byte[] httpPost(@NonNull String licenseUri, byte[] data) throws IOException {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "application/octet-stream");
-
-        return ExoplayerUtil.executePost(licenseUri, data, headers);
+    WidevineModularAdapter(Context context, LocalDrmStorage localDrmStorage) {
+        this.context = context;
+        this.localDrmStorage = localDrmStorage;
     }
 
     @Override
-    public boolean registerAsset(@NonNull String localAssetPath, String licenseUri, @Nullable LocalAssetsManager.AssetRegistrationListener listener) {
+    public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, LocalAssetsManager.AssetRegistrationListener listener) {
 
         try {
-            boolean result = registerAsset(localAssetPath, licenseUri);
+            boolean result = registerAsset(localAssetPath, assetId, licenseUri);
             if (listener != null) {
                 listener.onRegistered(localAssetPath);
             }
@@ -66,50 +63,21 @@ public class WidevineModularAdapter extends DrmAdapter {
         }
     }
 
-    private class RegisterException extends Exception {
-        RegisterException(String detailMessage, Throwable throwable) {
-            super(detailMessage, throwable);
-        }
-    }
+    private boolean registerAsset(String localAssetPath, String assetId, String licenseUri) throws RegisterException {
 
-    private class NoWidevinePSSHException extends RegisterException {
-        NoWidevinePSSHException(String detailMessage, Throwable throwable) {
-            super(detailMessage, throwable);
-        }
-    }
-
-    private SimpleDashParser parseDash(@NonNull String localPath) throws RegisterException {
-        SimpleDashParser dashParser;
-        try {
-            dashParser = new SimpleDashParser().parse(localPath);
-            if (dashParser.format == null) {
-                throw new RegisterException("Unknown format", null);
-            }
-            if (dashParser.hasContentProtection && dashParser.widevineInitData == null) {
-                throw new NoWidevinePSSHException("No Widevine PSSH in media", null);
-            }
-        } catch (IOException e) {
-            throw new RegisterException("Can't parse local dash", e);
-        }
-
-        return dashParser;
-    }
-
-    private boolean registerAsset(@NonNull String localAssetPath, String licenseUri) throws RegisterException {
-
-        SimpleDashParser dash = parseDash(localAssetPath);
+        // obtain the dash manifest.
+        SimpleDashParser dash = parseDash(localAssetPath, assetId);
 
         if (!dash.hasContentProtection) {
             // Not protected -- nothing to do.
             return true;
         }
 
-        String mimeType = dash.format.sampleMimeType; //TODO should use dash.format.containerMimeType; or dash.format.sampleMimeType;
-
+        String mimeType = dash.format.containerMimeType;
         byte[] initData = dash.widevineInitData;
 
         MediaDrmSession session;
-        MediaDrm mediaDrm = createMediaDrm();
+        FrameworkMediaDrm mediaDrm = createMediaDrm();
         try {
             session = MediaDrmSession.open(mediaDrm);
         } catch (MediaDrmException e) {
@@ -118,17 +86,17 @@ public class WidevineModularAdapter extends DrmAdapter {
 
 
         // Get keyRequest
-        MediaDrm.KeyRequest keyRequest = session.getOfflineKeyRequest(initData, mimeType);
-        Log.d(TAG, "registerAsset: init data (b64): " + Base64.encodeToString(initData, Base64.NO_WRAP));
+        FrameworkMediaDrm.KeyRequest keyRequest = session.getOfflineKeyRequest(initData, mimeType);
+        log.d("registerAsset: init data (b64): " + encodeToString(initData));
 
         byte[] data = keyRequest.getData();
+        log.d("registerAsset: request data (b64): " + encodeToString(data));
 
         // Send request to server
         byte[] keyResponse;
         try {
-            Log.d(TAG, "registerAsset: request data (b64): " + Base64.encodeToString(data, Base64.NO_WRAP));
-            keyResponse = httpPost(licenseUri, data);
-            Log.d(TAG, "registerAsset: response data (b64): " + Base64.encodeToString(keyResponse, Base64.NO_WRAP));
+            keyResponse = executeKeyRequest(licenseUri, keyRequest);
+            log.d("registerAsset: response data (b64): " + encodeToString(keyResponse));
         } catch (IOException e) {
             throw new RegisterException("Can't send key request for registration", e);
         }
@@ -136,7 +104,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         // Provide keyResponse
         try {
             byte[] offlineKeyId = session.provideKeyResponse(keyResponse);
-            offlineStorage.save(initData, offlineKeyId);
+            localDrmStorage.save(encodeToString(initData), offlineKeyId);
         } catch (DeniedByServerException e) {
             throw new RegisterException("Request denied by server", e);
         }
@@ -146,44 +114,14 @@ public class WidevineModularAdapter extends DrmAdapter {
         return true;
     }
 
-    private boolean unregisterAsset(String localPath) throws RegisterException {
-
-        SimpleDashParser dash = parseDash(localPath);
-
-
-        byte[] keySetId;
-        try {
-            keySetId = offlineStorage.load(dash.widevineInitData);
-        } catch (FileNotFoundException e) {
-            throw new RegisterException("Can't unregister -- keySetId not found", e);
-        }
-
-
-        MediaDrm mediaDrm = createMediaDrm();
-        MediaDrm.KeyRequest releaseRequest;
-        try {
-            releaseRequest = mediaDrm.getKeyRequest(keySetId, null, null, MediaDrm.KEY_TYPE_RELEASE, null);
-        } catch (NotProvisionedException e) {
-            throw new WidevineNotSupportedException(e);
-        }
-
-        Log.d(TAG, "releaseRequest:" + Base64.encodeToString(releaseRequest.getData(), Base64.NO_WRAP));
-
-        offlineStorage.remove(dash.widevineInitData);
-
-        return true;
-    }
-
-
     @Override
-    public boolean unregisterAsset(@NonNull String localAssetPath, LocalAssetsManager.AssetRemovalListener listener) {
-        // TODO
+    public boolean unregisterAsset(String localAssetPath, String assetId, LocalAssetsManager.AssetRemovalListener listener) {
 
         try {
-            unregisterAsset(localAssetPath);
+            unregisterAsset(localAssetPath, assetId);
             return true;
         } catch (RegisterException e) {
-            Log.e(TAG, "Failed to unregister", e);
+            log.e("Failed to unregister", e);
             return false;
         } finally {
             if (listener != null) {
@@ -192,29 +130,45 @@ public class WidevineModularAdapter extends DrmAdapter {
         }
     }
 
-    @NonNull
-    private MediaDrm createMediaDrm() throws RegisterException {
-        MediaDrm mediaDrm;
+    private boolean unregisterAsset(String localAssetPath, String assetId) throws RegisterException {
+
+        SimpleDashParser dash = parseDash(localAssetPath, assetId);
+        // obtain key with which we will load the saved keySetId.
+        String key = encodeToString(dash.widevineInitData);
+
+        byte[] keySetId;
         try {
-            mediaDrm = new MediaDrm(WIDEVINE_UUID);
-        } catch (UnsupportedSchemeException e) {
+            keySetId = localDrmStorage.load(key);
+        } catch (FileNotFoundException e) {
+            throw new RegisterException("Can't unregister -- keySetId not found", e);
+        }
+
+        FrameworkMediaDrm mediaDrm = createMediaDrm();
+        FrameworkMediaDrm.KeyRequest releaseRequest;
+        try {
+            releaseRequest = mediaDrm.getKeyRequest(keySetId, null, null, MediaDrm.KEY_TYPE_RELEASE, null);
+        } catch (NotProvisionedException e) {
             throw new WidevineNotSupportedException(e);
         }
-        return mediaDrm;
+
+        log.d("releaseRequest:" + encodeToString(releaseRequest.getData()));
+
+        localDrmStorage.remove(key);
+
+        return true;
     }
 
     @Override
-    public boolean refreshAsset(@NonNull String localAssetPath, String licenseUri, @Nullable LocalAssetsManager.AssetRegistrationListener listener) {
+    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, LocalAssetsManager.AssetRegistrationListener listener) {
         // TODO -- verify that we just need to register again
-
-        return registerAsset(localAssetPath, licenseUri, listener);
+        return registerAsset(localAssetPath, assetId, licenseUri, listener);
     }
 
     @Override
-    public boolean checkAssetStatus(@NonNull String localAssetPath, @Nullable LocalAssetsManager.AssetStatusListener listener) {
+    public boolean checkAssetStatus(String localAssetPath, String assetId, LocalAssetsManager.AssetStatusListener listener) {
 
         try {
-            Map<String, String> assetStatus = checkAssetStatus(localAssetPath);
+            Map<String, String> assetStatus = checkAssetStatus(localAssetPath, assetId);
             if (assetStatus != null) {
                 long licenseDurationRemaining = 0;
                 long playbackDurationRemaining = 0;
@@ -222,7 +176,7 @@ public class WidevineModularAdapter extends DrmAdapter {
                     licenseDurationRemaining = Long.parseLong(assetStatus.get("LicenseDurationRemaining"));
                     playbackDurationRemaining = Long.parseLong(assetStatus.get("PlaybackDurationRemaining"));
                 } catch (NumberFormatException e) {
-                    Log.e(TAG, "Invalid integers in KeyStatus: " + assetStatus);
+                    log.e("Invalid integers in KeyStatus: " + assetStatus);
                 }
                 if (listener != null) {
                     listener.onStatus(localAssetPath, licenseDurationRemaining, playbackDurationRemaining);
@@ -244,36 +198,25 @@ public class WidevineModularAdapter extends DrmAdapter {
         return true;
     }
 
-    //TODO check with Noam about MediaCryptoException
-    private Map<String, String> checkAssetStatus(@NonNull String localAssetPath) throws RegisterException {
-        SimpleDashParser dashParser;
-        try {
-            dashParser = new SimpleDashParser().parse(localAssetPath);
-        } catch (IOException e) {
-            throw new RegisterException("Can't parse dash", e);
-        }
-        if (dashParser.widevineInitData == null) {
+    private Map<String, String> checkAssetStatus(String localAssetPath, String assetId) throws RegisterException {
+        SimpleDashParser dash = parseDash(localAssetPath, assetId);
+        if (dash.widevineInitData == null) {
             throw new NoWidevinePSSHException("No Widevine PSSH in media", null);
         }
 
-
-        MediaDrm mediaDrm = createMediaDrm();
+        FrameworkMediaDrm mediaDrm = createMediaDrm();
 
         MediaDrmSession session;
         try {
-            byte[] keySetId = offlineStorage.load(dashParser.widevineInitData);
-
-            session = MediaDrmSession.open(mediaDrm);
-            session.restoreKeys(keySetId);
-
-            Map<String, String> keyStatus = session.queryKeyStatus();
-            Log.d(TAG, "keyStatus: " + keyStatus);
-//            session = OfflineDrmManager.openSessionWithKeys(mediaDrm, offlineStorage, dashParser.widevineInitData);
-        } catch (MediaDrmException | FileNotFoundException e) {
+            String key = encodeToString(dash.widevineInitData);
+            session = openSessionWithKeys(mediaDrm, key);
+        } catch (MediaDrmException | FileNotFoundException | MediaCryptoException e) {
             throw new RegisterException("Can't open session with keys", e);
         }
 
+
         Map<String, String> keyStatus = session.queryKeyStatus();
+        log.d("keyStatus: " + keyStatus);
 
         session.close();
         mediaDrm.release();
@@ -281,8 +224,104 @@ public class WidevineModularAdapter extends DrmAdapter {
         return keyStatus;
     }
 
+    @NonNull
+    private FrameworkMediaDrm createMediaDrm() throws RegisterException {
+        FrameworkMediaDrm mediaDrm = null;
+        try {
+            mediaDrm = FrameworkMediaDrm.newInstance(MediaSupport.WIDEVINE_UUID);
+        } catch (UnsupportedDrmException e) {
+            e.printStackTrace();
+        }
+
+        if(mediaDrm == null){
+            throw new RegisterException("Could not create MediaDrm instance ", null);
+        }
+
+        return mediaDrm;
+    }
+
+    /**
+     * Parse the dash manifest for the specified file.
+     * @param localPath - file from which to parse the dash manifest.
+     * @param assetId - the asset id.
+     * @return - {@link SimpleDashParser} which contains the manifest data we need.
+     * @throws RegisterException
+     */
+    private SimpleDashParser parseDash(String localPath, String assetId) throws RegisterException {
+        SimpleDashParser dashParser;
+        try {
+            dashParser = new SimpleDashParser().parse(localPath, assetId);
+            if (dashParser.format == null) {
+                throw new RegisterException("Unknown format", null);
+            }
+            if (dashParser.hasContentProtection && dashParser.widevineInitData == null) {
+                throw new NoWidevinePSSHException("No Widevine PSSH in media", null);
+            }
+        } catch (IOException e) {
+            throw new RegisterException("Can't parse local dash", e);
+        }
+
+        return dashParser;
+    }
+
+    private MediaDrmSession openSessionWithKeys(FrameworkMediaDrm mediaDrm, String key) throws MediaDrmException, MediaCryptoException, FileNotFoundException {
+
+        byte[] keySetId = localDrmStorage.load(key);
+
+        MediaDrmSession session = MediaDrmSession.open(mediaDrm);
+        session.restoreKeys(keySetId);
+
+        return session;
+    }
+
+    private byte[] executeKeyRequest(String licenseUrl, ExoMediaDrm.KeyRequest keyRequest) throws IOException {
+        HttpMediaDrmCallback httpMediaDrmCallback = new HttpMediaDrmCallback(licenseUrl, buildDataSourceFactory());
+        try {
+            return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @Override
     public DRMScheme getScheme() {
         return DRMScheme.WidevineCENC;
+    }
+
+    private HttpDataSource.Factory buildDataSourceFactory() {
+        return new DefaultHttpDataSourceFactory(getUserAgent(context), null);
+    }
+
+    private static String getUserAgent(Context context) {
+        String applicationName;
+        try {
+            String packageName = context.getPackageName();
+            PackageInfo info = context.getPackageManager().getPackageInfo(packageName, 0);
+            applicationName = packageName + "/" + info.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            applicationName = "?";
+        }
+
+        String sdkName = "PlayKit/" + BuildConfig.VERSION_NAME;
+
+        return sdkName + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE
+                + ") " + "ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
+    }
+
+    private String encodeToString(byte[] data){
+        return Base64.encodeToString(data, Base64.NO_WRAP);
+    }
+
+    private class RegisterException extends Exception {
+        RegisterException(String detailMessage, Throwable throwable) {
+            super(detailMessage, throwable);
+        }
+    }
+
+    private class NoWidevinePSSHException extends RegisterException {
+        NoWidevinePSSHException(String detailMessage, Throwable throwable) {
+            super(detailMessage, throwable);
+        }
     }
 }
