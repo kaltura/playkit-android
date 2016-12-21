@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 import com.kaltura.playkit.backend.BaseResult;
+import com.kaltura.playkit.backend.PrimitiveResult;
 import com.kaltura.playkit.backend.ovp.KalturaOvpParser;
 import com.kaltura.playkit.connect.ErrorElement;
 

@@ -1,6 +1,5 @@
-package com.kaltura.playkit.backend.ovp.data;
+package com.kaltura.playkit.backend;
 
-import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.connect.ErrorElement;
 
 /**

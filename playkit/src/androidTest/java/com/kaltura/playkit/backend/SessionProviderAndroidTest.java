@@ -10,7 +10,6 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
-import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
 import com.kaltura.playkit.backend.ovp.services.BaseEntryService;
 import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
@@ -24,6 +23,17 @@ import com.kaltura.playkit.connect.ResultElement;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.kaltura.playkit.backend.MockParams.FormatHD;
+import static com.kaltura.playkit.backend.MockParams.MediaId;
+import static com.kaltura.playkit.backend.MockParams.NonDRMEntryId;
+import static com.kaltura.playkit.backend.MockParams.OvpBaseUrl;
+import static com.kaltura.playkit.backend.MockParams.OvpLoginId;
+import static com.kaltura.playkit.backend.MockParams.OvpPartnerId;
+import static com.kaltura.playkit.backend.MockParams.OvpPassword;
+import static com.kaltura.playkit.backend.MockParams.PnxPassword;
+import static com.kaltura.playkit.backend.MockParams.PnxUsername;
+import static com.kaltura.playkit.backend.MockParams.PnxBaseUrl;
+import static com.kaltura.playkit.backend.MockParams.PnxPartnerId;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
@@ -36,29 +46,11 @@ import static junit.framework.Assert.fail;
 @RunWith(AndroidJUnit4.class)
 public class SessionProviderAndroidTest extends BaseTest {
 
-    public static String OttBaseUrl = "http://api-preprod.ott.kaltura.com/v4_1/api_v3/"; //"http://52.210.223.65:8080/v4_1/api_v3/";
-    public static final int OttPartnerId = 198;
-    public static final String OttUsername = "albert@gmail.com";
-    public static final String OttPassword = "123456";
-    public static final String AssetId = "258574"; // free
-
-    public static final String FormatHd = "Mobile_Devices_Main_HD";
-    public static final String FormatSd = "Mobile_Devices_Main_SD";
-
-    public static String OvpBaseUrl = "http://www.kaltura.com/api_v3/";
-    public static final int OvpPartnerId = 2209591;
-    public static final String OvpLoginId = "tehila.rozin@kaltura.com";
-    public static final String OvpPassword = "abcd1234*";
-    public static final String EntryId = "1_1h1vsv3z";
-
-
-    SessionProvider sessionProvider;
-
     @Test
     public void testOttSessionProviderBaseFlow() {
-        final OttSessionProvider ottSessionProvider = new OttSessionProvider(OttBaseUrl, OttPartnerId);
+        final OttSessionProvider ottSessionProvider = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
 
-        ottSessionProvider.startSession(OttUsername, OttPassword, null, new OnCompletion<PrimitiveResult>() {
+        ottSessionProvider.startSession(PnxUsername, PnxPassword, null, new OnCompletion<PrimitiveResult>() {
             @Override
             public void onComplete(PrimitiveResult response) {
                 if (response.error != null) {
@@ -73,15 +65,15 @@ public class SessionProviderAndroidTest extends BaseTest {
 
                             new PhoenixMediaProvider()
                                     .setSessionProvider(ottSessionProvider)
-                                    .setAssetId(AssetId)
+                                    .setAssetId(MediaId)
                                     .setReferenceType("media")
-                                    .setFormats(FormatHd)
+                                    .setFormats(FormatHD)
                                     .load(new OnMediaLoadCompletion() {
                                         @Override
                                         public void onComplete(ResultElement<PKMediaEntry> response) {
                                             if (response != null && response.isSuccess()) {
                                                 Log.i("testOttSessionProvider", "we have mediaEntry");
-                                                assertTrue(response.getResponse().getId().equals(AssetId));
+                                                assertTrue(response.getResponse().getId().equals(MediaId));
                                                 assertTrue(response.getResponse().getSources().size() == 1);
                                             }
                                             resume();
@@ -98,7 +90,7 @@ public class SessionProviderAndroidTest extends BaseTest {
 
     @Test
     public void testOttAnonymousSession() {
-        final OttSessionProvider ottSessionProvider = new OttSessionProvider(OttBaseUrl, OttPartnerId);
+        final OttSessionProvider ottSessionProvider = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
 
         ottSessionProvider.startAnonymousSession(null, new OnCompletion<PrimitiveResult>() {
             @Override
@@ -122,15 +114,15 @@ public class SessionProviderAndroidTest extends BaseTest {
 
                                     new PhoenixMediaProvider()
                                             .setSessionProvider(ottSessionProvider)
-                                            .setAssetId(AssetId)
+                                            .setAssetId(MediaId)
                                             .setReferenceType("media")
-                                            .setFormats(FormatHd)
+                                            .setFormats(FormatHD)
                                             .load(new OnMediaLoadCompletion() {
                                                 @Override
                                                 public void onComplete(ResultElement<PKMediaEntry> response) {
                                                     assertTrue(response != null && response.isSuccess());
                                                     Log.i("testOttSessionProvider", "we have mediaEntry");
-                                                    assertTrue(response.getResponse().getId().equals(AssetId));
+                                                    assertTrue(response.getResponse().getId().equals(MediaId));
                                                     assertTrue(response.getResponse().getSources().size() == 1);
 
                                                     resume();
@@ -149,9 +141,9 @@ public class SessionProviderAndroidTest extends BaseTest {
 
     @Test
     public void testOttEndSession() {
-        final OttSessionProvider ottSessionProvider = new OttSessionProvider(OttBaseUrl, OttPartnerId);
+        final OttSessionProvider ottSessionProvider = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
 
-        ottSessionProvider.startSession(OttUsername, OttPassword, null, new OnCompletion<PrimitiveResult>() {
+        ottSessionProvider.startSession(PnxUsername, PnxPassword, null, new OnCompletion<PrimitiveResult>() {
             @Override
             public void onComplete(PrimitiveResult response) {
                 if (response.error != null) {
@@ -175,9 +167,9 @@ public class SessionProviderAndroidTest extends BaseTest {
 
                                     new PhoenixMediaProvider()
                                             .setSessionProvider(ottSessionProvider)
-                                            .setAssetId(AssetId)
+                                            .setAssetId(MediaId)
                                             .setReferenceType("media")
-                                            .setFormats(FormatHd)
+                                            .setFormats(FormatHD)
                                             .load(new OnMediaLoadCompletion() {
                                                 @Override
                                                 public void onComplete(ResultElement<PKMediaEntry> response) {
@@ -216,13 +208,13 @@ public class SessionProviderAndroidTest extends BaseTest {
 
                             new KalturaOvpMediaProvider()
                                     .setSessionProvider(ovpSessionProvider)
-                                    .setEntryId(EntryId)
+                                    .setEntryId(NonDRMEntryId)
                                     .load(new OnMediaLoadCompletion() {
                                         @Override
                                         public void onComplete(ResultElement<PKMediaEntry> response) {
                                             if (response != null && response.isSuccess()) {
                                                 Log.i("testOvpSessionProvider", "we have mediaEntry");
-                                                assertTrue(response.getResponse().getId().equals(EntryId));
+                                                assertTrue(response.getResponse().getId().equals(NonDRMEntryId));
                                                 // Assert.assertTrue(response.getResponse().getSources().size() == 1);
                                             }
                                             resume();
@@ -259,13 +251,13 @@ public class SessionProviderAndroidTest extends BaseTest {
                             Log.e("testAnonymousSession", "get ks = " + response.getResult());
                             new KalturaOvpMediaProvider()
                                     .setSessionProvider(ovpSessionProvider)
-                                    .setEntryId(EntryId)
+                                    .setEntryId(NonDRMEntryId)
                                     .load(new OnMediaLoadCompletion() {
                                         @Override
                                         public void onComplete(ResultElement<PKMediaEntry> response) {
                                             if (response != null && response.isSuccess()) {
                                                 Log.i("testOvpSessionProvider", "we have mediaEntry");
-                                                assertTrue(response.getResponse().getId().equals(EntryId));
+                                                assertTrue(response.getResponse().getId().equals(NonDRMEntryId));
                                             }
                                             resume();
                                         }
@@ -339,7 +331,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                     public void onComplete(BaseResult response) {
                         if (response.error == null) {
                             APIOkRequestsExecutor.getSingleton().queue(BaseEntryService.list(ovpSessionProvider.baseUrl(),
-                                    testKs, EntryId)
+                                    testKs, NonDRMEntryId)
                                     .completion(new OnRequestCompletion() {
                                         @Override
                                         public void onComplete(ResponseElement response) {
@@ -351,7 +343,7 @@ public class SessionProviderAndroidTest extends BaseTest {
 
                                             new KalturaOvpMediaProvider()
                                                     .setSessionProvider(ovpSessionProvider)
-                                                    .setEntryId(EntryId)
+                                                    .setEntryId(NonDRMEntryId)
                                                     .load(new OnMediaLoadCompletion() {
                                                         @Override
                                                         public void onComplete(ResultElement<PKMediaEntry> response) {

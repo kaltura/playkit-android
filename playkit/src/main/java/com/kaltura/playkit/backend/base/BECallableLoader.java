@@ -4,7 +4,7 @@ import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.backend.SessionProvider;
-import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
+import com.kaltura.playkit.backend.PrimitiveResult;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.RequestQueue;
@@ -43,6 +43,7 @@ public abstract class BECallableLoader extends CallableLoader {
         } else {
             PKLog.i(TAG, loadId+": cancel: request completed ");
         }
+
         isCanceled = true;
         PKLog.i(TAG, loadId+": i am canceled ");
 

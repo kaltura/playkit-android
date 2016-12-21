@@ -2,7 +2,7 @@ package com.kaltura.playkit.backend.tvpapi;
 
 import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.backend.base.BaseSessionProvider;
-import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
+import com.kaltura.playkit.backend.PrimitiveResult;
 
 /**
  * Created by tehilarozin on 11/12/2016.

@@ -2,7 +2,7 @@ package com.kaltura.playkitdemo;
 
 import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.backend.SessionProvider;
-import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
+import com.kaltura.playkit.backend.PrimitiveResult;
 
 /**
  * Created by tehilarozin on 16/11/2016.

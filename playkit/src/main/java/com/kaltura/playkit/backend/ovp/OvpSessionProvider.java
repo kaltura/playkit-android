@@ -10,7 +10,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.backend.base.BaseSessionProvider;
 import com.kaltura.playkit.backend.ovp.data.KalturaSessionInfo;
-import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
+import com.kaltura.playkit.backend.PrimitiveResult;
 import com.kaltura.playkit.backend.ovp.services.OvpService;
 import com.kaltura.playkit.backend.ovp.services.OvpSessionService;
 import com.kaltura.playkit.backend.ovp.services.UserService;

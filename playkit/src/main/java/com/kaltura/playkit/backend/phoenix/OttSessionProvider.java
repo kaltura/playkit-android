@@ -8,7 +8,7 @@ import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.backend.base.BaseSessionProvider;
-import com.kaltura.playkit.backend.ovp.data.PrimitiveResult;
+import com.kaltura.playkit.backend.PrimitiveResult;
 import com.kaltura.playkit.backend.phoenix.data.KalturaLoginResponse;
 import com.kaltura.playkit.backend.phoenix.data.KalturaLoginSession;
 import com.kaltura.playkit.backend.phoenix.data.KalturaSession;
