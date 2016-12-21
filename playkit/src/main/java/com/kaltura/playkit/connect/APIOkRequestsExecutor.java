@@ -1,6 +1,8 @@
 package com.kaltura.playkit.connect;
 
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -98,7 +100,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
     }
 
     private OkHttpClient.Builder configClient(OkHttpClient.Builder builder, RequestConfiguration config){
-        builder.connectTimeout(config.getConnectTimeout(), TimeUnit.MILLISECONDS)
+        builder.followRedirects(true).connectTimeout(config.getConnectTimeout(), TimeUnit.MILLISECONDS)
                 .readTimeout(config.getReadTimeout(), TimeUnit.MILLISECONDS)
                 .writeTimeout(config.getWriteTimeout(), TimeUnit.MILLISECONDS)
                 .retryOnConnectionFailure(config.getRetry() > 0);
@@ -226,10 +228,12 @@ public class APIOkRequestsExecutor implements RequestQueue {
         Call call = findCall(reqId, dispatcher.queuedCalls());
         if(call != null){
             call.cancel();
+            Log.d(TAG, "call canceled:"+call.request().tag());
         }
         call = findCall(reqId, dispatcher.runningCalls());
         if(call != null){
             call.cancel();
+            Log.d(TAG, "call canceled:"+call.request().tag());
         }
     }
 
@@ -258,7 +262,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
         String requestId = getRequestId(response);
 
         if (!response.isSuccessful()) { // in case response has failure status
-            return new ExecutedRequest().requestId(requestId).response(response.message()).code(response.code()).success(false);
+            return new ExecutedRequest().requestId(requestId).error(ErrorElement.fromCode(response.code(), response.message())).success(false);
 
         } else {
 

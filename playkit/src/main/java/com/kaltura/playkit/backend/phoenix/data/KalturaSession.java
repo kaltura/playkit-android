@@ -1,23 +1,18 @@
 package com.kaltura.playkit.backend.phoenix.data;
 
-import com.kaltura.playkit.backend.BaseResult;
+import com.kaltura.playkit.backend.ovp.data.KalturaSessionInfo;
 
 /**
  * Created by tehilarozin on 28/11/2016.
  */
 
-public class KalturaSession extends BaseResult {
+public class KalturaSession extends KalturaSessionInfo {
 
-    String sessionType;
-    long expiry;
-    String userId;
     String ks;
-
-    public long getExpiry() {
-        return expiry;
-    }
+    String udid;
 
     public String getKs() {
         return ks;
     }
+
 }

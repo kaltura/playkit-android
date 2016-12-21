@@ -57,7 +57,7 @@ public class MediaProvidersAndroidTest {
                             public void onComplete(ResultElement<PKMediaEntry> response) {
                                 assertTrue(!response.isSuccess());
                                 assertTrue(response.getError() != null);
-                                assertTrue(response.getError().equals(ErrorElement.MediaNotFound));
+                                assertTrue(response.getError().equals(ErrorElement.NotFound));
                             }
                         });
                     }

@@ -9,10 +9,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * A tool for creating a remote request that can be passed over http executor.
+ * By activating the {@link RequestBuilder#build method}, we create a {@link RequestElement} object
+ * This object can be queued or executed by a {@link RequestQueue} implementing component, such as
+ * {@link APIOkRequestsExecutor}.
+ *
+ * The request is built in Builder style by setting the needed properties with "set" methods.
+ *
+ *
+ *
+ *
  * Created by tehilarozin on 09/11/2016.
  */
 
-public class RequestBuilder {
+public class RequestBuilder<T extends RequestBuilder> {
 
     protected String service = null;
     protected String action = null;
@@ -31,44 +41,44 @@ public class RequestBuilder {
         headers.put("ContentType", "application/json");
     }
 
-    public RequestBuilder url(String url){
+    public T url(String url){
         this.baseUrl = url;
-        return this;
+        return (T) this;
     }
 
-    public RequestBuilder method(String method){
+    public T method(String method){
         this.method = method;
-        return this;
+        return (T) this;
     }
 
-    public RequestBuilder id(String id){
+    public T id(String id){
         this.id = id;
-        return this;
+        return (T) this;
     }
 
-    public RequestBuilder tag(String tag){
+    public T tag(String tag){
         this.tag = tag;
-        return this;
+        return (T) this;
     }
 
-    public RequestBuilder completion(OnRequestCompletion completion){
+    public T completion(OnRequestCompletion completion){
         this.completion = completion;
-        return this;
+        return (T) this;
     }
 
-    public RequestBuilder params(JsonObject params) {
+    public T params(JsonObject params) {
         this.params = params;
-        return this;
+        return (T) this;
     }
 
-    public RequestBuilder service(String service) {
+    public T service(String service) {
         this.service = service;
-        return this;
+        return (T) this;
     }
 
-    public RequestBuilder action(String action) {
+    public T action(String action) {
         this.action = action;
-        return this;
+        return (T) this;
     }
 
     public MultiRequestBuilder add(RequestBuilder... requestBuilder){
@@ -139,9 +149,9 @@ public class RequestBuilder {
 
     }
 
-    public RequestBuilder addParams(JsonObject others){
+    public T addParams(JsonObject others){
         if(others == null){
-            return this;
+            return (T) this;
         }
         if(this.params == null){
             this.params = new JsonObject();
@@ -150,24 +160,24 @@ public class RequestBuilder {
             this.params.add(entry.getKey(), entry.getValue());
         }
 
-        return this;
+        return (T) this;
     }
 
-    public RequestBuilder addParam(String key, String value) {
+    public T addParam(String key, String value) {
         if(this.params == null){
             this.params = new JsonObject();
         }
         this.params.addProperty(key, value);
-        return this;
+        return (T) this;
     }
 
-    public RequestBuilder removeParams(@NonNull String... keys){
-        if(params == null) return this;
+    public T removeParams(@NonNull String... keys){
+        if(params == null) return (T) this;
 
         for (String key : keys){
             this.params.remove(key);
         }
 
-        return this;
+        return (T) this;
     }
 }

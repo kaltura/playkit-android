@@ -3,11 +3,7 @@ package com.kaltura.playkit.backend.ovp;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import static android.text.TextUtils.isEmpty;
@@ -22,13 +18,6 @@ public class PlaySourceUrlBuilder {
 
     public static final String DefFormat = "url";
 
-    private static final Map<String, String> ExtToFormatMapper = new HashMap<String, String>() {{
-        put("mpegdash", "mpd");
-        put("applehttp", "m3u8");
-        put("url", "mp4"); //if format is "url it can be mp4 or wvm - this is the default
-    }};
-
-    private static final List<String> ExcludesFormats = new ArrayList<String>(){{add("hdnetworkmanifest");}};
 
     private String baseUrl = null;
     private String partnerId = null;
@@ -46,7 +35,7 @@ public class PlaySourceUrlBuilder {
         baseUrl = DefPlayUrl;
         protocol = OvpConfigs.PreferredHttpProtocol;
         format = DefFormat;
-        sessionId = UUID.randomUUID().toString();
+        sessionId = UUID.randomUUID().toString(); //!! should be created and added to the source by the player (playerConfig)
     }
 
     PlaySourceUrlBuilder(PlaySourceUrlBuilder builder) {
@@ -105,11 +94,6 @@ public class PlaySourceUrlBuilder {
         return this;
     }
 
-    public static String getExtByFormat(@NonNull String format) {
-        return ExtToFormatMapper.get(format);
-    }
-
-
 
     /**
      * we support http or https. defaults to PreferredHttpProtocol
@@ -144,8 +128,7 @@ public class PlaySourceUrlBuilder {
     }
 
     private boolean assertMandatoryValues() {
-        return !isEmpty(baseUrl) && !isEmpty(partnerId) && !isEmpty(entryId) && !isEmpty(format) && !isEmpty(extension) &&
-                !ExcludesFormats.contains(format);
+        return !isEmpty(baseUrl) && !isEmpty(partnerId) && !isEmpty(entryId) && !isEmpty(extension) && !isEmpty(format);
     }
 
     public String build() {
@@ -153,8 +136,9 @@ public class PlaySourceUrlBuilder {
             return null;
         }
 
-        StringBuilder playUrl = new StringBuilder(baseUrl).append("/p/").append(partnerId).append("/sp/").append(partnerId)
-                .append("/entryId/").append(entryId).append("/protocol/").append(protocol).append("/format/").append(format);
+        StringBuilder playUrl = new StringBuilder(baseUrl).append("/p/").append(partnerId).append("/sp/")
+                .append(partnerId).append("/playManifest").append("/entryId/").append(entryId).append("/protocol/")
+                .append(protocol).append("/format/").append(format);
 
         boolean hasUiConfId = !isEmpty(uiConfId);
         boolean hasFlavors = !isEmpty(flavorIds);
@@ -171,7 +155,7 @@ public class PlaySourceUrlBuilder {
 
         playUrl.append("/a.").append(extension);
 
-        playUrl.append("?playSessionId=").append(sessionId);
+        //TODO: add it on player side!: playUrl.append("?playSessionId=").append(sessionId);
 
         if (hasFlavors && hasUiConfId) {
             playUrl.append("&uiConfId=").append(uiConfId);
@@ -180,7 +164,4 @@ public class PlaySourceUrlBuilder {
         return playUrl.toString();
     }
 
-    public static Set<String> getExtensions() {
-        return ExtToFormatMapper.keySet();
-    }
 }
