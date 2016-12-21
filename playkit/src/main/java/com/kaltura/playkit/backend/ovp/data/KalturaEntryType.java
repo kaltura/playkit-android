@@ -8,6 +8,8 @@ import com.google.gson.annotations.SerializedName;
 
 public enum KalturaEntryType {
 
+    @SerializedName("-1")
+    AUTOMATIC("-1"),
     @SerializedName("1")
     MEDIA_CLIP("1"),
     @SerializedName("7")

@@ -41,13 +41,14 @@ public class MockParams {
     public static final String PnxPassword = "123456";
     public static final int PnxPartnerId = 198;
 
-    public static final String PnxKS = "djJ8MTk4fAZXObQaPfvkEqBWfZkZfbruAO1V3CYGwE4OdvqojvsjaNMeN8yYtqgCvtpFiKblOayM9Xq5d2wHFCBAkbf7ju9-H4CrWrxOg7qhIRQUzqPz";
+    public static final String PnxKS = "djJ8MTk4fDkhVL8m8cvU-Y2SijGoVRfRLkxFjgwmadm_hW2OH88H9hMZoGn53o2470bKBuPGw7J7ne9CWZ6ehAvc8LfShWlwH9pPCeekUEJGCm-JQvK_";
 
     public static final String MediaId = "258656";//frozen
     public static final String MediaId4 = "258655";//shrek
     public static final String MediaId2 = "437800";//vild
     public static final String MediaId3 = "259295";//the salt of earth
     public static final String MediaId5 = "258574";//gladiator  HD id- 508408  SD id- 397243
+    public static final String ChannelId = "255854";
 
     public static final String FormatHD = "Mobile_Devices_Main_HD";
     public static final String FormatSD = "Mobile_Devices_Main_SD";

@@ -12,6 +12,7 @@ import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.backend.phoenix.APIDefines;
 import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.backend.phoenix.data.KalturaMediaAsset;
@@ -34,6 +35,7 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.kaltura.playkit.backend.MockParams.ChannelId;
 import static com.kaltura.playkit.backend.MockParams.FormatHD;
 import static com.kaltura.playkit.backend.MockParams.FormatSD;
 import static com.kaltura.playkit.backend.MockParams.FrozenAssetInfo;
@@ -68,7 +70,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
         @Override
         public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
-            if(completion != null){
+            if (completion != null) {
                 completion.onComplete(new PrimitiveResult(PnxKS));
             }
         }
@@ -87,7 +89,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
         @Override
         public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
-            if(completion != null){
+            if (completion != null) {
                 completion.onComplete(null);
             }
         }
@@ -114,7 +116,8 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     @Test
     public void testResponseParsing() {
 
-        phoenixMediaProvider = new PhoenixMediaProvider().setSessionProvider(ksSessionProvider).setAssetId(MediaId).setReferenceType("media").setFormats(FormatHD).setRequestExecutor(testExecutor);
+        phoenixMediaProvider = new PhoenixMediaProvider().setSessionProvider(ksSessionProvider).
+                setAssetId(MediaId).setMediaType(APIDefines.MediaType.Vod).setFormats(FormatHD).setRequestExecutor(testExecutor);
         phoenixMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
@@ -124,6 +127,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                 assertTrue(response.getResponse().getId().equals(MediaId));
                 assertTrue(response.getResponse().getSources().size() == 1);
                 assertTrue(response.getResponse().getDuration() == 2237);
+                assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Vod));
 
                 phoenixMediaProvider.setAssetId(MediaId5).setFormats(FormatHD, FormatSD).setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
                     @Override
@@ -132,10 +136,11 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                             assertTrue(response.getResponse() != null);
                             assertTrue(response.getResponse().getId().equals(MediaId5));
                             assertTrue(response.getResponse().getSources().size() == 2);
+                            assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Vod));
 
                         } else {
                             assertNotNull(response.getError());
-                            Log.e("PhoenixMediaProvider", "asset can't be played: "+response.getError().getMessage());
+                            Log.e("PhoenixMediaProvider", "asset can't be played: " + response.getError().getMessage());
                         }
 
                         PhoenixMediaProviderAndroidTest.this.resume();
@@ -150,10 +155,10 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     }
 
     @Test
-    public void textRemoteLoading(){
+    public void textRemoteLoading() {
         phoenixMediaProvider = new PhoenixMediaProvider()
                 .setSessionProvider(ksSessionProvider)
-                .setReferenceType("media").setAssetId(MediaId5)
+                .setMediaType(APIDefines.MediaType.Vod).setAssetId(MediaId5)
                 .setFormats(FormatHD, FormatSD);
 
         phoenixMediaProvider.load(new OnMediaLoadCompletion() {
@@ -163,10 +168,11 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                     assertTrue(response.getResponse() != null);
                     assertTrue(response.getResponse().getId().equals(MediaId5));
                     assertTrue(response.getResponse().getSources().size() == 2);
+                    assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Vod));
 
                 } else {
                     assertNotNull(response.getError());
-                    Log.e("PhoenixMediaProvider", "asset can't be played: "+response.getError().getMessage());
+                    fail("asset can't be played: " + response.getError().getMessage());
                 }
 
                 PhoenixMediaProviderAndroidTest.this.resume();
@@ -177,18 +183,61 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     }
 
     @Test
-    public void testLoadCancel(){
+    public void textLiveRemoteLoading() {
+
+        final OttSessionProvider ottSessionProvider = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
+        ottSessionProvider.startSession(PnxUsername, PnxPassword, null, new OnCompletion<PrimitiveResult>() {
+            @Override
+            public void onComplete(PrimitiveResult response) {
+
+                if (response.error != null) {
+                    fail(response.error.getMessage());
+                    resume();
+
+                } else {
+                    phoenixMediaProvider = new PhoenixMediaProvider()
+                            .setSessionProvider(ottSessionProvider)
+                            .setMediaType(APIDefines.MediaType.Channel).setAssetId(ChannelId)
+                            .setFormats(FormatHD, FormatSD);
+
+                    phoenixMediaProvider.load(new OnMediaLoadCompletion() {
+                        @Override
+                        public void onComplete(ResultElement<PKMediaEntry> response) {
+                            if (response.isSuccess()) {
+                                assertTrue(response.getResponse() != null);
+                                assertTrue(response.getResponse().getId().equals(ChannelId));
+                                assertTrue(response.getResponse().getSources().size() == 2);
+                                assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Live));
+
+                            } else {
+                                assertNotNull(response.getError());
+                                Log.e("PhoenixMediaProvider", "asset can't be played: " + response.getError());
+                            }
+
+                            PhoenixMediaProviderAndroidTest.this.resume();
+
+                        }
+                    });
+                }
+            }
+        });
+
+        wait(1);
+    }
+
+    @Test
+    public void testLoadCancel() {
 
         phoenixMediaProvider = new PhoenixMediaProvider()
                 .setSessionProvider(testSession)
-                .setReferenceType("media").setAssetId(MediaId5)
+                .setMediaType(APIDefines.MediaType.Vod).setAssetId(MediaId5)
                 .setFormats(FormatHD, FormatSD);
 
         testSession.startSession(PnxUsername, PnxPassword, null, new OnCompletion<PrimitiveResult>() {
             @Override
             public void onComplete(PrimitiveResult response) {
-                if(response.error != null){
-                    fail("failed to start session: "+response.error.getMessage());
+                if (response.error != null) {
+                    fail("failed to start session: " + response.error.getMessage());
                     resume();
                     resume();
                 } else {
@@ -196,13 +245,14 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
                     loadCancelTest1();
 
-                    while (testWaitCount.getCount() > 1){}
+                    while (testWaitCount.getCount() > 1) {
+                    }
 
                     loadCancelTest2(true);
                 }
             }
         });
-        wait(1);
+        wait(2);
     }
 
     private void loadCancelTest1() {
@@ -228,6 +278,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                     assertTrue(response.getResponse() != null);
                     assertTrue(response.getResponse().getId().equals(MediaId));
                     assertTrue(response.getResponse().getSources().size() == 1);
+                    assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Vod));
 
                     PKLog.d("phoenix testing", "starting load 3");
                     phoenixMediaProvider.load(new OnMediaLoadCompletion() {
@@ -244,16 +295,15 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
                 } else {
                     assertNotNull(response.getError());
-                    Log.e("PhoenixMediaProvider", "MediaEntry loading failed: "+response.getError().getMessage());
+                    Log.e("PhoenixMediaProvider", "MediaEntry loading failed: " + response.getError().getMessage());
                     resume();
                 }
-
 
             }
         });
     }
 
-    private void loadCancelTest2(final boolean cancelAtEnd){
+    private void loadCancelTest2(final boolean cancelAtEnd) {
         PKLog.i("phoenix testing", "starting load 1:");
         phoenixMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
@@ -276,7 +326,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         phoenixMediaProvider.setAssetId(MediaId2).setFormats(FormatHD, FormatSD).load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
-                if(cancelAtEnd) {
+                if (cancelAtEnd) {
                     PKLog.e("phoenix testing", "load completion on a canceled load 3");
                     fail("load 3 should have been canceled");
                     resume();
@@ -284,13 +334,13 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                     assertTrue(response.getResponse() != null);
                     assertTrue(response.getResponse().getId().equals(MediaId2));
                     assertTrue(response.getResponse().getSources().size() == 2);
-
+                    assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Vod));
                     resume();
                 }
             }
         });
 
-        if(cancelAtEnd) {
+        if (cancelAtEnd) {
             phoenixMediaProvider.cancel();
 
             resume();
@@ -310,7 +360,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
             BaseResult asset = PhoenixParser.parse(jsonReader);
 
             assertNotNull(asset);
-            mediaEntry = PhoenixMediaProvider.getMediaEntry(assetInfo, Arrays.asList(FormatHD, FormatSD));
+            mediaEntry = PhoenixMediaProvider.getMediaEntry(assetInfo, Arrays.asList(FormatHD, FormatSD), APIDefines.AssetReferenceType.Media);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -324,7 +374,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
     @Test
     public void testInvalidSession() {
-        new PhoenixMediaProvider().setSessionProvider(InvalidSessionProvider).setAssetId(MediaId).setReferenceType("media").setFormats(FormatHD).load(new OnMediaLoadCompletion() {
+        new PhoenixMediaProvider().setSessionProvider(InvalidSessionProvider).setAssetId(MediaId).setMediaType(APIDefines.MediaType.Vod).setFormats(FormatHD).load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
                 assertFalse(response.isSuccess());
@@ -334,7 +384,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     }
 
     @Test
-    public void testMultiresponseParsing(){
+    public void testMultiresponseParsing() {
         String multiresponseWithError = "{\n" +
                 "  \"executionTime\": 0.1118046,\n" +
                 "  \"result\": [\n" +
@@ -371,17 +421,17 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
         Object parsed = PhoenixParser.parse(multiresponseSuccess);
         assertTrue(parsed instanceof List);
-        assertTrue(((List)parsed).size() == 2);
+        assertTrue(((List) parsed).size() == 2);
 
         parsed = PhoenixParser.parse(multiresponseWithError);
         assertTrue(parsed instanceof List);
-        assertTrue(((List)parsed).size() == 2);
-        assertTrue(((List)parsed).get(1) instanceof BaseResult);
-        assertTrue(((BaseResult)(((List)parsed).get(1))).error != null);
+        assertTrue(((List) parsed).size() == 2);
+        assertTrue(((List) parsed).get(1) instanceof BaseResult);
+        assertTrue(((BaseResult) (((List) parsed).get(1))).error != null);
     }
 
     @Test
-    public void testPrimitiveResponseParsing(){
+    public void testPrimitiveResponseParsing() {
         String response = "{\n" +
                 "  \"executionTime\": 0.2519926,\n" +
                 "  \"result\": true\n" +
@@ -404,10 +454,9 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
         parsed = PhoenixParser.parse(sameRequestError);
         assertTrue(parsed instanceof BaseResult);
-        assertTrue(((BaseResult)parsed).error != null);
+        assertTrue(((BaseResult) parsed).error != null);
 
     }
-
 
 
     /**
@@ -415,7 +464,6 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
      * from the server.
      * the mock response file name is constructed from the request and parameters.
      * [phoenix.serviceName.actionName.assetId.json]
-     *
      */
     class Executor implements RequestQueue {
 
@@ -470,18 +518,18 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                         JsonParser parser = new JsonParser();
                         JsonElement body = parser.parse(request.getBody());
                         //parsing from response -> String assetId = body.getAsJsonObject().getAsJsonObject("result").getAsJsonPrimitive("id").getAsString();
-                        String identifier ="";
+                        String identifier = "";
 
-                        if(body.getAsJsonObject().has("id")) {
+                        if (body.getAsJsonObject().has("id")) {
                             identifier = body.getAsJsonObject().getAsJsonPrimitive("id").getAsString();
 
                         } else if (service.equals("multirequest")) {
-                            if(body.getAsJsonObject().getAsJsonObject("1").getAsJsonPrimitive("service").getAsString().equals("licensedUrl")){
+                            if (body.getAsJsonObject().getAsJsonObject("1").getAsJsonPrimitive("service").getAsString().equals("licensedUrl")) {
                                 identifier = "licensedUrl";
                             }
                         }
 
-                        if(identifier.equals("")){
+                        if (identifier.equals("")) {
                             request.onComplete((ResponseElement) Accessories.<String>buildResult(null, ErrorElement.NotFound.message("mock file can't be traced from data")));
                             return;
                         }

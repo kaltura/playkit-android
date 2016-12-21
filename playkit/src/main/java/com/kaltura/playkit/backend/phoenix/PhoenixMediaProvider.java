@@ -43,6 +43,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         String assetId;
         @APIDefines.AssetReferenceType
         String referenceType;
+        @APIDefines.MediaType
+        String mediaType;
         List<String> formats;
         String epgId;
         long startDate;
@@ -76,12 +78,22 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return this;
     }
 
-    /**
+    /*
      * @param referenceType - can be one of the {@link com.kaltura.playkit.backend.phoenix.APIDefines.AssetReferenceType} values
      * @return
      */
-    public PhoenixMediaProvider setReferenceType(@NonNull String referenceType) {
+    /*public PhoenixMediaProvider setReferenceType(@NonNull String referenceType) {
         this.mediaAsset.referenceType = referenceType;
+        return this;
+    }*/
+
+    /**
+     * @param mediaType - can be one of the {@link com.kaltura.playkit.backend.phoenix.APIDefines.MediaType} values
+     * @return
+     */
+    public PhoenixMediaProvider setMediaType(@NonNull @APIDefines.MediaType String mediaType) {
+        this.mediaAsset.mediaType = mediaType;
+        this.mediaAsset.referenceType = MediaTypeConverter.toReferenceType(mediaType);
         return this;
     }
 
@@ -109,8 +121,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return new Loader(requestsExecutor, sessionProvider, mediaAsset, completion);
     }
 
-    public static PKMediaEntry getMediaEntry(KalturaMediaAsset assetInfo, List<String> formats) {
-        return ProviderParser.getMedia(assetInfo, formats);
+    public static PKMediaEntry getMediaEntry(KalturaMediaAsset assetInfo, List<String> formats, @APIDefines.AssetReferenceType String type) {
+        return ProviderParser.getMedia(assetInfo, formats, type);
     }
 
     @Override
@@ -125,13 +137,13 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     class Loader extends BECallableLoader {
 
-        private MediaAsset asset;
+        private MediaAsset mediaAsset;
 
 
         public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, MediaAsset mediaAsset, OnMediaLoadCompletion completion) {
             super(PhoenixMediaProvider.TAG + "#Loader", requestsExecutor, sessionProvider, completion);
 
-            this.asset = mediaAsset;
+            this.mediaAsset = mediaAsset;
 
             PKLog.v(TAG, loadId + ": construct new Loader");
         }
@@ -145,7 +157,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         @Override
         protected void requestRemote(String ks) throws InterruptedException {
-            PhoenixRequestBuilder requestBuilder = AssetService.assetGet(sessionProvider.baseUrl(), ks, asset.assetId, asset.referenceType)
+            PhoenixRequestBuilder requestBuilder = AssetService.assetGet(sessionProvider.baseUrl(), ks, mediaAsset.assetId, mediaAsset.referenceType)
                     .completion(new OnRequestCompletion() {
                         @Override
                         public void onComplete(ResponseElement response) {
@@ -206,7 +218,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                         if (assetResult.error == null) {
                             asset = (KalturaMediaAsset) assetResult;
                         } else {
-                            error = assetResult.error;
+                            error = PhoenixErrorHelper.getErrorElement(assetResult.error); // get predefined error if exists for this error code
                         }
                     } else { // response parsed to null but request to the server returned a "valid" response
                         throw new JsonParseException("missing response object");
@@ -217,7 +229,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 }
 
                 if (asset != null) {
-                    mediaEntry = ProviderParser.getMedia(asset, this.asset.formats);
+                    mediaEntry = ProviderParser.getMedia(asset, this.mediaAsset.formats, this.mediaAsset.mediaType);
                 }
 
             } else {
@@ -238,15 +250,15 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     static class ProviderParser {
 
-        static PKMediaEntry getMedia(KalturaMediaAsset assetInfo, List<String> formats) {
-            return getMedia(assetInfo.getId() + "", assetInfo.getFiles(), formats);
+        static PKMediaEntry getMedia(KalturaMediaAsset assetInfo, List<String> formats, @APIDefines.MediaType String type) {
+            return getMedia(assetInfo.getId() + "", assetInfo.getFiles(), formats, type);
         }
 
-        static PKMediaEntry getMedia(String id, List<KalturaMediaFile> mediaFiles) {
-            return getMedia(id, mediaFiles, null);
+        static PKMediaEntry getMedia(String id, List<KalturaMediaFile> mediaFiles, @APIDefines.MediaType String type) {
+            return getMedia(id, mediaFiles, null, type);
         }
 
-        private synchronized static PKMediaEntry getMedia(String assetId, List<KalturaMediaFile> mediaFiles, List<String> formats) {
+        private synchronized static PKMediaEntry getMedia(String assetId, List<KalturaMediaFile> mediaFiles, List<String> formats, @APIDefines.MediaType String type) {
             PKMediaEntry mediaEntry = new PKMediaEntry();
             mediaEntry.setId("" + assetId);
 
@@ -261,7 +273,40 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     }
                 }
             }
-            return mediaEntry.setDuration(maxDuration).setSources(sources);
+            return mediaEntry.setDuration(maxDuration).setSources(sources).setMediaType(MediaTypeConverter.toMediaEntryType(type));
         }
     }
+
+    static class MediaTypeConverter{
+        public static PKMediaEntry.MediaEntryType toMediaEntryType(@APIDefines.MediaType String mediaType){
+            switch (mediaType){
+                case APIDefines.MediaType.Vod:
+                    return PKMediaEntry.MediaEntryType.Vod;
+
+                case APIDefines.MediaType.Channel:
+                case APIDefines.MediaType.Program:
+                case APIDefines.MediaType.EPG:
+                    return PKMediaEntry.MediaEntryType.Live;
+
+                default:
+                    return PKMediaEntry.MediaEntryType.Unknown;
+            }
+        }
+
+        public static String toReferenceType(@APIDefines.MediaType String mediaType) {
+            switch (mediaType){
+                case APIDefines.MediaType.Vod:
+                case APIDefines.MediaType.Channel:
+                    return APIDefines.AssetReferenceType.Media;
+
+                case APIDefines.MediaType.Program:
+                case APIDefines.MediaType.EPG:
+                    return APIDefines.AssetReferenceType.InternalEpg;
+
+                default:
+                    return null;
+            }
+        }
+    }
+
 }

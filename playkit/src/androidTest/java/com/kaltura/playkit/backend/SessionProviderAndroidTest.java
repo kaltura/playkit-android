@@ -11,6 +11,7 @@ import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
 import com.kaltura.playkit.backend.ovp.services.BaseEntryService;
+import com.kaltura.playkit.backend.phoenix.APIDefines;
 import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.backend.phoenix.data.PhoenixParser;
@@ -30,10 +31,10 @@ import static com.kaltura.playkit.backend.MockParams.OvpBaseUrl;
 import static com.kaltura.playkit.backend.MockParams.OvpLoginId;
 import static com.kaltura.playkit.backend.MockParams.OvpPartnerId;
 import static com.kaltura.playkit.backend.MockParams.OvpPassword;
-import static com.kaltura.playkit.backend.MockParams.PnxPassword;
-import static com.kaltura.playkit.backend.MockParams.PnxUsername;
 import static com.kaltura.playkit.backend.MockParams.PnxBaseUrl;
 import static com.kaltura.playkit.backend.MockParams.PnxPartnerId;
+import static com.kaltura.playkit.backend.MockParams.PnxPassword;
+import static com.kaltura.playkit.backend.MockParams.PnxUsername;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
@@ -66,7 +67,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                             new PhoenixMediaProvider()
                                     .setSessionProvider(ottSessionProvider)
                                     .setAssetId(MediaId)
-                                    .setReferenceType("media")
+                                    .setMediaType(APIDefines.MediaType.Vod)
                                     .setFormats(FormatHD)
                                     .load(new OnMediaLoadCompletion() {
                                         @Override
@@ -75,6 +76,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                                                 Log.i("testOttSessionProvider", "we have mediaEntry");
                                                 assertTrue(response.getResponse().getId().equals(MediaId));
                                                 assertTrue(response.getResponse().getSources().size() == 1);
+                                                assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Vod));
                                             }
                                             resume();
                                         }
@@ -115,7 +117,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                                     new PhoenixMediaProvider()
                                             .setSessionProvider(ottSessionProvider)
                                             .setAssetId(MediaId)
-                                            .setReferenceType("media")
+                                            .setMediaType(APIDefines.MediaType.Vod)
                                             .setFormats(FormatHD)
                                             .load(new OnMediaLoadCompletion() {
                                                 @Override
@@ -124,6 +126,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                                                     Log.i("testOttSessionProvider", "we have mediaEntry");
                                                     assertTrue(response.getResponse().getId().equals(MediaId));
                                                     assertTrue(response.getResponse().getSources().size() == 1);
+                                                    assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Vod));
 
                                                     resume();
                                                 }
@@ -168,7 +171,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                                     new PhoenixMediaProvider()
                                             .setSessionProvider(ottSessionProvider)
                                             .setAssetId(MediaId)
-                                            .setReferenceType("media")
+                                            .setMediaType(APIDefines.MediaType.Vod)
                                             .setFormats(FormatHD)
                                             .load(new OnMediaLoadCompletion() {
                                                 @Override

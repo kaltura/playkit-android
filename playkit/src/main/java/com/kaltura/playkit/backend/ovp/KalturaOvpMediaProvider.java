@@ -260,11 +260,11 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 sources = parseFromFlavors(ks, partnerId, uiConfId, entry, playbackContext);
             }*/
 
-            return mediaEntry.setId(entry.getId()).setSources(sources).setDuration(entry.getMsDuration()).setMetadata(getMediaMetadata(entry));
+            return mediaEntry.setId(entry.getId()).setSources(sources).setDuration(entry.getMsDuration()).setMediaType(MediaTypeConverter.toMediaEntryType(entry.getType()));
         }
 
         private static Map<String, Object> getMediaMetadata(KalturaMediaEntry entry) {
-            if(entry.getType() == )
+           // if(entry.getType() == )
             return null;
         }
 //!! PKMediaSource id is not unique - if contains more than 1 drm each of the drm will be converted to a source
@@ -424,7 +424,11 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         public static PKMediaEntry.MediaEntryType toMediaEntryType(KalturaEntryType type){
             switch (type){
                 case MEDIA_CLIP:
-
+                    return PKMediaEntry.MediaEntryType.Vod;
+                case LIVE_STREAM:
+                    return PKMediaEntry.MediaEntryType.Live;
+                default:
+                    return PKMediaEntry.MediaEntryType.Unknown;
             }
         }
     }
