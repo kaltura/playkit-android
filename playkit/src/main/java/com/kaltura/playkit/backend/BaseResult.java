@@ -1,13 +1,19 @@
 package com.kaltura.playkit.backend;
 
-import com.google.gson.annotations.SerializedName;
 import com.kaltura.playkit.connect.ErrorElement;
 
 /**
  * Created by tehilarozin on 15/11/2016.
  */
 
-public class BaseResult  {
+public class BaseResult {
     public double executionTime;
     public ErrorElement error;
+
+    public BaseResult() {
+    }
+
+    public BaseResult(ErrorElement error) {
+        this.error = error;
+    }
 }

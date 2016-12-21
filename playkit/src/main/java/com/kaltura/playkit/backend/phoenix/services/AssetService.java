@@ -1,7 +1,7 @@
 package com.kaltura.playkit.backend.phoenix.services;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.connect.RequestBuilder;
+import com.kaltura.playkit.backend.phoenix.PhoenixRequestBuilder;
 
 /**
  * Created by tehilarozin on 13/11/2016.
@@ -9,11 +9,8 @@ import com.kaltura.playkit.connect.RequestBuilder;
 
 public class AssetService extends PhoenixService {
 
-    public static RequestBuilder assetGet(String baseUrl, /*int partnerId,*/ String ks, String assetId, String referenceType) {
-        /*if(TextUtils.isEmpty(ks)){
-            return assetGet(baseUrl, partnerId, assetId, referenceType);
-        }*/
-        return new RequestBuilder()
+    public static PhoenixRequestBuilder assetGet(String baseUrl, String ks, String assetId, String referenceType) {
+        return new PhoenixRequestBuilder()
                 .service("asset")
                 .action("get")
                 .method("POST")
@@ -22,21 +19,8 @@ public class AssetService extends PhoenixService {
                 .params(getAssetGetReqParams(ks, assetId, referenceType));
     }
 
-    /*static RequestBuilder assetGet(String baseUrl, int partnerId, String assetId, String referenceType) {
-        return new MultiRequestBuilder(OttUserService.anonymousLogin(baseUrl, partnerId),
-                new RequestBuilder()
-                        .params(getAssetGetReqParams("{1:result:ks}", assetId, referenceType)) //on http://52.210.223.65:8080/v4_0/api_v3 its without the {}
-                        .addParam("service","asset")
-                        .addParam("action","get"))
-                .method("POST")
-                .tag("asset-multi-get")
-                .url(baseUrl)
-                .service("multirequest");
-    }*/
-
-
     private static JsonObject getAssetGetReqParams(String ks, String assetId, String referenceType) {
-        JsonObject getParams = getPhoenixParams();
+        JsonObject getParams = new JsonObject();
         getParams.addProperty("ks", ks);
         getParams.addProperty("id", assetId);
         getParams.addProperty("assetReferenceType", referenceType);

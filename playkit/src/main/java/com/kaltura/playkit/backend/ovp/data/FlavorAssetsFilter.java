@@ -3,16 +3,6 @@ package com.kaltura.playkit.backend.ovp.data;
 
 import android.support.annotation.NonNull;
 
-import com.google.gson.Gson;
-import com.google.gson.TypeAdapter;
-import com.google.gson.TypeAdapterFactory;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-import com.google.gson.stream.JsonWriter;
-
-import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +12,7 @@ import java.util.List;
  */
 
 
-public class FlavorAssetsFilter /*extends ArrayList<KalturaFlavorAsset>*/ {
+public class FlavorAssetsFilter {
 
     public interface Filterable{
         <V> V getMemberValue(String name);
@@ -50,7 +40,7 @@ public class FlavorAssetsFilter /*extends ArrayList<KalturaFlavorAsset>*/ {
         return filtered;
     }
 
-    public static class ArrayAdapter<T> extends TypeAdapter<List<T>> {
+    /*public static class ArrayAdapter<T> extends TypeAdapter<List<T>> {
         private Class<T> adapterclass;
 
         public ArrayAdapter(Class<T> adapterclass) {
@@ -90,9 +80,9 @@ public class FlavorAssetsFilter /*extends ArrayList<KalturaFlavorAsset>*/ {
 
         }
 
-    }
+    }*/
 
-    public static class ArrayAdapterFactory implements TypeAdapterFactory {
+    /*public static class ArrayAdapterFactory implements TypeAdapterFactory {
 
         @SuppressWarnings({"unchecked"})
         @Override
@@ -112,5 +102,5 @@ public class FlavorAssetsFilter /*extends ArrayList<KalturaFlavorAsset>*/ {
 
             return typeAdapter;
         }
-    }
+    }*/
 }

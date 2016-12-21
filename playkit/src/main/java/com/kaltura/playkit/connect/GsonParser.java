@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.$Gson$Types;
 
@@ -67,4 +68,8 @@ public class GsonParser {
         return new ArrayList<T>();
     }
 
+    public static JsonElement toJson(String jsonString) throws JsonSyntaxException{
+        JsonParser parser = new JsonParser();
+        return parser.parse(jsonString);
+    }
 }
