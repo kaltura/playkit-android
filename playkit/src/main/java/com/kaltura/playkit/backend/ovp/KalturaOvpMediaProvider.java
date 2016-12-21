@@ -16,6 +16,7 @@ import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.data.FlavorAssetsFilter;
 import com.kaltura.playkit.backend.ovp.data.KalturaBaseEntryListResponse;
 import com.kaltura.playkit.backend.ovp.data.KalturaEntryContextDataResult;
+import com.kaltura.playkit.backend.ovp.data.KalturaEntryType;
 import com.kaltura.playkit.backend.ovp.data.KalturaFlavorAsset;
 import com.kaltura.playkit.backend.ovp.data.KalturaMediaEntry;
 import com.kaltura.playkit.backend.ovp.data.KalturaPlaybackContext;
@@ -259,7 +260,12 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 sources = parseFromFlavors(ks, partnerId, uiConfId, entry, playbackContext);
             }*/
 
-            return mediaEntry.setId(entry.getId()).setSources(sources).setDuration(entry.getMsDuration());
+            return mediaEntry.setId(entry.getId()).setSources(sources).setDuration(entry.getMsDuration()).setMetadata(getMediaMetadata(entry));
+        }
+
+        private static Map<String, Object> getMediaMetadata(KalturaMediaEntry entry) {
+            if(entry.getType() == )
+            return null;
         }
 //!! PKMediaSource id is not unique - if contains more than 1 drm each of the drm will be converted to a source
 //!! AndroidCharacter will have the same id.
@@ -411,6 +417,16 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             return SupportedFormats.values();
         }
 
+    }
+
+    public static class MediaTypeConverter {
+
+        public static PKMediaEntry.MediaEntryType toMediaEntryType(KalturaEntryType type){
+            switch (type){
+                case MEDIA_CLIP:
+
+            }
+        }
     }
 
 }

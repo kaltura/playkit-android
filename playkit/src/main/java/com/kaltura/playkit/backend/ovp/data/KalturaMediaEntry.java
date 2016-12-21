@@ -9,16 +9,18 @@ import java.util.List;
 
 public class KalturaMediaEntry {
 
-    private int mediaType;
-    private String dataUrl;
-    private String flavorParamsIds; //consider set as list
     private String id;
     private String name;
-    private int msDuration;
-    //private int licenseType = -1; //UNKNOWN
 
-    public int getMediaType() {
-        return mediaType;
+    /** indicate the media type: {@link KalturaEntryType} **/
+    private KalturaEntryType type;
+
+    private String dataUrl;
+    private String flavorParamsIds;
+    private int msDuration;
+
+    public KalturaEntryType getType() {
+        return type;
     }
 
     public String getDataUrl() {
@@ -44,6 +46,5 @@ public class KalturaMediaEntry {
     public int getMsDuration() {
         return msDuration;
     }
-
 
 }

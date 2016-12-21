@@ -1,12 +1,18 @@
 package com.kaltura.playkit;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PKMediaEntry {
     private String id;
     private List<PKMediaSource> sources;
     private long duration;
-    private String uuid;
+    private MediaEntryType mediaType;
+    private Map<String, Object> metadata;
 
     public PKMediaEntry setId(String id) {
         this.id = id;
@@ -23,6 +29,22 @@ public class PKMediaEntry {
         return this;
     }
 
+    public PKMediaEntry setMetadata(String key, Object data){
+        if(metadata == null){
+            metadata = new HashMap<>();
+        }
+        metadata.put(key, data);
+        return this;
+    }
+
+    public PKMediaEntry setMetadata(Map<String, Object> metas){
+        if(metadata == null){
+            metadata = new HashMap<>();
+        }
+        metadata.putAll(metas);
+        return this;
+    }
+
     public String getId() {
         return id;
     }
@@ -34,4 +56,15 @@ public class PKMediaEntry {
     public long getDuration() {
         return duration;
     }
+
+    @Nullable
+    public Object getMetaData(@NonNull String key) {
+        return metadata != null ? metadata.get(key) : null;
+    }
+
+    public enum MediaEntryType {
+        VOD,
+        LIVE
+    }
+
 }
