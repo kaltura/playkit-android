@@ -43,7 +43,6 @@ import java.util.List;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_ENDED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_STARTED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_PROGRESS;
-import static com.kaltura.playkit.plugins.ads.AdEvent.Type.CUEPOINTS_CHANGED;
 
 
 /**
@@ -247,6 +246,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 if (isInitWaiting) {
                     player.getView().setVisibility(View.VISIBLE);
                     adsManager.init(renderingSettings);
+                    messageBus.post(new AdEvent.AdCuePointsUpdateEvent(getAdCuePoints()));
                     isInitWaiting = false;
                 }
 
@@ -261,6 +261,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         if(adsManager != null) {
             player.getView().setVisibility(View.VISIBLE);
             adsManager.init(renderingSettings);
+            messageBus.post(new AdEvent.AdCuePointsUpdateEvent(getAdCuePoints()));
         } else{
             isInitWaiting = true;
         }
@@ -493,11 +494,25 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdEvent(AD_BREAK_ENDED));
                 break;
             case  CUEPOINTS_CHANGED:
-                messageBus.post(new AdEvent(CUEPOINTS_CHANGED));
+                messageBus.post(new AdEvent.AdCuePointsUpdateEvent(getAdCuePoints()));
                 break;
             default:
                 break;
         }
+    }
+
+    private List<Long> getAdCuePoints() {
+        List<Long> adCuePoints = new ArrayList<>();
+        if (adsManager != null && adsManager.getAdCuePoints() != null) {
+            for (Float cuePoint : adsManager.getAdCuePoints()) {
+                if (cuePoint >= 0) {
+                    adCuePoints.add(cuePoint.longValue() * 1000);
+                } else {
+                    adCuePoints.add(cuePoint.longValue());
+                }
+            }
+        }
+        return adCuePoints;
     }
 
     private AdInfo createAdInfo(Ad ad) {
@@ -513,12 +528,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         int adPodCount            = ad.getAdPodInfo().getTotalAds();
         int adPodPosition         = ad.getAdPodInfo().getAdPosition();
         long adPodTimeOffset      = (long)(ad.getAdPodInfo().getTimeOffset() * 1000);
-        List<Long> adCuePoints = new ArrayList<>();
-        if (adsManager != null && adsManager.getAdCuePoints() != null) {
-            for (Float cuePoint : adsManager.getAdCuePoints()) {
-                adCuePoints.add(cuePoint.longValue() * 1000);
-            }
-        }
+
 
         AdInfo adInfo =  new AdInfo(adDescription, adDuration,
                 adTitle, isAdSkippable,
@@ -527,8 +537,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 adWidth,
                 adPodCount,
                 adPodPosition,
-                adPodTimeOffset,
-                adCuePoints);
+                adPodTimeOffset);
 
         log.v("AdInfo: " + adInfo.toString());
         return adInfo;
