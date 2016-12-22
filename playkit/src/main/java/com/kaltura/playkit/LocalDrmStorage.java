@@ -1,6 +1,4 @@
-package com.kaltura.playkit.drm;
-
-import com.kaltura.playkit.LocalAssetsManager;
+package com.kaltura.playkit;
 
 import java.io.FileNotFoundException;
 
@@ -9,7 +7,6 @@ import java.io.FileNotFoundException;
  * in order to save/load/remove the offline Drm keySetId.
  * Created by anton.afanasiev on 13/12/2016.
  */
-
 public interface LocalDrmStorage {
 
     /**

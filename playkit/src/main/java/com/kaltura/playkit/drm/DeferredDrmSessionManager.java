@@ -13,11 +13,10 @@ import com.google.android.exoplayer2.drm.StreamingDrmSessionManager;
 import com.google.android.exoplayer2.drm.UnsupportedDrmException;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.Util;
+import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.drm.LocalDrmSessionManager;
-import com.kaltura.playkit.LocalMediaSource;
 import com.kaltura.playkit.utils.EventLogger;
 
 import java.util.List;
@@ -48,7 +47,7 @@ public class DeferredDrmSessionManager<T extends ExoMediaCrypto> implements DrmS
             drmSessionManager = null;
             return;
         }
-        if (mediaSource instanceof LocalMediaSource) {
+        if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
             buildLocalDrmSessionManager(mediaSource);
         } else {
             buildStreamingDrmSessionManager(getLicenseUrl(mediaSource));
@@ -56,7 +55,7 @@ public class DeferredDrmSessionManager<T extends ExoMediaCrypto> implements DrmS
     }
 
     private void buildLocalDrmSessionManager(PKMediaSource mediaSource) {
-        LocalMediaSource localMediaSource = (LocalMediaSource) mediaSource;
+        LocalAssetsManager.LocalMediaSource localMediaSource = (LocalAssetsManager.LocalMediaSource) mediaSource;
         drmSessionManager = new LocalDrmSessionManager<>(localMediaSource);
     }
 

@@ -22,6 +22,7 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.LocalAssetsManager;
+import com.kaltura.playkit.LocalDrmStorage;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.player.MediaSupport;
 

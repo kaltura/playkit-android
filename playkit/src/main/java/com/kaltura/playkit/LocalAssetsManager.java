@@ -1,15 +1,16 @@
 package com.kaltura.playkit;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Base64;
 
-import com.kaltura.playkit.drm.DefaultLocalDrmStorage;
 import com.kaltura.playkit.drm.DrmAdapter;
-import com.kaltura.playkit.drm.LocalDrmStorage;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -211,6 +212,82 @@ public class LocalAssetsManager {
         ConnectivityManager conMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = conMgr.getActiveNetworkInfo();
         return !(netInfo == null || !netInfo.isConnected() || !netInfo.isAvailable());
+    }
+
+    /**
+     * The local media source that should be passed to the player
+     * when offline(locally stored) media want to be played.
+     * Created by anton.afanasiev on 18/12/2016.
+     */
+    public static class LocalMediaSource extends PKMediaSource {
+
+        private LocalDrmStorage localDrmStorage;
+
+        /**
+         * @param localDrmStorage - the storage from where drm keySetId is stored.
+         * @param localPath - the local url of the media.
+         * @param assetId - the id of the media.
+         */
+        public LocalMediaSource(LocalDrmStorage localDrmStorage, String localPath, String assetId) {
+            setId(assetId);
+            setUrl(localPath);
+            this.localDrmStorage = localDrmStorage;
+        }
+
+        /**
+         * @return - the {@link LocalDrmStorage}
+         */
+        public LocalDrmStorage getStorage() {
+            return localDrmStorage;
+        }
+
+    }
+
+    /**
+     * Default implementation of the {@link LocalDrmStorage}. Actually doing the basic save/load/remove actions
+     * to the {@link SharedPreferences}.
+     * Created by anton.afanasiev on 13/12/2016.
+     */
+
+    public class DefaultLocalDrmStorage implements LocalDrmStorage {
+
+        private final PKLog log = PKLog.get("DefaultLocalDrmStorage");
+
+        private static final String LOCAL_DRM_SHARED_PREFERENCE_STORAGE = "PlayKitLocalDrmStorage";
+        private final SharedPreferences sharedPreferences;
+
+        public DefaultLocalDrmStorage(Context context){
+            sharedPreferences = context.getSharedPreferences(LOCAL_DRM_SHARED_PREFERENCE_STORAGE, 0);
+        }
+
+        @Override
+        public void save(String key, byte[] value) {
+            String encodedValue = Base64.encodeToString(value, Base64.NO_WRAP);
+            log.i("save to storage with key " + key + " and value " + encodedValue);
+            sharedPreferences.edit()
+                    .putString(key, encodedValue)
+                    .apply();
+        }
+
+        @Override
+        public byte[] load(String key) throws FileNotFoundException {
+
+            String value = sharedPreferences.getString(key, null);
+            log.i("load from storage with key " + key);
+            if (value == null) {
+                throw new FileNotFoundException("Key not found in the storage " + key);
+            }
+
+            return Base64.decode(value, Base64.NO_WRAP);
+        }
+
+        @Override
+        public void remove(String key) {
+            log.i("remove from storage with key " + key);
+            sharedPreferences.edit()
+                    .remove(key)
+                    .apply();
+        }
     }
 
 }

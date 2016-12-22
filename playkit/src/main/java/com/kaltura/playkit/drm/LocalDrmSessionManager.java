@@ -16,7 +16,8 @@ import com.google.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.google.android.exoplayer2.drm.UnsupportedDrmException;
 import com.google.android.exoplayer2.extractor.mp4.PsshAtomUtil;
 import com.google.android.exoplayer2.util.Util;
-import com.kaltura.playkit.LocalMediaSource;
+import com.kaltura.playkit.LocalAssetsManager;
+import com.kaltura.playkit.LocalDrmStorage;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.player.MediaSupport;
 
@@ -39,7 +40,7 @@ public class LocalDrmSessionManager<T extends ExoMediaCrypto> implements DrmSess
     private int state = STATE_CLOSED;
 
 
-    public LocalDrmSessionManager(LocalMediaSource mediaSource) {
+    public LocalDrmSessionManager(LocalAssetsManager.LocalMediaSource mediaSource) {
         this.drmStorage = mediaSource.getStorage();
     }
 
