@@ -1,7 +1,9 @@
-package com.kaltura.playkit.offline;
+package com.kaltura.playkit.drm;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+
+import com.kaltura.playkit.LocalAssetsManager;
 
 import java.io.IOException;
 
@@ -9,10 +11,10 @@ import java.io.IOException;
  * Created by anton.afanasiev on 13/12/2016.
  */
 
-abstract class DrmAdapter {
+public abstract class DrmAdapter {
 
     @NonNull
-    static DrmAdapter getDrmAdapter(final Context context, LocalDrmStorage localDrmStorage, final String localAssetPath) {
+    public static DrmAdapter getDrmAdapter(final Context context, LocalDrmStorage localDrmStorage, final String localAssetPath) {
         if (localAssetPath.endsWith(".wvm")) {
             return new WidevineClassicAdapter(context);
         }
@@ -34,7 +36,7 @@ abstract class DrmAdapter {
 
     public abstract DRMScheme getScheme();
 
-    enum DRMScheme {
+    public enum DRMScheme {
         Null, WidevineClassic, WidevineCENC
     }
 

@@ -1,4 +1,4 @@
-package com.kaltura.playkit.offline;
+package com.kaltura.playkit.drm;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -18,10 +18,10 @@ public class DefaultLocalDrmStorage implements LocalDrmStorage {
 
     private static final PKLog log = PKLog.get("DefaultLocalDrmStorage");
 
-    private static final String LOCAL_DRM_SHARED_PREFERENCE_STORAGE = "LocalDrmStorage";
+    private static final String LOCAL_DRM_SHARED_PREFERENCE_STORAGE = "PlayKitLocalDrmStorage";
     private final SharedPreferences sharedPreferences;
 
-    DefaultLocalDrmStorage(Context context){
+    public DefaultLocalDrmStorage(Context context){
         sharedPreferences = context.getSharedPreferences(LOCAL_DRM_SHARED_PREFERENCE_STORAGE, 0);
     }
 

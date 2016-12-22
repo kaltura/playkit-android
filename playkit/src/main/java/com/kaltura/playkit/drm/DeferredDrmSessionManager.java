@@ -1,4 +1,4 @@
-package com.kaltura.playkit.player;
+package com.kaltura.playkit.drm;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -16,8 +16,8 @@ import com.google.android.exoplayer2.util.Util;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.offline.LocalDrmSessionManager;
-import com.kaltura.playkit.offline.LocalMediaSource;
+import com.kaltura.playkit.drm.LocalDrmSessionManager;
+import com.kaltura.playkit.LocalMediaSource;
 import com.kaltura.playkit.utils.EventLogger;
 
 import java.util.List;
@@ -26,7 +26,7 @@ import java.util.List;
  * Created by anton.afanasiev on 18/12/2016.
  */
 
-class DeferredDrmSessionManager<T extends ExoMediaCrypto> implements DrmSessionManager<T> {
+public class DeferredDrmSessionManager<T extends ExoMediaCrypto> implements DrmSessionManager<T> {
 
     private static final PKLog log = PKLog.get("DeferredDrmSessionManager");
 
@@ -36,14 +36,14 @@ class DeferredDrmSessionManager<T extends ExoMediaCrypto> implements DrmSessionM
     private EventLogger eventLogger;
     private HttpDataSource.Factory dataSourceFactory;
 
-    DeferredDrmSessionManager(Handler mainHandler, EventLogger eventLogger, HttpDataSource.Factory factory) {
+   public DeferredDrmSessionManager(Handler mainHandler, EventLogger eventLogger, HttpDataSource.Factory factory) {
         this.mainHandler = mainHandler;
         this.eventLogger = eventLogger;
 
         this.dataSourceFactory = factory;
     }
 
-    void setMediaSource(PKMediaSource mediaSource) {
+    public void setMediaSource(PKMediaSource mediaSource) {
         if (Util.SDK_INT < 18) {
             drmSessionManager = null;
             return;

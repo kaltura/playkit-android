@@ -1,4 +1,4 @@
-package com.kaltura.playkit.offline;
+package com.kaltura.playkit.drm;
 
 import android.media.MediaCryptoException;
 import android.media.MediaDrmException;
@@ -16,6 +16,7 @@ import com.google.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.google.android.exoplayer2.drm.UnsupportedDrmException;
 import com.google.android.exoplayer2.extractor.mp4.PsshAtomUtil;
 import com.google.android.exoplayer2.util.Util;
+import com.kaltura.playkit.LocalMediaSource;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.player.MediaSupport;
 

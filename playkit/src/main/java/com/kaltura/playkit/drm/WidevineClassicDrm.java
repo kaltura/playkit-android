@@ -1,4 +1,4 @@
-package com.kaltura.playkit.offline;
+package com.kaltura.playkit.drm;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -23,9 +23,9 @@ import java.util.Iterator;
  * Created by anton.afanasiev on 13/12/2016.
  */
 
-public class WidevineDrmClient {
+public class WidevineClassicDrm {
 
-    private static final PKLog log = PKLog.get("WidevineDrmClient");
+    private static final PKLog log = PKLog.get("WidevineClassiDrm");
 
 
     private final static String DEVICE_IS_PROVISIONED = "0";
@@ -125,7 +125,7 @@ public class WidevineDrmClient {
         return canHandle;
     }
 
-    public WidevineDrmClient(Context context) {
+    public WidevineClassicDrm(Context context) {
 
         mDrmManager = new DrmManagerClient(context) {
             @Override

@@ -1,4 +1,6 @@
-package com.kaltura.playkit.offline;
+package com.kaltura.playkit.drm;
+
+import com.kaltura.playkit.LocalAssetsManager;
 
 import java.io.FileNotFoundException;
 

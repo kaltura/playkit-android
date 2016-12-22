@@ -1,6 +1,7 @@
-package com.kaltura.playkit.offline;
+package com.kaltura.playkit;
 
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.drm.LocalDrmStorage;
 
 /**
  * The local media source that should be passed to the player

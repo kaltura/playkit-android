@@ -1,4 +1,4 @@
-package com.kaltura.playkit.offline;
+package com.kaltura.playkit.drm;
 
 import android.annotation.TargetApi;
 import android.media.DeniedByServerException;

@@ -1,4 +1,4 @@
-package com.kaltura.playkit.offline;
+package com.kaltura.playkit.drm;
 
 import android.net.Uri;
 import android.os.Build;

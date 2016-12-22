@@ -1,4 +1,4 @@
-package com.kaltura.playkit.offline;
+package com.kaltura.playkit;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -6,8 +6,9 @@ import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.drm.DefaultLocalDrmStorage;
+import com.kaltura.playkit.drm.DrmAdapter;
+import com.kaltura.playkit.drm.LocalDrmStorage;
 
 import java.io.IOException;
 
