@@ -239,6 +239,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
+                AdEvent.AdCuePointsUpdateEvent cuePointsList = (AdEvent.AdCuePointsUpdateEvent) event;
+                List<Long> cuepointsList = cuePointsList.cuePoints;
+            }
+        }, AdEvent.Type.CUEPOINTS_CHANGED);
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
                 log.d("AD_STARTED");
                 appProgressBar.setVisibility(View.INVISIBLE);
             }
