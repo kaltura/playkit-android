@@ -1,7 +1,5 @@
 package com.kaltura.playkit.ads;
 
-import java.util.List;
-
 public interface PKAdInfo {
     String   getAdDescription();
     String   getAdId();
@@ -15,5 +13,4 @@ public interface PKAdInfo {
     int      getAdPodPosition();
     long     getAdPodTimeOffset();
     long     getAdDuration();
-    List<Long> getAdCuePoints();
 }
