@@ -43,6 +43,8 @@ import java.util.List;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_ENDED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_STARTED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_PROGRESS;
+import static com.kaltura.playkit.plugins.ads.AdEvent.Type.PAUSED;
+import static com.kaltura.playkit.plugins.ads.AdEvent.Type.RESUMED;
 
 
 /**
@@ -426,7 +428,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED");
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_RESUME_REQUESTED));
                 isAdDisplayed = false;
-                if (player != null) {
+                if (player != null && player.getCurrentPosition() < player.getDuration()) {
                     player.play();
                 }
                 break;
@@ -447,12 +449,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             case PAUSED:
                 log.d("AD PAUSED");
                 isAdIsPaused = true;
-                messageBus.post(new AdEvent(AdEvent.Type.PAUSED));
+                messageBus.post(new AdEvent(PAUSED));
                 break;
             case RESUMED:
                 log.d("AD RESUMED");
                 isAdIsPaused = false;
-                messageBus.post(new AdEvent(AdEvent.Type.RESUMED));
+                messageBus.post(new AdEvent(RESUMED));
                 break;
             case COMPLETED:
                 log.d("AD COMPLETED");
