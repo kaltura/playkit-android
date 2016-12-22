@@ -83,6 +83,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private AdsLoader.AdsLoadedListener adsLoadedListener;
 
     // AdsManager exposes methods to control ad playback and listen to ad events.
+    ImaSdkSettings imaSdkSettings;
     private AdsManager adsManager;
     private AdsRenderingSettings renderingSettings;
     // Whether an ad is displayed.
@@ -203,17 +204,21 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     @Override
     public void requestAd() {
         log.d("Start RequestAd");
-        ImaSdkSettings imaSdkSettings = new ImaSdkSettings();
+        if (imaSdkSettings == null) {
+            imaSdkSettings = new ImaSdkSettings();
+        }
         // Tell the SDK we want to control ad break playback.
         imaSdkSettings.setAutoPlayAdBreaks(adConfig.getAutoPlayAdBreaks());
         imaSdkSettings.setLanguage(adConfig.getLanguage());
-
-        sdkFactory = ImaSdkFactory.getInstance();
-        adsLoader = sdkFactory.createAdsLoader(context, imaSdkSettings);
-
-        // Add listeners for when ads are loaded and for errors.
-        adsLoader.addAdErrorListener(this);
-        adsLoader.addAdsLoadedListener(getAdsLoadedListener());
+        if (sdkFactory == null) {
+            sdkFactory = ImaSdkFactory.getInstance();
+        }
+        if (adsLoader == null) {
+            adsLoader = sdkFactory.createAdsLoader(context, imaSdkSettings);
+            // Add listeners for when ads are loaded and for errors.
+            adsLoader.addAdErrorListener(this);
+            adsLoader.addAdsLoadedListener(getAdsLoadedListener());
+        }
         if (adConfig != null) {
             requestAdsFromIMA(adConfig.getAdTagURL());
         }
