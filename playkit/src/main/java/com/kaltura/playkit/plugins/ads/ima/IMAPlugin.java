@@ -83,7 +83,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private AdsLoader.AdsLoadedListener adsLoadedListener;
 
     // AdsManager exposes methods to control ad playback and listen to ad events.
-    ImaSdkSettings imaSdkSettings;
+    private ImaSdkSettings imaSdkSettings;
     private AdsManager adsManager;
     private AdsRenderingSettings renderingSettings;
     // Whether an ad is displayed.
