@@ -7,11 +7,16 @@ import android.os.Build;
 
 import com.kaltura.playkit.PKLog;
 
+import java.util.UUID;
+
 public class MediaSupport {
+
+    public static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
+
 
     private static Boolean widevineClassic;
     private static Boolean widevineModular;
-    
+
     private static final PKLog log = PKLog.get("MediaSupport");
 
     public static boolean widevineClassic(Context context) {
@@ -22,9 +27,9 @@ public class MediaSupport {
         try {
             widevineClassic = drmManagerClient.canHandle("", "video/wvm");
         } catch (IllegalArgumentException ex) {
-            // On some Android devices, canHandle() fails when given an empty path (despite what 
+            // On some Android devices, canHandle() fails when given an empty path (despite what
             // the API says). In that case, make a guess: Widevine Classic is always supported on
-            // Google-certified devices from JellyBean (inclusive) to Marshmallow (exclusive). 
+            // Google-certified devices from JellyBean (inclusive) to Marshmallow (exclusive).
             log.e("drmManagerClient.canHandle failed");
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
                 log.w("Assuming WV Classic is supported although canHandle has failed");
@@ -44,10 +49,11 @@ public class MediaSupport {
         // Encrypted dash is only supported in Android v4.3 and up -- needs MediaDrm class.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             // Make sure Widevine is supported.
-            if (MediaDrm.isCryptoSchemeSupported(ExoPlayerWrapper.WIDEVINE_UUID)) {
+            if (MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID)) {
                 widevineModular = true;
+                return true;
             }
         }
-        return widevineModular;
+        return false;
     }
 }

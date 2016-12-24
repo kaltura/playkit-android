@@ -3,6 +3,7 @@ package com.kaltura.playkit.player;
 import android.net.Uri;
 import android.view.View;
 
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.utils.Consts;
@@ -20,10 +21,9 @@ interface PlayerEngine {
     /**
      * Initialize player (if needed), and load the mediaSourceUri
      * that should be played.
-     * @param mediaSourceUri - the source to be played.
-     * @param licenseUri - DRM license String.
+     * @param mediaSource - the source to be played.
      */
-    void load(Uri mediaSourceUri, String licenseUri);
+    void load(PKMediaSource mediaSource);
 
     /**
      * Getter for the View to which current

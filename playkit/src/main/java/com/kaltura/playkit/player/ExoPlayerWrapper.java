@@ -17,11 +17,6 @@ import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.drm.DrmSessionManager;
-import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
-import com.google.android.exoplayer2.drm.FrameworkMediaDrm;
-import com.google.android.exoplayer2.drm.StreamingDrmSessionManager;
-import com.google.android.exoplayer2.drm.UnsupportedDrmException;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
@@ -45,16 +40,16 @@ import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.Util;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.player.PlayerController.EventListener;
 import com.kaltura.playkit.player.PlayerController.StateChangedListener;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.EventLogger;
-
-import java.util.UUID;
 
 
 /**
@@ -66,8 +61,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
 
-    static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
-
     private EventLogger eventLogger;
     private EventListener eventListener;
     private StateChangedListener stateChangedListener;
@@ -76,11 +69,15 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private SimpleExoPlayer player;
     private CustomExoPlayerView exoPlayerView;
 
+    private PKTracks tracksInfo;
+    private TrackSelectionHelper trackSelectionHelper;
+    private DeferredDrmSessionManager drmSessionManager;
+
     private PlayerEvent.Type currentEvent;
     private PlayerState currentState = PlayerState.IDLE, previousState;
 
-    private Handler mainHandler = new Handler();
     private Factory mediaDataSourceFactory;
+    private Handler mainHandler = new Handler();
 
     private boolean isSeeking = false;
 
@@ -88,16 +85,12 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private long playerPosition;
     private Uri lastPlayedSource;
     private Timeline.Window window;
+    private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
-    private DeferredMediaDrmCallback deferredMediaDrmCallback;
-    private String licenseUri;
     private long prevDuration = Consts.TIME_UNSET;
 
-    private DefaultTrackSelector trackSelector;
-    private PKTracks tracksInfo;
-    private boolean shouldGetTracksInfo;
+    private MappingTrackSelector trackSelector;
 
-    private TrackSelectionHelper trackSelectionHelper;
 
 
     interface TracksInfoListener {
@@ -129,44 +122,16 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         window = new Timeline.Window();
     }
 
-    private DeferredMediaDrmCallback.UrlProvider licenseUrlProvider = new DeferredMediaDrmCallback.UrlProvider() {
-        @Override
-        public String getUrl() {
-            return licenseUri;
-        }
-    };
-
     private void initializePlayer() {
         eventLogger = new EventLogger();
 
         MappingTrackSelector trackSelector = initializeTrackSelector();
-
-        // TODO: check if there's any overhead involved in creating a session manager and not using it.
-        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager = null;
-        try {
-            drmSessionManager = buildDrmSessionManager(WIDEVINE_UUID);
-        } catch (UnsupportedDrmException e) {
-            // TODO: proper error
-            log.w("This device doesn't support widevine modular");
-        }
-        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), 
-                drmSessionManager, SimpleExoPlayer.EXTENSION_RENDERER_MODE_OFF);
+        drmSessionManager = new DeferredDrmSessionManager(mainHandler, eventLogger, buildHttpDataSourceFactory(false));
+        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager);
         setPlayerListeners();
         exoPlayerView.setPlayer(player);
         player.setPlayWhenReady(false);
     }
-
-    private DrmSessionManager<FrameworkMediaCrypto> buildDrmSessionManager(UUID uuid) throws UnsupportedDrmException {
-        if (Util.SDK_INT < 18) {
-            return null;
-        }
-
-        // Using the deferred callback because we don't yet have the license URL.
-        deferredMediaDrmCallback = new DeferredMediaDrmCallback(buildHttpDataSourceFactory(false), licenseUrlProvider);
-        return new StreamingDrmSessionManager<>(uuid,
-                FrameworkMediaDrm.newInstance(uuid), deferredMediaDrmCallback, null, mainHandler, eventLogger);
-    }
-
 
     private void setPlayerListeners() {
         if (player != null) {
@@ -191,11 +156,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         return trackSelector;
     }
 
-    private void preparePlayer(Uri mediaSourceUri, String licenseUri) {
-        this.licenseUri = licenseUri;
+    private void preparePlayer(PKMediaSource pkMediaSource) {
+
+        drmSessionManager.setMediaSource(pkMediaSource);
+
         shouldGetTracksInfo = true;
-        this.lastPlayedSource = mediaSourceUri;
-        MediaSource mediaSource = buildMediaSource(mediaSourceUri, null);
+        this.lastPlayedSource = Uri.parse(pkMediaSource.getUrl());
+        MediaSource mediaSource = buildMediaSource(lastPlayedSource, null);
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
     }
@@ -343,7 +310,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         log.d("onTimelineChanged");
         shouldResetPlayerPosition = timeline != null && !timeline.isEmpty()
                 && !timeline.getWindow(timeline.getWindowCount() - 1, window).isDynamic;
-
     }
 
     @Override
@@ -356,7 +322,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     public void onPositionDiscontinuity() {
         log.d("onPositionDiscontinuity");
     }
-
 
     @Override
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
@@ -383,13 +348,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     }
 
     @Override
-    public void load(Uri mediaSourceUri, String licenseUri) {
+    public void load(PKMediaSource mediaSource) {
         log.d("load");
         if (player == null) {
             initializePlayer();
         }
 
-        preparePlayer(mediaSourceUri, licenseUri);
+        preparePlayer(mediaSource);
     }
 
     @Override
