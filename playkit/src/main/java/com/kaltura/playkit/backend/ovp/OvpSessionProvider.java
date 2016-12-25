@@ -1,27 +1,30 @@
 package com.kaltura.playkit.backend.ovp;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonSyntaxException;
 import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.backend.base.BaseSessionProvider;
-import com.kaltura.playkit.backend.phoenix.data.KalturaLoginResponse;
-import com.kaltura.playkit.backend.phoenix.data.KalturaLoginSession;
-import com.kaltura.playkit.backend.phoenix.data.KalturaSession;
-import com.kaltura.playkit.backend.phoenix.data.PhoenixParser;
-import com.kaltura.playkit.backend.phoenix.services.OttSessionService;
-import com.kaltura.playkit.backend.phoenix.services.OttUserService;
-import com.kaltura.playkit.backend.phoenix.services.PhoenixService;
+import com.kaltura.playkit.backend.ovp.data.KalturaSessionInfo;
+import com.kaltura.playkit.backend.PrimitiveResult;
+import com.kaltura.playkit.backend.ovp.services.OvpService;
+import com.kaltura.playkit.backend.ovp.services.OvpSessionService;
+import com.kaltura.playkit.backend.ovp.services.UserService;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
 import com.kaltura.playkit.connect.ErrorElement;
+import com.kaltura.playkit.connect.GsonParser;
 import com.kaltura.playkit.connect.MultiRequestBuilder;
 import com.kaltura.playkit.connect.OnRequestCompletion;
+import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.ResponseElement;
 
 import java.util.List;
+
+import static java.lang.System.currentTimeMillis;
 
 /**
  * Created by tehilarozin on 27/11/2016.
@@ -29,60 +32,89 @@ import java.util.List;
 
 public class OvpSessionProvider extends BaseSessionProvider {
 
-    public static final long TimeDelta = 2 * 60 * 60;//hour in seconds
-    private static final String TAG = "BaseResult";
-    public static final int DeltaPercent = 12;
+    private static final String TAG = "OvpSessionProvider";
 
-    private OttSessionParams sessionParams;
-    private String refreshToken;
-    private long refreshDelta = 9*60*60*24;//TimeDelta;
+    private static final int DefaultSessionExpiry = 24 * 60 * 60; //in seconds
 
-    public OvpSessionProvider(String baseUrl, int partnerId) {
-        super(baseUrl, partnerId);
+    /**
+     * defines the time before expiration, to restart session on.
+     */
+    public static final long ExpirationDelta = 10 * 60;//hour in seconds
+
+    private OvpSessionParams sessionParams;
+
+
+    public OvpSessionProvider(String baseUrl) {
+        super(baseUrl);
     }
+
 
     /**
      * starts anonymous session
-     *
-     * @param udid
      */
-    public void startAnonymousSession(@Nullable String udid) {
-        this.sessionParams = new OttSessionParams().setUdid(udid);
-
-        MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(baseUrl, null);
-        multiRequest.add(OttUserService.anonymousLogin(baseUrl, partnerId, udid).removeParams(PhoenixService.getRequestConfigKeys()),
-                OttSessionService.get(baseUrl, "{1:result:ks}").removeParams(PhoenixService.getRequestConfigKeys())).
-                completion(new OnRequestCompletion() {
+    public void startAnonymousSession(int partnerId, final OnCompletion<PrimitiveResult> completion) {
+        sessionParams = new OvpSessionParams().setPartnerId(partnerId);
+        final long expiration = System.currentTimeMillis() / 1000 + DefaultSessionExpiry;
+        RequestBuilder requestBuilder = OvpSessionService.anonymousSession(baseUrl, sessionParams.partnerId())
+                .completion(new OnRequestCompletion() {
                     @Override
                     public void onComplete(ResponseElement response) {
-                        handleStartSession(response);
+                        handleAnonymousResponse(response, expiration, completion);
                     }
                 });
-        APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
+        APIOkRequestsExecutor.getSingleton().queue(requestBuilder.build());
+    }
+
+    private void handleAnonymousResponse(ResponseElement response, long expiration, OnCompletion<PrimitiveResult> completion) {
+        ErrorElement error = null;
+
+        if (response != null && response.isSuccess()) {
+
+            try {
+                JsonElement responseElement = GsonParser.toJson(response.getResponse());
+                String ks = responseElement.getAsJsonObject().getAsJsonPrimitive("ks").getAsString();
+                setSession(ks, expiration, "0");// sets a "dummy" session expiration, since we can't get the actual expiration from the server
+                if (completion != null) {
+                    completion.onComplete(new PrimitiveResult(ks));
+                }
+
+            } catch (JsonSyntaxException e) {
+                error = ErrorElement.SessionError.message("got response but failed to parse it");
+            }
+
+        } else { // failed to start session
+            error = response.getError() != null ? response.getError() : ErrorElement.SessionError;
+        }
+
+        if (error != null) {
+            clearSession(); //clears current saved data - app can try renewSession with the current credentials. or endSession/startSession
+            if (completion != null) {
+                completion.onComplete(new PrimitiveResult(error)); // in case we can't login - app should provide a solution.
+            }
+        }
     }
 
     /**
      * starts new user session
-     * login and gets the session expiration for refresh purposes.
      *
-     * @param username
+     * @param username - user's email that identifies the user for login (username)
      * @param password
-     * @param udid
      */
-    public void startSession(@NonNull String username, @NonNull String password, @Nullable String udid) {
+    public void startSession(@NonNull String username, @NonNull String password, int partnerId, final OnCompletion<PrimitiveResult> completion) {
         // login user
         //get session data for expiration time
-        this.sessionParams = new OttSessionParams().setPassword(password).setUsername(username).setUdid(udid);
+        this.sessionParams = new OvpSessionParams().setPassword(password).setUsername(username).setPartnerId(partnerId);
 
-        MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(baseUrl, null);
-        multiRequest.add(OttUserService.userLogin(baseUrl, partnerId, sessionParams.username, sessionParams.password).removeParams(PhoenixService.getRequestConfigKeys()),
-                OttSessionService.get(baseUrl, "{1:result:loginSession:ks}").removeParams(PhoenixService.getRequestConfigKeys())).
+        MultiRequestBuilder multiRequest = OvpService.getMultirequest(baseUrl, null);
+        multiRequest.add(UserService.loginByLoginId(baseUrl, sessionParams.username, sessionParams.password, sessionParams.partnerId()),
+                OvpSessionService.get(baseUrl, "{1:result}")).
                 completion(new OnRequestCompletion() {
                     @Override
                     public void onComplete(ResponseElement response) {
-                        handleStartSession(response);
+                        handleStartSession(response, completion);
                     }
                 });
+
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
     }
 
@@ -96,28 +128,26 @@ public class OvpSessionProvider extends BaseSessionProvider {
     * */
 
 
-    private void handleStartSession(ResponseElement response) {
+    private void handleStartSession(ResponseElement response, OnCompletion<PrimitiveResult> completion) {
 
         ErrorElement error = null;
 
         if (response != null && response.isSuccess()) {
-            List<BaseResult> responses = PhoenixParser.parse(response.getResponse()); // parses KalturaLoginResponse, KalturaSession
+            List<BaseResult> responses = KalturaOvpParser.parse(response.getResponse()); // parses KalturaLoginResponse, KalturaSession
 
             if (responses.get(0).error != null) { //!- failed to login
                 //?? clear session?
                 error = ErrorElement.SessionError;
 
             } else {
-                refreshToken = responses.get(0) instanceof KalturaLoginResponse ? ((KalturaLoginResponse) responses.get(0)).getLoginSession().getRefreshToken() :
-                        ((KalturaLoginSession) responses.get(0)).getRefreshToken();
-                // session data is taken from second response since its common for both user/anonymous login
-                // and we need this response for the expiry.
+                // first response is the "ks" itself, second response contains the session data (no ks)
                 if (responses.get(1).error == null) { // get session data success
-                    KalturaSession session = (KalturaSession) responses.get(1);
-                    setSession(session.getKs(), session.getExpiry()); // save new session
+                    KalturaSessionInfo session = (KalturaSessionInfo) responses.get(1);
+                    String ks = ((PrimitiveResult) responses.get(0)).getResult();
+                    setSession(ks, session.getExpiry(), session.getUserId()); // save new session
 
-                    if (sessionListener != null) {
-                        sessionListener.ready();
+                    if (completion != null) {
+                        completion.onComplete(new PrimitiveResult(ks));
                     }
                 } else {
                     error = ErrorElement.SessionError;
@@ -130,8 +160,8 @@ public class OvpSessionProvider extends BaseSessionProvider {
 
         if (error != null) {
             clearSession(); //clears current saved data - app can try renewSession with the current credentials. or endSession/startSession
-            if (sessionListener != null) {
-                sessionListener.onError(error); // in case we can't login - app should provide a solution.
+            if (completion != null) {
+                completion.onComplete(new PrimitiveResult(error)); // in case we can't login - app should provide a solution.
             }
         }
     }
@@ -139,139 +169,110 @@ public class OvpSessionProvider extends BaseSessionProvider {
     /**
      * try to re-login with current credentials
      */
-    public void renewSession() {
+    private void renewSession(OnCompletion<PrimitiveResult> completion) {
         if (sessionParams != null) {
-            startSession(sessionParams.username, sessionParams.password, sessionParams.udid);
+            if (sessionParams.username != null) {
+                startSession(sessionParams.username, sessionParams.password, sessionParams.partnerId, completion);
+            } else {
+                startAnonymousSession(sessionParams.partnerId, completion);
+            }
         } else {
-            Log.i(TAG, "Session params weren't set! ");
+            Log.e(TAG, "Session was ended or failed to start when this was called.\nCan't recover session if not started before");
+            if (completion != null) {
+                completion.onComplete(new PrimitiveResult().error(ErrorElement.SessionError.message("Session expired")));
+            }
         }
     }
 
     /**
-     * in case session is active we try to logout. fails or not the saved session data is cleared.
+     * Ends current active session. if it's a {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#User} session
+     * logout, if {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#Anonymous} will return, since
+     * logout on anonymous session doesn't make the session invalid.
+     * <p>
+     * If logout was activated, session params are cleared.
      */
-    @Override
-    public void endSession() {
+    public void endSession(final OnCompletion<BaseResult> completion) {
 
-        if (isSessionActive()) {
-            //logout??
-            APIOkRequestsExecutor.getSingleton().queue(OttUserService.logout(baseUrl, getSessionToken(), sessionParams.udid)
-                    .completion(new OnRequestCompletion() {
-                        @Override
-                        public void onComplete(ResponseElement response) {
-                            if (response != null && response.isSuccess()) {
-                                PKLog.i(TAG, "endSession: logout user session success. clearing session data.");
-                            } else {
-                                PKLog.e(TAG, "endSession: session logout failed. clearing session data. " + (response.getError() != null ? response.getError().getMessage() : ""));
-                            }
-                            OvpSessionProvider.super.endSession();
-                            sessionParams = null;
-                        }
-                    }).build());
+        if (hasActiveSession()) {
+
+            if (getUserSessionType().equals(UserSessionType.Anonymous)) {
+                if (completion != null) {
+                    completion.onComplete(new BaseResult(null));
+                }
+                return;
+            }
+
+            APIOkRequestsExecutor.getSingleton().queue(
+                    OvpSessionService.end(baseUrl, getSessionToken())
+                            .addParams(OvpService.getOvpConfigParams())
+                            .completion(new OnRequestCompletion() {
+                                @Override
+                                public void onComplete(ResponseElement response) {
+                                    ErrorElement error = null;
+                                    if (response != null && response.isSuccess()) {//!! end session with success returns null
+                                        PKLog.i(TAG, "endSession: logout user session success. clearing session data.");
+                                    } else {
+                                        PKLog.e(TAG, "endSession: session logout failed. clearing session data. " + (response.getError() != null ? response.getError().getMessage() : ""));
+                                        error = response.getError() != null ? response.getError() : ErrorElement.GeneralError.message("failed to end session");
+                                    }
+                                    endSession();
+                                    sessionParams = null;
+
+                                    if (completion != null) {
+                                        completion.onComplete(new BaseResult(error));
+                                    }
+
+                                }
+                            }).build());
 
         } else {
             sessionParams = null;
         }
     }
 
+    @Override
+    public int partnerId() {
+        return sessionParams != null ? sessionParams.partnerId : 0;
+    }
 
     @Override
-    public void getKs(OnCompletion<String> completion) {
+    public void getSessionToken(final OnCompletion<PrimitiveResult> completion) {
         String ks = validateSession();
         if (ks != null) {
             if (completion != null) {
-                completion.onComplete(ks);
+                completion.onComplete(new PrimitiveResult(ks));
             }
         } else {
-            renewSession();
+            renewSession(completion);
         }
     }
 
     protected String validateSession() {
-        long currentDate = System.currentTimeMillis() / 1000;
+        long currentDate = currentTimeMillis() / 1000;
         long timeLeft = expiryDate - currentDate;
-
-        String token = null;
+        String sessionToken = null;
         if (timeLeft > 0) {
-            token = getSessionToken();
+            sessionToken = getSessionToken();
 
-            if (timeLeft < refreshDelta) {
-                // call refreshToken
-                refreshSessionToken();
+            if (timeLeft < ExpirationDelta) {
+                renewSession(null); // token about to expired - we need to restart session
             }
-        } else { // token expired - we need to relogin
-            //call re-login (renewSession)
-            renewSession();
         }
 
-        return token;
-    }
-
-    private void refreshSessionToken() {
-        if (refreshToken == null) {
-            return;
-        }
-        // multi request needed to fetch the new expiration date.
-        MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(baseUrl, null);
-        multiRequest.add(OttUserService.refreshSession(baseUrl, getSessionToken(), refreshToken, sessionParams.udid).removeParams(PhoenixService.getRequestConfigKeys()),
-                OttSessionService.get(baseUrl, "{1:result:ks}").removeParams(PhoenixService.getRequestConfigKeys()))
-                .completion(new OnRequestCompletion() {
-                    @Override
-                    public void onComplete(ResponseElement response) {
-                        if (response != null && response.isSuccess()) {
-                            List<BaseResult> responses = PhoenixParser.parse(response.getResponse());
-                            if (responses.get(0).error != null) { // refresh success
-                                PKLog.e(TAG, "failed to refresh session. token may be invalid and cause ");
-                                // session may have still time before it expires so actually if fails, do nothing.
-
-                            } else {
-                                KalturaLoginSession loginSession = (KalturaLoginSession) responses.get(0);
-                                refreshToken = loginSession.getRefreshToken();
-
-                                if (responses.get(1).error == null) {
-                                    KalturaSession session = (KalturaSession) responses.get(1);
-                                    setSession(session.getKs(), session.getExpiry()); // save new session
-                                }
-
-                            }
-                        }
-                    }
-                });
-        APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
+        return sessionToken;
     }
 
 
-    @Override
-    protected void setSession(String sessionToken, long expiry) {
-        super.setSession(sessionToken, expiry);
-        updateRefreshDelta(expiry);
-    }
-
-    private void updateRefreshDelta(long expiry) {
-        long currentDate = System.currentTimeMillis()/1000;
-        refreshDelta = (expiry - currentDate) * DeltaPercent / 100; // 20% of total validation time
-    }
-
-
-    class OttSessionParams {
-        private String udid;
+    class OvpSessionParams {
         private String username;
         private String password;
-
-        public String udid() {
-            return udid;
-        }
-
-        public OttSessionParams setUdid(String udid) {
-            this.udid = udid;
-            return this;
-        }
+        public int partnerId;
 
         public String username() {
             return username;
         }
 
-        public OttSessionParams setUsername(String username) {
+        public OvpSessionParams setUsername(String username) {
             this.username = username;
             return this;
         }
@@ -280,8 +281,17 @@ public class OvpSessionProvider extends BaseSessionProvider {
             return password;
         }
 
-        public OttSessionParams setPassword(String password) {
+        public OvpSessionParams setPassword(String password) {
             this.password = password;
+            return this;
+        }
+
+        public int partnerId() {
+            return partnerId;
+        }
+
+        public OvpSessionParams setPartnerId(int partnerId) {
+            this.partnerId = partnerId;
             return this;
         }
     }

@@ -12,33 +12,41 @@ import java.util.concurrent.CountDownLatch;
 
 public abstract class CallableLoader implements Callable<Void> {
 
-    protected final String loadId = this.toString()+":"+System.currentTimeMillis();
+    protected final String loadId = this.toString() + ":" + System.currentTimeMillis();
 
     protected OnCompletion completion;
-    protected CountDownLatch waitCompletion;
+    private CountDownLatch waitCompletion;
 
     protected String TAG;
+    protected final Object syncObject = new Object();
+    protected boolean isCanceled = false;
 
-    protected CallableLoader(String tag, OnCompletion completion){
+
+    protected CallableLoader(String tag, OnCompletion completion) {
         this.completion = completion;
         this.TAG = tag;
     }
 
     abstract protected void load() throws InterruptedException;
+
     abstract protected void cancel();
 
-    protected synchronized void notifyCompletion() {
+    protected void notifyCompletion() {
         if (waitCompletion != null) {
-            PKLog.i(TAG, loadId+": notifyCompletion: countDown =  "+waitCompletion.getCount());
-
-            waitCompletion.countDown();
+            synchronized (syncObject) {
+                PKLog.i(TAG, loadId + ": notifyCompletion: countDown =  " + waitCompletion.getCount());
+                waitCompletion.countDown();
+            }
         }
     }
 
-    protected synchronized void waitCompletion() throws InterruptedException {
-        PKLog.i(TAG, loadId+": waitCompletion: set new counDown"+(waitCompletion != null ? "already has counter "+waitCompletion.getCount() : ""));
-        waitCompletion = new CountDownLatch(1);
+    protected void waitCompletion() throws InterruptedException {
+        synchronized (syncObject) {
+            PKLog.i(TAG, loadId + ": waitCompletion: set new counDown" + (waitCompletion != null ? "already has counter " + waitCompletion.getCount() : ""));
+            waitCompletion = new CountDownLatch(1);
+        }
         waitCompletion.await();
+
     }
 
     @Override
@@ -60,7 +68,7 @@ public abstract class CallableLoader implements Callable<Void> {
     }
 
     protected boolean isCanceled() {
-        return Thread.currentThread().isInterrupted();
+        return isCanceled;// Thread.currentThread().isInterrupted();
     }
 
     protected void interrupted() {

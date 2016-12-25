@@ -58,17 +58,21 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
 
         //!- in case load action is in progress and new load is activated, prev request will be canceled
         cancel();
-        currentLoad = loadExecutor.submit(factorNewLoader(completion));
-        PKLog.v(tag, "new loader started "+currentLoad.toString());
+        synchronized (syncObject) {
+            currentLoad = loadExecutor.submit(factorNewLoader(completion));
+            PKLog.v(tag, "new loader started " + currentLoad.toString());
+        }
     }
 
     @Override
-    public synchronized void cancel() {
-        if (currentLoad != null && !currentLoad.isDone() && !currentLoad.isCancelled()) {
-            PKLog.v(tag, "has running load operation, canceling current load operation - " + currentLoad.toString());
-            currentLoad.cancel(true);
-        } else {
-            //for DEBUG: PKLog.v(tag, (currentLoad != null ? currentLoad.toString() : "") + ": no need to cancel operation," + (currentLoad == null ? "operation is null" : (currentLoad.isDone() ? "operation done" : "operation canceled")));
+    public void cancel() {
+        synchronized (syncObject) {
+            if (currentLoad != null && !currentLoad.isDone() && !currentLoad.isCancelled()) {
+                PKLog.v(tag, "has running load operation, canceling current load operation - " + currentLoad.toString());
+                currentLoad.cancel(true);
+            } else {
+                //for DEBUG: PKLog.v(tag, (currentLoad != null ? currentLoad.toString() : "") + ": no need to cancel operation," + (currentLoad == null ? "operation is null" : (currentLoad.isDone() ? "operation done" : "operation canceled")));
+            }
         }
     }
 
