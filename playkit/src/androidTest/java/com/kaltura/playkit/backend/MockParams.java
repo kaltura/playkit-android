@@ -6,7 +6,9 @@ package com.kaltura.playkit.backend;
 
 public class MockParams {
     //OVP:
-    public static final String OvpBaseUrl = "http://www.kaltura.com/api_v3/"; //login at: http://kmc.kaltura.com/index.php/kmc/kmc4#content|manage
+    //public static final String OvpBaseUrl = "http://www.kaltura.com/api_v3/"; //login at: http://kmc.kaltura.com/index.php/kmc/kmc4#content|manage
+    public static final String OvpBaseUrl = "https://cdnapisec.kaltura.com/"; //login at: http://kmc.kaltura.com/index.php/kmc/kmc4#content|manage
+    //public static final String OvpBaseUrl = "http://cdnapi.kaltura.com/"; //login at: http://kmc.kaltura.com/index.php/kmc/kmc4#content|manage
 
     // Demo account user
     public static final String NonDRMEntryIdAnm = "1_25q88snr"; //works for anonymous
@@ -35,7 +37,7 @@ public class MockParams {
 
 
     //OTT:
-    public static final String PnxBaseUrl = "http://api-preprod.ott.kaltura.com/v4_1/api_v3/";//"http://52.210.223.65:8080/v4_1/api_v3/";
+    public static final String PnxBaseUrl = "http://api-preprod.ott.kaltura.com/v4_1/";//"http://52.210.223.65:8080/v4_1/api_v3/";
 
     public static final String PnxUsername = "albert@gmail.com";
     public static final String PnxPassword = "123456";
@@ -55,4 +57,6 @@ public class MockParams {
 
     public static String FrozenAssetInfo = "mock/phoenix.asset.get.258656.json";
 
+
+    public static final String OvpQaBaseUrl = "http://qa-apache-testing-ubu-01.dev.kaltura.com/";
 }

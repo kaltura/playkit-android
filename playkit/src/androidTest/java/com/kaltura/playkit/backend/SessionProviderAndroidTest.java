@@ -9,6 +9,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
+import com.kaltura.playkit.backend.ovp.OvpConfigs;
 import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
 import com.kaltura.playkit.backend.ovp.services.BaseEntryService;
 import com.kaltura.playkit.backend.phoenix.APIDefines;
@@ -23,6 +24,8 @@ import com.kaltura.playkit.connect.ResultElement;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.kaltura.playkit.backend.MockParams.FormatHD;
 import static com.kaltura.playkit.backend.MockParams.MediaId;
@@ -67,7 +70,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                             new PhoenixMediaProvider()
                                     .setSessionProvider(ottSessionProvider)
                                     .setAssetId(MediaId)
-                                    .setMediaType(APIDefines.MediaType.Vod)
+                                    .setReferenceType(APIDefines.AssetReferenceType.Media)
                                     .setFormats(FormatHD)
                                     .load(new OnMediaLoadCompletion() {
                                         @Override
@@ -117,7 +120,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                                     new PhoenixMediaProvider()
                                             .setSessionProvider(ottSessionProvider)
                                             .setAssetId(MediaId)
-                                            .setMediaType(APIDefines.MediaType.Vod)
+                                            .setReferenceType(APIDefines.AssetReferenceType.Media)
                                             .setFormats(FormatHD)
                                             .load(new OnMediaLoadCompletion() {
                                                 @Override
@@ -126,7 +129,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                                                     Log.i("testOttSessionProvider", "we have mediaEntry");
                                                     assertTrue(response.getResponse().getId().equals(MediaId));
                                                     assertTrue(response.getResponse().getSources().size() == 1);
-                                                    assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Vod));
+                                                    assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
 
                                                     resume();
                                                 }
@@ -171,7 +174,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                                     new PhoenixMediaProvider()
                                             .setSessionProvider(ottSessionProvider)
                                             .setAssetId(MediaId)
-                                            .setMediaType(APIDefines.MediaType.Vod)
+                                            .setReferenceType(APIDefines.AssetReferenceType.Media)
                                             .setFormats(FormatHD)
                                             .load(new OnMediaLoadCompletion() {
                                                 @Override
@@ -310,7 +313,7 @@ public class SessionProviderAndroidTest extends BaseTest {
 
         testOvpSessionProviderBaseFlow();
 
-        testOvpEndSession();
+        testOvpUserEndSession();
 
     }
 
@@ -318,55 +321,73 @@ public class SessionProviderAndroidTest extends BaseTest {
     String testKs;
 
     @Test
-    public void testOvpEndSession() {
+    public void testOvpUserEndSession() {
+        final AtomicReference<AssertionError> failure = new AtomicReference<>();
 
-        assertNotNull(ovpSessionProvider);
-        assertTrue(ovpSessionProvider.hasActiveSession());
-
-        ovpSessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
+        ovpSessionProvider = new OvpSessionProvider(OvpBaseUrl);
+        ovpSessionProvider.startSession(OvpLoginId, OvpPassword, OvpPartnerId, new OnCompletion<PrimitiveResult>() {
             @Override
             public void onComplete(PrimitiveResult response) {
-                assertNotNull(response.getResult());
-                testKs = response.getResult();
+                if (response.error == null) {
+                    ovpSessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
+                        @Override
+                        public void onComplete(PrimitiveResult response) {
+                            assertNotNull(response.getResult());
+                            testKs = response.getResult();
 
-                ovpSessionProvider.endSession(new OnCompletion<BaseResult>() {
-                    @Override
-                    public void onComplete(BaseResult response) {
-                        if (response.error == null) {
-                            APIOkRequestsExecutor.getSingleton().queue(BaseEntryService.list(ovpSessionProvider.baseUrl(),
-                                    testKs, NonDRMEntryId)
-                                    .completion(new OnRequestCompletion() {
-                                        @Override
-                                        public void onComplete(ResponseElement response) {
-                                            assertNotNull(response.getResponse());
-                                            BaseResult parsedResponse = PhoenixParser.parse(response.getResponse());
-                                            assertNotNull(parsedResponse);
-                                            assertNotNull(parsedResponse.error);
-                                            assertTrue(parsedResponse.error.getCode().toLowerCase().contains("invalid_ks"));
+                            ovpSessionProvider.endSession(new OnCompletion<BaseResult>() {
+                                @Override
+                                public void onComplete(BaseResult response) {
+                                    if (response.error == null) {
+                                        APIOkRequestsExecutor.getSingleton().queue(BaseEntryService.list(ovpSessionProvider.baseUrl() + OvpConfigs.ApiPrefix,
+                                                testKs, NonDRMEntryId)
+                                                .completion(new OnRequestCompletion() {
+                                                    @Override
+                                                    public void onComplete(ResponseElement response) {
+                                                        try {
+                                                            assertNotNull(response.getResponse());
+                                                            BaseResult parsedResponse = PhoenixParser.parse(response.getResponse());
+                                                            assertNotNull(parsedResponse);
+                                                            assertNotNull(parsedResponse.error);
+                                                            assertTrue(parsedResponse.error.getCode().toLowerCase().contains("invalid_ks"));
 
-                                            new KalturaOvpMediaProvider()
-                                                    .setSessionProvider(ovpSessionProvider)
-                                                    .setEntryId(NonDRMEntryId)
-                                                    .load(new OnMediaLoadCompletion() {
-                                                        @Override
-                                                        public void onComplete(ResultElement<PKMediaEntry> response) {
-                                                            //after ending session, it can't be renewed, start session should be called.
-                                                            assertNotNull(response.getError());
-                                                            assertTrue(response.getError().equals(ErrorElement.SessionError));
-                                                            resume();
+                                                            new KalturaOvpMediaProvider()
+                                                                    .setSessionProvider(ovpSessionProvider)
+                                                                    .setEntryId(NonDRMEntryId)
+                                                                    .load(new OnMediaLoadCompletion() {
+                                                                        @Override
+                                                                        public void onComplete(ResultElement<PKMediaEntry> response) {
+                                                                            //after ending session, it can't be renewed, start session should be called.
+                                                                            try {
+                                                                                assertNotNull(response.getError());
+                                                                                assertTrue(response.getError().equals(ErrorElement.SessionError));
+                                                                            } catch (AssertionError e) {
+                                                                                failure.set(e);
+                                                                                fail("failed assert error on entry loading on expired ks: " + e.getMessage());
+                                                                            } finally {
+                                                                                resume();
+                                                                            }
+                                                                        }
+                                                                    });
+                                                        } catch (AssertionError error) {
+                                                            failure.set(error);
+                                                            fail("failed assert error on expired ks: " + error.getMessage());
                                                         }
-                                                    });
-                                        }
-                                    })
-                                    .build());
+                                                    }
+                                                }).build());
 
-                        } else {
-                            PKLog.i(TAG, "got an error: " + response.error.getMessage());
-                            //assertTrue(error.equals(fo));
-                            resume();
+                                    } else {
+                                        PKLog.i(TAG, "got an error: " + response.error.getMessage());
+                                        fail("failed to end session");
+                                        resume();
+                                    }
+                                }
+                            });
                         }
-                    }
-                });
+                    });
+                } else {
+                    fail("failed to establish session");
+                }
             }
         });
         wait(1);

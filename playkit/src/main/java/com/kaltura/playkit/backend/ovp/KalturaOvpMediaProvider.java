@@ -121,7 +121,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
         @Override
         protected void requestRemote(final String ks) throws InterruptedException {
-            final RequestBuilder entryRequest = BaseEntryService.entryInfo(sessionProvider.baseUrl(), ks, entryId)
+            final RequestBuilder entryRequest = BaseEntryService.entryInfo(getApiBaseUrl(), ks, entryId)
                     .completion(new OnRequestCompletion() {
                         @Override
                         public void onComplete(ResponseElement response) {
@@ -141,6 +141,10 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
             waitCompletion();
+        }
+
+        private String getApiBaseUrl() {
+            return sessionProvider.baseUrl()+OvpConfigs.ApiPrefix;
         }
 
 
@@ -183,7 +187,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                                 new KalturaPlaybackContext((KalturaEntryContextDataResult) responses.get(2));*/
 
                         if ((error = hasError(kalturaPlaybackContext.getMessages())) == null) { // check for error message
-                            mediaEntry = ProviderParser.getMediaEntry(ks, sessionProvider.partnerId() + "", uiConfId,
+                            mediaEntry = ProviderParser.getMediaEntry(getApiBaseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
                                     ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), kalturaPlaybackContext);
 
                             if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
@@ -236,19 +240,21 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         /**
          * creates {@link PKMediaEntry} from entry's data and contextData
          *
+         *
+         * @param baseUrl
          * @param entry
          * @param playbackContext
          * @return (in case of restriction on maxbitrate, filtering should be done by considering the flavors provided to the
          *source- if none meets the restriction, source should not be added to the mediaEntrys sources.)
          */
-        public static PKMediaEntry getMediaEntry(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlaybackContext playbackContext) throws InvalidParameterException {
+        public static PKMediaEntry getMediaEntry(String baseUrl, String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlaybackContext playbackContext) throws InvalidParameterException {
 
             PKMediaEntry mediaEntry = new PKMediaEntry();
             ArrayList<KalturaPlaybackSource> kalturaSources = playbackContext.getSources();
             List<PKMediaSource> sources;
 
             if (kalturaSources != null && kalturaSources.size() > 0) {
-                sources = parseFromSources(ks, partnerId, uiConfId, entry, playbackContext);
+                sources = parseFromSources(baseUrl, ks, partnerId, uiConfId, entry, playbackContext);
             } else {
                 sources = new ArrayList<>();
             }
@@ -315,7 +321,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     //          "url":"http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/url/protocol/http/a.mp4/flavorIds/0_,1_ude4l5pb,1_izgi81qa,1_3l6wh2jz,1_fafwf2t7,1_k6gs4dju,1_nzen8kfl"
 
     @NonNull
-    private static List<PKMediaSource> parseFromSources(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlaybackContext playbackContext) {
+    private static List<PKMediaSource> parseFromSources(String baseUrl, String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlaybackContext playbackContext) {
         ArrayList<PKMediaSource> sources = new ArrayList<>();
 
         //-> create PKMediaSource-s according to sources list provided in "getContextData" response
@@ -331,6 +337,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             if (playbackSource.hasFlavorIds()) {
 
                 PlaySourceUrlBuilder playUrlBuilder = new PlaySourceUrlBuilder()
+                        .setBaseUrl(baseUrl)
                         .setEntryId(entry.getId())
                         .setFlavorIds(playbackSource.getFlavorIds())
                         .setFormat(playbackSource.getFormat())
