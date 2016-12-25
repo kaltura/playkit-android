@@ -1,5 +1,7 @@
 package com.kaltura.playkit;
 
+import android.support.annotation.NonNull;
+
 import java.util.List;
 
 /**
@@ -23,8 +25,10 @@ public class PKTracks {
      * Getter for videoTracksInfo list.
      * Before use, the list entry's should be casted to {@link VideoTrack} in order to receive the
      * full track info of that type.
+     * Can be empty, if no tracks available.
      * @return - the list of all available Video tracks, that can be played on the device.
      */
+    @NonNull
     public List<BaseTrack> getVideoTracksInfo() {
         return videoTracksInfo;
     }
@@ -33,8 +37,10 @@ public class PKTracks {
      * Getter for audioTracksInfo list.
      * Before use, the list entry's should be casted to {@link AudioTrack} in order to receive the
      * full track info of that type.
+     * Can be empty, if no tracks available.
      * @return - the list of all available Audio tracks, that can be played on the device.
      */
+    @NonNull
     public List<BaseTrack> getAudioTracksInfo() {
         return audioTracksInfo;
     }
@@ -43,8 +49,10 @@ public class PKTracks {
      * Getter for textTracksInfo list.
      * Before use, the list entry's should be casted to {@link TextTrack} in order to receive the
      * full track info of that type.
+     * Can be empty, if no tracks available.
      * @return - the list of all available Text tracks, that can be played on the device.
      */
+    @NonNull
     public List<BaseTrack> getTextTracksInfo() {
         return textTracksInfo;
     }
