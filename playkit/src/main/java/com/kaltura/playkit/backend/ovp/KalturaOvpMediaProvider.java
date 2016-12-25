@@ -187,7 +187,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                                 new KalturaPlaybackContext((KalturaEntryContextDataResult) responses.get(2));*/
 
                         if ((error = hasError(kalturaPlaybackContext.getMessages())) == null) { // check for error message
-                            mediaEntry = ProviderParser.getMediaEntry(getApiBaseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
+                            mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
                                     ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), kalturaPlaybackContext);
 
                             if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
