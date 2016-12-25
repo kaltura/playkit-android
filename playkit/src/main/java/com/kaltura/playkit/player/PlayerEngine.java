@@ -1,6 +1,5 @@
 package com.kaltura.playkit.player;
 
-import android.net.Uri;
 import android.view.View;
 
 import com.kaltura.playkit.PKMediaSource;
