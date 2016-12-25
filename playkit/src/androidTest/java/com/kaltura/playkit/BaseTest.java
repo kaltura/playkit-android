@@ -13,22 +13,25 @@ public class BaseTest {
 
     protected CountDownLatch testWaitCount;
     protected String TAG = "BaseTest";
+    Object syncObject = new Object();
 
-    public BaseTest(){
+    public BaseTest() {
     }
 
-    public BaseTest(String tag){
+    public BaseTest(String tag) {
         this.TAG = tag;
     }
 
-    protected void resume(){
-        if(testWaitCount != null) {
-            testWaitCount.countDown();
-            PKLog.d(TAG, "count down reduced to "+testWaitCount.getCount());
+    protected void resume() {
+        if (testWaitCount != null) {
+            synchronized (syncObject) {
+                testWaitCount.countDown();
+                PKLog.d(TAG, "count down reduced to " + testWaitCount.getCount());
+            }
         }
     }
 
-    protected void resume(int delay){
+    protected synchronized void resume(int delay) {
         try {
             Thread.sleep(delay);
             resume();
@@ -37,19 +40,27 @@ public class BaseTest {
         }
     }
 
-    protected synchronized void wait(int count){
-        testWaitCount = new CountDownLatch(count);
+    protected void wait(int count) {
+        synchronized (syncObject) {
+            testWaitCount = new CountDownLatch(count);
+        }
         try {
-            testWaitCount.await();
-            PKLog.d(TAG, "count down set for "+count);
+            testWaitCount.await(/*10000, TimeUnit.MILLISECONDS*/);
+            PKLog.d(TAG, "count down set for " + count);
 
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
     }
 
     @After
-    public void tearDown(){
+    public void tearDown() {
         /*resume();*/
+    }
+
+
+    public interface TestBlock<T>{
+        void execute(T data) throws AssertionError;
     }
 }

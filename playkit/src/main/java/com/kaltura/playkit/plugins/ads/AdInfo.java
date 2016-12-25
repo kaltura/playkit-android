@@ -2,6 +2,8 @@ package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.ads.PKAdInfo;
 
+import java.util.List;
+
 /**
  * Created by gilad.nadav on 22/11/2016.
  */

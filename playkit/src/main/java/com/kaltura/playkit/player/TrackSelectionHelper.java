@@ -132,6 +132,8 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
                                 textTracksInfo.add(new TextTrackInfo(uniqueId, format.language));
                                 break;
                         }
+                    }else{
+                        log.w("format is not supported for this device. Format bitrate " + format.bitrate + " id " + format.id);
                     }
                 }
             }

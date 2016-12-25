@@ -1,19 +1,19 @@
 package com.kaltura.playkit.backend.phoenix.services;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.connect.RequestBuilder;
+import com.kaltura.playkit.backend.phoenix.PhoenixRequestBuilder;
 
 /**
  * Created by tehilarozin on 28/11/2016.
  */
 
-public class OttSessionService extends PhoenixService {
+public class PhoenixSessionService extends PhoenixService {
 
-    public static RequestBuilder get(String baseUrl, String ks){
-        JsonObject params = getPhoenixParams();
+    public static PhoenixRequestBuilder get(String baseUrl, String ks){
+        JsonObject params = new JsonObject();
         params.addProperty("ks", ks);
 
-        return new RequestBuilder()
+        return new PhoenixRequestBuilder()
                 .service("session")
                 .action("get")
                 .method("POST")

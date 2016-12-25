@@ -5,6 +5,7 @@ import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayKitManager;
+import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
@@ -16,6 +17,8 @@ import org.json.JSONException;
 
 import java.util.Map;
 
+import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
+
 /**
  * Created by zivilan on 02/11/2016.
  */
@@ -24,8 +27,9 @@ public class YouboraLibraryManager extends PluginGeneric {
     private static final PKLog log = PKLog.get("YouboraLibraryManager");
     private static final String TAG = "YouboraPlugin";
 
-    private Double lastReportedBitrate = super.getBitrate();
+    private Double lastReportedBitrate = -1.0;
     private Double lastReportedthroughput = super.getThroughput();
+    private String mediaUrl = "unknown";
     private static final long MONITORING_INTERVAL = 200L;
     private boolean isFirstPlay = true;
     private boolean isBuffering = false;
@@ -78,11 +82,19 @@ public class YouboraLibraryManager extends PluginGeneric {
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
-            if (event instanceof PlayerEvent) {
+            if (event instanceof PlayerEvent && viewManager != null) {
                 log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
                     case STATE_CHANGED:
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
+                        break;
+                    case PLAYBACK_PARAMS:
+                        PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParams) event).getPlaybackParamsInfo();
+                        lastReportedBitrate = Long.valueOf(currentPlaybackParams.getVideoBitrate()).doubleValue();
+                        if (!mediaUrl.equals(currentPlaybackParams.getMediaUrl())){
+                            mediaUrl = currentPlaybackParams.getMediaUrl();
+
+                        }
                         break;
                     case ENDED:
                         if (!isFirstPlay) {
@@ -106,6 +118,10 @@ public class YouboraLibraryManager extends PluginGeneric {
                         }
                         break;
                     case PLAYING:
+                        if (isFirstPlay){
+                            isFirstPlay = false;
+                            playHandler();
+                        }
                         playingHandler();
                         break;
                     case SEEKED:
@@ -121,7 +137,7 @@ public class YouboraLibraryManager extends PluginGeneric {
                         break;
                 }
                 log.d(event.eventType().name());
-                if (((PlayerEvent) event).type != PlayerEvent.Type.STATE_CHANGED){
+                if (((PlayerEvent) event).type != STATE_CHANGED){
                     messageBus.post(new LogEvent(TAG + " " + ((PlayerEvent) event).type.toString()));
                 }
             } else if (event instanceof AdEvent){
@@ -150,21 +166,12 @@ public class YouboraLibraryManager extends PluginGeneric {
     public void startMonitoring(Object player) {
         log.d("startMonitoring");
         super.startMonitoring(player);
-        this.lastReportedBitrate = super.getBitrate();
-        this.enableSeekMonitor();
+        this.enableBufferMonitor();
     }
 
     public void stopMonitoring() {
         log.d("stopMonitoring");
         super.stopMonitoring();
-    }
-
-    public void setBitrate(Double bitrate) {
-        this.lastReportedBitrate = bitrate;
-    }
-
-    public void setThroughput(Double throughput) {
-        this.lastReportedthroughput = throughput;
     }
 
     public Double getBitrate() {
@@ -188,7 +195,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public String getResource() {
-            return "unknown";
+            return this.mediaUrl;
     }
 
     public Double getPlayhead() {

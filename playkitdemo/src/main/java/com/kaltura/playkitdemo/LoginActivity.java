@@ -315,8 +315,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
-            MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getUser();
-            RequestBuilder requestBuilder = OttUserService.userLogin(MockParams.PhoenixBaseUrl, MockParams.PartnerId, user.username, user.password);
+            MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getUser(MockParams.UserType.Ott);
+            RequestBuilder requestBuilder = OttUserService.userLogin(MockParams.PhoenixBaseUrl, MockParams.OttPartnerId, user.username, user.password);
             requestBuilder.completion(new OnRequestCompletion() {
                 @Override
                 public void onComplete(ResponseElement response) {
