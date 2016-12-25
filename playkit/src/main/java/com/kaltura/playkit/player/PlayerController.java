@@ -100,13 +100,7 @@ public class PlayerController implements Player {
 
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
-        Uri sourceUri = Uri.parse(source.getUrl());
-        List<PKDrmParams> drmData = source.getDrmData();//PKDrmParams drmData = source.getDrmData();
-        String licenseUri = null;
-        if (drmData != null && drmData.size() > 0) {
-            licenseUri = drmData.get(0).getLicenseUri(); // ?? TODO: decide which of the drm items to take
-        }
-        player.load(sourceUri, licenseUri);
+        player.load(source);
 
         startPlaybackFrom(mediaConfig.getStartPosition());
     }
@@ -257,6 +251,11 @@ public class PlayerController implements Player {
     @Override
     public void onApplicationPaused() {
         log.d("onApplicationPaused");
+        if(player == null){
+            log.e("Attempt to invoke 'release()' on null instance of the player engine");
+            return;
+        }
+
         player.release();
         togglePlayerListeners(false);
         wasReleased = true;
