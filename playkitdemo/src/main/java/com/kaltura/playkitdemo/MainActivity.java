@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void onComplete(PrimitiveResult response) {
                     if (response.error == null) {
-                        mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(MockParams.NonDRMEntryId);
+                        mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(MockParams.DRMEntryIdAnm);
 
                         mediaProvider.load(new OnMediaLoadCompletion() {
                             @Override
