@@ -139,11 +139,6 @@ public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.
     }
 
     @Override
-    public void onVideoTracksDisabled() {
-        shutterView.setVisibility(VISIBLE);
-    }
-
-    @Override
     public void onCues(List<Cue> cues) {
         subtitleLayout.onCues(cues);
     }
