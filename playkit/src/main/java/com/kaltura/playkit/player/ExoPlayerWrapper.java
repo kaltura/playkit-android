@@ -139,7 +139,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
             player.addListener(eventLogger);
             player.setVideoDebugListener(eventLogger);
             player.setAudioDebugListener(eventLogger);
-            player.setId3Output(eventLogger);
+            player.setMetadataOutput(eventLogger);
             player.setVideoDebugListener(trackSelectionHelper);
             player.setAudioDebugListener(trackSelectionHelper);
         }
@@ -343,7 +343,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
         if (shouldGetTracksInfo) {
             shouldGetTracksInfo = false;
-            trackSelectionHelper.prepareTracksInfo();
+            trackSelectionHelper.prepareTracks();
         }
     }
 
