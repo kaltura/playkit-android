@@ -11,17 +11,13 @@ import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.SelectionOverride;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import com.kaltura.playkit.AudioTrack;
 import com.kaltura.playkit.BaseTrack;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.kaltura.playkit.AudioTrackInfo;
-import com.kaltura.playkit.BaseTrackInfo;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.TextTrack;
 import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.VideoTrack;
-import com.google.android.exoplayer2.trackselection.MappingTrackSelector.SelectionOverride;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
