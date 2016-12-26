@@ -11,10 +11,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.BaseTrack;
 import com.kaltura.playkit.AudioTrack;
-import com.kaltura.playkit.TextTrack;
-import com.kaltura.playkit.VideoTrack;
+import com.kaltura.playkit.BaseTrack;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKEvent;
@@ -25,11 +23,12 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-
+import com.kaltura.playkit.TextTrack;
+import com.kaltura.playkit.VideoTrack;
+import com.kaltura.playkit.backend.PrimitiveResult;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
-import com.kaltura.playkit.backend.PrimitiveResult;
 import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
@@ -78,8 +77,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setVisibility(View.INVISIBLE);
         registerPlugins();
-
-        //mediaProvider = new MockMediaProvider("mock/entries.playkit.json", this, "dash");
 
         startOvpMediaLoading();
         //startOttMediaLoading();
@@ -132,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 public void onComplete(PrimitiveResult response) {
                     if (response.error == null) {
                         mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(MockParams.DRMEntryIdAnm);
-
+                        //mediaProvider = new MockMediaProvider("mock/entries.playkit.json", getApplicationContext(), "hls");
                         mediaProvider.load(new OnMediaLoadCompletion() {
                             @Override
                             public void onComplete(final ResultElement<PKMediaEntry> response) {
@@ -374,9 +371,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 for (int i = 0; i < trackInfos.size(); i++) {
                     AudioTrack audioTrackInfo = (AudioTrack) trackInfos.get(i);
                     if(audioTrackInfo.isAdaptive()){
-                        trackItems[i] = new TrackItem(audioTrackInfo.getLanguage() + " Auto", audioTrackInfo.getUniqueId());
+                        trackItems[i] = new TrackItem("Auto", audioTrackInfo.getUniqueId());
                     }else{
-                        trackItems[i] = new TrackItem(audioTrackInfo.getLanguage() + " " + String.valueOf(audioTrackInfo.getBitrate()), audioTrackInfo.getUniqueId());
+                        String label = audioTrackInfo.getLanguage() != null ? audioTrackInfo.getLanguage() : audioTrackInfo.getLabel();
+                        String bitrate = (audioTrackInfo.getBitrate() >  0)? "" + audioTrackInfo.getBitrate() : "";
+                        trackItems[i] = new TrackItem(label + " " + bitrate, audioTrackInfo.getUniqueId());
                     }
                 }
                 break;
@@ -387,7 +386,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 for (int i = 0; i < trackInfos.size(); i++) {
 
                     TextTrack textTrackInfo = (TextTrack) trackInfos.get(i);
-                    trackItems[i] = new TrackItem(String.valueOf(textTrackInfo.getLanguage()), textTrackInfo.getUniqueId());
+                    String lang = (textTrackInfo.getLanguage() != null) ? textTrackInfo.getLanguage() : "unknown";
+                    trackItems[i] = new TrackItem(lang, textTrackInfo.getUniqueId());
                 }
                 break;
         }
