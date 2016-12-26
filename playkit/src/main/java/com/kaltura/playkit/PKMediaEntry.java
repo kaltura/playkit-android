@@ -5,7 +5,7 @@ import java.util.List;
 public class PKMediaEntry {
     private String id;
     private List<PKMediaSource> sources;
-    private long duration;
+    private long duration; //in milliseconds
     private MediaEntryType mediaType;
 
     public PKMediaEntry setId(String id) {

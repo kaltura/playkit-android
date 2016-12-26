@@ -44,6 +44,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         @APIDefines.AssetReferenceType
         String referenceType;
         List<String> formats;
+        /*consider remove the following 3 members if the license links are not rertreived by the provider*/
         String epgId;
         long startDate;
         String streamType;
