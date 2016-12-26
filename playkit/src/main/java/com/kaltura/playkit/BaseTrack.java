@@ -11,12 +11,12 @@ package com.kaltura.playkit;
  * Created by anton.afanasiev on 27/11/2016.
  */
 
-public abstract class BaseTrackInfo {
+public abstract class BaseTrack {
 
     private String uniqueId;
     private boolean isAdaptive;
 
-    public BaseTrackInfo(String uniqueId, boolean isAdaptive) {
+    public BaseTrack(String uniqueId, boolean isAdaptive) {
         this.uniqueId = uniqueId;
         this.isAdaptive = isAdaptive;
     }

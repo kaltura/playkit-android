@@ -81,7 +81,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
      * @param referenceType - can be one of the {@link com.kaltura.playkit.backend.phoenix.APIDefines.AssetReferenceType} values
      * @return
      */
-    public PhoenixMediaProvider setReferenceType(@NonNull @APIDefines.AssetReferenceType String referenceType) {
+    public PhoenixMediaProvider setReferenceType(@NonNull String referenceType) {
         this.mediaAsset.referenceType = referenceType;
         return this;
     }
