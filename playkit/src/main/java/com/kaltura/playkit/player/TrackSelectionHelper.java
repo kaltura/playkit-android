@@ -428,11 +428,24 @@ class TrackSelectionHelper {
             if (trackSelection == null || trackSelection.getSelectedFormat() == null) {
                 continue;
             }
-            if (trackSelection.getSelectedFormat().sampleMimeType == null) {
+
+            String sampleMimeType = "";
+            String containerMimeType = "";
+            if (trackSelection.getSelectedFormat().sampleMimeType != null) {
+                sampleMimeType = trackSelection.getSelectedFormat().sampleMimeType;
+            }
+            if (trackSelection.getSelectedFormat().containerMimeType != null) {
+                containerMimeType = trackSelection.getSelectedFormat().containerMimeType;
+            }
+
+            if ("".equals(sampleMimeType) && "".equals(containerMimeType)) {
                 continue;
             }
+            log.d("sampleMimeType = "    + sampleMimeType);
+            log.d("containerMimeType = " + containerMimeType);
+
             String auto = "";
-            if (trackSelection.getSelectedFormat().sampleMimeType.contains(VIDEO) && trackSelection.getSelectedFormat().bitrate != -1) {
+            if ((sampleMimeType.contains(VIDEO) || containerMimeType.contains(VIDEO))) {
 
                 if (trackSelection instanceof AdaptiveVideoTrackSelection) {
                     auto = " Auto";
@@ -440,11 +453,12 @@ class TrackSelectionHelper {
                 log.d("Selected" + auto + " video bitrate = " + trackSelection.getSelectedFormat().bitrate);
                 auto = "";
                 currentVideoBitrate = trackSelection.getSelectedFormat().bitrate;
-            } else if (trackSelection.getSelectedFormat().sampleMimeType.contains(AUDIO) && trackSelection.getSelectedFormat().bitrate != -1) {
+            } else if ((sampleMimeType.contains(AUDIO) || containerMimeType.contains(AUDIO))) {
                 if (trackSelection instanceof AdaptiveVideoTrackSelection) {
                     auto = " Auto";
                 }
                 log.d("Selected" + auto + " audio bitrate = " + trackSelection.getSelectedFormat().bitrate);
+                auto = "";
                 currentAudioBitrate = trackSelection.getSelectedFormat().bitrate;
             }
         }
