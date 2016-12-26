@@ -10,6 +10,7 @@ import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
@@ -51,7 +52,7 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
     private static final String AUDIO_PREFIX = "Audio:";
     private static final String TEXT_PREFIX = "Text:";
 
-    private final MappingTrackSelector selector;
+    private final DefaultTrackSelector selector;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
     private final TrackSelection.Factory adaptiveTrackSelectionFactory;
     private ExoPlayerWrapper.TracksInfoListener tracksInfoListener;
@@ -69,25 +70,31 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
      * @param adaptiveTrackSelectionFactory A factory for adaptive video {@link TrackSelection}s,
      *                                      or null if the selection helper should not support adaptive video.
      */
-    TrackSelectionHelper(MappingTrackSelector selector,
+    TrackSelectionHelper(DefaultTrackSelector selector,
                          TrackSelection.Factory adaptiveTrackSelectionFactory) {
         this.selector = selector;
         this.adaptiveTrackSelectionFactory = adaptiveTrackSelectionFactory;
     }
 
-
     /**
      * Prepare {@link PKTracks} object for application.
      * When the object is created, notify {@link ExoPlayerWrapper} about that,
      * and pass the {@link PKTracks} as parameter.
+     * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
-    void prepareTracks() {
+    boolean prepareTracks() {
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
+        if(mappedTrackInfo == null){
+            return false;
+        }
+        warnAboutUnsupportedRenderTypes();
         PKTracks tracksInfo = buildTracks();
 
         if (tracksInfoListener != null) {
             tracksInfoListener.onTracksInfoReady(tracksInfo);
         }
+
+        return true;
     }
 
     /**
@@ -95,6 +102,9 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
      */
     private PKTracks buildTracks() {
+
+        clearTracksLists();
+
         TrackGroupArray trackGroupArray;
         TrackGroup trackGroup;
         Format format;
@@ -127,7 +137,6 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
                             case Consts.TRACK_TYPE_AUDIO:
                                 audioTracks.add(new AudioTrack(uniqueId, format.language, format.id, format.bitrate, false));
                                 break;
-
                             case Consts.TRACK_TYPE_TEXT:
                                 textTracks.add(new TextTrack(uniqueId, format.language, format.id));
                                 break;
@@ -225,7 +234,6 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
         overrideTrack(rendererIndex, override);
 
     }
-
 
     /**
      * @param uniqueId - the uniqueId to convert.
@@ -402,10 +410,26 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
         return false;
     }
 
+    private void warnAboutUnsupportedRenderTypes() {
+        if (mappedTrackInfo.getTrackTypeRendererSupport(Consts.TRACK_TYPE_VIDEO)
+                == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
+            log.w("Error unsupported video");
+        }
+        if (mappedTrackInfo.getTrackTypeRendererSupport(Consts.TRACK_TYPE_AUDIO)
+                == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
+            log.w("Error unsupported audio");
+        }
+    }
+
     void setTracksInfoListener(ExoPlayerWrapper.TracksInfoListener tracksInfoListener) {
         this.tracksInfoListener = tracksInfoListener;
     }
 
+    private void clearTracksLists() {
+        videoTracks.clear();
+        audioTracks.clear();
+        textTracks.clear();
+    }
 
     public void release() {
         tracksInfoListener = null;
