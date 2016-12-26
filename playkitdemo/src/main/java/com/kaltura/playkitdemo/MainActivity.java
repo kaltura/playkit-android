@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         PlayerConfig config = new PlayerConfig();
 
-        config.media.setMediaEntry(mediaEntry).setStartPosition(30000);
+        config.media.setMediaEntry(mediaEntry).setStartPosition(30);
 
         if (player == null) {
 
