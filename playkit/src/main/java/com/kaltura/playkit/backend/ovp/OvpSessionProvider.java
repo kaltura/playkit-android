@@ -45,7 +45,7 @@ public class OvpSessionProvider extends BaseSessionProvider {
 
 
     public OvpSessionProvider(String baseUrl) {
-        super(baseUrl);
+        super(baseUrl, OvpConfigs.ApiPrefix);
     }
 
 
@@ -55,7 +55,7 @@ public class OvpSessionProvider extends BaseSessionProvider {
     public void startAnonymousSession(int partnerId, final OnCompletion<PrimitiveResult> completion) {
         sessionParams = new OvpSessionParams().setPartnerId(partnerId);
         final long expiration = System.currentTimeMillis() / 1000 + DefaultSessionExpiry;
-        RequestBuilder requestBuilder = OvpSessionService.anonymousSession(baseUrl, sessionParams.partnerId())
+        RequestBuilder requestBuilder = OvpSessionService.anonymousSession(apiBaseUrl, sessionParams.partnerId())
                 .completion(new OnRequestCompletion() {
                     @Override
                     public void onComplete(ResponseElement response) {
@@ -105,9 +105,9 @@ public class OvpSessionProvider extends BaseSessionProvider {
         //get session data for expiration time
         this.sessionParams = new OvpSessionParams().setPassword(password).setUsername(username).setPartnerId(partnerId);
 
-        MultiRequestBuilder multiRequest = OvpService.getMultirequest(baseUrl, null);
-        multiRequest.add(UserService.loginByLoginId(baseUrl, sessionParams.username, sessionParams.password, sessionParams.partnerId()),
-                OvpSessionService.get(baseUrl, "{1:result}")).
+        MultiRequestBuilder multiRequest = OvpService.getMultirequest(apiBaseUrl, null);
+        multiRequest.add(UserService.loginByLoginId(apiBaseUrl, sessionParams.username, sessionParams.password, sessionParams.partnerId()),
+                OvpSessionService.get(apiBaseUrl, "{1:result}")).
                 completion(new OnRequestCompletion() {
                     @Override
                     public void onComplete(ResponseElement response) {
@@ -203,7 +203,7 @@ public class OvpSessionProvider extends BaseSessionProvider {
             }
 
             APIOkRequestsExecutor.getSingleton().queue(
-                    OvpSessionService.end(baseUrl, getSessionToken())
+                    OvpSessionService.end(apiBaseUrl, getSessionToken())
                             .addParams(OvpService.getOvpConfigParams())
                             .completion(new OnRequestCompletion() {
                                 @Override

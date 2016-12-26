@@ -10,7 +10,7 @@ import java.util.List;
 public class MockParams {
 
 /*Ott Mock params: */
-    public static final String PhoenixBaseUrl = "http://api-preprod.ott.kaltura.com/v4_1/api_v3/";//http://52.210.223.65:8080/v4_1/api_v3/";
+    public static final String PhoenixBaseUrl = "http://api-preprod.ott.kaltura.com/v4_1/";//http://52.210.223.65:8080/v4_1/api_v3/";
     public static final int OttPartnerId = 198;
 
     //result of login with : [username: albert@gmail.com, pass: 123456]
@@ -28,7 +28,7 @@ public class MockParams {
 //---------------------------------------
 
 /*Ovp Mock params: */
-    public static final String OvpBaseUrl = "http://www.kaltura.com/api_v3/";
+    public static final String OvpBaseUrl = "https://cdnapisec.kaltura.com/";
     public static final String NonDRMEntryId = "1_xay0wjby"; //works for user/anonymous
     public static final String DRMEntryIdUsr = "1_tmomdals"; //works for logged user
     public static final String DRMEntryIdAnm = "1_ytsd86sc"; //works for anonymous
