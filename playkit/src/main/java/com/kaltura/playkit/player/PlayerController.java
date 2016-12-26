@@ -1,13 +1,11 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
 
 import com.kaltura.playkit.Assert;
-import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaSource;
@@ -18,7 +16,6 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
-import java.util.List;
 
 /**
  * Created by anton.afanasiev on 01/11/2016.
