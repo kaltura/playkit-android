@@ -410,14 +410,17 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
         return false;
     }
 
+    /**
+     * Notify to log, that video/audio renderer have only unsupported tracks.
+     */
     private void warnAboutUnsupportedRenderTypes() {
         if (mappedTrackInfo.getTrackTypeRendererSupport(Consts.TRACK_TYPE_VIDEO)
                 == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-            log.w("Error unsupported video");
+            log.w("Warning! All the video tracks are unsupported by this device.");
         }
         if (mappedTrackInfo.getTrackTypeRendererSupport(Consts.TRACK_TYPE_AUDIO)
                 == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-            log.w("Error unsupported audio");
+            log.w("Warning! All the audio tracks are unsupported by this device.");
         }
     }
 
