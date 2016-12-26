@@ -6,6 +6,8 @@ package com.kaltura.playkit.backend.ovp;
 
 public class OvpConfigs {
 
+    public static String ApiPrefix = "api_v3/";
+
     public static String ApiVersion = "3.3.0";
 
     //temporal value - will be configurable: provided by uiconf or something

@@ -137,8 +137,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
             player.setVideoDebugListener(eventLogger);
             player.setAudioDebugListener(eventLogger);
             player.setMetadataOutput(eventLogger);
-            player.setVideoDebugListener(trackSelectionHelper);
-            player.setAudioDebugListener(trackSelectionHelper);
         }
     }
 
@@ -328,6 +326,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         if (shouldGetTracksInfo) {
             shouldGetTracksInfo = !trackSelectionHelper.prepareTracks();
         }
+
+        trackSelectionHelper.updateSelectedTracksBitrate(trackSelections);
     }
 
     @Override

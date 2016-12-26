@@ -44,6 +44,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         @APIDefines.AssetReferenceType
         String referenceType;
         List<String> formats;
+        /*consider remove the following 3 members if the license links are not rertreived by the provider*/
         String epgId;
         long startDate;
         String streamType;
@@ -80,7 +81,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
      * @param referenceType - can be one of the {@link com.kaltura.playkit.backend.phoenix.APIDefines.AssetReferenceType} values
      * @return
      */
-    public PhoenixMediaProvider setReferenceType(@NonNull String referenceType) {
+    public PhoenixMediaProvider setReferenceType(@NonNull @APIDefines.AssetReferenceType String referenceType) {
         this.mediaAsset.referenceType = referenceType;
         return this;
     }
@@ -125,13 +126,13 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     class Loader extends BECallableLoader {
 
-        private MediaAsset asset;
+        private MediaAsset mediaAsset;
 
 
         public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, MediaAsset mediaAsset, OnMediaLoadCompletion completion) {
             super(PhoenixMediaProvider.TAG + "#Loader", requestsExecutor, sessionProvider, completion);
 
-            this.asset = mediaAsset;
+            this.mediaAsset = mediaAsset;
 
             PKLog.v(TAG, loadId + ": construct new Loader");
         }
@@ -145,7 +146,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         @Override
         protected void requestRemote(String ks) throws InterruptedException {
-            PhoenixRequestBuilder requestBuilder = AssetService.assetGet(sessionProvider.baseUrl(), ks, asset.assetId, asset.referenceType)
+            PhoenixRequestBuilder requestBuilder = AssetService.assetGet(getApiBaseUrl(), ks, mediaAsset.assetId, mediaAsset.referenceType)
                     .completion(new OnRequestCompletion() {
                         @Override
                         public void onComplete(ResponseElement response) {
@@ -166,6 +167,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
             waitCompletion();
+        }
+
+        private String getApiBaseUrl() {
+            return sessionProvider.baseUrl() + PhoenixConfigs.ApiPrefix;
         }
 
 
@@ -206,7 +211,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                         if (assetResult.error == null) {
                             asset = (KalturaMediaAsset) assetResult;
                         } else {
-                            error = assetResult.error;
+                            error = PhoenixErrorHelper.getErrorElement(assetResult.error); // get predefined error if exists for this error code
                         }
                     } else { // response parsed to null but request to the server returned a "valid" response
                         throw new JsonParseException("missing response object");
@@ -217,7 +222,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 }
 
                 if (asset != null) {
-                    mediaEntry = ProviderParser.getMedia(asset, this.asset.formats);
+                    mediaEntry = ProviderParser.getMedia(asset, this.mediaAsset.formats);
                 }
 
             } else {
@@ -261,7 +266,18 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     }
                 }
             }
-            return mediaEntry.setDuration(maxDuration).setSources(sources);
+            return mediaEntry.setDuration(maxDuration).setSources(sources).setMediaType(MediaTypeConverter.toMediaEntryType(""));
         }
     }
+
+    static class MediaTypeConverter{
+
+        public static PKMediaEntry.MediaEntryType toMediaEntryType(String mediaType){
+            switch (mediaType){
+                default:
+                    return PKMediaEntry.MediaEntryType.Unknown;
+            }
+        }
+    }
+
 }

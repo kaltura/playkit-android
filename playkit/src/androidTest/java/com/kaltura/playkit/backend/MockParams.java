@@ -6,7 +6,9 @@ package com.kaltura.playkit.backend;
 
 public class MockParams {
     //OVP:
-    public static final String OvpBaseUrl = "http://www.kaltura.com/api_v3/"; //login at: http://kmc.kaltura.com/index.php/kmc/kmc4#content|manage
+    //public static final String OvpBaseUrl = "http://www.kaltura.com/api_v3/"; //login at: http://kmc.kaltura.com/index.php/kmc/kmc4#content|manage
+    public static final String OvpBaseUrl = "https://cdnapisec.kaltura.com/"; //login at: http://kmc.kaltura.com/index.php/kmc/kmc4#content|manage
+    //public static final String OvpBaseUrl = "http://cdnapi.kaltura.com/"; //login at: http://kmc.kaltura.com/index.php/kmc/kmc4#content|manage
 
     // Demo account user
     public static final String NonDRMEntryIdAnm = "1_25q88snr"; //works for anonymous
@@ -35,23 +37,26 @@ public class MockParams {
 
 
     //OTT:
-    public static final String PnxBaseUrl = "http://api-preprod.ott.kaltura.com/v4_1/api_v3/";//"http://52.210.223.65:8080/v4_1/api_v3/";
+    public static final String PnxBaseUrl = "http://api-preprod.ott.kaltura.com/v4_1/";//"http://52.210.223.65:8080/v4_1/api_v3/";
 
     public static final String PnxUsername = "albert@gmail.com";
     public static final String PnxPassword = "123456";
     public static final int PnxPartnerId = 198;
 
-    public static final String PnxKS = "djJ8MTk4fAZXObQaPfvkEqBWfZkZfbruAO1V3CYGwE4OdvqojvsjaNMeN8yYtqgCvtpFiKblOayM9Xq5d2wHFCBAkbf7ju9-H4CrWrxOg7qhIRQUzqPz";
+    public static final String PnxKS = "djJ8MTk4fDkhVL8m8cvU-Y2SijGoVRfRLkxFjgwmadm_hW2OH88H9hMZoGn53o2470bKBuPGw7J7ne9CWZ6ehAvc8LfShWlwH9pPCeekUEJGCm-JQvK_";
 
     public static final String MediaId = "258656";//frozen
     public static final String MediaId4 = "258655";//shrek
     public static final String MediaId2 = "437800";//vild
     public static final String MediaId3 = "259295";//the salt of earth
     public static final String MediaId5 = "258574";//gladiator  HD id- 508408  SD id- 397243
+    public static final String ChannelId = "255854";
 
     public static final String FormatHD = "Mobile_Devices_Main_HD";
     public static final String FormatSD = "Mobile_Devices_Main_SD";
 
     public static String FrozenAssetInfo = "mock/phoenix.asset.get.258656.json";
 
+
+    public static final String OvpQaBaseUrl = "http://qa-apache-testing-ubu-01.dev.kaltura.com/";
 }

@@ -14,10 +14,7 @@ import static android.text.TextUtils.isEmpty;
 
 public class PlaySourceUrlBuilder {
 
-    public static final String DefPlayUrl = "https://cdnapisec.kaltura.com";
-
     public static final String DefFormat = "url";
-
 
     private String baseUrl = null;
     private String partnerId = null;
@@ -32,7 +29,6 @@ public class PlaySourceUrlBuilder {
 
     PlaySourceUrlBuilder() {
         // set defaults:
-        baseUrl = DefPlayUrl;
         protocol = OvpConfigs.PreferredHttpProtocol;
         format = DefFormat;
         sessionId = UUID.randomUUID().toString(); //!! should be created and added to the source by the player (playerConfig)
@@ -136,8 +132,8 @@ public class PlaySourceUrlBuilder {
             return null;
         }
 
-        StringBuilder playUrl = new StringBuilder(baseUrl).append("/p/").append(partnerId).append("/sp/")
-                .append(partnerId).append("/playManifest").append("/entryId/").append(entryId).append("/protocol/")
+        StringBuilder playUrl = new StringBuilder(baseUrl).append("p/").append(partnerId).append("/sp/")
+                .append(partnerId).append("00").append("/playManifest").append("/entryId/").append(entryId).append("/protocol/")
                 .append(protocol).append("/format/").append(format);
 
         boolean hasUiConfId = !isEmpty(uiConfId);
