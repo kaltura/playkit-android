@@ -98,8 +98,12 @@ public class PlayerController implements Player {
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
         player.load(source);
-
-        startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+        long startPosition = mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER;
+        if(startPosition <= player.getDuration()){
+            startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+        }else{
+            log.w("The start position is grater then duration of the video!");
+        }
     }
 
     @Override
