@@ -11,8 +11,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.AudioTrackInfo;
-import com.kaltura.playkit.BaseTrackInfo;
+import com.kaltura.playkit.BaseTrack;
+import com.kaltura.playkit.AudioTrack;
+import com.kaltura.playkit.TextTrack;
+import com.kaltura.playkit.VideoTrack;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKEvent;
@@ -23,8 +25,7 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.TextTrackInfo;
-import com.kaltura.playkit.VideoTrackInfo;
+
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
@@ -349,7 +350,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param trackInfos - all availables tracks.
      * @return
      */
-    private TrackItem[] obtainRelevantTrackInfo(int trackType, List<BaseTrackInfo> trackInfos) {
+    private TrackItem[] obtainRelevantTrackInfo(int trackType, List<BaseTrack> trackInfos) {
         TrackItem[] trackItems = new TrackItem[trackInfos.size()];
         switch (trackType) {
             case Consts.TRACK_TYPE_VIDEO:
@@ -357,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 changeSpinnerVisibility(videoSpinner, tvVideo, trackInfos);
 
                 for (int i = 0; i < trackInfos.size(); i++) {
-                        VideoTrackInfo videoTrackInfo = (VideoTrackInfo) trackInfos.get(i);
+                        VideoTrack videoTrackInfo = (VideoTrack) trackInfos.get(i);
                         if(videoTrackInfo.isAdaptive()){
                             trackItems[i] = new TrackItem("Auto", videoTrackInfo.getUniqueId());
                         }else{
@@ -371,7 +372,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 changeSpinnerVisibility(audioSpinner, tvAudio, trackInfos);
 
                 for (int i = 0; i < trackInfos.size(); i++) {
-                    AudioTrackInfo audioTrackInfo = (AudioTrackInfo) trackInfos.get(i);
+                    AudioTrack audioTrackInfo = (AudioTrack) trackInfos.get(i);
                     if(audioTrackInfo.isAdaptive()){
                         trackItems[i] = new TrackItem(audioTrackInfo.getLanguage() + " Auto", audioTrackInfo.getUniqueId());
                     }else{
@@ -385,7 +386,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 for (int i = 0; i < trackInfos.size(); i++) {
 
-                    TextTrackInfo textTrackInfo = (TextTrackInfo) trackInfos.get(i);
+                    TextTrack textTrackInfo = (TextTrack) trackInfos.get(i);
                     trackItems[i] = new TrackItem(String.valueOf(textTrackInfo.getLanguage()), textTrackInfo.getUniqueId());
                 }
                 break;
@@ -393,7 +394,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         return trackItems;
     }
 
-    private void changeSpinnerVisibility(Spinner spinner, TextView textView, List<BaseTrackInfo> trackInfos) {
+    private void changeSpinnerVisibility(Spinner spinner, TextView textView, List<BaseTrack> trackInfos) {
         //hide spinner if no data available.
         if (trackInfos.isEmpty()) {
             textView.setVisibility(View.GONE);
