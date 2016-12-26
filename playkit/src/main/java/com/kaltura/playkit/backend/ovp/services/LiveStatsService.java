@@ -16,7 +16,7 @@ import java.net.URLDecoder;
 public class LiveStatsService {
     private static final PKLog log = PKLog.get("LiveStatsService");
 
-    public static RequestBuilder sendLiveStatsEvent(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, int bitrate,
+    public static RequestBuilder sendLiveStatsEvent(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, long bitrate,
                                                     String sessionId, long startTime, String entryId, boolean isLive, String clientVer, String deliveryType) {
         return new RequestBuilder()
                 .method("GET")
@@ -24,7 +24,7 @@ public class LiveStatsService {
                 .tag("stats-send");
     }
 
-    private static String getOvpUrl(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, int bitrate,
+    private static String getOvpUrl(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, long bitrate,
                                     String sessionId, long startTime, String entryId, boolean isLive, String clientVer, String deliveryType) {
         Uri.Builder builder = new Uri.Builder();
         builder.scheme("http")
@@ -42,7 +42,7 @@ public class LiveStatsService {
                 .appendQueryParameter("event:sessionId", sessionId)
                 .appendQueryParameter("event:eventIndex", Integer.toString(eventIndex))
                 .appendQueryParameter("event:bufferTime", Long.toString(bufferTime))
-                .appendQueryParameter("event:bitrate", Integer.toString(bitrate))
+                .appendQueryParameter("event:bitrate", Long.toString(bitrate))
                 .appendQueryParameter("event:isLive", Boolean.toString(isLive))
                 .appendQueryParameter("event:startTime", Long.toString(startTime))
                 .appendQueryParameter("event:entryId", entryId)
