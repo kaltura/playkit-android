@@ -15,6 +15,7 @@ import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SubtitleView;
+import com.kaltura.playkit.R;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ import java.util.List;
  * Created by anton.afanasiev on 13/11/2016.
  */
 
-public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.VideoListener, TextRenderer.Output{
+public class CustomExoPlayerView extends FrameLayout implements PKView, SimpleExoPlayer.VideoListener, TextRenderer.Output{
 
     private static final String TAG = CustomExoPlayerView.class.getSimpleName();
 
@@ -45,6 +46,7 @@ public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.
         super(context, attrs, defStyleAttr);
 
         layout = initFrameLayout();
+        layout.setId(R.id.aspect_ratio_frame_layout);
         posterView = initPosterView();
         subtitleLayout = initSubtitleLayout();
 
@@ -141,6 +143,16 @@ public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.
     @Override
     public void onCues(List<Cue> cues) {
         subtitleLayout.onCues(cues);
+    }
+
+    @Override
+    public void hideVideoSurface() {
+        surfaceView.setVisibility(GONE);
+    }
+
+    @Override
+    public void showVideoSurface() {
+        surfaceView.setVisibility(VISIBLE);
     }
 }
 

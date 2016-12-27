@@ -1,8 +1,5 @@
 package com.kaltura.playkit.player;
 
-import android.net.Uri;
-import android.view.View;
-
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.PlaybackParamsInfo;
@@ -30,7 +27,7 @@ interface PlayerEngine {
      * surface is attached to.
      * @return - {@link android.view.SurfaceView}
      */
-    View getView();
+    PKView getView();
 
     /**
      * Start players playback.

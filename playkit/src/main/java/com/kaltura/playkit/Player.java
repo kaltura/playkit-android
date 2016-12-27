@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.view.View;
 
 import com.kaltura.playkit.ads.AdController;
+import com.kaltura.playkit.player.PKView;
 import com.kaltura.playkit.utils.Consts;
 
 /**
@@ -65,7 +66,7 @@ public interface Player {
      * The Player's View.
      * @return - the view player attached to.
      */
-    View getView();
+    PKView getView();
 
     /**
      * Getter for the current playback position.
