@@ -251,7 +251,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     private void sendAnalyticsEvent(final KAnalonyEvents eventType) {
         String sessionId = pluginConfig.has("sessionId")? pluginConfig.get("sessionId").toString(): "";
         int uiconfId = pluginConfig.has("uiconfId")? Integer.valueOf(pluginConfig.get("uiconfId").toString()): 0;
-        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString(): "http://analytics.kaltura.com/api_v3/index.php";
+        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString(): "https://analytics.kaltura.com/api_v3/index.php";
         int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt(): 0;
         String playbackType = isDvr? "dvr":"live";
         int flavourId = -1;

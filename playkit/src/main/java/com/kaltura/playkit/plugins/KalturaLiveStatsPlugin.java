@@ -204,7 +204,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     private void sendLiveEvent(long bufferTime) {
         String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
-        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : "http://livestats.kaltura.com/api_v3/index.php";
+        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : "https://livestats.kaltura.com/api_v3/index.php";
         int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
 
         // Parameters for the request -
