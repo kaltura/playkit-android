@@ -27,7 +27,7 @@ interface PlayerEngine {
      * surface is attached to.
      * @return - {@link android.view.SurfaceView}
      */
-    PKView getView();
+    PlayerView getView();
 
     /**
      * Start players playback.

@@ -131,7 +131,7 @@ public class PlayerController implements Player {
         }
     }
 
-    public PKView getView() {
+    public PlayerView getView() {
         if(player == null){
             return null;
         }

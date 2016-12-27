@@ -7,7 +7,7 @@ import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.ads.AdController;
-import com.kaltura.playkit.player.PKView;
+import com.kaltura.playkit.player.PlayerView;
 
 /**
  * Created by zivilan on 11/12/2016.
@@ -69,7 +69,7 @@ public class MockPlayer implements Player {
     }
 
     @Override
-    public PKView getView() {
+    public PlayerView getView() {
         return null;
     }
 

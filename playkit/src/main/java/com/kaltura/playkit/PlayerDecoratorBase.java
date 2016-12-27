@@ -4,7 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.ads.AdController;
-import com.kaltura.playkit.player.PKView;
+import com.kaltura.playkit.player.PlayerView;
 
 public class PlayerDecoratorBase implements Player {
     
@@ -74,7 +74,7 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public PKView getView() {
+    public PlayerView getView() {
         return player.getView();
     }
 

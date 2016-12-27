@@ -29,7 +29,6 @@ import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdEnabledPlayerController;
 import com.kaltura.playkit.ads.PKAdInfo;
-import com.kaltura.playkit.player.PKView;
 import com.kaltura.playkit.plugins.ads.AdError;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
@@ -425,7 +424,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     player.pause();
                 }
                 if (adEvent.getAd().getAdPodInfo().getTotalAds() > 1) {
-                    ((PKView)player.getView()).hideVideoSurface();
+                    player.getView().hideVideoSurface();
                 }
                 break;
             case CONTENT_RESUME_REQUESTED:
@@ -435,7 +434,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_RESUME_REQUESTED));
                 isAdDisplayed = false;
                 if (player != null && player.getCurrentPosition() < player.getDuration()) {
-                    ((PKView)player.getView()).showVideoSurface();
+                    player.getView().showVideoSurface();
                     player.play();
                 }
                 break;

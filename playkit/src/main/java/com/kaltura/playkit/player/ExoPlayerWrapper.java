@@ -65,7 +65,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
     private Context context;
     private SimpleExoPlayer player;
-    private CustomExoPlayerView exoPlayerView;
+    private ExoPlayerView exoPlayerView;
 
     private PKTracks tracks;
     private TrackSelectionHelper trackSelectionHelper;
@@ -113,7 +113,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     ExoPlayerWrapper(Context context) {
         this.context = context;
         mediaDataSourceFactory = buildDataSourceFactory(true);
-        exoPlayerView = new CustomExoPlayerView(context);
+        exoPlayerView = new ExoPlayerView(context);
         window = new Timeline.Window();
     }
 
@@ -339,7 +339,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     }
 
     @Override
-    public PKView getView() {
+    public PlayerView getView() {
         return exoPlayerView;
     }
 

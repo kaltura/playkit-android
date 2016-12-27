@@ -3,7 +3,7 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.kaltura.playkit.player.PKView;
+import com.kaltura.playkit.player.PlayerView;
 
 
 public abstract class PlayerDecorator extends PlayerDecoratorBase {
@@ -13,7 +13,7 @@ public abstract class PlayerDecorator extends PlayerDecoratorBase {
     }
 
     @Override
-    final public PKView getView() {
+    final public PlayerView getView() {
         return super.getView();
     }
 
