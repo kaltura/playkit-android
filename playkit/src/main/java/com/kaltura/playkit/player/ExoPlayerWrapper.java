@@ -28,7 +28,6 @@ import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSource;
@@ -107,7 +106,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
         @Override
         public void onTrackChanged() {
-            sendEvent(PlayerEvent.Type.PLAYBACK_PARAMS);
+            sendEvent(PlayerEvent.Type.PLAYBACK_PARAMS_UPDATED);
         }
     };
 

@@ -88,7 +88,7 @@ public class YouboraLibraryManager extends PluginGeneric {
                     case STATE_CHANGED:
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
-                    case PLAYBACK_PARAMS:
+                    case PLAYBACK_PARAMS_UPDATED:
                         PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParams) event).getPlaybackParamsInfo();
                         lastReportedBitrate = Long.valueOf(currentPlaybackParams.getVideoBitrate()).doubleValue();
                         if (!mediaUrl.equals(currentPlaybackParams.getMediaUrl())){
