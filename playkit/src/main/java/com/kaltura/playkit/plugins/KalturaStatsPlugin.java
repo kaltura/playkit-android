@@ -400,7 +400,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     private void sendAnalyticsEvent(final KStatsEvent eventType) {
         String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
         int uiconfId = pluginConfig.has("uiconfId") ? pluginConfig.getAsJsonPrimitive("uiconfId").getAsInt() : 0;
-        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : "";
+        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : "http://stats.kaltura.com/api_v3/index.php";
         int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
         long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration() / 1000;
 

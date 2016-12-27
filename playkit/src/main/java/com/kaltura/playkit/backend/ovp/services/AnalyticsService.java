@@ -29,7 +29,7 @@ public class AnalyticsService {
     private static String getAnalyticsUrl(String baseUrl, int partnerId, int eventType, String clientVer, String playbackType, String sessionId, long position,
                                            int uiConfId, String entryId, int eventIdx, int flavourId, int bufferTime, int actualBitrate, String deliveryType) {
         Uri.Builder builder = new Uri.Builder();
-        builder.p(baseUrl)
+        builder.path(baseUrl)
                 .appendQueryParameter("service", "analytics")
                 .appendQueryParameter("apiVersion", "3.1")
                 .appendQueryParameter("expiry", "86400")
