@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Player configuration data holder.
+ * This object is used by the player in order to preset desired configurations.
  * Created by Noam Tamim @ Kaltura on 18/09/2016.
  */
 public class PlayerConfig {
@@ -28,10 +30,21 @@ public class PlayerConfig {
             return this;
         }
 
+        /**
+         * Getter for start position. Default is 0.
+         * Note, that start position is in seconds.
+         * @return - the start position
+         */
         public long getStartPosition() {
             return startPosition;
         }
 
+        /**
+         * Setter for start position.
+         * Note, that start position is in seconds.
+         * @param startPosition - the position from which the media should start.
+         * @return - the config object.
+         */
         public Media setStartPosition(long startPosition) {
             this.startPosition = startPosition;
             return this;

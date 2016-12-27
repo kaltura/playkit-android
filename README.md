@@ -1,3 +1,11 @@
-# PlayKit for Android
+# PlayKit
 
-Stay tuned...
+# *Note: PlayKit is under active development*
+
+[![CI Status](http://img.shields.io/travis/kaltura/playkit-android.svg?style=flat)](https://travis-ci.org/kaltura/playkit-android)
+
+# License and Copyright Information
+All code in this project is released under the [AGPLv3 license](http://www.gnu.org/licenses/agpl-3.0.html) unless a different license for a particular library is specified in the applicable library path.   
+
+Copyright © Kaltura Inc. All rights reserved.   
+Authors and contributors: See [GitHub contributors list](https://github.com/kaltura/playkit-android/graphs/contributors).  

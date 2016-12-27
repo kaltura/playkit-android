@@ -1,13 +1,11 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
 
 import com.kaltura.playkit.Assert;
-import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaSource;
@@ -18,8 +16,6 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
-import java.util.List;
-
 /**
  * Created by anton.afanasiev on 01/11/2016.
  */
@@ -27,6 +23,7 @@ import java.util.List;
 public class PlayerController implements Player {
 
     private static final PKLog log = PKLog.get("PlayerController");
+    private static final long MILLISECONDS_MULTIPLIER = 1000L;
 
 
     private PlayerEngine player;
@@ -68,7 +65,7 @@ public class PlayerController implements Player {
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());
                         break;
-                    case PLAYBACK_PARAMS:
+                    case PLAYBACK_PARAMS_UPDATED:
                         event = new PlayerEvent.PlaybackParams(player.getPlaybackParamsInfo());
                         break;
                     default:
@@ -101,8 +98,12 @@ public class PlayerController implements Player {
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
         player.load(source);
-
-        startPlaybackFrom(mediaConfig.getStartPosition());
+        long startPosition = mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER;
+        if(startPosition <= player.getDuration()){
+            startPlaybackFrom(startPosition);
+        }else{
+            log.w("The start position is grater then duration of the video!");
+        }
     }
 
     @Override

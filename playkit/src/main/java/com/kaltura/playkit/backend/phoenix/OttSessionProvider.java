@@ -7,8 +7,8 @@ import android.util.Log;
 import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.backend.BaseResult;
-import com.kaltura.playkit.backend.base.BaseSessionProvider;
 import com.kaltura.playkit.backend.PrimitiveResult;
+import com.kaltura.playkit.backend.base.BaseSessionProvider;
 import com.kaltura.playkit.backend.phoenix.data.KalturaLoginResponse;
 import com.kaltura.playkit.backend.phoenix.data.KalturaLoginSession;
 import com.kaltura.playkit.backend.phoenix.data.KalturaSession;
@@ -39,9 +39,8 @@ public class OttSessionProvider extends BaseSessionProvider {
     private long refreshDelta = 9 * 60 * 60 * 24;//TimeDelta;
     private int partnerId = 0;
 
-
     public OttSessionProvider(String baseUrl, int partnerId) {
-        super(baseUrl);
+        super(baseUrl, PhoenixConfigs.ApiPrefix);
         this.partnerId = partnerId;
     }
 
@@ -53,9 +52,9 @@ public class OttSessionProvider extends BaseSessionProvider {
     public void startAnonymousSession(@Nullable String udid, final OnCompletion<PrimitiveResult> completion) {
         this.sessionParams = new OttSessionParams().setUdid(udid);
 
-        MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(baseUrl, null);
-        multiRequest.add(OttUserService.anonymousLogin(baseUrl, partnerId, udid),
-                PhoenixSessionService.get(baseUrl, "{1:result:ks}")).
+        MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
+        multiRequest.add(OttUserService.anonymousLogin(apiBaseUrl, partnerId, udid),
+                PhoenixSessionService.get(apiBaseUrl, "{1:result:ks}")).
                 completion(new OnRequestCompletion() {
                     @Override
                     public void onComplete(ResponseElement response) {
@@ -79,9 +78,9 @@ public class OttSessionProvider extends BaseSessionProvider {
         //get session data for expiration time
         this.sessionParams = new OttSessionParams().setPassword(password).setUsername(username).setUdid(udid);
 
-        MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(baseUrl, null);
-        multiRequest.add(OttUserService.userLogin(baseUrl, partnerId, sessionParams.username, sessionParams.password),
-                PhoenixSessionService.get(baseUrl, "{1:result:loginSession:ks}")).
+        MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
+        multiRequest.add(OttUserService.userLogin(apiBaseUrl, partnerId, sessionParams.username, sessionParams.password),
+                PhoenixSessionService.get(apiBaseUrl, "{1:result:loginSession:ks}")).
                 completion(new OnRequestCompletion() {
                     @Override
                     public void onComplete(ResponseElement response) {
@@ -170,12 +169,12 @@ public class OttSessionProvider extends BaseSessionProvider {
 
             if (getUserSessionType().equals(UserSessionType.Anonymous)) { //no need to logout anonymous session
                 if (completion != null) {
-                    completion.onComplete(new BaseResult(null));
+                    completion.onComplete(new BaseResult());
                 }
                 return;
             }
 
-            APIOkRequestsExecutor.getSingleton().queue(OttUserService.logout(baseUrl, getSessionToken(), sessionParams.udid)
+            APIOkRequestsExecutor.getSingleton().queue(OttUserService.logout(apiBaseUrl, getSessionToken(), sessionParams.udid)
                     .completion(new OnRequestCompletion() {
                         @Override
                         public void onComplete(ResponseElement response) {
@@ -241,9 +240,9 @@ public class OttSessionProvider extends BaseSessionProvider {
             return;
         }
         // multi request needed to fetch the new expiration date.
-        MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(baseUrl, null);
-        multiRequest.add(OttUserService.refreshSession(baseUrl, getSessionToken(), refreshToken, sessionParams.udid),
-                PhoenixSessionService.get(baseUrl, "{1:result:ks}"))
+        MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
+        multiRequest.add(OttUserService.refreshSession(apiBaseUrl, getSessionToken(), refreshToken, sessionParams.udid),
+                PhoenixSessionService.get(apiBaseUrl, "{1:result:ks}"))
                 .completion(new OnRequestCompletion() {
                     @Override
                     public void onComplete(ResponseElement response) {
