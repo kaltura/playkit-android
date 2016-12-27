@@ -15,7 +15,6 @@ import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SubtitleView;
-import com.kaltura.playkit.R;
 
 import java.util.List;
 
@@ -46,7 +45,6 @@ public class CustomExoPlayerView extends FrameLayout implements PKView, SimpleEx
         super(context, attrs, defStyleAttr);
 
         layout = initFrameLayout();
-        layout.setId(R.id.aspect_ratio_frame_layout);
         posterView = initPosterView();
         subtitleLayout = initSubtitleLayout();
 
