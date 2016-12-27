@@ -154,5 +154,10 @@ public class CustomExoPlayerView extends FrameLayout implements PKView, SimpleEx
     public void showVideoSurface() {
         surfaceView.setVisibility(VISIBLE);
     }
+
+    @Override
+    public View getContainerView() {
+        return this;
+    }
 }
 

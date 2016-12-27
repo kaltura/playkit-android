@@ -1,7 +1,6 @@
 package com.kaltura.playkit.plugins.ads.ima;
 
 import android.content.Context;
-import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.ads.interactivemedia.v3.api.Ad;
@@ -252,7 +251,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 }
 
                 if (isInitWaiting) {
-                    player.getView().setVisibility(View.VISIBLE);
                     adsManager.init(renderingSettings);
                     messageBus.post(new AdEvent.AdCuePointsUpdateEvent(getAdCuePoints()));
                     isInitWaiting = false;
@@ -267,7 +265,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     public void init() {
         isAdRequested = true;
         if(adsManager != null) {
-            player.getView().setVisibility(View.VISIBLE);
             adsManager.init(renderingSettings);
             messageBus.post(new AdEvent.AdCuePointsUpdateEvent(getAdCuePoints()));
         } else{
@@ -445,10 +442,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             case ALL_ADS_COMPLETED:
                 log.d("AD_ALL_ADS_COMPLETED");
                 messageBus.post(new AdEvent(AdEvent.Type.ALL_ADS_COMPLETED));
+                player.getView().showVideoSurface();
                 if (adsManager != null) {
                     log.d("AD_ALL_ADS_COMPLETED onDestroy");
                     onDestroy();
                 }
+
                 break;
             case STARTED:
                 log.d("AD STARTED");
