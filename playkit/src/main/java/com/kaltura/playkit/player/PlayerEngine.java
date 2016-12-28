@@ -100,6 +100,7 @@ interface PlayerEngine {
 
     /**
      * Start players playback from the specified position.
+     * Note! The position is passed in seconds.
      * @param position - desired position.
      */
     void startFrom(long position);

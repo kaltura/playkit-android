@@ -46,6 +46,7 @@ import static com.kaltura.playkit.backend.MockParams.OvpBaseUrl;
 import static com.kaltura.playkit.backend.MockParams.OvpLoginId;
 import static com.kaltura.playkit.backend.MockParams.OvpPartnerId;
 import static com.kaltura.playkit.backend.MockParams.OvpPassword;
+import static com.kaltura.playkit.backend.MockParams.OvpQaBaseUrl;
 import static com.kaltura.playkit.backend.MockParams.RestrictedEntryId;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
@@ -182,6 +183,56 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
                             PKMediaSource secondSource = data.getResponse().getSources().get(1);
                             assertTrue(secondSource.getDrmData().size() == 0);
                             assertTrue(secondSource.getUrl().endsWith("m3u8"));
+                        }
+                    });
+
+                } else {
+                    fail("failed to establish session: " + response.error);
+                }
+            }
+        });
+
+        wait(1);
+
+        if (failure.get() != null) {
+            throw failure.get();
+        }
+    }
+
+    @Test
+    public void testLiveEntryInfoFetch() {
+        final OvpSessionProvider sessionProvider = new OvpSessionProvider(OvpQaBaseUrl);
+        final AtomicReference<AssertionError> failure = new AtomicReference<>();
+
+        sessionProvider.startAnonymousSession(1091, new OnCompletion<PrimitiveResult>() {
+            @Override
+            public void onComplete(PrimitiveResult response) {
+                if (response.error == null) {
+                    final String entryId = "0_cb9k71rb";
+                    new KalturaOvpMediaProvider().setSessionProvider(sessionProvider).setEntryId(entryId).load(new OnMediaLoadCompletion() {
+                        @Override
+                        public void onComplete(ResultElement<PKMediaEntry> response) {
+                            try {
+                                if (response.isSuccess()) {
+                                    PKLog.d(TAG, "got PKMediaEntry object: checking content");
+                                    assertTrue(response.getResponse() != null);
+                                    assertTrue(response.getResponse().getId().equals(entryId));
+                                    assertTrue(response.getResponse().getSources().size() == 2);
+
+                                    PKLog.i(TAG, "PKMediaEntry validated successfully");
+
+                                } else {
+                                    assertNotNull(response.getError());
+                                    PKLog.d(TAG, "got error on PKMediaEntry loading:" + response.getError());
+                                    fail("failed on entry loading:" + response.getError());
+                                }
+
+                            } catch (AssertionError e) {
+                                failure.set(e);
+                                fail("failed on entry validation:" + e.getMessage());
+                            } finally {
+                                OvpMediaProviderAndroidTest.this.resume();
+                            }
                         }
                     });
 
@@ -411,7 +462,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
         });
         wait(1);
         try {
-            TimeUnit.MILLISECONDS.sleep(620); // can be used to check cancel in different points of execution
+            TimeUnit.MILLISECONDS.sleep(615); // can be used to check cancel in different points of execution
             // mostly 625 milliseconds and up resulted in request finished execution, before the cancel was activated.
         } catch (InterruptedException e) {
             e.printStackTrace();

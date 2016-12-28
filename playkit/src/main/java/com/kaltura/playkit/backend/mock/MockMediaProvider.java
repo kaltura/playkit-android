@@ -23,6 +23,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import static com.kaltura.playkit.PKMediaEntry.MediaEntryType.Unknown;
+
 /**
  * Created by tehilarozin on 06/11/2016.
  */
@@ -112,7 +114,11 @@ public class MockMediaProvider implements MediaEntryProvider {
 
 
         static PKMediaEntry parseMedia(JsonObject mediaObject) throws JsonSyntaxException {
-            return new Gson().fromJson(mediaObject, PKMediaEntry.class);
+            PKMediaEntry mediaEntry =  new Gson().fromJson(mediaObject, PKMediaEntry.class);
+            if (mediaEntry.getMediaType() == null) {
+                mediaEntry.setMediaType(Unknown);
+            }
+            return mediaEntry;
         }
 
     }

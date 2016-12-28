@@ -13,7 +13,7 @@ public class TvpapiSessionProvider extends BaseSessionProvider {
     private int partnerId;
 
     public TvpapiSessionProvider(String baseUrl, int partnerId) {
-        super(baseUrl);
+        super(baseUrl, "");
         this.partnerId = partnerId;
     }
 
