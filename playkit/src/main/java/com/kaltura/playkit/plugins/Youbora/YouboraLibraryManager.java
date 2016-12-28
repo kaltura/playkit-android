@@ -17,6 +17,7 @@ import org.json.JSONException;
 
 import java.util.Map;
 
+import static com.kaltura.playkit.PlayerEvent.Type.PLAYBACK_PARAMS_UPDATED;
 import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
 
 /**
@@ -82,19 +83,19 @@ public class YouboraLibraryManager extends PluginGeneric {
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
+
+            if (event instanceof PlayerEvent && ((PlayerEvent) event).type == PLAYBACK_PARAMS_UPDATED) {
+                PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParams) event).getPlaybackParamsInfo();
+                lastReportedBitrate = Long.valueOf(currentPlaybackParams.getVideoBitrate()).doubleValue();
+                mediaUrl = currentPlaybackParams.getMediaUrl();
+                return;
+            }
+
             if (event instanceof PlayerEvent && viewManager != null) {
                 log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
                     case STATE_CHANGED:
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
-                        break;
-                    case PLAYBACK_PARAMS_UPDATED:
-                        PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParams) event).getPlaybackParamsInfo();
-                        lastReportedBitrate = Long.valueOf(currentPlaybackParams.getVideoBitrate()).doubleValue();
-                        if (!mediaUrl.equals(currentPlaybackParams.getMediaUrl())){
-                            mediaUrl = currentPlaybackParams.getMediaUrl();
-
-                        }
                         break;
                     case ENDED:
                         if (!isFirstPlay) {
