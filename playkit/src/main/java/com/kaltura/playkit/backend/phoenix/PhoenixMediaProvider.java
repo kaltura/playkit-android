@@ -61,17 +61,31 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         this.mediaAsset = new MediaAsset();
     }
 
-    public PhoenixMediaProvider setSessionProvider(@NonNull SessionProvider ksProvider) {
-        this.sessionProvider = ksProvider;
+    /**
+     * MANDATORY! provides the baseUrl and the session token(ks) for the API calls.
+     * @param sessionProvider
+     * @return
+     */
+    public PhoenixMediaProvider setSessionProvider(@NonNull SessionProvider sessionProvider) {
+        this.sessionProvider = sessionProvider;
         return this;
     }
 
+    /**
+     * MANDATORY! the media asset id, to fetch the data for.
+     * @param assetId
+     * @return
+     */
     public PhoenixMediaProvider setAssetId(@NonNull String assetId) {
         this.mediaAsset.assetId = assetId;
         return this;
     }
 
-
+    /**
+     * MANDATORY! defines the sources to be used for the PKMediaSource objects creation.
+     * @param formats 1 or more content format definition. can be: Hd, Sd, Download, Trailer etc
+     * @return
+     */
     public PhoenixMediaProvider setFormats(@NonNull String... formats) {
         this.mediaAsset.formats = new ArrayList<>(Arrays.asList(formats));
         return this;
@@ -101,6 +115,12 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return this;
     }
 
+    /**
+     * optional parameter.
+     * Defaults to {@link com.kaltura.playkit.connect.APIOkRequestsExecutor} implementation.
+     * @param executor
+     * @return
+     */
     public PhoenixMediaProvider setRequestExecutor(@NonNull RequestQueue executor) {
         this.requestsExecutor = executor;
         return this;
@@ -114,6 +134,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return ProviderParser.getMedia(assetInfo, formats);
     }
 
+    /**
+     * Checks for non empty value on the mandatory parameters.
+     * @return - error in case of at least 1 invalid mandatory parameter.
+     */
     @Override
     protected ErrorElement validateParams() {
         String error = TextUtils.isEmpty(this.mediaAsset.assetId) ? ": Missing required parameters, assetId" :
@@ -144,6 +168,11 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     null;
         }
 
+        /**
+         * Builds and passes to the executor, the Asset info fetching request.
+         * @param ks
+         * @throws InterruptedException
+         */
         @Override
         protected void requestRemote(String ks) throws InterruptedException {
             PhoenixRequestBuilder requestBuilder = AssetService.assetGet(getApiBaseUrl(), ks, mediaAsset.assetId, mediaAsset.referenceType)
@@ -174,6 +203,11 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
 
+        /**
+         * Parse and create a {@link PKMediaEntry} object from the API response.
+         * @param response
+         * @throws InterruptedException
+         */
         private void onAssetGetResponse(final ResponseElement response) throws InterruptedException {
             ErrorElement error = null;
             PKMediaEntry mediaEntry = null;
