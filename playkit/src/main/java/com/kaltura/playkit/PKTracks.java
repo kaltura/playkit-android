@@ -1,5 +1,7 @@
 package com.kaltura.playkit;
 
+import android.support.annotation.NonNull;
+
 import java.util.List;
 
 /**
@@ -9,44 +11,50 @@ import java.util.List;
 
 public class PKTracks {
 
-    private List<BaseTrackInfo> videoTracksInfo;
-    private List<BaseTrackInfo> audioTracksInfo;
-    private List<BaseTrackInfo> textTracksInfo;
+    private List<VideoTrack> videoTracks;
+    private List<AudioTrack> audioTracks;
+    private List<TextTrack> textTracks;
 
-    public PKTracks(List<BaseTrackInfo> videoTracksInfo, List<BaseTrackInfo> audioTracksInfo, List<BaseTrackInfo> textTracksInfo) {
-        this.audioTracksInfo = audioTracksInfo;
-        this.videoTracksInfo = videoTracksInfo;
-        this.textTracksInfo = textTracksInfo;
+    public PKTracks(List<VideoTrack> videoTracks, List<AudioTrack> audioTracks, List<TextTrack> textTracks) {
+        this.audioTracks = audioTracks;
+        this.videoTracks = videoTracks;
+        this.textTracks = textTracks;
     }
 
     /**
-     * Getter for videoTracksInfo list.
-     * Before use, the list entry's should be casted to {@link VideoTrackInfo} in order to receive the
+     * Getter for videoTracks list.
+     * Before use, the list entry's should be casted to {@link VideoTrack} in order to receive the
      * full track info of that type.
+     * Can be empty, if no tracks available.
      * @return - the list of all available Video tracks, that can be played on the device.
      */
-    public List<BaseTrackInfo> getVideoTracksInfo() {
-        return videoTracksInfo;
+    @NonNull
+    public List<VideoTrack> getVideoTracks() {
+        return videoTracks;
     }
 
     /**
-     * Getter for audioTracksInfo list.
-     * Before use, the list entry's should be casted to {@link AudioTrackInfo} in order to receive the
+     * Getter for audioTracks list.
+     * Before use, the list entry's should be casted to {@link AudioTrack} in order to receive the
      * full track info of that type.
+     * Can be empty, if no tracks available.
      * @return - the list of all available Audio tracks, that can be played on the device.
      */
-    public List<BaseTrackInfo> getAudioTracksInfo() {
-        return audioTracksInfo;
+    @NonNull
+    public List<AudioTrack> getAudioTracks() {
+        return audioTracks;
     }
 
     /**
-     * Getter for textTracksInfo list.
-     * Before use, the list entry's should be casted to {@link TextTrackInfo} in order to receive the
+     * Getter for textTracks list.
+     * Before use, the list entry's should be casted to {@link TextTrack} in order to receive the
      * full track info of that type.
+     * Can be empty, if no tracks available.
      * @return - the list of all available Text tracks, that can be played on the device.
      */
-    public List<BaseTrackInfo> getTextTracksInfo() {
-        return textTracksInfo;
+    @NonNull
+    public List<TextTrack> getTextTracks() {
+        return textTracks;
     }
 
 }

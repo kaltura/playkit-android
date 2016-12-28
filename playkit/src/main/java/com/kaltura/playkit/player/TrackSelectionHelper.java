@@ -1,28 +1,24 @@
 package com.kaltura.playkit.player;
 
 
-
-import android.view.Surface;
-
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
-import com.google.android.exoplayer2.audio.AudioRendererEventListener;
-import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.video.VideoRendererEventListener;
-import com.kaltura.playkit.AudioTrackInfo;
-import com.kaltura.playkit.BaseTrackInfo;
-import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.TextTrackInfo;
-import com.kaltura.playkit.PKTracks;
-import com.kaltura.playkit.VideoTrackInfo;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.SelectionOverride;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
+import com.kaltura.playkit.AudioTrack;
+import com.kaltura.playkit.BaseTrack;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.TextTrack;
+import com.kaltura.playkit.PKTracks;
+import com.kaltura.playkit.VideoTrack;
 import com.kaltura.playkit.utils.Consts;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +28,7 @@ import java.util.List;
  * Created by anton.afanasiev on 22/11/2016.
  */
 
-class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererEventListener {
+class TrackSelectionHelper {
 
     private static final PKLog log = PKLog.get("TrackSelectionHelper");
 
@@ -48,17 +44,19 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
 
     private static final String ADAPTIVE_SUFFIX = "adaptive";
     private static final String VIDEO_PREFIX = "Video:";
+    private static final String VIDEO = "video";
     private static final String AUDIO_PREFIX = "Audio:";
+    private static final String AUDIO = "audio";
     private static final String TEXT_PREFIX = "Text:";
 
-    private final MappingTrackSelector selector;
+    private final DefaultTrackSelector selector;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
     private final TrackSelection.Factory adaptiveTrackSelectionFactory;
     private ExoPlayerWrapper.TracksInfoListener tracksInfoListener;
 
-    private List<BaseTrackInfo> videoTracksInfo = new ArrayList<>();
-    private List<BaseTrackInfo> audioTracksInfo = new ArrayList<>();
-    private List<BaseTrackInfo> textTracksInfo = new ArrayList<>();
+    private List<VideoTrack> videoTracks = new ArrayList<>();
+    private List<AudioTrack> audioTracks = new ArrayList<>();
+    private List<TextTrack> textTracks = new ArrayList<>();
 
     private long currentVideoBitrate = Consts.NO_VALUE;
     private long currentAudioBitrate = Consts.NO_VALUE;
@@ -69,32 +67,41 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
      * @param adaptiveTrackSelectionFactory A factory for adaptive video {@link TrackSelection}s,
      *                                      or null if the selection helper should not support adaptive video.
      */
-    TrackSelectionHelper(MappingTrackSelector selector,
+    TrackSelectionHelper(DefaultTrackSelector selector,
                          TrackSelection.Factory adaptiveTrackSelectionFactory) {
         this.selector = selector;
         this.adaptiveTrackSelectionFactory = adaptiveTrackSelectionFactory;
     }
 
-
     /**
      * Prepare {@link PKTracks} object for application.
      * When the object is created, notify {@link ExoPlayerWrapper} about that,
      * and pass the {@link PKTracks} as parameter.
+     * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
-    void prepareTracksInfo() {
+    boolean prepareTracks() {
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
-        PKTracks tracksInfo = buildTracksInfo();
+        if(mappedTrackInfo == null){
+            return false;
+        }
+        warnAboutUnsupportedRenderTypes();
+        PKTracks tracksInfo = buildTracks();
 
         if (tracksInfoListener != null) {
             tracksInfoListener.onTracksInfoReady(tracksInfo);
         }
+
+        return true;
     }
 
     /**
      * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
      */
-    private PKTracks buildTracksInfo() {
+    private PKTracks buildTracks() {
+
+        clearTracksLists();
+
         TrackGroupArray trackGroupArray;
         TrackGroup trackGroup;
         Format format;
@@ -122,24 +129,23 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
                         String uniqueId = getUniqueId(rendererIndex, groupIndex, trackIndex);
                         switch (rendererIndex) {
                             case Consts.TRACK_TYPE_VIDEO:
-                                videoTracksInfo.add(new VideoTrackInfo(uniqueId, format.bitrate, format.width, format.height, false));
+                                videoTracks.add(new VideoTrack(uniqueId, format.bitrate, format.width, format.height, false));
                                 break;
                             case Consts.TRACK_TYPE_AUDIO:
-                                audioTracksInfo.add(new AudioTrackInfo(uniqueId, format.language, format.bitrate, false));
+                                audioTracks.add(new AudioTrack(uniqueId, format.language, format.id, format.bitrate, false));
                                 break;
-
                             case Consts.TRACK_TYPE_TEXT:
-                                textTracksInfo.add(new TextTrackInfo(uniqueId, format.language));
+                                textTracks.add(new TextTrack(uniqueId, format.language, format.id));
                                 break;
                         }
-                    }else{
+                    } else {
                         log.w("format is not supported for this device. Format bitrate " + format.bitrate + " id " + format.id);
                     }
                 }
             }
         }
 
-        return new PKTracks(videoTracksInfo, audioTracksInfo, textTracksInfo);
+        return new PKTracks(videoTracks, audioTracks, textTracks);
     }
 
     /**
@@ -151,16 +157,16 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
      */
     private void maybeAddAdaptiveTrack(int rendererIndex, int groupIndex, Format format) {
         String uniqueId = getUniqueId(rendererIndex, groupIndex, TRACK_ADAPTIVE);
-        if (isAdaptive(rendererIndex, groupIndex) && !adaptiveTrackInfoAlreadyExist(uniqueId, rendererIndex)) {
+        if (isAdaptive(rendererIndex, groupIndex) && !adaptiveTrackAlreadyExist(uniqueId, rendererIndex)) {
             switch (rendererIndex) {
                 case Consts.TRACK_TYPE_VIDEO:
-                    videoTracksInfo.add(new VideoTrackInfo(uniqueId, 0, 0, 0, true));
+                    videoTracks.add(new VideoTrack(uniqueId, 0, 0, 0, true));
                     break;
                 case Consts.TRACK_TYPE_AUDIO:
-                    audioTracksInfo.add(new AudioTrackInfo(uniqueId, format.language, 0, true));
+                    audioTracks.add(new AudioTrack(uniqueId, format.language, format.id, 0, true));
                     break;
                 case Consts.TRACK_TYPE_TEXT:
-                    textTracksInfo.add(new TextTrackInfo(uniqueId, format.language));
+                    textTracks.add(new TextTrack(uniqueId, format.language, format.id));
                     break;
             }
         }
@@ -226,7 +232,6 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
 
     }
 
-
     /**
      * @param uniqueId - the uniqueId to convert.
      * @return - int[] that consist from indexes that are readable to Exoplayer.
@@ -272,21 +277,21 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
             switch (rendererIndex) {
                 case Consts.TRACK_TYPE_VIDEO:
 
-                    VideoTrackInfo videoTrackInfo;
+                    VideoTrack videoTrack;
 
-                    for (int i = 1; i < videoTracksInfo.size(); i++) {
-                        videoTrackInfo = (VideoTrackInfo) videoTracksInfo.get(i);
-                        if (getIndexFromUniqueId(videoTrackInfo.getUniqueId(), GROUP_INDEX) == groupIndex) {
-                            adaptiveTrackIndexesList.add(getIndexFromUniqueId(videoTrackInfo.getUniqueId(), TRACK_INDEX));
+                    for (int i = 1; i < videoTracks.size(); i++) {
+                        videoTrack = videoTracks.get(i);
+                        if (getIndexFromUniqueId(videoTrack.getUniqueId(), GROUP_INDEX) == groupIndex) {
+                            adaptiveTrackIndexesList.add(getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX));
                         }
                     }
                     break;
                 case Consts.TRACK_TYPE_AUDIO:
-                    AudioTrackInfo audioTrackInfo;
-                    for (int i = 1; i < audioTracksInfo.size(); i++) {
-                        audioTrackInfo = (AudioTrackInfo) audioTracksInfo.get(i);
-                        if (getIndexFromUniqueId(audioTrackInfo.getUniqueId(), GROUP_INDEX) == groupIndex) {
-                            adaptiveTrackIndexesList.add(getIndexFromUniqueId(audioTrackInfo.getUniqueId(), TRACK_INDEX));
+                    AudioTrack audioTrack;
+                    for (int i = 1; i < audioTracks.size(); i++) {
+                        audioTrack = audioTracks.get(i);
+                        if (getIndexFromUniqueId(audioTrack.getUniqueId(), GROUP_INDEX) == groupIndex) {
+                            adaptiveTrackIndexesList.add(getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX));
                         }
                     }
                     break;
@@ -300,7 +305,6 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
 
         return override;
     }
-
 
     /**
      * Actually doing the override acrion on the track.
@@ -327,25 +331,25 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
      *
      * @param uniqueId      - unique id.
      * @param rendererIndex - renderer index.
-     * @return - true, if adaptive {@link BaseTrackInfo} object already exist for this group.
+     * @return - true, if adaptive {@link BaseTrack} object already exist for this group.
      */
-    private boolean adaptiveTrackInfoAlreadyExist(String uniqueId, int rendererIndex) {
+    private boolean adaptiveTrackAlreadyExist(String uniqueId, int rendererIndex) {
 
-        List<BaseTrackInfo> trackInfoList = new ArrayList<>();
+        List<? extends BaseTrack> trackList = new ArrayList<>();
         switch (rendererIndex) {
             case Consts.TRACK_TYPE_VIDEO:
-                trackInfoList = videoTracksInfo;
+                trackList = videoTracks;
                 break;
             case Consts.TRACK_TYPE_AUDIO:
-                trackInfoList = audioTracksInfo;
+                trackList = audioTracks;
                 break;
             case Consts.TRACK_TYPE_TEXT:
-                trackInfoList = textTracksInfo;
+                trackList = textTracks;
                 break;
         }
 
-        for (BaseTrackInfo trackInfo : trackInfoList) {
-            if (trackInfo.getUniqueId().equals(uniqueId)) {
+        for (BaseTrack track : trackList) {
+            if (track.getUniqueId().equals(uniqueId)) {
                 return true;
             }
         }
@@ -402,90 +406,85 @@ class TrackSelectionHelper implements VideoRendererEventListener, AudioRendererE
         return false;
     }
 
+    /**
+     * Notify to log, that video/audio renderer have only unsupported tracks.
+     */
+    private void warnAboutUnsupportedRenderTypes() {
+        if (mappedTrackInfo.getTrackTypeRendererSupport(Consts.TRACK_TYPE_VIDEO)
+                == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
+            log.w("Warning! All the video tracks are unsupported by this device.");
+        }
+        if (mappedTrackInfo.getTrackTypeRendererSupport(Consts.TRACK_TYPE_AUDIO)
+                == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
+            log.w("Warning! All the audio tracks are unsupported by this device.");
+        }
+    }
+
     void setTracksInfoListener(ExoPlayerWrapper.TracksInfoListener tracksInfoListener) {
         this.tracksInfoListener = tracksInfoListener;
     }
 
+    private void clearTracksLists() {
+        videoTracks.clear();
+        audioTracks.clear();
+        textTracks.clear();
+    }
 
     public void release() {
         tracksInfoListener = null;
-        videoTracksInfo.clear();
-        audioTracksInfo.clear();
-        textTracksInfo.clear();
+        clearTracksLists();
     }
 
-    public long getCurrentVideoBitrate() {
+    long getCurrentVideoBitrate() {
         return currentVideoBitrate;
     }
 
-
-    public long getCurrentAudioBitrate() {
+    long getCurrentAudioBitrate() {
         return currentAudioBitrate;
     }
 
-    @Override
-    public void onAudioEnabled(DecoderCounters counters) {
+    void updateSelectedTracksBitrate(TrackSelectionArray trackSelections) {
+        if (trackSelections == null) {
+            return;
+        }
 
-    }
+        for (TrackSelection trackSelection : trackSelections.getAll()) {
+            if (trackSelection == null || trackSelection.getSelectedFormat() == null) {
+                continue;
+            }
 
-    @Override
-    public void onAudioSessionId(int audioSessionId) {
+            String sampleMimeType = "";
+            String containerMimeType = "";
+            if (trackSelection.getSelectedFormat().sampleMimeType != null) {
+                sampleMimeType = trackSelection.getSelectedFormat().sampleMimeType;
+            }
+            if (trackSelection.getSelectedFormat().containerMimeType != null) {
+                containerMimeType = trackSelection.getSelectedFormat().containerMimeType;
+            }
 
-    }
+            if ("".equals(sampleMimeType) && "".equals(containerMimeType)) {
+                continue;
+            }
+            log.d("sampleMimeType = "    + sampleMimeType);
+            log.d("containerMimeType = " + containerMimeType);
 
-    @Override
-    public void onAudioDecoderInitialized(String decoderName, long initializedTimestampMs, long initializationDurationMs) {
+            String auto = "";
+            if ((sampleMimeType.contains(VIDEO) || containerMimeType.contains(VIDEO))) {
 
-    }
-
-    @Override
-    public void onAudioInputFormatChanged(Format format) {
-        currentAudioBitrate = format.bitrate;
+                if (trackSelection instanceof AdaptiveVideoTrackSelection) {
+                    auto = " Auto";
+                }
+                log.d("Selected" + auto + " video bitrate = " + trackSelection.getSelectedFormat().bitrate);
+                currentVideoBitrate = trackSelection.getSelectedFormat().bitrate;
+            } else if ((sampleMimeType.contains(AUDIO) || containerMimeType.contains(AUDIO))) {
+                if (trackSelection instanceof AdaptiveVideoTrackSelection) {
+                    auto = " Auto";
+                }
+                log.d("Selected" + auto + " audio bitrate = " + trackSelection.getSelectedFormat().bitrate);
+                currentAudioBitrate = trackSelection.getSelectedFormat().bitrate;
+            }
+        }
         tracksInfoListener.onTrackChanged();
-    }
-
-    @Override
-    public void onAudioTrackUnderrun(int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
-
-    }
-
-    @Override
-    public void onAudioDisabled(DecoderCounters counters) {
-
-    }
-
-    @Override
-    public void onVideoEnabled(DecoderCounters counters) {
-
-    }
-
-    @Override
-    public void onVideoDecoderInitialized(String decoderName, long initializedTimestampMs, long initializationDurationMs) {
-
-    }
-
-    @Override
-    public void onVideoInputFormatChanged(Format format) {
-        currentVideoBitrate = format.bitrate;
-        tracksInfoListener.onTrackChanged();
-    }
-
-    @Override
-    public void onDroppedFrames(int count, long elapsedMs) {
-
-    }
-
-    @Override
-    public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
-
-    }
-
-    @Override
-    public void onRenderedFirstFrame(Surface surface) {
-    }
-
-    @Override
-    public void onVideoDisabled(DecoderCounters counters) {
-
     }
 }
+

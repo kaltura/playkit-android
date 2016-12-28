@@ -28,7 +28,6 @@ import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSource;
@@ -69,7 +68,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private SimpleExoPlayer player;
     private CustomExoPlayerView exoPlayerView;
 
-    private PKTracks tracksInfo;
+    private PKTracks tracks;
     private TrackSelectionHelper trackSelectionHelper;
     private DeferredDrmSessionManager drmSessionManager;
 
@@ -89,9 +88,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private boolean shouldResetPlayerPosition;
     private long prevDuration = Consts.TIME_UNSET;
 
-    private MappingTrackSelector trackSelector;
-
-
 
     interface TracksInfoListener {
 
@@ -102,15 +98,15 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
     private TracksInfoListener tracksInfoListener = new TracksInfoListener() {
         @Override
-        public void onTracksInfoReady(PKTracks tracksInfoReady) {
+        public void onTracksInfoReady(PKTracks tracksReady) {
             //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
-            tracksInfo = tracksInfoReady;
+            tracks = tracksReady;
             sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
         }
 
         @Override
         public void onTrackChanged() {
-            sendEvent(PlayerEvent.Type.PLAYBACK_PARAMS);
+            sendEvent(PlayerEvent.Type.PLAYBACK_PARAMS_UPDATED);
         }
     };
 
@@ -125,7 +121,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private void initializePlayer() {
         eventLogger = new EventLogger();
 
-        MappingTrackSelector trackSelector = initializeTrackSelector();
+        DefaultTrackSelector trackSelector = initializeTrackSelector();
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, eventLogger, buildHttpDataSourceFactory(false));
         player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager);
         setPlayerListeners();
@@ -139,17 +135,15 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
             player.addListener(eventLogger);
             player.setVideoDebugListener(eventLogger);
             player.setAudioDebugListener(eventLogger);
-            player.setId3Output(eventLogger);
-            player.setVideoDebugListener(trackSelectionHelper);
-            player.setAudioDebugListener(trackSelectionHelper);
+            player.setMetadataOutput(eventLogger);
         }
     }
 
-    private MappingTrackSelector initializeTrackSelector() {
+    private DefaultTrackSelector initializeTrackSelector() {
 
         TrackSelection.Factory videoTrackSelectionFactory =
                 new AdaptiveVideoTrackSelection.Factory(BANDWIDTH_METER);
-        trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
+        DefaultTrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, videoTrackSelectionFactory);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
@@ -326,25 +320,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
         log.d("onTracksChanged");
-        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
-        if (mappedTrackInfo == null) {
-            return;
-        }
-
-        if (mappedTrackInfo.getTrackTypeRendererSupport(Consts.TRACK_TYPE_VIDEO)
-                    == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-                log.w("Error unsupported video");
-        }
-        if (mappedTrackInfo.getTrackTypeRendererSupport(Consts.TRACK_TYPE_AUDIO)
-                    == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-                log.w("Error unsupported audio");
-        }
 
         //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
         if (shouldGetTracksInfo) {
-            shouldGetTracksInfo = false;
-            trackSelectionHelper.prepareTracksInfo();
+            shouldGetTracksInfo = !trackSelectionHelper.prepareTracks();
         }
+
+        trackSelectionHelper.updateSelectedTracksBitrate(trackSelections);
     }
 
     @Override
@@ -478,7 +460,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     }
 
     public PKTracks getPKTracks() {
-        return this.tracksInfo;
+        return this.tracks;
     }
 
     @Override

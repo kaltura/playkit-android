@@ -7,12 +7,12 @@ import com.kaltura.playkit.PKEvent;
  */
 
 public class OTTEvent implements PKEvent {
-    public final OTTEvent.OttEventType type;
+    public final OttEventType type;
 
     public enum OttEventType
     {Concurrency}
 
-    public OTTEvent(OTTEvent.OttEventType type) {
+    public OTTEvent(OttEventType type) {
         this.type = type;
     }
 

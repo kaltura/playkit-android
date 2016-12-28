@@ -17,6 +17,8 @@ import org.json.JSONException;
 
 import java.util.Map;
 
+import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
+
 /**
  * Created by zivilan on 02/11/2016.
  */
@@ -80,19 +82,19 @@ public class YouboraLibraryManager extends PluginGeneric {
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
-            if (event instanceof PlayerEvent) {
+
+            if (event instanceof PlayerEvent.PlaybackParamsUpdated) {
+                PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParamsUpdated) event).getPlaybackParamsInfo();
+                lastReportedBitrate = Long.valueOf(currentPlaybackParams.getVideoBitrate()).doubleValue();
+                mediaUrl = currentPlaybackParams.getMediaUrl();
+                return;
+            }
+
+            if (event instanceof PlayerEvent && viewManager != null) {
                 log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
                     case STATE_CHANGED:
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
-                        break;
-                    case PLAYBACK_PARAMS:
-                        PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParams) event).getPlaybackParamsInfo();
-                        lastReportedBitrate = Long.valueOf(currentPlaybackParams.getVideoBitrate()).doubleValue();
-                        if (!mediaUrl.equals(currentPlaybackParams.getMediaUrl())){
-                            mediaUrl = currentPlaybackParams.getMediaUrl();
-
-                        }
                         break;
                     case ENDED:
                         if (!isFirstPlay) {
@@ -116,6 +118,10 @@ public class YouboraLibraryManager extends PluginGeneric {
                         }
                         break;
                     case PLAYING:
+                        if (isFirstPlay){
+                            isFirstPlay = false;
+                            playHandler();
+                        }
                         playingHandler();
                         break;
                     case SEEKED:
@@ -131,7 +137,7 @@ public class YouboraLibraryManager extends PluginGeneric {
                         break;
                 }
                 log.d(event.eventType().name());
-                if (((PlayerEvent) event).type != PlayerEvent.Type.STATE_CHANGED){
+                if (((PlayerEvent) event).type != STATE_CHANGED){
                     messageBus.post(new LogEvent(TAG + " " + ((PlayerEvent) event).type.toString()));
                 }
             } else if (event instanceof AdEvent){
@@ -160,7 +166,6 @@ public class YouboraLibraryManager extends PluginGeneric {
     public void startMonitoring(Object player) {
         log.d("startMonitoring");
         super.startMonitoring(player);
-        this.enableSeekMonitor();
         this.enableBufferMonitor();
     }
 
