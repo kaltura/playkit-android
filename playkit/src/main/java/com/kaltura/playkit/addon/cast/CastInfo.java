@@ -5,6 +5,7 @@ package com.kaltura.playkit.addon.cast;
 import com.google.android.gms.cast.MediaMetadata;
 import com.google.android.gms.cast.MediaTrack;
 import com.google.android.gms.cast.TextTrackStyle;
+import com.kaltura.playkit.addon.cast.BasicCastBuilder.StreamType;
 import java.util.List;
 
 /**
@@ -20,10 +21,10 @@ class CastInfo {
     private String mUiConfId;
     private String mInitObject;
     private String mFormat;
-    private List<MediaTrack> mMediaTrackList;
     private MediaMetadata mMediaMetadata;
     private TextTrackStyle mTextTrackStyle;
     private String mMwEmbedUrl;
+    private StreamType mStreamType;
 
 
     CastInfo() {
@@ -62,16 +63,16 @@ class CastInfo {
         mMediaMetadata = mediaMetadata;
     }
 
-    void setMediaTrackList(List<MediaTrack> mediaTrackList) {
-        mMediaTrackList = mediaTrackList;
-    }
-
     void setTextTrackStyle(TextTrackStyle textTrackStyle) {
         mTextTrackStyle = textTrackStyle;
     }
 
     void setMwEmbedUrl(String mwEmbedUrl) {
         mMwEmbedUrl = mwEmbedUrl;
+    }
+
+    void setStreamType(StreamType streamType) {
+        mStreamType = streamType;
     }
 
     String getAdTagUrl() {
@@ -98,10 +99,6 @@ class CastInfo {
         return mMediaMetadata;
     }
 
-    List<MediaTrack> getMediaTrackList() {
-        return mMediaTrackList;
-    }
-
     String getPartnerId() {
         return mPartnerId;
     }
@@ -116,6 +113,10 @@ class CastInfo {
 
     String getMwEmbedUrl() {
         return mMwEmbedUrl;
+    }
+
+    StreamType getStreamType() {
+        return mStreamType;
     }
 
 }

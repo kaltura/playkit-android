@@ -9,7 +9,7 @@ import org.json.JSONObject;
  */
 
 
-class OTTCastConfigHelper extends CastConfigHelper {
+class TVPAPICastConfigHelper extends CastConfigHelper {
 
 
     @Override

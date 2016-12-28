@@ -46,10 +46,13 @@ abstract class CastConfigHelper {
 
         try {
 
-            embedConfig.put("lib", mwEmbedUrl);
+            if (!TextUtils.isEmpty(mwEmbedUrl)) { //mwEmbedUrl isn't mandatory
+                embedConfig.put("lib", mwEmbedUrl);
+            }
+
             embedConfig.put("publisherID", partnerId);
-            embedConfig.put("uiconfID", uiConf);
             embedConfig.put("entryID", entryId);
+            embedConfig.put("uiconfID", uiConf);
 
             setFlashVars(embedConfig, sessionInfo, adTagUrl, fileFormat, entryId);
 

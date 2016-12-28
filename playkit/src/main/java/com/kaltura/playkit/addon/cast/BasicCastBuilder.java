@@ -18,6 +18,11 @@ import java.util.List;
 public abstract class BasicCastBuilder<T extends BasicCastBuilder> {
 
 
+    public enum StreamType {
+        VOD,
+        LIVE
+    }
+
     private static final String MOCK_DATA = "MOCK_DATA";
     CastInfo mCastInfo;
 
@@ -54,11 +59,6 @@ public abstract class BasicCastBuilder<T extends BasicCastBuilder> {
         return (T) this;
     }
 
-    public T setMediaTrackList(@NonNull List<MediaTrack> mediaTrackList) {
-        mCastInfo.setMediaTrackList(mediaTrackList);
-        return (T) this;
-    }
-
     public T setTextTrackStyle(@NonNull TextTrackStyle textTrackStyle) {
         mCastInfo.setTextTrackStyle(textTrackStyle);
         return (T) this;
@@ -67,6 +67,12 @@ public abstract class BasicCastBuilder<T extends BasicCastBuilder> {
 
     public T setMwEmbedUrl(@NonNull String mwEmbedUrl) {
         mCastInfo.setMwEmbedUrl(mwEmbedUrl);
+        return (T) this;
+    }
+
+
+    public T setStreamType(@NonNull StreamType streamType) {
+        mCastInfo.setStreamType(streamType);
         return (T) this;
     }
 
@@ -86,10 +92,10 @@ public abstract class BasicCastBuilder<T extends BasicCastBuilder> {
         JSONObject customData = castConfigHelper.getCustomData(castInfo);
 
         MediaInfo.Builder mediaInfoBuilder = new MediaInfo.Builder(MOCK_DATA)
-                .setStreamType(MediaInfo.STREAM_TYPE_NONE)
                 .setContentType(MOCK_DATA)
                 .setCustomData(customData);
 
+        setStreamType(mediaInfoBuilder, castInfo);
         setOptionalData(mediaInfoBuilder, castInfo);
 
         return mediaInfoBuilder.build();
@@ -108,13 +114,6 @@ public abstract class BasicCastBuilder<T extends BasicCastBuilder> {
             mediaInfoBuilder.setMetadata(mediaMetadata);
         }
 
-
-        List<MediaTrack> mediaTrackList = castInfo.getMediaTrackList();
-        if (mediaTrackList != null) {
-            mediaInfoBuilder.setMediaTracks(mediaTrackList);
-        }
-
-
         TextTrackStyle textTrackStyle = castInfo.getTextTrackStyle();
         if (textTrackStyle != null) {
             mediaInfoBuilder.setTextTrackStyle(textTrackStyle);
@@ -122,6 +121,30 @@ public abstract class BasicCastBuilder<T extends BasicCastBuilder> {
 
     }
 
+
+    private void setStreamType(MediaInfo.Builder mediaInfoBuilder, CastInfo castInfo) {
+
+        StreamType streamType = castInfo.getStreamType();
+        int castStreamType;
+
+        switch (streamType) {
+
+            case VOD:
+                castStreamType = MediaInfo.STREAM_TYPE_BUFFERED;
+                break;
+
+            case LIVE:
+                castStreamType = MediaInfo.STREAM_TYPE_LIVE;
+                break;
+
+            default:
+                castStreamType = MediaInfo.STREAM_TYPE_BUFFERED;
+                break;
+        }
+
+        mediaInfoBuilder.setStreamType(castStreamType);
+
+    }
 
 
 
@@ -138,6 +161,11 @@ public abstract class BasicCastBuilder<T extends BasicCastBuilder> {
         // adTagUrl isn't mandatory, but if you set adTagUrl it must be valid
         String adTagUrl = castInfo.getAdTagUrl();
         if (adTagUrl != null && TextUtils.isEmpty(adTagUrl)) {
+            throw new IllegalArgumentException();
+        }
+
+
+        if (castInfo.getStreamType() == null) {
             throw new IllegalArgumentException();
         }
 

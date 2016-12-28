@@ -7,16 +7,16 @@ import android.text.TextUtils;
  * Created by itanbarpeled on 14/12/2016.
  */
 
-public class OTTCastBuilder extends BasicCastBuilder<OTTCastBuilder> {
+public class TVPAPICastBuilder extends BasicCastBuilder<TVPAPICastBuilder> {
 
 
-    public OTTCastBuilder setFormat(@NonNull String format) {
+    public TVPAPICastBuilder setFormat(@NonNull String format) {
         mCastInfo.setFormat(format);
         return this;
     }
 
 
-    public OTTCastBuilder setInitObject(@NonNull String initObject) {
+    public TVPAPICastBuilder setInitObject(@NonNull String initObject) {
         mCastInfo.setInitObject(initObject);
         return this;
     }
@@ -25,7 +25,7 @@ public class OTTCastBuilder extends BasicCastBuilder<OTTCastBuilder> {
     @Override
     protected CastConfigHelper getCastHelper() {
 
-        return new OTTCastConfigHelper();
+        return new TVPAPICastConfigHelper();
 
     }
 
