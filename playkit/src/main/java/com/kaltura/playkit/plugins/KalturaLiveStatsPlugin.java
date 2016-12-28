@@ -132,7 +132,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                         stopLiveEvents();
                         break;
                     case PLAYBACK_PARAMS_UPDATED:
-                        PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParams) event).getPlaybackParamsInfo();
+                        PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParamsUpdated) event).getPlaybackParamsInfo();
                         lastReportedBitrate = currentPlaybackParams.getVideoBitrate();
                     default:
                         break;
