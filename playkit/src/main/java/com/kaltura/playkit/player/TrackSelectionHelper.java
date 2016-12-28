@@ -54,9 +54,9 @@ class TrackSelectionHelper {
     private final TrackSelection.Factory adaptiveTrackSelectionFactory;
     private ExoPlayerWrapper.TracksInfoListener tracksInfoListener;
 
-    private List<BaseTrack> videoTracks = new ArrayList<>();
-    private List<BaseTrack> audioTracks = new ArrayList<>();
-    private List<BaseTrack> textTracks = new ArrayList<>();
+    private List<VideoTrack> videoTracks = new ArrayList<>();
+    private List<AudioTrack> audioTracks = new ArrayList<>();
+    private List<TextTrack> textTracks = new ArrayList<>();
 
     private long currentVideoBitrate = Consts.NO_VALUE;
     private long currentAudioBitrate = Consts.NO_VALUE;
@@ -280,7 +280,7 @@ class TrackSelectionHelper {
                     VideoTrack videoTrack;
 
                     for (int i = 1; i < videoTracks.size(); i++) {
-                        videoTrack = (VideoTrack) videoTracks.get(i);
+                        videoTrack = videoTracks.get(i);
                         if (getIndexFromUniqueId(videoTrack.getUniqueId(), GROUP_INDEX) == groupIndex) {
                             adaptiveTrackIndexesList.add(getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX));
                         }
@@ -289,7 +289,7 @@ class TrackSelectionHelper {
                 case Consts.TRACK_TYPE_AUDIO:
                     AudioTrack audioTrack;
                     for (int i = 1; i < audioTracks.size(); i++) {
-                        audioTrack = (AudioTrack) audioTracks.get(i);
+                        audioTrack = audioTracks.get(i);
                         if (getIndexFromUniqueId(audioTrack.getUniqueId(), GROUP_INDEX) == groupIndex) {
                             adaptiveTrackIndexesList.add(getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX));
                         }
@@ -335,7 +335,7 @@ class TrackSelectionHelper {
      */
     private boolean adaptiveTrackAlreadyExist(String uniqueId, int rendererIndex) {
 
-        List<BaseTrack> trackList = new ArrayList<>();
+        List<? extends BaseTrack> trackList = new ArrayList<>();
         switch (rendererIndex) {
             case Consts.TRACK_TYPE_VIDEO:
                 trackList = videoTracks;
@@ -443,7 +443,7 @@ class TrackSelectionHelper {
         return currentAudioBitrate;
     }
 
-    public void updateSelectedTracksBitrate(TrackSelectionArray trackSelections) {
+    void updateSelectedTracksBitrate(TrackSelectionArray trackSelections) {
         if (trackSelections == null) {
             return;
         }
@@ -475,14 +475,12 @@ class TrackSelectionHelper {
                     auto = " Auto";
                 }
                 log.d("Selected" + auto + " video bitrate = " + trackSelection.getSelectedFormat().bitrate);
-                auto = "";
                 currentVideoBitrate = trackSelection.getSelectedFormat().bitrate;
             } else if ((sampleMimeType.contains(AUDIO) || containerMimeType.contains(AUDIO))) {
                 if (trackSelection instanceof AdaptiveVideoTrackSelection) {
                     auto = " Auto";
                 }
                 log.d("Selected" + auto + " audio bitrate = " + trackSelection.getSelectedFormat().bitrate);
-                auto = "";
                 currentAudioBitrate = trackSelection.getSelectedFormat().bitrate;
             }
         }
