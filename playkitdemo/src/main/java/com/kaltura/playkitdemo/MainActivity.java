@@ -325,15 +325,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void populateSpinnersWithTrackInfo(PKTracks tracksInfo) {
 
         //Retrieve info that describes available tracks.(video/audio/subtitle).
-        TrackItem[] videoTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_VIDEO, tracksInfo.getVideoTracksInfo());
+        TrackItem[] videoTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_VIDEO, tracksInfo.getVideoTracks());
         //populate spinner with this info.
         applyAdapterOnSpinner(videoSpinner, videoTrackItems);
 
-        TrackItem[] audioTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_AUDIO, tracksInfo.getAudioTracksInfo());
+        TrackItem[] audioTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_AUDIO, tracksInfo.getAudioTracks());
         applyAdapterOnSpinner(audioSpinner, audioTrackItems);
 
 
-        TrackItem[] subtitlesTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_TEXT, tracksInfo.getTextTracksInfo());
+        TrackItem[] subtitlesTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_TEXT, tracksInfo.getTextTracks());
         applyAdapterOnSpinner(textSpinner, subtitlesTrackItems);
     }
 
@@ -347,7 +347,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
      * @param trackInfos - all availables tracks.
      * @return
      */
-    private TrackItem[] obtainRelevantTrackInfo(int trackType, List<BaseTrack> trackInfos) {
+    private TrackItem[] obtainRelevantTrackInfo(int trackType, List<? extends BaseTrack> trackInfos) {
         TrackItem[] trackItems = new TrackItem[trackInfos.size()];
         switch (trackType) {
             case Consts.TRACK_TYPE_VIDEO:
@@ -394,7 +394,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         return trackItems;
     }
 
-    private void changeSpinnerVisibility(Spinner spinner, TextView textView, List<BaseTrack> trackInfos) {
+    private void changeSpinnerVisibility(Spinner spinner, TextView textView, List<? extends BaseTrack> trackInfos) {
         //hide spinner if no data available.
         if (trackInfos.isEmpty()) {
             textView.setVisibility(View.GONE);
