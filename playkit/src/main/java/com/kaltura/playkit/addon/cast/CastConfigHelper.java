@@ -2,6 +2,8 @@ package com.kaltura.playkit.addon.cast;
 
 import android.text.TextUtils;
 
+import com.kaltura.playkit.PKLog;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,6 +14,7 @@ import org.json.JSONObject;
 
 abstract class CastConfigHelper {
 
+    protected static final PKLog log = PKLog.get("CastConfigHelper");
 
 
     JSONObject getCustomData(CastInfo castInfo) {
@@ -59,7 +62,7 @@ abstract class CastConfigHelper {
             customData.put("embedConfig", embedConfig);
 
         } catch (JSONException e) {
-            e.printStackTrace();
+            log.e(e.getMessage());
         }
 
     }
@@ -82,7 +85,7 @@ abstract class CastConfigHelper {
             }
 
         } catch (JSONException e) {
-            e.printStackTrace();
+            log.e(e.getMessage());
         }
 
     }
@@ -120,7 +123,7 @@ abstract class CastConfigHelper {
                 flashVars.put("doubleClick", doubleClick);
 
             } catch (JSONException e) {
-                e.printStackTrace();
+                log.e(e.getMessage());
             }
 
         }

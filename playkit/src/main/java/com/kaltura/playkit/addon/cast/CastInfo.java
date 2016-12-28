@@ -3,10 +3,8 @@ package com.kaltura.playkit.addon.cast;
 
 
 import com.google.android.gms.cast.MediaMetadata;
-import com.google.android.gms.cast.MediaTrack;
 import com.google.android.gms.cast.TextTrackStyle;
 import com.kaltura.playkit.addon.cast.BasicCastBuilder.StreamType;
-import java.util.List;
 
 /**
  * Created by itanbarpeled on 13/12/2016.
@@ -14,17 +12,17 @@ import java.util.List;
 
 class CastInfo {
 
-    private String mAdTagUrl;
-    private String mMediaEntryId;
-    private String mKs;
-    private String mPartnerId;
-    private String mUiConfId;
-    private String mInitObject;
-    private String mFormat;
-    private MediaMetadata mMediaMetadata;
-    private TextTrackStyle mTextTrackStyle;
-    private String mMwEmbedUrl;
-    private StreamType mStreamType;
+    private String adTagUrl;
+    private String mediaEntryId;
+    private String ks;
+    private String partnerId;
+    private String uiConfId;
+    private String initObject;
+    private String format;
+    private MediaMetadata mediaMetadata;
+    private TextTrackStyle textTrackStyle;
+    private String mwEmbedUrl;
+    private StreamType streamType;
 
 
     CastInfo() {
@@ -32,91 +30,91 @@ class CastInfo {
 
 
     void setFormat(String format) {
-        this.mFormat = format;
+        this.format = format;
     }
 
     void setInitObject(String initObject) {
-        this.mInitObject = initObject;
+        this.initObject = initObject;
     }
 
     void setKs(String ks) {
-        this.mKs = ks;
+        this.ks = ks;
     }
 
     void setPartnerId(String partnerId) {
-        this.mPartnerId = partnerId;
+        this.partnerId = partnerId;
     }
 
     void setUiConfId(String uiConfId) {
-        this.mUiConfId = uiConfId;
+        this.uiConfId = uiConfId;
     }
 
     void setAdTagUrl(String adTagUrl) {
-        this.mAdTagUrl = adTagUrl;
+        this.adTagUrl = adTagUrl;
     }
 
     void setMediaEntryId(String mediaEntryId) {
-        this.mMediaEntryId = mediaEntryId;
+        this.mediaEntryId = mediaEntryId;
     }
 
     void setMetadata(MediaMetadata mediaMetadata) {
-        mMediaMetadata = mediaMetadata;
+        this.mediaMetadata = mediaMetadata;
     }
 
     void setTextTrackStyle(TextTrackStyle textTrackStyle) {
-        mTextTrackStyle = textTrackStyle;
+        this.textTrackStyle = textTrackStyle;
     }
 
     void setMwEmbedUrl(String mwEmbedUrl) {
-        mMwEmbedUrl = mwEmbedUrl;
+        this.mwEmbedUrl = mwEmbedUrl;
     }
 
     void setStreamType(StreamType streamType) {
-        mStreamType = streamType;
+        this.streamType = streamType;
     }
 
     String getAdTagUrl() {
-        return mAdTagUrl;
+        return adTagUrl;
     }
 
     String getFormat() {
-        return mFormat;
+        return format;
     }
 
     String getInitObject() {
-        return mInitObject;
+        return initObject;
     }
 
     String getKs() {
-        return mKs;
+        return ks;
     }
 
     String getMediaEntryId() {
-        return mMediaEntryId;
+        return mediaEntryId;
     }
 
     MediaMetadata getMetadata() {
-        return mMediaMetadata;
+        return mediaMetadata;
     }
 
     String getPartnerId() {
-        return mPartnerId;
+        return partnerId;
     }
 
     TextTrackStyle getTextTrackStyle() {
-        return mTextTrackStyle;
+        return textTrackStyle;
     }
 
     String getUiConfId() {
-        return mUiConfId;
+        return uiConfId;
     }
 
     String getMwEmbedUrl() {
-        return mMwEmbedUrl;
+        return mwEmbedUrl;
     }
 
     StreamType getStreamType() {
-        return mStreamType;
+        return streamType;
     }
 
 }

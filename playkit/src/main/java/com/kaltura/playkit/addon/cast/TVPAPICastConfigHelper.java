@@ -45,7 +45,7 @@ class TVPAPICastConfigHelper extends CastConfigHelper {
             flashVars.put("proxyData", proxyData);
 
         } catch(JSONException e) {
-            e.printStackTrace();
+           log.e(e.getMessage());
         }
 
 

@@ -86,7 +86,7 @@ public class CastAdInfoParser implements RemoteMediaClient.ParseAdsInfoCallback 
 
             } catch (JSONException e) {
 
-                e.printStackTrace();
+                log.e(e.getMessage());
                 return null;
 
             }

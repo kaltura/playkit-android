@@ -11,13 +11,13 @@ public class TVPAPICastBuilder extends BasicCastBuilder<TVPAPICastBuilder> {
 
 
     public TVPAPICastBuilder setFormat(@NonNull String format) {
-        mCastInfo.setFormat(format);
+        castInfo.setFormat(format);
         return this;
     }
 
 
     public TVPAPICastBuilder setInitObject(@NonNull String initObject) {
-        mCastInfo.setInitObject(initObject);
+        castInfo.setInitObject(initObject);
         return this;
     }
 
