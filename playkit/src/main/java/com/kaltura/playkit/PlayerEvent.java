@@ -62,10 +62,10 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
-    public static class PlaybackParams extends PlayerEvent {
+    public static class PlaybackParamsUpdated extends PlayerEvent {
         private PlaybackParamsInfo playbackParamsInfo;
 
-        public PlaybackParams(PlaybackParamsInfo playbackParamsInfo){
+        public PlaybackParamsUpdated(PlaybackParamsInfo playbackParamsInfo){
             super(Type.PLAYBACK_PARAMS_UPDATED);
             this.playbackParamsInfo = playbackParamsInfo;
         }
