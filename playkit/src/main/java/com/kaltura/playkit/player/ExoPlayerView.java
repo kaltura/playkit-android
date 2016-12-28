@@ -22,7 +22,7 @@ import java.util.List;
  * Created by anton.afanasiev on 13/11/2016.
  */
 
-public class ExoPlayerView extends FrameLayout implements PlayerView, SimpleExoPlayer.VideoListener, TextRenderer.Output{
+public class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener, TextRenderer.Output{
 
     private static final String TAG = ExoPlayerView.class.getSimpleName();
 
@@ -151,11 +151,6 @@ public class ExoPlayerView extends FrameLayout implements PlayerView, SimpleExoP
     @Override
     public void showVideoSurface() {
         surfaceView.setVisibility(VISIBLE);
-    }
-
-    @Override
-    public View getContainerView() {
-        return this;
     }
 }
 
