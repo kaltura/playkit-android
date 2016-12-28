@@ -11,11 +11,11 @@ import java.util.List;
 
 public class PKTracks {
 
-    private List<BaseTrack> videoTracks;
-    private List<BaseTrack> audioTracks;
-    private List<BaseTrack> textTracks;
+    private List<VideoTrack> videoTracks;
+    private List<AudioTrack> audioTracks;
+    private List<TextTrack> textTracks;
 
-    public PKTracks(List<BaseTrack> videoTracks, List<BaseTrack> audioTracks, List<BaseTrack> textTracks) {
+    public PKTracks(List<VideoTrack> videoTracks, List<AudioTrack> audioTracks, List<TextTrack> textTracks) {
         this.audioTracks = audioTracks;
         this.videoTracks = videoTracks;
         this.textTracks = textTracks;
@@ -29,7 +29,7 @@ public class PKTracks {
      * @return - the list of all available Video tracks, that can be played on the device.
      */
     @NonNull
-    public List<BaseTrack> getVideoTracks() {
+    public List<VideoTrack> getVideoTracks() {
         return videoTracks;
     }
 
@@ -41,7 +41,7 @@ public class PKTracks {
      * @return - the list of all available Audio tracks, that can be played on the device.
      */
     @NonNull
-    public List<BaseTrack> getAudioTracks() {
+    public List<AudioTrack> getAudioTracks() {
         return audioTracks;
     }
 
@@ -53,7 +53,7 @@ public class PKTracks {
      * @return - the list of all available Text tracks, that can be played on the device.
      */
     @NonNull
-    public List<BaseTrack> getTextTracks() {
+    public List<TextTrack> getTextTracks() {
         return textTracks;
     }
 
