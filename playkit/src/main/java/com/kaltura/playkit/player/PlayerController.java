@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
@@ -116,7 +117,10 @@ public class PlayerController implements Player {
 
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
-        if (source.ge)
+        if (!source.getMediaFormat().equals(PKMediaFormat.wvm_widevine)) {
+            player = new ExoPlayerWrapper(context);
+            
+        }
         player.load(source);
         startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
     }
