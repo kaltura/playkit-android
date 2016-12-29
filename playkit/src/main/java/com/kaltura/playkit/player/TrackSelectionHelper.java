@@ -444,7 +444,7 @@ class TrackSelectionHelper {
     }
 
     void updateSelectedTracksBitrate(TrackSelectionArray trackSelections) {
-        if (trackSelections == null) {
+        if (tracksInfoListener == null || trackSelections == null) {
             return;
         }
 
