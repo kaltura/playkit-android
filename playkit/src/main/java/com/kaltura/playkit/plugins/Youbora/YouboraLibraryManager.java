@@ -66,10 +66,6 @@ public class YouboraLibraryManager extends PluginGeneric {
                     isBuffering = false;
                     bufferedHandler();
                 }
-                if (player.isAutoPlay() && isFirstPlay){ //Handle auto-play send-start event
-                    isFirstPlay = false;
-                    playHandler();
-                }
                 break;
             case BUFFERING:
                 if (!isFirstPlay) {
