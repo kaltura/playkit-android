@@ -49,11 +49,13 @@ public class YouboraPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
+        stopMonitoring();
         log.d("youbora - onUpdateMedia");
         this.mediaConfig = mediaConfig;
         Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, this.mediaConfig, player);
         // Refresh options with updated media
         pluginManager.setOptions(opt);
+        startMonitoring(player);
     }
 
     @Override

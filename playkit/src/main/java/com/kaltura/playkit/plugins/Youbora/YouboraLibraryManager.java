@@ -66,6 +66,10 @@ public class YouboraLibraryManager extends PluginGeneric {
                     isBuffering = false;
                     bufferedHandler();
                 }
+                if (player.isAutoPlay() && isFirstPlay){ //Handle auto-play send-start event
+                    isFirstPlay = false;
+                    playHandler();
+                }
                 break;
             case BUFFERING:
                 if (!isFirstPlay) {
@@ -94,9 +98,6 @@ public class YouboraLibraryManager extends PluginGeneric {
             if (event instanceof PlayerEvent && viewManager != null) {
                 log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
-                    case DURATION_CHANGE:
-                        log.d("new duration = " + ((PlayerEvent.DurationChanged) event).duration);
-                        break;
                     case STATE_CHANGED:
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
@@ -203,7 +204,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public Double getPlayhead() {
-        return Long.valueOf(player.getCurrentPosition()).doubleValue();
+        return Long.valueOf(player.getCurrentPosition()).doubleValue() / 1000;
     }
 
     public Boolean getIsLive() {
