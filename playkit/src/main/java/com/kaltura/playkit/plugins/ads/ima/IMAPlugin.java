@@ -627,5 +627,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             default:
                 messageBus.post(new AdError(AdError.Type.UNKNOWN_ERROR, errorMessage));
         }
+        if (player != null && player.getView() != null) {
+            player.getView().showVideoSurface();
+        }
     }
 }
