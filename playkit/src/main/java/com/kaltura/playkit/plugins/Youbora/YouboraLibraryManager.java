@@ -82,19 +82,19 @@ public class YouboraLibraryManager extends PluginGeneric {
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
+
+            if (event instanceof PlayerEvent.PlaybackParamsUpdated) {
+                PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParamsUpdated) event).getPlaybackParamsInfo();
+                lastReportedBitrate = Long.valueOf(currentPlaybackParams.getVideoBitrate()).doubleValue();
+                mediaUrl = currentPlaybackParams.getMediaUrl();
+                return;
+            }
+
             if (event instanceof PlayerEvent && viewManager != null) {
                 log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
                     case STATE_CHANGED:
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
-                        break;
-                    case PLAYBACK_PARAMS:
-                        PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParams) event).getPlaybackParamsInfo();
-                        lastReportedBitrate = Long.valueOf(currentPlaybackParams.getVideoBitrate()).doubleValue();
-                        if (!mediaUrl.equals(currentPlaybackParams.getMediaUrl())){
-                            mediaUrl = currentPlaybackParams.getMediaUrl();
-
-                        }
                         break;
                     case ENDED:
                         if (!isFirstPlay) {

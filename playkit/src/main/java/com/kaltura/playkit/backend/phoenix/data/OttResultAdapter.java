@@ -35,7 +35,7 @@ public class OttResultAdapter implements JsonDeserializer<BaseResult> {
         BaseResult baseResult = null;
 
         if(result != null && result.has("error")){
-             baseResult.error = new Gson().fromJson(result.get("error"), ErrorElement.class);
+             baseResult = new BaseResult(new Gson().fromJson(result.get("error"), ErrorElement.class));
 
         } else if(result != null && result.has("objectType")){
             String objectType=  result.getAsJsonPrimitive("objectType").getAsString();

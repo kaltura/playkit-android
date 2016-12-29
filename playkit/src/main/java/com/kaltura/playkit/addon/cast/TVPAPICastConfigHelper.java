@@ -9,7 +9,7 @@ import org.json.JSONObject;
  */
 
 
-class OTTCastConfigHelper extends CastConfigHelper {
+class TVPAPICastConfigHelper extends CastConfigHelper {
 
 
     @Override
@@ -45,7 +45,7 @@ class OTTCastConfigHelper extends CastConfigHelper {
             flashVars.put("proxyData", proxyData);
 
         } catch(JSONException e) {
-            e.printStackTrace();
+           log.e(e.getMessage());
         }
 
 

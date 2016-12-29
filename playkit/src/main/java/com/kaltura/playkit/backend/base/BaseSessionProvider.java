@@ -26,14 +26,15 @@ public abstract class BaseSessionProvider implements SessionProvider{
 
 
     protected String baseUrl;
+    protected String apiBaseUrl;
     private String sessionToken;
     protected long expiryDate;
     private @UserSessionType String userSessionType = UserSessionType.None;
 
 
-    protected BaseSessionProvider(String baseUrl){
+    protected BaseSessionProvider(String baseUrl, String apiPrefix){
         this.baseUrl = baseUrl;
-        //this.partnerId = partnerId;
+        this.apiBaseUrl =  baseUrl+ apiPrefix;
     }
 
 

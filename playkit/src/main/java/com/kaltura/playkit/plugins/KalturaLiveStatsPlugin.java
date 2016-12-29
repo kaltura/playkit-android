@@ -10,6 +10,7 @@ import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PlayKitManager;
+import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
@@ -48,7 +49,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         }
     }
 
-
+    private long lastReportedBitrate = -1;
     private Player player;
     private PlayerConfig.Media mediaConfig;
     private JsonObject pluginConfig;
@@ -130,6 +131,9 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                     case PAUSE:
                         stopLiveEvents();
                         break;
+                    case PLAYBACK_PARAMS_UPDATED:
+                        PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParamsUpdated) event).getPlaybackParamsInfo();
+                        lastReportedBitrate = currentPlaybackParams.getVideoBitrate();
                     default:
                         break;
                 }
@@ -200,14 +204,14 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     private void sendLiveEvent(long bufferTime) {
         String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
-        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : "";
+        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : "https://livestats.kaltura.com/api_v3/index.php";
         int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
 
         // Parameters for the request -
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
         // String sessionId, String startTime,  String entryId,  boolean isLive, String referrer
         RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(baseUrl, partnerId, isLive ? 1 : 2, eventIdx++, bufferTime,
-                /*player.getBitrate() */ 0, sessionId, mediaConfig.getStartPosition(), mediaConfig.getMediaEntry().getId(), isLive, PlayKitManager.CLIENT_TAG, "hls");
+                lastReportedBitrate, sessionId, mediaConfig.getStartPosition(), mediaConfig.getMediaEntry().getId(), isLive, PlayKitManager.CLIENT_TAG, "hls");
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
