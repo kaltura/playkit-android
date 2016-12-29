@@ -27,9 +27,7 @@ public class LiveStatsService {
     private static String getOvpUrl(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, long bitrate,
                                     String sessionId, long startTime, String entryId, boolean isLive, String clientVer, String deliveryType) {
         Uri.Builder builder = new Uri.Builder();
-        builder.scheme("http")
-                .authority(baseUrl)
-                .path("/api_v3/index.php")
+        builder.path(baseUrl)
                 .appendQueryParameter("service", "liveStats")
                 .appendQueryParameter("apiVersion", "3.1")
                 .appendQueryParameter("expiry", "86400")

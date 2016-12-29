@@ -2,6 +2,8 @@ package com.kaltura.playkit.addon.cast;
 
 import android.text.TextUtils;
 
+import com.kaltura.playkit.PKLog;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,6 +14,7 @@ import org.json.JSONObject;
 
 abstract class CastConfigHelper {
 
+    protected static final PKLog log = PKLog.get("CastConfigHelper");
 
 
     JSONObject getCustomData(CastInfo castInfo) {
@@ -46,17 +49,20 @@ abstract class CastConfigHelper {
 
         try {
 
-            embedConfig.put("lib", mwEmbedUrl);
+            if (!TextUtils.isEmpty(mwEmbedUrl)) { //mwEmbedUrl isn't mandatory
+                embedConfig.put("lib", mwEmbedUrl);
+            }
+
             embedConfig.put("publisherID", partnerId);
-            embedConfig.put("uiconfID", uiConf);
             embedConfig.put("entryID", entryId);
+            embedConfig.put("uiconfID", uiConf);
 
             setFlashVars(embedConfig, sessionInfo, adTagUrl, fileFormat, entryId);
 
             customData.put("embedConfig", embedConfig);
 
         } catch (JSONException e) {
-            e.printStackTrace();
+            log.e(e.getMessage());
         }
 
     }
@@ -79,7 +85,7 @@ abstract class CastConfigHelper {
             }
 
         } catch (JSONException e) {
-            e.printStackTrace();
+            log.e(e.getMessage());
         }
 
     }
@@ -117,7 +123,7 @@ abstract class CastConfigHelper {
                 flashVars.put("doubleClick", doubleClick);
 
             } catch (JSONException e) {
-                e.printStackTrace();
+                log.e(e.getMessage());
             }
 
         }

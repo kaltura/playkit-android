@@ -39,4 +39,5 @@ public abstract class BaseTrack {
     public boolean isAdaptive() {
         return isAdaptive;
     }
+
 }

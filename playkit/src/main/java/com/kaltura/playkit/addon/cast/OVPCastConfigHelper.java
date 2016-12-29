@@ -2,6 +2,8 @@ package com.kaltura.playkit.addon.cast;
 
 import android.text.TextUtils;
 
+import com.kaltura.playkit.PKLog;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -11,7 +13,6 @@ import org.json.JSONObject;
 
 
 class OVPCastConfigHelper extends CastConfigHelper {
-
 
 
     @Override
@@ -40,7 +41,7 @@ class OVPCastConfigHelper extends CastConfigHelper {
                 flashVars.put("proxyData", proxyData);
 
             } catch(JSONException e) {
-                e.printStackTrace();
+               log.e(e.getMessage());
             }
 
         }

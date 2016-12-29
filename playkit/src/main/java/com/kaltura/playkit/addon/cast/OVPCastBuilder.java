@@ -11,7 +11,7 @@ public class OVPCastBuilder extends BasicCastBuilder<OVPCastBuilder> {
 
 
     public OVPCastBuilder setKs(@NonNull String ks) {
-        mCastInfo.setKs(ks);
+        castInfo.setKs(ks);
         return this;
     }
 
