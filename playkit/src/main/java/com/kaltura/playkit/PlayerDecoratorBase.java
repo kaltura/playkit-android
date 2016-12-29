@@ -109,11 +109,6 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public boolean isAutoPlay() {
-        return player.isAutoPlay();
-    }
-
-    @Override
     public void changeTrack(String uniqueId) {
         player.changeTrack(uniqueId);
     }
