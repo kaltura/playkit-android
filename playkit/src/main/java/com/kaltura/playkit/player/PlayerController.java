@@ -3,7 +3,7 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.view.View;
+import android.view.ViewGroup;
 
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKEvent;
@@ -32,6 +32,7 @@ public class PlayerController implements Player {
     private PlayerConfig.Media mediaConfig;
     private boolean wasReleased = false;
 
+    private ViewGroup playerRootView;
     private PKEvent.Listener eventListener;
 
     public void setEventListener(PKEvent.Listener eventListener) {
@@ -130,7 +131,7 @@ public class PlayerController implements Player {
         }
     }
 
-    public View getView() {
+    public PlayerView getView() {
         if(player == null){
             return null;
         }

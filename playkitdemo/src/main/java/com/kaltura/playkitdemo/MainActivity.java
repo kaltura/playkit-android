@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             addPlayerListeners(progressBar);
 
             LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
-            layout.addView(player.getView());
+            layout.addView(player.getView().getContainerView());
 
             controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
             controlsView.setPlayer(player);
