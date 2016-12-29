@@ -14,7 +14,6 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.R;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
@@ -95,17 +94,17 @@ public class PlayerController implements Player {
         this.wrapperView = new PlayerView(context) {
             @Override
             public void hideVideoSurface() {
-                PlayerView exoView = (PlayerView)wrapperView.findViewById(R.id.exo_view);
-                if (exoView != null) {
-                    exoView.hideVideoSurface();
+                PlayerView playerView = (PlayerView)wrapperView.getChildAt(0);
+                if (playerView != null) {
+                    playerView.hideVideoSurface();
                 }
             }
 
             @Override
             public void showVideoSurface() {
-                PlayerView exoView = (PlayerView)wrapperView.findViewById(R.id.exo_view);
-                if (exoView != null) {
-                    exoView.showVideoSurface();
+                PlayerView playerView = (PlayerView)wrapperView.getChildAt(0);
+                if (playerView != null) {
+                    playerView.showVideoSurface();
                 }
             }
         };
@@ -126,6 +125,7 @@ public class PlayerController implements Player {
         } else {
             //WVM Player
         }
+        wrapperView.removeAllViews();
         wrapperView.addView(player.getView());
         togglePlayerListeners(true);
         player.load(source);
