@@ -4,6 +4,7 @@ import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.Player;
@@ -93,6 +94,9 @@ public class YouboraLibraryManager extends PluginGeneric {
             if (event instanceof PlayerEvent && viewManager != null) {
                 log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
+                    case DURATION_CHANGE:
+                        log.d("new duration = " + ((PlayerEvent.DurationChanged) event).duration);
+                        break;
                     case STATE_CHANGED:
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
@@ -200,6 +204,10 @@ public class YouboraLibraryManager extends PluginGeneric {
 
     public Double getPlayhead() {
         return Long.valueOf(player.getCurrentPosition()).doubleValue();
+    }
+
+    public Boolean getIsLive() {
+        return (mediaConfig.getMediaEntry().getMediaType() == PKMediaEntry.MediaEntryType.Live);
     }
 
 
