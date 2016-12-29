@@ -210,9 +210,4 @@ public class YouboraLibraryManager extends PluginGeneric {
         return (mediaConfig.getMediaEntry().getMediaType() == PKMediaEntry.MediaEntryType.Live);
     }
 
-    public Boolean getIsLive() {
-        return (mediaConfig.getMediaEntry().getMediaType() == PKMediaEntry.MediaEntryType.Live);
-    }
-
-
 }
