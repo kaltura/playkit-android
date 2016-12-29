@@ -50,13 +50,4 @@ public class PKMediaEntry {
         Live,
         Unknown
     }
-
-    public PKMediaFormat getSourceFormat(String fileURL) {
-        if(fileURL != null) {
-            String ext = fileURL.substring(fileURL.lastIndexOf("."));
-            return PKMediaFormat.valueOfExt(ext);
-        }
-        return null;
-    }
-
 }
