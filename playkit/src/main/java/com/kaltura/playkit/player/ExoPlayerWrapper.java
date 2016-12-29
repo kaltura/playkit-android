@@ -43,6 +43,7 @@ import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.R;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.player.PlayerController.EventListener;
 import com.kaltura.playkit.player.PlayerController.StateChangedListener;
@@ -114,6 +115,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         this.context = context;
         mediaDataSourceFactory = buildDataSourceFactory(true);
         exoPlayerView = new ExoPlayerView(context);
+        exoPlayerView.setId(R.id.exo_view);
         window = new Timeline.Window();
     }
 

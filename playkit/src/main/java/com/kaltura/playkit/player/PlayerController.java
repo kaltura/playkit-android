@@ -13,6 +13,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.R;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
@@ -28,11 +29,12 @@ public class PlayerController implements Player {
 
     private PlayerEngine player;
     private Context context;
+    private PlayerView wrapperView;
 
     private PlayerConfig.Media mediaConfig;
     private boolean wasReleased = false;
 
-    private ViewGroup playerRootView;
+    //private ViewGroup playerRootView;
     private PKEvent.Listener eventListener;
 
     public void setEventListener(PKEvent.Listener eventListener) {
@@ -89,8 +91,24 @@ public class PlayerController implements Player {
 
     public PlayerController(Context context, PlayerConfig.Media mediaConfig){
         this.context = context;
+        this.wrapperView = new PlayerView(context) {
+            @Override
+            public void hideVideoSurface() {
+                PlayerView exoView = (PlayerView)wrapperView.findViewById(R.id.exo_view);
+                exoView.hideVideoSurface();
+            }
+
+            @Override
+            public void showVideoSurface() {
+                PlayerView exoView = (PlayerView)wrapperView.findViewById(R.id.exo_view);
+                exoView.showVideoSurface();
+            }
+        };
+        ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        this.wrapperView.setLayoutParams(lp);
         this.mediaConfig = mediaConfig;
-        player = new ExoPlayerWrapper(context);
+
+
         togglePlayerListeners(true);
     }
 
@@ -98,6 +116,7 @@ public class PlayerController implements Player {
 
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
+        if (source.ge)
         player.load(source);
         startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
     }
@@ -135,7 +154,7 @@ public class PlayerController implements Player {
         if(player == null){
             return null;
         }
-        return player.getView();
+        return wrapperView;
     }
 
     public long getDuration() {
