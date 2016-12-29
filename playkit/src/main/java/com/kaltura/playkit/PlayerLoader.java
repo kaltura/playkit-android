@@ -105,11 +105,6 @@ class PlayerLoader extends PlayerDecoratorBase {
         getPlayer().onApplicationPaused();
     }
 
-    @Override
-    public boolean isAutoPlay() {
-        return getPlayer().isAutoPlay();
-    }
-    
     private void releasePlayer() {
         getPlayer().destroy();
     }

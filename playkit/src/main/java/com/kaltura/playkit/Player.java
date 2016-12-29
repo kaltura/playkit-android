@@ -99,8 +99,6 @@ public interface Player {
      */
     boolean isPlaying();
 
-    boolean isAutoPlay();
-
     /**
      * Add event listener to the player.
      * @param listener - event listener.

@@ -46,11 +46,6 @@ public abstract class PlayerDecorator extends PlayerDecoratorBase {
     }
 
     @Override
-    public boolean isAutoPlay() {
-        return super.isAutoPlay();
-    }
-
-    @Override
     final public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
         super.updatePluginConfig(pluginName, key, value);
     }
