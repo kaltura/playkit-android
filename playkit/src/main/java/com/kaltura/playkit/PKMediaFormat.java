@@ -30,10 +30,14 @@ public enum PKMediaFormat {
     }
 
     public static PKMediaFormat getMediaFormat(String sourceURL) {
+        PKMediaFormat mediaFormat = null;
         if(sourceURL != null) {
-            String ext = sourceURL.substring(sourceURL.lastIndexOf("."));
-            return PKMediaFormat.valueOfExt(ext);
+            int extIndex = sourceURL.lastIndexOf(".");
+            if (extIndex < 0) {
+                return mediaFormat;
+            }
+            mediaFormat = PKMediaFormat.valueOfExt(sourceURL.substring(2));
         }
-        return null;
+        return mediaFormat;
     }
 }
