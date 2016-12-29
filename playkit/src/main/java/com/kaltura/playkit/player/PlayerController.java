@@ -98,12 +98,7 @@ public class PlayerController implements Player {
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
         player.load(source);
-        long startPosition = mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER;
-        if(startPosition <= player.getDuration()){
-            startPlaybackFrom(startPosition);
-        }else{
-            log.w("The start position is grater then duration of the video!");
-        }
+        startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
     }
 
     @Override
@@ -123,10 +118,15 @@ public class PlayerController implements Player {
             log.e("Attempt to invoke 'startPlaybackFrom()' on null instance of the player engine");
             return;
         }
-        if(!wasReleased){
-            togglePlayerListeners(false);
-            player.startFrom(startPosition);
-            togglePlayerListeners(true);
+
+        if(startPosition <= mediaConfig.getMediaEntry().getDuration()){
+            if(!wasReleased){
+                togglePlayerListeners(false);
+                player.startFrom(startPosition);
+                togglePlayerListeners(true);
+            }
+        }else{
+            log.w("The start position is grater then duration of the video! Start position " + startPosition + ", duration " + mediaConfig.getMediaEntry().getDuration());
         }
     }
 
@@ -281,10 +281,5 @@ public class PlayerController implements Player {
         }
 
         player.changeTrack(uniqueId);
-    }
-
-    @Override
-    public boolean isAutoPlay() {
-        return mediaConfig.isAutoPlay();
     }
 }

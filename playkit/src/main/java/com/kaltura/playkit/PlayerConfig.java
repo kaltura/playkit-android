@@ -17,18 +17,8 @@ public class PlayerConfig {
     public final Plugins plugins = new Plugins();
 
     public static class Media {
-        private boolean autoPlay = false;
         private long startPosition = 0;
         private PKMediaEntry mediaEntry;
-
-        public boolean isAutoPlay() {
-            return autoPlay;
-        }
-
-        public Media setAutoPlay(boolean autoPlay) {
-            this.autoPlay = autoPlay;
-            return this;
-        }
 
         /**
          * Getter for start position. Default is 0.
