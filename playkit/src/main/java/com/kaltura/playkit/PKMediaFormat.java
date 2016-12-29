@@ -36,7 +36,7 @@ public enum PKMediaFormat {
             if (extIndex < 0) {
                 return mediaFormat;
             }
-            mediaFormat = PKMediaFormat.valueOfExt(sourceURL.substring(2));
+            mediaFormat = PKMediaFormat.valueOfExt(sourceURL.substring(extIndex));
         }
         return mediaFormat;
     }
