@@ -69,12 +69,12 @@ public class YouboraPlugin extends PKPlugin {
 
     @Override
     protected void onApplicationPaused() {
-        stopMonitoring();
+        pluginManager.pauseMonitoring();
     }
 
     @Override
     protected void onApplicationResumed() {
-        startMonitoring(this.player);
+        pluginManager.resumeMonitoring();
     }
 
     @Override

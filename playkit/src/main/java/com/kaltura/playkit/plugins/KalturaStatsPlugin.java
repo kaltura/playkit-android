@@ -31,6 +31,8 @@ import java.util.TimerTask;
 public class KalturaStatsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("KalturaStatsPlugin");
     private static final String TAG = "KalturaStatsPlugin";
+    private final String BASE_URL = "https://stats.kaltura.com/api_v3/index.php";
+
 
     /*
          * Kaltura event types that are presently not usable in the
@@ -400,7 +402,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     private void sendAnalyticsEvent(final KStatsEvent eventType) {
         String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
         int uiconfId = pluginConfig.has("uiconfId") ? pluginConfig.getAsJsonPrimitive("uiconfId").getAsInt() : 0;
-        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : "https://stats.kaltura.com/api_v3/index.php";
+        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : BASE_URL;
         int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
         long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration() / 1000;
 
