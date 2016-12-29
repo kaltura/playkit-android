@@ -139,7 +139,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     }
 
     public Double getMediaPlayhead() {
-        return this.plugin.getPlayhead();
+        return this.plugin.getPlayhead() / 1000;
     }
 
     public String getAdPosition() {

@@ -203,12 +203,11 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public Double getPlayhead() {
-        return Long.valueOf(player.getCurrentPosition()).doubleValue();
+        return Long.valueOf(player.getCurrentPosition()).doubleValue() / 1000;
     }
 
     public Boolean getIsLive() {
         return (mediaConfig.getMediaEntry().getMediaType() == PKMediaEntry.MediaEntryType.Live);
     }
-
 
 }
