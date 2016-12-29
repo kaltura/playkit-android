@@ -29,7 +29,8 @@ public class YouboraConfig {
     private static String[] youboraConfigFieldNames = new String[]{"accountCode","username"};
     private static String[] youboraBooleanConfigFieldNames = new String[]{"haltOnError","enableAnalytics"};
 
-    private static String[] mediaConfigFieldNames = new String[]{"title"};
+    private static String[] mediaConfigFieldNames = new String[]{"title","cdn"};
+    private static String[] mediaBooleanConfigFieldNames = new String[]{"isLive"};
 
     private static String[] adsConfigFieldNames = new String[]{"title","campaign"};
     private static String[] adsBooleanConfigFieldNames = new String[]{"adsExpected"};
@@ -112,7 +113,7 @@ public class YouboraConfig {
                 setYouboraConfigObject(youboraConfigObject, pluginConfig.getAsJsonObject("youboraConfig"), youboraConfigFieldNames, youboraBooleanConfigFieldNames);
             }
             if (pluginConfig.has("media")){
-                setYouboraConfigObject(mediaObject, pluginConfig.getAsJsonObject("media"), mediaConfigFieldNames, null);
+                setYouboraConfigObject(mediaObject, pluginConfig.getAsJsonObject("media"), mediaConfigFieldNames, mediaBooleanConfigFieldNames);
             }
             if (pluginConfig.has("ads")){
                 setYouboraConfigObject(adsObject, pluginConfig.getAsJsonObject("ads"), adsConfigFieldNames, adsBooleanConfigFieldNames);
