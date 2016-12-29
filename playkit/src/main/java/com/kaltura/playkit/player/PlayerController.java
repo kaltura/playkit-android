@@ -310,9 +310,4 @@ public class PlayerController implements Player {
 
         player.changeTrack(uniqueId);
     }
-
-    @Override
-    public boolean isAutoPlay() {
-        return mediaConfig.isAutoPlay();
-    }
 }

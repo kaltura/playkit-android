@@ -99,11 +99,6 @@ public class MockPlayer implements Player {
     }
 
     @Override
-    public boolean isAutoPlay() {
-        return false;
-    }
-
-    @Override
     public void addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
 
     }
