@@ -128,6 +128,7 @@ public class PlayerController implements Player {
             }
         } else {
             //WVM Player
+            return;
         }
 
         player.load(source);
