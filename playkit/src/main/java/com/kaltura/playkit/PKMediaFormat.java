@@ -19,4 +19,13 @@ public enum PKMediaFormat {
         this.pathExt = pathExt;
         this.drm = drm;
     }
+
+    public static PKMediaFormat valueOfExt(String ext) {
+        for(PKMediaFormat mediaFormat : values()){
+            if(mediaFormat.pathExt.equals(ext)){
+                return mediaFormat;
+            }
+        }
+        return null;
+    }
 }

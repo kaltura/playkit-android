@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import com.google.gson.JsonParseException;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.backend.SessionProvider;
@@ -61,17 +62,31 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         this.mediaAsset = new MediaAsset();
     }
 
-    public PhoenixMediaProvider setSessionProvider(@NonNull SessionProvider ksProvider) {
-        this.sessionProvider = ksProvider;
+    /**
+     * MANDATORY! provides the baseUrl and the session token(ks) for the API calls.
+     * @param sessionProvider
+     * @return
+     */
+    public PhoenixMediaProvider setSessionProvider(@NonNull SessionProvider sessionProvider) {
+        this.sessionProvider = sessionProvider;
         return this;
     }
 
+    /**
+     * MANDATORY! the media asset id, to fetch the data for.
+     * @param assetId
+     * @return
+     */
     public PhoenixMediaProvider setAssetId(@NonNull String assetId) {
         this.mediaAsset.assetId = assetId;
         return this;
     }
 
-
+    /**
+     * MANDATORY! defines the sources to be used for the PKMediaSource objects creation.
+     * @param formats 1 or more content format definition. can be: Hd, Sd, Download, Trailer etc
+     * @return
+     */
     public PhoenixMediaProvider setFormats(@NonNull String... formats) {
         this.mediaAsset.formats = new ArrayList<>(Arrays.asList(formats));
         return this;
@@ -81,7 +96,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
      * @param referenceType - can be one of the {@link com.kaltura.playkit.backend.phoenix.APIDefines.AssetReferenceType} values
      * @return
      */
-    public PhoenixMediaProvider setReferenceType(@NonNull String referenceType) {
+    public PhoenixMediaProvider setReferenceType(@NonNull @APIDefines.AssetReferenceType String referenceType) {
         this.mediaAsset.referenceType = referenceType;
         return this;
     }
@@ -101,6 +116,12 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return this;
     }
 
+    /**
+     * optional parameter.
+     * Defaults to {@link com.kaltura.playkit.connect.APIOkRequestsExecutor} implementation.
+     * @param executor
+     * @return
+     */
     public PhoenixMediaProvider setRequestExecutor(@NonNull RequestQueue executor) {
         this.requestsExecutor = executor;
         return this;
@@ -114,6 +135,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return ProviderParser.getMedia(assetInfo, formats);
     }
 
+    /**
+     * Checks for non empty value on the mandatory parameters.
+     * @return - error in case of at least 1 invalid mandatory parameter.
+     */
     @Override
     protected ErrorElement validateParams() {
         String error = TextUtils.isEmpty(this.mediaAsset.assetId) ? ": Missing required parameters, assetId" :
@@ -144,6 +169,11 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     null;
         }
 
+        /**
+         * Builds and passes to the executor, the Asset info fetching request.
+         * @param ks
+         * @throws InterruptedException
+         */
         @Override
         protected void requestRemote(String ks) throws InterruptedException {
             PhoenixRequestBuilder requestBuilder = AssetService.assetGet(getApiBaseUrl(), ks, mediaAsset.assetId, mediaAsset.referenceType)
@@ -174,6 +204,11 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
 
+        /**
+         * Parse and create a {@link PKMediaEntry} object from the API response.
+         * @param response
+         * @throws InterruptedException
+         */
         private void onAssetGetResponse(final ResponseElement response) throws InterruptedException {
             ErrorElement error = null;
             PKMediaEntry mediaEntry = null;
@@ -261,12 +296,29 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 // if provided, only the "formats" matching MediaFiles should be parsed and added to the PKMediaEntry media sources
                 for (KalturaMediaFile file : mediaFiles) {
                     if (formats == null || formats.contains(file.getType())) {
-                        sources.add(new PKMediaSource().setId(file.getId() + "").setUrl(file.getUrl()));
+                        sources.add(new PKMediaSource().setId(file.getId() + "").setUrl(file.getUrl()).setMediaFormat(getFileFormat(file)));
                         maxDuration = Math.max(file.getDuration(), maxDuration);
                     }
                 }
             }
             return mediaEntry.setDuration(maxDuration).setSources(sources).setMediaType(MediaTypeConverter.toMediaEntryType(""));
+        }
+
+        /**
+         * since currently in OTT there's no specific data regarding the source format, we need to parse
+         * it from the url extension.
+         * @param file
+         * @return
+         */
+        /* we're actually guessing the format according to the extension. since we don't have data regarding
+           DRM support, all formats, minus wvm, that has special extension, will be set as clear type formats.*/
+        private static PKMediaFormat getFileFormat(KalturaMediaFile file) {
+            String url = file.getUrl();
+            if(url != null) {
+                String ext = url.substring(url.lastIndexOf("."));
+                return PKMediaFormat.valueOfExt(ext);
+            }
+            return null;
         }
     }
 
