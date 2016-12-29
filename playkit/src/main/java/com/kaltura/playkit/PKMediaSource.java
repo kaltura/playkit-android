@@ -5,7 +5,7 @@ import java.util.List;
 public class PKMediaSource {
     private String id;
     private String url;
-    //private String mimeType;
+    private PKMediaFormat mediaFormat;
     private List<PKDrmParams> drmData;
 
     public String getId() {
@@ -26,21 +26,21 @@ public class PKMediaSource {
         return this;
     }
 
-    /*public String getMimeType() {
-        return mimeType;
-    }
-
-    public PKMediaSource setMimeType(String mimeType) {
-        this.mimeType = mimeType;
-        return this;
-    }*/
-
     public List<PKDrmParams> getDrmData() {
         return drmData;
     }
 
     public PKMediaSource setDrmData(List<PKDrmParams> drmData) {
         this.drmData = drmData;
+        return this;
+    }
+
+    public PKMediaFormat getMediaFormat() {
+        return mediaFormat;
+    }
+
+    public PKMediaSource setMediaFormat(PKMediaFormat mediaFormat) {
+        this.mediaFormat = mediaFormat;
         return this;
     }
 }

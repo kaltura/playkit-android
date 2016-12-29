@@ -43,16 +43,7 @@ public class KalturaPlaybackSource {
 
         return null;
     }
-    /*public String getProtocol(String preferred) {
-        if (protocols != null && protocols.size() > 0) {
-            for (KalturaValue kalturaValue : protocols) {
-                if (kalturaValue.getValue().equals(preferred)) return preferred;
-            }
-            return (String) protocols.get(0).getValue();
-        }
 
-        return null;
-    }*/
 
     public String getFlavorIds() {
         return flavorIds;
@@ -72,6 +63,10 @@ public class KalturaPlaybackSource {
 
     public String getUrl() {
         return url;
+    }
+
+    public boolean hasDrmData() {
+        return drm != null && drm.size() > 0;
     }
 
 

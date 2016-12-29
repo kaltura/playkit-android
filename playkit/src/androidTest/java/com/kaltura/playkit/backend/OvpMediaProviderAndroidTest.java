@@ -10,6 +10,7 @@ import com.kaltura.playkit.BaseTest;
 import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
@@ -110,10 +111,12 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
                             assertNotNull(firstSource.getDrmData());
                             assertTrue(firstSource.getDrmData().size() == 2);
                             assertTrue(firstSource.getUrl().endsWith("mpd"));
+                            assertTrue(firstSource.getMediaFormat().equals(PKMediaFormat.dash_widevine));
 
                             PKMediaSource secondSource = data.getResponse().getSources().get(1);
                             assertTrue(secondSource.getDrmData().size() == 0);
                             assertTrue(secondSource.getUrl().endsWith("m3u8"));
+                            assertTrue(secondSource.getMediaFormat().equals(PKMediaFormat.hls_clear));
                         }
                     });
                 } else {
@@ -145,10 +148,12 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
                             assertNotNull(firstSource.getDrmData());
                             assertTrue(firstSource.getDrmData().size() == 2);
                             assertTrue(firstSource.getUrl().endsWith("mpd"));
+                            assertTrue(firstSource.getMediaFormat().equals(PKMediaFormat.dash_widevine));
 
                             PKMediaSource secondSource = data.getResponse().getSources().get(1);
                             assertTrue(secondSource.getDrmData().size() == 0);
                             assertTrue(secondSource.getUrl().endsWith("m3u8"));
+                            assertTrue(secondSource.getMediaFormat().equals(PKMediaFormat.hls_clear));
                         }
                     });
                 } else {
