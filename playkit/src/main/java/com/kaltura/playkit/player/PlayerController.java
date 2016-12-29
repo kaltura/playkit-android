@@ -119,7 +119,7 @@ public class PlayerController implements Player {
 
         if (!source.getMediaFormat().equals(PKMediaFormat.wvm_widevine)) {
             player = new ExoPlayerWrapper(context);
-            
+            wrapperView.addView(player.getView());
         }
         player.load(source);
         startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
