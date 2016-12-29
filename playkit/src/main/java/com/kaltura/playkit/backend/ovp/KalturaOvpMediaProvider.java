@@ -9,7 +9,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.backend.SessionProvider;
 import com.kaltura.playkit.backend.base.BECallableLoader;
@@ -34,7 +33,6 @@ import com.kaltura.playkit.connect.ResponseElement;
 import java.lang.annotation.Retention;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -322,8 +320,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 }
 
                 String playUrl = null;
-                String formatName = FormatsHelper.getFormatName(playbackSource.getFormat(), playbackSource.hasDrmData());
-                PKMediaFormat mediaFormat = FormatsHelper.SupportedFormats.get(formatName);
+                PKMediaFormat mediaFormat = FormatsHelper.getPKMediaFormat(playbackSource.getFormat(), playbackSource.hasDrmData());
 
                 // in case playbackSource doesn't have flavors we don't need to build the url and we'll use the provided one.
                 if (playbackSource.hasFlavorIds()) {
@@ -399,20 +396,20 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
                 if (flavorIds.length() > 0) {
                     //-> create PKMediaSource for every predefine extension:
-                    Collection<PKMediaFormat> extensions = FormatsHelper.getSupportedExtensions();
+                    //Collection<PKMediaFormat> extensions = FormatsHelper.getSupportedExtensions();
 
-                    for (PKMediaFormat mediaFormat : extensions) {
-                        String format = FormatsHelper.getFormatNameByMediaFormat(mediaFormat);
+                    for (Map.Entry<String,PKMediaFormat> mediaFormatEntry : FormatsHelper.SupportedFormats.entrySet()/*extensions*/) {
+                        String formatName = mediaFormatEntry.getKey();//FormatsHelper.getFormatNameByMediaFormat(mediaFormat);
                         String playUrl = new PlaySourceUrlBuilder()
                                 .setEntryId(entry.getId())
                                 .setFlavorIds(flavorIds.toString())
                                 .setKs(ks)
                                 .setPartnerId(partnerId)
                                 .setUiConfId(uiConfId)
-                                .setExtension(mediaFormat.pathExt)
-                                .setFormat(format).build();
+                                .setExtension(mediaFormatEntry.getValue().pathExt)
+                                .setFormat(formatName).build();
 
-                        PKMediaSource mediaSource = new PKMediaSource().setId(entry.getId() + "_" + mediaFormat.pathExt).setMediaFormat(mediaFormat);
+                        PKMediaSource mediaSource = new PKMediaSource().setId(entry.getId() + "_" + mediaFormatEntry.getValue().pathExt).setMediaFormat(mediaFormatEntry.getValue());
                         mediaSource.setUrl(playUrl);
                         sources.add(mediaSource);
                     }
@@ -438,60 +435,43 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             String UrlDrm = "url+drm";
         }
 
+        /**
+         * to map BE format name to the matching format element in the {@link PKMediaFormat} enumeration.
+         */
         private static final Map<String, PKMediaFormat> SupportedFormats = new HashMap<String, PKMediaFormat>() {{
             put(FormatName.MpegDash, PKMediaFormat.dash_clear);
             put(FormatName.MpegDashDrm, PKMediaFormat.dash_widevine);
-            put(FormatName.AppleHttp, PKMediaFormat.hls_clear); // without drm
-            put(FormatName.Url, PKMediaFormat.mp4_clear); //if format is "url it can be mp4 or wvm - this is the default
-            put(FormatName.UrlDrm, PKMediaFormat.wvm_widevine); //if format is "url it can be mp4 or wvm - this is the default
+            put(FormatName.AppleHttp, PKMediaFormat.hls_clear);
+            put(FormatName.Url, PKMediaFormat.mp4_clear);
+            put(FormatName.UrlDrm, PKMediaFormat.wvm_widevine);
         }};
-        //url format - if has drm .WVM else mp4
-        //TODO - add MediaFormat enum type to the PKMediaSource according to the selected type
 
-        private static String getFormatName(String format, boolean hasDrm) {
+        private static PKMediaFormat getPKMediaFormat(String format, boolean hasDrm) {
             switch (format) {
                 case FormatName.MpegDash:
-                    return hasDrm ? FormatName.MpegDashDrm : FormatName.MpegDash;
+                    return hasDrm ? SupportedFormats.get(FormatName.MpegDashDrm) : SupportedFormats.get(FormatName.MpegDash);
                 case FormatName.Url:
-                    return hasDrm ? FormatName.UrlDrm : FormatName.Url;
+                    return hasDrm ? SupportedFormats.get(FormatName.UrlDrm) : SupportedFormats.get(FormatName.Url);
                 case FormatName.AppleHttp:
-                    return format;
+                    return hasDrm ? null : SupportedFormats.get(FormatName.AppleHttp);
             }
             return null;
         }
 
-        public static String getExtByFormat(@NonNull String format) {
-            return SupportedFormats.get(format).pathExt;
-        }
-
-        public static String getFormatNameByMediaFormat(@NonNull PKMediaFormat mediaFormat) {
-            for (Map.Entry<String, PKMediaFormat> entry : SupportedFormats.entrySet()) {
-                if (entry.getValue().equals(mediaFormat)) {
-                    return entry.getKey();
-                }
-            }
-            return FormatName.Url; //default
-        }
 
         /**
-         * Check if format is not empty and it's supported.
-         * <p>
-         * "applehttp" format is supported only if doesn't have drm.
-         *
-         * @param source
+         * checks if the format name from the source parameter has a matching supported {@link PKMediaFormat}
+         * element.
+         * @param source - playback source item
          * @return - true, if format is valid and supported
          */
         public static boolean validateFormat(KalturaPlaybackSource source) {
-            String format = getFormatName(source.getFormat(), source.hasDrmData());
-            return !isEmpty(format) && SupportedFormats.keySet().contains(format) &&
-                    (!format.equals("applehttp") || Utils.isNullOrEmpty(source.getDrmData()));
-        }
-
-        public static Collection<PKMediaFormat> getSupportedExtensions() {
-            return SupportedFormats.values();
+            PKMediaFormat format = getPKMediaFormat(source.getFormat(), source.hasDrmData());
+            return format != null;
         }
 
     }
+
 
     public static class MediaTypeConverter {
 
