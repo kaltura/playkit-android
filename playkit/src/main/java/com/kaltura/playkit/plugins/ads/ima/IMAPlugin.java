@@ -27,7 +27,6 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.R;
 import com.kaltura.playkit.ads.AdEnabledPlayerController;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.plugins.ads.AdError;
@@ -133,7 +132,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         //----------------------------//
         Gson gson = new Gson();
         adConfig =  gson.fromJson(pluginConfig, IMAConfig.class);//IMAConfig.fromJsonObject(pluginConfig);
-        adUiContainer = (ViewGroup) player.getView().findViewById(R.id.exo_view);
+        adUiContainer = (ViewGroup) player.getView();
         requestAd();
     }
 

@@ -96,13 +96,17 @@ public class PlayerController implements Player {
             @Override
             public void hideVideoSurface() {
                 PlayerView exoView = (PlayerView)wrapperView.findViewById(R.id.exo_view);
-                exoView.hideVideoSurface();
+                if (exoView != null) {
+                    exoView.hideVideoSurface();
+                }
             }
 
             @Override
             public void showVideoSurface() {
                 PlayerView exoView = (PlayerView)wrapperView.findViewById(R.id.exo_view);
-                exoView.showVideoSurface();
+                if (exoView != null) {
+                    exoView.showVideoSurface();
+                }
             }
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -110,17 +114,20 @@ public class PlayerController implements Player {
         this.mediaConfig = mediaConfig;
 
 
-        togglePlayerListeners(true);
+
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
 
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
-        if (!source.getMediaFormat().equals(PKMediaFormat.wvm_widevine)) {
+        if (source.getMediaFormat() != null && !source.getMediaFormat().equals(PKMediaFormat.wvm_widevine)) {
             player = new ExoPlayerWrapper(context);
-            wrapperView.addView(player.getView());
+        } else {
+            //WVM Player
         }
+        wrapperView.addView(player.getView());
+        togglePlayerListeners(true);
         player.load(source);
         startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
     }
@@ -155,9 +162,6 @@ public class PlayerController implements Player {
     }
 
     public PlayerView getView() {
-        if(player == null){
-            return null;
-        }
         return wrapperView;
     }
 
