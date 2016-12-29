@@ -115,7 +115,6 @@ public class MockMediaProvider implements MediaEntryProvider {
 
     static class MockMediaParser {
 
-
         static PKMediaEntry parseMedia(JsonObject mediaObject) throws JsonSyntaxException {
             PKMediaEntry mediaEntry =  new Gson().fromJson(mediaObject, PKMediaEntry.class);
             if (mediaEntry.getMediaType() == null) {
@@ -123,18 +122,12 @@ public class MockMediaProvider implements MediaEntryProvider {
             }
             List<PKMediaSource> mediaSources = mediaEntry.getSources();
             for (PKMediaSource mediaSource : mediaSources) {
-                mediaSource.setMediaFormat(getFileFormat(mediaSource.getUrl()));
+                mediaSource.setMediaFormat(PKMediaFormat.getMediaFormat(mediaSource.getUrl()));
             }
             return mediaEntry;
         }
 
-        private static PKMediaFormat getFileFormat(String fileURL) {
-            if(fileURL != null) {
-                String ext = fileURL.substring(fileURL.lastIndexOf("."));
-                return PKMediaFormat.valueOfExt(ext);
-            }
-            return null;
-        }
+
 
     }
 
