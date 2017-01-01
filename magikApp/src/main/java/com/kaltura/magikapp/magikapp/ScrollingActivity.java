@@ -51,6 +51,10 @@ public class ScrollingActivity extends AppCompatActivity implements  ToolbarMedi
         });
     }
 
+    private Fragment getTemplate() {
+        return Template1Fragment.newInstance();
+    }
+
     protected void inflateLayout() {
         ViewStub viewStub = ((ViewStub) findViewById(R.id.activity_stub));
         viewStub.setLayoutResource(R.layout.playback_layout); //should override default defined layout resource
