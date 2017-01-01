@@ -70,7 +70,6 @@ public class KalturaStatsAndroidTest {
 
     private void setMediaObject(){
         PlayerConfig config = new PlayerConfig();
-        config.media.setAutoPlay(false);
         PKMediaSource mediaSource = new PKMediaSource().setUrl("http://cdnapi.kaltura.com/p/1774581/sp/177458100/playManifest/entryId/1_mphei4ku/format/applehttp/tags/mbr/protocol/http/f/a.m3u8");
         mediaSource.setId("516109");
         ArrayList<PKMediaSource> sourceList = new ArrayList<>();
