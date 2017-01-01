@@ -65,4 +65,32 @@ public class SideMenuView extends LinearLayout implements View.OnClickListener, 
         }
         return false;
     }
+
+    public MenuAdapter getMenuAdapter() {
+        return mMenuAdapter;
+    }
+
+    public void setMenuSelectionById(int menuId) {
+        if (menuId != -1) {
+            int position = MenuHelper.getInstance().getPositionByMenuId(menuId);
+            setMenuSelection(position);
+        }
+    }
+
+    public void setMenuSelectionByType(String menuType) {
+        int position = MenuHelper.getPositionByMenuType(menuType);
+
+        if(position != -1){
+            setMenuSelection(position);
+        }
+    }
+
+
+    public void setMenuSelection(int selection) {
+        if (selection >= SELECTION_NONE && mMenuAdapter != null && selection < mMenuAdapter.getItemCount()) {
+            mMenuAdapter.setSelectedItem(selection);
+            if (selection > SELECTION_NONE)
+                mLastSelectedPosition = selection;
+        }
+    }
 }

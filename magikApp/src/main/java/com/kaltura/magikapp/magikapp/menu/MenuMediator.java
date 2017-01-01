@@ -21,6 +21,6 @@ public interface MenuMediator {
 
     void refreshDrawer();
 
-    void onMenuClicked(MenuItem menuItem);
+    void onMenuClick(MenuItem menuItem);
 
 }

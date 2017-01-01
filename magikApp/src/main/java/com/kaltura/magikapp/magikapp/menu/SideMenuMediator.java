@@ -1,5 +1,6 @@
 package com.kaltura.magikapp.magikapp.menu;
 
+import android.app.Activity;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.text.TextUtils;
@@ -11,17 +12,20 @@ import android.text.TextUtils;
 public class SideMenuMediator implements MenuMediator, SideMenuListener{
 
     private static final int DRAWER_GRAVITY = GravityCompat.START;
+    public Activity mActivity;
+    public DrawerLayout mDrawerLayout;
+
 
     private SideMenuView mSideMenu;
 
-    public SideMenuMediator(PluginProvider provider, int drawerId, int menuId) {
-        super(provider, drawerId);
-        initMenu(menuId);
+    public SideMenuMediator(Activity activity, int drawerId, int menuId) {
+        mActivity = activity;
+        initMenu(menuId, drawerId);
     }
 
-    private void initMenu(int menuId) {
+    private void initMenu(int menuId, int drawerId) {
+        mDrawerLayout = (DrawerLayout)mActivity.findViewById(drawerId);
         mSideMenu = (SideMenuView) mActivity.findViewById(menuId);
-        mSideMenu.setUserState(TvinciSDK.getSessionManager().isLoggedIn() ? SideMenuView.USER_LOGGED_IN : SideMenuView.USER_LOGGED_OUT);
         mSideMenu.setMenuListener(this);
     }
 
@@ -45,7 +49,7 @@ public class SideMenuMediator implements MenuMediator, SideMenuListener{
 
     @Override
     public void refreshDrawer() {
-        mSideMenu.refreshSideMenu();
+
     }
 
     @Override
@@ -54,15 +58,20 @@ public class SideMenuMediator implements MenuMediator, SideMenuListener{
     }
 
     @Override
-    public void onMenuClicked(MenuItem menuItem) {
+    public void onMenuClick(MenuItem menuItem) {
         mSideMenu.getMenuAdapter().onMenuItemClick(menuItem, MenuHelper.getPositionByMenuType(menuItem.getStringType()));
     }
 
-    public boolean onMenuClicked(MenuItem menuItem, Object extra) {
+    @Override
+    public boolean onMenuClicked(MenuItem menuItem) {
 
         switch (menuItem.getStringType()) {
 
+            default:
+                closeDrawer();
+                break;
         }
+
         return false;
 
     }

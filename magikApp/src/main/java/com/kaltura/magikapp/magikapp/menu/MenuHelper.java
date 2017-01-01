@@ -1,5 +1,7 @@
 package com.kaltura.magikapp.magikapp.menu;
 
+import android.text.TextUtils;
+
 import java.util.List;
 
 /**
@@ -23,6 +25,28 @@ public class MenuHelper {
     public List<MenuItem> getMenuItems(){
         return mMenuItems;
     }
+
+    public static int getPositionByMenuType(String menuType) {
+        if(!TextUtils.isEmpty(menuType)) {
+            for (int i = 0; i < getInstance().mMenuItems.size(); i++) {
+                if (getInstance().mMenuItems.get(i).getStringType().equals(menuType)) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public int getPositionByMenuId(int menuId) {
+        for (int i = 0; i < mMenuItems.size(); i++) {
+            if (mMenuItems.get(i).getId() == menuId) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     public static class MenuType {
         public static final String HOME = "Home";
         public static final String EPG = "EPG";

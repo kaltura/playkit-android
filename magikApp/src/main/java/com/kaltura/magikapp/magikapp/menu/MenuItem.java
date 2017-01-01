@@ -13,6 +13,8 @@ public class MenuItem {
     private int resIcon;
     private boolean itemSelected;
     private int mMenuId;
+    private String mStringType;
+
 
     public MenuItem(int type, String title) {
         this.mMenuType = type;
@@ -64,5 +66,13 @@ public class MenuItem {
         this.resIcon = resIcon;
     }
 
+    public void setStringType(String mStringType) {
+        this.mStringType = mStringType;
+    }
+
+
+    public String getStringType() {
+        return mStringType;
+    }
 
 }

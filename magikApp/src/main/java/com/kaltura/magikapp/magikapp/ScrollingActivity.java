@@ -8,9 +8,15 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import com.kaltura.magikapp.R;
+import com.kaltura.magikapp.magikapp.menu.MenuMediator;
 
 
 public class ScrollingActivity extends AppCompatActivity {
+
+    public MenuMediator mMenuMediator;
+    private ToolbarMediator mToolbarMediator;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -64,7 +64,7 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
     private void initMenuItem(final MenuItemViewHolder holder, final MenuItem menuItem, final int position) {
         holder.itemName.setText(menuItem.getMenuName());
         holder.indicator.setVisibility(menuItem.isItemSelected() ? View.VISIBLE : View.INVISIBLE);
-        holder.indicator.setBackgroundColor(UnifiedConfigurationManager.getInstance().getCurrentBrandColor());
+//        holder.indicator.setBackgroundColor(UnifiedConfigurationManager.getInstance().getCurrentBrandColor());
         holder.itemIcon.setImageResource(menuItem.getResIcon());
         holder.mainLayout.setBackgroundResource(menuItem.isItemSelected() ? R.color.selected_menu_item_bg : R.color.menuBackgroud);
         holder.mainLayout.setOnClickListener(new View.OnClickListener() {
