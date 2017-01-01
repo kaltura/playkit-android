@@ -1,4 +1,4 @@
-package com.kaltura.playkitdemo;
+package com.kaltura.magikapp;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -30,6 +30,7 @@ import com.kaltura.playkit.VideoTrack;
 import com.kaltura.playkit.backend.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
+import com.kaltura.playkit.backend.phoenix.APIDefines;
 import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.plugins.SamplePlugin;
@@ -41,8 +42,8 @@ import com.kaltura.playkit.utils.Consts;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.kaltura.playkitdemo.MockParams.Format;
-import static com.kaltura.playkitdemo.MockParams.MediaId;
+import static com.kaltura.magikapp.MockParams.Format;
+import static com.kaltura.magikapp.MockParams.MediaId;
 
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
@@ -94,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onComplete(PrimitiveResult response) {
                 if(response.error == null) {
-                    mediaProvider = new PhoenixMediaProvider().setSessionProvider(ottSessionProvider).setAssetId(MediaId).setReferenceType(MockParams.MediaType).setFormats(Format);
+                    mediaProvider = new PhoenixMediaProvider().setSessionProvider(ottSessionProvider).setAssetId(MediaId).setReferenceType(APIDefines.AssetReferenceType.Media).setFormats(Format);
 
                     mediaProvider.load(new OnMediaLoadCompletion() {
                         @Override

@@ -1,4 +1,4 @@
-package com.kaltura.playkitdemo;
+package com.kaltura.magikapp;
 
 /**
  * Created by anton.afanasiev on 30/11/2016.

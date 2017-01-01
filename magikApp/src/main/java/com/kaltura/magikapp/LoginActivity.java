@@ -1,4 +1,4 @@
-package com.kaltura.playkitdemo;
+package com.kaltura.magikapp;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;

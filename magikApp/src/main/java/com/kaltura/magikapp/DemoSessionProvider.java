@@ -1,4 +1,4 @@
-package com.kaltura.playkitdemo;
+package com.kaltura.magikapp;
 
 import com.connect.backend.PrimitiveResult;
 import com.connect.backend.SessionProvider;
