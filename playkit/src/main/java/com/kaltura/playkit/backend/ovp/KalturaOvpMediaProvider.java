@@ -2,33 +2,38 @@ package com.kaltura.playkit.backend.ovp;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.StringDef;
+import android.text.TextUtils;
 
+import com.connect.backend.BaseResult;
+import com.connect.backend.SessionProvider;
+import com.connect.backend.ovp.KalturaOvpErrorHelper;
+import com.connect.backend.ovp.KalturaOvpParser;
+import com.connect.backend.ovp.OvpConfigs;
+import com.connect.backend.ovp.PlaySourceUrlBuilder;
+import com.connect.backend.ovp.data.FlavorAssetsFilter;
+import com.connect.backend.ovp.data.KalturaBaseEntryListResponse;
+import com.connect.backend.ovp.data.KalturaEntryContextDataResult;
+import com.connect.backend.ovp.data.KalturaEntryType;
+import com.connect.backend.ovp.data.KalturaFlavorAsset;
+import com.connect.backend.ovp.data.KalturaMediaEntry;
+import com.connect.backend.ovp.data.KalturaPlaybackContext;
+import com.connect.backend.ovp.data.KalturaPlaybackSource;
+import com.connect.backend.ovp.services.BaseEntryService;
+import com.connect.utils.Accessories;
+import com.connect.utils.ErrorElement;
+import com.connect.utils.OnRequestCompletion;
+import com.connect.utils.RequestBuilder;
+import com.connect.utils.RequestQueue;
+import com.connect.utils.ResponseElement;
 import com.google.gson.JsonSyntaxException;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.backend.BaseResult;
-import com.kaltura.playkit.backend.SessionProvider;
-import com.kaltura.playkit.backend.base.BECallableLoader;
-import com.kaltura.playkit.backend.base.BEMediaProvider;
-import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.backend.ovp.data.FlavorAssetsFilter;
-import com.kaltura.playkit.backend.ovp.data.KalturaBaseEntryListResponse;
-import com.kaltura.playkit.backend.ovp.data.KalturaEntryContextDataResult;
-import com.kaltura.playkit.backend.ovp.data.KalturaEntryType;
-import com.kaltura.playkit.backend.ovp.data.KalturaFlavorAsset;
-import com.kaltura.playkit.backend.ovp.data.KalturaMediaEntry;
-import com.kaltura.playkit.backend.ovp.data.KalturaPlaybackContext;
-import com.kaltura.playkit.backend.ovp.data.KalturaPlaybackSource;
-import com.kaltura.playkit.backend.ovp.services.BaseEntryService;
-import com.kaltura.playkit.connect.Accessories;
-import com.kaltura.playkit.connect.ErrorElement;
-import com.kaltura.playkit.connect.OnRequestCompletion;
-import com.kaltura.playkit.connect.RequestBuilder;
-import com.kaltura.playkit.connect.RequestQueue;
-import com.kaltura.playkit.connect.ResponseElement;
+import com.kaltura.playkit.backend.BECallableLoader;
+import com.kaltura.playkit.backend.BEMediaProvider;
+import com.kaltura.playkit.backend.OnMediaLoadCompletion;
 
 import java.lang.annotation.Retention;
 import java.security.InvalidParameterException;
@@ -37,7 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static android.text.TextUtils.isEmpty;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
@@ -81,7 +85,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     /**
      * optional parameter.
-     * Defaults to {@link com.kaltura.playkit.connect.APIOkRequestsExecutor} implementation.
+     * Defaults to {@link com.connect.utils.APIOkRequestsExecutor} implementation.
      * @param executor
      * @return
      */
@@ -109,7 +113,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     @Override
     protected ErrorElement validateParams() {
-        return isEmpty(this.entryId) ?
+        return TextUtils.isEmpty(this.entryId) ?
                 ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": Missing required parameters, entryId") :
                 null;
     }
@@ -131,7 +135,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
         @Override
         protected ErrorElement validateKs(String ks) {
-            return isEmpty(ks) ?
+            return TextUtils.isEmpty(ks) ?
                     ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token") :
                     null;
         }

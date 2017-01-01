@@ -4,23 +4,24 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.kaltura.playkit.OnCompletion;
+import com.connect.backend.BaseResult;
+import com.connect.backend.PrimitiveResult;
+import com.connect.backend.base.BaseSessionProvider;
+import com.connect.backend.phoenix.PhoenixConfigs;
+import com.connect.backend.phoenix.data.KalturaLoginResponse;
+import com.connect.backend.phoenix.data.KalturaLoginSession;
+import com.connect.backend.phoenix.data.KalturaSession;
+import com.connect.backend.phoenix.data.PhoenixParser;
+import com.connect.backend.phoenix.services.OttUserService;
+import com.connect.backend.phoenix.services.PhoenixService;
+import com.connect.backend.phoenix.services.PhoenixSessionService;
+import com.connect.core.OnCompletion;
+import com.connect.utils.APIOkRequestsExecutor;
+import com.connect.utils.ErrorElement;
+import com.connect.utils.MultiRequestBuilder;
+import com.connect.utils.OnRequestCompletion;
+import com.connect.utils.ResponseElement;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.backend.BaseResult;
-import com.kaltura.playkit.backend.PrimitiveResult;
-import com.kaltura.playkit.backend.base.BaseSessionProvider;
-import com.kaltura.playkit.backend.phoenix.data.KalturaLoginResponse;
-import com.kaltura.playkit.backend.phoenix.data.KalturaLoginSession;
-import com.kaltura.playkit.backend.phoenix.data.KalturaSession;
-import com.kaltura.playkit.backend.phoenix.data.PhoenixParser;
-import com.kaltura.playkit.backend.phoenix.services.OttUserService;
-import com.kaltura.playkit.backend.phoenix.services.PhoenixService;
-import com.kaltura.playkit.backend.phoenix.services.PhoenixSessionService;
-import com.kaltura.playkit.connect.APIOkRequestsExecutor;
-import com.kaltura.playkit.connect.ErrorElement;
-import com.kaltura.playkit.connect.MultiRequestBuilder;
-import com.kaltura.playkit.connect.OnRequestCompletion;
-import com.kaltura.playkit.connect.ResponseElement;
 
 import java.util.List;
 
@@ -157,8 +158,8 @@ public class OttSessionProvider extends BaseSessionProvider {
     }
 
     /**
-     * Ends current active session. if it's a {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#User} session
-     * logout, if {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#Anonymous} will return, since
+     * Ends current active session. if it's a {@link UserSessionType#User} session
+     * logout, if {@link UserSessionType#Anonymous} will return, since
      * logout on anonymous session doesn't make the session invalid.
      * <p>
      * If logout was activated, session params are cleared.

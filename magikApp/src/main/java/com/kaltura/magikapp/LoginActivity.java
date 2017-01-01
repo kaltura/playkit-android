@@ -28,13 +28,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.connect.backend.phoenix.data.OttResultAdapter;
+import com.connect.backend.phoenix.services.OttUserService;
+import com.connect.utils.OnRequestCompletion;
+import com.connect.utils.RequestBuilder;
+import com.connect.utils.ResponseElement;
 import com.google.gson.GsonBuilder;
-import com.kaltura.playkit.backend.phoenix.data.OttResultAdapter;
-import com.kaltura.playkit.backend.phoenix.services.OttUserService;
-import com.kaltura.playkit.connect.OnRequestCompletion;
-import com.kaltura.playkit.connect.RequestBuilder;
-import com.kaltura.playkit.connect.ResponseElement;
-import com.kaltura.magikapp.data.LoginResult;
+import com.kaltura.playkitdemo.data.LoginResult;
 
 import java.util.ArrayList;
 import java.util.List;
