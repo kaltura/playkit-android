@@ -2,6 +2,12 @@ package com.kaltura.playkit.plugins;
 
 import android.content.Context;
 
+import com.connect.backend.phoenix.services.BookmarkService;
+import com.connect.utils.APIOkRequestsExecutor;
+import com.connect.utils.OnRequestCompletion;
+import com.connect.utils.RequestBuilder;
+import com.connect.utils.RequestQueue;
+import com.connect.utils.ResponseElement;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
@@ -12,12 +18,6 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.backend.phoenix.services.BookmarkService;
-import com.kaltura.playkit.connect.APIOkRequestsExecutor;
-import com.kaltura.playkit.connect.OnRequestCompletion;
-import com.kaltura.playkit.connect.RequestBuilder;
-import com.kaltura.playkit.connect.RequestQueue;
-import com.kaltura.playkit.connect.ResponseElement;
 
 import java.util.TimerTask;
 
