@@ -1,4 +1,4 @@
-package com.kaltura.playkitdemo;
+package com.kaltura.magikapp;
 
 import android.content.Context;
 import android.util.AttributeSet;

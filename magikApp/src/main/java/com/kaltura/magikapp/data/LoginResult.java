@@ -1,4 +1,4 @@
-package com.kaltura.playkitdemo.data;
+package com.kaltura.magikapp.data;
 
 import com.kaltura.playkit.backend.BaseResult;
 
