@@ -1,34 +1,44 @@
 package com.kaltura.magikapp.magikapp;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewStub;
+import android.view.WindowManager;
+import android.widget.ProgressBar;
 
 import com.kaltura.magikapp.R;
 import com.kaltura.magikapp.magikapp.core.ActivityComponentsInjector;
 import com.kaltura.magikapp.magikapp.core.ComponentsInjector;
+import com.kaltura.magikapp.magikapp.core.FragmentAid;
 import com.kaltura.magikapp.magikapp.core.PluginProvider;
+import com.kaltura.magikapp.magikapp.homepage.Template1Fragment;
 import com.kaltura.magikapp.magikapp.menu.MenuMediator;
 import com.kaltura.magikapp.magikapp.toolbar.ToolbarMediator;
 
+import static android.view.View.VISIBLE;
 
-public class ScrollingActivity extends AppCompatActivity implements  ToolbarMediator.ToolbarActionListener, PluginProvider {
+
+public class ScrollingActivity extends AppCompatActivity implements FragmentAid, ToolbarMediator.ToolbarActionListener, PluginProvider {
 
     public MenuMediator mMenuMediator;
     private ToolbarMediator mToolbarMediator;
     protected CoordinatorLayout mCoordMainContainer;
     protected CollapsingToolbarLayout mCollapsingToolbar;
     protected FragmentManager mFragmentManager;
-
+    protected ProgressBar mWaitProgress;
+    protected int mLastCollapsingLayoutColor = -1;
 
 
     @Override
@@ -37,18 +47,10 @@ public class ScrollingActivity extends AppCompatActivity implements  ToolbarMedi
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.base_drawer);
 
-        inflateLayout();
         initComponents();
+        inflateLayout();
         initOthers();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
     }
 
     private Fragment getTemplate() {
@@ -56,9 +58,7 @@ public class ScrollingActivity extends AppCompatActivity implements  ToolbarMedi
     }
 
     protected void inflateLayout() {
-        ViewStub viewStub = ((ViewStub) findViewById(R.id.activity_stub));
-        viewStub.setLayoutResource(R.layout.playback_layout); //should override default defined layout resource
-        View view = viewStub.inflate();
+        getFragmentManager().beginTransaction().add(R.id.activity_scrolling_content, getTemplate()).commit();
     }
 
     protected void initComponents() {
@@ -71,6 +71,16 @@ public class ScrollingActivity extends AppCompatActivity implements  ToolbarMedi
 
         mCoordMainContainer = (CoordinatorLayout) findViewById(R.id.activity_scrolling);
         mCollapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        if (menuItem.getItemId() == android.R.id.home) {
+            onToolbarAction(mToolbarMediator.getHomeButton());
+            Log.d("check","Home pressed");
+        }
+        return super.onOptionsItemSelected(menuItem);
     }
 
     @NonNull
@@ -113,7 +123,7 @@ public class ScrollingActivity extends AppCompatActivity implements  ToolbarMedi
     }
 
     protected int getFragmentsContainerId(){
-        return R.id.frags_container;
+        return R.id.activity_scrolling_content;
     }
 
     @Override
@@ -124,5 +134,94 @@ public class ScrollingActivity extends AppCompatActivity implements  ToolbarMedi
     @Override
     public Context getContext() {
         return this;
+    }
+
+    @Override
+    public void setWaitProgressVisibility(int state) {
+        if (state == VISIBLE && mWaitProgress == null) {
+            mWaitProgress = (ProgressBar) findViewById(R.id.wait_progress);
+        }
+
+        if (mWaitProgress != null) {
+            mWaitProgress.setVisibility(state);
+        }
+    }
+
+    @Override
+    public void setToolbarTitle(String title) {
+        mToolbarMediator.setTitle(title);
+    }
+
+    @Override
+    public void setToolbarActionListener(ToolbarMediator.ToolbarActionListener listener) {
+        mToolbarMediator.setToolbarActionListener(listener);
+    }
+
+    protected int[] getCollapsingFromToBackColors(boolean transparent) {
+        int[] colors = new int[2];
+//        colors[0] = transparent ? UnifiedConfigurationManager.getInstance().getCurrentBrandColor() : Color.TRANSPARENT;
+//        colors[1] = transparent ? Color.TRANSPARENT : UnifiedConfigurationManager.getInstance().getCurrentBrandColor();
+        return colors;
+    }
+
+    @Override
+    public boolean changeToolbarLayoutColor(boolean toBeTransparent, final View... applyTo) {
+
+        int[] fromToColors = getCollapsingFromToBackColors(toBeTransparent);
+
+        //TODO: to prevent blinks we need the prev color
+        if (fromToColors[1] == mLastCollapsingLayoutColor) {
+            return false;
+        }
+
+        mLastCollapsingLayoutColor = fromToColors[1];
+
+        ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), fromToColors[0], fromToColors[1]);
+        colorAnimation.setDuration(0); // milliseconds
+        colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+            @Override
+            public void onAnimationUpdate(ValueAnimator animator) {
+                int animatedColor = (int) animator.getAnimatedValue();
+                mCollapsingToolbar.setBackgroundColor(animatedColor);
+                if (applyTo != null) {
+                    for (View view : applyTo) {
+                        view.setBackgroundColor(animatedColor);
+                    }
+                }
+            }
+
+        });
+        colorAnimation.start();
+
+        return true;
+    }
+
+    @Override
+    public void setStatusBarColor(int color/*Activity activity, Context context, boolean isTransparent*/){
+        //mToolbarMediator.setStatusBarState(activity, context, isTransparent);
+        if (color != -1) {
+            int windowFlagskitkat = -1;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                windowFlagskitkat = WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION |
+                        WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
+
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                windowFlagskitkat = WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION |
+                        WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+            }
+            if (windowFlagskitkat != -1){
+                getWindow().setFlags(windowFlagskitkat, windowFlagskitkat);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    getWindow().setStatusBarColor(color/*context.getResources().getColor(R.color.transparent)*/);
+                    getWindow().setNavigationBarColor(color/*context.getResources().getColor(R.color.transparent)*/);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void setToolbarHomeButton(@ToolbarMediator.ToolbarHomeButton int button) {
+        mToolbarMediator.setHomeButton(button);
     }
 }

@@ -32,6 +32,8 @@ public interface ToolbarMediator {
 
     void setToolbarActionListener(ToolbarActionListener listener);
 
+    ToolbarMediator.ToolbarAction getHomeButton();
+
     void onToolbarMenuAction(int id);
 
     void setToolbarMenu(Menu menu);

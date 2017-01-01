@@ -45,7 +45,7 @@ public class Template1RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.
 
     @Override
     public int getItemCount() {
-        return 2;
+        return 1;
     }
 
     @Override

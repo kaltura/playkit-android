@@ -1,5 +1,6 @@
 package com.kaltura.magikapp.magikapp.homepage;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
@@ -8,7 +9,6 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +16,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.kaltura.magikapp.R;
+import com.kaltura.magikapp.magikapp.core.FragmentAid;
 import com.kaltura.magikapp.magikapp.homepage.binders.DataBinder;
 import com.kaltura.magikapp.magikapp.homepage.binders.OneImageDataBinder;
 import com.kaltura.magikapp.magikapp.homepage.recycler.Template1RecyclerAdapter;
@@ -31,20 +32,20 @@ import java.util.List;
 public class Template1Fragment extends Fragment {
 
     private RecyclerView mRecyclerView;
-    private FragmentActivityMediator mActivity;
-    private Toolbar mToolbar;
     private Context mContext;
     private View mContainer;
     private ViewPager mViewPager;
+    protected FragmentAid mFragmentAid;
+
     private String[] mViewPagerUrls = {"http://cdn.pinchofyum.com/wp-content/uploads/Simple-Mushroom-Penne-eaten-with-fork-600x900.jpg",
             "http://cdn.pinchofyum.com/wp-content/uploads/Dynamite-Plant-Power-Sushi-Bowl-2-2-600x900.jpg",
                "http://cdn.pinchofyum.com/wp-content/uploads/Sweet-Potato-Noodle-Salad-1-6-600x900.jpg" };
 
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(Activity context) {
         super.onAttach(context);
-        mActivity = (FragmentActivityMediator) context;
+        mFragmentAid = (FragmentAid) context;
         mContext = context;
     }
 
@@ -68,9 +69,7 @@ public class Template1Fragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        mToolbar = (Toolbar) mContainer.findViewById(R.id.toolbar);
-        mActivity.setToolbar(mToolbar);
+        mFragmentAid.setToolbarTitle("mada fucka");
 
         mRecyclerView = (RecyclerView) mContainer.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));

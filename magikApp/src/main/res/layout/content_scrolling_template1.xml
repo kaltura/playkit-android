@@ -10,12 +10,9 @@
     tools:showIn="@layout/activity_scrolling_template1">
 
 
-    <ViewStub
-        android:id="@+id/activity_stub"
+    <FrameLayout
+        android:id="@+id/activity_scrolling_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:inflatedId="@+id/frags_container"
-        android:layout="@layout/fragments_container"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        android:layout_height="match_parent" />
 
 </android.support.v4.widget.NestedScrollView>

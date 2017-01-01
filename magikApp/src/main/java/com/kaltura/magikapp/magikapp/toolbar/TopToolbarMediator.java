@@ -72,7 +72,6 @@ public class TopToolbarMediator implements View.OnClickListener, ToolbarMediator
         }
     }
 
-
     @Override
     public void setHomeButton(@ToolbarHomeButton int button) {
         switch (button) {
@@ -86,6 +85,18 @@ public class TopToolbarMediator implements View.OnClickListener, ToolbarMediator
                 break;
         }
         mToolbarHomeButton = button;
+    }
+
+    @Override
+    public ToolbarMediator.ToolbarAction getHomeButton(){
+        switch (mToolbarHomeButton){
+            case BUgitTTON_BACK:
+                return ToolbarAction.Back;
+            case BUTTON_MENU:
+                return ToolbarAction.Menu;
+            default:
+                return ToolbarAction.Menu;
+        }
     }
 
     @Override
