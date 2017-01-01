@@ -29,6 +29,7 @@ import com.kaltura.playkit.backend.PrimitiveResult;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
+import com.kaltura.playkit.backend.phoenix.APIDefines;
 import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.connect.ResultElement;
@@ -41,7 +42,6 @@ import com.kaltura.playkit.utils.Consts;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.google.ads.interactivemedia.v3.b.b.a.n.R;
 import static com.kaltura.magikapp.MockParams.Format;
 import static com.kaltura.magikapp.MockParams.MediaId;
 
@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onComplete(PrimitiveResult response) {
                 if(response.error == null) {
-                    mediaProvider = new PhoenixMediaProvider().setSessionProvider(ottSessionProvider).setAssetId(MediaId).setReferenceType(MockParams.MediaType).setFormats(Format);
+                    mediaProvider = new PhoenixMediaProvider().setSessionProvider(ottSessionProvider).setAssetId(MediaId).setReferenceType(APIDefines.AssetReferenceType.Media).setFormats(Format);
 
                     mediaProvider.load(new OnMediaLoadCompletion() {
                         @Override
