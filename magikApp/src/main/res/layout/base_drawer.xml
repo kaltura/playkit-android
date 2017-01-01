@@ -1,0 +1,19 @@
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <include
+        android:id="@+id/activity_scrolling"
+        layout="@layout/activity_scrolling"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <com.kaltura.mediago.views.SideMenuView
+        android:id="@+id/sideMenu"
+        android:layout_width="320dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start" />
+
+</android.support.v4.widget.DrawerLayout>
