@@ -41,6 +41,7 @@ import com.kaltura.playkit.utils.Consts;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.google.ads.interactivemedia.v3.b.b.a.n.R;
 import static com.kaltura.magikapp.MockParams.Format;
 import static com.kaltura.magikapp.MockParams.MediaId;
 
