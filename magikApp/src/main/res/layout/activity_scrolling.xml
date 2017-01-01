@@ -9,6 +9,14 @@
     android:fitsSystemWindows="true"
     tools:context="com.kaltura.magikapp.magikapp.ScrollingActivity">
 
+    <ViewStub
+        android:id="@+id/activity_stub"
+        android:inflatedId="@+id/frags_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout="@layout/fragments_container"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
     <android.support.design.widget.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
@@ -29,7 +37,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
-                app:popupTheme="@style/AppTheme.PopupOverlay"/>
+                app:popupTheme="@style/AppTheme.PopupOverlay">
+
+            <com.kaltura.mediago.views.RTLTextView
+                android:id="@+id/toolbar_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="start|center_vertical"
+                android:textSize="20sp" />
+            </android.support.v7.widget.Toolbar>
+
 
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
