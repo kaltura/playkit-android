@@ -6,6 +6,8 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -58,6 +60,11 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu and adds defined items to the toolbar.
         getMenuInflater().inflate(R.menu.menu_scrolling, menu);
+
+        Drawable icon = menu.getItem(0).getIcon();
+        icon.mutate();
+        icon.setColorFilter(Color.DKGRAY, PorterDuff.Mode.SRC_IN);
+
         mToolbarMediator.setToolbarMenu(menu);
 
         return true;

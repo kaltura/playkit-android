@@ -34,6 +34,7 @@
                     android:layout_width="139dp"
                     android:layout_height="31dp"
                     android:contentDescription="logo"
+                    android:layout_marginStart="60dp"
                     android:id="@+id/toolbar_logo"
                     android:gravity="center" />
             </android.support.v7.widget.Toolbar>
