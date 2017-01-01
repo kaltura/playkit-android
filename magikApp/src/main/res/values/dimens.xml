@@ -5,4 +5,25 @@
     <dimen name="app_bar_height">180dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="text_margin">16dp</dimen>
+
+    <dimen name="helen_round_button_padding">5dp</dimen>
+    <dimen name="helen_round_button_text_size">14sp</dimen>
+    <dimen name="helen_round_button_text_width">90dp</dimen>
+
+    <dimen name="text_round_button_width">96dp</dimen>
+    <dimen name="text_round_button_height">32dp</dimen>
+
+    <dimen name="helen_button_width_collapsed">40dp</dimen>
+    <dimen name="helen_button_width_expanded">110dp</dimen>
+    <dimen name="helen_button_height">40dp</dimen>
+
+    <dimen name="icon_text_round_button_image_padding_left">16dp</dimen>
+    <dimen name="icon_text_round_button_image_padding_top">5dp</dimen>
+    <dimen name="icon_text_round_button_image_padding_right">10dp</dimen>
+    <dimen name="icon_text_round_button_image_padding_bottom">5dp</dimen>
+
+    <dimen name="icon_text_round_button_text_padding_right">16dp</dimen>
+
+    <!--secondary buttons layout-->
+    <dimen name="secondary_buttons_layout_padding_between_buttons">7dp</dimen>
 </resources>
