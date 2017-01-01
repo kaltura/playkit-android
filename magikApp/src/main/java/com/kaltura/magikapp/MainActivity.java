@@ -1,4 +1,4 @@
-package com.kaltura.playkitdemo;
+package com.kaltura.magikapp;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -41,8 +41,8 @@ import com.kaltura.playkit.utils.Consts;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.kaltura.playkitdemo.MockParams.Format;
-import static com.kaltura.playkitdemo.MockParams.MediaId;
+import static com.kaltura.magikapp.MockParams.Format;
+import static com.kaltura.magikapp.MockParams.MediaId;
 
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {

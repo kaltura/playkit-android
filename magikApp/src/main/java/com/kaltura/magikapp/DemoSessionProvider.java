@@ -1,4 +1,4 @@
-package com.kaltura.playkitdemo;
+package com.kaltura.magikapp;
 
 import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.backend.SessionProvider;

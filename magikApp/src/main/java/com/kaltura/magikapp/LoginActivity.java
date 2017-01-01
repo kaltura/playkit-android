@@ -1,4 +1,4 @@
-package com.kaltura.playkitdemo;
+package com.kaltura.magikapp;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -34,7 +34,7 @@ import com.kaltura.playkit.backend.phoenix.services.OttUserService;
 import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.ResponseElement;
-import com.kaltura.playkitdemo.data.LoginResult;
+import com.kaltura.magikapp.data.LoginResult;
 
 import java.util.ArrayList;
 import java.util.List;
