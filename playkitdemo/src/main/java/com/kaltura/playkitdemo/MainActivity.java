@@ -27,6 +27,7 @@ import com.kaltura.playkit.TextTrack;
 import com.kaltura.playkit.VideoTrack;
 import com.kaltura.playkit.backend.PrimitiveResult;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
 import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
@@ -78,11 +79,34 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         progressBar.setVisibility(View.INVISIBLE);
         registerPlugins();
 
-        startOvpMediaLoading();
+        //startOvpMediaLoading();
+        startMockMediaLoading();
         //startOttMediaLoading();
 
     }
 
+    private void startMockMediaLoading() {
+
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", getApplicationContext(), "wvm2");
+
+        mediaProvider.load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(final ResultElement<PKMediaEntry> response) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (response.isSuccess()) {
+                            onMediaLoaded(response.getResponse());
+                        } else {
+
+                            Toast.makeText(MainActivity.this, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""), Toast.LENGTH_LONG).show();
+                            log.e("failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
+                        }
+                    }
+                });
+            }
+        });
+    }
     private void startOttMediaLoading() {
         final OttSessionProvider ottSessionProvider = new OttSessionProvider(MockParams.PhoenixBaseUrl, MockParams.OttPartnerId);
         /* start anonymous session:
@@ -129,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 public void onComplete(PrimitiveResult response) {
                     if (response.error == null) {
                         mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(MockParams.DRMEntryIdAnm);
-                        //mediaProvider = new MockMediaProvider("mock/entries.playkit.json", getApplicationContext(), "hls");
+                        //mediaProvider = new MockMediaProvider("mock/entries.playkit.json", getApplicationContext(), "wvm2");
                         mediaProvider.load(new OnMediaLoadCompletion() {
                             @Override
                             public void onComplete(final ResultElement<PKMediaEntry> response) {

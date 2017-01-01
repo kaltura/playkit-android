@@ -5,9 +5,10 @@
       {
         "id": "0_pl5lbfo0_dash",
         "url": "http://cdnapi.kaltura.com/p/1851571/sp/185157100/playManifest/entryId/0_pl5lbfo0/flavorIds/0_ywkmqnkg/format/mpegdash/protocol/http/a.mpd",
-        "drmData": {
+        "drmData": [ {
           "licenseUri": "https://udrm.kaltura.com/cenc/widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVlAiLCJ1c2VyX3Rva2VuIjoiZGpKOE1UZzFNVFUzTVh6NnJxM3hFYnI0aFBWU3N0ajRDaGtkT1NoVU1QYV9sTFFaNWpkSVdscWdYNld6YnJuSGZORHZ0V3hmYmExT3dJVmVjeXNIVTc3ci1VazBvWWZkaGttd0dZNWQwSmdCUGdfMkZ3Wi13cE1yRlE9PSIsImFjY291bnRfaWQiOiIxODUxNTcxIiwiY29udGVudF9pZCI6IjBfcGw1bGJmbzAiLCJmaWxlcyI6IjBfendxM2w0NHIsMF91YTYycms2cywwX290bWFxcG5mLDBfeXdrbXFua2csMV9lMHF0YWoxaiwxX2IycXp5dmE3In0%3D&signature=eFrsxqplBh6b8%2BRkn4XaLsKD7Lc%3D"
-        }
+          }
+        ]
       }
     ]
   },
@@ -22,8 +23,7 @@
         "url": "http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/mpegdash/protocol/http/a.mpd"
       }
     ]
-  }
-,
+  },
   "mp4": {
     "duration": 102000,
     "id": "1_1h1vsv3z",
@@ -35,9 +35,7 @@
         "url":"http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/url/protocol/http/a.mp4"
       }
     ]
-
-  }
-,
+  },
   "hls": {
     "duration": 102000,
     "id": "1_1h1vsv3z",
@@ -49,8 +47,39 @@
         "url": "http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/applehttp/protocol/http/a.m3u8"
       }
     ]
-  }
-,
+  },
+  "wvc": {
+  "duration": 102000,
+  "id": "0_hbhe2o9x",
+  "name": "Roadies",
+  "sources": [
+    {
+      "id": "0_hbhe2o9x",
+      "url": "https://cdnapisec.kaltura.com/p/1982551/sp/198255100/playManifest/entryId/0_hbhe2o9x/format/url/tags/widevine_mbr/protocol/https/f/a.wvm",
+      "mimeType": "video/wvm",
+      "drmData":[ {
+        "licenseUri": "https://udrm.kaltura.com//widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVFQiLCJ1c2VyX3Rva2VuIjoiIiwiYWNjb3VudF9pZCI6MTk4MjU1MSwiY29udGVudF9pZCI6IjBfaGJoZTJvOXhfMF9jaDU3amVxbSIsImZpbGVzIjoiIiwidWRpZCI6ImFhNWUxYjZjOTY5ODhkNjgiLCJhZGRpdGlvbmFsX2Nhc19zeXN0ZW0iOjB9&signature=4rU6mYMWLQmCbPFj3DZaEDAPlGA%3D&"
+        }
+      ]
+    }
+  ]
+  },
+  "wvc2": {
+    "duration": 102000,
+    "id": "0_hbhe2o9x",
+    "name": "CountDown",
+    "sources": [
+      {
+        "id": "0_hbhe2o9x",
+        "url": "http://cfvod.kaltura.com/scf/pd/p/1851571/sp/185157100/serveFlavor/entryId/0_uafvpmv8/v/2/flavorId/0_2rl0w6f1/name/a.wvm",
+        "mimeType": "video/wvm",
+        "drmData":[ {
+          "licenseUri": "https://udrm.kaltura.com//widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVFQiLCJ1c2VyX3Rva2VuIjoiIiwiYWNjb3VudF9pZCI6MTk4MjU1MSwiY29udGVudF9pZCI6IjBfaGJoZTJvOXhfMF9jaDU3amVxbSIsImZpbGVzIjoiIiwidWRpZCI6ImFhNWUxYjZjOTY5ODhkNjgiLCJhZGRpdGlvbmFsX2Nhc19zeXN0ZW0iOjB9&signature=4rU6mYMWLQmCbPFj3DZaEDAPlGA%3D&"
+          }
+        ]
+      }
+    ]
+  },
   "live": {
     "duration": 102000,
     "id": "0_f8re4ujs",
