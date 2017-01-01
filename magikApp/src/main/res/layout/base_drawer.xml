@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <com.kaltura.mediago.views.SideMenuView
+    <com.kaltura.magikapp.magikapp.menu.SideMenuView
         android:id="@+id/sideMenu"
         android:layout_width="320dp"
         android:layout_height="match_parent"

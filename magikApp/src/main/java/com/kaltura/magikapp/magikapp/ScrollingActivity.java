@@ -1,5 +1,6 @@
 package com.kaltura.magikapp.magikapp;
 
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,15 +11,17 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.ViewStub;
 
 import com.kaltura.magikapp.R;
 import com.kaltura.magikapp.magikapp.core.ActivityComponentsInjector;
 import com.kaltura.magikapp.magikapp.core.ComponentsInjector;
+import com.kaltura.magikapp.magikapp.core.PluginProvider;
 import com.kaltura.magikapp.magikapp.menu.MenuMediator;
 import com.kaltura.magikapp.magikapp.toolbar.ToolbarMediator;
 
 
-public class ScrollingActivity extends AppCompatActivity implements  ToolbarMediator.ToolbarActionListener{
+public class ScrollingActivity extends AppCompatActivity implements  ToolbarMediator.ToolbarActionListener, PluginProvider {
 
     public MenuMediator mMenuMediator;
     private ToolbarMediator mToolbarMediator;
@@ -34,6 +37,7 @@ public class ScrollingActivity extends AppCompatActivity implements  ToolbarMedi
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.base_drawer);
 
+        inflateLayout();
         initComponents();
         initOthers();
 
@@ -45,6 +49,12 @@ public class ScrollingActivity extends AppCompatActivity implements  ToolbarMedi
                         .setAction("Action", null).show();
             }
         });
+    }
+
+    protected void inflateLayout() {
+        ViewStub viewStub = ((ViewStub) findViewById(R.id.activity_stub));
+        viewStub.setLayoutResource(R.layout.playback_layout); //should override default defined layout resource
+        View view = viewStub.inflate();
     }
 
     protected void initComponents() {
@@ -102,4 +112,13 @@ public class ScrollingActivity extends AppCompatActivity implements  ToolbarMedi
         return R.id.frags_container;
     }
 
+    @Override
+    public AppCompatActivity getActivity() {
+        return this;
+    }
+
+    @Override
+    public Context getContext() {
+        return this;
+    }
 }

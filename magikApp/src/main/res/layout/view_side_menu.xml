@@ -9,7 +9,6 @@
         android:id="@+id/menu"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/sideMenuLayout"
         android:background="@color/menuBackgroud"
         android:paddingTop="20dp" />
 </android.support.percent.PercentRelativeLayout>

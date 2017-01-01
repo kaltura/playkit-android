@@ -9,10 +9,12 @@
     tools:context="com.kaltura.magikapp.magikapp.ScrollingActivity"
     tools:showIn="@layout/activity_scrolling">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/text_margin"
-        android:text="@string/large_text"/>
+    <ViewStub
+        android:id="@+id/activity_stub"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:inflatedId="@+id/frags_container"
+        android:layout="@layout/fragments_container"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
 </android.support.v4.widget.NestedScrollView>

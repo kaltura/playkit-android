@@ -25,7 +25,7 @@
             android:layout_marginLeft="11dp"
             android:layout_marginRight="18dp" />
 
-        <com.kaltura.mediago.views.RTLTextView
+        <TextView
             android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

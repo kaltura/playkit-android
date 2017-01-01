@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.kaltura.magikapp.R;
+import com.kaltura.magikapp.magikapp.core.PluginProvider;
 
 /**
  * Created by zivilan on 01/01/2017.
@@ -17,6 +18,8 @@ import com.kaltura.magikapp.R;
 public class TopToolbarMediator implements View.OnClickListener, ToolbarMediator {
     public static final int BUTTON_MENU = 1;
     public static final int BUTTON_BACK = -1;
+
+    PluginProvider mProvider;
 
     private AppBarLayout mAppBar;
     protected Toolbar mToolbar; // the common top bar
@@ -27,16 +30,17 @@ public class TopToolbarMediator implements View.OnClickListener, ToolbarMediator
     private @ToolbarHomeButton int mToolbarHomeButton = BUTTON_MENU;
 
 
-    public TopToolbarMediator(AppCompatActivity activity, int toolbarId) {
+    public TopToolbarMediator(PluginProvider activity, int toolbarId) {
         this(activity, toolbarId, -1);
     }
 
-    public TopToolbarMediator(AppCompatActivity activity, int toolbarId, int appBarId) {
-        initToolbar(activity, toolbarId, appBarId);
+    public TopToolbarMediator(PluginProvider activity, int toolbarId, int appBarId) {
+        mProvider = activity;
+        initToolbar(toolbarId, appBarId);
     }
 
-    private void initToolbar(AppCompatActivity varActivity, int toolbarId, int appBarId) {
-        AppCompatActivity activity = varActivity;
+    private void initToolbar(int toolbarId, int appBarId) {
+        AppCompatActivity activity = mProvider.getActivity();
 
         mToolbar = (Toolbar) activity.findViewById(toolbarId);
         activity.setSupportActionBar(mToolbar);
@@ -72,11 +76,11 @@ public class TopToolbarMediator implements View.OnClickListener, ToolbarMediator
     @Override
     public void setHomeButton(@ToolbarHomeButton int button) {
         switch (button) {
-            case BUTTON_BACK:
+            case ToolbarMediator.BUTTON_BACK:
                 //setSortMenuMode(false);
                 mToolbar.setNavigationIcon(R.mipmap.ic_action_navigation_arrow_back);
                 break;
-            case BUTTON_MENU:
+            case ToolbarMediator.BUTTON_MENU:
                 //setSortMenuMode(false);
                 mToolbar.setNavigationIcon(R.mipmap.menu_icon_tablet);
                 break;
@@ -93,11 +97,11 @@ public class TopToolbarMediator implements View.OnClickListener, ToolbarMediator
         ToolbarAction action = null;
         switch (itemId) {
             case android.R.id.home:
-                switch (mToolbarHomeButton) { //TODO check name value
-                    case BUTTON_MENU:
+                switch (mToolbarHomeButton) {
+                    case ToolbarMediator.BUTTON_MENU:
                         action = ToolbarAction.Menu;
                         break;
-                    case BUTTON_BACK:
+                    case ToolbarMediator.BUTTON_BACK:
                         action = ToolbarAction.Back;
                         break;
                 }

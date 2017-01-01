@@ -1,7 +1,5 @@
 package com.kaltura.magikapp.magikapp.core;
 
-import android.support.v7.app.AppCompatActivity;
-
 import com.kaltura.magikapp.magikapp.menu.MenuMediator;
 import com.kaltura.magikapp.magikapp.toolbar.ToolbarMediator;
 
@@ -10,8 +8,8 @@ import com.kaltura.magikapp.magikapp.toolbar.ToolbarMediator;
  */
 public interface ActivityComponentsInjector {
 
-    ToolbarMediator getToolbar(AppCompatActivity provider);
+    ToolbarMediator getToolbar(PluginProvider provider);
 
-    MenuMediator getMenu(AppCompatActivity provider);
+    MenuMediator getMenu(PluginProvider provider);
 
 }
