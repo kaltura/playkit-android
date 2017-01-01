@@ -69,7 +69,8 @@ public class Template1Fragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mFragmentAid.setToolbarTitle("mada fucka");
+        mFragmentAid.setToolbarTitle("");
+        mFragmentAid.changeToolbarLayoutColor(false);
 
         mRecyclerView = (RecyclerView) mContainer.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));

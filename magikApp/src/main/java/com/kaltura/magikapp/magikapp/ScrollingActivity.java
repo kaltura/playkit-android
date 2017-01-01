@@ -5,6 +5,7 @@ import android.animation.ValueAnimator;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,7 +13,7 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -53,6 +54,20 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu and adds defined items to the toolbar.
+        getMenuInflater().inflate(R.menu.menu_scrolling, menu);
+        mToolbarMediator.setToolbarMenu(menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return super.onPrepareOptionsMenu(menu);
+    }
+
     private Fragment getTemplate() {
         return Template1Fragment.newInstance();
     }
@@ -68,6 +83,7 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
 
         mToolbarMediator = injector.getToolbar(this);// new TopToolbarMediator(this, R.id.toolbar, this);
         mToolbarMediator.setToolbarActionListener(this);
+        mToolbarMediator.setToolbarLogo(getResources().getDrawable(R.drawable.logo_app));
 
         mCoordMainContainer = (CoordinatorLayout) findViewById(R.id.activity_scrolling);
         mCollapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
@@ -76,10 +92,8 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
-        if (menuItem.getItemId() == android.R.id.home) {
-            onToolbarAction(mToolbarMediator.getHomeButton());
-            Log.d("check","Home pressed");
-        }
+        mToolbarMediator.onToolbarMenuAction(menuItem.getItemId());
+
         return super.onOptionsItemSelected(menuItem);
     }
 
@@ -159,8 +173,8 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
 
     protected int[] getCollapsingFromToBackColors(boolean transparent) {
         int[] colors = new int[2];
-//        colors[0] = transparent ? UnifiedConfigurationManager.getInstance().getCurrentBrandColor() : Color.TRANSPARENT;
-//        colors[1] = transparent ? Color.TRANSPARENT : UnifiedConfigurationManager.getInstance().getCurrentBrandColor();
+        colors[0] = transparent ? Color.WHITE : Color.TRANSPARENT;
+        colors[1] = transparent ? Color.TRANSPARENT : Color.WHITE;
         return colors;
     }
 

@@ -1,5 +1,6 @@
 package com.kaltura.magikapp.magikapp.toolbar;
 
+import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
 import android.view.Menu;
 
@@ -27,6 +28,8 @@ public interface ToolbarMediator {
 
 
     void setTitle(String title);
+
+    void setToolbarLogo(Drawable logo);
 
     void setHomeButton(@ToolbarHomeButton int homeButton);
 
