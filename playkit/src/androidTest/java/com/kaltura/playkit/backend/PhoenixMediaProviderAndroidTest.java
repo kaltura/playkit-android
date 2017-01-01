@@ -4,26 +4,28 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
+import com.connect.backend.BaseResult;
+import com.connect.backend.PrimitiveResult;
+import com.connect.backend.SessionProvider;
+import com.connect.backend.phoenix.APIDefines;
+import com.connect.backend.phoenix.data.KalturaMediaAsset;
+import com.connect.backend.phoenix.data.PhoenixParser;
+import com.connect.core.OnCompletion;
+import com.connect.utils.APIOkRequestsExecutor;
+import com.connect.utils.Accessories;
+import com.connect.utils.ErrorElement;
+import com.connect.utils.RequestElement;
+import com.connect.utils.RequestQueue;
+import com.connect.utils.ResponseElement;
+import com.connect.utils.ResultElement;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.kaltura.playkit.BaseTest;
-import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.backend.phoenix.APIDefines;
 import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
-import com.kaltura.playkit.backend.phoenix.data.KalturaMediaAsset;
-import com.kaltura.playkit.backend.phoenix.data.PhoenixParser;
-import com.kaltura.playkit.connect.APIOkRequestsExecutor;
-import com.kaltura.playkit.connect.Accessories;
-import com.kaltura.playkit.connect.ErrorElement;
-import com.kaltura.playkit.connect.RequestElement;
-import com.kaltura.playkit.connect.RequestQueue;
-import com.kaltura.playkit.connect.ResponseElement;
-import com.kaltura.playkit.connect.ResultElement;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -156,7 +158,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     }
 
     @Test
-    public void textRemoteLoading() {
+    public void testRemoteLoading() {
         phoenixMediaProvider = new PhoenixMediaProvider()
                 .setSessionProvider(ksSessionProvider)
                 .setReferenceType(APIDefines.AssetReferenceType.Media).setAssetId(MediaId5)
