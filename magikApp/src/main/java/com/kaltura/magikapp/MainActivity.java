@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.connect.backend.PrimitiveResult;
+import com.connect.backend.phoenix.APIDefines;
 import com.connect.core.OnCompletion;
 import com.connect.utils.ResultElement;
 import com.google.gson.JsonObject;
@@ -30,7 +31,6 @@ import com.kaltura.playkit.VideoTrack;
 import com.kaltura.playkit.backend.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
-import com.kaltura.playkit.backend.phoenix.APIDefines;
 import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
 import com.kaltura.playkit.plugins.SamplePlugin;

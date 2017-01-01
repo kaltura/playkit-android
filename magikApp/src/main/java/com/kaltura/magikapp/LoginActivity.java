@@ -34,7 +34,7 @@ import com.connect.utils.OnRequestCompletion;
 import com.connect.utils.RequestBuilder;
 import com.connect.utils.ResponseElement;
 import com.google.gson.GsonBuilder;
-import com.kaltura.playkitdemo.data.LoginResult;
+import com.kaltura.magikapp.data.LoginResult;
 
 import java.util.ArrayList;
 import java.util.List;
