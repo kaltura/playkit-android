@@ -61,7 +61,7 @@ public class Template1Fragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mContainer = inflater.inflate(R.layout.activity_scrolling_template1, container, false);
+        mContainer = inflater.inflate(R.layout.activity_scrolling, container, false);
         return mContainer;
 
     }

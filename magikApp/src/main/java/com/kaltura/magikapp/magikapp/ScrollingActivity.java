@@ -11,7 +11,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
@@ -38,7 +37,7 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
     public MenuMediator mMenuMediator;
     private ToolbarMediator mToolbarMediator;
     protected CoordinatorLayout mCoordMainContainer;
-    protected CollapsingToolbarLayout mCollapsingToolbar;
+//    protected CollapsingToolbarLayout mCollapsingToolbar;
     protected FragmentManager mFragmentManager;
     protected ProgressBar mWaitProgress;
     protected int mLastCollapsingLayoutColor = -1;
@@ -80,7 +79,7 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
     }
 
     protected void inflateLayout() {
-        getFragmentManager().beginTransaction().add(R.id.activity_scrolling_content, getTemplate()).commit();
+//        getFragmentManager().beginTransaction().add(R.id.activity_scrolling_content, getTemplate()).commit();
     }
 
     protected void initComponents() {
@@ -93,7 +92,7 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
         mToolbarMediator.setToolbarLogo(getResources().getDrawable(R.drawable.logo_app));
 
         mCoordMainContainer = (CoordinatorLayout) findViewById(R.id.activity_scrolling);
-        mCollapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
+//        mCollapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
     }
 
 
@@ -143,9 +142,9 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
         return handled;
     }
 
-    protected int getFragmentsContainerId(){
-        return R.id.activity_scrolling_content;
-    }
+//    protected int getFragmentsContainerId(){
+//        return R.id.activity_scrolling_content;
+//    }
 
     @Override
     public AppCompatActivity getActivity() {
@@ -204,7 +203,7 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
             @Override
             public void onAnimationUpdate(ValueAnimator animator) {
                 int animatedColor = (int) animator.getAnimatedValue();
-                mCollapsingToolbar.setBackgroundColor(animatedColor);
+//                mCollapsingToolbar.setBackgroundColor(animatedColor);
                 if (applyTo != null) {
                     for (View view : applyTo) {
                         view.setBackgroundColor(animatedColor);

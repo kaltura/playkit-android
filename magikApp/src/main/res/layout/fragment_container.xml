@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.kaltura.magikapp.magikapp.ScrollingActivity"
-    tools:showIn="@layout/activity_scrolling">
+    tools:showIn="@layout/activity_scrolling_template1">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
