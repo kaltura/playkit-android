@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/asset_page_description_height"
+    android:gravity="start|center_vertical"
+    android:orientation="horizontal">
+
+    <com.kaltura.magikapp.magikapp.asset_page.RoundButton
+        android:id="@+id/helen_round_button_comment_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="2dp"
+        app:button_size="Medium"
+        app:image_not_pressed="@mipmap/ic_mail"
+        app:image_pressed="@mipmap/ic_mail" />
+
+    <com.kaltura.magikapp.magikapp.asset_page.RoundButton
+        android:id="@+id/helen_round_button_share_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="2dp"
+        android:layout_marginStart="2dp"
+        app:button_size="Medium"
+        app:image_not_pressed="@mipmap/ic_face"
+        app:image_pressed="@mipmap/ic_face" />
+
+    <com.kaltura.magikapp.magikapp.asset_page.RoundButton
+        android:id="@+id/helen_round_button_favorites_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="2dp"
+        android:layout_marginStart="2dp"
+        app:button_size="Medium"
+        app:image_not_pressed="@mipmap/ic_mail"
+        app:image_pressed="@mipmap/ic_mail" />
+
+    <com.kaltura.magikapp.magikapp.asset_page.ExpandingRoundButton
+        android:id="@+id/helen_round_button_like_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="2dp"
+        android:layout_marginStart="2dp"
+        app:button_size="Medium"
+        app:image_not_pressed="@mipmap/ic_insta"
+        app:image_pressed="@mipmap/ic_insta" />
+
+    <com.kaltura.magikapp.magikapp.asset_page.ExpandingRoundButton
+        android:id="@+id/helen_round_button_twitter_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="2dp"
+        android:layout_marginStart="2dp"
+        app:button_size="Medium"
+        app:image_not_pressed="@mipmap/ic_twitter"
+        app:image_pressed="@mipmap/ic_twitter" />
+
+</LinearLayout>

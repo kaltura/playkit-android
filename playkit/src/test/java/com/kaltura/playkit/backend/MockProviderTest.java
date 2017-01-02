@@ -1,9 +1,8 @@
 package com.kaltura.playkit.backend;
 
+import com.connect.utils.ErrorElement;
+import com.connect.utils.ResultElement;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.connect.ResultElement;
-import com.kaltura.playkit.connect.ErrorElement;
-import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 
 import junit.framework.TestCase;

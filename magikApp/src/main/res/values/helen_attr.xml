@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="HelenRoundButton">
+
+        <attr name="button_size" format="enum">
+            <enum name="Small" value="0"/>
+            <enum name="Medium" value="1"/>
+            <enum name="Large" value="2"/>
+        </attr>
+
+        <attr name="image_not_pressed" format="reference" />
+        <attr name="image_pressed" format="reference" />
+        <attr name="button_width" format="float" />
+        <attr name="button_height" format="float" />
+        <attr name="round_button_text" format="string"/>
+        <attr name="background_pressed" format="color"/>
+        <attr name="background_not_pressed" format="color"/>
+        <attr name="image_text_size" format="integer"/>
+        <attr name="button_mode" format="enum">
+            <enum name="Like" value="0"/>
+            <enum name="Favorites" value="1"/>
+            <enum name="Comment" value="2"/>
+            <enum name="Share" value="3"/>
+            <enum name="Play" value="4"/>
+            <enum name="Download" value="5"/>
+            <enum name="MoreOptions" value="6"/>
+        </attr>
+
+    </declare-styleable>
+    
+
+</resources>

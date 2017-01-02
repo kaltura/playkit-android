@@ -1,1 +1,1 @@
-include ':playkit', ':playkitdemo'
+include ':playkit', ':magikApp', ':connectremote'

@@ -1,5 +1,6 @@
 # generated files
 /build
+*/build/*
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -8,3 +9,4 @@ local.properties
 *.iml
 .idea
 .gradle
+connectremote/build

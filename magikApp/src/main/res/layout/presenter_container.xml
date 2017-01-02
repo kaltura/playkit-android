@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:keepScreenOn="true">
+
+
+    <LocalPlayerPresenterView
+        android:id="@+id/local_player_presenter"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintDimensionRatio="H,16:9"
+        android:background="@android:color/black"/>
+
+
+    <CastPresenterView
+        android:id="@+id/cast_presenter"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintDimensionRatio="H,16:9"/>
+
+
+
+</merge>

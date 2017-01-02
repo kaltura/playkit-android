@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_scrolling"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context="com.kaltura.magikapp.magikapp.ScrollingActivity">
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary"
+            android:fitsSystemWindows="true"
+            app:layout_collapseMode="pin">
+
+            <ImageView
+                android:id="@+id/toolbar_logo"
+                android:layout_width="139dp"
+                android:layout_height="31dp"
+                android:layout_marginStart="60dp"
+                android:contentDescription="logo"
+                android:gravity="center" />
+        </android.support.v7.widget.Toolbar>
+    </android.support.design.widget.AppBarLayout>
+
+    <!--<include layout="@layout/content_scrolling_template1" />-->
+
+    <FrameLayout
+        android:id="@+id/activity_scrolling_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+
+    <ProgressBar
+        android:id="@+id/wait_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:elevation="1dp"
+        android:visibility="invisible" />
+
+</android.support.design.widget.CoordinatorLayout>

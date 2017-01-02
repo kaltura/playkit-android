@@ -1,0 +1,48 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.0"
+
+    defaultConfig {
+        applicationId "com.kaltura.magikapp"
+        minSdkVersion 17
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+    lintOptions{
+        abortOnError false
+    }
+
+    dexOptions {
+        jumboMode true
+    }
+}
+
+dependencies {
+    compile project(path: ':playkit')
+    compile 'com.android.support:appcompat-v7:25.1.0'
+    compile 'com.android.support:design:25.1.0'
+    compile 'com.android.support:percent:25.1.0'
+    compile 'com.android.support:recyclerview-v7:25.1.0'
+    compile 'com.android.support:multidex:1.0.1'
+    compile 'com.facebook.android:facebook-android-sdk:4.18.0'
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
+
+    androidTestCompile ('com.android.support.test:runner:0.5'){
+        exclude module: 'support-annotations'
+    }
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+<!-- Contains button sizes small, medium, large -->
+
+    <dimen name="text_round_button_large_height">52dp</dimen>
+    <dimen name="text_round_button_medium_height">40dp</dimen>
+    <dimen name="text_round_button_small_height">32dp</dimen>
+
+    <dimen name="text_round_button_large_width">156dp</dimen>
+    <dimen name="text_round_button_medium_width">120dp</dimen>
+    <dimen name="text_round_button_small_width">96dp</dimen>
+
+    <dimen name="round_round_button_small_width">32dp</dimen>
+    <dimen name="round_round_button_medium_width">40dp</dimen>
+    <dimen name="round_round_button_large_width">40dp</dimen>
+
+    <dimen name="round_round_button_small_height">32dp</dimen>
+    <dimen name="round_round_button_medium_height">40dp</dimen>
+    <dimen name="round_round_button_large_height">40dp</dimen>
+
+
+    <dimen name="like_round_button_width">80dp</dimen>
+
+
+
+</resources>

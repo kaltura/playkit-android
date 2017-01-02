@@ -2,21 +2,20 @@ package com.kaltura.playkit.backend.mock;
 
 import android.content.Context;
 
+import com.connect.backend.base.CallableLoader;
+import com.connect.core.OnCompletion;
+import com.connect.utils.ErrorElement;
+import com.connect.utils.ResultElement;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
 import com.kaltura.playkit.MediaEntryProvider;
-import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PKMediaFormat;
-import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.backend.base.CallableLoader;
-import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.connect.ErrorElement;
-import com.kaltura.playkit.connect.ResultElement;
+import com.kaltura.playkit.backend.OnMediaLoadCompletion;
+
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -25,8 +24,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import static com.kaltura.playkit.PKMediaEntry.MediaEntryType.Unknown;
 
 /**
  * Created by tehilarozin on 06/11/2016.
@@ -118,7 +115,7 @@ public class MockMediaProvider implements MediaEntryProvider {
         static PKMediaEntry parseMedia(JsonObject mediaObject) throws JsonSyntaxException {
             PKMediaEntry mediaEntry =  new Gson().fromJson(mediaObject, PKMediaEntry.class);
             if (mediaEntry.getMediaType() == null) {
-                mediaEntry.setMediaType(Unknown);
+                mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Unknown);
             }
             List<PKMediaSource> mediaSources = mediaEntry.getSources();
             for (PKMediaSource mediaSource : mediaSources) {

@@ -4,25 +4,29 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import com.connect.backend.BaseResult;
+import com.connect.backend.SessionProvider;
+import com.connect.backend.phoenix.APIDefines;
+import com.connect.backend.phoenix.PhoenixConfigs;
+import com.connect.backend.phoenix.PhoenixErrorHelper;
+import com.connect.backend.phoenix.PhoenixRequestBuilder;
+import com.connect.backend.phoenix.data.KalturaMediaAsset;
+import com.connect.backend.phoenix.data.KalturaMediaFile;
+import com.connect.backend.phoenix.data.PhoenixParser;
+import com.connect.backend.phoenix.services.AssetService;
+import com.connect.utils.Accessories;
+import com.connect.utils.ErrorElement;
+import com.connect.utils.OnRequestCompletion;
+import com.connect.utils.RequestQueue;
+import com.connect.utils.ResponseElement;
 import com.google.gson.JsonParseException;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.backend.BaseResult;
-import com.kaltura.playkit.backend.SessionProvider;
-import com.kaltura.playkit.backend.base.BECallableLoader;
-import com.kaltura.playkit.backend.base.BEMediaProvider;
-import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.backend.phoenix.data.KalturaMediaAsset;
-import com.kaltura.playkit.backend.phoenix.data.KalturaMediaFile;
-import com.kaltura.playkit.backend.phoenix.data.PhoenixParser;
-import com.kaltura.playkit.backend.phoenix.services.AssetService;
-import com.kaltura.playkit.connect.Accessories;
-import com.kaltura.playkit.connect.ErrorElement;
-import com.kaltura.playkit.connect.OnRequestCompletion;
-import com.kaltura.playkit.connect.RequestQueue;
-import com.kaltura.playkit.connect.ResponseElement;
+import com.kaltura.playkit.backend.BECallableLoader;
+import com.kaltura.playkit.backend.BEMediaProvider;
+import com.kaltura.playkit.backend.OnMediaLoadCompletion;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,7 +97,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
     /**
-     * @param referenceType - can be one of the {@link com.kaltura.playkit.backend.phoenix.APIDefines.AssetReferenceType} values
+     * @param referenceType - can be one of the {@link APIDefines.AssetReferenceType} values
      * @return
      */
     public PhoenixMediaProvider setReferenceType(@NonNull @APIDefines.AssetReferenceType String referenceType) {
@@ -118,7 +122,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     /**
      * optional parameter.
-     * Defaults to {@link com.kaltura.playkit.connect.APIOkRequestsExecutor} implementation.
+     * Defaults to {@link com.connect.utils.APIOkRequestsExecutor} implementation.
      * @param executor
      * @return
      */
