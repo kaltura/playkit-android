@@ -14,4 +14,6 @@
     <color name="menuBackgroud">#323232</color>
     <color name="menuTextColor">#838383</color>
 
+    <color name="titleColor">#723f5f</color>
+
 </resources>

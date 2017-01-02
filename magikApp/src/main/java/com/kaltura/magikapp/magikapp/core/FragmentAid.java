@@ -18,7 +18,7 @@ public interface FragmentAid {
 
     void setStatusBarColor(int color);
 
-    boolean changeToolbarLayoutColor(boolean transparent, final View... applyTo);
+    boolean changeToolbarLayoutColor(boolean toBeTransparent, final View... applyTo);
 
     void onBackPressed();
 

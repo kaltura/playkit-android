@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -28,6 +29,7 @@ import com.kaltura.magikapp.data.JsonFetchHandler;
 import com.kaltura.magikapp.magikapp.PlayerControlsController;
 import com.kaltura.magikapp.magikapp.PlayerProvider;
 import com.kaltura.magikapp.magikapp.PresenterController;
+import com.kaltura.magikapp.magikapp.ScrollingActivity;
 import com.kaltura.magikapp.magikapp.core.FragmentAid;
 import com.kaltura.magikapp.magikapp.toolbar.ToolbarMediator;
 import com.kaltura.playkit.PKEvent;
@@ -106,7 +108,6 @@ public class AssetPageFragment extends Fragment implements PresenterController.O
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mFragmentAid.setToolbarTitle("");
-        mFragmentAid.changeToolbarLayoutColor(false);
         mFragmentAid.setToolbarHomeButton(ToolbarMediator.BUTTON_BACK);
 
         mTitle = (TextView) mContainer.findViewById(R.id.asset_title);
@@ -117,8 +118,11 @@ public class AssetPageFragment extends Fragment implements PresenterController.O
         mSubTitle.setText(getString(R.string.asset_sub_title_sample));
         mDescription.setText(getString(R.string.asset_description_sample));
 
-        Typeface typeface = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Dosis-Medium.ttf");
+        boolean theme = ((ScrollingActivity) getActivity()).getCurrentTheme() == ScrollingActivity.Theme_Type.FOOD;
+
+        Typeface typeface = Typeface.createFromAsset(getActivity().getAssets(),theme? "fonts/Dosis-Medium.ttf" : "fonts/Raleway-Black.ttf");
         mTitle.setTypeface(typeface);
+        mTitle.setTextColor(theme? getResources().getColor(R.color.titleColor) : Color.RED);
         mDescription.setTypeface(typeface);
 
         mPlayerContainer = (FrameLayout) mContainer.findViewById(R.id.player_container);
