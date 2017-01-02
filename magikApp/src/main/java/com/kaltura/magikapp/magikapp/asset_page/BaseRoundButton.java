@@ -81,16 +81,16 @@ public abstract class BaseRoundButton extends LinearLayout {
 //            String tmpPrimaryColor = getConfiguration().getColor(ConfigObjectConsts.COLOR_PRIMARY, ConfigObjectConsts.COLOR_PRIMARY1);
 //            mPrimaryColor = Color.parseColor(tmpPrimaryColor);
 //        } else {
-            mPrimaryColor = Color.parseColor(String.valueOf(Color.MAGENTA));
+//            mPrimaryColor = Color.parseColor(String.valueOf(Color.MAGENTA));
 //        }
 
-        Drawable defaultBackground = getDefaultBackground();
+//        Drawable defaultBackground = getDefaultBackground();
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 //            String tmpPrimaryColor = TvinciSDK.getConfiguration().getColor(ConfigObjectConsts.COLOR_SECONDARY, ConfigObjectConsts.COLOR_SECONDARY1);
 //            RippleDrawable r = new RippleDrawable(getPressedColorSelector(Color.parseColor(tmpPrimaryColor)), defaultBackground, null);
 //            setBackground(r);
 //        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            setBackground(defaultBackground);
+//            setBackground(defaultBackground);
 //        } else {
 //            setBackgroundDrawable(defaultBackground);
 //        }

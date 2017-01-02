@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -41,7 +40,7 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
     private ToolbarMediator mToolbarMediator;
     protected CoordinatorLayout mCoordMainContainer;
 //    protected CollapsingToolbarLayout mCollapsingToolbar;
-    protected FragmentManager mFragmentManager;
+    protected android.support.v4.app.FragmentManager mFragmentManager;
     protected ProgressBar mWaitProgress;
     protected int mLastCollapsingLayoutColor = -1;
     private SplashFragment splashFragment;
@@ -87,7 +86,7 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
     }
 
     protected void inflateLayout() {
-//        getFragmentManager().beginTransaction().add(R.id.activity_scrolling_content, getTemplate()).commit();
+        getFragmentManager().beginTransaction().add(R.id.activity_scrolling_content, getTemplate()).commit();
     }
 
     protected void initComponents() {

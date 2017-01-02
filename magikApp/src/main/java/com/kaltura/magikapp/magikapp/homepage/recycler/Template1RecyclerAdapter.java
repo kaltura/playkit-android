@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import com.kaltura.magikapp.magikapp.asset_page.AssetInfo;
 import com.kaltura.magikapp.magikapp.homepage.binders.DataBinder;
 
 import java.util.List;
@@ -16,6 +17,10 @@ public class Template1RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.
 
     List<DataBinder> mBinders;
     private Context mContext;
+
+    public interface ItemClick{
+        void onClick(AssetInfo asset);
+    }
 
 
     public Template1RecyclerAdapter(Context context, List<DataBinder> binders) {
@@ -45,7 +50,7 @@ public class Template1RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.
 
     @Override
     public int getItemCount() {
-        return 1;
+        return 3;
     }
 
     @Override
