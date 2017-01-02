@@ -6,9 +6,7 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.RippleDrawable;
 import android.graphics.drawable.StateListDrawable;
-import android.os.Build;
 import android.support.v4.content.res.ResourcesCompat;
 import android.util.AttributeSet;
 import android.view.View;
@@ -79,23 +77,23 @@ public abstract class BaseRoundButton extends LinearLayout {
             }
         }
 
-        if (!isInEditMode()) {
-            String tmpPrimaryColor = TvinciSDK.getConfiguration().getColor(ConfigObjectConsts.COLOR_PRIMARY, ConfigObjectConsts.COLOR_PRIMARY1);
-            mPrimaryColor = Color.parseColor(tmpPrimaryColor);
-        } else {
+//        if (!isInEditMode()) {
+//            String tmpPrimaryColor = getConfiguration().getColor(ConfigObjectConsts.COLOR_PRIMARY, ConfigObjectConsts.COLOR_PRIMARY1);
+//            mPrimaryColor = Color.parseColor(tmpPrimaryColor);
+//        } else {
             mPrimaryColor = Color.parseColor(String.valueOf(Color.MAGENTA));
-        }
+//        }
 
         Drawable defaultBackground = getDefaultBackground();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            String tmpPrimaryColor = TvinciSDK.getConfiguration().getColor(ConfigObjectConsts.COLOR_SECONDARY, ConfigObjectConsts.COLOR_SECONDARY1);
-            RippleDrawable r = new RippleDrawable(getPressedColorSelector(Color.parseColor(tmpPrimaryColor)), defaultBackground, null);
-            setBackground(r);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            String tmpPrimaryColor = TvinciSDK.getConfiguration().getColor(ConfigObjectConsts.COLOR_SECONDARY, ConfigObjectConsts.COLOR_SECONDARY1);
+//            RippleDrawable r = new RippleDrawable(getPressedColorSelector(Color.parseColor(tmpPrimaryColor)), defaultBackground, null);
+//            setBackground(r);
+//        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             setBackground(defaultBackground);
-        } else {
-            setBackgroundDrawable(defaultBackground);
-        }
+//        } else {
+//            setBackgroundDrawable(defaultBackground);
+//        }
     }
 
     abstract protected int getButtonLayout();
@@ -127,7 +125,7 @@ public abstract class BaseRoundButton extends LinearLayout {
     protected Drawable getDefaultRegularState(){
         GradientDrawable regular = new GradientDrawable();
         regular.setShape(GradientDrawable.RECTANGLE);
-        regular.setStroke(1, ResourcesCompat.getColor(getResources(), R.color.secondary_6, null));
+        regular.setStroke(1, ResourcesCompat.getColor(getResources(), R.color.white, null));
         regular.setCornerRadius(RADIUS);
         regular.setColor(Color.TRANSPARENT);
         return regular;

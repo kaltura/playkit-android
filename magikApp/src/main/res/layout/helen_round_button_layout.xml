@@ -15,7 +15,7 @@
         android:layout_gravity="center"
         android:adjustViewBounds="true"
         android:padding="5dp"
-        android:src="@drawable/ic_like_fill"
+        android:src="@mipmap/ic_face"
         android:layout_marginStart="1dp"
     />
 

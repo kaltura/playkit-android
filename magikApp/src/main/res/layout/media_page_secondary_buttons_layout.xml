@@ -20,8 +20,8 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="5dp"
             android:layout_marginStart="5dp"
-            app:image_not_pressed="@drawable/ic_comment_outline"
-            app:image_pressed="@drawable/ic_comment_fill"
+            app:image_not_pressed="@mipmap/ic_mail"
+            app:image_pressed="@mipmap/ic_mail"
             app:button_size="Medium"
         />
 
@@ -29,7 +29,7 @@
             android:id="@+id/helen_round_button_comment_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/media_page_be_the_first_to_comment" />
+            android:text="Be the first to comment" />
     </LinearLayout>
 
 
@@ -43,8 +43,8 @@
             android:id="@+id/helen_round_button_share_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:image_not_pressed="@drawable/ic_share_outline"
-            app:image_pressed="@drawable/ic_share_outline"
+            app:image_not_pressed="@mipmap/ic_face"
+            app:image_pressed="@mipmap/ic_face"
             app:button_size="Medium"
         />
 
@@ -54,8 +54,8 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/secondary_buttons_layout_padding_between_buttons"
             android:layout_marginStart="@dimen/secondary_buttons_layout_padding_between_buttons"
-            app:image_not_pressed="@drawable/ic_add_favorits_outline"
-            app:image_pressed="@drawable/ic_added_favorits_fill"
+            app:image_not_pressed="@mipmap/ic_mail"
+            app:image_pressed="@mipmap/ic_mail"
             app:button_size="Medium"
         />
 
@@ -63,8 +63,8 @@
             android:id="@+id/helen_round_button_like_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:image_not_pressed="@drawable/ic_like_outline"
-            app:image_pressed="@drawable/ic_like_fill"
+            app:image_not_pressed="@mipmap/ic_insta"
+            app:image_pressed="@mipmap/ic_insta"
             app:button_size="Medium"
             android:layout_marginEnd="@dimen/asset_page_secondary_like_button_end_margin"
         />

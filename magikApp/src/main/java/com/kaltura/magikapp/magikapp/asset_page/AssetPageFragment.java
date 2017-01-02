@@ -9,10 +9,16 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.Spinner;
+import android.widget.TextView;
 
+import com.kaltura.magikapp.PlaybackControlsView;
 import com.kaltura.magikapp.R;
 import com.kaltura.magikapp.magikapp.core.FragmentAid;
 import com.kaltura.magikapp.magikapp.toolbar.ToolbarMediator;
+import com.kaltura.playkit.MediaEntryProvider;
+import com.kaltura.playkit.Player;
 
 /**
  * Created by zivilan on 01/01/2017.
@@ -24,6 +30,18 @@ public class AssetPageFragment extends Fragment {
     private ViewPager mViewPager;
     protected FragmentAid mFragmentAid;
     private int assetId;
+    private TextView mTitle;
+    private TextView mSubTitle;
+    private TextView mDescription;
+
+    private Player player;
+    private MediaEntryProvider mediaProvider;
+    private PlaybackControlsView controlsView;
+    private boolean nowPlaying;
+    ProgressBar progressBar;
+
+    private Spinner videoSpinner, audioSpinner, textSpinner;
+
 
 
 
@@ -42,12 +60,15 @@ public class AssetPageFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         mContainer = inflater.inflate(R.layout.activity_scrolling, container, false);
+
         return mContainer;
 
     }
@@ -59,6 +80,13 @@ public class AssetPageFragment extends Fragment {
         mFragmentAid.changeToolbarLayoutColor(false);
         mFragmentAid.setToolbarHomeButton(ToolbarMediator.BUTTON_BACK);
 
+        mTitle = (TextView) mContainer.findViewById(R.id.asset_title);
+        mSubTitle = (TextView) mContainer.findViewById(R.id.asset_sub_title);
+        mDescription = (TextView) mContainer.findViewById(R.id.asset_description);
+
+        mTitle.setText(getString(R.string.asset_title_sample));
+        mSubTitle.setText(getString(R.string.asset_sub_title_sample));
+        mDescription.setText(getString(R.string.asset_description_sample));
 
     }
 
