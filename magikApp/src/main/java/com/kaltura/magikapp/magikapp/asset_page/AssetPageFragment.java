@@ -125,15 +125,6 @@ public class AssetPageFragment extends Fragment implements PresenterController.O
         mPlayerView = (LinearLayout) mContainer.findViewById(R.id.player_view);
 
         mPlayerControlsView = (PlayerControlsView) mContainer.findViewById(R.id.player_controls_view);
-        mPlayerControlsView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (isFirstPlay) {
-                    isFirstPlay = false;
-                    mContainer.findViewById(R.id.video_image_thumb).setVisibility(View.GONE);
-                }
-            }
-        });
 
         mPlayerControlsController = new PlayerControlsController(mPlayerControlsView, this);
 

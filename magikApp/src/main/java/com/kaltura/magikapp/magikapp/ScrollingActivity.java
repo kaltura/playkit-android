@@ -51,7 +51,6 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
         initComponents();
         inflateLayout();
         initOthers();
-
     }
 
     @Override
@@ -130,6 +129,11 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onBackPressed(){
+
     }
 
     protected boolean backOnStack() {
