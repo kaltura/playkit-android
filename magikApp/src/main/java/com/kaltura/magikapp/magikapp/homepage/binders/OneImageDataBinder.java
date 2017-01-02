@@ -21,8 +21,8 @@ public class OneImageDataBinder extends DataBinder<OneImageDataBinder.ViewHolder
     private String mTitleText;
     private String mSubTitleText;
 
-    public OneImageDataBinder(Context context/*, Template1RecyclerAdapter dataBindAdapter*/) {
-        super(context/*, dataBindAdapter*/);
+    public OneImageDataBinder(Context context) {
+        super(context);
     }
 
     public void setData(String url, String title, String subtitle){
@@ -34,7 +34,7 @@ public class OneImageDataBinder extends DataBinder<OneImageDataBinder.ViewHolder
     @Override
     public ViewHolder newViewHolder(ViewGroup parent) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.oneimage_layout, parent, false);
-        int height = parent.getMeasuredHeight() / 3;
+        int height = parent.getMeasuredHeight() / 2;
         v.setMinimumHeight(height);
         return new ViewHolder(v);
     }
