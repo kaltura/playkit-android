@@ -10,8 +10,6 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.kaltura.magikapp.R;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -22,11 +20,17 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
 
     private Context mContext;
     private List<String> mUrls;
+    int[] mDrawableRes;
 
-    public GridAdapter(Context context, String[] urls) {
+    public GridAdapter(Context context, int[] drawableRes){
         mContext = context;
-        mUrls = new ArrayList(Arrays.asList(urls));
+        mDrawableRes = drawableRes;
     }
+
+//    public GridAdapter(Context context, String[] urls) {
+//        mContext = context;
+//        mUrls = new ArrayList(Arrays.asList(urls));
+//    }
 
     @Override
     public GridAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -35,7 +39,7 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(GridAdapter.ViewHolder holder, int position) {
-        Glide.with(mContext).load(mUrls.get(0)).centerCrop().crossFade().into(holder.mImageView);
+        Glide.with(mContext).load(mDrawableRes[position]).centerCrop().crossFade().into(holder.mImageView);
     }
 
     @Override

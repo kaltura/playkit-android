@@ -10,8 +10,6 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.kaltura.magikapp.R;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -22,11 +20,18 @@ public class ExtendedItemGridAdapter extends RecyclerView.Adapter<ExtendedItemGr
 
     private Context mContext;
     private List<String> mUrls;
+    int[] mDrawableRes;
 
-    public ExtendedItemGridAdapter(Context context, String[] urls) {
+    public ExtendedItemGridAdapter(Context context, int[] drawableRes) {
         mContext = context;
-        mUrls = new ArrayList(Arrays.asList(urls));
+        mDrawableRes = drawableRes;
     }
+
+
+//    public ExtendedItemGridAdapter(Context context, String[] urls) {
+//        mContext = context;
+//        mUrls = new ArrayList(Arrays.asList(urls));
+//    }
 
     @Override
     public ExtendedItemGridAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -35,9 +40,30 @@ public class ExtendedItemGridAdapter extends RecyclerView.Adapter<ExtendedItemGr
 
     @Override
     public void onBindViewHolder(ExtendedItemGridAdapter.ViewHolder holder, int position) {
-        Glide.with(mContext).load(mUrls.get(0)).centerCrop().crossFade().into(holder.mImageView);
-//        holder.mTitleTextView.setText();
-//        holder.mSubTitleTextView.setText();
+        Glide.with(mContext).load(mDrawableRes[position]).centerCrop().crossFade().into(holder.mImageView);
+
+        String title = null;
+        String subTitle = null;
+        switch (position){
+            case 0:
+                title = "Mushroom Gnoochi";
+                subTitle = "These little snack-dessert winners are called No-Bake salted cups";
+                break;
+            case 1:
+                title = "Chipotle sweet potato noodle salad";
+                subTitle = "No-Bake salted cups with corn";
+                break;
+            case 2:
+                title = "No-Bake salted cups with corn";
+                subTitle = "Prepared medium well";
+                break;
+            case 3:
+                title = "No-Bake salted caramel cups";
+                subTitle = "vegetarian soup";
+                break;
+        }
+        holder.mTitleTextView.setText(title);
+        holder.mSubTitleTextView.setText(subTitle);
     }
 
     @Override

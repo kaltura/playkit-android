@@ -1,5 +1,6 @@
 package com.kaltura.magikapp.magikapp.homepage;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
@@ -7,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,8 +61,7 @@ public class Template1Fragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-//        mContainer = inflater.inflate(R.layout.activity_scrolling_template1, container, false);
-        mContainer = inflater.inflate(R.layout.activity_scrolling, container, false);
+        mContainer = inflater.inflate(R.layout.content_scrolling_template1, container, false);
         return mContainer;
 
     }
@@ -81,18 +80,19 @@ public class Template1Fragment extends Fragment {
         List<DataBinder> binders = new ArrayList<>();
         binders.add(oneImageBinder);
 
-        FourImageDataBinder fourImageDataBinder = new FourImageDataBinder(mContext, new GridAdapter(mContext, FourImageDataBinder.URLS));
+        int[] drawableRes = {R.drawable.pasta, R.drawable.bliss, R.drawable.crock, R.drawable.korean};
+        FourImageDataBinder fourImageDataBinder = new FourImageDataBinder(mContext, new GridAdapter(mContext, drawableRes));
+        fourImageDataBinder.setTitles("make this for", " DINNER");
         binders.add(fourImageDataBinder);
 
-        FourImageDataBinder fourImageDataBinder2 = new FourImageDataBinder(mContext, new ExtendedItemGridAdapter(mContext, FourImageDataBinder.URLS), R.drawable.bg);
+        int[] drawableRes2 = {R.drawable.pullaprt, R.drawable.squash, R.drawable.bruschetta, R.drawable.mediterranean};
+        FourImageDataBinder fourImageDataBinder2 = new FourImageDataBinder(mContext, new ExtendedItemGridAdapter(mContext, drawableRes2));
+        fourImageDataBinder.showBackground(false);
+        fourImageDataBinder2.setTitles("the latest", " AND GREATEST");
         binders.add(fourImageDataBinder2);
 
         mRecyclerView.setAdapter(new Template1RecyclerAdapter(mContext, binders));
         mRecyclerView.addItemDecoration(new RowSpaceItemDecoration(30));
-
-//        mViewPager = (ViewPager) mContainer.findViewById(R.id.header_view_pager);
-//        ToolbarHeaderImageAdapter headerPagerAdapter = new ToolbarHeaderImageAdapter(mContext, mViewPagerUrls);
-//        mViewPager.setAdapter(headerPagerAdapter);
 
     }
 

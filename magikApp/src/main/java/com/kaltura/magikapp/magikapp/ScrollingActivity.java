@@ -79,7 +79,7 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
     }
 
     protected void inflateLayout() {
-//        getFragmentManager().beginTransaction().add(R.id.activity_scrolling_content, getTemplate()).commit();
+        getFragmentManager().beginTransaction().add(R.id.activity_scrolling_content, getTemplate()).commit();
     }
 
     protected void initComponents() {

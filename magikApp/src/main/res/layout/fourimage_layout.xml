@@ -6,6 +6,7 @@
               android:paddingStart="12dp"
               android:paddingEnd="12dp"
               android:id="@+id/container"
+              android:background="@drawable/bgr1"
 >
 
     <LinearLayout
@@ -18,7 +19,6 @@
             android:id="@+id/four_image_title1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="make this for"
             android:textColor="@color/one_image_description_text_title_color"
             android:textSize="20sp"
         />
@@ -29,7 +29,6 @@
             android:layout_height="wrap_content"
             android:textColor="@color/one_image_description_text_sub_title_color"
             android:textSize="20dp"
-            android:text=" DINNER"
         />
 
     </LinearLayout>
