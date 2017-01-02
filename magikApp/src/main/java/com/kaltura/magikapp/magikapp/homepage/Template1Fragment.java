@@ -5,24 +5,24 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
 import com.kaltura.magikapp.R;
 import com.kaltura.magikapp.magikapp.core.FragmentAid;
 import com.kaltura.magikapp.magikapp.homepage.binders.DataBinder;
+import com.kaltura.magikapp.magikapp.homepage.binders.ExtendedItemGridAdapter;
+import com.kaltura.magikapp.magikapp.homepage.binders.FourImageDataBinder;
+import com.kaltura.magikapp.magikapp.homepage.binders.GridAdapter;
 import com.kaltura.magikapp.magikapp.homepage.binders.OneImageDataBinder;
+import com.kaltura.magikapp.magikapp.homepage.recycler.RowSpaceItemDecoration;
 import com.kaltura.magikapp.magikapp.homepage.recycler.Template1RecyclerAdapter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -61,7 +61,7 @@ public class Template1Fragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mContainer = inflater.inflate(R.layout.activity_scrolling, container, false);
+        mContainer = inflater.inflate(R.layout.content_scrolling_template1, container, false);
         return mContainer;
 
     }
@@ -80,59 +80,22 @@ public class Template1Fragment extends Fragment {
         List<DataBinder> binders = new ArrayList<>();
         binders.add(oneImageBinder);
 
+        int[] drawableRes = {R.drawable.pasta, R.drawable.bliss, R.drawable.crock, R.drawable.korean};
+        FourImageDataBinder fourImageDataBinder = new FourImageDataBinder(mContext, new GridAdapter(mContext, drawableRes));
+        fourImageDataBinder.setTitles("make this for", " DINNER");
+        binders.add(fourImageDataBinder);
+
+        int[] drawableRes2 = {R.drawable.pullaprt, R.drawable.squash, R.drawable.bruschetta, R.drawable.mediterranean};
+        FourImageDataBinder fourImageDataBinder2 = new FourImageDataBinder(mContext, new ExtendedItemGridAdapter(mContext, drawableRes2));
+        fourImageDataBinder.showBackground(false);
+        fourImageDataBinder2.setTitles("the latest", " AND GREATEST");
+        binders.add(fourImageDataBinder2);
+
         mRecyclerView.setAdapter(new Template1RecyclerAdapter(mContext, binders));
-
-//        mViewPager = (ViewPager) mContainer.findViewById(R.id.header_view_pager);
-//        ToolbarHeaderImageAdapter headerPagerAdapter = new ToolbarHeaderImageAdapter(mContext, mViewPagerUrls);
-//        mViewPager.setAdapter(headerPagerAdapter);
+        mRecyclerView.addItemDecoration(new RowSpaceItemDecoration(30));
 
     }
 
-
-
-    private class ToolbarHeaderImageAdapter extends PagerAdapter {
-
-        private Context mContext;
-        private LayoutInflater mInflater;
-        private List<String> mUrls;
-
-
-        public ToolbarHeaderImageAdapter(Context context, String[] urls) {
-            this.mContext = context;
-            mInflater = LayoutInflater.from(context);
-            mUrls = new ArrayList<>(Arrays.asList(urls));
-        }
-
-        @Override
-        public Object instantiateItem(ViewGroup container, int position) {
-            View view = mInflater.inflate(R.layout.template1_view_pager_item, container);
-            ImageView imageView = (ImageView) view.findViewById(R.id.view_pager_image);
-
-            Glide.with(mContext).load(mUrls.get(position)).into(imageView);
-
-            return container;
-        }
-
-        @Override
-        public int getCount() {
-            return mUrls.size();
-        }
-
-        @Override
-        public boolean isViewFromObject(View view, Object object) {
-            return false;
-        }
-
-        @Override
-        public void destroyItem(ViewGroup container, int position, Object object) {
-            container.removeView((View) object);
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return "vladi";
-        }
-    }
 
 }
 

@@ -8,7 +8,8 @@
     <ImageView
         android:id="@+id/oneimage_image"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+    />
 
 
     <LinearLayout
@@ -17,8 +18,8 @@
         android:orientation="vertical"
         android:layout_gravity="bottom"
         android:paddingStart="12dp"
-        android:paddingBottom="8dp"
-        android:paddingTop="10dp"
+        android:paddingBottom="6dp"
+        android:paddingTop="8dp"
         android:background="@color/one_image_description_background"
         >
 
@@ -29,7 +30,7 @@
             android:text="Dynamite plant test"
             android:textStyle="bold"
             android:textColor="@color/one_image_description_text_title_color"
-            android:textSize="20sp"
+            android:textSize="18sp"
         />
 
 
@@ -39,7 +40,7 @@
             android:layout_height="wrap_content"
             android:text="April 11, 2016 test"
             android:textColor="@color/one_image_description_text_sub_title_color"
-            android:textSize="15sp"
+            android:textSize="13sp"
         />
 
     </LinearLayout>

@@ -10,18 +10,20 @@ import android.view.ViewGroup;
 
 abstract public class DataBinder <T extends RecyclerView.ViewHolder>{
 
-//    protected Template1RecyclerAdapter mDataBindAdapter;
     protected Context mContext;
 
-    public DataBinder(Context context/*, Template1RecyclerAdapter dataBindAdapter*/) {
+    public DataBinder(Context context) {
         mContext = context;
-//        mDataBindAdapter = dataBindAdapter;
     }
 
     abstract public T newViewHolder(ViewGroup parent);
 
     abstract public void bindViewHolder(T holder, int position);
 
+    abstract public void showBackground(boolean isShow);
+
     abstract public int getItemCount();
+
+    public void setTitles(String title1, String title2){}
 
 }
