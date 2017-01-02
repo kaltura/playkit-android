@@ -29,7 +29,7 @@ public class SpacesItemDecoration extends RecyclerView.ItemDecoration {
                 outRect.bottom = space;
                 break;
             case 2:
-                outRect.right = space;
+//                outRect.right = space;
                 outRect.top = space;
                 break;
             case 3:
