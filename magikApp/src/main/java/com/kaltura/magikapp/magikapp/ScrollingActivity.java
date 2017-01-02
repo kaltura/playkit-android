@@ -27,7 +27,7 @@ import com.kaltura.magikapp.magikapp.core.ActivityComponentsInjector;
 import com.kaltura.magikapp.magikapp.core.ComponentsInjector;
 import com.kaltura.magikapp.magikapp.core.FragmentAid;
 import com.kaltura.magikapp.magikapp.core.PluginProvider;
-import com.kaltura.magikapp.magikapp.homepage.Template1Fragment;
+import com.kaltura.magikapp.magikapp.homepage.recycler.Template2Fragment;
 import com.kaltura.magikapp.magikapp.menu.MenuMediator;
 import com.kaltura.magikapp.magikapp.toolbar.ToolbarMediator;
 
@@ -87,7 +87,7 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
     }
 
     private Fragment getTemplate() {
-        return Template1Fragment.newInstance();
+        return Template2Fragment.newInstance();
     }
 
     protected void inflateLayout() {

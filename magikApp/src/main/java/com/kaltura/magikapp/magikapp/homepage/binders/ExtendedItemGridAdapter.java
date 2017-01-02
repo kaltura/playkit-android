@@ -86,7 +86,7 @@ public class ExtendedItemGridAdapter extends RecyclerView.Adapter<ExtendedItemGr
         mOnItemClicked = onItemClicked;
     }
 
-    class ViewHolder extends GridAdapter.ViewHolder{
+    class ViewHolder extends SimpleGridAdapterTemplate1.ViewHolder{
 
         TextView mTitleTextView;
         TextView mSubTitleTextView;

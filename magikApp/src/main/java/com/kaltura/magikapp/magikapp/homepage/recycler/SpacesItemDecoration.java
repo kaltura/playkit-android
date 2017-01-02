@@ -22,7 +22,7 @@ public class SpacesItemDecoration extends RecyclerView.ItemDecoration {
         switch (parent.getChildLayoutPosition(view)){
             case 0:
 //                outRect.right = space;
-                outRect.bottom = space;
+//                outRect.bottom = space;
                 break;
             case 1:
                 outRect.left = space;
@@ -34,7 +34,7 @@ public class SpacesItemDecoration extends RecyclerView.ItemDecoration {
                 break;
             case 3:
                 outRect.left = space;
-                outRect.top = space;
+//                outRect.top = space;
                 break;
 
         }
