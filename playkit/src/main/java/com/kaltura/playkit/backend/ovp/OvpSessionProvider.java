@@ -3,24 +3,26 @@ package com.kaltura.playkit.backend.ovp;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.connect.backend.BaseResult;
+import com.connect.backend.PrimitiveResult;
+import com.connect.backend.base.BaseSessionProvider;
+import com.connect.backend.ovp.KalturaOvpParser;
+import com.connect.backend.ovp.OvpConfigs;
+import com.connect.backend.ovp.data.KalturaSessionInfo;
+import com.connect.backend.ovp.services.OvpService;
+import com.connect.backend.ovp.services.OvpSessionService;
+import com.connect.backend.ovp.services.UserService;
+import com.connect.core.OnCompletion;
+import com.connect.utils.APIOkRequestsExecutor;
+import com.connect.utils.ErrorElement;
+import com.connect.utils.GsonParser;
+import com.connect.utils.MultiRequestBuilder;
+import com.connect.utils.OnRequestCompletion;
+import com.connect.utils.RequestBuilder;
+import com.connect.utils.ResponseElement;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
-import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.backend.BaseResult;
-import com.kaltura.playkit.backend.base.BaseSessionProvider;
-import com.kaltura.playkit.backend.ovp.data.KalturaSessionInfo;
-import com.kaltura.playkit.backend.PrimitiveResult;
-import com.kaltura.playkit.backend.ovp.services.OvpService;
-import com.kaltura.playkit.backend.ovp.services.OvpSessionService;
-import com.kaltura.playkit.backend.ovp.services.UserService;
-import com.kaltura.playkit.connect.APIOkRequestsExecutor;
-import com.kaltura.playkit.connect.ErrorElement;
-import com.kaltura.playkit.connect.GsonParser;
-import com.kaltura.playkit.connect.MultiRequestBuilder;
-import com.kaltura.playkit.connect.OnRequestCompletion;
-import com.kaltura.playkit.connect.RequestBuilder;
-import com.kaltura.playkit.connect.ResponseElement;
 
 import java.util.List;
 
@@ -185,8 +187,8 @@ public class OvpSessionProvider extends BaseSessionProvider {
     }
 
     /**
-     * Ends current active session. if it's a {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#User} session
-     * logout, if {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#Anonymous} will return, since
+     * Ends current active session. if it's a {@link UserSessionType#User} session
+     * logout, if {@link UserSessionType#Anonymous} will return, since
      * logout on anonymous session doesn't make the session invalid.
      * <p>
      * If logout was activated, session params are cleared.

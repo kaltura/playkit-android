@@ -1,8 +1,8 @@
 package com.kaltura.magikapp;
 
-import com.kaltura.playkit.OnCompletion;
-import com.kaltura.playkit.backend.SessionProvider;
-import com.kaltura.playkit.backend.PrimitiveResult;
+import com.connect.backend.PrimitiveResult;
+import com.connect.backend.SessionProvider;
+import com.connect.core.OnCompletion;
 
 /**
  * Created by tehilarozin on 16/11/2016.

@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="main"><source path="/Users/zivilan/magik-app/connectremote/src/main/assets"/><source path="/Users/zivilan/magik-app/connectremote/build/generated/assets/shaders/release"/></dataSet><dataSet config="release"><source path="/Users/zivilan/magik-app/connectremote/src/release/assets"/></dataSet></merger>

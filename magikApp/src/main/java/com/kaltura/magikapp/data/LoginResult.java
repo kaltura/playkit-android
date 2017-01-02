@@ -1,12 +1,13 @@
 package com.kaltura.magikapp.data;
 
-import com.kaltura.playkit.backend.BaseResult;
+
+import com.connect.backend.BaseResult;
 
 /**
  * Created by tehilarozin on 16/11/2016.
  */
 
-public class LoginResult extends BaseResult{
+public class LoginResult extends BaseResult {
 
     Result result;
 
