@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.kaltura.magikapp.R;
+import com.kaltura.magikapp.magikapp.asset_page.AssetInfo;
+import com.kaltura.magikapp.magikapp.homepage.recycler.Template1RecyclerAdapter;
 
 import java.util.List;
 
@@ -21,6 +23,7 @@ public class ExtendedItemGridAdapter extends RecyclerView.Adapter<ExtendedItemGr
     private Context mContext;
     private List<String> mUrls;
     int[] mDrawableRes;
+    private Template1RecyclerAdapter.ItemClick mOnItemClicked;
 
     public ExtendedItemGridAdapter(Context context, int[] drawableRes) {
         mContext = context;
@@ -35,7 +38,15 @@ public class ExtendedItemGridAdapter extends RecyclerView.Adapter<ExtendedItemGr
 
     @Override
     public ExtendedItemGridAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ExtendedItemGridAdapter.ViewHolder(LayoutInflater.from(mContext).inflate(R.layout.fourimage_item_extended_layout, parent, false));
+        View view = LayoutInflater.from(mContext).inflate(R.layout.fourimage_item_extended_layout, parent, false);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mOnItemClicked.onClick(new AssetInfo());
+            }
+        });
+
+        return new ExtendedItemGridAdapter.ViewHolder(view);
     }
 
     @Override
@@ -69,6 +80,10 @@ public class ExtendedItemGridAdapter extends RecyclerView.Adapter<ExtendedItemGr
     @Override
     public int getItemCount() {
         return 4;
+    }
+
+    public void setOnClickListener(Template1RecyclerAdapter.ItemClick onItemClicked) {
+        mOnItemClicked = onItemClicked;
     }
 
     class ViewHolder extends GridAdapter.ViewHolder{

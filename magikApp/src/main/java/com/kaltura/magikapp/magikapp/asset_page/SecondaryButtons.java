@@ -112,7 +112,7 @@ public class SecondaryButtons extends RelativeLayout implements View.OnClickList
         }
     }
 
-    public void setButtonSelected(SecondaryButtons.SecondaryButtonType type, boolean isPressed){
+    public void setButtonSelected(SecondaryButtonType type, boolean isPressed){
         getButton(type).setSelected(isPressed);
     }
 }

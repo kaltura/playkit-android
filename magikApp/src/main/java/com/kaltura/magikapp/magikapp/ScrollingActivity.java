@@ -20,11 +20,11 @@ import android.view.WindowManager;
 import android.widget.ProgressBar;
 
 import com.kaltura.magikapp.R;
-import com.kaltura.magikapp.magikapp.asset_page.AssetPageFragment;
 import com.kaltura.magikapp.magikapp.core.ActivityComponentsInjector;
 import com.kaltura.magikapp.magikapp.core.ComponentsInjector;
 import com.kaltura.magikapp.magikapp.core.FragmentAid;
 import com.kaltura.magikapp.magikapp.core.PluginProvider;
+import com.kaltura.magikapp.magikapp.homepage.Template1Fragment;
 import com.kaltura.magikapp.magikapp.menu.MenuMediator;
 import com.kaltura.magikapp.magikapp.toolbar.ToolbarMediator;
 
@@ -74,7 +74,7 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
     }
 
     private Fragment getTemplate() {
-        return AssetPageFragment.newInstance();
+        return Template1Fragment.newInstance();
     }
 
     protected void inflateLayout() {

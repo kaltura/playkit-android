@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.kaltura.magikapp.R;
+import com.kaltura.magikapp.magikapp.asset_page.AssetInfo;
+import com.kaltura.magikapp.magikapp.asset_page.AssetPageFragment;
 import com.kaltura.magikapp.magikapp.core.FragmentAid;
 import com.kaltura.magikapp.magikapp.homepage.binders.DataBinder;
 import com.kaltura.magikapp.magikapp.homepage.binders.ExtendedItemGridAdapter;
@@ -81,21 +83,32 @@ public class Template1Fragment extends Fragment {
         binders.add(oneImageBinder);
 
         int[] drawableRes = {R.drawable.pasta, R.drawable.bliss, R.drawable.crock, R.drawable.korean};
-        FourImageDataBinder fourImageDataBinder = new FourImageDataBinder(mContext, new GridAdapter(mContext, drawableRes));
+        GridAdapter gridAdapter = new GridAdapter(mContext, drawableRes);
+        gridAdapter.setOnClickListener(mOnItemClicked);
+        FourImageDataBinder fourImageDataBinder = new FourImageDataBinder(mContext, gridAdapter);
         fourImageDataBinder.setTitles("make this for", " DINNER");
         binders.add(fourImageDataBinder);
 
         int[] drawableRes2 = {R.drawable.pullaprt, R.drawable.squash, R.drawable.bruschetta, R.drawable.mediterranean};
-        FourImageDataBinder fourImageDataBinder2 = new FourImageDataBinder(mContext, new ExtendedItemGridAdapter(mContext, drawableRes2));
+        ExtendedItemGridAdapter extendedItemGridAdapter = new ExtendedItemGridAdapter(mContext, drawableRes2);
+        extendedItemGridAdapter.setOnClickListener(mOnItemClicked);
+        FourImageDataBinder fourImageDataBinder2 = new FourImageDataBinder(mContext, extendedItemGridAdapter);
         fourImageDataBinder.showBackground(false);
         fourImageDataBinder2.setTitles("the latest", " AND GREATEST");
         binders.add(fourImageDataBinder2);
 
-        mRecyclerView.setAdapter(new Template1RecyclerAdapter(mContext, binders));
+        Template1RecyclerAdapter template1RecyclerAdapter = new Template1RecyclerAdapter(mContext, binders);
+        mRecyclerView.setAdapter(template1RecyclerAdapter);
         mRecyclerView.addItemDecoration(new RowSpaceItemDecoration(30));
 
     }
 
+    private Template1RecyclerAdapter.ItemClick mOnItemClicked = new Template1RecyclerAdapter.ItemClick() {
+        @Override
+        public void onClick(AssetInfo asset) {
+            getFragmentManager().beginTransaction().replace(R.id.activity_scrolling_content, AssetPageFragment.newInstance()).addToBackStack("item").commit();
+        }
+    };
 
 }
 

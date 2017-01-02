@@ -1,5 +1,10 @@
 package com.kaltura.magikapp.magikapp.asset_page;
 
+/**
+ * Created by vladir on 02/01/2017.
+ */
+
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
@@ -107,6 +112,7 @@ public class ExpandingRoundButton extends IconTextRoundButton {
     }
 
 }
+
 
 
 
