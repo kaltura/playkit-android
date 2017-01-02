@@ -113,5 +113,20 @@
     <string name="asset_sub_title_sample">April 27 \, 2016</string>
     <string name="asset_description_sample">Confession time. I used to not like to eat green salads. Let me rephrase that, I used to not ever make myself salads. I liked vegetables and always made my salads with chunky vegetables but it was something about the leafy greens being hard to eat (I know that is a weird reason.) If someone else made a salad and put it in front of me I loved it. But whenever I tried to make one they didn’t taste good and so I would give up. At some point last year I decided to figure this whole salad thing out and after lots of trial and error I’ve learned some things. Maybe everyone know all these tips already but I didn’t so I figured I would share a few on how to make really good salad. After learning to make a decent salad I started eating salads three times a week and this year I made a goal to eat them every day.</string>
 
+    <string name="player_time_indicator_init">00:00 / 00:00</string>
+
+    <string name="time_indicator_separator"> / </string>
+
+    <string name="no_track_to_dispaly">Sorry, no track selection available</string>
+
+    <string name="something_went_wrong">Something went wrong.</string>
+
+    <string name="ok">OK</string>
+
+    <string name="video_track_selection_dialog_title">Select video track.</string>
+    <string name="audio_track_selection_dialog_title">Select audio track.</string>
+    <string name="text_track_selection_dialog_title">Select text track.</string>
+    <string name="empty_string"></string>
+
 
 </resources>

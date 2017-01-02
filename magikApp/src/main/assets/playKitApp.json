@@ -1,0 +1,204 @@
+{
+  "playKitApp": [
+    {
+      "rootMenuTitle": "Playback options",
+      "subMenu": [
+        {
+          "subMenuTitle": "DRM",
+          "featureVariants": [
+            {
+              "featureTitle": "Widevine Modular",
+              "playerConfigURL": "file://mock/standalonePlayer_v2.json"
+            },
+            {
+              "featureTitle": "Widevine Classic ",
+              "playerConfigURL": "file://mock/standalonePlayer_v2.json"
+            },
+            {
+              "featureTitle": "DRM 3",
+              "playerConfigURL": "file://mock/standalonePlayer_hls_Kaltura_Live_no_dvr_OVP.json"
+            },
+            {
+              "featureTitle": "DRM 4",
+              "playerConfigURL": "file://mock/standalonePlayer.json"
+            },
+            {
+              "featureTitle": "DRM 5",
+              "playerConfigURL": "file://mock/standalonePlayer_v2.json"
+            }
+          ],
+          "aboutFeature": "long text long text long text\nlong text long text long text\nlong text long text long text\nlong text long text long text\nlong text long text long text\nlong text long text long text\nlong text long text long text\nlong text long text long text\nlong text long text long text\nlong text long text long text\nlong text long text long text",
+          "featureId":["FEATURE_LOGS"]
+
+        },
+        {
+          "subMenuTitle": "Live",
+          "featureVariants": [
+            {
+              "featureTitle": "Live With DVR",
+              "playerConfigURL": "file://mock/live/standalonePlayer_live_dvr.json"
+            },
+            {
+              "featureTitle": "Live Without DVR",
+              "playerConfigURL": "file://mock/standalonePlayer_hls_Kaltura_Live_no_dvr_OVP.json"
+            }
+          ],
+          "aboutFeature": "text text text\ntext text"
+        },
+        {
+          "subMenuTitle": "Offline",
+          "featureVariants": [
+            {
+              "featureTitle": "Offline",
+              "playerConfigURL": "file://mock/standalonePlayer.json"
+            }
+          ],
+          "aboutFeature": "text text text\ntext text",
+          "featureId":["FEATURE_OFFLINE"]
+        }
+      ]
+    },
+    {
+      "rootMenuTitle": "Monetization",
+      "subMenu": [  {
+        "subMenuTitle": "Pre-roll, linear not skippable",
+        "featureVariants": [
+          {
+            "featureTitle": "Pre-roll, linear not skippable",
+            "playerConfigURL": "file://mock/ads/standalonePlayer_ads_pre_roll_no_skip.json"
+          }
+        ],
+        "aboutFeature": "Pre-roll, linear not skippable Example"
+      },
+        {
+          "subMenuTitle": "Pre-roll, linear, skippable",
+          "featureVariants": [
+            {
+              "featureTitle": "Pre-roll, linear, skippable",
+              "playerConfigURL": "file://mock/ads/standalonePlayer_ads_pre_roll_skip.json"
+            }
+          ],
+          "aboutFeature": "Pre-roll, linear, skippable Example"
+        },
+        {
+          "subMenuTitle": "Post-roll",
+          "featureVariants": [
+            {
+              "featureTitle": "Post-roll",
+              "playerConfigURL": "file://mock/ads/standalonePlayer_ads_post_roll.json"
+            }
+          ],
+          "aboutFeature": "Post-roll Example"
+        },
+        {
+          "subMenuTitle": "VMAP",
+          "featureVariants": [
+            {
+              "featureTitle": "VMAP",
+              "playerConfigURL": "file://mock/ads/standalonePlayer_ads_vamp.json"
+            }
+          ],
+          "aboutFeature": "VAMP Example"
+        },
+        {
+          "subMenuTitle": "VMAP_PODS",
+          "featureVariants": [
+            {
+              "featureTitle": "VMAP_PODS",
+              "playerConfigURL": "file://mock/ads/standalonePlayer_ads_vamp_pods.json"
+            }
+          ],
+          "aboutFeature": "VMAP_PODS Example"
+        },
+        {
+          "subMenuTitle": "WRAPPER",
+          "featureVariants": [
+            {
+              "featureTitle": "WRAPPER",
+              "playerConfigURL": "file://mock/ads/standalonePlayer_ads_wapper.json"
+            }
+          ],
+          "aboutFeature": "WRAPPER Example"
+        },       {
+          "subMenuTitle": "ADSENSE",
+          "featureVariants": [
+            {
+              "featureTitle": "ADSENSE",
+              "playerConfigURL": "file://mock/ads/standalonePlayer_ads_adsense.json"
+            }
+          ],
+          "aboutFeature": "ADSENSE Example"
+        },
+        {
+          "subMenuTitle": "Companion AD",
+          "featureVariants": [
+            {
+              "featureTitle": "Companion AD",
+              "playerConfigURL": "file://mock/ads/standalonePlayer_ads_companion.json"
+            }
+          ],
+          "aboutFeature": "Companion AD Example",
+          "featureId":["FEATURE_MONETIZATION_COMPANION_AD"]
+        }
+      ]
+    },
+    {
+      "rootMenuTitle": "Cast",
+      "subMenu": [
+        {
+          "subMenuTitle": "Cast",
+          "featureVariants": [
+            {
+              "featureTitle": "Cast 1",
+              "playerConfigURL": "file://mock/cast/standalonePlayerCastOvp_kgit.json"
+            },
+            {
+              "featureTitle": "Cast 2",
+              "playerConfigURL": "file://mock/cast/standalonePlayerCastOvp_disney.json"
+            },
+            {
+              "featureTitle": "Cast 3",
+              "playerConfigURL": "file://mock/cast/standalonePlayerCastOvp_3.json"
+            }
+          ],
+          "aboutFeature": "text text text\ntext text"
+        }
+      ]
+    },
+    {
+      "rootMenuTitle": "Analytics",
+      "subMenu": [{
+        "subMenuTitle": "Analytics",
+          "featureVariants": [
+            {
+              "featureTitle": "Youbora DASH",
+              "playerConfigURL": "file://mock/stats/standalonePlayer_stats_youbora_dash.json"
+            },
+            {
+              "featureTitle": "Youbora HLS",
+              "playerConfigURL": "file://mock/stats/standalonePlayer_stats_youbora_hls.json"
+            },
+            {
+              "featureTitle": "Kaltura Analytics",
+              "playerConfigURL": "file://mock/stats/standalonePlayer_stats_kaltura_analytics.json"
+            },
+            {
+              "featureTitle": "Kaltura Stats",
+              "playerConfigURL": "file://mock/stats/standalonePlayer_stats_kaltura_stats.json"
+            },
+            {
+              "featureTitle": "Kaltura Live Stats",
+              "playerConfigURL": "file://mock/stats/standalonePlayer_stats_kaltura_live_stats.json"
+            },
+            {
+              "featureTitle": "Kaltura TVPAPI Analytics",
+              "playerConfigURL": "file://mock/stats/standalonePlayer_stats_kaltura_tvpapi_analytics.json"
+            }
+          ],
+          "aboutFeature": "text text text\ntext text",
+          "featureId":["FEATURE_LOGS"]
+        }
+      ]
+    }
+  ]
+}

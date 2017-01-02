@@ -41,4 +41,6 @@
     <dimen name="asset_page_description_height">66dp</dimen>
     <dimen name="asset_page_secondary_like_button_end_margin">16dp</dimen>
 
+    <dimen name="DP16">16dp</dimen>
+
 </resources>

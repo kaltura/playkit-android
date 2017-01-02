@@ -1,38 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:orientation="vertical"
+    android:paddingTop="?actionBarSize">
 
-    <include
-        layout="@layout/activity_main"/>
+    <include layout="@layout/activity_main" />
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:id="@+id/asset_text_container">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="337dp"
-            android:id="@+id/asset_title" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:id="@+id/asset_sub_title" />
-
-        <com.kaltura.magikapp.magikapp.asset_page.SecondaryButtons
-            android:layout_height="40dp"
-            android:layout_width="match_parent"
-            android:id="@+id/asset_secondary_buttons"
-            />
-
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/asset_description"/>
+            android:layout_marginEnd="14dp"
+            android:layout_marginStart="14dp"
+            android:orientation="vertical">
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/asset_title"
+                android:layout_width="match_parent"
+                android:layout_height="66dp"
+                android:layout_marginBottom="12dp"
+                android:layout_marginTop="10dp"
+                android:textColor="#723f5f"
+                android:textSize="26sp" />
 
+            <TextView
+                android:id="@+id/asset_sub_title"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:textColor="#666666"
+                android:textSize="14sp" />
 
-</android.support.constraint.ConstraintLayout>
+            <TextView
+                android:id="@+id/asset_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

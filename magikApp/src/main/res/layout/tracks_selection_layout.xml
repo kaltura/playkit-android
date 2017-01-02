@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/player_tracks_selection"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <ImageView
+        android:id="@+id/track_selection_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@android:color/black"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:alpha="0.5"
+        android:clickable="true"
+        />
+    <ImageButton
+        android:id="@+id/close_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@mipmap/exit"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginRight="@dimen/DP16"
+        android:layout_marginEnd="@dimen/DP16"
+        android:layout_marginTop="@dimen/DP16"
+        />
+
+    <ImageButton
+        android:id="@+id/video_track_select_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@mipmap/speed_rate"
+        app:layout_constraintRight_toLeftOf="@+id/text_track_select_btn"
+        app:layout_constraintLeft_toRightOf="parent"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        android:layout_marginLeft="@dimen/DP16"
+        android:layout_marginStart="@dimen/DP16"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    <ImageButton
+        android:id="@+id/text_track_select_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@mipmap/icon_cc"
+        app:layout_constraintLeft_toRightOf="@+id/video_track_select_btn"
+        app:layout_constraintRight_toLeftOf="@+id/audio_track_select_btn"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginLeft="@dimen/DP16"
+        android:layout_marginRight="@dimen/DP16"
+        android:layout_marginStart="@dimen/DP16"
+        android:layout_marginEnd="@dimen/DP16" />
+
+    <ImageButton
+        android:id="@+id/audio_track_select_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@mipmap/icon_audiotrack"
+        app:layout_constraintLeft_toRightOf="@+id/text_track_select_btn"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginRight="@dimen/DP16"
+        android:layout_marginEnd="@dimen/DP16" />
+
+    </android.support.constraint.ConstraintLayout>
+

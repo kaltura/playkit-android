@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,11 +20,11 @@ import android.view.WindowManager;
 import android.widget.ProgressBar;
 
 import com.kaltura.magikapp.R;
+import com.kaltura.magikapp.magikapp.asset_page.AssetPageFragment;
 import com.kaltura.magikapp.magikapp.core.ActivityComponentsInjector;
 import com.kaltura.magikapp.magikapp.core.ComponentsInjector;
 import com.kaltura.magikapp.magikapp.core.FragmentAid;
 import com.kaltura.magikapp.magikapp.core.PluginProvider;
-import com.kaltura.magikapp.magikapp.homepage.Template1Fragment;
 import com.kaltura.magikapp.magikapp.menu.MenuMediator;
 import com.kaltura.magikapp.magikapp.toolbar.ToolbarMediator;
 
@@ -38,7 +37,7 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
     private ToolbarMediator mToolbarMediator;
     protected CoordinatorLayout mCoordMainContainer;
 //    protected CollapsingToolbarLayout mCollapsingToolbar;
-    protected FragmentManager mFragmentManager;
+    protected android.support.v4.app.FragmentManager mFragmentManager;
     protected ProgressBar mWaitProgress;
     protected int mLastCollapsingLayoutColor = -1;
 
@@ -75,11 +74,11 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
     }
 
     private Fragment getTemplate() {
-        return Template1Fragment.newInstance();
+        return AssetPageFragment.newInstance();
     }
 
     protected void inflateLayout() {
-//        getFragmentManager().beginTransaction().add(R.id.activity_scrolling_content, getTemplate()).commit();
+        getFragmentManager().beginTransaction().add(R.id.activity_scrolling_content, getTemplate()).commit();
     }
 
     protected void initComponents() {
