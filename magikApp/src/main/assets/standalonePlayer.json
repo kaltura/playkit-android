@@ -1,0 +1,194 @@
+{
+  "standalonePlayer": {
+    "mediaProvider": {
+      "mediaProviderType": "mockMediaProvider",
+      "params": {
+        "mediaId":"dash",
+        "entries":{
+
+          "dash": {
+            "duration": 102000,
+            "id": "1_1h1vsv3z",
+            "name": "DASH: Kaltura Video Solutions for Media Companies",
+            "sources": [
+              {
+                "id": "1_1h1vsv3z_dash",
+                "mimeType": "application/dash+xml",
+                "url": "http://cfvod.kaltura.com/dasha/p/1851571/sp/185157100/serveFlavor/entryId/0_pl5lbfo0/v/2/flavorId/0_,zwq3l44r,otmaqpnf,ywkmqnkg,/forceproxy/true/name/a.mp4.urlset/manifest.mpd"
+              }
+            ]
+          },
+
+          "mp4": {
+            "duration": 102000,
+            "id": "1_1h1vsv3z",
+            "name": "MP4: Kaltura Video Solutions for Media Companies",
+            "sources": [
+              {
+                "id": "1_1h1vsv3z_mp4",
+                "mimeType": "video/mp4",
+                "url":"https://preprod-mediago.s3.amazonaws.com/magikapp/com-kaltura-magikapp/7 Easy Chicken Dinners.mp4"
+              }
+            ]
+
+          },
+
+          "hls": {
+            "duration": 102000,
+            "id": "1_1h1vsv3z",
+            "name": "HLS: Kaltura Video Solutions for Media Companies",
+            "sources": [
+              {
+                "id": "1_1h1vsv3z_hls",
+                "mimeType": "application/x-mpegURL",
+                "url": "http://cdnapi.kaltura.com/p/1774581/sp/177458100/playManifest/entryId/1_tzhsuqij/format/applehttp/tags/ipad/protocol/http/f/a.m3u8"
+              }
+            ]
+          },
+
+          "live": {
+            "duration": 102000,
+            "id": "1_1h1vsv3z",
+            "name": "HLS: Kaltura Video Solutions for Media Companies",
+            "sources": [
+              {
+                "id": "1_1h1vsv3z_hls",
+                "mimeType": "application/x-mpegURL",
+                "url": "http://il-wowza-centos-01.dev.kaltura.com:8080/live/hls/p/1091/e/0_f8re4ujs/t/PaQ_1V7wLekxRZGfgZMM8w/index-s32.m3u8"
+              }
+            ]
+          },
+
+          "liveDVR": {
+            "duration": 102000,
+            "id": "1_1h1vsv3z",
+            "name": "HLS: Kaltura Video Solutions for Media Companies",
+            "sources": [
+              {
+                "id": "1_1h1vsv3z_hls",
+                "mimeType": "application/x-mpegURL",
+                "url": "http://il-wowza-centos-01.dev.kaltura.com:8080/live/hls/p/1091/e/0_cb9k71rb/t/KQT69d74Ls5IGXrkjtAABQ/index-s32.m3u8"
+              }
+            ]
+          }
+
+        }
+
+        
+      }
+    },
+    "playerConfig": {
+      "media": {
+        "autoPlay": false,
+        "startPosition": 0
+      },
+      "plugins": [
+        {
+          "pluginName": "KalturaStats",
+          "params": {
+            "sessionId": "b3460681-b994-6fad-cd8b-f0b65736e837",
+            "uiconfId":24997472,
+            "baseUrl": "https://stats.kaltura.com/api_v3/index.php",
+            "partnerId":1281471,
+            "timerInterval":30000
+          }
+        },
+        {
+          "pluginName": "Youbora",
+          "params": {
+            "youboraConfig":{
+              "accountCode": "kalturatest",
+              "username":"QA front",
+              "haltOnError": true,
+              "enableAnalytics":true
+            },
+            "media":{
+              "title":"QA Front media",
+              "isLive": true
+            },
+            "ads":{
+              "adsExpected": false,
+              "title":"qa front awsome ad",
+              "campaign":"great campaing"
+            },
+            "properties":{
+              "genre": "action",
+              "type":"video",
+              "transaction_type":"great transaction type",
+              "year":"2000",
+              "cast":"joe joe",
+              "director":"henry",
+              "owner":"qa",
+              "parental":"not needed",
+              "price":"30",
+              "rating":"good one",
+              "audioType":"kaltura",
+              "audioChannels":"english",
+              "device":"android",
+              "quality":"high"
+            },
+            "extraParams":{
+              "param2":"parameter 2",
+              "param3":"parameter 3"
+            }
+          }
+        }
+      ],
+
+
+      "addons": [
+
+        {
+
+          "addonName":"googleCast",
+          "params": {
+
+            "receiverEnvironmentType":"ovp",
+            "params": {
+
+              "entryId":"0_wifqaipd",
+              "adTagURL":"",
+              "mwEmbedURL":"",
+              "partnerId":"1091",
+              "uiconfId":"15191170",
+              "ks":"",
+              "mediaMetadata":{
+
+                "imageUrls":[
+
+                  {
+                    "URL":"https://commondatastorage.googleapis.com/gtv-videos-bucket/CastVideos/images/780x1200/BigBuckBunny-780x1200.jpg",
+                    "width":780,
+                    "height":1200
+                  }
+
+                ],
+
+
+                "title":"Sintel",
+                "subtitle":"Blender foundation"
+
+
+
+              }
+
+
+            }
+
+
+
+
+          }
+
+
+        }
+
+      ]
+
+
+
+
+
+    }
+  }
+}

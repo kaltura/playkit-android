@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimary">#FFFF</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+
+
+    <color name="one_image_description_background">#D9ECECEC</color>
+    <color name="one_image_description_text_title_color">#723f5f</color>
+    <color name="one_image_description_text_sub_title_color">#4d4d4d</color>
+
+    <color name="selected_menu_item_bg">#373737</color>
+    <color name="white">#ffffff</color>
+    <color name="menuBackgroud">#323232</color>
+    <color name="menuTextColor">#838383</color>
+
 </resources>

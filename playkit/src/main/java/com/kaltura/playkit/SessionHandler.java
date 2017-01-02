@@ -2,8 +2,8 @@ package com.kaltura.playkit;
 
 import android.support.annotation.StringDef;
 
-import com.kaltura.playkit.backend.SessionProvider;
-import com.kaltura.playkit.backend.base.BaseSessionProvider;
+import com.connect.backend.SessionProvider;
+import com.connect.backend.base.BaseSessionProvider;
 
 import java.lang.annotation.Retention;
 import java.util.HashMap;

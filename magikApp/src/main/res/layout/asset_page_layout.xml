@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingTop="?actionBarSize">
+
+    <include layout="@layout/activity_main" />
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="14dp"
+            android:layout_marginStart="14dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/asset_title"
+                android:layout_width="match_parent"
+                android:layout_height="66dp"
+                android:layout_marginBottom="12dp"
+                android:layout_marginTop="10dp"
+                android:textColor="#723f5f"
+                android:textSize="26sp" />
+
+            <TextView
+                android:id="@+id/asset_sub_title"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:textColor="#666666"
+                android:textSize="14sp" />
+
+            <com.kaltura.magikapp.magikapp.asset_page.SecondaryButtons
+                android:id="@+id/asset_secondary_buttons_container"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="16dp"
+                android:layout_marginTop="16dp"
+                android:background="@android:color/transparent"
+                />
+
+            <TextView
+                android:id="@+id/asset_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:layout_marginBottom="20dp"/>
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

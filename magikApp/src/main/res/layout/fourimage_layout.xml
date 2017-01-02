@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:paddingStart="12dp"
+              android:paddingEnd="12dp"
+              android:id="@+id/container"
+              android:background="@drawable/bgr1"
+>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="24dp">
+
+        <TextView
+            android:id="@+id/four_image_title1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/one_image_description_text_title_color"
+            android:textSize="20sp"
+        />
+
+        <TextView
+            android:id="@+id/four_image_title2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/one_image_description_text_sub_title_color"
+            android:textSize="20dp"
+        />
+
+    </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/fourimage_grid"
+        android:layout_gravity="center"
+
+    />
+    <!--android:background="@drawable/fourimage_item_border"-->
+
+</LinearLayout>

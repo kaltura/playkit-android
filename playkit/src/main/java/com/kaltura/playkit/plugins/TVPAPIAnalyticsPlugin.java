@@ -1,14 +1,14 @@
 package com.kaltura.playkit.plugins;
 
+import com.connect.backend.tvpapi.services.MediaMarkService;
+import com.connect.utils.OnRequestCompletion;
+import com.connect.utils.RequestBuilder;
+import com.connect.utils.ResponseElement;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.OttEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
-import com.kaltura.playkit.backend.tvpapi.MediaMarkService;
-import com.kaltura.playkit.connect.OnRequestCompletion;
-import com.kaltura.playkit.connect.RequestBuilder;
-import com.kaltura.playkit.connect.ResponseElement;
 
 
 /**
