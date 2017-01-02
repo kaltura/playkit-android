@@ -31,11 +31,13 @@ public interface ToolbarMediator {
 
     void setToolbarLogo(Drawable logo);
 
-    void setHomeButton(@ToolbarHomeButton int homeButton);
-
     void setToolbarActionListener(ToolbarActionListener listener);
 
+    void setToolbarColor(int color);
+
     ToolbarMediator.ToolbarAction getHomeButton();
+
+    void setHomeButton(@ToolbarHomeButton int button, Drawable[] drawables);
 
     void onToolbarMenuAction(int id);
 

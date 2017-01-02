@@ -39,12 +39,17 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
     public MenuMediator mMenuMediator;
     private ToolbarMediator mToolbarMediator;
     protected CoordinatorLayout mCoordMainContainer;
-//    protected CollapsingToolbarLayout mCollapsingToolbar;
     protected android.support.v4.app.FragmentManager mFragmentManager;
     protected ProgressBar mWaitProgress;
     protected int mLastCollapsingLayoutColor = -1;
     private SplashFragment splashFragment;
 
+    private Theme_Type theme = Theme_Type.COLA;
+    public enum Theme_Type {
+        SPORT,
+        COLA,
+        FOOD
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +74,7 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
 
         Drawable icon = menu.getItem(0).getIcon();
         icon.mutate();
-        icon.setColorFilter(Color.DKGRAY, PorterDuff.Mode.SRC_IN);
+        icon.setColorFilter(theme == Theme_Type.FOOD? Color.DKGRAY: Color.WHITE, PorterDuff.Mode.SRC_IN);
 
         mToolbarMediator.setToolbarMenu(menu);
 
@@ -89,6 +94,10 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
         getFragmentManager().beginTransaction().add(R.id.activity_scrolling_content, getTemplate()).commit();
     }
 
+    public Theme_Type getCurrentTheme(){
+        return theme;
+    }
+
     protected void initComponents() {
         ActivityComponentsInjector injector = getComponentsInjector();// create function for the injector and change it in users activity
 
@@ -96,7 +105,17 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
 
         mToolbarMediator = injector.getToolbar(this);// new TopToolbarMediator(this, R.id.toolbar, this);
         mToolbarMediator.setToolbarActionListener(this);
-        mToolbarMediator.setToolbarLogo(getResources().getDrawable(R.drawable.logo_app));
+        switch (theme){
+            case FOOD:
+                mToolbarMediator.setToolbarLogo(getResources().getDrawable(R.drawable.logo_app));
+                break;
+            case COLA:
+                mToolbarMediator.setToolbarLogo(getResources().getDrawable(R.drawable.coca_cola_logo));
+                break;
+            case SPORT:
+                mToolbarMediator.setToolbarLogo(getResources().getDrawable(R.drawable.logo_app));
+                break;
+        }
 
         mCoordMainContainer = (CoordinatorLayout) findViewById(R.id.activity_scrolling);
 //        mCollapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
@@ -117,16 +136,6 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
 
     protected void initOthers() {
         mFragmentManager = getSupportFragmentManager();
-
-
-    }
-
-    @Override
-    public void onBackPressed() {
-        /*if(splashFragment.isVisible()){
-            splashFragment.dismiss();
-        }*/
-        super.onBackPressed();
     }
 
     @Override
@@ -140,14 +149,6 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
                 onBackPressed();
                 break;
         }
-    }
-
-    protected boolean closeMenu() {
-        if (mMenuMediator.closeDrawer()) {
-            mToolbarMediator.setHomeButton(ToolbarMediator.BUTTON_MENU);
-            return true;
-        }
-        return false;
     }
 
     protected boolean backOnStack() {
@@ -195,9 +196,21 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
     }
 
     protected int[] getCollapsingFromToBackColors(boolean transparent) {
+        int color = -1;
+        switch (theme){
+            case FOOD:
+                color = Color.WHITE;
+                break;
+            case COLA:
+                color = Color.RED;
+                break;
+            case SPORT:
+                color = Color.GREEN;
+                break;
+        }
         int[] colors = new int[2];
-        colors[0] = transparent ? Color.WHITE : Color.TRANSPARENT;
-        colors[1] = transparent ? Color.TRANSPARENT : Color.WHITE;
+        colors[0] = transparent ? color : Color.TRANSPARENT;
+        colors[1] = transparent ? Color.TRANSPARENT : color;
         return colors;
     }
 
@@ -220,7 +233,7 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
             @Override
             public void onAnimationUpdate(ValueAnimator animator) {
                 int animatedColor = (int) animator.getAnimatedValue();
-//                mCollapsingToolbar.setBackgroundColor(animatedColor);
+                mToolbarMediator.setToolbarColor(animatedColor);
                 if (applyTo != null) {
                     for (View view : applyTo) {
                         view.setBackgroundColor(animatedColor);
@@ -259,7 +272,13 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
 
     @Override
     public void setToolbarHomeButton(@ToolbarMediator.ToolbarHomeButton int button) {
-        mToolbarMediator.setHomeButton(button);
+        Drawable[] drawables = new Drawable[2];
+        drawables[0] = getResources().getDrawable(R.mipmap.ic_action_navigation_arrow_back);
+        drawables[0].setColorFilter(theme == Theme_Type.FOOD? Color.DKGRAY : Color.WHITE, PorterDuff.Mode.SRC_IN);
+        drawables[1] = getResources().getDrawable(R.mipmap.menu_icon_tablet);
+        drawables[1].setColorFilter(theme == Theme_Type.FOOD? Color.DKGRAY : Color.WHITE, PorterDuff.Mode.SRC_IN);
+
+        mToolbarMediator.setHomeButton(button, drawables);
     }
 
     @Override
