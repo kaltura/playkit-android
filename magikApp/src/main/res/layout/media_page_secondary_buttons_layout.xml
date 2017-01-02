@@ -1,74 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="@dimen/asset_page_description_height"
-    android:orientation="vertical"
-    android:gravity="center"
-    >
+    android:gravity="start|center_vertical"
+    android:orientation="horizontal">
 
-    <LinearLayout
+    <com.kaltura.magikapp.magikapp.asset_page.RoundButton
+        android:id="@+id/helen_round_button_comment_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:gravity="center"
-        android:orientation="horizontal">
+        android:layout_marginEnd="2dp"
+        app:button_size="Medium"
+        app:image_not_pressed="@mipmap/ic_mail"
+        app:image_pressed="@mipmap/ic_mail" />
 
-        <com.kaltura.mediago.fragments.helen.views.roundbutton.RoundButton
-            android:id="@+id/helen_round_button_comment_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            android:layout_marginStart="5dp"
-            app:image_not_pressed="@mipmap/ic_mail"
-            app:image_pressed="@mipmap/ic_mail"
-            app:button_size="Medium"
-        />
-
-        <TextView
-            android:id="@+id/helen_round_button_comment_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Be the first to comment" />
-    </LinearLayout>
-
-
-    <LinearLayout
+    <com.kaltura.magikapp.magikapp.asset_page.RoundButton
+        android:id="@+id/helen_round_button_share_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:gravity="center">
+        android:layout_marginEnd="2dp"
+        android:layout_marginStart="2dp"
+        app:button_size="Medium"
+        app:image_not_pressed="@mipmap/ic_face"
+        app:image_pressed="@mipmap/ic_face" />
 
-        <com.kaltura.mediago.fragments.helen.views.roundbutton.RoundButton
-            android:id="@+id/helen_round_button_share_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:image_not_pressed="@mipmap/ic_face"
-            app:image_pressed="@mipmap/ic_face"
-            app:button_size="Medium"
-        />
+    <com.kaltura.magikapp.magikapp.asset_page.RoundButton
+        android:id="@+id/helen_round_button_favorites_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="2dp"
+        android:layout_marginStart="2dp"
+        app:button_size="Medium"
+        app:image_not_pressed="@mipmap/ic_mail"
+        app:image_pressed="@mipmap/ic_mail" />
 
-        <com.kaltura.mediago.fragments.helen.views.roundbutton.RoundButton
-            android:id="@+id/helen_round_button_favorites_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/secondary_buttons_layout_padding_between_buttons"
-            android:layout_marginStart="@dimen/secondary_buttons_layout_padding_between_buttons"
-            app:image_not_pressed="@mipmap/ic_mail"
-            app:image_pressed="@mipmap/ic_mail"
-            app:button_size="Medium"
-        />
+    <com.kaltura.magikapp.magikapp.asset_page.ExpandingRoundButton
+        android:id="@+id/helen_round_button_like_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="2dp"
+        android:layout_marginStart="2dp"
+        app:button_size="Medium"
+        app:image_not_pressed="@mipmap/ic_insta"
+        app:image_pressed="@mipmap/ic_insta" />
 
-        <com.kaltura.mediago.fragments.helen.views.roundbutton.ExpandingRoundButton
-            android:id="@+id/helen_round_button_like_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:image_not_pressed="@mipmap/ic_insta"
-            app:image_pressed="@mipmap/ic_insta"
-            app:button_size="Medium"
-            android:layout_marginEnd="@dimen/asset_page_secondary_like_button_end_margin"
-        />
+    <com.kaltura.magikapp.magikapp.asset_page.ExpandingRoundButton
+        android:id="@+id/helen_round_button_twitter_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="2dp"
+        android:layout_marginStart="2dp"
+        app:button_size="Medium"
+        app:image_not_pressed="@mipmap/ic_twitter"
+        app:image_pressed="@mipmap/ic_twitter" />
 
-    </LinearLayout>
-
-</RelativeLayout>
+</LinearLayout>

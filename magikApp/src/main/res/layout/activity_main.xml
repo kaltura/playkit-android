@@ -22,6 +22,11 @@
             android:orientation="vertical"
             android:layout_gravity="center_vertical"/>
 
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/vidthumb_16x9"
+            android:id="@+id/video_image_thumb"/>
 
         <com.kaltura.magikapp.PlayerControlsView
             android:id="@+id/player_controls_view"

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
@@ -29,9 +30,11 @@ import com.kaltura.magikapp.magikapp.PlayerProvider;
 import com.kaltura.magikapp.magikapp.PresenterController;
 import com.kaltura.magikapp.magikapp.core.FragmentAid;
 import com.kaltura.magikapp.magikapp.toolbar.ToolbarMediator;
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
+import com.kaltura.playkit.PlayerEvent;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -46,6 +49,7 @@ public class AssetPageFragment extends Fragment implements PresenterController.O
 
     private static final PKLog log = PKLog.get("AssetPageFragment");
 
+    private boolean isFirstPlay = true;
     private Context mContext;
     private View mContainer;
     private ViewPager mViewPager;
@@ -113,9 +117,23 @@ public class AssetPageFragment extends Fragment implements PresenterController.O
         mSubTitle.setText(getString(R.string.asset_sub_title_sample));
         mDescription.setText(getString(R.string.asset_description_sample));
 
+        Typeface typeface = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Dosis-Medium.ttf");
+        mTitle.setTypeface(typeface);
+        mDescription.setTypeface(typeface);
+
         mPlayerContainer = (FrameLayout) mContainer.findViewById(R.id.player_container);
         mPlayerView = (LinearLayout) mContainer.findViewById(R.id.player_view);
+
         mPlayerControlsView = (PlayerControlsView) mContainer.findViewById(R.id.player_controls_view);
+        mPlayerControlsView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isFirstPlay) {
+                    isFirstPlay = false;
+                    mContainer.findViewById(R.id.video_image_thumb).setVisibility(View.GONE);
+                }
+            }
+        });
 
         mPlayerControlsController = new PlayerControlsController(mPlayerControlsView, this);
 
@@ -166,11 +184,19 @@ public class AssetPageFragment extends Fragment implements PresenterController.O
                 mPlayer = player;
                 mPlayerConfig = playerConfig;
                 startPlay();
+                mPlayer.addEventListener(new PKEvent.Listener() {
+                    @Override
+                    public void onEvent(PKEvent event) {
+                        if (isFirstPlay) {
+                            isFirstPlay = false;
+                            mContainer.findViewById(R.id.video_image_thumb).setVisibility(View.GONE);
+                        }
+                    }
+                }, PlayerEvent.Type.PLAY);
             }
         });
 
     }
-
 
 
     private void startPlay() {

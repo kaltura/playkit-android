@@ -5,7 +5,7 @@
     android:keepScreenOn="true">
 
 
-    <com.kaltura.playkitdemo.localplayer.LocalPlayerPresenterView
+    <LocalPlayerPresenterView
         android:id="@+id/local_player_presenter"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -16,7 +16,7 @@
         android:background="@android:color/black"/>
 
 
-    <com.kaltura.playkitdemo.cast.CastPresenterView
+    <CastPresenterView
         android:id="@+id/cast_presenter"
         android:layout_width="0dp"
         android:layout_height="0dp"
