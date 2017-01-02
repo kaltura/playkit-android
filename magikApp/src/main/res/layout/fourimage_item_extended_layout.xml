@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:paddingStart="14dp">
+
+    <include
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        layout="@layout/fourimage_item_layout"/>
+
+
+    <TextView
+        android:id="@+id/oneimage_image_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Dynamite plant test"
+        android:textStyle="bold"
+        android:textColor="@color/one_image_description_text_title_color"
+        android:textSize="16sp"
+    />
+
+    <TextView
+        android:id="@+id/oneimage_image_sub_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="April 11, 2016 test"
+        android:textColor="@color/one_image_description_text_sub_title_color"
+        android:textSize="13sp"
+    />
+
+</LinearLayout>

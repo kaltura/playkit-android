@@ -1,10 +1,10 @@
 package com.kaltura.magikapp.magikapp.homepage;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,16 +12,17 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
 import com.kaltura.magikapp.R;
 import com.kaltura.magikapp.magikapp.homepage.binders.DataBinder;
+import com.kaltura.magikapp.magikapp.homepage.binders.ExtendedItemGridAdapter;
+import com.kaltura.magikapp.magikapp.homepage.binders.FourImageDataBinder;
+import com.kaltura.magikapp.magikapp.homepage.binders.GridAdapter;
 import com.kaltura.magikapp.magikapp.homepage.binders.OneImageDataBinder;
+import com.kaltura.magikapp.magikapp.homepage.recycler.RowSpaceItemDecoration;
 import com.kaltura.magikapp.magikapp.homepage.recycler.Template1RecyclerAdapter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -42,10 +43,10 @@ public class Template1Fragment extends Fragment {
 
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        mActivity = (FragmentActivityMediator) context;
-        mContext = context;
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mActivity = (FragmentActivityMediator) activity;
+        mContext = activity;
     }
 
     public static Fragment newInstance() {
@@ -69,8 +70,8 @@ public class Template1Fragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mToolbar = (Toolbar) mContainer.findViewById(R.id.toolbar);
-        mActivity.setToolbar(mToolbar);
+//        mToolbar = (Toolbar) mContainer.findViewById(R.id.toolbar);
+//        mActivity.setToolbar(mToolbar);
 
         mRecyclerView = (RecyclerView) mContainer.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
@@ -80,58 +81,15 @@ public class Template1Fragment extends Fragment {
         List<DataBinder> binders = new ArrayList<>();
         binders.add(oneImageBinder);
 
+        FourImageDataBinder fourImageDataBinder = new FourImageDataBinder(mContext, new GridAdapter(mContext, FourImageDataBinder.URLS));
+        binders.add(fourImageDataBinder);
+
+        FourImageDataBinder fourImageDataBinder2 = new FourImageDataBinder(mContext, new ExtendedItemGridAdapter(mContext, FourImageDataBinder.URLS), R.drawable.bg);
+        binders.add(fourImageDataBinder2);
+
         mRecyclerView.setAdapter(new Template1RecyclerAdapter(mContext, binders));
+        mRecyclerView.addItemDecoration(new RowSpaceItemDecoration(30));
 
-//        mViewPager = (ViewPager) mContainer.findViewById(R.id.header_view_pager);
-//        ToolbarHeaderImageAdapter headerPagerAdapter = new ToolbarHeaderImageAdapter(mContext, mViewPagerUrls);
-//        mViewPager.setAdapter(headerPagerAdapter);
-
-    }
-
-
-
-    private class ToolbarHeaderImageAdapter extends PagerAdapter {
-
-        private Context mContext;
-        private LayoutInflater mInflater;
-        private List<String> mUrls;
-
-
-        public ToolbarHeaderImageAdapter(Context context, String[] urls) {
-            this.mContext = context;
-            mInflater = LayoutInflater.from(context);
-            mUrls = new ArrayList<>(Arrays.asList(urls));
-        }
-
-        @Override
-        public Object instantiateItem(ViewGroup container, int position) {
-            View view = mInflater.inflate(R.layout.template1_view_pager_item, container);
-            ImageView imageView = (ImageView) view.findViewById(R.id.view_pager_image);
-
-            Glide.with(mContext).load(mUrls.get(position)).into(imageView);
-
-            return container;
-        }
-
-        @Override
-        public int getCount() {
-            return mUrls.size();
-        }
-
-        @Override
-        public boolean isViewFromObject(View view, Object object) {
-            return false;
-        }
-
-        @Override
-        public void destroyItem(ViewGroup container, int position, Object object) {
-            container.removeView((View) object);
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return "vladi";
-        }
     }
 
 }
