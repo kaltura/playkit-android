@@ -85,15 +85,18 @@ public class TopToolbarMediator implements View.OnClickListener, ToolbarMediator
     }
 
     @Override
-    public void setHomeButton(@ToolbarHomeButton int button) {
+    public void setToolbarColor(int color){
+        mToolbar.setBackgroundColor(color);
+    }
+
+    @Override
+    public void setHomeButton(@ToolbarHomeButton int button, Drawable[] drawables) {
         switch (button) {
             case ToolbarMediator.BUTTON_BACK:
-                //setSortMenuMode(false);
-                mToolbar.setNavigationIcon(R.mipmap.ic_action_navigation_arrow_back);
+                mToolbar.setNavigationIcon(drawables[0]);
                 break;
             case ToolbarMediator.BUTTON_MENU:
-                //setSortMenuMode(false);
-                mToolbar.setNavigationIcon(R.mipmap.menu_icon_tablet);
+                mToolbar.setNavigationIcon(drawables[1]);
                 break;
         }
         mToolbarHomeButton = button;

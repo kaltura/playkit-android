@@ -23,6 +23,7 @@ import com.kaltura.magikapp.magikapp.homepage.binders.SimpleGridAdapterTemplate1
 import com.kaltura.magikapp.magikapp.homepage.binders.OneImageDataBinder;
 import com.kaltura.magikapp.magikapp.homepage.recycler.RowSpaceItemDecoration;
 import com.kaltura.magikapp.magikapp.homepage.recycler.Template1RecyclerAdapter;
+import com.kaltura.magikapp.magikapp.toolbar.ToolbarMediator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +74,7 @@ public class Template1Fragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mFragmentAid.setToolbarTitle("");
         mFragmentAid.changeToolbarLayoutColor(false);
+        mFragmentAid.setToolbarHomeButton(ToolbarMediator.BUTTON_MENU);
 
         mRecyclerView = (RecyclerView) mContainer.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
