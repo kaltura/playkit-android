@@ -35,11 +35,21 @@
                 android:textColor="#666666"
                 android:textSize="14sp" />
 
+            <com.kaltura.magikapp.magikapp.asset_page.SecondaryButtons
+                android:id="@+id/asset_secondary_buttons_container"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="16dp"
+                android:layout_marginTop="16dp"
+                android:background="@android:color/transparent"
+                />
+
             <TextView
                 android:id="@+id/asset_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:layout_marginBottom="20dp"/>
         </LinearLayout>
     </ScrollView>
 
