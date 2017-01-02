@@ -11,6 +11,7 @@ import com.kaltura.magikapp.R;
 
 import java.util.List;
 
+
 /**
  * Created by zivilan on 01/01/2017.
  */

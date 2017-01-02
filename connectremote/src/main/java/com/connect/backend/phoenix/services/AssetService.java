@@ -1,5 +1,7 @@
 package com.connect.backend.phoenix.services;
 
+import android.text.TextUtils;
+
 import com.google.gson.JsonObject;
 import com.connect.backend.phoenix.PhoenixRequestBuilder;
 
@@ -30,6 +32,25 @@ public class AssetService extends PhoenixService {
         getParams.addProperty("with","[{\"type\": \"files\"}]");/*"objectType": "KalturaCatalogWithHolder"*/
 
         return getParams;
+    }
+
+    public static PhoenixRequestBuilder listByChannel(String baseUrl, String ks, int channelId, String sql) {
+        JsonObject params = new JsonObject();
+        params.addProperty("ks", ks);
+        params.addProperty("idEqual", channelId);
+        if(!TextUtils.isEmpty(sql)) {
+            params.addProperty("kSql", sql); //"(and tagName:(:->in)'some tags seperated with comma')
+        }
+        // needed to make sure response will retrieve the media file no matter if apiVersion property supplied or not
+        params.addProperty("with","[{\"type\": \"files\"}]");/*"objectType": "KalturaCatalogWithHolder"*/
+
+        return new PhoenixRequestBuilder()
+                .service("asset")
+                .action("list")
+                .method("POST")
+                .url(baseUrl)
+                .tag("asset-get")
+                .params(params);
     }
 
 }

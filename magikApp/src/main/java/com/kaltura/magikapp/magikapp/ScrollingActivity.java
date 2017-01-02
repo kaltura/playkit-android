@@ -12,6 +12,7 @@ import com.kaltura.magikapp.magikapp.menu.MenuMediator;
 import com.kaltura.magikapp.magikapp.toolbar.ToolbarMediator;
 
 
+
 public class ScrollingActivity extends AppCompatActivity {
 
     public MenuMediator mMenuMediator;

@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 
 import com.kaltura.magikapp.R;
 
+
 /**
  * Created by zivilan on 01/01/2017.
  */
