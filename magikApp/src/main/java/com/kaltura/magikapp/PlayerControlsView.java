@@ -1,7 +1,6 @@
 package com.kaltura.magikapp;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.constraint.ConstraintLayout;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -120,7 +119,6 @@ public class PlayerControlsView extends FrameLayout {
             } else {
                 mPlayPause.setImageResource(R.mipmap.pause);
             }
-            mPlayPause.setColorFilter(Color.MAGENTA);
             mPlayPause.setVisibility(View.VISIBLE);
 
         } else {
