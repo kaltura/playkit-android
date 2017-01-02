@@ -1,6 +1,5 @@
 package com.kaltura.magikapp.magikapp.homepage;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
@@ -14,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.kaltura.magikapp.R;
+import com.kaltura.magikapp.magikapp.core.FragmentAid;
 import com.kaltura.magikapp.magikapp.homepage.binders.DataBinder;
 import com.kaltura.magikapp.magikapp.homepage.binders.ExtendedItemGridAdapter;
 import com.kaltura.magikapp.magikapp.homepage.binders.FourImageDataBinder;
@@ -32,21 +32,21 @@ import java.util.List;
 public class Template1Fragment extends Fragment {
 
     private RecyclerView mRecyclerView;
-    private FragmentActivityMediator mActivity;
-    private Toolbar mToolbar;
     private Context mContext;
     private View mContainer;
     private ViewPager mViewPager;
+    protected FragmentAid mFragmentAid;
+
     private String[] mViewPagerUrls = {"http://cdn.pinchofyum.com/wp-content/uploads/Simple-Mushroom-Penne-eaten-with-fork-600x900.jpg",
             "http://cdn.pinchofyum.com/wp-content/uploads/Dynamite-Plant-Power-Sushi-Bowl-2-2-600x900.jpg",
                "http://cdn.pinchofyum.com/wp-content/uploads/Sweet-Potato-Noodle-Salad-1-6-600x900.jpg" };
 
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        mActivity = (FragmentActivityMediator) activity;
-        mContext = activity;
+    public void onAttach(Activity context) {
+        super.onAttach(context);
+        mFragmentAid = (FragmentAid) context;
+        mContext = context;
     }
 
     public static Fragment newInstance() {
@@ -61,7 +61,8 @@ public class Template1Fragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mContainer = inflater.inflate(R.layout.activity_scrolling_template1, container, false);
+//        mContainer = inflater.inflate(R.layout.activity_scrolling_template1, container, false);
+        mContainer = inflater.inflate(R.layout.activity_scrolling, container, false);
         return mContainer;
 
     }
@@ -69,9 +70,8 @@ public class Template1Fragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-//        mToolbar = (Toolbar) mContainer.findViewById(R.id.toolbar);
-//        mActivity.setToolbar(mToolbar);
+        mFragmentAid.setToolbarTitle("");
+        mFragmentAid.changeToolbarLayoutColor(false);
 
         mRecyclerView = (RecyclerView) mContainer.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
@@ -90,7 +90,12 @@ public class Template1Fragment extends Fragment {
         mRecyclerView.setAdapter(new Template1RecyclerAdapter(mContext, binders));
         mRecyclerView.addItemDecoration(new RowSpaceItemDecoration(30));
 
+//        mViewPager = (ViewPager) mContainer.findViewById(R.id.header_view_pager);
+//        ToolbarHeaderImageAdapter headerPagerAdapter = new ToolbarHeaderImageAdapter(mContext, mViewPagerUrls);
+//        mViewPager.setAdapter(headerPagerAdapter);
+
     }
+
 
 }
 

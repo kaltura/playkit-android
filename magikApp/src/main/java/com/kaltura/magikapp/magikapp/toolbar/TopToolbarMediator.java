@@ -1,11 +1,13 @@
 package com.kaltura.magikapp.magikapp.toolbar;
 
+import android.graphics.drawable.Drawable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.kaltura.magikapp.R;
@@ -26,6 +28,7 @@ public class TopToolbarMediator implements View.OnClickListener, ToolbarMediator
     private ActionBar mToolActionbar;
     private Menu mToolbarMenu;
     private TextView mToolbarTitle;
+    private ImageView mToolbarLogo;
     private ToolbarMediator.ToolbarActionListener mActionListener;
     private @ToolbarHomeButton int mToolbarHomeButton = BUTTON_MENU;
 
@@ -50,8 +53,10 @@ public class TopToolbarMediator implements View.OnClickListener, ToolbarMediator
         mToolActionbar.setDisplayHomeAsUpEnabled(true);
         mToolActionbar.setDisplayShowTitleEnabled(false);
 
-        mToolbarTitle = (TextView) activity.findViewById(R.id.toolbar_title);
-        mToolbarTitle.setOnClickListener(this);
+//        mToolbarTitle = (TextView) activity.findViewById(R.id.toolbar_title);
+//        mToolbarTitle.setOnClickListener(this);
+
+        mToolbarLogo = (ImageView) activity.findViewById(R.id.toolbar_logo);
 
         if (appBarId != -1) {
             mAppBar = (AppBarLayout) activity.findViewById(appBarId);
@@ -72,6 +77,12 @@ public class TopToolbarMediator implements View.OnClickListener, ToolbarMediator
         }
     }
 
+    @Override
+    public void setToolbarLogo(Drawable logo){
+        if (mToolbarLogo != null) {
+            mToolbarLogo.setImageDrawable(logo);
+        }
+    }
 
     @Override
     public void setHomeButton(@ToolbarHomeButton int button) {
@@ -86,6 +97,18 @@ public class TopToolbarMediator implements View.OnClickListener, ToolbarMediator
                 break;
         }
         mToolbarHomeButton = button;
+    }
+
+    @Override
+    public ToolbarMediator.ToolbarAction getHomeButton(){
+        switch (mToolbarHomeButton){
+            case BUTTON_BACK:
+                return ToolbarAction.Back;
+            case BUTTON_MENU:
+                return ToolbarAction.Menu;
+            default:
+                return ToolbarAction.Menu;
+        }
     }
 
     @Override

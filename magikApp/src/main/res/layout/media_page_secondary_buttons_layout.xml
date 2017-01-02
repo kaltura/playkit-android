@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/asset_page_description_height"
+    android:orientation="vertical"
+    android:gravity="center"
+    >
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <com.kaltura.mediago.fragments.helen.views.roundbutton.RoundButton
+            android:id="@+id/helen_round_button_comment_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:layout_marginStart="5dp"
+            app:image_not_pressed="@drawable/ic_comment_outline"
+            app:image_pressed="@drawable/ic_comment_fill"
+            app:button_size="Medium"
+        />
+
+        <TextView
+            android:id="@+id/helen_round_button_comment_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/media_page_be_the_first_to_comment" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:gravity="center">
+
+        <com.kaltura.mediago.fragments.helen.views.roundbutton.RoundButton
+            android:id="@+id/helen_round_button_share_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:image_not_pressed="@drawable/ic_share_outline"
+            app:image_pressed="@drawable/ic_share_outline"
+            app:button_size="Medium"
+        />
+
+        <com.kaltura.mediago.fragments.helen.views.roundbutton.RoundButton
+            android:id="@+id/helen_round_button_favorites_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/secondary_buttons_layout_padding_between_buttons"
+            android:layout_marginStart="@dimen/secondary_buttons_layout_padding_between_buttons"
+            app:image_not_pressed="@drawable/ic_add_favorits_outline"
+            app:image_pressed="@drawable/ic_added_favorits_fill"
+            app:button_size="Medium"
+        />
+
+        <com.kaltura.mediago.fragments.helen.views.roundbutton.ExpandingRoundButton
+            android:id="@+id/helen_round_button_like_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:image_not_pressed="@drawable/ic_like_outline"
+            app:image_pressed="@drawable/ic_like_fill"
+            app:button_size="Medium"
+            android:layout_marginEnd="@dimen/asset_page_secondary_like_button_end_margin"
+        />
+
+    </LinearLayout>
+
+</RelativeLayout>
