@@ -20,7 +20,10 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 
+import com.connect.backend.magikapp.data.Configuration;
+import com.kaltura.magikapp.MagikApplication;
 import com.kaltura.magikapp.R;
+import com.kaltura.magikapp.SplashFragment;
 import com.kaltura.magikapp.magikapp.core.ActivityComponentsInjector;
 import com.kaltura.magikapp.magikapp.core.ComponentsInjector;
 import com.kaltura.magikapp.magikapp.core.FragmentAid;
@@ -32,7 +35,7 @@ import com.kaltura.magikapp.magikapp.toolbar.ToolbarMediator;
 import static android.view.View.VISIBLE;
 
 
-public class ScrollingActivity extends AppCompatActivity implements FragmentAid, ToolbarMediator.ToolbarActionListener, PluginProvider {
+public class ScrollingActivity extends AppCompatActivity implements FragmentAid, ToolbarMediator.ToolbarActionListener, PluginProvider, MagikApplication.ConfigurationsReady {
 
     public MenuMediator mMenuMediator;
     private ToolbarMediator mToolbarMediator;
@@ -41,18 +44,23 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
     protected FragmentManager mFragmentManager;
     protected ProgressBar mWaitProgress;
     protected int mLastCollapsingLayoutColor = -1;
+    private SplashFragment splashFragment;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        setContentView(R.layout.base_drawer);
 
+        // TODO: show spinner!
+        MagikApplication.get().registerToConfigurationReady(this);
+    }
+
+    private void startLoadingActivity() {
+        setContentView(R.layout.base_drawer);
         initComponents();
         inflateLayout();
         initOthers();
-
     }
 
     @Override
@@ -110,6 +118,16 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
 
     protected void initOthers() {
         mFragmentManager = getSupportFragmentManager();
+
+
+    }
+
+    @Override
+    public void onBackPressed() {
+        /*if(splashFragment.isVisible()){
+            splashFragment.dismiss();
+        }*/
+        super.onBackPressed();
     }
 
     @Override
@@ -243,5 +261,28 @@ public class ScrollingActivity extends AppCompatActivity implements FragmentAid,
     @Override
     public void setToolbarHomeButton(@ToolbarMediator.ToolbarHomeButton int button) {
         mToolbarMediator.setHomeButton(button);
+    }
+
+    @Override
+    public void onReady(Configuration configuration) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                splashFragment = SplashFragment.newInstance(MagikApplication.get().getConfigurations().getSplashVideo());
+                splashFragment.show(getSupportFragmentManager(), "SPLASH");
+                ScrollingActivity.this.getWindow().getDecorView().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        splashFragment.dismiss();
+                        startLoadingActivity();
+                    }
+                }, 10000);
+            }
+        });
+    }
+
+    @Override
+    public void onLoadFailure() {
+        finish();
     }
 }

@@ -29,7 +29,7 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        switch (viewType) {
+        /*switch (viewType) {
             case MenuItem.TYPE_TITLE: {
                 View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item_menu_title, viewGroup, false);
                 MenuTitleViewHolder holder = new MenuTitleViewHolder(view);
@@ -40,8 +40,11 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
                 MenuItemViewHolder holder = new MenuItemViewHolder(view);
                 return holder;
             }
-        }
-        return null;
+        }*/
+        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item_menu_item, viewGroup, false);
+        MenuItemViewHolder holder = new MenuItemViewHolder(view);
+        return holder;
+        //return null;
     }
 
     public void clearSelection() {
@@ -52,22 +55,23 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         final MenuItem menuItem = mMenuItems.get(position);
-        switch (menuItem.getMenuType()) {
+        initMenuItem((MenuItemViewHolder) holder, menuItem, position);
+
+        /*switch (menuItem.getMenuType()) {
             case MenuItem.TYPE_TITLE:
                 initTitle((MenuTitleViewHolder) holder, menuItem, position);
                 break;
             case MenuItem.TYPE_MENU_ITEM:
                 initMenuItem((MenuItemViewHolder) holder, menuItem, position);
                 break;
-        }
+        }*/
     }
 
     private void initMenuItem(final MenuItemViewHolder holder, final MenuItem menuItem, final int position) {
-        holder.itemName.setText(menuItem.getMenuName());
-        holder.indicator.setVisibility(menuItem.isItemSelected() ? View.VISIBLE : View.INVISIBLE);
-//        holder.indicator.setBackgroundColor(UnifiedConfigurationManager.getInstance().getCurrentBrandColor());
-        holder.itemIcon.setImageResource(menuItem.getResIcon());
-        holder.mainLayout.setBackgroundResource(menuItem.isItemSelected() ? R.color.selected_menu_item_bg : R.color.menuBackgroud);
+        holder.itemName.setText(menuItem.getTitle());
+        holder.indicator.setVisibility(menuItem.isSelected() ? View.VISIBLE : View.INVISIBLE);
+        //holder.itemIcon.setImageResource(menuItem.getResIcon());
+        holder.mainLayout.setBackgroundResource(menuItem.isSelected() ? R.color.selected_menu_item_bg : R.color.menuBackgroud);
         holder.mainLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -97,19 +101,20 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
         if(mSelectedMenuItem > -1) {
             MenuItem menuItem = mMenuItems.get(mSelectedMenuItem);
             if (menuItem != null) {
-                menuItem.setItemSelected(selected);
+                menuItem.setSelected(selected);
                 notifyItemChanged(mSelectedMenuItem);
             }
         }
     }
 
     private void initTitle(MenuTitleViewHolder holder, MenuItem menuItem, int position) {
-        holder.groupTitle.setText(menuItem.getMenuName());
+        holder.groupTitle.setText(menuItem.getTitle());
     }
 
     @Override
     public int getItemViewType(int position) {
-        return mMenuItems.get(position).getMenuType();
+        //return mMenuItems.get(position).getId();
+        return position;
     }
 
     @Override

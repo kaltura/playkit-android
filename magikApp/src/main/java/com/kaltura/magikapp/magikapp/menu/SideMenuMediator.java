@@ -3,7 +3,6 @@ package com.kaltura.magikapp.magikapp.menu;
 import android.app.Activity;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.text.TextUtils;
 
 import com.kaltura.magikapp.magikapp.core.PluginProvider;
 
@@ -62,13 +61,13 @@ public class SideMenuMediator implements MenuMediator, SideMenuListener{
 
     @Override
     public void onMenuClick(MenuItem menuItem) {
-        mSideMenu.getMenuAdapter().onMenuItemClick(menuItem, MenuHelper.getPositionByMenuType(menuItem.getStringType()));
+        mSideMenu.getMenuAdapter().onMenuItemClick(menuItem, MenuHelper.getMenuItemPosition(menuItem.getId()));
     }
 
     @Override
     public boolean onMenuClicked(MenuItem menuItem) {
 
-        switch (menuItem.getStringType()) {
+        switch (menuItem.getId()) {
 
             default:
                 closeDrawer();
@@ -80,10 +79,8 @@ public class SideMenuMediator implements MenuMediator, SideMenuListener{
     }
 
     @Override
-    public void update(String menuType) {
-        if(!TextUtils.isEmpty(menuType)) {
-            mSideMenu.setMenuSelectionByType(menuType);
-        }
+    public void update(String id) {
+            mSideMenu.setMenuSelectionById(id);
     }
 
     @Override

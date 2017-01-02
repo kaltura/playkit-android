@@ -59,7 +59,7 @@ public class Configuration extends BaseResult {
     }
 
     public @ThemeType String getThemeType(){
-        return theme.type;
+        return theme != null ? theme.type : null;
     }
 
     public ArrayList<MenuItemConf> getMenu(){
@@ -70,6 +70,9 @@ public class Configuration extends BaseResult {
         return (content.menu != null && idx >= 0 && content.menu.size() > idx) ? content.menu.get(idx) : null;
     }
 
+    public String getSplashVideo() {
+        return metadata != null ? metadata.splashScreen : null;
+    }
 
 
     private class ThemeConf {
@@ -104,10 +107,19 @@ public class Configuration extends BaseResult {
         String applicationId;
     }
 
-    private class MenuItemConf {
-        String name;
-        String title;
-        ArrayList<GroupConf> groups;
+    public class MenuItemConf {
+        public String name;
+        public String title;
+        public ArrayList<GroupConf> groups;
+    }
+
+    public ArrayList<GroupConf> getMenuContent(String id){
+        for(MenuItemConf menuItemConf : content.menu){
+            if(menuItemConf.name.equals(id)){
+                return menuItemConf.groups;
+            }
+        }
+        return null;
     }
 
     class GroupConf{

@@ -15,7 +15,7 @@ import com.kaltura.magikapp.R;
  * Created by zivilan on 01/01/2017.
  */
 
-public class SideMenuView extends LinearLayout implements View.OnClickListener, MenuAdapter.MenuItemClickListener{
+public class SideMenuView extends LinearLayout implements View.OnClickListener, MenuAdapter.MenuItemClickListener {
     private RecyclerView mMenu;
     private SideMenuListener mListener;
     private MenuAdapter mMenuAdapter;
@@ -42,21 +42,13 @@ public class SideMenuView extends LinearLayout implements View.OnClickListener, 
         mListener = listener;
     }
 
-    private void init(){
+    private void init() {
         LayoutInflater.from(getContext()).inflate(R.layout.view_side_menu, this);
         mMenu = (RecyclerView) findViewById(R.id.menu);
         mMenu.setLayoutManager(new LinearLayoutManager(getContext()));
         mMenuAdapter = new MenuAdapter(MenuHelper.getInstance().getMenuItems(), this);
         mMenu.setAdapter(mMenuAdapter);
 
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (mListener != null) {
-            MenuItem menuItem = new MenuItem(MenuItem.TYPE_MENU_ITEM, MenuHelper.MenuType.OFFONLINE);
-            mListener.onMenuClicked(menuItem);
-        }
     }
 
     @Override
@@ -71,21 +63,13 @@ public class SideMenuView extends LinearLayout implements View.OnClickListener, 
         return mMenuAdapter;
     }
 
-    public void setMenuSelectionById(int menuId) {
-        if (menuId != -1) {
-            int position = MenuHelper.getInstance().getPositionByMenuId(menuId);
+    public void setMenuSelectionById(String menuId) {
+        int position = MenuHelper.getInstance().getMenuItemPosition(menuId);
+
+        if (position > -1) {
             setMenuSelection(position);
         }
     }
-
-    public void setMenuSelectionByType(String menuType) {
-        int position = MenuHelper.getPositionByMenuType(menuType);
-
-        if(position != -1){
-            setMenuSelection(position);
-        }
-    }
-
 
     public void setMenuSelection(int selection) {
         if (selection >= SELECTION_NONE && mMenuAdapter != null && selection < mMenuAdapter.getItemCount()) {
@@ -93,5 +77,9 @@ public class SideMenuView extends LinearLayout implements View.OnClickListener, 
             if (selection > SELECTION_NONE)
                 mLastSelectedPosition = selection;
         }
+    }
+
+    @Override
+    public void onClick(View view) {
     }
 }
