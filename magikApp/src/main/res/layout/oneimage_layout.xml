@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+
+
+    <ImageView
+        android:id="@+id/oneimage_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="bottom"
+        android:paddingStart="12dp"
+        android:paddingBottom="8dp"
+        android:paddingTop="10dp"
+        android:background="@color/one_image_description_background"
+        >
+
+        <TextView
+            android:id="@+id/oneimage_image_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dynamite plant test"
+            android:textStyle="bold"
+            android:textColor="@color/one_image_description_text_title_color"
+            android:textSize="20sp"
+        />
+
+
+        <TextView
+            android:id="@+id/oneimage_image_sub_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="April 11, 2016 test"
+            android:textColor="@color/one_image_description_text_sub_title_color"
+            android:textSize="15sp"
+        />
+
+    </LinearLayout>
+
+</FrameLayout>

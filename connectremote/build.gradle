@@ -5,9 +5,9 @@ android {
     buildToolsVersion "25.0.0"
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 17
         targetSdkVersion 25
-        versionCode 3
+        versionCode 4
         versionName "0.0.6"
     }
     buildTypes {
@@ -32,5 +32,3 @@ dependencies {
 
 }
 
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"

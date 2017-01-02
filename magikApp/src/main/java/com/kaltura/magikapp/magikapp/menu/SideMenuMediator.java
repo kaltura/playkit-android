@@ -5,6 +5,8 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.text.TextUtils;
 
+import com.kaltura.magikapp.magikapp.core.PluginProvider;
+
 /**
  * Created by zivilan on 01/01/2017.
  */
@@ -12,18 +14,19 @@ import android.text.TextUtils;
 public class SideMenuMediator implements MenuMediator, SideMenuListener{
 
     private static final int DRAWER_GRAVITY = GravityCompat.START;
-    public Activity mActivity;
+    public PluginProvider mProvider;
     public DrawerLayout mDrawerLayout;
-
+    public Activity mActivity;
 
     private SideMenuView mSideMenu;
 
-    public SideMenuMediator(Activity activity, int drawerId, int menuId) {
-        mActivity = activity;
+    public SideMenuMediator(PluginProvider activity, int drawerId, int menuId) {
+        mProvider = activity;
         initMenu(menuId, drawerId);
     }
 
     private void initMenu(int menuId, int drawerId) {
+        mActivity = mProvider.getActivity();
         mDrawerLayout = (DrawerLayout)mActivity.findViewById(drawerId);
         mSideMenu = (SideMenuView) mActivity.findViewById(menuId);
         mSideMenu.setMenuListener(this);

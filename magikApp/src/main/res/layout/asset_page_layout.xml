@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <include
+        layout="@layout/activity_main"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:id="@+id/asset_text_container">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="337dp"
+            android:id="@+id/asset_title" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:id="@+id/asset_sub_title" />
+
+        <com.kaltura.magikapp.magikapp.asset_page.SecondaryButtons
+            android:layout_height="40dp"
+            android:layout_width="match_parent"
+            android:id="@+id/asset_secondary_buttons"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/asset_description"/>
+
+    </LinearLayout>
+
+
+</android.support.constraint.ConstraintLayout>
