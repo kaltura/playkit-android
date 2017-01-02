@@ -18,14 +18,14 @@ import java.util.List;
  * Created by vladir on 01/01/2017.
  */
 
-public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
+public class SimpleGridAdapterTemplate1 extends RecyclerView.Adapter<SimpleGridAdapterTemplate1.ViewHolder> {
 
     private Context mContext;
     private List<String> mUrls;
     int[] mDrawableRes;
     private Template1RecyclerAdapter.ItemClick mOnItemClicked;
 
-    public GridAdapter(Context context, int[] drawableRes){
+    public SimpleGridAdapterTemplate1(Context context, int[] drawableRes){
         mContext = context;
         mDrawableRes = drawableRes;
     }
@@ -36,7 +36,7 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
 //    }
 
     @Override
-    public GridAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public SimpleGridAdapterTemplate1.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(mContext).inflate(R.layout.fourimage_item_layout, parent, false);
         view.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -45,11 +45,11 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
             }
         });
 
-        return new GridAdapter.ViewHolder(view);
+        return new SimpleGridAdapterTemplate1.ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(GridAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(SimpleGridAdapterTemplate1.ViewHolder holder, int position) {
         Glide.with(mContext).load(mDrawableRes[position]).centerCrop().crossFade().into(holder.mImageView);
     }
 

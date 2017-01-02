@@ -1,4 +1,4 @@
-package com.kaltura.magikapp.magikapp.homepage;
+package com.kaltura.magikapp.magikapp.homepage.recycler;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -17,21 +17,18 @@ import com.kaltura.magikapp.magikapp.asset_page.AssetInfo;
 import com.kaltura.magikapp.magikapp.asset_page.AssetPageFragment;
 import com.kaltura.magikapp.magikapp.core.FragmentAid;
 import com.kaltura.magikapp.magikapp.homepage.binders.DataBinder;
-import com.kaltura.magikapp.magikapp.homepage.binders.ExtendedItemGridAdapter;
-import com.kaltura.magikapp.magikapp.homepage.binders.FourImageDataBinder;
-import com.kaltura.magikapp.magikapp.homepage.binders.SimpleGridAdapterTemplate1;
-import com.kaltura.magikapp.magikapp.homepage.binders.OneImageDataBinder;
-import com.kaltura.magikapp.magikapp.homepage.recycler.RowSpaceItemDecoration;
-import com.kaltura.magikapp.magikapp.homepage.recycler.Template1RecyclerAdapter;
+import com.kaltura.magikapp.magikapp.homepage.binders.FourImagesDataBinderTemplate2;
+import com.kaltura.magikapp.magikapp.homepage.binders.OneImageTemplate2Binder;
+import com.kaltura.magikapp.magikapp.homepage.binders.SimpleGridAdapterTemplate2;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by vladir on 01/01/2017.
+ * Created by vladir on 02/01/2017.
  */
 
-public class Template1Fragment extends Fragment {
+public class Template2Fragment extends Fragment {
 
     private RecyclerView mRecyclerView;
     private Context mContext;
@@ -41,7 +38,7 @@ public class Template1Fragment extends Fragment {
 
     private String[] mViewPagerUrls = {"http://cdn.pinchofyum.com/wp-content/uploads/Simple-Mushroom-Penne-eaten-with-fork-600x900.jpg",
             "http://cdn.pinchofyum.com/wp-content/uploads/Dynamite-Plant-Power-Sushi-Bowl-2-2-600x900.jpg",
-               "http://cdn.pinchofyum.com/wp-content/uploads/Sweet-Potato-Noodle-Salad-1-6-600x900.jpg" };
+            "http://cdn.pinchofyum.com/wp-content/uploads/Sweet-Potato-Noodle-Salad-1-6-600x900.jpg" };
 
 
     @Override
@@ -52,7 +49,7 @@ public class Template1Fragment extends Fragment {
     }
 
     public static Fragment newInstance() {
-        return new Template1Fragment();
+        return new Template2Fragment();
     }
 
     @Override
@@ -77,29 +74,19 @@ public class Template1Fragment extends Fragment {
         mRecyclerView = (RecyclerView) mContainer.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
 
-        OneImageDataBinder oneImageBinder = new OneImageDataBinder(mContext);
-        oneImageBinder.setData(mViewPagerUrls[0], "Dynamite plant test", "April 11, 2016 test");
+        OneImageTemplate2Binder oneImageBinder = new OneImageTemplate2Binder(mContext);
         List<DataBinder> binders = new ArrayList<>();
         binders.add(oneImageBinder);
 
-        int[] drawableRes = {R.drawable.pasta, R.drawable.bliss, R.drawable.crock, R.drawable.korean};
-        SimpleGridAdapterTemplate1 gridAdapter = new SimpleGridAdapterTemplate1(mContext, drawableRes);
+        int[] drawableRes = {R.drawable.cola1, R.drawable.cola2, R.drawable.cola4, R.drawable.cola3};
+        SimpleGridAdapterTemplate2 gridAdapter = new SimpleGridAdapterTemplate2(mContext, drawableRes);
         gridAdapter.setOnClickListener(mOnItemClicked);
-        FourImageDataBinder fourImageDataBinder = new FourImageDataBinder(mContext, gridAdapter);
-        fourImageDataBinder.setTitles("make this for", " DINNER");
+        FourImagesDataBinderTemplate2 fourImageDataBinder = new FourImagesDataBinderTemplate2(mContext, gridAdapter);
         binders.add(fourImageDataBinder);
-
-        int[] drawableRes2 = {R.drawable.pullaprt, R.drawable.squash, R.drawable.bruschetta, R.drawable.mediterranean};
-        ExtendedItemGridAdapter extendedItemGridAdapter = new ExtendedItemGridAdapter(mContext, drawableRes2);
-        extendedItemGridAdapter.setOnClickListener(mOnItemClicked);
-        FourImageDataBinder fourImageDataBinder2 = new FourImageDataBinder(mContext, extendedItemGridAdapter);
-        fourImageDataBinder.showBackground(false);
-        fourImageDataBinder2.setTitles("the latest", " AND GREATEST");
-        binders.add(fourImageDataBinder2);
 
         Template1RecyclerAdapter template1RecyclerAdapter = new Template1RecyclerAdapter(mContext, binders);
         mRecyclerView.setAdapter(template1RecyclerAdapter);
-        mRecyclerView.addItemDecoration(new RowSpaceItemDecoration(30));
+        mRecyclerView.addItemDecoration(new RowSpaceItemDecoration(2));
 
     }
 
@@ -111,17 +98,3 @@ public class Template1Fragment extends Fragment {
     };
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
