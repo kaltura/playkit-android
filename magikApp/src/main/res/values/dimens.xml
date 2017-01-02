@@ -26,4 +26,21 @@
 
     <!--secondary buttons layout-->
     <dimen name="secondary_buttons_layout_padding_between_buttons">7dp</dimen>
+
+    <!-- Round Button -->
+
+    // delete
+    <dimen name="helen_round_button_width_collapsed">40dp</dimen>
+    // delete
+    <dimen name="helen_round_button_width_expanded">80dp</dimen>
+    // delete
+    <dimen name="helen_round_button_height">40dp</dimen>
+    //delete
+    <dimen name="helen_round_button_width">40dp</dimen>
+
+    <dimen name="asset_page_description_height">66dp</dimen>
+    <dimen name="asset_page_secondary_like_button_end_margin">16dp</dimen>
+
+    <dimen name="DP16">16dp</dimen>
+
 </resources>

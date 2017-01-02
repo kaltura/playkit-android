@@ -92,32 +92,32 @@ public class RoundButton extends BaseRoundButton implements SecondaryViewsInitia
         Drawable pressed = null;
         switch (mode){
             case Like:
-                notPressed = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_like_outline, null);
-                pressed = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_like_fill, null);
+                notPressed = ResourcesCompat.getDrawable(getResources(), R.mipmap.ic_face, null);
+                pressed = ResourcesCompat.getDrawable(getResources(), R.mipmap.ic_face, null);
                 break;
             case Comment:
-                notPressed = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_comment_outline, null);
-                pressed = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_comment_fill, null);
+                notPressed = ResourcesCompat.getDrawable(getResources(), R.mipmap.ic_insta, null);
+                pressed = ResourcesCompat.getDrawable(getResources(), R.mipmap.ic_insta, null);
                 break;
             case Favorites:
-                notPressed = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_add_favorits_outline, null);
-                pressed = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_added_favorits_fill, null);
+                notPressed = ResourcesCompat.getDrawable(getResources(), R.mipmap.ic_pintrest, null);
+                pressed = ResourcesCompat.getDrawable(getResources(), R.mipmap.ic_pintrest, null);
                 break;
             case Share:
-                notPressed = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_share_outline, null);
-                pressed = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_share_outline, null);
+                notPressed = ResourcesCompat.getDrawable(getResources(), R.mipmap.ic_mail, null);
+                pressed = ResourcesCompat.getDrawable(getResources(), R.mipmap.ic_mail, null);
                 break;
             case Play:
-                notPressed = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_play, null);
-                pressed = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_play, null);
+                notPressed = ResourcesCompat.getDrawable(getResources(), R.mipmap.vid_badge_copy, null);
+                pressed = ResourcesCompat.getDrawable(getResources(), R.mipmap.vid_badge_copy, null);
                 break;
             case Download:
-                notPressed = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_download, null);
-                pressed = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_downlaod_finished, null);
+                notPressed = ResourcesCompat.getDrawable(getResources(), R.mipmap.ic_twitter, null);
+                pressed = ResourcesCompat.getDrawable(getResources(), R.mipmap.ic_twitter, null);
                 break;
             case MoreOptions:
-                notPressed = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_more_options, null);
-                pressed = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_more_options, null);
+                notPressed = ResourcesCompat.getDrawable(getResources(), R.mipmap.ic_twitter, null);
+                pressed = ResourcesCompat.getDrawable(getResources(), R.mipmap.ic_twitter, null);
                 break;
         }
 
@@ -144,8 +144,9 @@ public class RoundButton extends BaseRoundButton implements SecondaryViewsInitia
         }
     }
 
+
     @Override
-    public void setText(String text) {
+    public void setText(String string){
 
     }
 
