@@ -40,7 +40,7 @@ public class OttSessionProvider extends BaseSessionProvider {
     private int partnerId = 0;
 
     public OttSessionProvider(String baseUrl, int partnerId) {
-        super(baseUrl, PhoenixConfigs.ApiPrefix);
+        super(baseUrl, "");
         this.partnerId = partnerId;
     }
 

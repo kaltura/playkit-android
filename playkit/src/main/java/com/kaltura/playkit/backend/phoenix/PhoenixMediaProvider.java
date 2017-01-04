@@ -200,7 +200,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
         private String getApiBaseUrl() {
-            return sessionProvider.baseUrl() + PhoenixConfigs.ApiPrefix;
+            return sessionProvider.baseUrl();
         }
 
 
