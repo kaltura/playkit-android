@@ -71,10 +71,10 @@
     "sources": [
       {
         "id": "0_hbhe2o9x",
-        "url": "http://cfvod.kaltura.com/scf/pd/p/1851571/sp/185157100/serveFlavor/entryId/0_uafvpmv8/v/2/flavorId/0_2rl0w6f1/name/a.wvm",
+        "url": "http://cfvod.kaltura.com/scf/pd/p/1851571/sp/185157100/serveFlavor/entryId/0_uafvpmv8/v/2/flavorId/0_2rl0w6f1/name/a.wvm?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cDovL2Nmdm9kLmthbHR1cmEuY29tL3NjZi9wZC9wLzE4NTE1NzEvc3AvMTg1MTU3MTAwL3NlcnZlRmxhdm9yL2VudHJ5SWQvMF91YWZ2cG12OC92LzIvZmxhdm9ySWQvMF8ycmwwdzZmMS9uYW1lLyoiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE0ODM2MTUyNDZ9fX1dfQ__&Signature=cipdPEm2Mw4qk4B5uplniFdgiaUxrxbkTDVOTzuGZlsCG-8YaGl3uPqrJo2Jh9aywW906skFMzlW3qdFQi~VelYJRwv8S2CWf~71O0ZFSY9gS1j-ktmVSdjljngRP8s6D0AhJW-c8TjqQLf33nW-PPsGirlREgb5HXOOEffnyoP3~KqqiZh2E0~d7bZFpUftEXefUnvSXxH2KGG9T9D7JMtjjEvdgSdQfPAoHPMSG-QPQdv3S5ImMLYTboIriXMUUM1yVGYCQNYOPOfTTMT6SV4raYii~0rYkhcCLRUFDr2caOmzupqyL0UWytSssakLlLzz3vgvJpU1oojD66OlGw__&Key-Pair-Id=APKAJT6QIWSKVYK3V34A",
         "mimeType": "video/wvm",
         "drmData":[ {
-          "licenseUri": "https://udrm.kaltura.com//widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVFQiLCJ1c2VyX3Rva2VuIjoiIiwiYWNjb3VudF9pZCI6MTk4MjU1MSwiY29udGVudF9pZCI6IjBfaGJoZTJvOXhfMF9jaDU3amVxbSIsImZpbGVzIjoiIiwidWRpZCI6ImFhNWUxYjZjOTY5ODhkNjgiLCJhZGRpdGlvbmFsX2Nhc19zeXN0ZW0iOjB9&signature=4rU6mYMWLQmCbPFj3DZaEDAPlGA%3D&"
+          "licenseUri": "https://udrm.kaltura.com/widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVlAiLCJ1c2VyX3Rva2VuIjoiZGpKOE1UZzFNVFUzTVh3eUNNVjlNYlgxUDkwbFpLMEdpTEJ2MGU1LWFMNGZsQVh1ZExjd0oyU2lvZGlZV0lvUTlmOUUya3NBX2U1ZWVCWU5oZmlXSXU3b2NfenNrYnVHUEt3Y0NmaFVBQWhGUzRZNngyRGMzdnlhM2c9PSIsImFjY291bnRfaWQiOiIxODUxNTcxIiwiY29udGVudF9pZCI6IjBfdWFmdnBtdjgiLCJmaWxlcyI6IjBfNmFja3lna2csMF8ycmwwdzZmMSJ9&signature=ow2P%2BXImvYUkbre%2F8ZVlLgo4rXA%3D&"
           }
         ]
       }

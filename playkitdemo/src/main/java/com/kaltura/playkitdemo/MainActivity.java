@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void startMockMediaLoading() {
 
-        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", getApplicationContext(), "wvm2");
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", getApplicationContext(), "wvc2");
 
         mediaProvider.load(new OnMediaLoadCompletion() {
             @Override
@@ -181,8 +181,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         PlayerConfig config = new PlayerConfig();
 
-        config.media.setMediaEntry(mediaEntry).setStartPosition(30);
-
+        config.media.setMediaEntry(mediaEntry);//.setStartPosition(30);
+        LinearLayout layout = null;
         if (player == null) {
 
             configurePlugins(config.plugins);
@@ -192,14 +192,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
 
-            LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
+            layout = (LinearLayout) findViewById(R.id.player_root);
             layout.addView(player.getView());
 
             controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
             controlsView.setPlayer(player);
             initSpinners();
         }
+
         player.prepare(config.media);
+
         player.play();
     }
 

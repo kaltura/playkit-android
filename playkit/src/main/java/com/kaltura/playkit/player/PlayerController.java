@@ -127,8 +127,11 @@ public class PlayerController implements Player {
                 togglePlayerListeners(true);
             }
         } else {
-            //WVM Player
-            return;
+           if (player == null) {
+               player = new MediaPlayerWrapper(context);
+               wrapperView.addView(player.getView());
+
+           }
         }
 
         player.load(source);
