@@ -32,6 +32,8 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("KalturaLiveStatsPlugin");
     private static final String TAG = "KalturaLiveStatsPlugin";
 
+    private final String BASE_URL = "https://livestats.kaltura.com/api_v3/index.php";
+
     private boolean isBuffering = false;
 
     public enum KLiveStatsEvent {
@@ -204,7 +206,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     private void sendLiveEvent(long bufferTime) {
         String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
-        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : "https://livestats.kaltura.com/api_v3/index.php";
+        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : BASE_URL;
         int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
 
         // Parameters for the request -

@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.text.TextUtils;
-import android.view.View;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -66,7 +65,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
     private Context context;
     private SimpleExoPlayer player;
-    private CustomExoPlayerView exoPlayerView;
+    private ExoPlayerView exoPlayerView;
 
     private PKTracks tracks;
     private TrackSelectionHelper trackSelectionHelper;
@@ -114,7 +113,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     ExoPlayerWrapper(Context context) {
         this.context = context;
         mediaDataSourceFactory = buildDataSourceFactory(true);
-        exoPlayerView = new CustomExoPlayerView(context);
+        exoPlayerView = new ExoPlayerView(context);
         window = new Timeline.Window();
     }
 
@@ -340,7 +339,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     }
 
     @Override
-    public View getView() {
+    public PlayerView getView() {
         return exoPlayerView;
     }
 

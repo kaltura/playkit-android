@@ -31,6 +31,8 @@ public class YouboraPlugin extends PKPlugin {
     private Player player;
     private MessageBus messageBus;
     private boolean adAnalytics = false;
+    private boolean isMonitoring = false;
+    private boolean isAdsMonitoring = false;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -47,14 +49,18 @@ public class YouboraPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
+        stopMonitoring();
+        log.d("youbora - onUpdateMedia");
         this.mediaConfig = mediaConfig;
         Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, this.mediaConfig, player);
         // Refresh options with updated media
         pluginManager.setOptions(opt);
+        startMonitoring(player);
     }
 
     @Override
     protected void onUpdateConfig(String key, Object value) {
+        log.d("youbora - onUpdateConfig");
         if (pluginConfig.has(key)){
             pluginConfig.addProperty(key, value.toString());
         }
@@ -65,12 +71,12 @@ public class YouboraPlugin extends PKPlugin {
 
     @Override
     protected void onApplicationPaused() {
-        stopMonitoring();
+        pluginManager.pauseMonitoring();
     }
 
     @Override
     protected void onApplicationResumed() {
-        startMonitoring(this.player);
+        pluginManager.resumeMonitoring();
     }
 
     @Override
@@ -90,53 +96,51 @@ public class YouboraPlugin extends PKPlugin {
     }
 
     private void loadPlugin(){
-        startMonitoring(this.player);
         if (pluginConfig != null) {
             if (pluginConfig.getAsJsonObject("youboraConfig").has("adsAnalytics")) {
                 adAnalytics = pluginConfig.getAsJsonObject("youboraConfig").getAsJsonPrimitive("adsAnalytics").getAsBoolean();
             }
         }
-        if (adsManager != null){
-            adsManager = new YouboraAdManager(pluginManager, messageBus);
-            adsManager.startMonitoring(this.player);
-            pluginManager.setAdnalyzer(adsManager);
-        }
+        startMonitoring(this.player);
         log.d("onLoad");
     }
 
     PKEvent.Listener eventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
-            if (player.getDuration() > 0){
-                setPluginOptions();
-            }
+            setPluginOptions();
         }
     };
 
     private void startMonitoring(Player player) {
         log.d("start monitoring");
-        if (player.getDuration() < 0){
-            messageBus.listen(eventListener, PlayerEvent.Type.DURATION_CHANGE);
-        } else {
-            setPluginOptions();
-        }
+        messageBus.listen(eventListener, PlayerEvent.Type.DURATION_CHANGE);
+        setPluginOptions();
     }
 
     private void setPluginOptions(){
         Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig, player);
         // Set options
         pluginManager.setOptions(opt);
-        pluginManager.startMonitoring(player);
-        if (adsManager != null){
-            adsManager.startMonitoring(player);
+        if (!isMonitoring) {
+            isMonitoring = true;
+            pluginManager.startMonitoring(player);
+        }
+        if (adAnalytics && !isAdsMonitoring){
+            isAdsMonitoring = true;
+            adsManager = new YouboraAdManager(pluginManager, messageBus);
+            adsManager.startMonitoring(this.player);
+            pluginManager.setAdnalyzer(adsManager);
         }
     }
 
     private void stopMonitoring() {
         log.d("stop monitoring");
+        isMonitoring = false;
         pluginManager.stopMonitoring();
         if (adsManager != null){
             adsManager.stopMonitoring();
+            isAdsMonitoring = false;
         }
     }
 }

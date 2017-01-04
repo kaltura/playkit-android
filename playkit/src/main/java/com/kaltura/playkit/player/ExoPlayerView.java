@@ -22,9 +22,9 @@ import java.util.List;
  * Created by anton.afanasiev on 13/11/2016.
  */
 
-public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.VideoListener, TextRenderer.Output{
+public class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener, TextRenderer.Output{
 
-    private static final String TAG = CustomExoPlayerView.class.getSimpleName();
+    private static final String TAG = ExoPlayerView.class.getSimpleName();
 
     private final View surfaceView;
     private final View posterView; // TODO should be changed to poster?
@@ -33,15 +33,15 @@ public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.
 
     private SimpleExoPlayer player;
 
-    public CustomExoPlayerView(Context context) {
+    public ExoPlayerView(Context context) {
         this(context, null);
     }
 
-    public CustomExoPlayerView(Context context, AttributeSet attrs) {
+    public ExoPlayerView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public CustomExoPlayerView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public ExoPlayerView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
         layout = initFrameLayout();
@@ -141,6 +141,16 @@ public class CustomExoPlayerView extends FrameLayout implements SimpleExoPlayer.
     @Override
     public void onCues(List<Cue> cues) {
         subtitleLayout.onCues(cues);
+    }
+
+    @Override
+    public void hideVideoSurface() {
+        surfaceView.setVisibility(GONE);
+    }
+
+    @Override
+    public void showVideoSurface() {
+        surfaceView.setVisibility(VISIBLE);
     }
 }
 

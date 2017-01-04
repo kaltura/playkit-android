@@ -1,7 +1,6 @@
 package com.kaltura.playkit.plugins.ads.ima;
 
 import android.content.Context;
-import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.ads.interactivemedia.v3.api.Ad;
@@ -251,7 +250,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 }
 
                 if (isInitWaiting) {
-                    player.getView().setVisibility(View.VISIBLE);
                     adsManager.init(renderingSettings);
                     messageBus.post(new AdEvent.AdCuePointsUpdateEvent(getAdCuePoints()));
                     isInitWaiting = false;
@@ -266,7 +264,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     public void init() {
         isAdRequested = true;
         if(adsManager != null) {
-            player.getView().setVisibility(View.VISIBLE);
             adsManager.init(renderingSettings);
             messageBus.post(new AdEvent.AdCuePointsUpdateEvent(getAdCuePoints()));
         } else{
@@ -426,6 +423,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 if (player != null) {
                     player.pause();
                 }
+                if (adEvent.getAd().getAdPodInfo().getTotalAds() > 1) {
+                    player.getView().hideVideoSurface();
+                }
                 break;
             case CONTENT_RESUME_REQUESTED:
                 // AdEventType.CONTENT_RESUME_REQUESTED is fired when the ad is completed
@@ -434,16 +434,19 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_RESUME_REQUESTED));
                 isAdDisplayed = false;
                 if (player != null && player.getCurrentPosition() < player.getDuration()) {
+                    player.getView().showVideoSurface();
                     player.play();
                 }
                 break;
             case ALL_ADS_COMPLETED:
                 log.d("AD_ALL_ADS_COMPLETED");
                 messageBus.post(new AdEvent(AdEvent.Type.ALL_ADS_COMPLETED));
+                player.getView().showVideoSurface();
                 if (adsManager != null) {
                     log.d("AD_ALL_ADS_COMPLETED onDestroy");
                     onDestroy();
                 }
+
                 break;
             case STARTED:
                 log.d("AD STARTED");
@@ -620,6 +623,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 break;
             default:
                 messageBus.post(new AdError(AdError.Type.UNKNOWN_ERROR, errorMessage));
+        }
+        if (player != null && player.getView() != null) {
+            player.getView().showVideoSurface();
         }
     }
 }

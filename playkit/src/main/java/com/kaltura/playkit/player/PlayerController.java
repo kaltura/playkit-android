@@ -3,11 +3,12 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.view.View;
+import android.view.ViewGroup;
 
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
@@ -28,10 +29,12 @@ public class PlayerController implements Player {
 
     private PlayerEngine player;
     private Context context;
+    private PlayerView wrapperView;
 
     private PlayerConfig.Media mediaConfig;
     private boolean wasReleased = false;
 
+    //private ViewGroup playerRootView;
     private PKEvent.Listener eventListener;
 
     public void setEventListener(PKEvent.Listener eventListener) {
@@ -88,22 +91,48 @@ public class PlayerController implements Player {
 
     public PlayerController(Context context, PlayerConfig.Media mediaConfig){
         this.context = context;
+        this.wrapperView = new PlayerView(context) {
+            @Override
+            public void hideVideoSurface() {
+                PlayerView playerView = (PlayerView)wrapperView.getChildAt(0);
+                if (playerView != null) {
+                    playerView.hideVideoSurface();
+                }
+            }
+
+            @Override
+            public void showVideoSurface() {
+                PlayerView playerView = (PlayerView)wrapperView.getChildAt(0);
+                if (playerView != null) {
+                    playerView.showVideoSurface();
+                }
+            }
+        };
+        ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        this.wrapperView.setLayoutParams(lp);
         this.mediaConfig = mediaConfig;
-        player = new ExoPlayerWrapper(context);
-        togglePlayerListeners(true);
+
+
+
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
 
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
-        player.load(source);
-        long startPosition = mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER;
-        if(startPosition <= player.getDuration()){
-            startPlaybackFrom(startPosition);
-        }else{
-            log.w("The start position is grater then duration of the video!");
+        if (source.getMediaFormat() != null && !source.getMediaFormat().equals(PKMediaFormat.wvm_widevine)) {
+            if (player == null) {
+                player = new ExoPlayerWrapper(context);
+                wrapperView.addView(player.getView());
+                togglePlayerListeners(true);
+            }
+        } else {
+            //WVM Player
+            return;
         }
+
+        player.load(source);
+        startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
     }
 
     @Override
@@ -123,18 +152,20 @@ public class PlayerController implements Player {
             log.e("Attempt to invoke 'startPlaybackFrom()' on null instance of the player engine");
             return;
         }
-        if(!wasReleased){
-            togglePlayerListeners(false);
-            player.startFrom(startPosition);
-            togglePlayerListeners(true);
+
+        if(startPosition <= mediaConfig.getMediaEntry().getDuration()){
+            if(!wasReleased){
+                togglePlayerListeners(false);
+                player.startFrom(startPosition);
+                togglePlayerListeners(true);
+            }
+        }else{
+            log.w("The start position is grater then duration of the video! Start position " + startPosition + ", duration " + mediaConfig.getMediaEntry().getDuration());
         }
     }
 
-    public View getView() {
-        if(player == null){
-            return null;
-        }
-        return player.getView();
+    public PlayerView getView() {
+        return wrapperView;
     }
 
     public long getDuration() {
@@ -281,10 +312,5 @@ public class PlayerController implements Player {
         }
 
         player.changeTrack(uniqueId);
-    }
-
-    @Override
-    public boolean isAutoPlay() {
-        return mediaConfig.isAutoPlay();
     }
 }
