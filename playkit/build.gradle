@@ -1,7 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'bintray-release'
 
-def playkitVersion = '0.1.0'
+def libVersionName = '0.1.0'
+def libVersionCode = 4
 
 android {
     compileSdkVersion 25
@@ -10,8 +11,8 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 4
-        versionName playkitVersion
+        versionCode libVersionCode
+        versionName libVersionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -53,7 +54,7 @@ publish {
     repoName = 'android'
     userOrg = 'kaltura'
     groupId = 'com.kaltura.playkit'
-    version = playkitVersion
+    version = libVersionName
     autoPublish = false
     licences = ['AGPL-3.0']
 }
