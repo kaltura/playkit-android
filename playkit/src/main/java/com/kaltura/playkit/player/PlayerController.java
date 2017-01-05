@@ -95,40 +95,39 @@ public class PlayerController implements Player {
         this.wrapperView = new PlayerView(context) {
             @Override
             public void hideVideoSurface() {
-                View videoSurface = wrapperView.getChildAt(0);
-                if (videoSurface != null) {
-                    if (videoSurface instanceof  PlayerView) {
-                        PlayerView playerView = (PlayerView) wrapperView.getChildAt(0);
-                        if (playerView != null) {
-                            playerView.hideVideoSurface();
-                        }
-                    } else {
-                        log.e("Error in hideVideoSurface cannot cast to PlayerView,  class = " +  videoSurface.getClass().getName());
-                    }
-                }
+                setVideoSurfaceVisibility(false);
             }
 
             @Override
             public void showVideoSurface() {
-                View videoSurface = wrapperView.getChildAt(0);
-                if ( videoSurface != null) {
-                    if (videoSurface instanceof  PlayerView) {
-                        PlayerView playerView = (PlayerView) wrapperView.getChildAt(0);
-                        if (playerView != null) {
-                            playerView.showVideoSurface();
-                        }
-                    } else {
-                        log.e("Error in showVideoSurface cannot cast to PlayerView,  class = " +  videoSurface.getClass().getName());
-                    }
-                }
+                setVideoSurfaceVisibility(true);
             }
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         this.wrapperView.setLayoutParams(lp);
         this.mediaConfig = mediaConfig;
+    }
 
-
-
+    private void setVideoSurfaceVisibility(boolean isVisible) {
+        View videoSurface = wrapperView.getChildAt(0);
+        if ( videoSurface != null) {
+            if (videoSurface instanceof  PlayerView) {
+                PlayerView playerView = (PlayerView) wrapperView.getChildAt(0);
+                if (playerView != null) {
+                    if (isVisible) {
+                        playerView.showVideoSurface();
+                    } else {
+                        playerView.hideVideoSurface();
+                    }
+                }
+            } else {
+                String visibilityFunction = "showVideoSurface";
+                if (!isVisible) {
+                    visibilityFunction = "hideVideoSurface";
+                }
+                log.e("Error in " + visibilityFunction + " cannot cast to PlayerView,  class = " +  videoSurface.getClass().getName());
+            }
+        }
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
