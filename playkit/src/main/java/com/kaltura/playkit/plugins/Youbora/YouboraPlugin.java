@@ -81,7 +81,9 @@ public class YouboraPlugin extends PKPlugin {
 
     @Override
     public void onDestroy() {
-        stopMonitoring();
+        if (isMonitoring) {
+            stopMonitoring();
+        }
     }
 
     @Override
@@ -96,13 +98,20 @@ public class YouboraPlugin extends PKPlugin {
     }
 
     private void loadPlugin(){
+        log.d("loadPlugin");
         if (pluginConfig != null) {
-            if (pluginConfig.getAsJsonObject("youboraConfig").has("adsAnalytics")) {
+            if (pluginConfig.get("youboraConfig").isJsonNull() || pluginConfig.getAsJsonObject("youboraConfig").isJsonNull()) {
+                log.e("Youbora PluginConfig is missing the youboraConfig key in json object");
+                return;
+            }
+            if (pluginConfig.getAsJsonObject("youboraConfig").has("adsAnalytics")  &&
+                !pluginConfig.getAsJsonObject("youboraConfig").getAsJsonPrimitive("adsAnalytics").isJsonNull()) {
                 adAnalytics = pluginConfig.getAsJsonObject("youboraConfig").getAsJsonPrimitive("adsAnalytics").getAsBoolean();
             }
+            startMonitoring(this.player);
+            log.d("onLoad");
         }
-        startMonitoring(this.player);
-        log.d("onLoad");
+
     }
 
     PKEvent.Listener eventListener = new PKEvent.Listener() {
