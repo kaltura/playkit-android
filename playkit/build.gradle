@@ -1,4 +1,7 @@
 apply plugin: 'com.android.library'
+apply plugin: 'bintray-release'
+
+def playkitVersion = '0.1.0'
 
 android {
     compileSdkVersion 25
@@ -8,7 +11,7 @@ android {
         minSdkVersion 16
         targetSdkVersion 25
         versionCode 4
-        versionName "0.0.9"
+        versionName playkitVersion
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -42,4 +45,15 @@ dependencies {
 
     compile 'com.android.support:mediarouter-v7:25.0.1'
     compile 'com.google.android.gms:play-services-cast-framework:10.0.1'
+}
+
+publish {
+    artifactId = 'playkit'
+    description = 'Kaltura PlayKit Library'
+    repoName = 'android'
+    userOrg = 'kaltura'
+    groupId = 'com.kaltura.playkit'
+    version = playkitVersion
+    autoPublish = false
+    licences = ['AGPL-3.0']
 }
