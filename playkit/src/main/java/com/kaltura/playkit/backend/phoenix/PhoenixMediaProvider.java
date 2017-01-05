@@ -200,7 +200,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
         private String getApiBaseUrl() {
-            return sessionProvider.baseUrl() + PhoenixConfigs.ApiPrefix;
+            return sessionProvider.baseUrl();
         }
 
 
@@ -296,29 +296,12 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 // if provided, only the "formats" matching MediaFiles should be parsed and added to the PKMediaEntry media sources
                 for (KalturaMediaFile file : mediaFiles) {
                     if (formats == null || formats.contains(file.getType())) {
-                        sources.add(new PKMediaSource().setId(file.getId() + "").setUrl(file.getUrl()).setMediaFormat(getFileFormat(file)));
+                        sources.add(new PKMediaSource().setId(file.getId() + "").setUrl(file.getUrl()).setMediaFormat(PKMediaFormat.getMediaFormat(file.getUrl())));
                         maxDuration = Math.max(file.getDuration(), maxDuration);
                     }
                 }
             }
             return mediaEntry.setDuration(maxDuration).setSources(sources).setMediaType(MediaTypeConverter.toMediaEntryType(""));
-        }
-
-        /**
-         * since currently in OTT there's no specific data regarding the source format, we need to parse
-         * it from the url extension.
-         * @param file
-         * @return
-         */
-        /* we're actually guessing the format according to the extension. since we don't have data regarding
-           DRM support, all formats, minus wvm, that has special extension, will be set as clear type formats.*/
-        private static PKMediaFormat getFileFormat(KalturaMediaFile file) {
-            String url = file.getUrl();
-            if(url != null) {
-                String ext = url.substring(url.lastIndexOf("."));
-                return PKMediaFormat.valueOfExt(ext);
-            }
-            return null;
         }
     }
 

@@ -37,13 +37,13 @@ public class MockParams {
 
 
     //OTT:
-    public static final String PnxBaseUrl = "http://api-preprod.ott.kaltura.com/v4_1/";//"http://52.210.223.65:8080/v4_1/api_v3/";
+    public static final String PnxBaseUrl = "http://api-preprod.ott.kaltura.com/v4_1/api_v3/";//"http://52.210.223.65:8080/v4_1/api_v3/";
 
     public static final String PnxUsername = "albert@gmail.com";
     public static final String PnxPassword = "123456";
     public static final int PnxPartnerId = 198;
 
-    public static final String PnxKS = "djJ8MTk4fDkhVL8m8cvU-Y2SijGoVRfRLkxFjgwmadm_hW2OH88H9hMZoGn53o2470bKBuPGw7J7ne9CWZ6ehAvc8LfShWlwH9pPCeekUEJGCm-JQvK_";
+    public static final String PnxKS = "djJ8MTk4fJIH_vOOwg_8s7ZoleGRXM3XpmAW5_-D8JEFMOIL-70ELzSMwyHosPaiAqtqHCJ01Ekc0Opa5eJjYEq6u63zTRrrG_ngIQKgHqysBVGYxoGe";
 
     public static final String MediaId = "258656";//frozen
     public static final String MediaId4 = "258655";//shrek

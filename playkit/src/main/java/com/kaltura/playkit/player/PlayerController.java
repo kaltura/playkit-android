@@ -3,6 +3,7 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.kaltura.playkit.Assert;
@@ -94,26 +95,39 @@ public class PlayerController implements Player {
         this.wrapperView = new PlayerView(context) {
             @Override
             public void hideVideoSurface() {
-                PlayerView playerView = (PlayerView)wrapperView.getChildAt(0);
-                if (playerView != null) {
-                    playerView.hideVideoSurface();
-                }
+                setVideoSurfaceVisibility(false);
             }
 
             @Override
             public void showVideoSurface() {
-                PlayerView playerView = (PlayerView)wrapperView.getChildAt(0);
-                if (playerView != null) {
-                    playerView.showVideoSurface();
-                }
+                setVideoSurfaceVisibility(true);
             }
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         this.wrapperView.setLayoutParams(lp);
         this.mediaConfig = mediaConfig;
+    }
 
-
-
+    private void setVideoSurfaceVisibility(boolean isVisible) {
+        View videoSurface = wrapperView.getChildAt(0);
+        if ( videoSurface != null) {
+            if (videoSurface instanceof  PlayerView) {
+                PlayerView playerView = (PlayerView) wrapperView.getChildAt(0);
+                if (playerView != null) {
+                    if (isVisible) {
+                        playerView.showVideoSurface();
+                    } else {
+                        playerView.hideVideoSurface();
+                    }
+                }
+            } else {
+                String visibilityFunction = "showVideoSurface";
+                if (!isVisible) {
+                    visibilityFunction = "hideVideoSurface";
+                }
+                log.e("Error in " + visibilityFunction + " cannot cast to PlayerView,  class = " +  videoSurface.getClass().getName());
+            }
+        }
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
