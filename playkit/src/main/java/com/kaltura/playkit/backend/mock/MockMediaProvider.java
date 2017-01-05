@@ -1,7 +1,6 @@
 package com.kaltura.playkit.backend.mock;
 
 import android.content.Context;
-import android.net.Uri;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -123,8 +122,7 @@ public class MockMediaProvider implements MediaEntryProvider {
             }
             List<PKMediaSource> mediaSources = mediaEntry.getSources();
             for (PKMediaSource mediaSource : mediaSources) {
-                String path = Uri.parse(mediaSource.getUrl()).getPath();
-                mediaSource.setMediaFormat(PKMediaFormat.getMediaFormat(path));
+                mediaSource.setMediaFormat(PKMediaFormat.getMediaFormat(mediaSource.getUrl()));
             }
             return mediaEntry;
         }

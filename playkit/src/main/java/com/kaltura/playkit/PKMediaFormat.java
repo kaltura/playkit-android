@@ -1,5 +1,7 @@
 package com.kaltura.playkit;
 
+import android.net.Uri;
+
 public enum PKMediaFormat {
     mp4_clear("mp4", "video/mp4", ".mp4", null),
     dash_clear("dash", "application/dash+xml", ".mpd", null),
@@ -32,11 +34,12 @@ public enum PKMediaFormat {
     public static PKMediaFormat getMediaFormat(String sourceURL) {
         PKMediaFormat mediaFormat = null;
         if(sourceURL != null) {
-            int extIndex = sourceURL.lastIndexOf(".");
+            String path = Uri.parse(sourceURL).getPath();
+            int extIndex = path.lastIndexOf(".");
             if (extIndex < 0) {
                 return mediaFormat;
             }
-            mediaFormat = PKMediaFormat.valueOfExt(sourceURL.substring(extIndex));
+            mediaFormat = PKMediaFormat.valueOfExt(path.substring(extIndex));
         }
         return mediaFormat;
     }
