@@ -1,6 +1,7 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -19,6 +20,7 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
     private Context context;
     private SurfaceHolder holder;
     private SurfaceView surfaceView;
+    private View posterView;
 
 
     public MediaPlayerView(Context context) {
@@ -44,7 +46,9 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
         surfaceView.setLayoutParams(params);
+        posterView = initPosterView();
         addView(surfaceView, params);
+        addView(posterView);
         holder = surfaceView.getHolder();
         holder.addCallback(this);
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
@@ -61,9 +65,18 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
         surfaceView.setVisibility(VISIBLE);
     }
 
+    private View initPosterView() {
+        View posterView = new View(getContext());
+        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        posterView.setLayoutParams(params);
+        posterView.setBackgroundColor(Color.BLACK);
+
+        return posterView;
+    }
+
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
-
+        posterView.setVisibility(GONE);
     }
 
     @Override

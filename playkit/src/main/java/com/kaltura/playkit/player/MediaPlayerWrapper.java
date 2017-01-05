@@ -5,6 +5,9 @@ import android.drm.DrmErrorEvent;
 import android.drm.DrmEvent;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.annotation.Nullable;
 import android.view.SurfaceHolder;
 
 import com.kaltura.playkit.PKLog;
@@ -14,11 +17,11 @@ import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.WidevineClassicDrm;
+import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
 
-import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.Prepared;
-
+import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARED;
 
 /**
  * Created by gilad.nadav on 30/12/2016.
@@ -27,6 +30,8 @@ import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.Prepare
 public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback {
 
     private static final PKLog log = PKLog.get("MediaPlayerWrapper");
+
+    private static final long PLAYHEAD_UPDATE_INTERVAL = 200;
 
     Context context;
     private MediaPlayer player;
@@ -37,13 +42,16 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     private WidevineClassicDrm drmClient;
     private PlayerEvent.Type currentEvent;
     private PlayerState currentState = PlayerState.IDLE, previousState;
+    @Nullable
+    private PlayheadTracker mPlayheadTracker;
     private long playerPosition;
+    private long prevDuration = Consts.TIME_UNSET;
     private boolean isSeeking = false;
     private boolean shouldResetPlayerPosition;
     private Uri lastPlayedSource;
     private PlayerController.EventListener eventListener;
     private PlayerController.StateChangedListener stateChangedListener;
-    private PrepareState prepareState = PrepareState.NotPrepared;
+    private PrepareState prepareState = PrepareState.NOT_PREPARED;
     private boolean isPlayAfterPrepare = false;
 
 
@@ -147,10 +155,10 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
             public void onPrepared(MediaPlayer mediaPlayer) {
                 log.d("XXX onPrepared " + prepareState + " isPlayAfterPrepare = " + isPlayAfterPrepare);
 
-                prepareState = Prepared;
+                prepareState = PREPARED;
                 if (isPlayAfterPrepare) {
-                    isPlayAfterPrepare = false;
                     play();
+                    isPlayAfterPrepare = false;
                 }
 
             }
@@ -163,7 +171,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
         try {
            // player.setDataSource(context,Uri.parse("https://cdnapisec.kaltura.com/p/1982551/sp/198255100/playManifest/entryId/0_lcinsq2i/format/applehttp/tags/iphonenew/protocol/https/f/a.m3u8"));
             player.setDataSource(assetUri);
-            prepareState = PrepareState.Preparing;
+            prepareState = PrepareState.PREPARING;
             mediaPlayerView.getSurfaceHolder().addCallback(this);
         } catch (IOException e) {
             log.e(e.toString());
@@ -182,7 +190,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     @Override
     public void play() {
         log.d("XXX play prepareState = " + prepareState.name());
-        if (!Prepared.equals(prepareState)) {
+        if (!PREPARED.equals(prepareState)) {
             isPlayAfterPrepare = true;
             return;
         }
@@ -201,6 +209,12 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
         // Already playing; do nothing.
         currentEvent = PlayerEvent.Type.PLAY;
         sendDistinctEvent(currentEvent);
+
+        if (mPlayheadTracker == null) {
+            mPlayheadTracker = new PlayheadTracker();
+        }
+        mPlayheadTracker.start();
+
     }
 
 
@@ -208,7 +222,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     @Override
     public void pause() {
         log.d("XXX pause ");
-        if (!Prepared.equals(prepareState)) {
+        if (!PREPARED.equals(prepareState)) {
             return;
         }
         if(player.isPlaying()) {
@@ -221,7 +235,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
     @Override
     public void replay() {
-        if (!Prepared.equals(prepareState)) {
+        if (!PREPARED.equals(prepareState)) {
             return;
         }
         log.d("XXX replay ");
@@ -231,7 +245,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
             return;
         }
         isSeeking = false;
-        player.seekTo(0);
+        seekTo(0);
         player.start();
         sendDistinctEvent(PlayerEvent.Type.REPLAY);
     }
@@ -239,13 +253,26 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     @Override
     public long getCurrentPosition() {
         log.d("XXX getCurrentPosition ");
-        return currentState == PlayerState.IDLE ? 0 : player.getCurrentPosition();
+        if (player == null || !PREPARED.equals(prepareState)) {
+            return 0;
+        }
+
+        return player.getCurrentPosition();
     }
 
     @Override
     public long getDuration() {
         log.d("XXX getDuration ");
-        return currentState == PlayerState.IDLE ? 0 : player.getDuration();
+        if (player == null || !PREPARED.equals(prepareState)) {
+            return 0;
+        }
+        long currentDuration;
+        currentDuration = player == null ? Consts.TIME_UNSET : player.getDuration();
+        if (prevDuration != currentDuration) {
+            sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
+        }
+        prevDuration = currentDuration;
+        return prevDuration;
 
     }
 
@@ -272,7 +299,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     @Override
     public void seekTo(long position) {
         log.d("XXX seekTo " + position);
-        if (!Prepared.equals(prepareState)) {
+        if (!PREPARED.equals(prepareState)) {
             return;
         }
         player.seekTo((int)position);
@@ -283,10 +310,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     @Override
     public void startFrom(long position) {
         log.d("XXX startFrom " + position);
-        if (!Prepared.equals(prepareState)) {
-            return;
-        }
-        player.seekTo((int)position);
+        seekTo((int)position);
     }
 
     @Override
@@ -320,7 +344,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
         log.d("resume");
         initializePlayer();
         if (shouldResetPlayerPosition) {
-            player.seekTo((int) playerPosition);
+            seekTo((int) playerPosition);
         }
     }
 
@@ -386,11 +410,12 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         //SurfaceHolder playerurfaceHolder = mediaPlayerView.getSurfaceHolder();
         player.setDisplay(surfaceHolder);
-        try {
-            player.prepare();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        //try {
+            //player.prepare();
+            player.prepareAsync();
+        //} catch (IOException e) {
+        //    e.printStackTrace();
+        //}
         log.d("XXXXXY surfaceCreated");
     }
 
@@ -405,8 +430,78 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     }
 
     enum PrepareState {
-        NotPrepared,
-        Preparing,
-        Prepared
+        NOT_PREPARED,
+        PREPARING,
+        PREPARED
+    }
+
+    ////////////////////////
+
+    private void stopPlayheadTracker() {
+        if (mPlayheadTracker != null) {
+            playerPosition = (int) mPlayheadTracker.getPlaybackTime() * 1000;
+            mPlayheadTracker.stop();
+            mPlayheadTracker = null;
+        }
+    }
+
+    class PlayheadTracker {
+        Handler mHandler;
+        float playbackTime;
+        Runnable mRunnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (player != null && player.getCurrentPosition() == player.getDuration()){
+                        log.d("--- Video onCompletion ---");
+                        pause();
+                        seekTo(player.getDuration());
+                        stopPlayheadTracker();
+                        ///seekTo(player.getDuration());
+                        return;
+                    }
+
+                    if (player != null && player.isPlaying()) {
+                        int currPos = player.getCurrentPosition();
+                        log.d("progress status = " + currPos + "/" + player.getDuration());
+                        if (currPos > player.getDuration()) {
+                            playbackTime = player.getDuration() / 1000f;
+                        } else {
+                            playbackTime = currPos / 1000f;
+                        }
+                    }
+
+                } catch (IllegalStateException e) {
+                    String errMsg = "Player Error ";
+                    log.e(errMsg + e.getMessage());
+
+                }
+                if (mHandler != null) {
+                    mHandler.postDelayed(this, PLAYHEAD_UPDATE_INTERVAL);
+                }
+            }
+        };
+
+        float getPlaybackTime() {
+            return playbackTime;
+        }
+
+        void start() {
+            if (mHandler == null) {
+                mHandler = new Handler(Looper.getMainLooper());
+                mHandler.postDelayed(mRunnable, PLAYHEAD_UPDATE_INTERVAL);
+            } else {
+                log.d("Tracker is already started");
+            }
+        }
+
+        void stop() {
+            if (mHandler != null) {
+                mHandler.removeCallbacks(mRunnable);
+                mHandler = null;
+            } else {
+                log.d("Tracker is not started, nothing to stop");
+            }
+        }
     }
 }
