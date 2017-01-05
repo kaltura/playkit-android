@@ -100,7 +100,7 @@ public class YouboraPlugin extends PKPlugin {
     private void loadPlugin(){
         log.d("loadPlugin");
         if (pluginConfig != null) {
-            if (pluginConfig.get("youboraConfig").isJsonNull() || pluginConfig.getAsJsonObject("youboraConfig").isJsonNull()) {
+            if (!pluginConfig.has("youboraConfig") || pluginConfig.get("youboraConfig").isJsonNull() ) {
                 log.e("Youbora PluginConfig is missing the youboraConfig key in json object");
                 return;
             }
