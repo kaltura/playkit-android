@@ -1,5 +1,6 @@
 package com.kaltura.playkit.backend.phoenix;
 
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -315,8 +316,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         private static PKMediaFormat getFileFormat(KalturaMediaFile file) {
             String url = file.getUrl();
             if(url != null) {
-                String ext = url.substring(url.lastIndexOf("."));
-                return PKMediaFormat.valueOfExt(ext);
+                String path = Uri.parse(url).getPath();
+                return PKMediaFormat.getMediaFormat(path);
             }
             return null;
         }

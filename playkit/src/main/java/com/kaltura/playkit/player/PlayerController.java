@@ -3,6 +3,7 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.kaltura.playkit.Assert;
@@ -94,17 +95,31 @@ public class PlayerController implements Player {
         this.wrapperView = new PlayerView(context) {
             @Override
             public void hideVideoSurface() {
-                PlayerView playerView = (PlayerView)wrapperView.getChildAt(0);
-                if (playerView != null) {
-                    playerView.hideVideoSurface();
+                View videoSurface = wrapperView.getChildAt(0);
+                if (videoSurface != null) {
+                    if (videoSurface instanceof  PlayerView) {
+                        PlayerView playerView = (PlayerView) wrapperView.getChildAt(0);
+                        if (playerView != null) {
+                            playerView.hideVideoSurface();
+                        }
+                    } else {
+                        log.e("Error in hideVideoSurface cannot cast to PlayerView,  class = " +  videoSurface.getClass().getName());
+                    }
                 }
             }
 
             @Override
             public void showVideoSurface() {
-                PlayerView playerView = (PlayerView)wrapperView.getChildAt(0);
-                if (playerView != null) {
-                    playerView.showVideoSurface();
+                View videoSurface = wrapperView.getChildAt(0);
+                if ( videoSurface != null) {
+                    if (videoSurface instanceof  PlayerView) {
+                        PlayerView playerView = (PlayerView) wrapperView.getChildAt(0);
+                        if (playerView != null) {
+                            playerView.showVideoSurface();
+                        }
+                    } else {
+                        log.e("Error in showVideoSurface cannot cast to PlayerView,  class = " +  videoSurface.getClass().getName());
+                    }
                 }
             }
         };
