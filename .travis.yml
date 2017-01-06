@@ -29,3 +29,9 @@ notifications:
       - Anton.Afanasiev@kaltura.com
     on_success: always
     on_failure: always
+deploy:
+  provider: script
+  script: travis-push-to-bintray.sh
+  on:   # only deploy if building a tag, AND the tag is in the format digits.digits.digits
+    tags: true
+    condition: $TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$  
