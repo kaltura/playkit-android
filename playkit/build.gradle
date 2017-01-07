@@ -2,7 +2,6 @@ apply plugin: 'com.android.library'
 apply plugin: 'bintray-release'
 
 def libVersionName = '0.1.0'
-def libVersionCode = 4
 
 android {
     compileSdkVersion 25
@@ -11,7 +10,6 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode libVersionCode
         versionName libVersionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
