@@ -2,22 +2,29 @@
 
 
 # Only allow tags
-if [ -z "$TRAVIS_TAG" ]; then exit; fi
+if [ -z "$TRAVIS_TAG" ]; then 
+    echo "Not a Travis tag build; skipping deploy to bintray."
+    exit
+fi
 
+# Strip the "v" prefix
+TAG_VERSION_NAME=${TRAVIS_TAG:1}    
+
+# Only allow proper "digits.digits.digits" versions.
+if [[ ! $TAG_VERSION_NAME =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "Not a proper version string; skipping deploy to bintray." 
+    exit
+fi
 
 # Check that defined library version matches the tag.
-mismatch() {
-    >&2 echo "error: version name does not match tag name"
+if ! grep -q "def libVersionName = '$TAG_VERSION_NAME'" playkit/build.gradle
+then
+    >&2 echo "error: Library version name in build.gradle does not match tag name."
     exit 1
-}
-
-TAG_VERSION_NAME=${TRAVIS_TAG:1}    # Strip the "v" prefix
-grep -q "def libVersionName = '$TAG_VERSION_NAME'" playkit/build.gradle || mismatch
+fi
 
 
-# Assuming a successful playkit:build
-
-# Create javadoc jar, sources jar, pom
+# Assuming a successful playkit:build, create javadoc jar, sources jar, pom
 ./gradlew playkit:publishMavenPublicationToMavenLocal
 
 # Upload
