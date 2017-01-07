@@ -46,7 +46,7 @@ public class KalturaAnalyticsAndroidTest {
         context = InstrumentationRegistry.getContext();
         setPluginConfigObject();
         setMediaObject();
-        messageBus = new MessageBus(context);
+        messageBus = new MessageBus();
 
         player = new MockPlayer();
         ((MockPlayer) player).setDuration(duration);

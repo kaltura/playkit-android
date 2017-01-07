@@ -50,7 +50,7 @@ public class PhoenixTvpapiAndroidTest {
         setTvpapiPluginConfigObject();
         setPhoenixPluginConfig();
         setMediaObject();
-        messageBus = new MessageBus(context);
+        messageBus = new MessageBus();
 
         player = new MockPlayer();
         ((MockPlayer) player).setDuration(duration);

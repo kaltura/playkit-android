@@ -1,32 +1,39 @@
 package com.kaltura.playkit;
 
-import android.content.Context;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by Noam Tamim @ Kaltura on 07/11/2016.
  */
 @SuppressWarnings("WeakerAccess")
 public class MessageBus {
-    private final Context context;
+    private final ExecutorService executor;
     private Map<Object, Set<PKEvent.Listener>> listeners;
 
-    public MessageBus(Context context) {
-        this.context = context;
+    public MessageBus() {
         listeners = new HashMap<>();
+
+        executor = Executors.newSingleThreadExecutor();
     }
     
-    public void post(PKEvent event) {
+    public void post(final PKEvent event) {
 
-        Set<PKEvent.Listener> listeners = this.listeners.get(event.eventType());
+        final Set<PKEvent.Listener> listeners = this.listeners.get(event.eventType());
+        
         if (listeners != null) {
-            for (PKEvent.Listener listener : listeners) {
-                listener.onEvent(event);
-            }
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    for (PKEvent.Listener listener : listeners) {
+                        listener.onEvent(event);
+                    }
+                }
+            });
         }
     }
 
