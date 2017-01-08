@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
 
-def libVersionName = '0.1.0'
+def libVersionName = '0.1.1'
 
 android {
     compileSdkVersion 25
