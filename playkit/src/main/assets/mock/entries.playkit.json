@@ -48,6 +48,18 @@
       }
     ]
   },
+  "hls1": {
+    "duration": 102000,
+    "id": "0_uka1msg4",
+    "name": "HLS: Kaltura Video Solutions for Media Companies",
+    "sources": [
+      {
+        "id": "0_uka1msg4_hls",
+        "mimeType": "application/x-mpegURL",
+        "url": "http://cdnapi.kaltura.com/p/243342/sp/24334200/playManifest/entryId/0_uka1msg4/flavorIds/1_vqhfu6uy,1_80sohj7p/format/applehttp/protocol/http/a.m3u8"
+      }
+    ]
+  },
   "wvc": {
   "duration": 102000,
   "id": "0_hbhe2o9x",
@@ -76,6 +88,22 @@
         "drmData":[ {
           "licenseUri": "https://udrm.kaltura.com/widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVlAiLCJ1c2VyX3Rva2VuIjoiZGpKOE1UZzFNVFUzTVh3eUNNVjlNYlgxUDkwbFpLMEdpTEJ2MGU1LWFMNGZsQVh1ZExjd0oyU2lvZGlZV0lvUTlmOUUya3NBX2U1ZWVCWU5oZmlXSXU3b2NfenNrYnVHUEt3Y0NmaFVBQWhGUzRZNngyRGMzdnlhM2c9PSIsImFjY291bnRfaWQiOiIxODUxNTcxIiwiY29udGVudF9pZCI6IjBfdWFmdnBtdjgiLCJmaWxlcyI6IjBfNmFja3lna2csMF8ycmwwdzZmMSJ9&signature=ow2P%2BXImvYUkbre%2F8ZVlLgo4rXA%3D&"
           }
+        ]
+      }
+    ]
+  },
+  "wvc3": {
+    "duration": 102000,
+    "id": "0_hbhe2o9x",
+    "name": "testing",
+    "sources": [
+      {
+        "id": "0_hbhe2o9x",
+        "url": "http://qa-apache-testing-ubu-01.dev.kaltura.com/p/2621/sp/262100/serveFlavor/entryId/0_37vnq7qk/v/2/flavorId/0_zl8sm7m5/forceproxy/true/name/a.wvm",
+        "mimeType": "video/wvm",
+        "drmData":[ {
+          "licenseUri": "http://udrm2.dev.kaltura.com/widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVlAiLCJ1c2VyX3Rva2VuIjoiTmpkbU9UQmpORE5rT1dNM1pUaGpZemxqTVRVeVltSmxZekl6WXpsbVpqUXpNMk5tTnpOaU1Yd3lOakl4T3pJMk1qRTdNVFE0TXprME5qWTBNenN3T3pFME9ETTROakF5TkRNdU5qY3lPekE3ZG1sbGR6b3FMSGRwWkdkbGREb3hPenM9IiwiYWNjb3VudF9pZCI6IjI2MjEiLCJjb250ZW50X2lkIjoiMF8zN3ZucTdxayIsImZpbGVzIjoiMF9zeWV3dGRneCwwXzZkazZ6Y2plLDBfaXlkczBtejQsMF96bDhzbTdtNSJ9&signature=8KEgGQFkRlDsWmy3sl5OIGyOmJ8%3D&"
+        }
         ]
       }
     ]
