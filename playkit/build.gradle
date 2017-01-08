@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'bintray-release'
 
 def libVersionName = '0.1.0'
 
@@ -55,13 +54,21 @@ dependencies {
     androidTestCompile 'com.android.support.test:runner:0.5'
 }
 
-publish {
-    artifactId = 'playkit'
-    description = 'Kaltura PlayKit Library'
-    repoName = 'android'
-    userOrg = 'kaltura'
-    groupId = 'com.kaltura.playkit'
-    version = libVersionName
-    autoPublish = false
-    licences = ['AGPL-3.0']
+try {
+    apply plugin: 'bintray-release'
+
+    publish {
+        artifactId = 'playkit'
+        description = 'Kaltura PlayKit Library'
+        repoName = 'android'
+        userOrg = 'kaltura'
+        groupId = 'com.kaltura.playkit'
+        version = libVersionName
+        autoPublish = false
+        licences = ['AGPL-3.0']
+    }
+} catch (UnknownPluginException ignored) {
+    // Ignore - it's ok not to have this plugin.
 }
+
+
