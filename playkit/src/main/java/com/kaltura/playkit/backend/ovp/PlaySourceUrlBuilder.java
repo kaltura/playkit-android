@@ -132,7 +132,11 @@ public class PlaySourceUrlBuilder {
             return null;
         }
 
-        StringBuilder playUrl = new StringBuilder(baseUrl).append("p/").append(partnerId).append("/sp/")
+        StringBuilder playUrl = new StringBuilder(baseUrl);
+        if(!baseUrl.endsWith("/")){
+            playUrl.append("/");
+        }
+        playUrl.append("p/").append(partnerId).append("/sp/")
                 .append(partnerId).append("00").append("/playManifest").append("/entryId/").append(entryId).append("/protocol/")
                 .append(protocol).append("/format/").append(format);
 
