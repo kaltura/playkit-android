@@ -131,7 +131,7 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
-
+        this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
         if (source.getMediaFormat() != null && !source.getMediaFormat().equals(PKMediaFormat.wvm_widevine)) {

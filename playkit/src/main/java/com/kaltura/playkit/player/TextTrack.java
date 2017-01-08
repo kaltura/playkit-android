@@ -1,21 +1,20 @@
-package com.kaltura.playkit;
+package com.kaltura.playkit.player;
 
 import android.support.annotation.Nullable;
 
 /**
- * Audio track data holder.
+ * Text track data holder.
  * Created by anton.afanasiev on 17/11/2016.
  */
-public class AudioTrack extends BaseTrack {
+public class TextTrack extends BaseTrack {
 
-    private long bitrate;
     private String label;
     private String language;
 
-    public AudioTrack(String uniqueId, String language, String label, long bitrate, boolean isAdaptive) {
-        super(uniqueId, isAdaptive);
+
+    TextTrack(String uniqueId, String language, String label, int selectionFlag) {
+        super(uniqueId, selectionFlag, false);
         this.label = label;
-        this.bitrate = bitrate;
         this.language = language;
     }
 
@@ -29,15 +28,6 @@ public class AudioTrack extends BaseTrack {
     }
 
     /**
-     * Getter for the track bitrate.
-     * Can be -1 if unknown or not applicable.
-     * @return - the bitrate of the track.
-     */
-    public long getBitrate() {
-        return bitrate;
-    }
-
-    /**
      * Getter for the track label.
      * Can be null if the label is unknown.
      * @return - the label of the track.
@@ -45,4 +35,5 @@ public class AudioTrack extends BaseTrack {
     public @Nullable String getLabel() {
         return label;
     }
+
 }
