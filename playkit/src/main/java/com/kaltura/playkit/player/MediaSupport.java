@@ -4,6 +4,7 @@ import android.content.Context;
 import android.drm.DrmManagerClient;
 import android.media.MediaDrm;
 import android.os.Build;
+import android.support.annotation.NonNull;
 
 import com.kaltura.playkit.PKLog;
 
@@ -18,6 +19,11 @@ public class MediaSupport {
     private static Boolean widevineModular;
 
     private static final PKLog log = PKLog.get("MediaSupport");
+    
+    public static void initialize(@NonNull Context context) {
+        widevineClassic(context);
+        widevineModular();
+    }
 
     public static boolean widevineClassic(Context context) {
         if (widevineClassic != null) {

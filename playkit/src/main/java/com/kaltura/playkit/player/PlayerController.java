@@ -134,7 +134,12 @@ public class PlayerController implements Player {
 
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
-        if (source.getMediaFormat() != null && !source.getMediaFormat().equals(PKMediaFormat.wvm_widevine)) {
+        if (source == null) {
+            log.e("No playable source found for entry");
+            return;
+        }
+        
+        if (source.getMediaFormat() != PKMediaFormat.wvm_widevine) {
             if (player == null) {
                 player = new ExoPlayerWrapper(context);
                 wrapperView.addView(player.getView());

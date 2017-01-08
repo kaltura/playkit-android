@@ -37,7 +37,7 @@ public enum PKMediaFormat {
             String path = Uri.parse(sourceURL).getPath();
             int extIndex = path.lastIndexOf(".");
             if (extIndex < 0) {
-                return mediaFormat;
+                return null;
             }
             mediaFormat = PKMediaFormat.valueOfExt(path.substring(extIndex));
         }
