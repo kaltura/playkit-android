@@ -39,7 +39,6 @@ import com.google.android.exoplayer2.util.Util;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;

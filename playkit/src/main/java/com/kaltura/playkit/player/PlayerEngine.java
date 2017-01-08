@@ -1,7 +1,6 @@
 package com.kaltura.playkit.player;
 
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.PKTracks;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.utils.Consts;
 

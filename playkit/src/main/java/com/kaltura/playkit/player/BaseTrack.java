@@ -1,4 +1,4 @@
-package com.kaltura.playkit;
+package com.kaltura.playkit.player;
 
 /**
  * Base track info object that is common to all the trackInfo types.
@@ -14,10 +14,12 @@ package com.kaltura.playkit;
 public abstract class BaseTrack {
 
     private String uniqueId;
+    private int selectionFlag;
     private boolean isAdaptive;
 
-    public BaseTrack(String uniqueId, boolean isAdaptive) {
+     BaseTrack(String uniqueId, int selectionFlag, boolean isAdaptive) {
         this.uniqueId = uniqueId;
+        this.selectionFlag = selectionFlag;
         this.isAdaptive = isAdaptive;
     }
 
@@ -40,4 +42,7 @@ public abstract class BaseTrack {
         return isAdaptive;
     }
 
+    int getSelectionFlag() {
+        return selectionFlag;
+    }
 }
