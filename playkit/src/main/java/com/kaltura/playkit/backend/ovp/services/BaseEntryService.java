@@ -1,5 +1,7 @@
 package com.kaltura.playkit.backend.ovp.services;
 
+import android.text.TextUtils;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.backend.ovp.APIDefines;
@@ -14,10 +16,16 @@ import com.kaltura.playkit.connect.RequestBuilder;
 
 public class BaseEntryService extends OvpService {
 
-    public static RequestBuilder entryInfo(String baseUrl, String ks, String entryId) {
+    public static RequestBuilder entryInfo(String baseUrl, String ks, int partnerId, String entryId) {
 
-        MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks)
+        MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks, partnerId)
                 .tag("mediaAsset-multi-get");
+
+        if(TextUtils.isEmpty(ks)){
+            multiRequestBuilder.add(OvpSessionService.anonymousSession(baseUrl, partnerId));
+
+            ks = "{1:result:ks}";
+        }
 
         return multiRequestBuilder.add(list(baseUrl, ks, entryId),
                 getPlaybackContext(baseUrl, ks, entryId)

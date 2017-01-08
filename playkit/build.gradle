@@ -1,4 +1,7 @@
 apply plugin: 'com.android.library'
+apply plugin: 'bintray-release'
+
+def libVersionName = '0.1.0'
 
 android {
     compileSdkVersion 25
@@ -7,8 +10,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 4
-        versionName "0.0.9"
+        versionName libVersionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -28,18 +30,38 @@ android {
 }
 
 dependencies {
+    // Google Extras
     compile 'com.google.android.exoplayer:exoplayer:r2.1.1'
     compile 'com.google.code.gson:gson:2.7'
+    
+    // Google Ads
     compile 'com.google.ads.interactivemedia.v3:interactivemedia:3.5.2'
     compile 'com.google.android.gms:play-services-ads:10.0.1'
 
+    // Google Cast
+    compile 'com.google.android.gms:play-services-cast-framework:10.0.1'
+    compile 'com.android.support:mediarouter-v7:25.1.0'
+
+    // OkHttp
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
+    
+    // Youbora Analytics
     compile files('lib/YouboraLib-5.3.0.jar')
-    compile 'junit:junit:4.12'
+    
+    // Tests
+    testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:hamcrest-library:1.3'
     testCompile "org.mockito:mockito-core:2.2.26"
     androidTestCompile 'com.android.support.test:runner:0.5'
+}
 
-    compile 'com.android.support:mediarouter-v7:25.0.1'
-    compile 'com.google.android.gms:play-services-cast-framework:10.0.1'
+publish {
+    artifactId = 'playkit'
+    description = 'Kaltura PlayKit Library'
+    repoName = 'android'
+    userOrg = 'kaltura'
+    groupId = 'com.kaltura.playkit'
+    version = libVersionName
+    autoPublish = false
+    licences = ['AGPL-3.0']
 }

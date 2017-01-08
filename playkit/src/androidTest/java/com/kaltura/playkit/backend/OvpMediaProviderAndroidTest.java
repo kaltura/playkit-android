@@ -288,6 +288,61 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
         });
     }
 
+    @Test
+    public void textLoadMediaWithEmptyKs() {
+        SessionProvider sessionProvider = new SessionProvider() {
+            @Override
+            public String baseUrl() {
+                return MockParams.OvpBaseUrl;
+            }
+
+            @Override
+            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
+                if(completion != null){
+                    completion.onComplete(new PrimitiveResult(""));
+                }
+            }
+
+            @Override
+            public int partnerId() {
+                return MockParams.OvpPartnerId;
+            }
+        };
+
+        final AtomicReference<AssertionError> failure = new AtomicReference<>();
+
+        new KalturaOvpMediaProvider().setSessionProvider(sessionProvider).setEntryId(MockParams.NonDRMEntryId).load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                try {
+                    if (response.isSuccess()) {
+                        PKLog.d(TAG, "got PKMediaEntry object: checking content");
+                        assertTrue(response.getResponse() != null);
+                        assertTrue(response.getResponse().getId().equals(MockParams.NonDRMEntryId));
+                        PKLog.i(TAG, "PKMediaEntry validated successfully");
+
+                    } else {
+                        assertNotNull(response.getError());
+                        PKLog.d(TAG, "got error on PKMediaEntry loading:" + response.getError());
+                        fail("failed on entry loading:" + response.getError());
+                    }
+
+                } catch (AssertionError e) {
+                    failure.set(e);
+                    fail("failed on entry validation:" + e.getMessage());
+                } finally {
+                    OvpMediaProviderAndroidTest.this.resume();
+                }
+            }
+        });
+
+        wait(1);
+
+        if (failure.get() != null) {
+            throw failure.get();
+        }
+    }
+
     /**
      * expected - failure since entry should not be found
      */
