@@ -32,7 +32,7 @@ dependencies {
     // Google Extras
     compile 'com.google.android.exoplayer:exoplayer:r2.1.1'
     compile 'com.google.code.gson:gson:2.7'
-    
+
     // Google Ads
     compile 'com.google.ads.interactivemedia.v3:interactivemedia:3.5.2'
     compile 'com.google.android.gms:play-services-ads:10.0.1'
@@ -43,10 +43,10 @@ dependencies {
 
     // OkHttp
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
-    
+
     // Youbora Analytics
     compile files('lib/YouboraLib-5.3.0.jar')
-    
+
     // Tests
     testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:hamcrest-library:1.3'
@@ -70,5 +70,3 @@ try {
 } catch (UnknownPluginException ignored) {
     // Ignore - it's ok not to have this plugin.
 }
-
-

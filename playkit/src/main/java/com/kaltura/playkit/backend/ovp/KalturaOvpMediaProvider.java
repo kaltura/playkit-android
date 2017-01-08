@@ -2,6 +2,7 @@ package com.kaltura.playkit.backend.ovp;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.StringDef;
+import android.text.TextUtils;
 
 import com.google.gson.JsonSyntaxException;
 import com.kaltura.playkit.PKDrmParams;
@@ -37,7 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static android.text.TextUtils.isEmpty;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
@@ -47,6 +47,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     private static final String TAG = KalturaOvpMediaProvider.class.getSimpleName();
+    public static final boolean CanBeEmpty = true;
 
     private String entryId;
     private String uiConfId;
@@ -109,7 +110,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     @Override
     protected ErrorElement validateParams() {
-        return isEmpty(this.entryId) ?
+        return TextUtils.isEmpty(this.entryId) ?
                 ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": Missing required parameters, entryId") :
                 null;
     }
@@ -131,9 +132,14 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
         @Override
         protected ErrorElement validateKs(String ks) {
-            return isEmpty(ks) ?
-                    ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token") :
-                    null;
+            if(TextUtils.isEmpty(ks)){
+                if(CanBeEmpty) {
+                    PKLog.w(TAG, "provided ks is empty, Anonymous session will be used.");
+                } else {
+                    return ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token");
+                }
+            }
+            return null;
         }
 
         /**
@@ -143,7 +149,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          */
         @Override
         protected void requestRemote(final String ks) throws InterruptedException {
-            final RequestBuilder entryRequest = BaseEntryService.entryInfo(getApiBaseUrl(), ks, entryId)
+            final RequestBuilder entryRequest = BaseEntryService.entryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId(), entryId)
                     .completion(new OnRequestCompletion() {
                         @Override
                         public void onComplete(ResponseElement response) {
@@ -166,7 +172,8 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
 
         private String getApiBaseUrl() {
-            return sessionProvider.baseUrl() + OvpConfigs.ApiPrefix;
+            String sep = sessionProvider.baseUrl().endsWith("/") ? "" : "/";
+            return sessionProvider.baseUrl() + sep + OvpConfigs.ApiPrefix;
         }
 
         /**
@@ -179,6 +186,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         private void onEntryInfoMultiResponse(String ks, ResponseElement response, OnMediaLoadCompletion completion) throws InterruptedException {
             ErrorElement error = null;
             PKMediaEntry mediaEntry = null;
+
 
             if (isCanceled()) {
                 PKLog.v(TAG, loadId + ": i am canceled, exit response parsing ");
@@ -197,20 +205,23 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 * all response objects should extend BaseResult */
                     //  List<BaseResult> responses = (List<BaseResult>) KalturaOvpParser.parse(response.getResponse(), KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
 
-                    if (responses.get(0).error != null) {
-                        error = responses.get(0).error.addMessage("baseEntry/list request failed");
+                    int entryListResponseIdx = responses.size() > 2 ? 1 : 0;
+                    int playbackResponseIdx = entryListResponseIdx + 1;
+
+                    if (responses.get(entryListResponseIdx).error != null) {
+                        error = responses.get(entryListResponseIdx).error.addMessage("baseEntry/list request failed");
                     }
-                    if (error == null && responses.get(1).error != null) {
-                        error = responses.get(1).error.addMessage("baseEntry/getPlaybackContext request failed");
+                    if (error == null && responses.get(playbackResponseIdx).error != null) {
+                        error = responses.get(playbackResponseIdx).error.addMessage("baseEntry/getPlaybackContext request failed");
                     }
 
                     if (error == null) {
 
-                        KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) responses.get(1);
+                        KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) responses.get(playbackResponseIdx);
 
                         if ((error = hasError(kalturaPlaybackContext.getMessages())) == null) { // check for error message
                             mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
-                                    ((KalturaBaseEntryListResponse) responses.get(0)).objects.get(0), kalturaPlaybackContext);
+                                    ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext);
 
                             if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
                                 error = ErrorElement.RestrictionError.message("Content can't be played due to lack of sources");
