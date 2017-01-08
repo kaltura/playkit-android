@@ -1,24 +1,23 @@
 package com.kaltura.playkit;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by Noam Tamim @ Kaltura on 07/11/2016.
  */
 @SuppressWarnings("WeakerAccess")
 public class MessageBus {
-    private final ExecutorService executor;
+    private Handler postHandler = new Handler(Looper.getMainLooper());
     private Map<Object, Set<PKEvent.Listener>> listeners;
-
+    
     public MessageBus() {
         listeners = new HashMap<>();
-
-        executor = Executors.newSingleThreadExecutor();
     }
     
     public void post(final PKEvent event) {
@@ -26,7 +25,7 @@ public class MessageBus {
         final Set<PKEvent.Listener> listeners = this.listeners.get(event.eventType());
         
         if (listeners != null) {
-            executor.execute(new Runnable() {
+            postHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     for (PKEvent.Listener listener : listeners) {
