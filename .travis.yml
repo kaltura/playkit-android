@@ -21,6 +21,8 @@ script:
 after_failure:
   - cat playkit/build/outputs/lint-results-debug.xml
   - cat playkitdemo/build/outputs/lint-results-debug.xml
+after_success:
+  - ./travis-push-to-bintray.sh
 notifications:
   email:
     recipients:
@@ -29,8 +31,3 @@ notifications:
       - Anton.Afanasiev@kaltura.com
     on_success: always
     on_failure: always
-deploy:
-  provider: script
-  script: travis-push-to-bintray.sh
-  on:
-    tags: true
