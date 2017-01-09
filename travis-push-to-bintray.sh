@@ -5,6 +5,7 @@ DRY_RUN=false
 # Only allow tags
 if [ -z "$TRAVIS_TAG" ]; then 
     echo "Not a Travis tag build; will perform a dry-run."
+    TRAVIS_TAG=v0.0.0
     DRY_RUN=true
 fi
 
