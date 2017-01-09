@@ -17,7 +17,7 @@ if [[ ! $TAG_VERSION_NAME =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 
 # Check that defined library version matches the tag.
-if ! grep -q "def libVersionName = '$TAG_VERSION_NAME'" playkit/build.gradle
+if ! grep -q "ext.playkitVersion = '$TAG_VERSION_NAME'" playkit/version.gradle
 then
     >&2 echo "error: Library version name in build.gradle does not match tag name."
     exit 1

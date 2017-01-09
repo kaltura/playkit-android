@@ -1,15 +1,14 @@
 apply plugin: 'com.android.library'
-
-def libVersionName = '0.1.0'
+apply from: 'version.gradle'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.0"
+    buildToolsVersion "25.0.2"
 
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 25
-        versionName libVersionName
+        versionName playkitVersion  // defined in version.gradle
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -54,19 +53,3 @@ dependencies {
     androidTestCompile 'com.android.support.test:runner:0.5'
 }
 
-try {
-    apply plugin: 'bintray-release'
-
-    publish {
-        artifactId = 'playkit'
-        description = 'Kaltura PlayKit Library'
-        repoName = 'android'
-        userOrg = 'kaltura'
-        groupId = 'com.kaltura.playkit'
-        version = libVersionName
-        autoPublish = false
-        licences = ['AGPL-3.0']
-    }
-} catch (UnknownPluginException ignored) {
-    // Ignore - it's ok not to have this plugin.
-}

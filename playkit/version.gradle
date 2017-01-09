@@ -1,0 +1,34 @@
+
+// PlayKit Library Version
+ext.playkitVersion = 'dev'
+
+
+
+
+
+// Append short commit hash to dev builds, i.e. "dev.a1b2c3d"
+if (playkitVersion == 'dev') {
+    def cmd = "git rev-parse --short HEAD"
+    def proc = cmd.execute()
+    def commit = proc.text.trim()
+    ext.playkitVersion = 'dev.' + commit
+}
+
+
+// Publish to Bintray
+try {
+    apply plugin: 'bintray-release'
+
+    publish {
+        artifactId = 'playkit'
+        description = 'PlayKit: Kaltura Player SDK'
+        repoName = 'android'
+        userOrg = 'kaltura'
+        groupId = 'com.kaltura.playkit'
+        version = playkitVersion
+        autoPublish = false
+        licences = ['AGPL-3.0']
+    }
+} catch (UnknownPluginException ignored) {
+    // Ignore - it's ok not to have this plugin - it's only used for bintray uploads.
+}
