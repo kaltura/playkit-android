@@ -32,5 +32,6 @@ notifications:
 deploy:
   provider: script
   script: travis-push-to-bintray.sh
+  skip_cleanup: true
   on:
     tags: true
