@@ -22,7 +22,7 @@ after_failure:
   - cat playkit/build/outputs/lint-results-debug.xml
   - cat playkitdemo/build/outputs/lint-results-debug.xml
 after_success:
-  - travis-push-to-bintray.sh
+  - ./travis-push-to-bintray.sh
 notifications:
   email:
     recipients:
