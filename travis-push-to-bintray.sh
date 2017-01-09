@@ -1,10 +1,12 @@
 #!/bin/bash
 
+DRY_RUN=false
 
 # Only allow tags
 if [ -z "$TRAVIS_TAG" ]; then 
-    echo "Not a Travis tag build; skipping deploy to bintray."
-    exit
+    echo "Not a Travis tag build; will perform a dry-run."
+    TRAVIS_TAG=v0.0.0
+    DRY_RUN=true
 fi
 
 # Strip the "v" prefix
@@ -12,15 +14,15 @@ TAG_VERSION_NAME=${TRAVIS_TAG:1}
 
 # Only allow proper "digits.digits.digits" versions.
 if [[ ! $TAG_VERSION_NAME =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "Not a proper version string; skipping deploy to bintray." 
-    exit
+    echo "Not a proper version string; will perform a dry-run." 
+    DRY_RUN=true
 fi
 
 # Check that defined library version matches the tag.
 if ! grep -q "ext.playkitVersion = '$TAG_VERSION_NAME'" playkit/version.gradle
 then
-    >&2 echo "error: Library version name in build.gradle does not match tag name."
-    exit 1
+    echo "Library version name in build.gradle does not match tag name; will perform a dry-run."
+    DRY_RUN=true
 fi
 
 
@@ -28,4 +30,4 @@ fi
 ./gradlew playkit:publishMavenPublicationToMavenLocal
 
 # Upload
-./gradlew bintrayUpload -PdryRun=false -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY
+./gradlew bintrayUpload -PdryRun=$DRY_RUN -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY
