@@ -268,7 +268,10 @@ class TrackSelectionHelper {
             //disable text track
             selector.setRendererDisabled(Consts.TRACK_TYPE_TEXT, true);
             return;
+        } else if (rendererIndex == Consts.TRACK_TYPE_TEXT) {
+            selector.setRendererDisabled(Consts.TRACK_TYPE_TEXT, false);
         }
+
 
         SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
         overrideTrack(rendererIndex, override);
