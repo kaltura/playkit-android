@@ -28,7 +28,8 @@ public class BaseEntryService extends OvpService {
         }
 
         return multiRequestBuilder.add(list(baseUrl, ks, entryId),
-                getPlaybackContext(baseUrl, ks, entryId)
+                getPlaybackContext(baseUrl, ks, entryId),
+                getMetadata(baseUrl,ks,entryId)
                 /*getContextData(baseUrl, ks, entryId)*/);
     }
 
@@ -82,6 +83,21 @@ public class BaseEntryService extends OvpService {
                 .method("POST")
                 .url(baseUrl)
                 .tag("baseEntry-getPlaybackContext")
+                .params(params);
+    }
+
+    public static OvpRequestBuilder getMetadata(String baseUrl, String ks, String entryId) {
+        JsonObject params = new JsonObject();
+        params.addProperty("filter:objectType","KalturaMetadataFilter");
+        params.addProperty("filter:objectIdEqual",entryId);
+        params.addProperty("filter:metadataObjectTypeEqual","1");
+        params.addProperty("ks", ks);
+
+        return new OvpRequestBuilder().service("metadata_metadata")
+                .action("list")
+                .method("POST")
+                .url(baseUrl)
+                .tag("metadata_metadata-list")
                 .params(params);
     }
 

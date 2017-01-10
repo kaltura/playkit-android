@@ -1,5 +1,6 @@
 package com.kaltura.playkit.backend.ovp;
 
+import android.provider.DocumentsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringDef;
 import android.text.TextUtils;
@@ -21,6 +22,7 @@ import com.kaltura.playkit.backend.ovp.data.KalturaEntryContextDataResult;
 import com.kaltura.playkit.backend.ovp.data.KalturaEntryType;
 import com.kaltura.playkit.backend.ovp.data.KalturaFlavorAsset;
 import com.kaltura.playkit.backend.ovp.data.KalturaMediaEntry;
+import com.kaltura.playkit.backend.ovp.data.KalturaMetadataListResponse;
 import com.kaltura.playkit.backend.ovp.data.KalturaPlaybackContext;
 import com.kaltura.playkit.backend.ovp.data.KalturaPlaybackSource;
 import com.kaltura.playkit.backend.ovp.services.BaseEntryService;
@@ -31,12 +33,27 @@ import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
 
+import com.kaltura.playkit.backend.ovp.data.KalturaMetadata;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.StringReader;
 import java.lang.annotation.Retention;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
@@ -56,7 +73,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     private Map<String, Object> flavorsFilter;
 
 
-    public KalturaOvpMediaProvider() {
+    public  KalturaOvpMediaProvider() {
         super(KalturaOvpMediaProvider.TAG);
     }
 
@@ -205,8 +222,9 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 * all response objects should extend BaseResult */
                     //  List<BaseResult> responses = (List<BaseResult>) KalturaOvpParser.parse(response.getResponse(), KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
 
-                    int entryListResponseIdx = responses.size() > 2 ? 1 : 0;
+                    int entryListResponseIdx = responses.size() > 3 ? 1 : 0;
                     int playbackResponseIdx = entryListResponseIdx + 1;
+                    int metadataResposneIdx = playbackResponseIdx + 1;
 
                     if (responses.get(entryListResponseIdx).error != null) {
                         error = responses.get(entryListResponseIdx).error.addMessage("baseEntry/list request failed");
@@ -218,11 +236,12 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                     if (error == null) {
 
                         KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) responses.get(playbackResponseIdx);
+                        KalturaMetadataListResponse metadataList = (KalturaMetadataListResponse) responses.get(metadataResposneIdx);
 
                         if ((error = hasError(kalturaPlaybackContext.getMessages())) == null) { // check for error message
                             mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
-                                    ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext);
-
+                                    ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
+ 
                             if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
                                 error = ErrorElement.RestrictionError.message("Content can't be played due to lack of sources");
                             }
@@ -283,17 +302,51 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          * @return (in case of restriction on maxbitrate, filtering should be done by considering the flavors provided to the
          *source- if none meets the restriction, source should not be added to the mediaEntrys sources.)
          */
-        public static PKMediaEntry getMediaEntry(String baseUrl, String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlaybackContext playbackContext) throws InvalidParameterException {
+        public static PKMediaEntry getMediaEntry(String baseUrl, String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlaybackContext playbackContext,KalturaMetadataListResponse metadataList) throws InvalidParameterException {
 
             PKMediaEntry mediaEntry = new PKMediaEntry();
             ArrayList<KalturaPlaybackSource> kalturaSources = playbackContext.getSources();
             List<PKMediaSource> sources;
+            Map<String,String> metadata =  new HashMap<String, String>();
+            
 
             if (kalturaSources != null && kalturaSources.size() > 0) {
                 sources = parseFromSources(baseUrl, ks, partnerId, uiConfId, entry, playbackContext);
             } else {
                 sources = new ArrayList<>();
             }
+            
+            if (metadataList != null && metadataList.objects != null && metadataList.objects.size() > 0){
+                for (KalturaMetadata metadataItem :metadataList.objects) {
+                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                    DocumentBuilder builder = null;
+                    try {
+                        builder = factory.newDocumentBuilder();
+                    } catch (ParserConfigurationException e) {
+                        e.printStackTrace();
+                    }
+                    InputSource is = new InputSource(new StringReader(metadataItem.xml));
+                    Document doc = null;
+                    try {
+                        doc = builder.parse(is);
+                    } catch (SAXException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    if (doc != null){
+                        NodeList list = doc.getElementsByTagName("metadata");
+                        if (list!= null && list.getLength() ==1){
+                            NodeList childList = list.item(0).getChildNodes();
+                            for (int i = 0 ; i < childList.getLength() ; i++){
+                                Node currentItem = childList.item(i);
+                                metadata.put(currentItem.getNodeName(),currentItem.getFirstChild().getNodeValue());
+                            }
+                        }
+                    }
+                }
+            }
+            
             /*
             in case we need default sources creation:
             else {
@@ -302,7 +355,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 sources = parseFromFlavors(ks, partnerId, uiConfId, entry, playbackContext);
             }*/
 
-            return mediaEntry.setId(entry.getId()).setSources(sources).setDuration(entry.getMsDuration()).setMediaType(MediaTypeConverter.toMediaEntryType(entry.getType()));
+            return mediaEntry.setId(entry.getId()).setSources(sources).setDuration(entry.getMsDuration()).setMetadata(metadata).setMediaType(MediaTypeConverter.toMediaEntryType(entry.getType()));
         }
 
 
