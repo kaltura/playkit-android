@@ -71,7 +71,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private PlayerState currentState = PlayerState.IDLE, previousState;
 
     private Factory mediaDataSourceFactory;
-    private Handler mainHandler = new Handler();
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private boolean isSeeking = false;
 
