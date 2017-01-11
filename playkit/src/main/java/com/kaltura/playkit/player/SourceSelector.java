@@ -2,6 +2,7 @@ package com.kaltura.playkit.player;
 
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
@@ -35,6 +36,13 @@ class SourceSelector {
     
     @Nullable
     PKMediaSource getPreferredSource() {
+
+        // If PKMediaSource is local, there is no need to look for the preferred source,
+        // because it is only one.
+        PKMediaSource localMediaSource = getLocalSource();
+        if(localMediaSource != null){
+            return localMediaSource;
+        }
 
         // Default preference: DASH, HLS, WVM, MP4
 
@@ -72,6 +80,15 @@ class SourceSelector {
 
     static PKMediaSource selectSource(PKMediaEntry mediaEntry) {
         return new SourceSelector(mediaEntry).getPreferredSource();
+    }
+
+    private PKMediaSource getLocalSource(){
+        for (PKMediaSource source : mediaEntry.getSources()) {
+            if (source instanceof LocalAssetsManager.LocalMediaSource) {
+                return source;
+            }
+        }
+        return null;
     }
 }
 

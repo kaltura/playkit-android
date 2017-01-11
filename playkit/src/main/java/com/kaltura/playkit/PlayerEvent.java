@@ -77,6 +77,19 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class ExceptionInfo extends PlayerEvent {
+
+        private Exception exception;
+
+        public ExceptionInfo(Exception exception) {
+            super(Type.ERROR);
+        }
+
+        public Exception getException() {
+            return exception;
+        }
+    }
+
     public final Type type;
 
     public PlayerEvent(Type type) {

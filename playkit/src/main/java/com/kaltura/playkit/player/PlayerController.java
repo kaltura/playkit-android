@@ -1,11 +1,13 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
+import android.media.MediaCodec;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -55,9 +57,9 @@ public class PlayerController implements Player {
         @Override
         public void onEvent(PlayerEvent.Type eventType) {
             if (eventListener != null) {
-                
+
                 PlayerEvent event;
-                
+
                 // TODO: use specific event class
                 switch (eventType) {
                     case DURATION_CHANGE:
@@ -72,10 +74,21 @@ public class PlayerController implements Player {
                     case PLAYBACK_PARAMS_UPDATED:
                         event = new PlayerEvent.PlaybackParamsUpdated(player.getPlaybackParamsInfo());
                         break;
+                    case ERROR:
+                        Exception exception = player.getCurrentException();
+                        if (exception == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.ExceptionInfo(exception);
+                        //if exception should be handled locally, do not send it to message bus.
+                        if (maybeHandleExceptionLocally(exception)) {
+                            return;
+                        }
+                        break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
                 }
-                
+
                 eventListener.onEvent(event);
             }
         }
@@ -138,7 +151,7 @@ public class PlayerController implements Player {
             log.e("No playable source found for entry");
             return;
         }
-        
+
         if (source.getMediaFormat() != PKMediaFormat.wvm_widevine) {
             if (player == null) {
                 player = new ExoPlayerWrapper(context);
@@ -331,5 +344,32 @@ public class PlayerController implements Player {
         }
 
         player.changeTrack(uniqueId);
+    }
+
+    private boolean maybeHandleExceptionLocally(Exception exception) {
+        if (exception instanceof ExoPlaybackException) {
+            ExoPlaybackException exoPlaybackException = (ExoPlaybackException) exception;
+            if (exoPlaybackException.type == ExoPlaybackException.TYPE_RENDERER) {
+
+                if (exoPlaybackException.getRendererException() instanceof MediaCodec.CryptoException) {
+                    MediaCodec.CryptoException cryptoException = (MediaCodec.CryptoException) exoPlaybackException.getRendererException();
+                    if (cryptoException.getErrorCode() == MediaCodec.CryptoException.ERROR_SESSION_NOT_OPENED) {
+                        ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
+                        long currentPosition = player.getCurrentPosition();
+                        exoPlayerWrapper.savePlayerPosition();
+                        PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
+
+                        if (source == null) {
+                            log.e("No playable source found for entry");
+                            return false;
+                        }
+                        exoPlayerWrapper.load(source);
+                        exoPlayerWrapper.startFrom(currentPosition);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

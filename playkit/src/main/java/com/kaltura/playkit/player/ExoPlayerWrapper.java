@@ -75,6 +75,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
     private Factory mediaDataSourceFactory;
     private Handler mainHandler = new Handler();
+    private Exception currentException = null;
 
     private boolean isSeeking = false;
 
@@ -307,6 +308,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
+        currentException = error;
         sendDistinctEvent(PlayerEvent.Type.ERROR);
     }
 
@@ -410,12 +412,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     public void release() {
         log.d("release");
         if (player != null) {
-            playerWindow = player.getCurrentWindowIndex();
-            playerPosition = Consts.TIME_UNSET;
-            Timeline timeline = player.getCurrentTimeline();
-            if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
-                playerPosition = player.getCurrentPosition();
-            }
+            savePlayerPosition();
             this.eventLogger = null;
             player.release();
             player = null;
@@ -531,6 +528,24 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public PlaybackParamsInfo getPlaybackParamsInfo() {
         return new PlaybackParamsInfo(lastPlayedSource.toString(), trackSelectionHelper.getCurrentVideoBitrate(), trackSelectionHelper.getCurrentAudioBitrate());
+    }
+
+    @Override
+    public Exception getCurrentException() {
+        return currentException;
+    }
+
+    void savePlayerPosition(){
+        if(player == null){
+            log.e("Attempt to invoke 'savePlayerPosition()' on null instance of the exoplayer");
+            return;
+        }
+        playerWindow = player.getCurrentWindowIndex();
+        playerPosition = Consts.TIME_UNSET;
+        Timeline timeline = player.getCurrentTimeline();
+        if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
+            playerPosition = player.getCurrentPosition();
+        }
     }
 }
 

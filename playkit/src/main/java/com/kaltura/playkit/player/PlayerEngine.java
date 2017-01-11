@@ -159,5 +159,9 @@ interface PlayerEngine {
      */
     PlaybackParamsInfo getPlaybackParamsInfo();
 
-
+    /**
+     * Return the last exception that happened.
+     * @return - the last exception that happened or null if no exception was previously happened.
+     */
+    Exception getCurrentException();
 }
