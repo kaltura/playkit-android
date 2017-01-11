@@ -39,7 +39,7 @@ public enum PKMediaFormat {
             if (extIndex < 0) {
                 return null;
             }
-            mediaFormat = PKMediaFormat.valueOfExt(path.substring(extIndex));
+            mediaFormat = PKMediaFormat.valueOfExt(path.substring(extIndex + 1));
         }
         return mediaFormat;
     }
