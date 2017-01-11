@@ -122,7 +122,7 @@ public class MockMediaProvider implements MediaEntryProvider {
             }
             List<PKMediaSource> mediaSources = mediaEntry.getSources();
             for (PKMediaSource mediaSource : mediaSources) {
-                mediaSource.setMediaFormat(PKMediaFormat.getMediaFormat(mediaSource.getUrl()));
+                mediaSource.setMediaFormat(PKMediaFormat.valueOfUrl(mediaSource.getUrl()));
             }
             return mediaEntry;
         }
