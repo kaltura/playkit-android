@@ -40,12 +40,9 @@ public class PKMediaSource {
     }
 
     public PKMediaSource setMediaFormat(PKMediaFormat mediaFormat) {
-        if (mediaFormat != null) {
-            this.mediaFormat = mediaFormat;
-        } else if (url != null) {
-            this.mediaFormat = PKMediaFormat.getMediaFormat(url);
-        } else {
-            this.mediaFormat = mediaFormat;
+        this.mediaFormat = mediaFormat;
+        if (mediaFormat == null && url != null) {
+           this.mediaFormat = PKMediaFormat.getMediaFormat(url);
         }
         return this;
     }
