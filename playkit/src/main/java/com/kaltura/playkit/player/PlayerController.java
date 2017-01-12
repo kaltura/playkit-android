@@ -352,8 +352,6 @@ public class PlayerController implements Player {
             if (exoPlaybackException.type == ExoPlaybackException.TYPE_RENDERER) {
 
                 if (exoPlaybackException.getRendererException() instanceof MediaCodec.CryptoException) {
-                    MediaCodec.CryptoException cryptoException = (MediaCodec.CryptoException) exoPlaybackException.getRendererException();
-                    if (cryptoException.getErrorCode() == MediaCodec.CryptoException.ERROR_SESSION_NOT_OPENED) {
                         ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
                         long currentPosition = player.getCurrentPosition();
                         exoPlayerWrapper.savePlayerPosition();
@@ -366,7 +364,6 @@ public class PlayerController implements Player {
                         exoPlayerWrapper.load(source);
                         exoPlayerWrapper.startFrom(currentPosition);
                         return true;
-                    }
                 }
             }
         }
