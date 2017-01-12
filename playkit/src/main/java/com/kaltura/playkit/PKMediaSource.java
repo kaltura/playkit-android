@@ -36,14 +36,14 @@ public class PKMediaSource {
     }
 
     public PKMediaFormat getMediaFormat() {
+        if (mediaFormat == null && url != null) {
+            this.mediaFormat = PKMediaFormat.valueOfUrl(url);
+        }
         return mediaFormat;
     }
 
     public PKMediaSource setMediaFormat(PKMediaFormat mediaFormat) {
         this.mediaFormat = mediaFormat;
-        if (mediaFormat == null && url != null) {
-           this.mediaFormat = PKMediaFormat.getMediaFormat(url);
-        }
         return this;
     }
 }

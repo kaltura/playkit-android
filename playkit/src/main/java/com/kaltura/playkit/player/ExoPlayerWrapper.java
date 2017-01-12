@@ -6,9 +6,8 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
-import android.text.TextUtils;
+import android.os.Looper;
 
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -23,8 +22,6 @@ import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
-import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource;
-import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
@@ -35,9 +32,9 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
-import com.google.android.exoplayer2.util.Util;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
@@ -74,7 +71,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private PlayerState currentState = PlayerState.IDLE, previousState;
 
     private Factory mediaDataSourceFactory;
-    private Handler mainHandler = new Handler();
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private boolean isSeeking = false;
 
@@ -154,30 +151,36 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
         shouldGetTracksInfo = true;
         this.lastPlayedSource = Uri.parse(pkMediaSource.getUrl());
-        MediaSource mediaSource = buildMediaSource(lastPlayedSource, null);
+        MediaSource mediaSource = buildExoMediaSource(pkMediaSource);
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
     }
+    
+    private MediaSource buildExoMediaSource(PKMediaSource source) {
+        PKMediaFormat format = source.getMediaFormat();
+        if (format == null) {
+            // TODO: error?
+            return null;
+        }
 
-    private MediaSource buildMediaSource(Uri uri, String overrideExtension) {
-
-        int type = Util.inferContentType(!TextUtils.isEmpty(overrideExtension) ? "." + overrideExtension
-                : uri.getLastPathSegment());
-        switch (type) {
-            case C.TYPE_SS:
-                return new SsMediaSource(uri, buildDataSourceFactory(false),
-                        new DefaultSsChunkSource.Factory(mediaDataSourceFactory), mainHandler, eventLogger);
-            case C.TYPE_DASH:
-                return new DashMediaSource(uri, buildDataSourceFactory(false),
-                        new DefaultDashChunkSource.Factory(mediaDataSourceFactory), mainHandler, eventLogger);
-            case C.TYPE_HLS:
-                return new HlsMediaSource(uri, mediaDataSourceFactory, mainHandler, eventLogger);
-            case C.TYPE_OTHER:
+        Uri uri = Uri.parse(source.getUrl());
+        
+        
+        switch (format) {
+            case mp4_clear:
                 return new ExtractorMediaSource(uri, mediaDataSourceFactory, new DefaultExtractorsFactory(),
                         mainHandler, eventLogger);
-            default: {
-                throw new IllegalStateException("Unsupported type: " + type);
-            }
+
+            case dash_clear:
+            case dash_widevine:
+                return new DashMediaSource(uri, buildDataSourceFactory(false),
+                        new DefaultDashChunkSource.Factory(mediaDataSourceFactory), mainHandler, eventLogger);
+
+            case hls_clear:
+                return new HlsMediaSource(uri, mediaDataSourceFactory, mainHandler, eventLogger);
+
+            default:
+                throw new IllegalStateException("Unsupported type: " + format);
         }
     }
 

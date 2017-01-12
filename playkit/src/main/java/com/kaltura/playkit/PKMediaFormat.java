@@ -2,40 +2,43 @@ package com.kaltura.playkit;
 
 import android.net.Uri;
 
-public enum PKMediaFormat {
-    mp4_clear("mp4", "video/mp4", "mp4", null),
-    dash_clear("dash", "application/dash+xml", "mpd", null),
-    dash_widevine("dash", "application/dash+xml", "mpd", "widevine"),
-    wvm_widevine("wvm", "video/wvm", "wvm", "widevine"),
-    hls_clear("hls", "application/x-mpegURL", "m3u8", null),
-    hls_fairplay("hls", "application/vnd.apple.mpegurl", "m3u8", "fairplay");
+import java.util.HashMap;
+import java.util.Map;
 
-    public final String shortName;
+public enum PKMediaFormat {
+    mp4_clear("video/mp4", "mp4"),
+    dash_clear("application/dash+xml", "mpd"),
+    dash_widevine("application/dash+xml", "mpd"),
+    wvm_widevine("video/wvm", "wvm"),
+    hls_clear("application/x-mpegURL", "m3u8");
+
     public final String mimeType;
     public final String pathExt;
-    public final String drm;
+    
+    private static Map<String, PKMediaFormat> extensionLookup = new HashMap<>(); 
+    
+    static {
+        for (PKMediaFormat format : values()) {
+            if (extensionLookup.get(format.pathExt) == null) {
+                extensionLookup.put(format.pathExt, format);
+            }
+        }
+    }
 
-    PKMediaFormat(String shortName, String mimeType, String pathExt, String drm) {
-        this.shortName = shortName;
+    PKMediaFormat(String mimeType, String pathExt) {
         this.mimeType = mimeType;
         this.pathExt = pathExt;
-        this.drm = drm;
     }
 
     public static PKMediaFormat valueOfExt(String ext) {
-        for(PKMediaFormat mediaFormat : values()){
-            if(mediaFormat.pathExt.equals(ext)){
-                return mediaFormat;
-            }
-        }
-        return null;
+        return extensionLookup.get(ext);
     }
 
-    public static PKMediaFormat getMediaFormat(String sourceURL) {
+    public static PKMediaFormat valueOfUrl(String sourceURL) {
         PKMediaFormat mediaFormat = null;
-        if(sourceURL != null) {
+        if (sourceURL != null) {
             String path = Uri.parse(sourceURL).getPath();
-            int extIndex = path.lastIndexOf(".");
+            int extIndex = path.lastIndexOf('.');
             if (extIndex < 0) {
                 return null;
             }
