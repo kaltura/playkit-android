@@ -419,6 +419,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
             trackSelectionHelper.release();
             trackSelectionHelper = null;
             eventLogger = null;
+            currentException = null;
         }
     }
 
