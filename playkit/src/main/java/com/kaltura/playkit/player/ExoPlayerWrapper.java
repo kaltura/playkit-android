@@ -271,6 +271,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
             case ExoPlayer.STATE_BUFFERING:
                 log.d("onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.BUFFERING);
+                if (isEndedWhileTracksReady()) {
+                    changeState(PlayerState.IDLE);
+                    sendDistinctEvent(PlayerEvent.Type.ENDED);
+                }
                 break;
             case ExoPlayer.STATE_READY:
                 log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
@@ -300,6 +304,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
         }
 
+    }
+
+    private boolean isEndedWhileTracksReady() {
+        return tracks != null && getCurrentPosition() >= getDuration();
     }
 
     @Override
