@@ -29,7 +29,7 @@ public class PlaySourceUrlBuilder {
 
     PlaySourceUrlBuilder() {
         // set defaults:
-        protocol = OvpConfigs.PreferredHttpProtocol;
+        protocol = OvpConfigs.DefaultHttpProtocol;
         format = DefFormat;
         sessionId = UUID.randomUUID().toString(); //!! should be created and added to the source by the player (playerConfig)
     }
@@ -92,7 +92,7 @@ public class PlaySourceUrlBuilder {
 
 
     /**
-     * we support http or https. defaults to PreferredHttpProtocol
+     * we support http or https. defaults to DefaultHttpProtocol
      *
      * @param protocol
      * @return
