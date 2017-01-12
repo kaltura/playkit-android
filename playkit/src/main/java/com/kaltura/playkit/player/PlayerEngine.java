@@ -2,6 +2,7 @@ package com.kaltura.playkit.player;
 
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlaybackParamsInfo;
+import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.utils.Consts;
 
 
@@ -159,5 +160,11 @@ interface PlayerEngine {
      */
     PlaybackParamsInfo getPlaybackParamsInfo();
 
-
+    /**
+     * Return the ExceptionInfo object, which holds the last error that happened,
+     * and counter, which holds amount of the same exception that happened in a row.
+     * This counter will help us to avoid the infinite loop, in case when we retry the playback, when handle the exception.
+     * @return - the last {@link PlayerEvent.ExceptionInfo} that happened.
+     */
+    PlayerEvent.ExceptionInfo getCurrentException();
 }

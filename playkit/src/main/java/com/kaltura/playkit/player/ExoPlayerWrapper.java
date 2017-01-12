@@ -72,6 +72,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
     private Factory mediaDataSourceFactory;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
+    private Exception currentException = null;
 
     private boolean isSeeking = false;
 
@@ -82,6 +83,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
     private long prevDuration = Consts.TIME_UNSET;
+    private int sameErrorOccurrenceCounter = 0;
 
 
     interface TracksInfoListener {
@@ -146,7 +148,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     }
 
     private void preparePlayer(PKMediaSource pkMediaSource) {
-
+        sameErrorOccurrenceCounter = 0;
         drmSessionManager.setMediaSource(pkMediaSource);
 
         shouldGetTracksInfo = true;
@@ -155,7 +157,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
     }
-    
+
     private MediaSource buildExoMediaSource(PKMediaSource source) {
         PKMediaFormat format = source.getMediaFormat();
         if (format == null) {
@@ -164,8 +166,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         }
 
         Uri uri = Uri.parse(source.getUrl());
-        
-        
+
+
         switch (format) {
             case mp4_clear:
                 return new ExtractorMediaSource(uri, mediaDataSourceFactory, new DefaultExtractorsFactory(),
@@ -310,6 +312,17 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
+        if (currentException != null) {
+            //if error have same message as the previous one, update the errorCounter.
+            //this is need to avoid infinity retries on the same error.
+            if (currentException.getMessage().equals(error.getMessage())) {
+                sameErrorOccurrenceCounter++;
+            } else {
+                sameErrorOccurrenceCounter = 0;
+            }
+        }
+
+        currentException = error;
         sendDistinctEvent(PlayerEvent.Type.ERROR);
     }
 
@@ -322,7 +335,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
         log.d("onTracksChanged");
         //if onOnTracksChanged happened when application went background, do not update the tracks.
-        if(trackSelectionHelper == null){
+        if (trackSelectionHelper == null) {
             return;
         }
         //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
@@ -413,12 +426,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     public void release() {
         log.d("release");
         if (player != null) {
-            playerWindow = player.getCurrentWindowIndex();
-            playerPosition = Consts.TIME_UNSET;
-            Timeline timeline = player.getCurrentTimeline();
-            if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
-                playerPosition = player.getCurrentPosition();
-            }
+            savePlayerPosition();
             this.eventLogger = null;
             player.release();
             player = null;
@@ -534,6 +542,25 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public PlaybackParamsInfo getPlaybackParamsInfo() {
         return new PlaybackParamsInfo(lastPlayedSource.toString(), trackSelectionHelper.getCurrentVideoBitrate(), trackSelectionHelper.getCurrentAudioBitrate());
+    }
+
+    @Override
+    public PlayerEvent.ExceptionInfo getCurrentException() {
+        return new PlayerEvent.ExceptionInfo(currentException, sameErrorOccurrenceCounter);
+    }
+
+    void savePlayerPosition() {
+        if (player == null) {
+            log.e("Attempt to invoke 'savePlayerPosition()' on null instance of the exoplayer");
+            return;
+        }
+        currentException = null;
+        playerWindow = player.getCurrentWindowIndex();
+        playerPosition = Consts.TIME_UNSET;
+        Timeline timeline = player.getCurrentTimeline();
+        if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
+            playerPosition = player.getCurrentPosition();
+        }
     }
 }
 
