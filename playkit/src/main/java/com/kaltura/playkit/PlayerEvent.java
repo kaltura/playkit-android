@@ -80,13 +80,20 @@ public class PlayerEvent implements PKEvent {
     public static class ExceptionInfo extends PlayerEvent {
 
         private Exception exception;
+        private int errorCounter;
 
-        public ExceptionInfo(Exception exception) {
+        public ExceptionInfo(Exception exception, int errorCounter) {
             super(Type.ERROR);
+            this.exception = exception;
+            this.errorCounter = errorCounter;
         }
 
         public Exception getException() {
             return exception;
+        }
+
+        public int getErrorCounter() {
+            return errorCounter;
         }
     }
 
