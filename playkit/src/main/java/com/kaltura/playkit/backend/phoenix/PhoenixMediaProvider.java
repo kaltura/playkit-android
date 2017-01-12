@@ -296,7 +296,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 // if provided, only the "formats" matching MediaFiles should be parsed and added to the PKMediaEntry media sources
                 for (KalturaMediaFile file : mediaFiles) {
                     if (formats == null || formats.contains(file.getType())) {
-                        sources.add(new PKMediaSource().setId(file.getId() + "").setUrl(file.getUrl()).setMediaFormat(PKMediaFormat.getMediaFormat(file.getUrl())));
+                        sources.add(new PKMediaSource().setId(file.getId() + "").setUrl(file.getUrl()).setMediaFormat(PKMediaFormat.valueOfUrl(file.getUrl())));
                         maxDuration = Math.max(file.getDuration(), maxDuration);
                     }
                 }
