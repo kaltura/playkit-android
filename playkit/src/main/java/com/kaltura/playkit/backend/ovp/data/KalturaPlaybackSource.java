@@ -1,5 +1,7 @@
 package com.kaltura.playkit.backend.ovp.data;
 
+import com.kaltura.playkit.backend.ovp.OvpConfigs;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,19 +28,23 @@ public class KalturaPlaybackSource {
     }
 
     /**
-     * in case the supported protocols contains the defined preferable protocol return it
-     * otherwise returns the first protocol in the list.
+     * check if protocol is supported by this source.
+     * Player can't redirect cross protocols so we make sure that the base protocol is supported
+     * (included) by the source.
      *
-     * @param preferred see {@link com.kaltura.playkit.backend.ovp.OvpConfigs#PreferredHttpProtocol}
-     * @return
+     * @param protocol - the desired protocol for the source (base play url protocol)
+     * @return true, if protocol is in the protocols list
      */
-    public String getProtocol(String preferred) {
+    public String getProtocol(String protocol) {
         if (protocols != null && protocols.length() > 0) {
-            if (protocols.contains(preferred)) {
-                return preferred;
+            String protocolsLst[] = protocols.split(",");
+            for (String prc : protocolsLst) {
+                if (prc.equals(protocol)) {
+                    return protocol;
+                }
             }
-            int endIndex = protocols.indexOf(",");
-            return protocols.substring(0, endIndex >= 0 ? endIndex : protocols.length());
+        } else if (protocol.equals(OvpConfigs.DefaultHttpProtocol)) {
+            return protocol;
         }
 
         return null;

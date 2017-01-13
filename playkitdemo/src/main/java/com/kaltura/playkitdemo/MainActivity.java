@@ -22,6 +22,7 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.backend.PrimitiveResult;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
 import com.kaltura.playkit.backend.phoenix.APIDefines;
@@ -79,11 +80,34 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         progressBar.setVisibility(View.INVISIBLE);
         registerPlugins();
 
-        startOvpMediaLoading();
+        startMockMediaLoading();
+        //startOvpMediaLoading();
         //startOttMediaLoading();
 
     }
 
+    private void startMockMediaLoading() {
+
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", getApplicationContext(), "hls");
+
+        mediaProvider.load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(final ResultElement<PKMediaEntry> response) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (response.isSuccess()) {
+                            onMediaLoaded(response.getResponse());
+                        } else {
+
+                            Toast.makeText(MainActivity.this, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""), Toast.LENGTH_LONG).show();
+                            log.e("failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
+                        }
+                    }
+                });
+            }
+        });
+    }
     private void startOttMediaLoading() {
         final OttSessionProvider ottSessionProvider = new OttSessionProvider(MockParams.PhoenixBaseUrl, MockParams.OttPartnerId);
         /* start anonymous session:
@@ -130,7 +154,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 public void onComplete(PrimitiveResult response) {
                     if (response.error == null) {
                         mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(MockParams.DRMEntryIdAnm);
-                        //mediaProvider = new MockMediaProvider("mock/entries.playkit.json", getApplicationContext(), "hls");
                         mediaProvider.load(new OnMediaLoadCompletion() {
                             @Override
                             public void onComplete(final ResultElement<PKMediaEntry> response) {
@@ -158,8 +181,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         PlayerConfig config = new PlayerConfig();
 
-        config.media.setMediaEntry(mediaEntry).setStartPosition(30);
-
+        config.media.setMediaEntry(mediaEntry).setStartPosition(0);
+        LinearLayout layout = null;
         if (player == null) {
 
             configurePlugins(config.plugins);
@@ -169,14 +192,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
 
-            LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
+            layout = (LinearLayout) findViewById(R.id.player_root);
             layout.addView(player.getView());
 
             controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
             controlsView.setPlayer(player);
             initSpinners();
         }
+
         player.prepare(config.media);
+
         player.play();
     }
 
@@ -262,6 +287,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onEvent(PKEvent event) {
                 log.d("Ad Event AD_ALL_ADS_COMPLETED");
                 appProgressBar.setVisibility(View.INVISIBLE);
+                player.play();
             }
         }, AdEvent.Type.ALL_ADS_COMPLETED);
         player.addEventListener(new PKEvent.Listener() {
@@ -277,6 +303,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 nowPlaying = false;
             }
         }, PlayerEvent.Type.PAUSE);
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                nowPlaying = true;
+                player.play();
+            }
+        }, AdEvent.Type.SKIPPED);
 
         player.addStateChangeListener(new PKEvent.Listener() {
             @Override
@@ -356,12 +390,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 changeSpinnerVisibility(videoSpinner, tvVideo, trackInfos);
 
                 for (int i = 0; i < trackInfos.size(); i++) {
-                        VideoTrack videoTrackInfo = (VideoTrack) trackInfos.get(i);
-                        if(videoTrackInfo.isAdaptive()){
-                            trackItems[i] = new TrackItem("Auto", videoTrackInfo.getUniqueId());
-                        }else{
-                            trackItems[i] = new TrackItem(String.valueOf(videoTrackInfo.getBitrate()), videoTrackInfo.getUniqueId());
-                        }
+                    VideoTrack videoTrackInfo = (VideoTrack) trackInfos.get(i);
+                    if(videoTrackInfo.isAdaptive()){
+                        trackItems[i] = new TrackItem("Auto", videoTrackInfo.getUniqueId());
+                    }else{
+                        trackItems[i] = new TrackItem(String.valueOf(videoTrackInfo.getBitrate()), videoTrackInfo.getUniqueId());
+                    }
                 }
 
                 break;
@@ -414,9 +448,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
-            TrackItem trackItem = (TrackItem) parent.getItemAtPosition(position);
-            //tell to the player, to switch track based on the user selection.
-            player.changeTrack(trackItem.getUniqueId());
+        TrackItem trackItem = (TrackItem) parent.getItemAtPosition(position);
+        //tell to the player, to switch track based on the user selection.
+        player.changeTrack(trackItem.getUniqueId());
     }
 
     @Override
