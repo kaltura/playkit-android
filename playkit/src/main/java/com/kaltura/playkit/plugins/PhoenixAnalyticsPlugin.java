@@ -87,6 +87,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onApplicationResumed() {
+        timer = new java.util.Timer();
         log.d("onApplicationResumed");
 
     }
