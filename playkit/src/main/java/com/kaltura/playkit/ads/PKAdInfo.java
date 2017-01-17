@@ -1,10 +1,8 @@
 package com.kaltura.playkit.ads;
 
-public interface PKAdInfo {
+import com.kaltura.playkit.plugins.ads.AdRollType;
 
-    public static int PRE_ROLL  = 0;
-    public static int MID_ROLL  = 1;
-    public static int POST_ROLL = 2;
+public interface PKAdInfo {
 
     String   getAdDescription();
     String   getAdId();
@@ -18,5 +16,5 @@ public interface PKAdInfo {
     int      getAdPodPosition();
     long     getAdPodTimeOffset();
     long     getAdDuration();
-    int      getAdType();
+    AdRollType getAdRollType();
 }
