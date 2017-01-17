@@ -178,10 +178,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             log.d("IMA App resumed");
             loadedInBackground = false;
             isAdDisplayed = true;
-            //adsManager.start();
+            adsManager.start();
         }
         applicationInBackground = false;
-        pause();
     }
 
     @Override
