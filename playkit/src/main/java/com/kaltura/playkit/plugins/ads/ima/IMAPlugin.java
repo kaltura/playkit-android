@@ -252,7 +252,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
                 if (isInitWaiting) {
                     adsManager.init(renderingSettings);
-                    messageBus.post(new AdEvent.AdCuePointsUpdateEvent(new AdCuePoints(getAdCuePoints())));
+                    List<Long> cuePoints = getAdCuePoints();
+                    if (cuePoints.size() > 0) {
+                        messageBus.post(new AdEvent.AdCuePointsUpdateEvent(new AdCuePoints()));
+                    }
                     isInitWaiting = false;
                 }
 
@@ -266,7 +269,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         isAdRequested = true;
         if(adsManager != null) {
             adsManager.init(renderingSettings);
-            messageBus.post(new AdEvent.AdCuePointsUpdateEvent(new AdCuePoints(getAdCuePoints())));
+            List<Long> cuePoints = getAdCuePoints();
+            if (cuePoints.size() > 0) {
+                messageBus.post(new AdEvent.AdCuePointsUpdateEvent(new AdCuePoints(cuePoints)));
+            }
         } else{
             isInitWaiting = true;
         }
@@ -505,7 +511,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdEvent(AD_BREAK_ENDED));
                 break;
             case  CUEPOINTS_CHANGED:
-                messageBus.post(new AdEvent.AdCuePointsUpdateEvent(new AdCuePoints(getAdCuePoints())));
+                List<Long> cuePoints = getAdCuePoints();
+                if (cuePoints.size() > 0) {
+                    messageBus.post(new AdEvent.AdCuePointsUpdateEvent(new AdCuePoints(cuePoints)));
+                }
                 break;
             default:
                 break;
