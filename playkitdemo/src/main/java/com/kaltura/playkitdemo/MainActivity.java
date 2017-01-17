@@ -35,6 +35,7 @@ import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
 import com.kaltura.playkit.player.VideoTrack;
 import com.kaltura.playkit.plugins.SamplePlugin;
+import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
 import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
@@ -228,7 +229,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void addIMAPluginConfig(PlayerConfig.Plugins config) {
-        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
+        //String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
+        String adTagUrl = "http://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=xml_vmap1&unviewed_position_start=1&cust_params=sample_ar%3Dpremidpostpodbumper&cmsid=496&vid=short_onecue&correlator=%22";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
         List<String> videoMimeTypes = new ArrayList<>();
@@ -264,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onEvent(PKEvent event) {
                 AdEvent.AdCuePointsUpdateEvent cuePointsList = (AdEvent.AdCuePointsUpdateEvent) event;
-                List<Long> cuepointsList = cuePointsList.cuePoints;
+                AdCuePoints cuepointsList = cuePointsList.cuePoints;
             }
         }, AdEvent.Type.CUEPOINTS_CHANGED);
         player.addEventListener(new PKEvent.Listener() {
