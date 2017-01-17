@@ -1,6 +1,6 @@
 package com.kaltura.playkit.ads;
 
-import com.kaltura.playkit.plugins.ads.AdRollType;
+import com.kaltura.playkit.plugins.ads.AdPositionType;
 
 public interface PKAdInfo {
 
@@ -16,5 +16,5 @@ public interface PKAdInfo {
     int      getAdPodPosition();
     long     getAdPodTimeOffset();
     long     getAdDuration();
-    AdRollType getAdRollType();
+    AdPositionType getAdRollType();
 }

@@ -62,14 +62,14 @@ public class AdInfo implements PKAdInfo {
     }
 
     @Override
-    public AdRollType getAdRollType() {
+    public AdPositionType getAdRollType() {
 
         if (adPodTimeOffset > 0 ) {
-            return AdRollType.MID_ROLL;
+            return AdPositionType.MID_ROLL;
         } else if (adPodTimeOffset < 0) {
-            return AdRollType.POST_ROLL;
+            return AdPositionType.POST_ROLL;
         } else {
-            return AdRollType.PRE_ROLL;
+            return AdPositionType.PRE_ROLL;
         }
     }
 
