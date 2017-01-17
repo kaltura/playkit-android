@@ -35,6 +35,7 @@ import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
 import com.kaltura.playkit.player.VideoTrack;
 import com.kaltura.playkit.plugins.SamplePlugin;
+import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
 import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
@@ -264,7 +265,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onEvent(PKEvent event) {
                 AdEvent.AdCuePointsUpdateEvent cuePointsList = (AdEvent.AdCuePointsUpdateEvent) event;
-                List<Long> cuepointsList = cuePointsList.cuePoints;
+                AdCuePoints adCuePoints = cuePointsList.cuePoints;
+                if (adCuePoints != null) {
+                    log.d("Has Postroll = " + adCuePoints.hasPostRoll());
+                }
             }
         }, AdEvent.Type.CUEPOINTS_CHANGED);
         player.addEventListener(new PKEvent.Listener() {

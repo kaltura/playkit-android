@@ -29,6 +29,7 @@ import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdEnabledPlayerController;
 import com.kaltura.playkit.ads.PKAdInfo;
+import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdError;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
@@ -251,7 +252,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
                 if (isInitWaiting) {
                     adsManager.init(renderingSettings);
-                    messageBus.post(new AdEvent.AdCuePointsUpdateEvent(getAdCuePoints()));
+                    sendCuePointsUpdate();
                     isInitWaiting = false;
                 }
 
@@ -265,7 +266,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         isAdRequested = true;
         if(adsManager != null) {
             adsManager.init(renderingSettings);
-            messageBus.post(new AdEvent.AdCuePointsUpdateEvent(getAdCuePoints()));
+            sendCuePointsUpdate();
         } else{
             isInitWaiting = true;
         }
@@ -504,10 +505,17 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdEvent(AD_BREAK_ENDED));
                 break;
             case  CUEPOINTS_CHANGED:
-                messageBus.post(new AdEvent.AdCuePointsUpdateEvent(getAdCuePoints()));
+                sendCuePointsUpdate();
                 break;
             default:
                 break;
+        }
+    }
+
+    private void sendCuePointsUpdate() {
+        List<Long> cuePoints = getAdCuePoints();
+        if (cuePoints.size() > 0) {
+            messageBus.post(new AdEvent.AdCuePointsUpdateEvent(new AdCuePoints(cuePoints)));
         }
     }
 
