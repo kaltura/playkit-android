@@ -181,18 +181,18 @@ class WidevineModularAdapter extends DrmAdapter {
                     log.e("Invalid integers in KeyStatus: " + assetStatus);
                 }
                 if (listener != null) {
-                    listener.onStatus(localAssetPath, licenseDurationRemaining, playbackDurationRemaining);
+                    listener.onStatus(localAssetPath, licenseDurationRemaining, playbackDurationRemaining, true);
                 }
             }
         } catch (NoWidevinePSSHException e) {
             // Not a Widevine file
             if (listener != null) {
-                listener.onStatus(localAssetPath, -1, -1);
+                listener.onStatus(localAssetPath, -1, -1, false);
             }
             return false;
         } catch (RegisterException e) {
             if (listener != null) {
-                listener.onStatus(localAssetPath, 0, 0);
+                listener.onStatus(localAssetPath, 0, 0, false);
             }
             return false;
         }

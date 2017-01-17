@@ -45,10 +45,10 @@ public class LocalAssetsManager {
     }
 
     /**
-     * Will notify about the status of the requsted asset.
+     * Will notify about the status of the requested asset.
      */
     public interface AssetStatusListener {
-        void onStatus(String localAssetPath, long expiryTimeSeconds, long availableTimeSeconds);
+        void onStatus(String localAssetPath, long expiryTimeSeconds, long availableTimeSeconds, boolean isRegistered);
     }
 
     /**
