@@ -538,7 +538,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          */
         private static final Map<String, PKMediaFormat> SupportedFormats = new HashMap<String, PKMediaFormat>() {{
             put(FormatName.MpegDash, PKMediaFormat.dash_clear);
-            put(FormatName.MpegDashDrm, PKMediaFormat.dash_widevine);
+            put(FormatName.MpegDashDrm, PKMediaFormat.dash_drm);
             put(FormatName.AppleHttp, PKMediaFormat.hls_clear);
             put(FormatName.Url, PKMediaFormat.mp4_clear);
             put(FormatName.UrlDrm, PKMediaFormat.wvm_widevine);

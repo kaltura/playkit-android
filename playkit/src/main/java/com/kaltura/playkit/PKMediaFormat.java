@@ -8,7 +8,7 @@ import java.util.Map;
 public enum PKMediaFormat {
     mp4_clear("video/mp4", "mp4"),
     dash_clear("application/dash+xml", "mpd"),
-    dash_widevine("application/dash+xml", "mpd"),
+    dash_drm("application/dash+xml", "mpd"),
     wvm_widevine("video/wvm", "wvm"),
     hls_clear("application/x-mpegURL", "m3u8");
 
