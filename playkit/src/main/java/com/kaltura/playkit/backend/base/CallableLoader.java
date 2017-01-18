@@ -49,6 +49,10 @@ public abstract class CallableLoader implements Callable<Void> {
 
     }
 
+    protected void waitCompletion() throws InterruptedException {
+        waitCompletion(1);
+    }
+
     @Override
     public Void call() {
         if (isCanceled()) { // needed in case cancel done before callable started

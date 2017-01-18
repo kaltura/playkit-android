@@ -203,7 +203,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 loadReq = requestQueue.queue(entryRequest.build());
                 PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
-            waitCompletion(1);
+            waitCompletion();
         }
 
         private String getApiBaseUrl() {

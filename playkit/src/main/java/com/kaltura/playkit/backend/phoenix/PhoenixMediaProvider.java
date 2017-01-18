@@ -196,7 +196,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 loadReq = requestQueue.queue(requestBuilder.build());
                 PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
-            waitCompletion(1);
+            waitCompletion();
         }
 
         private String getApiBaseUrl() {
