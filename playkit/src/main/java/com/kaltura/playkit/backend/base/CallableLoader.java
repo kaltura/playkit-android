@@ -40,10 +40,10 @@ public abstract class CallableLoader implements Callable<Void> {
         }
     }
 
-    protected void waitCompletion() throws InterruptedException {
+    protected void waitCompletion(int countDownLatch) throws InterruptedException {
         synchronized (syncObject) {
             PKLog.i(TAG, loadId + ": waitCompletion: set new counDown" + (waitCompletion != null ? "already has counter " + waitCompletion.getCount() : ""));
-            waitCompletion = new CountDownLatch(1);
+            waitCompletion = new CountDownLatch(countDownLatch);
         }
         waitCompletion.await();
 
