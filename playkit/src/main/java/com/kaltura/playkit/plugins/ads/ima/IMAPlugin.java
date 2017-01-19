@@ -29,6 +29,7 @@ import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdEnabledPlayerController;
 import com.kaltura.playkit.ads.PKAdInfo;
+import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdError;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
@@ -53,8 +54,6 @@ import static com.kaltura.playkit.plugins.ads.AdEvent.Type.RESUMED;
 public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.interactivemedia.v3.api.AdEvent.AdEventListener, AdErrorEvent.AdErrorListener  {
 
     private static final PKLog log = PKLog.get("IMAPlugin");
-
-
 
     @Override
     protected PlayerDecorator getPlayerDecorator() {
@@ -191,8 +190,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
 
     }
-
-
+    
     ////////Ads Plugin
 
     @Override
@@ -251,7 +249,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
                 if (isInitWaiting) {
                     adsManager.init(renderingSettings);
-                    messageBus.post(new AdEvent.AdCuePointsUpdateEvent(getAdCuePoints()));
+                    sendCuePointsUpdate();
                     isInitWaiting = false;
                 }
 
@@ -265,7 +263,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         isAdRequested = true;
         if(adsManager != null) {
             adsManager.init(renderingSettings);
-            messageBus.post(new AdEvent.AdCuePointsUpdateEvent(getAdCuePoints()));
+            sendCuePointsUpdate();
         } else{
             isInitWaiting = true;
         }
@@ -433,9 +431,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED");
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_RESUME_REQUESTED));
                 isAdDisplayed = false;
-                if (player != null && player.getCurrentPosition() < player.getDuration()) {
+                if (player != null) {
                     player.getView().showVideoSurface();
-                    player.play();
+                    if (player.getCurrentPosition() < player.getDuration()) {
+                        player.play();
+                    }
                 }
                 break;
             case ALL_ADS_COMPLETED:
@@ -504,10 +504,26 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdEvent(AD_BREAK_ENDED));
                 break;
             case  CUEPOINTS_CHANGED:
-                messageBus.post(new AdEvent.AdCuePointsUpdateEvent(getAdCuePoints()));
+                sendCuePointsUpdate();
+                break;
+            case LOG:
+                //for this case no AD ERROR is fired need to show view {type=adLoadError, errorCode=1009, errorMessage=The response does not contain any valid ads.}
+                if (adEvent.getAd() == null) {
+                    log.e("Ad is null - back to playback");
+                    if (player != null && player.getView() != null) {
+                        player.getView().showVideoSurface();
+                    }
+                }
                 break;
             default:
                 break;
+        }
+    }
+
+    private void sendCuePointsUpdate() {
+        List<Long> cuePoints = getAdCuePoints();
+        if (cuePoints.size() > 0) {
+            messageBus.post(new AdEvent.AdCuePointsUpdateEvent(new AdCuePoints(cuePoints)));
         }
     }
 
@@ -626,6 +642,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
         if (player != null && player.getView() != null) {
             player.getView().showVideoSurface();
+            player.play();
         }
     }
 }

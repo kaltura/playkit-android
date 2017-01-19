@@ -2,6 +2,8 @@ package com.kaltura.playkit;
 
 import android.content.Context;
 
+import com.kaltura.playkit.player.MediaSupport;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +35,9 @@ public class PlayKitManager {
     }
 
     public static Player loadPlayer(PlayerConfig playerConfig, Context context) {
+
+        MediaSupport.initialize(context);
+        
         PlayerLoader playerLoader = new PlayerLoader(context);
         playerLoader.load(playerConfig);
         return playerLoader;

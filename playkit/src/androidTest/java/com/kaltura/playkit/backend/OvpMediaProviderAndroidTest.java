@@ -85,7 +85,6 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     };
 
 
-
     public OvpMediaProviderAndroidTest() {
         super("OvpMediaProviderAndroidTest");
     }
@@ -104,19 +103,20 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
             @Override
             public void onComplete(PrimitiveResult response) {
                 if (response.error == null) {
-                    loadMediaByEntryId(DRMEntryIdAnm, DRMEntryIdAnmDuration, 2, sessionProvider, failure, new TestBlock<ResultElement<PKMediaEntry>>() {
+                    loadMediaByEntryId(DRMEntryIdAnm, DRMEntryIdAnmDuration, 1, sessionProvider, failure, new TestBlock<ResultElement<PKMediaEntry>>() {
                         @Override
-                        public void execute(ResultElement<PKMediaEntry> data) throws AssertionError{
+                        public void execute(ResultElement<PKMediaEntry> data) throws AssertionError {
                             PKMediaSource firstSource = data.getResponse().getSources().get(0);
                             assertNotNull(firstSource.getDrmData());
                             assertTrue(firstSource.getDrmData().size() == 2);
                             assertTrue(firstSource.getUrl().endsWith("mpd"));
                             assertTrue(firstSource.getMediaFormat().equals(PKMediaFormat.dash_widevine));
 
+                            /*someone added drm data to the third retrieved source (applehttp), so this section is not valid
                             PKMediaSource secondSource = data.getResponse().getSources().get(1);
                             assertTrue(secondSource.getDrmData().size() == 0);
                             assertTrue(secondSource.getUrl().endsWith("m3u8"));
-                            assertTrue(secondSource.getMediaFormat().equals(PKMediaFormat.hls_clear));
+                            assertTrue(secondSource.getMediaFormat().equals(PKMediaFormat.hls_clear));*/
                         }
                     });
                 } else {
@@ -286,6 +286,61 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
                 }
             }
         });
+    }
+
+    @Test
+    public void textLoadMediaWithEmptyKs() {
+        SessionProvider sessionProvider = new SessionProvider() {
+            @Override
+            public String baseUrl() {
+                return MockParams.OvpBaseUrl;
+            }
+
+            @Override
+            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
+                if (completion != null) {
+                    completion.onComplete(new PrimitiveResult(""));
+                }
+            }
+
+            @Override
+            public int partnerId() {
+                return MockParams.OvpPartnerId;
+            }
+        };
+
+        final AtomicReference<AssertionError> failure = new AtomicReference<>();
+
+        new KalturaOvpMediaProvider().setSessionProvider(sessionProvider).setEntryId(MockParams.NonDRMEntryId).load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                try {
+                    if (response.isSuccess()) {
+                        PKLog.d(TAG, "got PKMediaEntry object: checking content");
+                        assertTrue(response.getResponse() != null);
+                        assertTrue(response.getResponse().getId().equals(MockParams.NonDRMEntryId));
+                        PKLog.i(TAG, "PKMediaEntry validated successfully");
+
+                    } else {
+                        assertNotNull(response.getError());
+                        PKLog.d(TAG, "got error on PKMediaEntry loading:" + response.getError());
+                        fail("failed on entry loading:" + response.getError());
+                    }
+
+                } catch (AssertionError e) {
+                    failure.set(e);
+                    fail("failed on entry validation:" + e.getMessage());
+                } finally {
+                    OvpMediaProviderAndroidTest.this.resume();
+                }
+            }
+        });
+
+        wait(1);
+
+        if (failure.get() != null) {
+            throw failure.get();
+        }
     }
 
     /**

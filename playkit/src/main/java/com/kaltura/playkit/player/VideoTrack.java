@@ -1,4 +1,4 @@
-package com.kaltura.playkit;
+package com.kaltura.playkit.player;
 
 /**
  * Video track data holder.
@@ -11,8 +11,8 @@ public class VideoTrack extends BaseTrack {
     private long bitrate;
 
 
-    public VideoTrack(String uniqueId, long bitrate, int width, int height, boolean isAdaptive) {
-        super(uniqueId, isAdaptive);
+     VideoTrack(String uniqueId, long bitrate, int width, int height, int selectionFlag, boolean isAdaptive) {
+        super(uniqueId, selectionFlag, isAdaptive);
         this.bitrate = bitrate;
         this.width = width;
         this.height = height;
