@@ -1,6 +1,6 @@
 [![CI Status](https://travis-ci.org/kaltura/playkit-android.svg?branch=develop)](https://travis-ci.org/kaltura/playkit-android)
 [ ![Download](https://api.bintray.com/packages/kaltura/android/playkit/images/download.svg) ](https://bintray.com/kaltura/android/playkit/_latestVersion)
-[ ![Android](https://img.shields.io/badge/platform-android-green.svg)]
+![Android](https://img.shields.io/badge/platform-android-green.svg)
 
 # Kaltura Player SDK
 ## Note: The Kaltura SDK v3 is in beta
