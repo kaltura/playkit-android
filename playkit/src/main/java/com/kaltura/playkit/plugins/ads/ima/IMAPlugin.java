@@ -190,8 +190,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
 
     }
-
-
+    
     ////////Ads Plugin
 
     @Override
