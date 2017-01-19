@@ -15,7 +15,7 @@ public abstract class CallableLoader implements Callable<Void> {
     protected final String loadId = this.toString() + ":" + System.currentTimeMillis();
 
     protected OnCompletion completion;
-    private CountDownLatch waitCompletion;
+    protected CountDownLatch waitCompletion;
 
     protected String TAG;
     protected final Object syncObject = new Object();
