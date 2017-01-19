@@ -54,8 +54,6 @@ import static com.kaltura.playkit.plugins.ads.AdEvent.Type.RESUMED;
 public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.interactivemedia.v3.api.AdEvent.AdEventListener, AdErrorEvent.AdErrorListener  {
 
     private static final PKLog log = PKLog.get("IMAPlugin");
-    private static final String NO_VALID_ADS_CODE = "1009";
-    private static final String AD_LOAD_ERROR = "adLoadError";
 
     @Override
     protected PlayerDecorator getPlayerDecorator() {
@@ -511,14 +509,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 break;
             case LOG:
                 //for this case no AD ERROR is fired need to show view {type=adLoadError, errorCode=1009, errorMessage=The response does not contain any valid ads.}
-                if (adEvent.getAdData() != null &&
-                    adEvent.getAdData().containsKey("type") &&
-                    AD_LOAD_ERROR.equals(adEvent.getAdData().get("type")) &&
-                    adEvent.getAdData().containsKey("errorCode") &&
-                    NO_VALID_ADS_CODE.equals(adEvent.getAdData().get("errorCode"))) {
-                         if (player != null && player.getView() != null) {
-                              player.getView().showVideoSurface();
-                         }
+                if (adEvent.getAd() == null) {
+                    log.e("Ad is null - back to playback");
+                    if (player != null && player.getView() != null) {
+                        player.getView().showVideoSurface();
+                    }
                 }
                 break;
             default:
