@@ -183,6 +183,12 @@ class WidevineModularAdapter extends DrmAdapter {
                 if (listener != null) {
                     listener.onStatus(localAssetPath, licenseDurationRemaining, playbackDurationRemaining, true);
                 }
+            } else {
+                //if assetStatus was null, that means that there is no drm protection for asset,
+                //but still it is count as registered.
+                if (listener != null) {
+                    listener.onStatus(localAssetPath, 0, 0, true);
+                }
             }
         } catch (NoWidevinePSSHException e) {
             // Not a Widevine file
@@ -202,6 +208,12 @@ class WidevineModularAdapter extends DrmAdapter {
 
     private Map<String, String> checkAssetStatus(String localAssetPath, String assetId) throws RegisterException {
         SimpleDashParser dash = parseDash(localAssetPath, assetId);
+
+        //no content protection, so there could not be any status info, so return null.
+        if (!dash.hasContentProtection) {
+            return null;
+        }
+
         if (dash.widevineInitData == null) {
             throw new NoWidevinePSSHException("No Widevine PSSH in media", null);
         }
@@ -235,7 +247,7 @@ class WidevineModularAdapter extends DrmAdapter {
             e.printStackTrace();
         }
 
-        if(mediaDrm == null){
+        if (mediaDrm == null) {
             throw new RegisterException("Could not create MediaDrm instance ", null);
         }
 
@@ -244,8 +256,9 @@ class WidevineModularAdapter extends DrmAdapter {
 
     /**
      * Parse the dash manifest for the specified file.
+     *
      * @param localPath - file from which to parse the dash manifest.
-     * @param assetId - the asset id.
+     * @param assetId   - the asset id.
      * @return - {@link SimpleDashParser} which contains the manifest data we need.
      * @throws RegisterException
      */
@@ -311,7 +324,7 @@ class WidevineModularAdapter extends DrmAdapter {
                 + ") " + "ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
     }
 
-    private String encodeToString(byte[] data){
+    private String encodeToString(byte[] data) {
         return Base64.encodeToString(data, Base64.NO_WRAP);
     }
 

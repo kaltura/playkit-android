@@ -89,7 +89,7 @@ public class LocalAssetsManager {
                                  @NonNull final String assetId, final AssetRegistrationListener listener) {
 
         // Preflight: check that all parameters are valid.
-        checkNotNull(mediaSource.getUrl(), "mediaSource.url");    // can be an empty string (but not null)
+        checkNotEmpty(mediaSource.getUrl(), "mediaSource.url");
         checkNotEmpty(localAssetPath, "localAssetPath");
         checkNotEmpty(assetId, "assetId");
 
