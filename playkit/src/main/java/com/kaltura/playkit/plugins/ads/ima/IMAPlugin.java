@@ -54,8 +54,8 @@ import static com.kaltura.playkit.plugins.ads.AdEvent.Type.RESUMED;
 public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.interactivemedia.v3.api.AdEvent.AdEventListener, AdErrorEvent.AdErrorListener  {
 
     private static final PKLog log = PKLog.get("IMAPlugin");
-
-
+    private static final String NO_VALID_ADS_CODE = "1009";
+    private static final String AD_LOAD_ERROR = "adLoadError";
 
     @Override
     protected PlayerDecorator getPlayerDecorator() {
@@ -434,9 +434,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED");
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_RESUME_REQUESTED));
                 isAdDisplayed = false;
-                if (player != null && player.getCurrentPosition() < player.getDuration()) {
+                if (player != null) {
                     player.getView().showVideoSurface();
-                    player.play();
+                    if (player.getCurrentPosition() < player.getDuration()) {
+                        player.play();
+                    }
                 }
                 break;
             case ALL_ADS_COMPLETED:
@@ -506,6 +508,18 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 break;
             case  CUEPOINTS_CHANGED:
                 sendCuePointsUpdate();
+                break;
+            case LOG:
+                //for this case no AD ERROR is fired need to show view {type=adLoadError, errorCode=1009, errorMessage=The response does not contain any valid ads.}
+                if (adEvent.getAdData() != null &&
+                    adEvent.getAdData().containsKey("type") &&
+                    AD_LOAD_ERROR.equals(adEvent.getAdData().get("type")) &&
+                    adEvent.getAdData().containsKey("errorCode") &&
+                    NO_VALID_ADS_CODE.equals(adEvent.getAdData().get("errorCode"))) {
+                         if (player != null && player.getView() != null) {
+                              player.getView().showVideoSurface();
+                         }
+                }
                 break;
             default:
                 break;
