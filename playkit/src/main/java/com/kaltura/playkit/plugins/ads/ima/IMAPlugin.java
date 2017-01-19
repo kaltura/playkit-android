@@ -55,8 +55,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     private static final PKLog log = PKLog.get("IMAPlugin");
 
-
-
     @Override
     protected PlayerDecorator getPlayerDecorator() {
         return new AdEnabledPlayerController(this);
@@ -192,8 +190,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
 
     }
-
-
+    
     ////////Ads Plugin
 
     @Override
@@ -434,9 +431,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED");
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_RESUME_REQUESTED));
                 isAdDisplayed = false;
-                if (player != null && player.getCurrentPosition() < player.getDuration()) {
+                if (player != null) {
                     player.getView().showVideoSurface();
-                    player.play();
+                    if (player.getCurrentPosition() < player.getDuration()) {
+                        player.play();
+                    }
                 }
                 break;
             case ALL_ADS_COMPLETED:
@@ -506,6 +505,15 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 break;
             case  CUEPOINTS_CHANGED:
                 sendCuePointsUpdate();
+                break;
+            case LOG:
+                //for this case no AD ERROR is fired need to show view {type=adLoadError, errorCode=1009, errorMessage=The response does not contain any valid ads.}
+                if (adEvent.getAd() == null) {
+                    log.e("Ad is null - back to playback");
+                    if (player != null && player.getView() != null) {
+                        player.getView().showVideoSurface();
+                    }
+                }
                 break;
             default:
                 break;
