@@ -53,7 +53,7 @@ class SourceSelector {
         
         // Dash+Widevine is only available from Android 4.3 
         if (MediaSupport.widevineModular()) {
-            pref.add(PKMediaFormat.dash_widevine);  
+            pref.add(PKMediaFormat.dash_drm);
         }
         
         // HLS clear is always available

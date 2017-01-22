@@ -174,7 +174,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
                         mainHandler, eventLogger);
 
             case dash_clear:
-            case dash_widevine:
+            case dash_drm:
                 return new DashMediaSource(uri, buildDataSourceFactory(false),
                         new DefaultDashChunkSource.Factory(mediaDataSourceFactory), mainHandler, eventLogger);
 
