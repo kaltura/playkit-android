@@ -65,7 +65,7 @@ public class KalturaStatsAndroidTest {
         pluginConfig.addProperty("uiconfId", uiconfId);
         pluginConfig.addProperty("baseUrl", "stats.kaltura.com");
         pluginConfig.addProperty("partnerId", partnerId);
-        pluginConfig.addProperty("timerInterval", 30000);
+        pluginConfig.addProperty("timerInterval", 30);
     }
 
     private void setMediaObject(){

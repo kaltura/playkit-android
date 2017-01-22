@@ -158,7 +158,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      */
     private void startMediaHitInterval(){
         log.d("timer interval");
-        MediaHitInterval = pluginConfig.has("timerInterval")? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt(): 30000;
+        MediaHitInterval = pluginConfig.has("timerInterval")? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * 1000 : 30000;
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {

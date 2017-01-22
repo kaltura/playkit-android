@@ -80,7 +80,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     private boolean hasSeeked = false;
     private boolean isImpression = false;
 
-    private static final int TimerInterval = 10000;
+    private int TimerInterval = 10000;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -226,6 +226,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     }
 
     private void startTimeObservorInterval() {
+        TimerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * 1000 : 10000;
         if (timer == null) {
             timer = new java.util.Timer();
         }
