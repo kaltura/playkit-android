@@ -1,3 +1,8 @@
+[![CI Status](https://travis-ci.org/kaltura/playkit-android.svg?branch=develop)](https://travis-ci.org/kaltura/playkit-android)
+[ ![Download](https://api.bintray.com/packages/kaltura/android/playkit/images/download.svg) ](https://bintray.com/kaltura/android/playkit/_latestVersion)
+[![License](https://img.shields.io/badge/license-AGPLv3-black.svg)](https://github.com/kaltura/playkit-android/blob/master/LICENSE)
+![Android](https://img.shields.io/badge/platform-android-green.svg)
+
 # Kaltura Player SDK
 ## Note: The Kaltura SDK v3 is in beta
 
@@ -25,4 +30,4 @@ All code in this project is released under the [AGPLv3 license](http://www.gnu.o
 Copyright © Kaltura Inc. All rights reserved.   
 Authors and contributors: See [GitHub contributors list](https://github.com/kaltura/playkit-android/graphs/contributors).  
 
-[![CI Status](http://img.shields.io/travis/kaltura/playkit-android.svg?style=flat)](https://travis-ci.org/kaltura/playkit-android)
+

@@ -14,6 +14,10 @@ public class AdCuePoints {
         this.adCuePoints = adCuePoints;
     }
 
+    public List<Long> getAdCuePoints() {
+        return adCuePoints;
+    }
+
     public boolean hasPreRoll() {
         if (adCuePoints != null && !adCuePoints.isEmpty()) {
             if (adCuePoints.get(0) == 0) {
