@@ -127,8 +127,6 @@ public class KalturaStatsPlugin extends PKPlugin {
     private boolean isFirstPlay = true;
     private boolean durationValid = false;
 
-    private int TimerInterval = 10000;
-
     public static final Factory factory = new Factory() {
         @Override
         public String getName() {
@@ -369,7 +367,7 @@ public class KalturaStatsPlugin extends PKPlugin {
      * Time interval handling play reached events
      */
     private void startTimerInterval() {
-        TimerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int)Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
+        int timerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int)Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
         if (timer == null) {
             timer = new java.util.Timer();
         }
@@ -391,7 +389,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                     sendAnalyticsEvent(KStatsEvent.PLAY_REACHED_100);
                 }
             }
-        }, 0, TimerInterval);
+        }, 0, timerInterval);
     }
 
     /**
