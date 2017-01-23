@@ -465,7 +465,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 if (drmData != null) {
                     List<PKDrmParams> drmParams = new ArrayList<>();
                     for (KalturaPlaybackSource.KalturaDrmEntryPlayingPluginData drm : drmData) {
-                        drmParams.add(new PKDrmParams(drm.getLicenseURL()));
+                        drmParams.add(new PKDrmParams(drm.getLicenseURL(), drm.getScheme()));
                     }
                     pkMediaSource.setDrmData(drmParams);
                 }
