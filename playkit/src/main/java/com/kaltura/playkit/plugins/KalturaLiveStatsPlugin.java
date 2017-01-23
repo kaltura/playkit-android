@@ -65,8 +65,6 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private boolean isLive = false;
     private boolean isFirstPlay = true;
 
-    private int TimerInterval = 10000;
-
     public static final Factory factory = new Factory() {
         @Override
         public String getName() {
@@ -176,7 +174,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     }
 
     private void startTimerInterval() {
-        TimerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * 1000 : 10000;
+        int timerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * 1000 : 10000;
 
         if (timer == null) {
             timer = new java.util.Timer();
@@ -186,7 +184,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
             public void run() {
                 sendLiveEvent(bufferTime);
             }
-        }, 0, TimerInterval);
+        }, 0, timerInterval);
     }
 
 
