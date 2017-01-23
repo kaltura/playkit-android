@@ -82,6 +82,7 @@ class TrackSelectionHelper {
     boolean prepareTracks() {
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if(mappedTrackInfo == null){
+            log.w("Trying to get current MappedTrackInfo returns null");
             return false;
         }
         warnAboutUnsupportedRenderTypes();
@@ -261,6 +262,10 @@ class TrackSelectionHelper {
 
         log.i("change track to uniqueID -> " + uniqueId);
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
+        if(mappedTrackInfo == null){
+            log.w("Trying to get current MappedTrackInfo returns null. Do not change track with id - " + uniqueId);
+            return;
+        }
         int[] uniqueTrackId = parseUniqueId(uniqueId);
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
