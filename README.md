@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f1252d6564a948c1b7b254ac8224e26d)](https://www.codacy.com/app/giladna/playkit-android?utm_source=github.com&utm_medium=referral&utm_content=kaltura/playkit-android&utm_campaign=badger)
 [![CI Status](https://travis-ci.org/kaltura/playkit-android.svg?branch=develop)](https://travis-ci.org/kaltura/playkit-android)
 [ ![Download](https://api.bintray.com/packages/kaltura/android/playkit/images/download.svg) ](https://bintray.com/kaltura/android/playkit/_latestVersion)
 [![License](https://img.shields.io/badge/license-AGPLv3-black.svg)](https://github.com/kaltura/playkit-android/blob/master/LICENSE)
