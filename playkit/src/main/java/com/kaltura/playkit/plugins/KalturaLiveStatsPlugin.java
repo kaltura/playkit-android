@@ -20,6 +20,7 @@ import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
+import com.kaltura.playkit.utils.Consts;
 
 import java.util.Date;
 import java.util.TimerTask;
@@ -174,7 +175,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     }
 
     private void startTimerInterval() {
-        int timerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * 1000 : 10000;
+        int timerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int)Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
 
         if (timer == null) {
             timer = new java.util.Timer();

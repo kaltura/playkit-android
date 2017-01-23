@@ -20,6 +20,8 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
+import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
+
 /**
  * Created by anton.afanasiev on 01/11/2016.
  */
@@ -27,7 +29,6 @@ import com.kaltura.playkit.utils.Consts;
 public class PlayerController implements Player {
 
     private static final PKLog log = PKLog.get("PlayerController");
-    private static final long MILLISECONDS_MULTIPLIER = 1000L;
     private static final int ALLOWED_ERROR_RETRIES = 3;
 
 

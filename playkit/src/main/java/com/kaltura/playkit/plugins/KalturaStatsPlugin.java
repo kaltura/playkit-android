@@ -369,7 +369,7 @@ public class KalturaStatsPlugin extends PKPlugin {
      * Time interval handling play reached events
      */
     private void startTimerInterval() {
-        TimerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * 1000 : 30000;
+        TimerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int)Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
         if (timer == null) {
             timer = new java.util.Timer();
         }

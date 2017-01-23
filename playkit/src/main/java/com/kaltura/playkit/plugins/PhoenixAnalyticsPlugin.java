@@ -18,6 +18,7 @@ import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
+import com.kaltura.playkit.utils.Consts;
 
 import java.util.TimerTask;
 
@@ -51,8 +52,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     public RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
     public MessageBus messageBus;
-
-    private int MediaHitInterval = 30000; //Should be provided in plugin config
 
     public static final Factory factory = new Factory() {
         @Override
@@ -160,7 +159,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      */
     private void startMediaHitInterval(){
         log.d("timer interval");
-        MediaHitInterval = pluginConfig.has("timerInterval")? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * 1000 : 30000;
+        int mediaHitInterval = pluginConfig.has("timerInterval")? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -169,7 +168,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                     sendAnalyticsEvent(PhoenixActionType.FINISH);
                 }
             }
-        }, 0, MediaHitInterval); // Get media hit interval from plugin config
+        }, 0, mediaHitInterval); // Get media hit interval from plugin config
     }
 
     /**
