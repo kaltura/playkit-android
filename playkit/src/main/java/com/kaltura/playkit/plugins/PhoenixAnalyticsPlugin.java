@@ -122,10 +122,12 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                 switch (((PlayerEvent) event).type) {
                     case ENDED:
                         timer.cancel();
+                        timer = new java.util.Timer();
                         sendAnalyticsEvent(PhoenixActionType.FINISH);
                         break;
                     case ERROR:
                         timer.cancel();
+                        timer = new java.util.Timer();
                         sendAnalyticsEvent(PhoenixActionType.ERROR);
                         break;
                     case LOADED_METADATA:
