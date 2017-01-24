@@ -1,6 +1,6 @@
 
 // PlayKit Library Version
-ext.playkitVersion = 'dev'
+ext.playkitVersion = '0.1.8'
 
 
 
@@ -26,7 +26,7 @@ try {
         userOrg = 'kaltura'
         groupId = 'com.kaltura.playkit'
         version = playkitVersion
-        autoPublish = false
+        autoPublish = true
         licences = ['AGPL-3.0']
     }
 } catch (UnknownPluginException ignored) {
