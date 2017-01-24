@@ -18,6 +18,7 @@ import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
+import com.kaltura.playkit.utils.Consts;
 
 import java.util.TimerTask;
 
@@ -29,6 +30,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     private static final PKLog log = PKLog.get("KalturaAnalyticsPlugin");
     private static final String TAG = "KalturaAnalyticsPlugin";
     private final String BASE_URL = "https://analytics.kaltura.com/api_v3/index.php";
+
 
 
     public enum KAnalonyEvents {
@@ -224,7 +226,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     }
 
     private void startTimeObservorInterval() {
-        int timerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * 1000 : 10000;
+        int timerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
         if (timer == null) {
             timer = new java.util.Timer();
         }

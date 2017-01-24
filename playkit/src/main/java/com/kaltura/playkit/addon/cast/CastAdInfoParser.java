@@ -1,12 +1,11 @@
 package com.kaltura.playkit.addon.cast;
 
-import android.util.Log;
-
 import com.google.android.gms.cast.AdBreakInfo;
 import com.google.android.gms.cast.MediaStatus;
 import com.google.android.gms.cast.framework.media.RemoteMediaClient;
 import com.google.gson.GsonBuilder;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.utils.Consts;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -57,7 +56,7 @@ public class CastAdInfoParser implements RemoteMediaClient.ParseAdsInfoCallback 
 
         for (long adPosition : adsInfoData.getAdsBreakInfo()) {
 
-            long adPositionInMs = adPosition * 1000;
+            long adPositionInMs = adPosition * Consts.MILLISECONDS_MULTIPLIER;
             adBreakInfo = new AdBreakInfo.Builder(adPositionInMs).build();
             adBreakInfoList.add(adBreakInfo);
 
