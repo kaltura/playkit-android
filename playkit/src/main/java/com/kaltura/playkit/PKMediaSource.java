@@ -47,7 +47,7 @@ public class PKMediaSource {
         return this;
     }
 
-    public boolean hasDrmParams(List<PKDrmParams> drmData) {
+    public boolean hasDrmParams() {
         return (drmData != null && drmData.size() > 0) ? true : false;
     }
 }
