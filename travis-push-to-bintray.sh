@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Required env vars:
+# TRAVIS_TAG: current tag (e.g. v0.1.2)
+# BINTRAY_USER, BINTRAY_KEY
+
+# Run locally:
+# TRAVIS_TAG=v0.1.2 BINTRAY_USER=username BINTRAY_KEY=fjkhsdfka3289r82rkfe ./travis-push-to-bintray.sh
+
+
 DRY_RUN=false
 
 # Only allow tags
