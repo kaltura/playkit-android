@@ -532,7 +532,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         if (adsManager != null && adsManager.getAdCuePoints() != null) {
             for (Float cuePoint : adsManager.getAdCuePoints()) {
                 if (cuePoint >= 0) {
-                    adCuePoints.add(cuePoint.longValue() * 1000);
+                    adCuePoints.add(cuePoint.longValue() * Consts.MILLISECONDS_MULTIPLIER);
                 } else {
                     adCuePoints.add(cuePoint.longValue());
                 }
@@ -543,7 +543,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     private AdInfo createAdInfo(Ad ad) {
         String adDescription      = ad.getDescription();
-        long adDuration           = (long)(ad.getDuration() * 1000);
+        long adDuration           = (long)(ad.getDuration() * Consts.MILLISECONDS_MULTIPLIER);
         String adTitle            = ad.getTitle();
         boolean isAdSkippable     = ad.isSkippable();
         String contentType        = ad.getContentType();
@@ -553,7 +553,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         int adWidth               = ad.getWidth();
         int adPodCount            = ad.getAdPodInfo().getTotalAds();
         int adPodPosition         = ad.getAdPodInfo().getAdPosition();
-        long adPodTimeOffset      = (long)(ad.getAdPodInfo().getTimeOffset() * 1000);
+        long adPodTimeOffset      = (long)(ad.getAdPodInfo().getTimeOffset() * Consts.MILLISECONDS_MULTIPLIER);
 
 
         AdInfo adInfo =  new AdInfo(adDescription, adDuration,
