@@ -55,11 +55,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     private static final PKLog log = PKLog.get("IMAPlugin");
 
-    @Override
-    protected PlayerDecorator getPlayerDecorator() {
-        return new AdEnabledPlayerController(this);
-    }
-
     /////////////////////
     private Player player;
     private Context context;
@@ -108,6 +103,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
     };
 
+    @Override
+    protected PlayerDecorator getPlayerDecorator() {
+        return new AdEnabledPlayerController(this);
+    }
     ////////PKPlugin
 
     ///////////END PKPlugin
