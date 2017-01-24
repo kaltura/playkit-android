@@ -71,7 +71,7 @@ public class DeferredDrmSessionManager<T extends ExoMediaCrypto> implements DrmS
     private String getLicenseUrl(PKMediaSource mediaSource) {
         String licenseUrl = null;
         List<PKDrmParams> drmData = mediaSource.getDrmData();
-        if (isDrmDataValid(drmData)) {
+        if (mediaSource.hasDrmParams(drmData)) {
             for (PKDrmParams pkDrmParam : drmData) {
                 // selecting widevine_cenc as default right now
                 if (PKDrmParams.Scheme.widevine_cenc == pkDrmParam.getScheme()) {
@@ -81,10 +81,6 @@ public class DeferredDrmSessionManager<T extends ExoMediaCrypto> implements DrmS
             }
         }
         return licenseUrl;
-    }
-
-    private boolean isDrmDataValid(List<PKDrmParams> drmData) {
-        return (drmData != null && drmData.size() > 0) ?  true : false;
     }
 
     @Override
