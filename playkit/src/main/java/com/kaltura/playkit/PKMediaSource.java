@@ -46,4 +46,8 @@ public class PKMediaSource {
         this.mediaFormat = mediaFormat;
         return this;
     }
+
+    public boolean hasDrmParams() {
+        return (drmData != null && drmData.size() > 0) ? true : false;
+    }
 }
