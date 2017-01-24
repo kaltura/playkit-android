@@ -58,6 +58,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import static com.kaltura.playkit.PKDrmParams.Scheme.playready_cenc;
+import static com.kaltura.playkit.PKDrmParams.Scheme.widevine_cenc;
+import static com.kaltura.playkit.PKDrmParams.Scheme.widevine_classic;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
@@ -475,7 +478,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 if (drmData != null) {
                     List<PKDrmParams> drmParams = new ArrayList<>();
                     for (KalturaPlaybackSource.KalturaDrmEntryPlayingPluginData drm : drmData) {
-                        drmParams.add(new PKDrmParams(drm.getLicenseURL()));
+                        drmParams.add(new PKDrmParams(drm.getLicenseURL(), getSchemeEnumByName(drm.getScheme())));
                     }
                     pkMediaSource.setDrmData(drmParams);
                 }
@@ -593,6 +596,20 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 default:
                     return PKMediaEntry.MediaEntryType.Unknown;
             }
+        }
+    }
+
+    public static PKDrmParams.Scheme getSchemeEnumByName(String code) {
+
+        switch (code) {
+            case "drm.WIDEVINE_CENC":
+                return widevine_cenc;
+            case "drm.PLAYREADY_CENC":
+                return playready_cenc;
+            case "drm.WIDEVINE_CLASSIC":
+                return widevine_classic;
+            default:
+                return null;
         }
     }
 

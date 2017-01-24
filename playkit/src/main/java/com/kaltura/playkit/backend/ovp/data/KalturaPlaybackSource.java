@@ -84,5 +84,9 @@ public class KalturaPlaybackSource {
         public String getLicenseURL() {
             return licenseURL;
         }
+
+        public String getScheme() {
+            return scheme;
+        }
     }
 }
