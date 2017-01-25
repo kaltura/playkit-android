@@ -158,7 +158,6 @@ public class PlayerController implements Player {
         if (source.getMediaFormat() != PKMediaFormat.wvm_widevine) {
             if (player == null) {
                 player = new ExoPlayerWrapper(context);
-                wrapperView.addView(player.getView());
                 togglePlayerListeners(true);
             }
         } else {
@@ -243,6 +242,9 @@ public class PlayerController implements Player {
         if (player == null) {
             log.e("Attempt to invoke 'play()' on null instance of the player engine");
             return;
+        }
+        if (wrapperView.getChildCount() == 1) {
+            wrapperView.addView(player.getView());
         }
         player.play();
     }
