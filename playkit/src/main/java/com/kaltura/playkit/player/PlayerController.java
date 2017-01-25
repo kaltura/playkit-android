@@ -4,7 +4,6 @@ import android.content.Context;
 import android.media.MediaCodec;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -125,33 +124,20 @@ public class PlayerController implements Player {
     }
 
     private void setVideoSurfaceVisibility(boolean isVisible) {
-        View videoSurface = wrapperView.getChildAt(0);
-        if (videoSurface != null) {
-            if (videoSurface instanceof PlayerView) {
-                    PlayerView playerView = (PlayerView) wrapperView.getChildAt(0);
-                    if (playerView != null) {
-                        if (isVisible) {
-                            playerView.showVideoSurface();
-                        } else {
-                            playerView.hideVideoSurface();
-                        }
-                    }
-            } else {
-                if (player != null && player.getView() != null) {
-                    if (isVisible) {
-                        player.getView().showVideoSurface();
-                    } else {
-                        player.getView().hideVideoSurface();
-                    }
-                } else {
-                    String visibilityFunction = "showVideoSurface";
-                    if (!isVisible) {
-                        visibilityFunction = "hideVideoSurface";
-                    }
-                    log.e("Error in " + visibilityFunction + " cannot cast to PlayerView,  class = " + videoSurface.getClass().getName());
-                }
+
+       if (player != null && player.getView() != null) {
+           if (isVisible) {
+               player.getView().showVideoSurface();
+           } else {
+                player.getView().hideVideoSurface();
+           }
+       } else {
+           String visibilityFunction = "showVideoSurface";
+           if (!isVisible) {
+              visibilityFunction = "hideVideoSurface";
             }
-        }
+            log.e("Error in " + visibilityFunction + " player or player view is null");
+       }
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
