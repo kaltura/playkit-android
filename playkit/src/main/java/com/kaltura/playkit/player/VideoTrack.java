@@ -1,9 +1,12 @@
 package com.kaltura.playkit.player;
 
+import com.kaltura.playkit.PKPublicAPI;
+
 /**
  * Video track data holder.
  * Created by anton.afanasiev on 17/11/2016.
  */
+@PKPublicAPI
 public class VideoTrack extends BaseTrack {
 
     private int width;

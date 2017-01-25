@@ -21,13 +21,14 @@ import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.MultiRequestBuilder;
 import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.ResponseElement;
+import com.kaltura.playkit.PKPublicAPI;
 
 import java.util.List;
 
 /**
  * Created by tehilarozin on 27/11/2016.
  */
-
+@PKPublicAPI
 public class OttSessionProvider extends BaseSessionProvider {
 
     public static final long TimeDelta = 2 * 60 * 60;//hour in seconds

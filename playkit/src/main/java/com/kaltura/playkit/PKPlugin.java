@@ -3,7 +3,9 @@ package com.kaltura.playkit;
 import android.content.Context;
 
 import com.google.gson.JsonObject;
+import com.kaltura.playkit.plugins.PKPluginAPI;
 
+@PKPluginAPI
 public abstract class PKPlugin {
 
     public interface Factory {

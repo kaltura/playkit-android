@@ -2,6 +2,8 @@ package com.kaltura.playkit.player;
 
 import android.support.annotation.NonNull;
 
+import com.kaltura.playkit.PKPublicAPI;
+
 import java.util.List;
 
 /**
@@ -9,6 +11,7 @@ import java.util.List;
  * Created by anton.afanasiev on 17/11/2016.
  */
 
+@PKPublicAPI
 public class PKTracks {
 
     private int defaultVideoTrackIndex;

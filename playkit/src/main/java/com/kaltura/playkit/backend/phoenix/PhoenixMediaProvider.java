@@ -9,6 +9,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKPublicAPI;
 import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.backend.SessionProvider;
 import com.kaltura.playkit.backend.base.BECallableLoader;
@@ -32,7 +33,7 @@ import java.util.List;
 /**
  * Created by tehilarozin on 27/10/2016.
  */
-
+@PKPublicAPI
 public class PhoenixMediaProvider extends BEMediaProvider {
 
     private static final String TAG = "PhoenixMediaProvider";

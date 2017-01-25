@@ -1,12 +1,13 @@
 package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.ads.PKAdInfo;
+import com.kaltura.playkit.plugins.PKPluginAPI;
 import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
 
 /**
  * Created by gilad.nadav on 17/11/2016.
  */
-
+@PKPluginAPI
 public interface AdsProvider {
     IMAConfig getAdsConfig();
     void requestAd();

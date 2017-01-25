@@ -2,6 +2,8 @@ package com.kaltura.playkit;
 
 import android.content.Context;
 
+import com.kaltura.playkit.plugins.PKPluginAPI;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -11,6 +13,7 @@ import java.util.Set;
  * Created by Noam Tamim @ Kaltura on 07/11/2016.
  */
 @SuppressWarnings("WeakerAccess")
+@PKPluginAPI
 public class MessageBus {
     private final Context context;
     private Map<Object, Set<PKEvent.Listener>> listeners;

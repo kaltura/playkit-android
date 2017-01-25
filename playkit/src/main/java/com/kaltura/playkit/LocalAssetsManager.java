@@ -19,6 +19,7 @@ import java.io.IOException;
  * Note, you must have network connection, while register.
  * Created by anton.afanasiev on 13/12/2016.
  */
+@PKPublicAPI
 public class LocalAssetsManager {
 
     private static final PKLog log = PKLog.get("LocalAssetsManager");
@@ -249,7 +250,8 @@ public class LocalAssetsManager {
      * Created by anton.afanasiev on 13/12/2016.
      */
 
-    public class DefaultLocalDrmStorage implements LocalDrmStorage {
+    @PKPublicAPI
+    public static class DefaultLocalDrmStorage implements LocalDrmStorage {
 
         private final PKLog log = PKLog.get("DefaultLocalDrmStorage");
 

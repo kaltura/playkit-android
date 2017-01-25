@@ -3,10 +3,13 @@ package com.kaltura.playkit.addon.cast;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import com.kaltura.playkit.PKPublicAPI;
+
 /**
  * Created by itanbarpeled on 14/12/2016.
  */
 
+@PKPublicAPI
 public class TVPAPICastBuilder extends BasicCastBuilder<TVPAPICastBuilder> {
 
 

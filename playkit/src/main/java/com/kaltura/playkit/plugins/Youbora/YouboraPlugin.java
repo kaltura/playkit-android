@@ -10,6 +10,7 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.PKPublicAPI;
 import com.npaw.youbora.youboralib.data.Options;
 
 import java.util.Map;
@@ -18,6 +19,7 @@ import java.util.Map;
  * Created by zivilan on 02/11/2016.
  */
 
+@PKPublicAPI
 public class YouboraPlugin extends PKPlugin {
     private static final String TAG = "YouboraPlugin";
     private static final PKLog log = PKLog.get("YouboraPlugin");

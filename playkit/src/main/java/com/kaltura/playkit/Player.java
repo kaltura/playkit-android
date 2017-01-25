@@ -10,6 +10,7 @@ import com.kaltura.playkit.utils.Consts;
 /**
  * Created by Noam Tamim @ Kaltura on 18/09/2016.
  */
+@PKPublicAPI
 public interface Player {
 
 

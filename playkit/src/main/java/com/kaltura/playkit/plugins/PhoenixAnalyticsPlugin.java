@@ -19,6 +19,7 @@ import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.PKPublicAPI;
 
 import java.util.TimerTask;
 
@@ -26,6 +27,7 @@ import java.util.TimerTask;
  * Created by zivilan on 02/11/2016.
  */
 
+@PKPublicAPI
 public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
     private static final String TAG = "PhoenixAnalytics";

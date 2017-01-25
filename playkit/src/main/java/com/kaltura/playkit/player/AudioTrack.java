@@ -2,10 +2,13 @@ package com.kaltura.playkit.player;
 
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.PKPublicAPI;
+
 /**
  * Audio track data holder.
  * Created by anton.afanasiev on 17/11/2016.
  */
+@PKPublicAPI
 public class AudioTrack extends BaseTrack {
 
     private long bitrate;

@@ -35,6 +35,7 @@ import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.PKPublicAPI;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,6 +52,7 @@ import static com.kaltura.playkit.plugins.ads.AdEvent.Type.RESUMED;
  * Created by gilad.nadav on 17/11/2016.
  */
 
+@PKPublicAPI
 public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.interactivemedia.v3.api.AdEvent.AdEventListener, AdErrorEvent.AdErrorListener  {
 
     private static final PKLog log = PKLog.get("IMAPlugin");
