@@ -44,6 +44,7 @@ import java.util.List;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_ENDED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_STARTED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_PROGRESS;
+import static com.kaltura.playkit.plugins.ads.AdEvent.Type.CUEPOINTS_CHANGED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.PAUSED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.RESUMED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.STARTED;
@@ -67,7 +68,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private Context context;
     private AdInfo adInfo;
     IMAConfig adConfig;
-    private PKAdEventListener adLoadedListener;
+    private PKAdEventListener pkAdEventListener;
+    private AdCuePoints adCuePoints;
     //////////////////////
 
 
@@ -391,12 +393,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     public void setAdLoadedListener(AdEnabledPlayerController adEnabledPlayerController) {
-        adLoadedListener = adEnabledPlayerController;
+        pkAdEventListener = adEnabledPlayerController;
     }
 
     @Override
     public void removeAdLoadedListener() {
-        adLoadedListener = null;
+        pkAdEventListener = null;
     }
 
     @Override
@@ -466,8 +468,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AD STARTED");
                 isAdIsPaused = false;
                 adInfo = createAdInfo(adEvent.getAd());
-                if (adLoadedListener != null) {
-                    adLoadedListener.onEvent(new AdEvent(STARTED));
+                if (pkAdEventListener != null) {
+                    pkAdEventListener.onEvent(new AdEvent(STARTED));
                 }
                 messageBus.post(new AdEvent.AdStartedEvent(adInfo));
                 break;
@@ -538,16 +540,23 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     private void sendCuePointsUpdate() {
-        List<Long> cuePoints = getAdCuePoints();
-        if (cuePoints.size() > 0) {
-            messageBus.post(new AdEvent.AdCuePointsUpdateEvent(new AdCuePoints(cuePoints)));
+        adCuePoints = new AdCuePoints(getAdCuePoints());
+        if (!adCuePoints.hasPreRoll()) {
+            if (pkAdEventListener != null) {
+                pkAdEventListener.onEvent(new AdEvent(CUEPOINTS_CHANGED));
+            }
+        }
+
+        if (adCuePoints.getAdCuePoints().size() > 0) {
+            messageBus.post(new AdEvent.AdCuePointsUpdateEvent(adCuePoints));
         }
     }
 
     private List<Long> getAdCuePoints() {
         List<Long> adCuePoints = new ArrayList<>();
-        if (adsManager != null && adsManager.getAdCuePoints() != null) {
-            for (Float cuePoint : adsManager.getAdCuePoints()) {
+        List<Float> adsManagerCuePoints = adsManager.getAdCuePoints();
+        if (adsManager != null && adsManagerCuePoints != null) {
+            for (Float cuePoint : adsManagerCuePoints) {
                 if (cuePoint >= 0) {
                     adCuePoints.add(cuePoint.longValue() * Consts.MILLISECONDS_MULTIPLIER);
                 } else {

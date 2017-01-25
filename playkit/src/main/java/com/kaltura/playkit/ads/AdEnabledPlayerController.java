@@ -114,7 +114,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     public void onEvent(PKEvent event) {
         Enum receivedEventType = event.eventType();
 
-        if (!isPlayerPrepared && receivedEventType == AdEvent.Type.STARTED) {
+        if (!isPlayerPrepared && (receivedEventType == AdEvent.Type.STARTED || receivedEventType == AdEvent.Type.CUEPOINTS_CHANGED)) {
             prepare(mediaConfig);
             if (adsProvider != null) {
                 adsProvider.removeAdLoadedListener();
