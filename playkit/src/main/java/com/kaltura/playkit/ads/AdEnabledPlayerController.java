@@ -1,21 +1,44 @@
 package com.kaltura.playkit.ads;
 
+import android.support.annotation.NonNull;
+
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerDecorator;
+import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 
 /**
  * Created by gilad.nadav on 20/11/2016.
  */
 
-public class AdEnabledPlayerController extends PlayerDecorator implements AdController {
+public class AdEnabledPlayerController extends PlayerDecorator implements AdController, PKAdEventListener {
 
     private static final PKLog log = PKLog.get("AdEnablController");
 
-    AdsProvider adsProvider;
+    private AdsProvider adsProvider;
+    private boolean isPlayerPrepared;
+    PlayerConfig.Media mediaConfig;
+
     public AdEnabledPlayerController(AdsProvider adsProvider) {
         log.d("Init AdEnabledPlayerController");
         this.adsProvider = adsProvider;
+    }
+
+    @Override
+    public void prepare(@NonNull final PlayerConfig.Media mediaConfig) {
+        this.mediaConfig = mediaConfig;
+
+        isPlayerPrepared = false;
+        if (adsProvider != null) {
+            if (adsProvider.isAdRequested()) {
+                super.prepare(mediaConfig);
+                isPlayerPrepared = true;
+            } else {
+                adsProvider.setAdLoadedListener(this);
+            }
+        }
     }
 
     @Override
@@ -85,5 +108,18 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public AdController getAdController() {
         return this;
+    }
+
+    @Override
+    public void onEvent(PKEvent event) {
+        Enum receivedEventType = event.eventType();
+
+        if (!isPlayerPrepared && receivedEventType == AdEvent.Type.STARTED) {
+            prepare(mediaConfig);
+            if (adsProvider != null) {
+                adsProvider.removeAdLoadedListener();
+            }
+            isPlayerPrepared = true;
+        }
     }
 }

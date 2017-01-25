@@ -28,6 +28,7 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdEnabledPlayerController;
+import com.kaltura.playkit.ads.PKAdEventListener;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdError;
@@ -45,6 +46,7 @@ import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_STARTED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_PROGRESS;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.PAUSED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.RESUMED;
+import static com.kaltura.playkit.plugins.ads.AdEvent.Type.STARTED;
 
 
 /**
@@ -65,6 +67,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private Context context;
     private AdInfo adInfo;
     IMAConfig adConfig;
+    private PKAdEventListener adLoadedListener;
     //////////////////////
 
 
@@ -108,6 +111,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     ////////PKPlugin
 
     ///////////END PKPlugin
+
     @Override
     protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
         this.player = player;
@@ -188,7 +192,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             adsLoadedListener = null;
             adsLoader = null;
         }
-
+        removeAdLoadedListener();
     }
     
     ////////Ads Plugin
@@ -386,6 +390,16 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     @Override
+    public void setAdLoadedListener(AdEnabledPlayerController adEnabledPlayerController) {
+        adLoadedListener = adEnabledPlayerController;
+    }
+
+    @Override
+    public void removeAdLoadedListener() {
+        adLoadedListener = null;
+    }
+
+    @Override
     public void skipAd() {
         if (adsManager != null) {
             adsManager.skip();
@@ -452,6 +466,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AD STARTED");
                 isAdIsPaused = false;
                 adInfo = createAdInfo(adEvent.getAd());
+                if (adLoadedListener != null) {
+                    adLoadedListener.onEvent(new AdEvent(STARTED));
+                }
                 messageBus.post(new AdEvent.AdStartedEvent(adInfo));
                 break;
             case PAUSED:
