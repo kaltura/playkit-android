@@ -44,6 +44,7 @@ import java.util.List;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_ENDED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_STARTED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_PROGRESS;
+import static com.kaltura.playkit.plugins.ads.AdEvent.Type.CONTENT_PAUSE_REQUESTED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.CONTENT_RESUME_REQUESTED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.CUEPOINTS_CHANGED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.PAUSED;
@@ -432,7 +433,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 // AdEventType.CONTENT_PAUSE_REQUESTED is fired immediately before a video
                 // ad is played.
                 log.d("AD_CONTENT_PAUSE_REQUESTED");
-                messageBus.post(new AdEvent(AdEvent.Type.CONTENT_PAUSE_REQUESTED));
+                if (pkAdEventListener != null) {
+                    pkAdEventListener.onEvent(new AdEvent(CONTENT_PAUSE_REQUESTED));
+                }
+                messageBus.post(new AdEvent(CONTENT_PAUSE_REQUESTED));
                 isAdDisplayed = true;
                 if (player != null) {
                     player.pause();
@@ -445,9 +449,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 // AdEventType.CONTENT_RESUME_REQUESTED is fired when the ad is completed
                 // and you should start playing your content.
                 log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED");
-                if (pkAdEventListener != null) {
-                    pkAdEventListener.onEvent(new AdEvent(CONTENT_RESUME_REQUESTED));
-                }
+
                 messageBus.post(new AdEvent(CONTENT_RESUME_REQUESTED));
                 isAdDisplayed = false;
                 if (player != null) {
