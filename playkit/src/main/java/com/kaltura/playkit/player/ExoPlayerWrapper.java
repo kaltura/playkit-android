@@ -249,6 +249,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private void sendEvent(PlayerEvent.Type event) {
         currentEvent = event;
         if (eventListener != null) {
+            log.i("Event sent: " + event.name());
             eventListener.onEvent(currentEvent);
         }
     }
@@ -305,6 +306,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
         log.d("onTimelineChanged");
+        sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
         shouldResetPlayerPosition = timeline != null && !timeline.isEmpty()
                 && !timeline.getWindow(timeline.getWindowCount() - 1, window).isDynamic;
     }
