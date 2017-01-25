@@ -49,7 +49,6 @@ import static com.kaltura.playkit.plugins.ads.AdEvent.Type.CONTENT_RESUME_REQUES
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.CUEPOINTS_CHANGED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.PAUSED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.RESUMED;
-import static com.kaltura.playkit.plugins.ads.AdEvent.Type.STARTED;
 
 
 /**
@@ -448,7 +447,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 // AdEventType.CONTENT_RESUME_REQUESTED is fired when the ad is completed
                 // and you should start playing your content.
                 log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED");
-
+                if (pkAdEventListener != null) {
+                    pkAdEventListener.onEvent(new AdEvent(CONTENT_RESUME_REQUESTED));
+                }
                 messageBus.post(new AdEvent(CONTENT_RESUME_REQUESTED));
                 isAdDisplayed = false;
                 if (player != null) {
@@ -469,9 +470,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 break;
             case STARTED:
                 log.d("AD STARTED");
-                if (pkAdEventListener != null) {
-                    pkAdEventListener.onEvent(new AdEvent(STARTED));
-                }
                 isAdIsPaused = false;
                 adInfo = createAdInfo(adEvent.getAd());
 
