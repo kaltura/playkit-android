@@ -3,7 +3,7 @@ package com.kaltura.playkit.backend.ovp.services;
 import com.kaltura.playkit.backend.ovp.APIDefines;
 
 /**
- * Created by tehilarozin on 28/11/2016.
+ * @hide
  */
 
 public class ResponseProfile {

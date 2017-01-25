@@ -10,7 +10,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 
 /**
- * Created by zivilan on 24/11/2016.
+ * @hide
  */
 
 public class LiveStatsService {

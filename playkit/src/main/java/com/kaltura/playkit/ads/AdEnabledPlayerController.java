@@ -5,7 +5,7 @@ import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 
 /**
- * Created by gilad.nadav on 20/11/2016.
+ * @hide
  */
 
 public class AdEnabledPlayerController extends PlayerDecorator implements AdController {

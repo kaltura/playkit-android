@@ -6,7 +6,7 @@ import com.kaltura.playkit.backend.BaseResult;
 import java.util.ArrayList;
 
 /**
- * Created by tehilarozin on 02/11/2016.
+ * @hide
  */
 
 public class KalturaPlaybackContext extends KalturaEntryContextDataResult {

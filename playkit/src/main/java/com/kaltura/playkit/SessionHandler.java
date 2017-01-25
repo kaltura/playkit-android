@@ -16,7 +16,7 @@ import static com.kaltura.playkit.SessionHandler.SessionType.OttTvpapi;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
- * Created by tehilarozin on 11/12/2016.
+ * @hide
  */
 
 public class SessionHandler {

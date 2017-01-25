@@ -1,7 +1,7 @@
 package com.kaltura.playkit.backend.ovp.data;
 
 /**
- * Created by tehilarozin on 31/10/2016.
+ * @hide
  */
 
 public class KalturaFlavorAsset implements FlavorAssetsFilter.Filterable {

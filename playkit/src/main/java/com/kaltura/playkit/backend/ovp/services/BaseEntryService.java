@@ -7,7 +7,7 @@ import com.kaltura.playkit.backend.ovp.OvpRequestBuilder;
 
 
 /**
- * Created by tehilarozin on 13/11/2016.
+ * @hide
  */
 
 public class BaseEntryService extends OvpService {

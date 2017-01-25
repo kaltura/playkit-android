@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by tehilarozin on 31/10/2016.
+ * @hide
  */
 
 public class KalturaMediaEntry {

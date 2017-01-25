@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.backend.ovp.OvpRequestBuilder;
 
 /**
- * Created by tehilarozin on 07/12/2016.
+ * @hide
  */
 
 public class UserService extends OvpService {

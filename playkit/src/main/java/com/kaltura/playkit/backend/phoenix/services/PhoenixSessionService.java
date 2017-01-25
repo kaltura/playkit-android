@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.backend.phoenix.PhoenixRequestBuilder;
 
 /**
- * Created by tehilarozin on 28/11/2016.
+ * @hide
  */
 
 public class PhoenixSessionService extends PhoenixService {

@@ -9,7 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
 /**
- * Created by anton.afanasiev on 13/12/2016.
+ * @hide
  */
 
 // From http://stackoverflow.com/a/5628136/38557

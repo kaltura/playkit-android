@@ -11,7 +11,7 @@ import java.net.URLDecoder;
 import java.util.Date;
 
 /**
- * Created by zivilan on 22/11/2016.
+ * @hide
  */
 
 public class StatsService {
