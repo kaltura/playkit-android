@@ -128,20 +128,28 @@ public class PlayerController implements Player {
         View videoSurface = wrapperView.getChildAt(0);
         if (videoSurface != null) {
             if (videoSurface instanceof PlayerView) {
-                PlayerView playerView = (PlayerView) wrapperView.getChildAt(0);
-                if (playerView != null) {
-                    if (isVisible) {
-                        playerView.showVideoSurface();
-                    } else {
-                        playerView.hideVideoSurface();
+                    PlayerView playerView = (PlayerView) wrapperView.getChildAt(0);
+                    if (playerView != null) {
+                        if (isVisible) {
+                            playerView.showVideoSurface();
+                        } else {
+                            playerView.hideVideoSurface();
+                        }
                     }
-                }
             } else {
-                String visibilityFunction = "showVideoSurface";
-                if (!isVisible) {
-                    visibilityFunction = "hideVideoSurface";
+                if (player != null && player.getView() != null) {
+                    if (isVisible) {
+                        player.getView().showVideoSurface();
+                    } else {
+                        player.getView().hideVideoSurface();
+                    }
+                } else {
+                    String visibilityFunction = "showVideoSurface";
+                    if (!isVisible) {
+                        visibilityFunction = "hideVideoSurface";
+                    }
+                    log.e("Error in " + visibilityFunction + " cannot cast to PlayerView,  class = " + videoSurface.getClass().getName());
                 }
-                log.e("Error in " + visibilityFunction + " cannot cast to PlayerView,  class = " + videoSurface.getClass().getName());
             }
         }
     }
