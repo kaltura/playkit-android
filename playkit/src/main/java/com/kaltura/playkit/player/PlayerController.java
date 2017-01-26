@@ -33,13 +33,14 @@ public class PlayerController implements Player {
 
     private PlayerEngine player;
     private Context context;
-    private PlayerView wrapperView;
+    private PlayerView rootPlayerView;
 
     private PlayerConfig.Media mediaConfig;
     private boolean wasReleased = false;
 
     //private ViewGroup playerRootView;
     private PKEvent.Listener eventListener;
+    private PlayerView playerEngineView;
 
     public void setEventListener(PKEvent.Listener eventListener) {
         this.eventListener = eventListener;
@@ -107,7 +108,7 @@ public class PlayerController implements Player {
 
     public PlayerController(Context context, PlayerConfig.Media mediaConfig) {
         this.context = context;
-        this.wrapperView = new PlayerView(context) {
+        this.rootPlayerView = new PlayerView(context) {
             @Override
             public void hideVideoSurface() {
                 setVideoSurfaceVisibility(false);
@@ -119,24 +120,30 @@ public class PlayerController implements Player {
             }
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        this.wrapperView.setLayoutParams(lp);
+        this.rootPlayerView.setLayoutParams(lp);
         this.mediaConfig = mediaConfig;
     }
 
     private void setVideoSurfaceVisibility(boolean isVisible) {
+        String visibilityFunction = "showVideoSurface";
+        if (!isVisible) {
+            visibilityFunction = "hideVideoSurface";
+        }
 
-        if (player != null && player.getView() != null) {
+        if (player == null) {
+            log.e("Error in " + visibilityFunction + " player is null");
+            return;
+        }
+
+        PlayerView playerView = player.getView();
+        if (playerView != null) {
             if (isVisible) {
-                player.getView().showVideoSurface();
+                playerView.showVideoSurface();
             } else {
-                player.getView().hideVideoSurface();
+                playerView.hideVideoSurface();
             }
         } else {
-            String visibilityFunction = "showVideoSurface";
-            if (!isVisible) {
-                visibilityFunction = "hideVideoSurface";
-            }
-            log.e("Error in " + visibilityFunction + " player or player view is null");
+            log.e("Error in " + visibilityFunction + " playerView is null");
         }
     }
 
@@ -152,7 +159,6 @@ public class PlayerController implements Player {
         if (source.getMediaFormat() != PKMediaFormat.wvm_widevine) {
             if (player == null) {
                 player = new ExoPlayerWrapper(context);
-                wrapperView.addView(player.getView());
                 togglePlayerListeners(true);
             }
         } else {
@@ -194,7 +200,7 @@ public class PlayerController implements Player {
     }
 
     public PlayerView getView() {
-        return wrapperView;
+        return rootPlayerView;
     }
 
     public long getDuration() {
@@ -238,6 +244,12 @@ public class PlayerController implements Player {
             log.e("Attempt to invoke 'play()' on null instance of the player engine");
             return;
         }
+
+        if (playerEngineView == null) {
+            playerEngineView = player.getView();
+            rootPlayerView.addView(playerEngineView);
+        }
+
         player.play();
     }
 

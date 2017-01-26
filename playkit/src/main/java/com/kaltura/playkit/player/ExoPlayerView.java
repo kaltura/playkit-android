@@ -145,7 +145,7 @@ public class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoLi
 
     @Override
     public void hideVideoSurface() {
-        surfaceView.setVisibility(GONE);
+        surfaceView.setVisibility(INVISIBLE);
     }
 
     @Override

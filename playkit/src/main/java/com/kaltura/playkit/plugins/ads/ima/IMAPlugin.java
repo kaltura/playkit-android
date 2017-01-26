@@ -49,6 +49,7 @@ import static com.kaltura.playkit.plugins.ads.AdEvent.Type.CONTENT_RESUME_REQUES
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.CUEPOINTS_CHANGED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.PAUSED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.RESUMED;
+import static com.kaltura.playkit.plugins.ads.AdEvent.Type.STARTED;
 
 
 /**
@@ -428,6 +429,29 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdEvent(AdEvent.Type.LOADED));
                 adsManager.start();
                 break;
+            case STARTED:
+                log.d("AD STARTED");
+                isAdIsPaused = false;
+                if (pkAdEventListener != null) {
+                    pkAdEventListener.onEvent(new AdEvent(STARTED));
+                }
+                adInfo = createAdInfo(adEvent.getAd());
+                messageBus.post(new AdEvent.AdStartedEvent(adInfo));
+                break;
+            case PAUSED:
+                log.d("AD PAUSED");
+                isAdIsPaused = true;
+                messageBus.post(new AdEvent(PAUSED));
+                break;
+            case RESUMED:
+                log.d("AD RESUMED");
+                isAdIsPaused = false;
+                messageBus.post(new AdEvent(RESUMED));
+                break;
+            case COMPLETED:
+                log.d("AD COMPLETED");
+                messageBus.post(new AdEvent(AdEvent.Type.COMPLETED));
+                break;
             case CONTENT_PAUSE_REQUESTED:
                 // AdEventType.CONTENT_PAUSE_REQUESTED is fired immediately before a video
                 // ad is played.
@@ -446,14 +470,13 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 // AdEventType.CONTENT_RESUME_REQUESTED is fired when the ad is completed
                 // and you should start playing your content.
                 log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED");
-                if (pkAdEventListener != null) {
-                    pkAdEventListener.onEvent(new AdEvent(CONTENT_RESUME_REQUESTED));
-                }
                 messageBus.post(new AdEvent(CONTENT_RESUME_REQUESTED));
                 isAdDisplayed = false;
                 if (player != null) {
                     player.getView().showVideoSurface();
-                    if (player.getCurrentPosition() < player.getDuration()) {
+
+                    long duration = player.getDuration();
+                    if (duration == Consts.TIME_UNSET || player.getCurrentPosition() < duration) {
                         player.play();
                     }
                 }
@@ -466,27 +489,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     log.d("AD_ALL_ADS_COMPLETED onDestroy");
                     onDestroy();
                 }
-                break;
-            case STARTED:
-                log.d("AD STARTED");
-                isAdIsPaused = false;
-                adInfo = createAdInfo(adEvent.getAd());
-
-                messageBus.post(new AdEvent.AdStartedEvent(adInfo));
-                break;
-            case PAUSED:
-                log.d("AD PAUSED");
-                isAdIsPaused = true;
-                messageBus.post(new AdEvent(PAUSED));
-                break;
-            case RESUMED:
-                log.d("AD RESUMED");
-                isAdIsPaused = false;
-                messageBus.post(new AdEvent(RESUMED));
-                break;
-            case COMPLETED:
-                log.d("AD COMPLETED");
-                messageBus.post(new AdEvent(AdEvent.Type.COMPLETED));
                 break;
             case FIRST_QUARTILE:
                 messageBus.post(new AdEvent(AdEvent.Type.FIRST_QUARTILE));
@@ -548,9 +550,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
         if (adCuePoints.getAdCuePoints().size() > 0) {
             messageBus.post(new AdEvent.AdCuePointsUpdateEvent(adCuePoints));
-        }
-        if (adCuePoints.hasPreRoll()) {
-            player.getView().hideVideoSurface();
         }
     }
 

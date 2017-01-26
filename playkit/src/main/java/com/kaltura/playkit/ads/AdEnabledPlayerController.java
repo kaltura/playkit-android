@@ -78,7 +78,6 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
         log.d("PLAY isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused());
         if (adsProvider != null) {
             if (!adsProvider.isAdRequested()) {
-                super.getView().hideVideoSurface();
                 adsProvider.init();
                 return;
             } else if (adsProvider.isAdDisplayed()) {
@@ -114,13 +113,12 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     public void onEvent(PKEvent event) {
         Enum receivedEventType = event.eventType();
 
-        if (!isPlayerPrepared && (receivedEventType == AdEvent.Type.CONTENT_RESUME_REQUESTED || receivedEventType == AdEvent.Type.CUEPOINTS_CHANGED)) {
+        if (!isPlayerPrepared && (receivedEventType == AdEvent.Type.STARTED || receivedEventType == AdEvent.Type.CUEPOINTS_CHANGED)) {
             prepare(mediaConfig);
             if (adsProvider != null) {
                 adsProvider.removeAdLoadedListener();
             }
             isPlayerPrepared = true;
-            super.play();
         }
     }
 }
