@@ -549,6 +549,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         if (adCuePoints.getAdCuePoints().size() > 0) {
             messageBus.post(new AdEvent.AdCuePointsUpdateEvent(adCuePoints));
         }
+        if (adCuePoints.hasPreRoll()) {
+            player.getView().hideVideoSurface();
+        }
     }
 
     private List<Long> getAdCuePoints() {
