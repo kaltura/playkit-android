@@ -59,18 +59,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     private static final PKLog log = PKLog.get("IMAPlugin");
 
-    @Override
-    protected PlayerDecorator getPlayerDecorator() {
-        return new AdEnabledPlayerController(this);
-    }
-
     /////////////////////
     private Player player;
     private Context context;
     private AdInfo adInfo;
     IMAConfig adConfig;
     private PKAdEventListener pkAdEventListener;
-    private AdCuePoints adCuePoints;
     //////////////////////
 
 
@@ -110,6 +104,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             return new IMAPlugin();
         }
     };
+
+    @Override
+    protected PlayerDecorator getPlayerDecorator() {
+        return new AdEnabledPlayerController(this);
+    }
 
     ////////PKPlugin
 
@@ -542,11 +541,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     private void sendCuePointsUpdate() {
-        adCuePoints = new AdCuePoints(getAdCuePoints());
-        if (!adCuePoints.hasPreRoll()) {
-            if (pkAdEventListener != null) {
+        AdCuePoints adCuePoints = new AdCuePoints(getAdCuePoints());
+        if (!adCuePoints.hasPreRoll() && pkAdEventListener != null) {
                 pkAdEventListener.onEvent(new AdEvent(CUEPOINTS_CHANGED));
-            }
         }
 
         if (adCuePoints.getAdCuePoints().size() > 0) {
