@@ -125,19 +125,19 @@ public class PlayerController implements Player {
 
     private void setVideoSurfaceVisibility(boolean isVisible) {
 
-       if (player != null && player.getView() != null) {
-           if (isVisible) {
-               player.getView().showVideoSurface();
-           } else {
+        if (player != null && player.getView() != null) {
+            if (isVisible) {
+                player.getView().showVideoSurface();
+            } else {
                 player.getView().hideVideoSurface();
-           }
-       } else {
-           String visibilityFunction = "showVideoSurface";
-           if (!isVisible) {
-              visibilityFunction = "hideVideoSurface";
+            }
+        } else {
+            String visibilityFunction = "showVideoSurface";
+            if (!isVisible) {
+                visibilityFunction = "hideVideoSurface";
             }
             log.e("Error in " + visibilityFunction + " player or player view is null");
-       }
+        }
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
