@@ -196,7 +196,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
         removeAdLoadedListener();
     }
-    
+
     ////////Ads Plugin
 
     @Override
@@ -543,7 +543,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private void sendCuePointsUpdate() {
         AdCuePoints adCuePoints = new AdCuePoints(getAdCuePoints());
         if (!adCuePoints.hasPreRoll() && pkAdEventListener != null) {
-                pkAdEventListener.onEvent(new AdEvent(CUEPOINTS_CHANGED));
+            pkAdEventListener.onEvent(new AdEvent(CUEPOINTS_CHANGED));
         }
 
         if (adCuePoints.getAdCuePoints().size() > 0) {
