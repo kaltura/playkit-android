@@ -13,6 +13,8 @@ import java.util.List;
  */
 
 public class IMAConfig {
+    public static final int DEFAULT_ADLOAD_TIMEOUT = 10;
+
     public static final String AD_TAG_LANGUAGE     = "language";
     public static final String AD_TAG_URL          = "adTagURL";
     public static final String ENABLE_BG_PLAYBACK  = "enableBackgroundPlayback";
@@ -22,6 +24,7 @@ public class IMAConfig {
     public static final String AD_TAG_TIMES             = "tagsTimes";
     public static final String AD_ATTRIBUTION_UIELEMENT = "adAttribution";
     public static final String AD_COUNTDOWN_UIELEMENT   = "adCountDown";
+    public static final String AD_LOAD_TIMEOUT          = "adLoadTimeOut";
 
 
     private String language = "en";
@@ -31,18 +34,20 @@ public class IMAConfig {
     private int videoBitrate;
     private boolean adAttribution;
     private boolean adCountDown;
+    private int  adLoadTimeOut;
     private List<String> videoMimeTypes;
     //private Map<Double,String> tagsTimes; // <AdTime,URL_to_execute>
 
     //View companionView;
 
-    public IMAConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate, List<String> videoMimeTypes, String adTagUrl, boolean adAttribution, boolean adCountDown) {
+    public IMAConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate, List<String> videoMimeTypes, String adTagUrl, boolean adAttribution, boolean adCountDown, int adLoadTimeOut) {
         this.enableBackgroundPlayback = enableBackgroundPlayback;
         this.autoPlayAdBreaks = autoPlayAdBreaks;
         this.videoBitrate = videoBitrate;
         this.adTagURL = adTagUrl;
         this.adAttribution = adAttribution;
         this.adCountDown = adCountDown;
+        this.adLoadTimeOut = adLoadTimeOut;
 
         if (videoMimeTypes == null) {
             videoMimeTypes = new ArrayList<>();
@@ -55,6 +60,28 @@ public class IMAConfig {
         //this.tagsTimes = tagTimes;
         //this.companionView = companionView;
     }
+
+    public IMAConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate, List<String> videoMimeTypes, String adTagUrl, boolean adAttribution, boolean adCountDown) {
+        this.enableBackgroundPlayback = enableBackgroundPlayback;
+        this.autoPlayAdBreaks = autoPlayAdBreaks;
+        this.videoBitrate = videoBitrate;
+        this.adTagURL = adTagUrl;
+        this.adAttribution = adAttribution;
+        this.adCountDown   = adCountDown;
+        this.adLoadTimeOut = DEFAULT_ADLOAD_TIMEOUT;
+
+        if (videoMimeTypes == null) {
+            videoMimeTypes = new ArrayList<>();
+        }
+        this.videoMimeTypes = videoMimeTypes;
+
+        //if (tagTimes == null) {
+        //    tagTimes = new HashMap<>();
+        //}
+        //this.tagsTimes = tagTimes;
+        //this.companionView = companionView;
+    }
+
 
 
     public String getLanguage() {
@@ -120,7 +147,15 @@ public class IMAConfig {
         this.adCountDown = adCountDown;
     }
 
-//    public Map<Double, String> getTagsTimes() {
+    public int getAdLoadTimeOut() {
+        return adLoadTimeOut;
+    }
+
+    public void setAdLoadTimeOut(int adLoadTimeOut) {
+        this.adLoadTimeOut = adLoadTimeOut;
+    }
+
+    //    public Map<Double, String> getTagsTimes() {
 //        return tagsTimes;
 //    }
 //
@@ -146,6 +181,7 @@ public class IMAConfig {
         jsonObject.addProperty(AD_VIDEO_BITRATE, videoBitrate);
         jsonObject.addProperty(AD_ATTRIBUTION_UIELEMENT, adAttribution);
         jsonObject.addProperty(AD_COUNTDOWN_UIELEMENT, adCountDown);
+        jsonObject.addProperty(AD_LOAD_TIMEOUT, adLoadTimeOut);
 
         Gson gson = new Gson();
         JsonArray jArray = new JsonArray();

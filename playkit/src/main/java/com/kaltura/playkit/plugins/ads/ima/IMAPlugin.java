@@ -1,6 +1,7 @@
 package com.kaltura.playkit.plugins.ads.ima;
 
 import android.content.Context;
+import android.os.Handler;
 import android.view.ViewGroup;
 
 import com.google.ads.interactivemedia.v3.api.Ad;
@@ -225,10 +226,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
         if (adConfig != null) {
             requestAdsFromIMA(adConfig.getAdTagURL());
+            resumePlaybackAfterTimeout();
         }
     }
 
     private AdsLoader.AdsLoadedListener getAdsLoadedListener() {
+
         if (adsLoadedListener != null) {
             return adsLoadedListener;
         }
@@ -671,5 +674,26 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             player.getView().showVideoSurface();
             player.play();
         }
+    }
+
+    private void resumePlaybackAfterTimeout() {
+        log.d("resumePLaybackAfterTimeout START timer" + adConfig.getAdLoadTimeOut());
+        Handler handler = new Handler();
+        Runnable r = new Runnable() {
+            public void run() {
+                log.d("resumePLaybackAfterTimeout timer done");
+                if (adsManager == null || (adsManager != null && adsManager.getCurrentAd() == null)) {
+                    log.d("resumePLaybackAfterTimeout resume playback");
+                    if (pkAdEventListener != null) {
+                        pkAdEventListener.onEvent(new AdEvent(STARTED));
+                    }
+                    onDestroy();
+                    player.getView().showVideoSurface();
+                    messageBus.post(new AdEvent(AdEvent.Type.ALL_ADS_COMPLETED));
+                    player.play();
+                }
+            }
+        };
+        handler.postDelayed(r, adConfig.getAdLoadTimeOut() * Consts.MILLISECONDS_MULTIPLIER);
     }
 }
