@@ -50,9 +50,10 @@ public class IMAConfig {
         this.adLoadTimeOut = adLoadTimeOut;
 
         if (videoMimeTypes == null) {
-            videoMimeTypes = new ArrayList<>();
+            this.videoMimeTypes = new ArrayList<>();
+        } else {
+            this.videoMimeTypes = videoMimeTypes;
         }
-        this.videoMimeTypes = videoMimeTypes;
 
         //if (tagTimes == null) {
         //    tagTimes = new HashMap<>();
