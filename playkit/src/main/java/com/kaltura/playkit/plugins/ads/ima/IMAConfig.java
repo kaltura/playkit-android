@@ -27,7 +27,7 @@ public class IMAConfig {
     public static final String AD_LOAD_TIMEOUT          = "adLoadTimeOut";
 
 
-    private String language = "en";
+    private String language;
     private String adTagURL;
     private boolean enableBackgroundPlayback = true;
     private boolean autoPlayAdBreaks = false;
@@ -41,6 +41,11 @@ public class IMAConfig {
     //View companionView;
 
     public IMAConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate, List<String> videoMimeTypes, String adTagUrl, boolean adAttribution, boolean adCountDown, int adLoadTimeOut) {
+        this.language = language;
+        if (language == null || "".equals(language)) {
+            language = "en";
+        }
+
         this.enableBackgroundPlayback = enableBackgroundPlayback;
         this.autoPlayAdBreaks = autoPlayAdBreaks;
         this.videoBitrate = videoBitrate;
@@ -63,27 +68,8 @@ public class IMAConfig {
     }
 
     public IMAConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate, List<String> videoMimeTypes, String adTagUrl, boolean adAttribution, boolean adCountDown) {
-        this.enableBackgroundPlayback = enableBackgroundPlayback;
-        this.autoPlayAdBreaks = autoPlayAdBreaks;
-        this.videoBitrate = videoBitrate;
-        this.adTagURL = adTagUrl;
-        this.adAttribution = adAttribution;
-        this.adCountDown   = adCountDown;
-        this.adLoadTimeOut = DEFAULT_ADLOAD_TIMEOUT;
-
-        if (videoMimeTypes == null) {
-            videoMimeTypes = new ArrayList<>();
-        }
-        this.videoMimeTypes = videoMimeTypes;
-
-        //if (tagTimes == null) {
-        //    tagTimes = new HashMap<>();
-        //}
-        //this.tagsTimes = tagTimes;
-        //this.companionView = companionView;
+        this(language, enableBackgroundPlayback, autoPlayAdBreaks, videoBitrate, videoMimeTypes, adTagUrl, adAttribution,  adCountDown, IMAConfig.DEFAULT_ADLOAD_TIMEOUT);
     }
-
-
 
     public String getLanguage() {
         return language;
