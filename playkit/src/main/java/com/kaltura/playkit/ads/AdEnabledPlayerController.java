@@ -19,7 +19,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
 
     private AdsProvider adsProvider;
     private boolean isPlayerPrepared;
-    PlayerConfig.Media mediaConfig;
+    private PlayerConfig.Media mediaConfig;
 
     public AdEnabledPlayerController(AdsProvider adsProvider) {
         log.d("Init AdEnabledPlayerController");
