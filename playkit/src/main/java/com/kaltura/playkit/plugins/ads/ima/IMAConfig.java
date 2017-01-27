@@ -43,7 +43,7 @@ public class IMAConfig {
     public IMAConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate, List<String> videoMimeTypes, String adTagUrl, boolean adAttribution, boolean adCountDown, int adLoadTimeOut) {
         this.language = language;
         if (language == null || "".equals(language)) {
-            language = "en";
+            this.language = "en";
         }
 
         this.enableBackgroundPlayback = enableBackgroundPlayback;
