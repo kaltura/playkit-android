@@ -682,7 +682,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         Runnable r = new Runnable() {
             public void run() {
                 log.d("resumePlaybackAfterTimeout timer done");
-                if (adsManager == null || (adsManager != null && adsManager.getCurrentAd() == null)) {
+                if (adsManager == null || (adsManager != null && isAdRequested == false)) {
                     log.d("resumePlaybackAfterTimeout resume playback");
                     if (pkAdEventListener != null) {
                         pkAdEventListener.onEvent(new AdEvent(STARTED));
