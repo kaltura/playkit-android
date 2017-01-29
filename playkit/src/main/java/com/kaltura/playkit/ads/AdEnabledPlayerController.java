@@ -6,6 +6,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
+import com.kaltura.playkit.plugins.ads.PKPrepareReason;
 
 /**
  * Created by gilad.nadav on 20/11/2016.
@@ -111,22 +112,13 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
         return this;
     }
 
-    @Override
-    public void prepareOnAdStarted() {
-        onAdProviderEvent();
-    }
 
     @Override
-    public void prepareOnNoPreroll() {
-        onAdProviderEvent();
-    }
-
-    @Override
-    public void prepareOnAdRequestFailed() {
-        onAdProviderEvent();
-    }
-
-    private void onAdProviderEvent() {
+    public void onAdLoadingFinished(PKPrepareReason pkPrepareReason) {
+        log.d("onAdLoadingFinished pkPrepareReason = " + pkPrepareReason.name());
+        if (pkPrepareReason == PKPrepareReason.UNKNOWN) {
+            return;
+        }
         prepare(mediaConfig);
         if (adsProvider != null) {
             adsProvider.removeAdProviderListener();

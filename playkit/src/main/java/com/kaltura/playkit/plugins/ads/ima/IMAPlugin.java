@@ -36,6 +36,7 @@ import com.kaltura.playkit.plugins.ads.AdError;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
+import com.kaltura.playkit.plugins.ads.PKPrepareReason;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
@@ -437,7 +438,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AD STARTED");
                 isAdIsPaused = false;
                 if (pkAdProviderListener != null) {
-                    pkAdProviderListener.prepareOnAdStarted();
+                    pkAdProviderListener.onAdLoadingFinished(PKPrepareReason.AD_STARTED);
                 }
                 adInfo = createAdInfo(adEvent.getAd());
                 messageBus.post(new AdEvent.AdStartedEvent(adInfo));
@@ -538,7 +539,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     log.e("Ad is null - back to playback");
                     quietAdLoadingErrorReceived = true;
                     if (pkAdProviderListener != null) {
-                        pkAdProviderListener.prepareOnAdRequestFailed();
+                        pkAdProviderListener.onAdLoadingFinished(PKPrepareReason.AD_ERROR);
                     }
                     if (player != null && player.getView() != null) {
                         messageBus.post(new AdError(AdError.Type.FAILED_TO_REQUEST_ADS, AdError.Type.FAILED_TO_REQUEST_ADS.name()));
@@ -554,8 +555,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     private void sendCuePointsUpdate() {
         AdCuePoints adCuePoints = new AdCuePoints(getAdCuePoints());
-        if (!adCuePoints.hasPreRoll() && pkAdProviderListener != null) {
-            pkAdProviderListener.prepareOnNoPreroll();
+        if (adCuePoints != null && adCuePoints.getAdCuePoints().size() > 0 && !adCuePoints.hasPreRoll() && pkAdProviderListener != null) {
+            pkAdProviderListener.onAdLoadingFinished(PKPrepareReason.NO_AD);
         }
 
         if (adCuePoints.getAdCuePoints().size() > 0) {
@@ -692,10 +693,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 if (quietAdLoadingErrorReceived) {
                     return;
                 }
-                if (adsManager == null || !isAdRequested) {
+                if (!isAdRequested) {
                     log.d("resumePlaybackAfterTimeout resume playback");
                     if (pkAdProviderListener != null) {
-                        pkAdProviderListener.prepareOnAdRequestFailed();
+                        pkAdProviderListener.onAdLoadingFinished(PKPrepareReason.AD_ERROR);
                     }
                     onDestroy();
                     messageBus.post(new AdError(AdError.Type.FAILED_TO_REQUEST_ADS, AdError.Type.FAILED_TO_REQUEST_ADS.name()));
