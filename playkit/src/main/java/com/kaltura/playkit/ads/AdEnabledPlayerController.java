@@ -2,20 +2,16 @@ package com.kaltura.playkit.ads;
 
 import android.support.annotation.NonNull;
 
-import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerDecorator;
-import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
-
-import static com.kaltura.playkit.plugins.ads.AdError.Type.*;
 
 /**
  * Created by gilad.nadav on 20/11/2016.
  */
 
-public class AdEnabledPlayerController extends PlayerDecorator implements AdController, PKAdEventListener {
+public class AdEnabledPlayerController extends PlayerDecorator implements AdController, PKAdProviderListener {
 
     private static final PKLog log = PKLog.get("AdEnablController");
 
@@ -28,6 +24,10 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
         this.adsProvider = adsProvider;
     }
 
+    /*
+         In order to avoid network resources race between IMA and Content CDN
+         we prevent the prepare until AD is STARTED, No Pre-Roll or AD ERROR is received
+     */
     @Override
     public void prepare(@NonNull final PlayerConfig.Media mediaConfig) {
         this.mediaConfig = mediaConfig;
@@ -38,7 +38,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
                 super.prepare(mediaConfig);
                 isPlayerPrepared = true;
             } else {
-                adsProvider.setAdLoadedListener(this);
+                adsProvider.setAdProviderListener(this);
             }
         }
     }
@@ -112,17 +112,25 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
-    public void onEvent(PKEvent event) {
-        Enum receivedEventType = event.eventType();
+    public void prepareOnAdStarted() {
+        onAdProviderEvent();
+    }
 
-        if (!isPlayerPrepared && (receivedEventType == AdEvent.Type.STARTED ||
-                                  receivedEventType == AdEvent.Type.CUEPOINTS_CHANGED ||
-                                  receivedEventType == FAILED_TO_REQUEST_ADS)) {
-            prepare(mediaConfig);
-            if (adsProvider != null) {
-                adsProvider.removeAdLoadedListener();
-            }
-            isPlayerPrepared = true;
+    @Override
+    public void prepareOnNoPreroll() {
+        onAdProviderEvent();
+    }
+
+    @Override
+    public void prepareOnAdRequestFailed() {
+        onAdProviderEvent();
+    }
+
+    private void onAdProviderEvent() {
+        prepare(mediaConfig);
+        if (adsProvider != null) {
+            adsProvider.removeAdProviderListener();
         }
+        isPlayerPrepared = true;
     }
 }

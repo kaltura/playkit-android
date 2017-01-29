@@ -13,7 +13,7 @@ import java.util.List;
  */
 
 public class IMAConfig {
-    public static final int DEFAULT_ADLOAD_TIMEOUT = 10;
+    public static final int DEFAULT_AD_LOAD_TIMEOUT = 10;
 
     public static final String AD_TAG_LANGUAGE     = "language";
     public static final String AD_TAG_URL          = "adTagURL";
@@ -68,7 +68,7 @@ public class IMAConfig {
     }
 
     public IMAConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate, List<String> videoMimeTypes, String adTagUrl, boolean adAttribution, boolean adCountDown) {
-        this(language, enableBackgroundPlayback, autoPlayAdBreaks, videoBitrate, videoMimeTypes, adTagUrl, adAttribution,  adCountDown, IMAConfig.DEFAULT_ADLOAD_TIMEOUT);
+        this(language, enableBackgroundPlayback, autoPlayAdBreaks, videoBitrate, videoMimeTypes, adTagUrl, adAttribution,  adCountDown, IMAConfig.DEFAULT_AD_LOAD_TIMEOUT);
     }
 
     public String getLanguage() {

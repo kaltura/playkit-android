@@ -22,7 +22,7 @@ public interface AdsProvider {
     boolean isAdRequested();
     long getDuration();
     long getCurrentPosition();
-    void setAdLoadedListener(AdEnabledPlayerController adEnabledPlayerController);
-    void removeAdLoadedListener();
+    void setAdProviderListener(AdEnabledPlayerController adEnabledPlayerController);
+    void removeAdProviderListener();
     void skipAd();
 }

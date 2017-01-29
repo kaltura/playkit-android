@@ -29,8 +29,8 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdEnabledPlayerController;
-import com.kaltura.playkit.ads.PKAdEventListener;
 import com.kaltura.playkit.ads.PKAdInfo;
+import com.kaltura.playkit.ads.PKAdProviderListener;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdError;
 import com.kaltura.playkit.plugins.ads.AdEvent;
@@ -47,10 +47,8 @@ import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_STARTED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_PROGRESS;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.CONTENT_PAUSE_REQUESTED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.CONTENT_RESUME_REQUESTED;
-import static com.kaltura.playkit.plugins.ads.AdEvent.Type.CUEPOINTS_CHANGED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.PAUSED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.RESUMED;
-import static com.kaltura.playkit.plugins.ads.AdEvent.Type.STARTED;
 
 
 /**
@@ -66,7 +64,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private Context context;
     private AdInfo adInfo;
     IMAConfig adConfig;
-    private PKAdEventListener pkAdEventListener;
+    private PKAdProviderListener pkAdProviderListener;
     //////////////////////
 
 
@@ -199,7 +197,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             adsLoadedListener = null;
             adsLoader = null;
         }
-        removeAdLoadedListener();
+        removeAdProviderListener();
     }
 
     ////////Ads Plugin
@@ -399,13 +397,13 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     @Override
-    public void setAdLoadedListener(AdEnabledPlayerController adEnabledPlayerController) {
-        pkAdEventListener = adEnabledPlayerController;
+    public void setAdProviderListener(AdEnabledPlayerController adEnabledPlayerController) {
+        pkAdProviderListener = adEnabledPlayerController;
     }
 
     @Override
-    public void removeAdLoadedListener() {
-        pkAdEventListener = null;
+    public void removeAdProviderListener() {
+        pkAdProviderListener = null;
     }
 
     @Override
@@ -438,8 +436,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             case STARTED:
                 log.d("AD STARTED");
                 isAdIsPaused = false;
-                if (pkAdEventListener != null) {
-                    pkAdEventListener.onEvent(new AdEvent(STARTED));
+                if (pkAdProviderListener != null) {
+                    pkAdProviderListener.prepareOnAdStarted();
                 }
                 adInfo = createAdInfo(adEvent.getAd());
                 messageBus.post(new AdEvent.AdStartedEvent(adInfo));
@@ -539,8 +537,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 if (adEvent.getAd() == null) {
                     log.e("Ad is null - back to playback");
                     quietAdLoadingErrorReceived = true;
-                    if (pkAdEventListener != null) {
-                        pkAdEventListener.onEvent(new AdError(AdError.Type.FAILED_TO_REQUEST_ADS, AdError.Type.FAILED_TO_REQUEST_ADS.name()));
+                    if (pkAdProviderListener != null) {
+                        pkAdProviderListener.prepareOnAdRequestFailed();
                     }
                     if (player != null && player.getView() != null) {
                         player.getView().showVideoSurface();
@@ -554,8 +552,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     private void sendCuePointsUpdate() {
         AdCuePoints adCuePoints = new AdCuePoints(getAdCuePoints());
-        if (!adCuePoints.hasPreRoll() && pkAdEventListener != null) {
-            pkAdEventListener.onEvent(new AdEvent(CUEPOINTS_CHANGED));
+        if (!adCuePoints.hasPreRoll() && pkAdProviderListener != null) {
+            pkAdProviderListener.prepareOnNoPreroll();
         }
 
         if (adCuePoints.getAdCuePoints().size() > 0) {
@@ -694,8 +692,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 }
                 if (adsManager == null || !isAdRequested) {
                     log.d("resumePlaybackAfterTimeout resume playback");
-                    if (pkAdEventListener != null) {
-                        pkAdEventListener.onEvent(new AdError(AdError.Type.FAILED_TO_REQUEST_ADS, AdError.Type.FAILED_TO_REQUEST_ADS.name()));
+                    if (pkAdProviderListener != null) {
+                        pkAdProviderListener.prepareOnAdRequestFailed();
                     }
                     onDestroy();
                     player.getView().showVideoSurface();
