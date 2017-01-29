@@ -9,6 +9,8 @@ import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 
+import static com.kaltura.playkit.plugins.ads.AdError.Type.*;
+
 /**
  * Created by gilad.nadav on 20/11/2016.
  */
@@ -113,7 +115,9 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     public void onEvent(PKEvent event) {
         Enum receivedEventType = event.eventType();
 
-        if (!isPlayerPrepared && (receivedEventType == AdEvent.Type.STARTED || receivedEventType == AdEvent.Type.CUEPOINTS_CHANGED)) {
+        if (!isPlayerPrepared && (receivedEventType == AdEvent.Type.STARTED ||
+                                  receivedEventType == AdEvent.Type.CUEPOINTS_CHANGED ||
+                                  receivedEventType == FAILED_TO_REQUEST_ADS)) {
             prepare(mediaConfig);
             if (adsProvider != null) {
                 adsProvider.removeAdLoadedListener();

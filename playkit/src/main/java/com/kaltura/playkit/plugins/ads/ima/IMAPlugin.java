@@ -89,8 +89,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     // Whether an ad is displayed.
     private boolean isAdDisplayed;
     private boolean isAdIsPaused;
-    private boolean isAdRequested = false;
-    private boolean isInitWaiting = false;
+    private boolean isAdRequested;
+    private boolean isInitWaiting;
+    private boolean quietAdLoadingErrorReceived;
     ////////////////////
     private MessageBus messageBus;
 
@@ -148,6 +149,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         log.d("Start onUpdateMedia");
         isAdRequested = false;
         isAdDisplayed = false;
+        quietAdLoadingErrorReceived = false;
     }
 
     @Override
@@ -160,6 +162,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             getAdsConfig().setAdTagURL((String) value);
             isAdRequested = false;
             isAdDisplayed = false;
+            quietAdLoadingErrorReceived = false;
             requestAd();
         } else if (key.equals(IMAConfig.ENABLE_BG_PLAYBACK)) {
             getAdsConfig().setEnableBackgroundPlayback((boolean) value);
@@ -535,6 +538,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 //for this case no AD ERROR is fired need to show view {type=adLoadError, errorCode=1009, errorMessage=The response does not contain any valid ads.}
                 if (adEvent.getAd() == null) {
                     log.e("Ad is null - back to playback");
+                    quietAdLoadingErrorReceived = true;
+                    if (pkAdEventListener != null) {
+                        pkAdEventListener.onEvent(new AdError(AdError.Type.FAILED_TO_REQUEST_ADS, AdError.Type.FAILED_TO_REQUEST_ADS.name()));
+                    }
                     if (player != null && player.getView() != null) {
                         player.getView().showVideoSurface();
                     }
@@ -679,23 +686,25 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private void resumePlaybackAfterTimeout() {
         log.d("resumePlaybackAfterTimeout START timer " + adConfig.getAdLoadTimeOut());
         Handler handler = new Handler();
-        Runnable r = new Runnable() {
+        Runnable countDown = new Runnable() {
             public void run() {
                 log.d("resumePlaybackAfterTimeout timer done");
+                if (quietAdLoadingErrorReceived) {
+                    return;
+                }
                 if (adsManager == null || !isAdRequested) {
                     log.d("resumePlaybackAfterTimeout resume playback");
                     if (pkAdEventListener != null) {
-                        pkAdEventListener.onEvent(new AdEvent(STARTED));
+                        pkAdEventListener.onEvent(new AdError(AdError.Type.FAILED_TO_REQUEST_ADS, AdError.Type.FAILED_TO_REQUEST_ADS.name()));
                     }
                     onDestroy();
                     player.getView().showVideoSurface();
-                    messageBus.post(new AdError(AdError.Type.FAILED_TO_REQUEST_ADS, "Failed to request AD from IMA"));
                     if (player != null && player.getView() != null) {
                         player.play();
                     }
                 }
             }
         };
-        handler.postDelayed(r, adConfig.getAdLoadTimeOut() * Consts.MILLISECONDS_MULTIPLIER);
+        handler.postDelayed(countDown, adConfig.getAdLoadTimeOut() * Consts.MILLISECONDS_MULTIPLIER);
     }
 }
