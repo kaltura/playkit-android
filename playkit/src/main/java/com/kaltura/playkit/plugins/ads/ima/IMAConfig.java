@@ -40,25 +40,16 @@ public class IMAConfig {
 
     //View companionView;
 
-    public IMAConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate, List<String> videoMimeTypes, String adTagUrl, boolean adAttribution, boolean adCountDown, int adLoadTimeOut) {
-        this.language = language;
-        if (language == null || "".equals(language)) {
-            this.language = "en";
-        }
-
-        this.enableBackgroundPlayback = enableBackgroundPlayback;
-        this.autoPlayAdBreaks = autoPlayAdBreaks;
-        this.videoBitrate = videoBitrate;
-        this.adTagURL = adTagUrl;
-        this.adAttribution = adAttribution;
-        this.adCountDown = adCountDown;
-        this.adLoadTimeOut = adLoadTimeOut;
-
-        if (videoMimeTypes == null) {
-            this.videoMimeTypes = new ArrayList<>();
-        } else {
-            this.videoMimeTypes = videoMimeTypes;
-        }
+    public IMAConfig() {
+        this.language                 = "en";
+        this.enableBackgroundPlayback = false;
+        this.autoPlayAdBreaks         = true;
+        this.videoBitrate             = -1;
+        this.adAttribution            = true;
+        this.adCountDown              = true;
+        this.adLoadTimeOut            = DEFAULT_AD_LOAD_TIMEOUT;
+        this.videoMimeTypes           = new ArrayList<>();
+        this.adTagURL = null;         //=> must be set via setter
 
         //if (tagTimes == null) {
         //    tagTimes = new HashMap<>();
@@ -67,79 +58,84 @@ public class IMAConfig {
         //this.companionView = companionView;
     }
 
-    public IMAConfig(String language, boolean enableBackgroundPlayback, boolean autoPlayAdBreaks, int videoBitrate, List<String> videoMimeTypes, String adTagUrl, boolean adAttribution, boolean adCountDown) {
-        this(language, enableBackgroundPlayback, autoPlayAdBreaks, videoBitrate, videoMimeTypes, adTagUrl, adAttribution,  adCountDown, IMAConfig.DEFAULT_AD_LOAD_TIMEOUT);
-    }
-
     public String getLanguage() {
         return language;
     }
 
-    public void setLanguage(String language) {
+    public IMAConfig setLanguage(String language) {
         this.language = language;
+        return this;
     }
 
     public boolean getEnableBackgroundPlayback() {
         return enableBackgroundPlayback;
     }
 
-    public void setEnableBackgroundPlayback(boolean enableBackgroundPlayback) {
+    public IMAConfig setEnableBackgroundPlayback(boolean enableBackgroundPlayback) {
         this.enableBackgroundPlayback = enableBackgroundPlayback;
+        return this;
     }
 
     public boolean getAutoPlayAdBreaks() {
         return autoPlayAdBreaks;
     }
 
-    public void setAutoPlayAdBreaks(boolean autoPlayAdBreaks) {
+    public IMAConfig setAutoPlayAdBreaks(boolean autoPlayAdBreaks) {
         this.autoPlayAdBreaks = autoPlayAdBreaks;
+        return this;
     }
 
     public long getVideoBitrate() {
         return videoBitrate;
     }
 
-    public void setVideoBitrate(int videoBitrate) {
+    public IMAConfig setVideoBitrate(int videoBitrate) {
         this.videoBitrate = videoBitrate;
+        return this;
     }
 
     public List<String> getVideoMimeTypes() {
         return videoMimeTypes;
     }
 
-    public void setVideoMimeTypes(List<String> videoMimeTypes) {
+    public IMAConfig setVideoMimeTypes(List<String> videoMimeTypes) {
         this.videoMimeTypes = videoMimeTypes;
+        return this;
     }
 
     public String getAdTagURL() {
         return adTagURL;
     }
 
-    public void setAdTagURL(String adTagURL) {
+    public IMAConfig setAdTagURL(String adTagURL) {
         this.adTagURL = adTagURL;
+        return this;
     }
 
     public boolean getAdAttribution() {
         return adAttribution;
     }
-    public void setAdAttribution(boolean adAttribution) {
+    public IMAConfig setAdAttribution(boolean adAttribution) {
         this.adAttribution = adAttribution;
+        return this;
     }
 
     public boolean getAdCountDown() {
         return adCountDown;
     }
 
-    public void setAdCountDown(boolean adCountDown) {
+    public IMAConfig setAdCountDown(boolean adCountDown) {
         this.adCountDown = adCountDown;
+        return this;
     }
 
     public int getAdLoadTimeOut() {
         return adLoadTimeOut;
     }
 
-    public void setAdLoadTimeOut(int adLoadTimeOut) {
+    public IMAConfig setAdLoadTimeOut(int adLoadTimeOut) {
         this.adLoadTimeOut = adLoadTimeOut;
+        return this;
     }
 
     //    public Map<Double, String> getTagsTimes() {
