@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.kaltura.playkit.PKMediaFormat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,7 @@ public class IMAConfig {
         this.adCountDown              = true;
         this.adLoadTimeOut            = DEFAULT_AD_LOAD_TIMEOUT;
         this.videoMimeTypes           = new ArrayList<>();
+        this.videoMimeTypes.add(PKMediaFormat.mp4_clear.mimeType);
         this.adTagURL = null;         //=> must be set via setter
 
         //if (tagTimes == null) {
