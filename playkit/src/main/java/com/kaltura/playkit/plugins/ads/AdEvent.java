@@ -2,8 +2,6 @@ package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.PKEvent;
 
-import java.util.List;
-
 /**
  * Created by gilad.nadav on 22/11/2016.
  */
@@ -32,9 +30,9 @@ public class AdEvent implements PKEvent {
 
     public static class AdCuePointsUpdateEvent extends AdEvent {
 
-        public List<Long> cuePoints;
+        public AdCuePoints cuePoints;
 
-        public AdCuePointsUpdateEvent(List<Long> cuePoints) {
+        public AdCuePointsUpdateEvent(AdCuePoints cuePoints) {
             super(Type.CUEPOINTS_CHANGED);
             this.cuePoints = cuePoints;
         }

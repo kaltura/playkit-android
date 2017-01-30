@@ -45,7 +45,7 @@ public abstract class DrmAdapter {
         @Override
         public boolean checkAssetStatus(String localAssetPath, String assetId, LocalAssetsManager.AssetStatusListener listener) {
             if (listener != null) {
-                listener.onStatus(localAssetPath, -1, -1);
+                listener.onStatus(localAssetPath, -1, -1, false);
             }
             return true;
         }

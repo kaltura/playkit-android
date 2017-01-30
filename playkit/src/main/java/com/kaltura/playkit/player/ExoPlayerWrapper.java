@@ -6,9 +6,8 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
-import android.text.TextUtils;
+import android.os.Looper;
 
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -23,8 +22,6 @@ import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
-import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource;
-import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
@@ -35,9 +32,9 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
-import com.google.android.exoplayer2.util.Util;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
@@ -74,9 +71,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private PlayerState currentState = PlayerState.IDLE, previousState;
 
     private Factory mediaDataSourceFactory;
-    private Handler mainHandler = new Handler();
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
+    private Exception currentException = null;
 
     private boolean isSeeking = false;
+    private boolean shouldRestorePlayerToPreviousState = false;
 
     private int playerWindow;
     private long playerPosition;
@@ -85,6 +84,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
     private long prevDuration = Consts.TIME_UNSET;
+    private int sameErrorOccurrenceCounter = 0;
 
 
     interface TracksInfoListener {
@@ -99,6 +99,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         public void onTracksInfoReady(PKTracks tracksReady) {
             //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
             tracks = tracksReady;
+            shouldRestorePlayerToPreviousState = false;
             sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
         }
 
@@ -149,35 +150,41 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     }
 
     private void preparePlayer(PKMediaSource pkMediaSource) {
-
+        sameErrorOccurrenceCounter = 0;
         drmSessionManager.setMediaSource(pkMediaSource);
 
         shouldGetTracksInfo = true;
         this.lastPlayedSource = Uri.parse(pkMediaSource.getUrl());
-        MediaSource mediaSource = buildMediaSource(lastPlayedSource, null);
+        MediaSource mediaSource = buildExoMediaSource(pkMediaSource);
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
     }
 
-    private MediaSource buildMediaSource(Uri uri, String overrideExtension) {
+    private MediaSource buildExoMediaSource(PKMediaSource source) {
+        PKMediaFormat format = source.getMediaFormat();
+        if (format == null) {
+            // TODO: error?
+            return null;
+        }
 
-        int type = Util.inferContentType(!TextUtils.isEmpty(overrideExtension) ? "." + overrideExtension
-                : uri.getLastPathSegment());
-        switch (type) {
-            case C.TYPE_SS:
-                return new SsMediaSource(uri, buildDataSourceFactory(false),
-                        new DefaultSsChunkSource.Factory(mediaDataSourceFactory), mainHandler, eventLogger);
-            case C.TYPE_DASH:
-                return new DashMediaSource(uri, buildDataSourceFactory(false),
-                        new DefaultDashChunkSource.Factory(mediaDataSourceFactory), mainHandler, eventLogger);
-            case C.TYPE_HLS:
-                return new HlsMediaSource(uri, mediaDataSourceFactory, mainHandler, eventLogger);
-            case C.TYPE_OTHER:
+        Uri uri = Uri.parse(source.getUrl());
+
+
+        switch (format) {
+            case mp4_clear:
                 return new ExtractorMediaSource(uri, mediaDataSourceFactory, new DefaultExtractorsFactory(),
                         mainHandler, eventLogger);
-            default: {
-                throw new IllegalStateException("Unsupported type: " + type);
-            }
+
+            case dash_clear:
+            case dash_drm:
+                return new DashMediaSource(uri, buildDataSourceFactory(false),
+                        new DefaultDashChunkSource.Factory(mediaDataSourceFactory), mainHandler, eventLogger);
+
+            case hls_clear:
+                return new HlsMediaSource(uri, mediaDataSourceFactory, mainHandler, eventLogger);
+
+            default:
+                throw new IllegalStateException("Unsupported type: " + format);
         }
     }
 
@@ -242,8 +249,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     }
 
     private void sendEvent(PlayerEvent.Type event) {
+        if (shouldRestorePlayerToPreviousState) {
+            log.i("Trying to send event " + event.name() + ". Should be blocked from sending now, because the player is restoring to the previous state.");
+            return;
+        }
         currentEvent = event;
         if (eventListener != null) {
+            log.i("Event sent: " + event.name());
             eventListener.onEvent(currentEvent);
         }
     }
@@ -300,6 +312,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
         log.d("onTimelineChanged");
+        sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
         shouldResetPlayerPosition = timeline != null && !timeline.isEmpty()
                 && !timeline.getWindow(timeline.getWindowCount() - 1, window).isDynamic;
     }
@@ -307,6 +320,17 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
+        if (currentException != null) {
+            //if error have same message as the previous one, update the errorCounter.
+            //this is need to avoid infinity retries on the same error.
+            if (currentException.getMessage().equals(error.getMessage())) {
+                sameErrorOccurrenceCounter++;
+            } else {
+                sameErrorOccurrenceCounter = 0;
+            }
+        }
+
+        currentException = error;
         sendDistinctEvent(PlayerEvent.Type.ERROR);
     }
 
@@ -318,7 +342,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
         log.d("onTracksChanged");
-
+        //if onOnTracksChanged happened when application went background, do not update the tracks.
+        if (trackSelectionHelper == null) {
+            return;
+        }
         //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
         if (shouldGetTracksInfo) {
             shouldGetTracksInfo = !trackSelectionHelper.prepareTracks();
@@ -407,12 +434,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     public void release() {
         log.d("release");
         if (player != null) {
-            playerWindow = player.getCurrentWindowIndex();
-            playerPosition = Consts.TIME_UNSET;
-            Timeline timeline = player.getCurrentTimeline();
-            if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
-                playerPosition = player.getCurrentPosition();
-            }
+            savePlayerPosition();
             this.eventLogger = null;
             player.release();
             player = null;
@@ -420,6 +442,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
             trackSelectionHelper = null;
             eventLogger = null;
         }
+        shouldRestorePlayerToPreviousState = true;
     }
 
     @Override
@@ -465,6 +488,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     public void startFrom(long position) {
         if (player == null) {
             log.e("Attempt to invoke 'startFrom()' on null instance of the exoplayer");
+            return;
+        }
+
+        if (shouldRestorePlayerToPreviousState) {
+            log.i("Restoring player from previous known state. So skip this block.");
             return;
         }
         isSeeking = false;
@@ -528,6 +556,25 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public PlaybackParamsInfo getPlaybackParamsInfo() {
         return new PlaybackParamsInfo(lastPlayedSource.toString(), trackSelectionHelper.getCurrentVideoBitrate(), trackSelectionHelper.getCurrentAudioBitrate());
+    }
+
+    @Override
+    public PlayerEvent.ExceptionInfo getCurrentException() {
+        return new PlayerEvent.ExceptionInfo(currentException, sameErrorOccurrenceCounter);
+    }
+
+    void savePlayerPosition() {
+        if (player == null) {
+            log.e("Attempt to invoke 'savePlayerPosition()' on null instance of the exoplayer");
+            return;
+        }
+        currentException = null;
+        playerWindow = player.getCurrentWindowIndex();
+        playerPosition = Consts.TIME_UNSET;
+        Timeline timeline = player.getCurrentTimeline();
+        if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
+            playerPosition = player.getCurrentPosition();
+        }
     }
 }
 

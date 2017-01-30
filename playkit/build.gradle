@@ -38,7 +38,7 @@ dependencies {
 
     // Google Cast
     compile 'com.google.android.gms:play-services-cast-framework:10.0.1'
-    compile 'com.android.support:mediarouter-v7:25.1.0'
+    compile 'com.android.support:mediarouter-v7:25.0.1'
 
     // OkHttp
     compile 'com.squareup.okhttp3:okhttp:3.4.1'

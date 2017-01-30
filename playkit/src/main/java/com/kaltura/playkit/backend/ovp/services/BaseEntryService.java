@@ -1,13 +1,9 @@
 package com.kaltura.playkit.backend.ovp.services;
 
-import android.text.TextUtils;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.backend.ovp.APIDefines;
 import com.kaltura.playkit.backend.ovp.OvpRequestBuilder;
-import com.kaltura.playkit.connect.MultiRequestBuilder;
-import com.kaltura.playkit.connect.RequestBuilder;
 
 
 /**
@@ -16,7 +12,7 @@ import com.kaltura.playkit.connect.RequestBuilder;
 
 public class BaseEntryService extends OvpService {
 
-    public static RequestBuilder entryInfo(String baseUrl, String ks, int partnerId, String entryId) {
+    /*public static RequestBuilder entryInfo(String baseUrl, String ks, int partnerId, String entryId) {
 
         MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks, partnerId)
                 .tag("mediaAsset-multi-get");
@@ -28,10 +24,10 @@ public class BaseEntryService extends OvpService {
         }
 
         return multiRequestBuilder.add(list(baseUrl, ks, entryId),
-                getPlaybackContext(baseUrl, ks, entryId)
-                /*getContextData(baseUrl, ks, entryId)*/);
+                getPlaybackContext(baseUrl, ks, entryId),
+                MetaDataService.list(baseUrl,ks,entryId));
     }
-
+*/
     public static OvpRequestBuilder list(String baseUrl, String ks, String entryId) {
         return new OvpRequestBuilder()
                 .service("baseEntry")
@@ -84,6 +80,8 @@ public class BaseEntryService extends OvpService {
                 .tag("baseEntry-getPlaybackContext")
                 .params(params);
     }
+
+
 
 
 

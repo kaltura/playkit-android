@@ -128,9 +128,19 @@ public class YouboraPlugin extends PKPlugin {
     }
 
     private void setPluginOptions(){
+        //update the isLive value
+        if (pluginConfig != null && pluginConfig.has("media")) {
+            if (!((JsonObject) pluginConfig.get("media")).has("isLive")) {
+                boolean isLiveFlag = pluginManager.getIsLive();
+                log.d("isLiveFlag = " + pluginManager.getIsLive());
+                ((JsonObject) pluginConfig.get("media")).addProperty("isLive", isLiveFlag);
+            }
+        }
+
         Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig, player);
         // Set options
         pluginManager.setOptions(opt);
+
         if (!isMonitoring) {
             isMonitoring = true;
             pluginManager.startMonitoring(player);
