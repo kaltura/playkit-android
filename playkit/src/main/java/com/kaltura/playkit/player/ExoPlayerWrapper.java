@@ -75,6 +75,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private Exception currentException = null;
 
     private boolean isSeeking = false;
+    private boolean shouldRestorePlayerToPreviousState = false;
 
     private int playerWindow;
     private long playerPosition;
@@ -98,6 +99,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         public void onTracksInfoReady(PKTracks tracksReady) {
             //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
             tracks = tracksReady;
+            shouldRestorePlayerToPreviousState = false;
             sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
         }
 
@@ -247,8 +249,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     }
 
     private void sendEvent(PlayerEvent.Type event) {
+        if (shouldRestorePlayerToPreviousState) {
+            log.i("Trying to send event " + event.name() + ". Should be blocked from sending now, because the player is restoring to the previous state.");
+            return;
+        }
         currentEvent = event;
         if (eventListener != null) {
+            log.i("Event sent: " + event.name());
             eventListener.onEvent(currentEvent);
         }
     }
@@ -305,6 +312,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
         log.d("onTimelineChanged");
+        sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
         shouldResetPlayerPosition = timeline != null && !timeline.isEmpty()
                 && !timeline.getWindow(timeline.getWindowCount() - 1, window).isDynamic;
     }
@@ -434,6 +442,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
             trackSelectionHelper = null;
             eventLogger = null;
         }
+        shouldRestorePlayerToPreviousState = true;
     }
 
     @Override
@@ -479,6 +488,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     public void startFrom(long position) {
         if (player == null) {
             log.e("Attempt to invoke 'startFrom()' on null instance of the exoplayer");
+            return;
+        }
+
+        if (shouldRestorePlayerToPreviousState) {
+            log.i("Restoring player from previous known state. So skip this block.");
             return;
         }
         isSeeking = false;
