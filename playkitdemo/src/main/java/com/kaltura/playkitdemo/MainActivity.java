@@ -67,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         PlayKitManager.registerPlugins(this, SamplePlugin.factory);
         PlayKitManager.registerPlugins(this, IMAPlugin.factory);
-        PlayKitManager.warmUpPlugins(this);
         //PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);
         
         
