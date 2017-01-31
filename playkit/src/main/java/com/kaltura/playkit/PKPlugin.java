@@ -9,6 +9,7 @@ public abstract class PKPlugin {
     public interface Factory {
         String getName();
         PKPlugin newInstance();
+        void warmUp(Context context);
     }
 
     protected abstract void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, MessageBus messageBus, Context context);

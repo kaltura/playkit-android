@@ -28,7 +28,14 @@ public class PlayKitManager {
             sPluginFactories.put(name, factory);
         }
     }
-
+    
+    public static void warmUpPlugins(Context context) {
+        Context applicationContext = context.getApplicationContext();
+        for (PKPlugin.Factory factory : sPluginFactories.values()) {
+            factory.warmUp(applicationContext);
+        }
+    }
+    
     static PKPlugin createPlugin(String name) {
         PKPlugin.Factory pluginFactory = sPluginFactories.get(name);
         return pluginFactory == null ? null : pluginFactory.newInstance();
