@@ -90,6 +90,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private boolean isAdIsPaused;
     private boolean isAdRequested;
     private boolean isInitWaiting;
+    private boolean isAdLoadingError;
     private boolean quietAdLoadingErrorReceived;
     ////////////////////
     private MessageBus messageBus;
@@ -379,6 +380,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     @Override
+    public boolean isAdLoadingError() {
+        return isAdLoadingError;
+    }
+
+    @Override
     public long getDuration() {
         if (adsManager != null) {
             return (long) adsManager.getAdProgress().getDuration();
@@ -432,6 +438,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 // ad rules playlists, as the SDK will automatically start executing the
                 // playlist.
                 messageBus.post(new AdEvent(AdEvent.Type.LOADED));
+                isAdLoadingError = false;
                 adsManager.start();
                 break;
             case STARTED:
@@ -705,6 +712,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     messageBus.post(new AdError(AdError.Type.FAILED_TO_REQUEST_ADS, AdError.Type.FAILED_TO_REQUEST_ADS.name()));
                     player.getView().showVideoSurface();
                     if (player != null && player.getView() != null) {
+                        isAdLoadingError = true;
                         player.play();
                     }
                 }

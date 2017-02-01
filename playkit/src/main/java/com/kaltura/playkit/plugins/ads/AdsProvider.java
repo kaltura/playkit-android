@@ -20,9 +20,11 @@ public interface AdsProvider {
     boolean isAdDisplayed();
     boolean isAdPaused();
     boolean isAdRequested();
+    boolean isAdLoadingError();
     long getDuration();
     long getCurrentPosition();
     void setAdProviderListener(AdEnabledPlayerController adEnabledPlayerController);
     void removeAdProviderListener();
     void skipAd();
+
 }

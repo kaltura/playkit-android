@@ -79,7 +79,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public void play() {
         log.d("PLAY isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused());
-        if (adsProvider != null) {
+        if (adsProvider != null && !adsProvider.isAdLoadingError()) {
             if (!adsProvider.isAdRequested()) {
                 adsProvider.init();
                 return;
