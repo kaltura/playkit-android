@@ -1,5 +1,7 @@
 package com.kaltura.playkit.plugins;
 
+import android.content.Context;
+
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.OttEvent;
@@ -29,6 +31,11 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         @Override
         public PKPlugin newInstance() {
             return new TVPAPIAnalyticsPlugin();
+        }
+
+        @Override
+        public void warmUp(Context context) {
+            
         }
     };
     /**
