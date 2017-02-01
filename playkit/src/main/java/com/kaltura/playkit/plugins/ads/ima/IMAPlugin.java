@@ -547,8 +547,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                         pkAdProviderListener.onAdLoadingFinished(PKPrepareReason.AD_ERROR);
                     }
                     if (player != null && player.getView() != null) {
-                        messageBus.post(new AdError(AdError.Type.FAILED_TO_REQUEST_ADS, AdError.Type.FAILED_TO_REQUEST_ADS.name()));
                         player.getView().showVideoSurface();
+                        //messageBus.post(new AdError(AdError.Type.FAILED_TO_REQUEST_ADS, AdError.Type.FAILED_TO_REQUEST_ADS.name()));
                         //player.play();
                     }
                 }
