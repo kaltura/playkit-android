@@ -281,6 +281,10 @@ public class PlayerController implements Player {
     }
 
     private void togglePlayerListeners(boolean enable) {
+        if (player == null) {
+            log.e("Attempt to invoke 'setEventListener()' on null instance of the player engine");
+            return;
+        }
         if (enable) {
             player.setEventListener(eventTrigger);
             player.setStateChangedListener(stateChangedTrigger);
@@ -330,6 +334,10 @@ public class PlayerController implements Player {
     @Override
     public void onApplicationResumed() {
         log.d("onApplicationResumed");
+        if (player == null) {
+            log.e("Attempt to invoke 'restore()' on null instance of the player engine");
+            return;
+        }
         player.restore();
         prepare(mediaConfig);
         togglePlayerListeners(true);
