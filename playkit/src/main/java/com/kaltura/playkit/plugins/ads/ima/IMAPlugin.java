@@ -196,10 +196,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             return;
         }
         if (adsManager != null) {
-        if (applicationInBackgroundDuringLoaded) {
-            applicationInBackgroundDuringLoaded = false;
-            adsManager.start();
-        } else if (isAdDisplayed) {
+            if (applicationInBackgroundDuringLoaded) {
+                applicationInBackgroundDuringLoaded = false;
+                adsManager.start();
+            } else if (isAdDisplayed) {
                 adsManager.resume();
             }
         }
@@ -221,7 +221,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
 
     }
-    
+
     ////////Ads Plugin
 
     @Override
