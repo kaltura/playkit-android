@@ -13,9 +13,11 @@ import android.widget.Toast;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.OnCompletion;
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
@@ -65,9 +67,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void registerPlugins() {
 
-        PlayKitManager.registerPlugins(SamplePlugin.factory);
-        PlayKitManager.registerPlugins(IMAPlugin.factory);
+        PlayKitManager.registerPlugins(this, SamplePlugin.factory);
+        PlayKitManager.registerPlugins(this, IMAPlugin.factory);
         //PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);
+        
+        
     }
 
     @Override
@@ -85,6 +89,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //startOvpMediaLoading();
         //startOttMediaLoading();
 
+    }
+
+    private PKMediaEntry simpleMediaEntry(String id, String contentUrl, String licenseUrl, PKDrmParams.Scheme scheme) {
+        return new PKMediaEntry()
+                    .setSources(Collections.singletonList(new PKMediaSource()
+                            .setUrl(contentUrl)
+                            .setDrmData(Collections.singletonList(
+                                    new PKDrmParams(licenseUrl, scheme)
+                            )
+                        )))
+                    .setId(id);
+    }
+
+    private PKMediaEntry simpleMediaEntry(String id, String contentUrl) {
+        return new PKMediaEntry()
+                .setSources(Collections.singletonList(new PKMediaSource()
+                        .setUrl(contentUrl)
+                ))
+                .setId(id);
     }
 
     private void startMockMediaLoading() {
@@ -238,7 +261,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //Map<Double, String> tagTimesMap = new HashMap<>();
         //tagTimesMap.put(2.0,"ADTAG");
 
-        IMAConfig adsConfig = new IMAConfig("en", false, true, 60000, videoMimeTypes, adTagUrl,true, true);
+        IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
         config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
 
     }

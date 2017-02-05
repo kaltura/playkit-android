@@ -103,6 +103,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         public PKPlugin newInstance() {
             return new IMAPlugin();
         }
+
+        @Override
+        public void warmUp(Context context) {
+            ImaSdkFactory.getInstance().createAdsLoader(context);
+        }
     };
 
     ////////PKPlugin

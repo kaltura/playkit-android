@@ -34,6 +34,11 @@ public class SamplePlugin extends PKPlugin {
         public PKPlugin newInstance() {
             return new SamplePlugin();
         }
+
+        @Override
+        public void warmUp(Context context) {
+            
+        }
     };
 
     @Override

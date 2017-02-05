@@ -37,7 +37,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     PlayerLoader(Context context) {
         this.context = context;
-        this.messageBus = new MessageBus(context);
+        this.messageBus = new MessageBus();
     }
     
     public void load(@NonNull PlayerConfig playerConfig) {
