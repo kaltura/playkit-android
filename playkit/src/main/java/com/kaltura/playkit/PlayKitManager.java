@@ -22,13 +22,16 @@ public class PlayKitManager {
     
     private static Map<String, PKPlugin.Factory> sPluginFactories = new HashMap<>();
 
-    public static void registerPlugins(PKPlugin.Factory ... pluginFactories) {
+    public static void registerPlugins(Context context, PKPlugin.Factory... pluginFactories) {
+        Context applicationContext = context != null ? context.getApplicationContext() : null;
         for (PKPlugin.Factory factory : pluginFactories) {
             String name = factory.getName();
-            sPluginFactories.put(name, factory);
+            if (applicationContext != null && sPluginFactories.put(name, factory) == null) {
+                factory.warmUp(applicationContext);
+            }
         }
     }
-
+    
     static PKPlugin createPlugin(String name) {
         PKPlugin.Factory pluginFactory = sPluginFactories.get(name);
         return pluginFactory == null ? null : pluginFactory.newInstance();

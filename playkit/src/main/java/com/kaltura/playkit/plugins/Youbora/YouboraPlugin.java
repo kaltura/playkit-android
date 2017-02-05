@@ -44,6 +44,11 @@ public class YouboraPlugin extends PKPlugin {
         public PKPlugin newInstance() {
             return new YouboraPlugin();
         }
+
+        @Override
+        public void warmUp(Context context) {
+            
+        }
     };
 
 

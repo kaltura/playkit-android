@@ -76,6 +76,11 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         public PKPlugin newInstance() {
             return new KalturaLiveStatsPlugin();
         }
+
+        @Override
+        public void warmUp(Context context) {
+            
+        }
     };
 
     @Override
