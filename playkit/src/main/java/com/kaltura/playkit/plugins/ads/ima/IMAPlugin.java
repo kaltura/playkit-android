@@ -495,10 +495,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AD STARTED");
                 isAdDisplayed = true;
                 isAdIsPaused = false;
-                if (isAppIsInBackground(context)) {
-                    if (adsManager != null) {
-                        adsManager.pause();
-                    }
+                if (adsManager != null && isAppIsInBackground(context)) {
+                    adsManager.pause();
                 }
                 adInfo = createAdInfo(adEvent.getAd());
                 messageBus.post(new AdEvent.AdStartedEvent(adInfo));
