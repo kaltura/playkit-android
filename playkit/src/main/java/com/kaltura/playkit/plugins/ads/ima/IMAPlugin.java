@@ -1,6 +1,9 @@
 package com.kaltura.playkit.plugins.ads.ima;
 
+import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
+import android.os.Build;
 import android.view.ViewGroup;
 
 import com.google.ads.interactivemedia.v3.api.Ad;
@@ -55,6 +58,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     private static final PKLog log = PKLog.get("IMAPlugin");
 
+
     @Override
     protected PlayerDecorator getPlayerDecorator() {
         return new AdEnabledPlayerController(this);
@@ -89,6 +93,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private boolean isAdIsPaused;
     private boolean isAdRequested = false;
     private boolean isInitWaiting = false;
+    private boolean appIsInBackground;
+    private boolean adManagerInitDuringBackground;
+    private boolean applicationInBackgroundDuringLoaded;
     ////////////////////
     private MessageBus messageBus;
 
@@ -166,12 +173,33 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     protected void onApplicationPaused() {
+        log.d("IMA onApplicationPaused");
+        appIsInBackground = true;
         pause();
     }
 
     @Override
     protected void onApplicationResumed() {
-
+        log.d("IMA onApplicationResumed adManagerInitDuringBackground = " + adManagerInitDuringBackground + " isAdDisplayed = " + isAdDisplayed);
+        appIsInBackground = false;
+        if (adManagerInitDuringBackground) {
+            if (adsManager != null) {
+                adsManager.init(renderingSettings);
+                player.getView().hideVideoSurface();
+                sendCuePointsUpdate();
+                isInitWaiting = false;
+            }
+            adManagerInitDuringBackground = false;
+            return;
+        }
+        if (adsManager != null) {
+        if (applicationInBackgroundDuringLoaded) {
+            applicationInBackgroundDuringLoaded = false;
+            adsManager.start();
+        } else if (isAdDisplayed) {
+                adsManager.resume();
+            }
+        }
     }
 
     @Override
@@ -248,6 +276,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 }
 
                 if (isInitWaiting) {
+                    appIsInBackground = isAppIsInBackground(context);
+                    if (appIsInBackground) {
+                        adManagerInitDuringBackground = true;
+                        return;
+                    }
                     adsManager.init(renderingSettings);
                     sendCuePointsUpdate();
                     isInitWaiting = false;
@@ -262,8 +295,13 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     public void init() {
         isAdRequested = true;
         if(adsManager != null) {
-            adsManager.init(renderingSettings);
-            sendCuePointsUpdate();
+            appIsInBackground = isAppIsInBackground(context);
+            if (appIsInBackground) {
+                adManagerInitDuringBackground = true;
+            } else {
+                adsManager.init(renderingSettings);
+                sendCuePointsUpdate();
+            }
         } else{
             isInitWaiting = true;
         }
@@ -409,8 +447,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 // AdsManager.start() begins ad playback. This method is ignored for VMAP or
                 // ad rules playlists, as the SDK will automatically start executing the
                 // playlist.
-                messageBus.post(new AdEvent(AdEvent.Type.LOADED));
-                adsManager.start();
+                if (isAppIsInBackground(context)) {
+                    applicationInBackgroundDuringLoaded = true;
+                } else {
+                    messageBus.post(new AdEvent(AdEvent.Type.LOADED));
+                    adsManager.start();
+                }
                 break;
             case CONTENT_PAUSE_REQUESTED:
                 // AdEventType.CONTENT_PAUSE_REQUESTED is fired immediately before a video
@@ -451,6 +493,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             case STARTED:
                 log.d("AD STARTED");
                 isAdIsPaused = false;
+                if (isAppIsInBackground(context)) {
+                    if (adsManager != null) {
+                        adsManager.pause();
+                    }
+                }
                 adInfo = createAdInfo(adEvent.getAd());
                 messageBus.post(new AdEvent.AdStartedEvent(adInfo));
                 break;
@@ -644,5 +691,30 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             player.getView().showVideoSurface();
             player.play();
         }
+    }
+
+    private boolean isAppIsInBackground(Context context) {
+        boolean isInBackground = true;
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH) {
+            List<ActivityManager.RunningAppProcessInfo> runningProcesses = am.getRunningAppProcesses();
+            for (ActivityManager.RunningAppProcessInfo processInfo : runningProcesses) {
+                if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                    for (String activeProcess : processInfo.pkgList) {
+                        if (activeProcess.equals(context.getPackageName())) {
+                            isInBackground = false;
+                        }
+                    }
+                }
+            }
+        } else {
+            List<ActivityManager.RunningTaskInfo> taskInfo = am.getRunningTasks(1);
+            ComponentName componentInfo = taskInfo.get(0).topActivity;
+            if (componentInfo.getPackageName().equals(context.getPackageName())) {
+                isInBackground = false;
+            }
+        }
+
+        return isInBackground;
     }
 }
