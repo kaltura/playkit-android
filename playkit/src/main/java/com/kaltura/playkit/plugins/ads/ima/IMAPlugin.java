@@ -358,7 +358,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     public void resume() {
-        log.d("AD Event resume mIsAdDisplayed = " + isAdDisplayed);
+        log.d("AD Event resume isAdDisplayed = " + isAdDisplayed);
         if (adsManager != null) {
             if (isAdDisplayed) {
                 adsManager.resume();
@@ -368,7 +368,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     public void pause() {
-        log.d("AD Event pause mIsAdDisplayed = " + isAdDisplayed);
+        log.d("AD Event pause isAdDisplayed = " + isAdDisplayed);
         if (adsManager != null && isAdDisplayed) {
             adsManager.pause();
         }
@@ -459,7 +459,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 // ad is played.
                 log.d("AD_CONTENT_PAUSE_REQUESTED");
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_PAUSE_REQUESTED));
-                isAdDisplayed = true;
+
                 if (player != null) {
                     player.pause();
                 }
@@ -492,6 +492,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 break;
             case STARTED:
                 log.d("AD STARTED");
+                isAdDisplayed = true;
                 isAdIsPaused = false;
                 if (isAppIsInBackground(context)) {
                     if (adsManager != null) {
