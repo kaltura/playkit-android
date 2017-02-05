@@ -65,7 +65,7 @@ public class PhoenixTvpapiAndroidTest {
         tvpapiPluginConfig = new JsonObject();
         tvpapiPluginConfig.addProperty("fileId", fileId);
         tvpapiPluginConfig.addProperty("baseUrl", "http://tvpapi-preprod.ott.kaltura.com/v3_9/gateways/jsonpostgw.aspx?");
-        tvpapiPluginConfig.addProperty("timerInterval", 30000);
+        tvpapiPluginConfig.addProperty("timerInterval", 30);
 
         JsonObject initObj = new JsonObject();
         initObj.addProperty("SiteGuid", siteGuid);
@@ -90,7 +90,7 @@ public class PhoenixTvpapiAndroidTest {
         phoenixPluginConfig = new JsonObject();
         phoenixPluginConfig.addProperty("fileId", "464302");
         phoenixPluginConfig.addProperty("baseUrl", "http://api-preprod.ott.kaltura.com/v4_1/api_v3/");
-        phoenixPluginConfig.addProperty("timerInterval", 30000);
+        phoenixPluginConfig.addProperty("timerInterval", 30);
         phoenixPluginConfig.addProperty("ks", ks);
         phoenixPluginConfig.addProperty("partnerId", 198);
     }

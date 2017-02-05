@@ -61,9 +61,9 @@ public class KalturaAnalyticsAndroidTest {
         pluginConfig = new JsonObject();
         pluginConfig.addProperty("sessionId", "b3460681-b994-6fad-cd8b-f0b65736e837");
         pluginConfig.addProperty("uiconfId", uiconfId);
-        pluginConfig.addProperty("baseUrl", "analytics.kaltura.com");
+        pluginConfig.addProperty("baseUrl", "https://analytics.kaltura.com/api_v3/index.php");
         pluginConfig.addProperty("partnerId", partnerId);
-        pluginConfig.addProperty("timerInterval", 30000);
+        pluginConfig.addProperty("timerInterval", 30);
     }
 
     private void setMediaObject(){

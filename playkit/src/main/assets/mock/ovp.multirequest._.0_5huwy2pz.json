@@ -57,5 +57,10 @@
     "actions": [],
     "messages": [],
     "objectType": "KalturaPlaybackContext"
+  },
+  {
+    "objectType": "KalturaMetadataListResponse",
+    "objects":[],
+    "totalCount": 0
   }
 ]

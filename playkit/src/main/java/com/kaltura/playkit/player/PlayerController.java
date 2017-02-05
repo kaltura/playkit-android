@@ -20,6 +20,8 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
+import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
+
 /**
  * Created by anton.afanasiev on 01/11/2016.
  */
@@ -27,7 +29,6 @@ import com.kaltura.playkit.utils.Consts;
 public class PlayerController implements Player {
 
     private static final PKLog log = PKLog.get("PlayerController");
-    private static final long MILLISECONDS_MULTIPLIER = 1000L;
     private static final int ALLOWED_ERROR_RETRIES = 3;
 
 
@@ -36,9 +37,7 @@ public class PlayerController implements Player {
     private PlayerView wrapperView;
 
     private PlayerConfig.Media mediaConfig;
-    private boolean wasReleased = false;
 
-    //private ViewGroup playerRootView;
     private PKEvent.Listener eventListener;
 
     public void setEventListener(PKEvent.Listener eventListener) {
@@ -188,11 +187,7 @@ public class PlayerController implements Player {
         }
 
         if (startPosition <= mediaConfig.getMediaEntry().getDuration()) {
-            if (!wasReleased) {
-                togglePlayerListeners(false);
-                player.startFrom(startPosition);
-                togglePlayerListeners(true);
-            }
+            player.startFrom(startPosition);
         } else {
             log.w("The start position is grater then duration of the video! Start position " + startPosition + ", duration " + mediaConfig.getMediaEntry().getDuration());
         }
@@ -324,18 +319,14 @@ public class PlayerController implements Player {
 
         player.release();
         togglePlayerListeners(false);
-        wasReleased = true;
     }
 
     @Override
     public void onApplicationResumed() {
         log.d("onApplicationResumed");
-        if (wasReleased) {
-            player.restore();
-            prepare(mediaConfig);
-            togglePlayerListeners(true);
-            wasReleased = false;
-        }
+        player.restore();
+        prepare(mediaConfig);
+        togglePlayerListeners(true);
     }
 
     @Override
@@ -350,7 +341,7 @@ public class PlayerController implements Player {
 
     private boolean maybeHandleExceptionLocally(PlayerEvent.ExceptionInfo exceptionInfo) {
         if (exceptionInfo.getErrorCounter() > ALLOWED_ERROR_RETRIES) {
-            log.w("Amount of the retries that happened on the same error are exceed the allowed amount of retries. Allowed amount of retries " + ALLOWED_ERROR_RETRIES + " actual amount " +exceptionInfo.getErrorCounter());
+            log.w("Amount of the retries that happened on the same error are exceed the allowed amount of retries. Allowed amount of retries " + ALLOWED_ERROR_RETRIES + " actual amount " + exceptionInfo.getErrorCounter());
             return false;
         }
 

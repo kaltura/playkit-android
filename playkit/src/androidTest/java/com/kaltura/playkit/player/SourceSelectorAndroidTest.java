@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(AndroidJUnit4.class)
 public class SourceSelectorAndroidTest {
 
-    PKMediaSource dashWidevine = new PKMediaSource().setMediaFormat(PKMediaFormat.dash_widevine).setUrl("http://example.com/a.mpd");
+    PKMediaSource dashWidevine = new PKMediaSource().setMediaFormat(PKMediaFormat.dash_drm).setUrl("http://example.com/a.mpd");
     PKMediaSource dashClear = new PKMediaSource().setMediaFormat(PKMediaFormat.dash_clear).setUrl("http://example.com/a.mpd");
     PKMediaSource mp4 = new PKMediaSource().setMediaFormat(PKMediaFormat.mp4_clear).setUrl("http://example.com/a.mp4");
     PKMediaSource hls = new PKMediaSource().setMediaFormat(PKMediaFormat.hls_clear).setUrl("http://example.com/a.m3u8");
