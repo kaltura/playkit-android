@@ -2,12 +2,12 @@ package com.kaltura.playkit.plugins;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.view.View;
 
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.ads.AdController;
+import com.kaltura.playkit.player.PlayerView;
 
 /**
  * Created by zivilan on 11/12/2016.
@@ -69,7 +69,7 @@ public class MockPlayer implements Player {
     }
 
     @Override
-    public View getView() {
+    public PlayerView getView() {
         return null;
     }
 
@@ -96,11 +96,6 @@ public class MockPlayer implements Player {
     @Override
     public boolean isPlaying() {
         return isPlaying;
-    }
-
-    @Override
-    public boolean isAutoPlay() {
-        return false;
     }
 
     @Override

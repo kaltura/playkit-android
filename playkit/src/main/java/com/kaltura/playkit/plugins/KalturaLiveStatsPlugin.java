@@ -20,6 +20,7 @@ import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
+import com.kaltura.playkit.utils.Consts;
 
 import java.util.Date;
 import java.util.TimerTask;
@@ -31,6 +32,8 @@ import java.util.TimerTask;
 public class KalturaLiveStatsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("KalturaLiveStatsPlugin");
     private static final String TAG = "KalturaLiveStatsPlugin";
+
+    private final String BASE_URL = "https://livestats.kaltura.com/api_v3/index.php";
 
     private boolean isBuffering = false;
 
@@ -62,8 +65,6 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private long bufferStartTime = 0;
     private boolean isLive = false;
     private boolean isFirstPlay = true;
-
-    private static final int TimerInterval = 10000;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -174,6 +175,8 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     }
 
     private void startTimerInterval() {
+        int timerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int)Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
+
         if (timer == null) {
             timer = new java.util.Timer();
         }
@@ -182,7 +185,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
             public void run() {
                 sendLiveEvent(bufferTime);
             }
-        }, 0, TimerInterval);
+        }, 0, timerInterval);
     }
 
 
@@ -204,7 +207,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     private void sendLiveEvent(long bufferTime) {
         String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
-        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : "https://livestats.kaltura.com/api_v3/index.php";
+        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : BASE_URL;
         int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
 
         // Parameters for the request -

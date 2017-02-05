@@ -63,14 +63,13 @@ public class KalturaStatsAndroidTest {
         pluginConfig = new JsonObject();
         pluginConfig.addProperty("sessionId", "b3460681-b994-6fad-cd8b-f0b65736e837");
         pluginConfig.addProperty("uiconfId", uiconfId);
-        pluginConfig.addProperty("baseUrl", "stats.kaltura.com");
+        pluginConfig.addProperty("baseUrl", "https://stats.kaltura.com/api_v3/index.php");
         pluginConfig.addProperty("partnerId", partnerId);
-        pluginConfig.addProperty("timerInterval", 30000);
+        pluginConfig.addProperty("timerInterval", 30);
     }
 
     private void setMediaObject(){
         PlayerConfig config = new PlayerConfig();
-        config.media.setAutoPlay(false);
         PKMediaSource mediaSource = new PKMediaSource().setUrl("http://cdnapi.kaltura.com/p/1774581/sp/177458100/playManifest/entryId/1_mphei4ku/format/applehttp/tags/mbr/protocol/http/f/a.m3u8");
         mediaSource.setId("516109");
         ArrayList<PKMediaSource> sourceList = new ArrayList<>();
@@ -89,7 +88,7 @@ public class KalturaStatsAndroidTest {
             public void onEvent(PKEvent event) {
                 Assert.assertTrue(((LogEvent)event).log.contains(KalturaStatsPlugin.factory.getName()));
                 Assert.assertTrue(((LogEvent)event).log.contains("SEEK"));
-                Assert.assertTrue(((LogEvent)event).request.contains("duration=" + duration));
+                Assert.assertTrue(((LogEvent)event).request.contains("duration=" + (duration / 1000)));
                 Assert.assertTrue(((LogEvent)event).request.contains("eventType=" + KalturaStatsPlugin.KStatsEvent.SEEK.getValue()));
                 Assert.assertTrue(((LogEvent)event).request.contains("currentPoint=" + seek));
                 Assert.assertTrue(((LogEvent)event).request.contains("seek=" + isSeek));
@@ -111,7 +110,7 @@ public class KalturaStatsAndroidTest {
             public void onEvent(PKEvent event) {
                 Assert.assertTrue(((LogEvent)event).log.contains(KalturaStatsPlugin.factory.getName()));
                 Assert.assertTrue(((LogEvent)event).log.contains("PLAY"));
-                Assert.assertTrue(((LogEvent)event).request.contains("duration=" + duration));
+                Assert.assertTrue(((LogEvent)event).request.contains("duration=" + (duration / 1000)));
                 Assert.assertTrue(((LogEvent)event).request.contains("eventType=" + KalturaStatsPlugin.KStatsEvent.PLAY.getValue()));
                 Assert.assertTrue(((LogEvent)event).request.contains("currentPoint=" + seek));
                 Assert.assertTrue(((LogEvent)event).request.contains("seek=" + isSeek));

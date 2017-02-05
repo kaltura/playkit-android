@@ -24,8 +24,15 @@ public class OvpService {
     }
 
     public static MultiRequestBuilder getMultirequest(String baseUrl, String ks){
+        return getMultirequest(baseUrl, ks, -1);
+    }
+
+    public static MultiRequestBuilder getMultirequest(String baseUrl, String ks, int partnerId){
         JsonObject ovpParams = OvpService.getOvpConfigParams();
         ovpParams.addProperty("ks", ks);
+        if(partnerId > 0) {
+            ovpParams.addProperty("partnerId", partnerId);
+        }
         return (MultiRequestBuilder) new MultiRequestBuilder().method("POST")
                 .url(baseUrl)
                 .params(ovpParams)

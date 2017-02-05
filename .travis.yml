@@ -17,10 +17,12 @@ before_script:
   - mkdir -p $ANDROID_HOME/licenses
   - echo $android_sdk_license > $ANDROID_HOME/licenses/android-sdk-license
 script:
-  - ./gradlew assembleDebug
+  - ./gradlew playkit:build
 after_failure:
   - cat playkit/build/outputs/lint-results-debug.xml
   - cat playkitdemo/build/outputs/lint-results-debug.xml
+after_success:
+  - ./travis-push-to-bintray.sh
 notifications:
   email:
     recipients:

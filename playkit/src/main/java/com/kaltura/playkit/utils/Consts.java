@@ -42,4 +42,16 @@ public class Consts {
      * Identifier for the no value.
      */
     public static final long NO_VALUE = -1;
+
+    /**
+     * Flag that indicates, that this specified track will be
+     * selected by the player as default track.
+     */
+    public static final int DEFAULT_TRACK_SELECTION_FLAG = 5;
+
+    public static final long MILLISECONDS_MULTIPLIER = 1000L;
+
+    public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW = 10000;
+
+    public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH = 30000;
 }

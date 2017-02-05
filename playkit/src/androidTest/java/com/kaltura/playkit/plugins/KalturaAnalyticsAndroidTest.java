@@ -61,14 +61,13 @@ public class KalturaAnalyticsAndroidTest {
         pluginConfig = new JsonObject();
         pluginConfig.addProperty("sessionId", "b3460681-b994-6fad-cd8b-f0b65736e837");
         pluginConfig.addProperty("uiconfId", uiconfId);
-        pluginConfig.addProperty("baseUrl", "analytics.kaltura.com");
+        pluginConfig.addProperty("baseUrl", "https://analytics.kaltura.com/api_v3/index.php");
         pluginConfig.addProperty("partnerId", partnerId);
-        pluginConfig.addProperty("timerInterval", 30000);
+        pluginConfig.addProperty("timerInterval", 30);
     }
 
     private void setMediaObject(){
         PlayerConfig config = new PlayerConfig();
-        config.media.setAutoPlay(false);
         PKMediaSource mediaSource = new PKMediaSource().setUrl("http://cdnapi.kaltura.com/p/1774581/sp/177458100/playManifest/entryId/1_mphei4ku/format/applehttp/tags/mbr/protocol/http/f/a.m3u8");
         mediaSource.setId("516109");
         ArrayList<PKMediaSource> sourceList = new ArrayList<>();

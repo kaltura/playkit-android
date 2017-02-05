@@ -18,6 +18,7 @@ import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
+import com.kaltura.playkit.utils.Consts;
 
 import java.util.TimerTask;
 
@@ -28,6 +29,9 @@ import java.util.TimerTask;
 public class KalturaAnalyticsPlugin extends PKPlugin{
     private static final PKLog log = PKLog.get("KalturaAnalyticsPlugin");
     private static final String TAG = "KalturaAnalyticsPlugin";
+    private final String BASE_URL = "https://analytics.kaltura.com/api_v3/index.php";
+
+
 
     public enum KAnalonyEvents {
         IMPRESSION(1),
@@ -77,8 +81,6 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     private boolean intervalOn = false;
     private boolean hasSeeked = false;
     private boolean isImpression = false;
-
-    private static final int TimerInterval = 10000;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -224,6 +226,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     }
 
     private void startTimeObservorInterval() {
+        int timerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
         if (timer == null) {
             timer = new java.util.Timer();
         }
@@ -245,13 +248,13 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
                     sendAnalyticsEvent(KAnalonyEvents.PLAY_100PERCENT);
                 }
             }
-        }, 0, TimerInterval);
+        }, 0, timerInterval);
     }
 
     private void sendAnalyticsEvent(final KAnalonyEvents eventType) {
         String sessionId = pluginConfig.has("sessionId")? pluginConfig.get("sessionId").toString(): "";
         int uiconfId = pluginConfig.has("uiconfId")? Integer.valueOf(pluginConfig.get("uiconfId").toString()): 0;
-        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString(): "https://analytics.kaltura.com/api_v3/index.php";
+        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString(): BASE_URL;
         int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt(): 0;
         String playbackType = isDvr? "dvr":"live";
         int flavourId = -1;

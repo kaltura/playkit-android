@@ -2,8 +2,6 @@ package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.ads.PKAdInfo;
 
-import java.util.List;
-
 /**
  * Created by gilad.nadav on 22/11/2016.
  */
@@ -61,6 +59,18 @@ public class AdInfo implements PKAdInfo {
     @Override
     public long getAdDuration() {
         return adDuration;
+    }
+
+    @Override
+    public AdPositionType getAdPositionType() {
+
+        if (adPodTimeOffset > 0 ) {
+            return AdPositionType.MID_ROLL;
+        } else if (adPodTimeOffset < 0) {
+            return AdPositionType.POST_ROLL;
+        } else {
+            return AdPositionType.PRE_ROLL;
+        }
     }
 
     @Override

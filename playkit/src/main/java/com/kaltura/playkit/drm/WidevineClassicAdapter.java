@@ -32,7 +32,7 @@ class WidevineClassicAdapter extends DrmAdapter {
         WidevineClassicDrm widevineClassicDrm = new WidevineClassicDrm(context);
         WidevineClassicDrm.RightsInfo info = widevineClassicDrm.getRightsInfo(localAssetPath);
         if (listener != null) {
-            listener.onStatus(localAssetPath, info.expiryTime, info.availableTime);
+            listener.onStatus(localAssetPath, info.expiryTime, info.availableTime, true);
         }
         return true;
     }
