@@ -24,7 +24,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
         if (adsProvider.isAdDisplayed()) {
             long adDuration = adsProvider.getDuration();
             log.v("getDuration: " + adDuration);
-           return Consts.MILLISECONDS_MULTIPLIER * adDuration;
+            return Consts.MILLISECONDS_MULTIPLIER * adDuration;
         } else {
             return super.getDuration();
         }
