@@ -78,7 +78,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private boolean shouldRestorePlayerToPreviousState = false;
 
     private int playerWindow;
-    private long playerPosition;
+    private long playerPosition = Consts.TIME_UNSET;
     private Uri lastPlayedSource;
     private Timeline.Window window;
     private boolean shouldGetTracksInfo;
@@ -469,6 +469,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         eventLogger = null;
         exoPlayerView = null;
         lastPlayedSource = null;
+        playerPosition = Consts.TIME_UNSET;
     }
 
     @Override
@@ -570,7 +571,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         }
         currentException = null;
         playerWindow = player.getCurrentWindowIndex();
-        playerPosition = Consts.TIME_UNSET;
         Timeline timeline = player.getCurrentTimeline();
         if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
             playerPosition = player.getCurrentPosition();
