@@ -1,3 +1,5 @@
+
+
 package com.kaltura.playkit.player;
 
 import android.content.Context;
@@ -51,8 +53,10 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     private Uri lastPlayedSource;
     private PlayerController.EventListener eventListener;
     private PlayerController.StateChangedListener stateChangedListener;
+    private boolean shouldRestorePlayerToPreviousState = false;
     private PrepareState prepareState = PrepareState.NOT_PREPARED;
     private boolean isPlayAfterPrepare = false;
+    private Exception currentException = null;
 
 
     public MediaPlayerWrapper(Context context) {
@@ -79,9 +83,10 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     public void load(PKMediaSource mediaSource) {
         log.d("load");
         this.mediaSource = mediaSource;
-        //if (player == null) {
-        initializePlayer();
-        //}
+
+        if (currentState == null || currentState == PlayerState.IDLE) {
+             initializePlayer();
+        }
     }
 
     private void initializePlayer() {
@@ -236,7 +241,11 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
             mPlayheadTracker = new PlayheadTracker();
         }
         mPlayheadTracker.start();
-        sendDistinctEvent(PlayerEvent.Type.PLAYING);
+        if (previousState.equals(PlayerState.READY)) {
+            sendDistinctEvent(PlayerEvent.Type.PLAYING);
+        }
+        sendDistinctEvent(PlayerEvent.Type.PLAY);
+
 
 
     }
@@ -329,6 +338,9 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
         if (!PREPARED.equals(prepareState)) {
             return;
         }
+        if (player == null) {
+            return;
+        }
         player.seekTo((int)position);
         changeState(PlayerState.BUFFERING);
         sendDistinctEvent(PlayerEvent.Type.SEEKING);
@@ -337,6 +349,12 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
     @Override
     public void startFrom(long position) {
+        if (shouldRestorePlayerToPreviousState) {
+            log.i("Restoring player from previous known state. So skip this block.");
+            shouldRestorePlayerToPreviousState = false;
+            return;
+        }
+
         log.d("XXX startFrom " + position);
         seekTo((int)position);
     }
@@ -363,19 +381,37 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
     @Override
     public void release() {
-        player.release();
-        player = null;
+        log.d("release");
+        if (player != null) {
+            player.release();
+            player = null;
+        }
+    }
+
+    @Override
+    public void suspend() {
+        log.d("suspend");
+        if (player != null) {
+            savePlayerPosition();
+            stopPlayheadTracker();
+            pause();
+            shouldRestorePlayerToPreviousState = true;
+        }
     }
 
     @Override
     public void restore() {
-        log.d("resume");
+        log.d("restore");
         if (player != null) {
-            initializePlayer();
-            if (shouldResetPlayerPosition) {
-                seekTo((int) playerPosition);
-            }
+            play();
+            seekTo(playerPosition);
         }
+//        if (player != null) {
+//            initializePlayer();
+//            if (shouldResetPlayerPosition) {
+//                seekTo((int) playerPosition);
+//            }
+//        }
     }
 
     @Override
@@ -429,12 +465,15 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
         if (newEvent.equals(currentEvent)) {
             return;
         }
-
         sendEvent(newEvent);
     }
 
 
     private void sendEvent(PlayerEvent.Type event) {
+        if (shouldRestorePlayerToPreviousState) {
+            log.i("Trying to send event " + event.name() + ". Should be blocked from sending now, because the player is restoring to the previous state.");
+            return;
+        }
         currentEvent = event;
         if (eventListener != null) {
             eventListener.onEvent(currentEvent);
@@ -443,15 +482,18 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
+        log.d("XXXXXY surfaceCreated state = " + currentState);
+
         //SurfaceHolder playerurfaceHolder = mediaPlayerView.getSurfaceHolder();
         player.setDisplay(surfaceHolder);
         //try {
         //player.prepare();
-        player.prepareAsync();
+        if (!PREPARED.equals(prepareState)) {
+            player.prepareAsync();
+        }
         //} catch (IOException e) {
         //    e.printStackTrace();
         //}
-        log.d("XXXXXY surfaceCreated");
     }
 
     @Override
@@ -535,5 +577,16 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
                 log.d("Tracker is not started, nothing to stop");
             }
         }
+    }
+
+    void savePlayerPosition() {
+        if (player == null) {
+            log.e("Attempt to invoke 'savePlayerPosition()' on null instance");
+            return;
+        }
+        currentException = null;
+        playerPosition = player.getCurrentPosition();
+        log.e("XXX playerPosition = " + playerPosition);
+
     }
 }

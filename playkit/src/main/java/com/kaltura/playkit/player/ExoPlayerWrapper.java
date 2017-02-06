@@ -446,6 +446,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     }
 
     @Override
+    public void suspend() {
+
+    }
+
+    @Override
     public void restore() {
         log.d("resume");
         initializePlayer();

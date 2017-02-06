@@ -141,6 +141,12 @@ interface PlayerEngine {
     void release();
 
     /**
+     * suspend the current player.
+     * in WV Classic no need to destroy player in background only to pause it
+     */
+    void suspend();
+
+    /**
      * Restore the player to its previous state.
      * It also restore the last playback position of the player, if it have and can do so.
      * Otherwise it will reset player to the default position.

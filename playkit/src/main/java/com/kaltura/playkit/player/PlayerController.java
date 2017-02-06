@@ -1,3 +1,4 @@
+
 package com.kaltura.playkit.player;
 
 import android.content.Context;
@@ -325,16 +326,22 @@ public class PlayerController implements Player {
             return;
         }
 
-        player.release();
+        if (player instanceof ExoPlayerWrapper) { //EXO
+            player.release();
+        } else { //WVC
+            player.suspend();
+        }
         togglePlayerListeners(false);
     }
 
     @Override
     public void onApplicationResumed() {
         log.d("onApplicationResumed");
-        player.restore();
-        prepare(mediaConfig);
-        togglePlayerListeners(true);
+        if (player != null) {
+            player.restore();
+            prepare(mediaConfig);
+            togglePlayerListeners(true);
+        }
     }
 
     @Override
