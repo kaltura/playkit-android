@@ -13,9 +13,11 @@ import android.widget.Toast;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.OnCompletion;
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
@@ -42,6 +44,7 @@ import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.kaltura.playkitdemo.MockParams.Format;
@@ -87,6 +90,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //startOvpMediaLoading();
         //startOttMediaLoading();
 
+    }
+
+    private PKMediaEntry simpleMediaEntry(String id, String contentUrl, String licenseUrl, PKDrmParams.Scheme scheme) {
+        return new PKMediaEntry()
+                    .setSources(Collections.singletonList(new PKMediaSource()
+                            .setUrl(contentUrl)
+                            .setDrmData(Collections.singletonList(
+                                    new PKDrmParams(licenseUrl, scheme)
+                            )
+                        )))
+                    .setId(id);
+    }
+
+    private PKMediaEntry simpleMediaEntry(String id, String contentUrl) {
+        return new PKMediaEntry()
+                .setSources(Collections.singletonList(new PKMediaSource()
+                        .setUrl(contentUrl)
+                ))
+                .setId(id);
     }
 
     private void startMockMediaLoading() {
