@@ -85,7 +85,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
         this.mediaSource = mediaSource;
 
         if (currentState == null || currentState == PlayerState.IDLE) {
-             initializePlayer();
+            initializePlayer();
         }
     }
 
@@ -241,10 +241,9 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
             mPlayheadTracker = new PlayheadTracker();
         }
         mPlayheadTracker.start();
-        if (previousState.equals(PlayerState.READY)) {
-            sendDistinctEvent(PlayerEvent.Type.PLAYING);
-        }
+
         sendDistinctEvent(PlayerEvent.Type.PLAY);
+        sendDistinctEvent(PlayerEvent.Type.PLAYING);
 
 
 
