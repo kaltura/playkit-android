@@ -139,6 +139,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         break;
                     case PAUSE:
                         sendAnalyticsEvent(PhoenixActionType.PAUSE);
+                        timer.cancel();
+                        timer = new java.util.Timer();
+                        intervalOn = false;
                         break;
                     case PLAY:
                         if (isFirstPlay) {
