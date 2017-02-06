@@ -63,6 +63,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         public PKPlugin newInstance() {
             return new PhoenixAnalyticsPlugin();
         }
+
+        @Override
+        public void warmUp(Context context) {
+            
+        }
     };
 
     @Override

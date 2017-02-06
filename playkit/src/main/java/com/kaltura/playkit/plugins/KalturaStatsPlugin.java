@@ -137,6 +137,11 @@ public class KalturaStatsPlugin extends PKPlugin {
         public PKPlugin newInstance() {
             return new KalturaStatsPlugin();
         }
+
+        @Override
+        public void warmUp(Context context) {
+            
+        }
     };
 
     @Override
