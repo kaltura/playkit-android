@@ -1,9 +1,6 @@
 package com.kaltura.playkit.plugins.ads.ima;
 
-import android.app.ActivityManager;
-import android.content.ComponentName;
 import android.content.Context;
-import android.os.Build;
 import android.view.ViewGroup;
 
 import com.google.ads.interactivemedia.v3.api.Ad;
@@ -279,7 +276,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 }
 
                 if (isInitWaiting) {
-                    appIsInBackground = isAppIsInBackground(context);
                     if (appIsInBackground) {
                         adManagerInitDuringBackground = true;
                         return;
@@ -298,7 +294,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     public void init() {
         isAdRequested = true;
         if(adsManager != null) {
-            appIsInBackground = isAppIsInBackground(context);
             if (appIsInBackground) {
                 adManagerInitDuringBackground = true;
             } else {
@@ -450,7 +445,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 // AdsManager.start() begins ad playback. This method is ignored for VMAP or
                 // ad rules playlists, as the SDK will automatically start executing the
                 // playlist.
-                if (isAppIsInBackground(context)) {
+                if (appIsInBackground) {
                     applicationInBackgroundDuringLoaded = true;
                 } else {
                     messageBus.post(new AdEvent(AdEvent.Type.LOADED));
@@ -497,7 +492,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AD STARTED");
                 isAdDisplayed = true;
                 isAdIsPaused = false;
-                if (adsManager != null && isAppIsInBackground(context)) {
+                if (adsManager != null && appIsInBackground) {
                     adsManager.pause();
                 }
                 adInfo = createAdInfo(adEvent.getAd());
@@ -693,30 +688,5 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             player.getView().showVideoSurface();
             player.play();
         }
-    }
-
-    private boolean isAppIsInBackground(Context context) {
-        boolean isInBackground = true;
-        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH) {
-            List<ActivityManager.RunningAppProcessInfo> runningProcesses = am.getRunningAppProcesses();
-            for (ActivityManager.RunningAppProcessInfo processInfo : runningProcesses) {
-                if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                    for (String activeProcess : processInfo.pkgList) {
-                        if (activeProcess.equals(context.getPackageName())) {
-                            isInBackground = false;
-                        }
-                    }
-                }
-            }
-        } else {
-            List<ActivityManager.RunningTaskInfo> taskInfo = am.getRunningTasks(1);
-            ComponentName componentInfo = taskInfo.get(0).topActivity;
-            if (componentInfo.getPackageName().equals(context.getPackageName())) {
-                isInBackground = false;
-            }
-        }
-
-        return isInBackground;
     }
 }
