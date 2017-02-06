@@ -3,6 +3,7 @@ package com.kaltura.playkit.ads;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
+import com.kaltura.playkit.utils.Consts;
 
 /**
  * Created by gilad.nadav on 20/11/2016.
@@ -23,7 +24,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
         if (adsProvider.isAdDisplayed()) {
             long adDuration = adsProvider.getDuration();
             log.v("getDuration: " + adDuration);
-           return 1000 * adDuration;
+            return Consts.MILLISECONDS_MULTIPLIER * adDuration;
         } else {
             return super.getDuration();
         }
@@ -34,7 +35,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
         if (adsProvider.isAdDisplayed()) {
             long adPosition = adsProvider.getCurrentPosition();
             log.v("getCurrentPosition = " + adPosition);
-            return 1000 * adPosition;
+            return Consts.MILLISECONDS_MULTIPLIER * adPosition;
         } else {
             return super.getCurrentPosition();
         }
