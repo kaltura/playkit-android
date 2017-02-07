@@ -42,6 +42,15 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     private MediaPlayerView mediaPlayerView;
     private PKMediaSource mediaSource;
     private String assetUri;
+
+    public String getLicenseUri() {
+        return licenseUri;
+    }
+
+    public String getAssetUri() {
+        return assetUri;
+    }
+
     private String licenseUri;
     private WidevineClassicDrm drmClient;
     private PlayerEvent.Type currentEvent;
@@ -61,9 +70,11 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
         this.context = context;
         player = new MediaPlayer();
         mediaPlayerView = new MediaPlayerView(context);
+        initDrmClient();
+    }
 
+    private void initDrmClient() {
         drmClient = new WidevineClassicDrm(context);
-
         drmClient.setEventListener(new WidevineClassicDrm.EventListener() {
             @Override
             public void onError(final DrmErrorEvent event) {
@@ -72,6 +83,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
             @Override
             public void onEvent(DrmEvent event) {
+                //Do Nothing
                 return;
             }
         });
@@ -157,7 +169,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
         player.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
             @Override
             public void onBufferingUpdate(MediaPlayer mediaPlayer, int i) {
-                return;
+                //Do Nothing;
             }
         });
 
