@@ -50,7 +50,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     private long prevDuration = Consts.TIME_UNSET;
     private boolean isSeeking = false;
     private boolean shouldResetPlayerPosition;
-    private Uri lastPlayedSource;
+    //private Uri lastPlayedSource;
     private PlayerController.EventListener eventListener;
     private PlayerController.StateChangedListener stateChangedListener;
     private boolean shouldRestorePlayerToPreviousState = false;
@@ -136,9 +136,21 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
                 String errMsg = "onError what = " + what;
                 log.e(errMsg);
+
                 if (what == -38) {
+                    release();
+                    player.reset();
+                    try {
+                        player.setDataSource(assetUri);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        sendDistinctEvent(PlayerEvent.Type.ERROR);
+                        return true;
+                    }
+                    restore();
                     return true;
                 }
+                sendDistinctEvent(PlayerEvent.Type.ERROR);
                 if(what == MediaPlayer.MEDIA_ERROR_SERVER_DIED || what == MediaPlayer.MEDIA_ERROR_UNKNOWN || what == MediaPlayer.MEDIA_ERROR_IO) {
 
                 }
@@ -380,16 +392,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
     @Override
     public void release() {
-        log.d("release");
-        if (player != null) {
-            player.release();
-            player = null;
-        }
-    }
-
-    @Override
-    public void suspend() {
-        log.d("suspend");
+        log.d("XXX release");
         if (player != null) {
             savePlayerPosition();
             stopPlayheadTracker();
@@ -400,22 +403,28 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
     @Override
     public void restore() {
-        log.d("restore");
+        log.d("XXX restore");
         if (player != null) {
             play();
             seekTo(playerPosition);
+            pause();
         }
-//        if (player != null) {
-//            initializePlayer();
-//            if (shouldResetPlayerPosition) {
-//                seekTo((int) playerPosition);
-//            }
-//        }
     }
 
     @Override
     public void destroy() {
-
+        log.d("XXX destroy");
+        stopPlayheadTracker();
+        if (player != null) {
+            player.release();
+            player = null;
+        }
+        mediaPlayerView = null;
+        eventListener = null;
+        stateChangedListener = null;
+        currentState = PlayerState.IDLE;
+        previousState = null;
+        playerPosition = 0;
     }
 
     @Override

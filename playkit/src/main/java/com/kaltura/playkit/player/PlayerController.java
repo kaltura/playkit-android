@@ -78,7 +78,7 @@ public class PlayerController implements Player {
                     case ERROR:
                         event = player.getCurrentException();
                         PlayerEvent.ExceptionInfo exceptionInfo = (PlayerEvent.ExceptionInfo) event;
-                        if (exceptionInfo.getException() == null) {
+                        if (exceptionInfo == null || exceptionInfo.getException() == null) {
                             return;
                         }
 
@@ -326,11 +326,7 @@ public class PlayerController implements Player {
             return;
         }
 
-        if (player instanceof ExoPlayerWrapper) { //EXO
-            player.release();
-        } else { //WVC
-            player.suspend();
-        }
+        player.release();
         togglePlayerListeners(false);
     }
 
