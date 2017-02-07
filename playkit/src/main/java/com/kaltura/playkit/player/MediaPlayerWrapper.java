@@ -76,7 +76,6 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
             @Override
             public void onEvent(DrmEvent event) {
                 //Do Nothing
-                return;
             }
         });
     }
