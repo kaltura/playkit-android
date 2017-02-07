@@ -207,13 +207,13 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
     @Override
     public PlayerView getView() {
-        log.d("XXX getView ");
+        log.d("getView ");
         return mediaPlayerView;
     }
 
     @Override
     public void play() {
-        log.d("XXX play prepareState = " + prepareState.name());
+        log.d("play prepareState = " + prepareState.name());
         if (!PREPARED.equals(prepareState)) {
             isPlayAfterPrepare = true;
             return;
@@ -232,7 +232,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
     @Override
     public void pause() {
-        log.d("XXX pause ");
+        log.d("pause ");
         if (!PREPARED.equals(prepareState)) {
             return;
         }
