@@ -40,7 +40,9 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
     public SurfaceHolder getSurfaceHolder() {
         return  holder;
     }
+
     private View initSurfaceView() {
+        log.d("initSurfaceView");
         surfaceView = new SurfaceView(context);
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,

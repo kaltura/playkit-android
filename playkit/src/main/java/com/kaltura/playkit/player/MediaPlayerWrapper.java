@@ -35,7 +35,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     private static final PKLog log = PKLog.get("MediaPlayerWrapper");
 
     private static final long PLAYHEAD_UPDATE_INTERVAL = 200;
-
+    private static int ILLEGAL_STATEׁ_ORERATION = -38;
     Context context;
     private MediaPlayer player;
     private MediaPlayerView mediaPlayerView;
@@ -49,14 +49,11 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     private PlayheadTracker mPlayheadTracker;
     private long playerPosition;
     private long prevDuration = Consts.TIME_UNSET;
-    private boolean isSeeking = false;
-    private boolean shouldResetPlayerPosition;
     private PlayerController.EventListener eventListener;
     private PlayerController.StateChangedListener stateChangedListener;
     private boolean shouldRestorePlayerToPreviousState = false;
     private PrepareState prepareState = PrepareState.NOT_PREPARED;
     private boolean isPlayAfterPrepare = false;
-    private Exception currentException = null;
     private boolean appInBackground;
 
 
@@ -118,13 +115,13 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
                 String errMsg = "onError what = " + what;
                 log.e(errMsg);
 
-                if (what == -38) {
+                if (what == ILLEGAL_STATEׁ_ORERATION) {
                     release();
                     player.reset();
                     try {
                         player.setDataSource(assetUri);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        log.e(e.getMessage());
                         sendDistinctEvent(PlayerEvent.Type.ERROR);
                         return true;
                     }
@@ -253,7 +250,6 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
             log.e("Attempt to invoke 'replay()' on null instance of the exoplayer");
             return;
         }
-        isSeeking = false;
         seekTo(0);
         player.start();
         sendDistinctEvent(PlayerEvent.Type.REPLAY);
@@ -407,24 +403,26 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     }
 
     public static String getWidevineAssetPlaybackUri(String assetUri) {
+        String assetUriForPlayback = null;
         if (assetUri.startsWith("file:")) {
-            assetUri = Uri.parse(assetUri).getPath();
+            assetUriForPlayback = Uri.parse(assetUri).getPath();
         } else if (assetUri.startsWith("http:")) {
-            assetUri = assetUri.replaceFirst("^http:", "widevine:");
+            assetUriForPlayback = assetUri.replaceFirst("^http:", "widevine:");
         }
-        return assetUri;
+        return assetUriForPlayback;
     }
 
     // Convert file:///local/path/a.wvm to /local/path/a.wvm
     // Convert widevine://example.com/path/a.wvm to http://example.com/path/a.wvm
     // Everything else remains the same.
     public static String getWidevineAssetAcquireUri(String assetUri) {
+        String assetAcquireUriForPlayback = null;
         if (assetUri.startsWith("file:")) {
-            assetUri = Uri.parse(assetUri).getPath();
+            assetAcquireUriForPlayback = Uri.parse(assetUri).getPath();
         } else if (assetUri.startsWith("widevine:")) {
-            assetUri = assetUri.replaceFirst("widevine", "http");
+            assetAcquireUriForPlayback = assetUri.replaceFirst("widevine", "http");
         }
-        return assetUri;
+        return assetAcquireUriForPlayback;
     }
 
     private void changeState(PlayerState newState) {
@@ -557,7 +555,6 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
             log.e("Attempt to invoke 'savePlayerPosition()' on null instance");
             return;
         }
-        currentException = null;
         playerPosition = player.getCurrentPosition();
         log.e("playerPosition = " + playerPosition);
     }
