@@ -23,6 +23,7 @@ import com.kaltura.playkit.utils.Consts;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.NOT_PREPARED;
 import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARED;
 import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARING;
 
@@ -36,7 +37,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
     private static final long PLAYHEAD_UPDATE_INTERVAL = 200;
     private static int ILLEGAL_STATEׁ_ORERATION = -38;
-    Context context;
+    private Context context;
     private MediaPlayer player;
     private MediaPlayerView mediaPlayerView;
     private PKMediaSource mediaSource;
@@ -52,10 +53,9 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     private PlayerController.EventListener eventListener;
     private PlayerController.StateChangedListener stateChangedListener;
     private boolean shouldRestorePlayerToPreviousState = false;
-    private PrepareState prepareState = PrepareState.NOT_PREPARED;
+    private PrepareState prepareState = NOT_PREPARED;
     private boolean isPlayAfterPrepare = false;
     private boolean appInBackground;
-
 
     public MediaPlayerWrapper(Context context) {
         this.context = context;
@@ -72,7 +72,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
             @Override
             public void onEvent(DrmEvent event) {
-
+                return;
             }
         });
     }
@@ -94,7 +94,25 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
         currentState = PlayerState.IDLE;
         //player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         //player.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
+        setPlayerListeners();
 
+
+        assetUri = mediaSource.getUrl();
+        licenseUri = mediaSource.getDrmData().get(0).getLicenseUri();
+        String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
+        try {
+            player.setDataSource(assetUri);
+            prepareState = PREPARING;
+            mediaPlayerView.getSurfaceHolder().addCallback(this);
+        } catch (IOException e) {
+            log.e(e.toString());
+        }
+        if(drmClient.needToAcquireRights(assetAcquireUri)) {
+            drmClient.acquireRights(assetAcquireUri, licenseUri);
+        }
+    }
+
+    private void setPlayerListeners() {
         // Set OnCompletionListener to notify our callbacks when the video is completed.
         player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 
@@ -139,7 +157,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
         player.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
             @Override
             public void onBufferingUpdate(MediaPlayer mediaPlayer, int i) {
-
+                return;
             }
         });
 
@@ -176,21 +194,6 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
             }
         });
-
-
-        assetUri = mediaSource.getUrl();
-        licenseUri = mediaSource.getDrmData().get(0).getLicenseUri();
-        String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
-        try {
-            player.setDataSource(assetUri);
-            prepareState = PREPARING;
-            mediaPlayerView.getSurfaceHolder().addCallback(this);
-        } catch (IOException e) {
-            log.e(e.toString());
-        }
-        if(drmClient.needToAcquireRights(assetAcquireUri)) {
-            drmClient.acquireRights(assetAcquireUri, licenseUri);
-        }
     }
 
     private void handleContentCompleted() {
@@ -299,7 +302,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
     @Override
     public void changeTrack(String uniqueId) {
-
+        return;
     }
 
     @Override
@@ -351,7 +354,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     public void release() {
         log.d("release");
         appInBackground = true;
-        if (player != null && prepareState == PrepareState.PREPARED) {
+        if (player != null && prepareState == PREPARED) {
             savePlayerPosition();
             stopPlayheadTracker();
             pause();
@@ -363,7 +366,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     public void restore() {
         log.d("restore prepareState = " + prepareState.name());
         appInBackground = false;
-        if (player != null && prepareState == PrepareState.PREPARED) {
+        if (player != null && prepareState == PREPARED) {
             play();
             if (playerPosition != 0) {
                 seekTo(playerPosition);
@@ -403,7 +406,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     }
 
     public static String getWidevineAssetPlaybackUri(String assetUri) {
-        String assetUriForPlayback = null;
+        String assetUriForPlayback = assetUri;
         if (assetUri.startsWith("file:")) {
             assetUriForPlayback = Uri.parse(assetUri).getPath();
         } else if (assetUri.startsWith("http:")) {
@@ -416,7 +419,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     // Convert widevine://example.com/path/a.wvm to http://example.com/path/a.wvm
     // Everything else remains the same.
     public static String getWidevineAssetAcquireUri(String assetUri) {
-        String assetAcquireUriForPlayback = null;
+        String assetAcquireUriForPlayback = assetUri;
         if (assetUri.startsWith("file:")) {
             assetAcquireUriForPlayback = Uri.parse(assetUri).getPath();
         } else if (assetUri.startsWith("widevine:")) {
@@ -469,12 +472,12 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
     @Override
     public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-
+        return;
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-
+        return;
     }
 
     enum PrepareState {
@@ -494,9 +497,9 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     }
 
     class PlayheadTracker {
-        Handler mHandler;
-        float playbackTime;
-        Runnable mRunnable = new Runnable() {
+        private float playbackTime;
+        private Handler trackingHandler;
+        private Runnable mRunnable = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -521,8 +524,8 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
                     log.e(errMsg + e.getMessage());
 
                 }
-                if (mHandler != null) {
-                    mHandler.postDelayed(this, PLAYHEAD_UPDATE_INTERVAL);
+                if (trackingHandler != null) {
+                    trackingHandler.postDelayed(this, PLAYHEAD_UPDATE_INTERVAL);
                 }
             }
         };
@@ -532,18 +535,18 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
         }
 
         void start() {
-            if (mHandler == null) {
-                mHandler = new Handler(Looper.getMainLooper());
-                mHandler.postDelayed(mRunnable, PLAYHEAD_UPDATE_INTERVAL);
+            if (trackingHandler == null) {
+                trackingHandler = new Handler(Looper.getMainLooper());
+                trackingHandler.postDelayed(mRunnable, PLAYHEAD_UPDATE_INTERVAL);
             } else {
                 log.d("Tracker is already started");
             }
         }
 
         void stop() {
-            if (mHandler != null) {
-                mHandler.removeCallbacks(mRunnable);
-                mHandler = null;
+            if (trackingHandler != null) {
+                trackingHandler.removeCallbacks(mRunnable);
+                trackingHandler = null;
             } else {
                 log.d("Tracker is not started, nothing to stop");
             }
