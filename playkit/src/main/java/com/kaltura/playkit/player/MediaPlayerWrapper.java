@@ -43,14 +43,6 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     private PKMediaSource mediaSource;
     private String assetUri;
 
-    public String getLicenseUri() {
-        return licenseUri;
-    }
-
-    public String getAssetUri() {
-        return assetUri;
-    }
-
     private String licenseUri;
     private WidevineClassicDrm drmClient;
     private PlayerEvent.Type currentEvent;
@@ -484,12 +476,12 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
     @Override
     public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-        return;
+        //Do Nothing;
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-        return;
+        //Do Nothing;
     }
 
     enum PrepareState {
@@ -572,5 +564,13 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
         }
         playerPosition = player.getCurrentPosition();
         log.e("playerPosition = " + playerPosition);
+    }
+
+    public String getLicenseUri() {
+        return licenseUri;
+    }
+
+    public String getAssetUri() {
+        return assetUri;
     }
 }
