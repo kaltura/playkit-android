@@ -305,7 +305,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
     @Override
     public void changeTrack(String uniqueId) {
-        return;
+        // Do Nothing
     }
 
     @Override
@@ -483,20 +483,35 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
         //Do Nothing;
     }
 
-    enum PrepareState {
-        NOT_PREPARED,
-        PREPARING,
-        PREPARED
-    }
-
-    ////////////////////////
-
     private void stopPlayheadTracker() {
         if (mPlayheadTracker != null) {
             playerPosition = (int) mPlayheadTracker.getPlaybackTime() * 1000;
             mPlayheadTracker.stop();
             mPlayheadTracker = null;
         }
+    }
+
+    public void savePlayerPosition() {
+        if (player == null) {
+            log.e("Attempt to invoke 'savePlayerPosition()' on null instance");
+            return;
+        }
+        playerPosition = player.getCurrentPosition();
+        log.d("playerPosition = " + playerPosition);
+    }
+
+    public String getLicenseUri() {
+        return licenseUri;
+    }
+
+    public String getAssetUri() {
+        return assetUri;
+    }
+
+    enum PrepareState {
+        NOT_PREPARED,
+        PREPARING,
+        PREPARED
     }
 
     class PlayheadTracker {
@@ -533,11 +548,11 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
             }
         };
 
-        float getPlaybackTime() {
+        public float getPlaybackTime() {
             return playbackTime;
         }
 
-        void start() {
+        public void start() {
             if (trackingHandler == null) {
                 trackingHandler = new Handler(Looper.getMainLooper());
                 trackingHandler.postDelayed(mRunnable, PLAYHEAD_UPDATE_INTERVAL);
@@ -546,7 +561,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
             }
         }
 
-        void stop() {
+        public void stop() {
             if (trackingHandler != null) {
                 trackingHandler.removeCallbacks(mRunnable);
                 trackingHandler = null;
@@ -554,22 +569,5 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
                 log.d("Tracker is not started, nothing to stop");
             }
         }
-    }
-
-    void savePlayerPosition() {
-        if (player == null) {
-            log.e("Attempt to invoke 'savePlayerPosition()' on null instance");
-            return;
-        }
-        playerPosition = player.getCurrentPosition();
-        log.e("playerPosition = " + playerPosition);
-    }
-
-    public String getLicenseUri() {
-        return licenseUri;
-    }
-
-    public String getAssetUri() {
-        return assetUri;
     }
 }
