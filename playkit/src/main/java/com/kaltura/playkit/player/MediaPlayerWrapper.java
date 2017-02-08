@@ -374,6 +374,8 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
             play();
             if (playerPosition != 0) {
                 seekTo(playerPosition);
+                shouldRestorePlayerToPreviousState = false;
+
             }
             pause();
         } else {
