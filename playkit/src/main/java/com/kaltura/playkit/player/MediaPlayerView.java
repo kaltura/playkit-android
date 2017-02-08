@@ -78,16 +78,17 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
+        log.d("surfaceCreated");
         posterView.setVisibility(GONE);
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-
+        // Do Nothing
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-
+        // Do Nothing
     }
 }

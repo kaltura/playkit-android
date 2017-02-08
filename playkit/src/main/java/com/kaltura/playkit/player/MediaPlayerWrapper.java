@@ -31,12 +31,13 @@ import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARI
  * Created by gilad.nadav on 30/12/2016.
  */
 
-public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback {
+public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback {
 
     private static final PKLog log = PKLog.get("MediaPlayerWrapper");
 
     private static final long PLAYHEAD_UPDATE_INTERVAL = 200;
     private static int ILLEGAL_STATEׁ_ORERATION = -38;
+
     private Context context;
     private MediaPlayer player;
     private MediaPlayerView mediaPlayerView;
@@ -335,7 +336,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
     @Override
     public void setVolume(float volume) {
-
+        // Do Nothing
     }
 
     @Override
@@ -517,11 +518,12 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
     class PlayheadTracker {
         private float playbackTime;
         private Handler trackingHandler;
+        private long duration = -1;
         private Runnable mRunnable = new Runnable() {
             @Override
             public void run() {
                 try {
-                    if (player != null && player.getCurrentPosition() == player.getDuration()){
+                    if (player != null && player.getCurrentPosition() == duration){
                         log.d("--- Video onCompletion ---");
                         handleContentCompleted();
                         return;
@@ -529,9 +531,9 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
 
                     if (player != null && player.isPlaying()) {
                         int currPos = player.getCurrentPosition();
-                        log.d("progress status = " + currPos + "/" + player.getDuration());
-                        if (currPos > player.getDuration()) {
-                            playbackTime = player.getDuration() / 1000f;
+                        log.d("progress status = " + currPos + "/" + duration);
+                        if (currPos > duration) {
+                            playbackTime = duration / 1000f;
                         } else {
                             playbackTime = currPos / 1000f;
                         }
@@ -553,6 +555,10 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
         }
 
         public void start() {
+            if (player != null) {
+                duration = player.getDuration();
+                log.d("tracker start getDurationXX  = " + duration);
+            }
             if (trackingHandler == null) {
                 trackingHandler = new Handler(Looper.getMainLooper());
                 trackingHandler.postDelayed(mRunnable, PLAYHEAD_UPDATE_INTERVAL);
@@ -562,6 +568,7 @@ public class MediaPlayerWrapper implements PlayerEngine,  SurfaceHolder.Callback
         }
 
         public void stop() {
+            duration = -1;
             if (trackingHandler != null) {
                 trackingHandler.removeCallbacks(mRunnable);
                 trackingHandler = null;
