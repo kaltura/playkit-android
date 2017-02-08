@@ -1,36 +1,4 @@
 {
-  "wvc_voot": {
-    "duration": 102000,
-    "id": "0_howqvlcs",
-    "name": "testing_voot",
-    "sources": [
-      {
-        "id": "0_howqvlcs",
-        "url": "https://cdnapisec.kaltura.com/p/1982551/sp/198255100/playManifest/entryId/0_ura1otnt/format/url/tags/widevine_mbr/protocol/https/f/a.wvm?playSessionId=85d4e12c-d78d-d773-0f1c-f1ebb5e4c864",
-        "mimeType": "video/wvm",
-        "drmData":[ {
-          "licenseUri": "https://udrm.kaltura.com//widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVFQiLCJ1c2VyX3Rva2VuIjoiIiwiYWNjb3VudF9pZCI6MTk4MjU1MSwiY29udGVudF9pZCI6IjBfdXJhMW90bnRfMF8yMDJzcXNydyIsImZpbGVzIjoiIiwidWRpZCI6ImFhNWUxYjZjOTY5ODhkNjgiLCJhZGRpdGlvbmFsX2Nhc19zeXN0ZW0iOjB9&signature=7UDUzx2kINJ2uBloMZyWvpDC4TY%3D&"
-        }
-        ]
-      }
-    ]
-  },
-  "wvc_voot_old": {
-    "duration": 102000,
-    "id": "0_howqvlcs",
-    "name": "testing_voot",
-    "sources": [
-      {
-        "id": "0_howqvlcs",
-        "url": "http://cfvod.kaltura.com/scf/pd/p/1804331/sp/180433100/serveFlavor/entryId/1_etkmak5i/v/1/flavorId/1_uujds9nx/name/a.wvm?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cDovL2Nmdm9kLmthbHR1cmEuY29tL3NjZi9wZC9wLzE4MDQzMzEvc3AvMTgwNDMzMTAwL3NlcnZlRmxhdm9yL2VudHJ5SWQvMV9ldGttYWs1aS92LzEvZmxhdm9ySWQvMV91dWpkczlueC9uYW1lLyoiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE0ODY0MTc3NzN9fX1dfQ__&Signature=Hf3ELnO~WcYkYrd9mnhiJHX8qR9-G9kRjEENGqE67afh0Ni~zpzxxSTqGgjxtpFbPafH38dfJ3KwUMj26eXxc9CwO6iXDJgDz32caeAabhX5GwEuDVn7x~tojvjr6OzgI841ZBmDuUIcqReBZnJ8SjMAc0XTUVPyGblwrJpdzzVuNWygvwAFpt3PghruyEy0mqZMfqDrhzcqcLUYIIsAhrUzf5K1GGN2VTleOfzjaEBw5CCR62jq8kt7bcSODzhF4RuMz5JRTtG51mSrbGiUIMV1FscIzUQ1JqpVQcLGy6AFZvjGAoy9bfUyhJnmVH3eejvCYlcFrDLeaGgLic92aA__&Key-Pair-Id=APKAJT6QIWSKVYK3V34A",
-        "mimeType": "video/wvm",
-        "drmData":[ {
-          "licenseUri": "https://udrm.kaltura.com/widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVlAiLCJ1c2VyX3Rva2VuIjoiZGpKOE1UZ3dORE16TVh5ZC12cW1JZk94Rnd5ZTRFdEFsSFFTT084dVZjblo0TXRWWXZqOWc0ZkxGakg4UzBiWWtLQ3JmOFdwQzUzTDI0MlF0UU9Pb2lTOWJBM284cDR5cmNEX3AtMWVibFlsanpGQ3ctQWNSOUZpQWc9PSIsImFjY291bnRfaWQiOiIxODA0MzMxIiwiY29udGVudF9pZCI6IjFfZXRrbWFrNWkiLCJmaWxlcyI6IjFfbXk2amgzbGssMV9udzFjZjk2eSwxX29ycHIyYnd0LDFfNW43c21weTYsMV82bnBkdHJzMSwxX2o5NTBqazV4LDFfYTgxNjhhcTgsMV91dWpkczlueCJ9&signature=4AHSenoF0uJVPQzvIBnZR84l9n8%3D&"
-        }
-        ]
-      }
-    ]
-  },
   "drm1": {
     "id": "0_pl5lbfo0",
     "sources": [
