@@ -32,6 +32,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdEnabledPlayerController;
 import com.kaltura.playkit.ads.AdResponseType;
 import com.kaltura.playkit.ads.PKAdInfo;
+import com.kaltura.playkit.ads.PKAdProviderListener;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdError;
 import com.kaltura.playkit.plugins.ads.AdEvent;
@@ -65,6 +66,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private Context context;
     private AdInfo adInfo;
     private IMAConfig adConfig;
+    private PKAdProviderListener pkAdProviderListener;
     private PlayerConfig.Media mediaConfig;
     //////////////////////
 
@@ -191,6 +193,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     log.d("adManagerTimer.onFinish, adsManager=" + adsManager);
                     if (adsManager == null) {
                         log.d("adsManager is null, will play content");
+                        if (pkAdProviderListener != null) {
+                            pkAdProviderListener.onAdLoadingFinished();
+                        }
+
                         messageBus.post(new AdEvent(AdEvent.Type.AD_BREAK_IGNORED));
                         if (isAdRequested) {
                             adPlaybackCancelled = true;
@@ -334,6 +340,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
         sdkFactory = null;
         imaSdkSettings = null;
+        removeAdProviderListener();
     }
 
     ////////Ads Plugin
@@ -486,6 +493,16 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     @Override
+    public void setAdProviderListener(AdEnabledPlayerController adEnabledPlayerController) {
+        pkAdProviderListener = adEnabledPlayerController;
+    }
+
+    @Override
+    public void removeAdProviderListener() {
+        pkAdProviderListener = null;
+    }
+
+    @Override
     public void skipAd() {
         if (adsManager != null) {
             adsManager.skip();
@@ -548,7 +565,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 isAdDisplayed = false;
                 if (player != null) {
                     player.getView().showVideoSurface();
-                    if (player.getCurrentPosition() < player.getDuration()) {
+                    long duration = player.getDuration();
+                    if (duration < 0 || player.getCurrentPosition() < duration) {
                         player.play();
                     }
                 }
@@ -568,9 +586,15 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AD STARTED");
                 isAdDisplayed = true;
                 isAdIsPaused = false;
+
                 if (adsManager != null && appIsInBackground) {
                     adsManager.pause();
                 }
+
+                if (pkAdProviderListener != null) {
+                    pkAdProviderListener.onAdLoadingFinished();
+                }
+
                 adInfo = createAdInfo(adEvent.getAd());
                 messageBus.post(new AdEvent.AdStartedEvent(adInfo));
 
@@ -652,6 +676,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             case LOG:
                 //for this case no AD ERROR is fired need to show view {type=adLoadError, errorCode=1009, errorMessage=The response does not contain any valid ads.}
                 if (adEvent.getAd() == null) {
+                    if (pkAdProviderListener != null) {
+                        pkAdProviderListener.onAdLoadingFinished();
+                    }
                     log.e("Ad is null - back to playback");
                     if (player != null && player.getView() != null) {
                         player.getView().showVideoSurface();
@@ -835,6 +862,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             default:
                 messageBus.post(new AdError(AdError.Type.UNKNOWN_ERROR, errorMessage));
         }
+
+        if (pkAdProviderListener != null) {
+            pkAdProviderListener.onAdLoadingFinished();
+        }
+
         if (player != null && player.getView() != null) {
             player.getView().showVideoSurface();
             player.play();
