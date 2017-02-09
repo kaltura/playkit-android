@@ -57,6 +57,7 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
     private boolean shouldRestorePlayerToPreviousState = false;
     private PrepareState prepareState = NOT_PREPARED;
     private boolean isPlayAfterPrepare = false;
+    private boolean isPauseAfterPrepare = false;
     private boolean appInBackground;
 
     public MediaPlayerWrapper(Context context) {
@@ -98,16 +99,15 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
         currentState = PlayerState.IDLE;
         //player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         //player.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
-        setPlayerListeners();
-
 
         assetUri = mediaSource.getUrl();
         licenseUri = mediaSource.getDrmData().get(0).getLicenseUri();
         String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
         try {
-            player.setDataSource(assetUri);
-            prepareState = PREPARING;
             mediaPlayerView.getSurfaceHolder().addCallback(this);
+            player.setDataSource(assetUri);
+            setPlayerListeners();
+            prepareState = PREPARING;
         } catch (IOException e) {
             log.e(e.toString());
         }
@@ -189,15 +189,23 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
                 changeState(PlayerState.READY);
                 if (isPlayAfterPrepare) {
                     sendDistinctEvent(PlayerEvent.Type.PLAY);
-                    sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
-                    sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
-                    sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+                    sendOnPreparedEvents();
                     play();
                     isPlayAfterPrepare = false;
+                } else if (isPauseAfterPrepare){
+                    sendOnPreparedEvents();
+                    pause();
+                    isPauseAfterPrepare = false;
                 }
 
             }
         });
+    }
+
+    private void sendOnPreparedEvents() {
+        sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
+        sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
+        sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
     }
 
     private void handleContentCompleted() {
@@ -220,6 +228,9 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
         log.d("play prepareState = " + prepareState.name());
         if (!PREPARED.equals(prepareState)) {
             isPlayAfterPrepare = true;
+            if (isPauseAfterPrepare) {
+                isPauseAfterPrepare = false;
+            }
             return;
         }
         player.start();
@@ -238,6 +249,10 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
     public void pause() {
         log.d("pause ");
         if (!PREPARED.equals(prepareState)) {
+            isPauseAfterPrepare = true;
+            if (isPlayAfterPrepare) {
+                isPlayAfterPrepare = false;
+            }
             return;
         }
         if(player.isPlaying()) {

@@ -169,7 +169,10 @@ public class PlayerController implements Player {
                 togglePlayerListeners(true);
             }
         }
-
+        if (playerEngineView == null) {
+            playerEngineView = player.getView();
+            rootPlayerView.addView(playerEngineView);
+        }
         player.load(source);
     }
 
@@ -244,10 +247,6 @@ public class PlayerController implements Player {
             return;
         }
 
-        if (playerEngineView == null) {
-            playerEngineView = player.getView();
-            rootPlayerView.addView(playerEngineView);
-        }
 
         player.play();
     }
