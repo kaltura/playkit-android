@@ -1,7 +1,6 @@
 package com.kaltura.playkit.plugins.ads.ima;
 
 import android.content.Context;
-import android.os.Handler;
 import android.view.ViewGroup;
 
 import com.google.ads.interactivemedia.v3.api.Ad;
@@ -233,7 +232,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
         if (adConfig != null) {
             requestAdsFromIMA(adConfig.getAdTagURL());
-            resumePlaybackAfterTimeout();
         }
     }
 
@@ -690,31 +688,5 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             player.getView().showVideoSurface();
             player.play();
         }
-    }
-
-    private void resumePlaybackAfterTimeout() {
-        log.d("resumePlaybackAfterTimeout START timer " + adConfig.getAdLoadTimeOut());
-        Handler handler = new Handler();
-        Runnable countDown = new Runnable() {
-            public void run() {
-                log.d("resumePlaybackAfterTimeout timer done");
-                if (quietAdLoadingErrorReceived) {
-                    return;
-                }
-                if (!isAdRequested) {
-                    log.d("resumePlaybackAfterTimeout resume playback");
-                    if (pkAdProviderListener != null) {
-                        pkAdProviderListener.onAdLoadingFinished(PKPrepareReason.AD_ERROR);
-                    }
-                    onDestroy();
-                    messageBus.post(new AdError(AdError.Type.FAILED_TO_REQUEST_ADS, AdError.Type.FAILED_TO_REQUEST_ADS.name()));
-                    player.getView().showVideoSurface();
-                    if (player != null && player.getView() != null) {
-                        player.play();
-                    }
-                }
-            }
-        };
-        handler.postDelayed(countDown, adConfig.getAdLoadTimeOut() * Consts.MILLISECONDS_MULTIPLIER);
     }
 }
