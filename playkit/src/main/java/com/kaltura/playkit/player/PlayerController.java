@@ -64,6 +64,9 @@ public class PlayerController implements Player {
                 switch (eventType) {
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
+                        if(getDuration() != Consts.TIME_UNSET){
+                            startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+                        }
                         break;
                     case TRACKS_AVAILABLE:
                         event = new PlayerEvent.TracksAvailable(player.getPKTracks());
@@ -165,7 +168,6 @@ public class PlayerController implements Player {
         }
 
         player.load(source);
-        startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
     }
 
     @Override
@@ -186,7 +188,7 @@ public class PlayerController implements Player {
             return;
         }
 
-        if (startPosition <= mediaConfig.getMediaEntry().getDuration()) {
+        if (startPosition <= getDuration()) {
             player.startFrom(startPosition);
         } else {
             log.w("The start position is grater then duration of the video! Start position " + startPosition + ", duration " + mediaConfig.getMediaEntry().getDuration());

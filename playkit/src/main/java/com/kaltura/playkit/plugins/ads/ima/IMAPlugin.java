@@ -63,7 +63,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private Player player;
     private Context context;
     private AdInfo adInfo;
-    IMAConfig adConfig;
+    private IMAConfig adConfig;
     private PKAdProviderListener pkAdProviderListener;
     //////////////////////
 
@@ -87,9 +87,14 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     // Whether an ad is displayed.
     private boolean isAdDisplayed;
     private boolean isAdIsPaused;
+
     private boolean isAdRequested;
     private boolean isInitWaiting;
     private boolean quietAdLoadingErrorReceived;
+    private boolean appIsInBackground;
+    private boolean adManagerInitDuringBackground;
+    private boolean applicationInBackgroundDuringLoaded;
+
     ////////////////////
     private MessageBus messageBus;
 
@@ -180,12 +185,33 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     protected void onApplicationPaused() {
+        log.d("IMA onApplicationPaused");
+        appIsInBackground = true;
         pause();
     }
 
     @Override
     protected void onApplicationResumed() {
-
+        log.d("IMA onApplicationResumed adManagerInitDuringBackground = " + adManagerInitDuringBackground + " isAdDisplayed = " + isAdDisplayed);
+        appIsInBackground = false;
+        if (adsManager != null && adManagerInitDuringBackground) {
+            player.getView().hideVideoSurface();
+            adsManager.init(renderingSettings);
+            sendCuePointsUpdate();
+            isInitWaiting = false;
+            adManagerInitDuringBackground = false;
+            return;
+        }
+        if (adsManager != null) {
+            if (applicationInBackgroundDuringLoaded) {
+                player.getView().hideVideoSurface();
+                applicationInBackgroundDuringLoaded = false;
+                adsManager.start();
+            } else if (isAdDisplayed) {
+                log.d("IMA onApplicationResumed and ad is displayed");
+                //adsManager.resume();
+            }
+        }
     }
 
     @Override
@@ -263,6 +289,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 }
 
                 if (isInitWaiting) {
+                    if (appIsInBackground) {
+                        adManagerInitDuringBackground = true;
+                        return;
+                    }
                     adsManager.init(renderingSettings);
                     sendCuePointsUpdate();
                     isInitWaiting = false;
@@ -277,8 +307,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     public void init() {
         isAdRequested = true;
         if(adsManager != null) {
-            adsManager.init(renderingSettings);
-            sendCuePointsUpdate();
+            if (appIsInBackground) {
+                adManagerInitDuringBackground = true;
+            } else {
+                adsManager.init(renderingSettings);
+                sendCuePointsUpdate();
+            }
         } else{
             isInitWaiting = true;
         }
@@ -335,7 +369,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     public void resume() {
-        log.d("AD Event resume mIsAdDisplayed = " + isAdDisplayed);
+        log.d("AD Event resume isAdDisplayed = " + isAdDisplayed);
         if (adsManager != null) {
             if (isAdDisplayed) {
                 adsManager.resume();
@@ -345,7 +379,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     public void pause() {
-        log.d("AD Event pause mIsAdDisplayed = " + isAdDisplayed);
+        log.d("AD Event pause isAdDisplayed = " + isAdDisplayed);
         if (adsManager != null && isAdDisplayed) {
             adsManager.pause();
         }
@@ -434,8 +468,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 // AdsManager.start() begins ad playback. This method is ignored for VMAP or
                 // ad rules playlists, as the SDK will automatically start executing the
                 // playlist.
-                messageBus.post(new AdEvent(AdEvent.Type.LOADED));
-                adsManager.start();
+                if (appIsInBackground) {
+                    applicationInBackgroundDuringLoaded = true;
+                } else {
+                    messageBus.post(new AdEvent(AdEvent.Type.LOADED));
+                    adsManager.start();
+                }
                 break;
             case STARTED:
                 log.d("AD STARTED");
@@ -466,7 +504,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AD_CONTENT_PAUSE_REQUESTED");
 
                 messageBus.post(new AdEvent(CONTENT_PAUSE_REQUESTED));
-                isAdDisplayed = true;
+
                 if (player != null) {
                     player.pause();
                 }

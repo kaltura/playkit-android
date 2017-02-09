@@ -78,12 +78,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private boolean shouldRestorePlayerToPreviousState = false;
 
     private int playerWindow;
-    private long playerPosition;
+    private long playerPosition = Consts.TIME_UNSET;
     private Uri lastPlayedSource;
     private Timeline.Window window;
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
-    private long prevDuration = Consts.TIME_UNSET;
     private int sameErrorOccurrenceCounter = 0;
 
 
@@ -313,6 +312,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     public void onTimelineChanged(Timeline timeline, Object manifest) {
         log.d("onTimelineChanged");
         sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
+        sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         shouldResetPlayerPosition = timeline != null && !timeline.isEmpty()
                 && !timeline.getWindow(timeline.getWindowCount() - 1, window).isDynamic;
     }
@@ -413,13 +413,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
     @Override
     public long getDuration() {
-        long currentDuration;
-        currentDuration = player == null ? Consts.TIME_UNSET : player.getDuration();
-        if (prevDuration != currentDuration) {
-            sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
-        }
-        prevDuration = currentDuration;
-        return prevDuration;
+        return player == null ? Consts.TIME_UNSET : player.getDuration();
     }
 
     @Override
@@ -469,6 +463,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         eventLogger = null;
         exoPlayerView = null;
         lastPlayedSource = null;
+        playerPosition = Consts.TIME_UNSET;
     }
 
     @Override
@@ -570,7 +565,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         }
         currentException = null;
         playerWindow = player.getCurrentWindowIndex();
-        playerPosition = Consts.TIME_UNSET;
         Timeline timeline = player.getCurrentTimeline();
         if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
             playerPosition = player.getCurrentPosition();
