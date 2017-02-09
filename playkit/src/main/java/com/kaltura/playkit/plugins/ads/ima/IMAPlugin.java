@@ -92,7 +92,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     private boolean isAdRequested;
     private boolean isInitWaiting;
-    private boolean quietAdLoadingErrorReceived;
     private boolean appIsInBackground;
     private boolean adManagerInitDuringBackground;
     private boolean applicationInBackgroundDuringLoaded;
@@ -159,7 +158,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         log.d("Start onUpdateMedia");
         isAdRequested = false;
         isAdDisplayed = false;
-        quietAdLoadingErrorReceived = false;
     }
 
     @Override
@@ -172,7 +170,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             getAdsConfig().setAdTagURL((String) value);
             isAdRequested = false;
             isAdDisplayed = false;
-            quietAdLoadingErrorReceived = false;
             onDestroy();
             onLoad(player, mediaConfig, getAdsConfig().toJSONObject(), messageBus, context);
         } else if (key.equals(IMAConfig.ENABLE_BG_PLAYBACK)) {
@@ -581,7 +578,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 //for this case no AD ERROR is fired need to show view {type=adLoadError, errorCode=1009, errorMessage=The response does not contain any valid ads.}
                 if (adEvent.getAd() == null) {
                     log.e("Ad is null - back to playback");
-                    quietAdLoadingErrorReceived = true;
                     if (pkAdProviderListener != null) {
                         pkAdProviderListener.onAdLoadingFinished(PKPrepareReason.AD_ERROR);
                     }
