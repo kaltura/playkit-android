@@ -209,7 +209,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 adsManager.start();
             } else if (isAdDisplayed) {
                 log.d("IMA onApplicationResumed and ad is displayed");
-                //adsManager.resume();
             }
         }
     }
@@ -584,8 +583,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     }
                     if (player != null && player.getView() != null) {
                         player.getView().showVideoSurface();
-                        //messageBus.post(new AdError(AdError.Type.FAILED_TO_REQUEST_ADS, AdError.Type.FAILED_TO_REQUEST_ADS.name()));
-                        //player.play();
                     }
                 }
                 break;
