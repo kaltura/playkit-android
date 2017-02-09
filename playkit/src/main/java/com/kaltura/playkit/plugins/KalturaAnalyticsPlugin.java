@@ -100,11 +100,10 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     };
 
     @Override
-    protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
         messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
-        this.mediaConfig = mediaConfig;
         this.pluginConfig = pluginConfig;
         this.messageBus = messageBus;
     }

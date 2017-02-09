@@ -42,7 +42,7 @@ public class SamplePlugin extends PKPlugin {
     };
 
     @Override
-    protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
         log.i("Loading");
         this.player = player;
         this.context = context;

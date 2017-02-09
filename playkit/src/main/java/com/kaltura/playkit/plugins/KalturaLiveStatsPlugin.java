@@ -84,7 +84,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     };
 
     @Override
-    protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
         messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY);
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;

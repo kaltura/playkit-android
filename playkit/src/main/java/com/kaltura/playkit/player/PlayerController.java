@@ -107,7 +107,7 @@ public class PlayerController implements Player {
         }
     };
 
-    public PlayerController(Context context, PlayerConfig.Media mediaConfig) {
+    public PlayerController(Context context) {
         this.context = context;
         this.wrapperView = new PlayerView(context) {
             @Override
@@ -122,7 +122,6 @@ public class PlayerController implements Player {
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         this.wrapperView.setLayoutParams(lp);
-        this.mediaConfig = mediaConfig;
     }
 
     private void setVideoSurfaceVisibility(boolean isVisible) {

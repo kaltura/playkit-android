@@ -116,7 +116,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     ///////////END PKPlugin
     @Override
-    protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
         this.player = player;
         if (player == null) {
             log.e("Error, player instance is null.");

@@ -55,7 +55,7 @@ public class KalturaStatsAndroidTest {
         player.seekTo(seek);
 
         plugin = (KalturaStatsPlugin) KalturaStatsPlugin.factory.newInstance();
-        plugin.onLoad(player, mediaConfig, pluginConfig, messageBus, context);
+        plugin.onLoad(player, pluginConfig, messageBus, context);
     }
 
 

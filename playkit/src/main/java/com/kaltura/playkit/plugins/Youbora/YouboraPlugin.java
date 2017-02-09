@@ -92,7 +92,7 @@ public class YouboraPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onLoad(final Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
+    protected void onLoad(final Player player, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
         this.mediaConfig = mediaConfig;
         this.player = player;
         this.pluginConfig = pluginConfig;

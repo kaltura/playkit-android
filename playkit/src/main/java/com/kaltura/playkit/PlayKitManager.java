@@ -37,12 +37,23 @@ public class PlayKitManager {
         return pluginFactory == null ? null : pluginFactory.newInstance();
     }
 
+    /**
+     * @deprecated Use {@link #loadPlayer(PlayerConfig.Plugins, Context)}
+     * @param playerConfig
+     * @param context
+     * @return
+     */
+    @Deprecated
     public static Player loadPlayer(PlayerConfig playerConfig, Context context) {
+        return loadPlayer(playerConfig.plugins, context);
+    }
+    
+    public static Player loadPlayer(PlayerConfig.Plugins pluginConfigs, Context context) {
 
         MediaSupport.initialize(context);
         
         PlayerLoader playerLoader = new PlayerLoader(context);
-        playerLoader.load(playerConfig);
+        playerLoader.load(pluginConfigs);
         return playerLoader;
     }
 }

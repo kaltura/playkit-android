@@ -40,8 +40,8 @@ class PlayerLoader extends PlayerDecoratorBase {
         this.messageBus = new MessageBus();
     }
     
-    public void load(@NonNull PlayerConfig playerConfig) {
-        PlayerController playerController = new PlayerController(context, playerConfig.media);
+    public void load(@NonNull PlayerConfig.Plugins pluginsConfig) {
+        PlayerController playerController = new PlayerController(context);
         
         playerController.setEventListener(new PKEvent.Listener() {
             @Override
@@ -52,9 +52,9 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         Player player = playerController;
 
-        for (Map.Entry<String, JsonObject> pluginConfig : playerConfig.plugins.getPluginConfigMap().entrySet()) {
+        for (Map.Entry<String, JsonObject> pluginConfig : pluginsConfig.getPluginConfigMap().entrySet()) {
             String name = pluginConfig.getKey();
-            PKPlugin plugin = loadPlugin(name, player, playerConfig, messageBus, context);
+            PKPlugin plugin = loadPlugin(name, player, pluginConfig.getValue(), messageBus, context);
 
             if (plugin == null) {
                 log.w("Plugin not found: " + name);
@@ -136,10 +136,10 @@ class PlayerLoader extends PlayerDecoratorBase {
         setPlayer(currentLayer);
     }
 
-    private PKPlugin loadPlugin(String name, Player player, PlayerConfig config, MessageBus messageBus, Context context) {
+    private PKPlugin loadPlugin(String name, Player player, JsonObject config, MessageBus messageBus, Context context) {
         PKPlugin plugin = PlayKitManager.createPlugin(name);
         if (plugin != null) {
-            plugin.onLoad(player, config.media, config.plugins.getPluginConfig(name), messageBus, context);
+            plugin.onLoad(player, config, messageBus, context);
         }
         return plugin;
     }

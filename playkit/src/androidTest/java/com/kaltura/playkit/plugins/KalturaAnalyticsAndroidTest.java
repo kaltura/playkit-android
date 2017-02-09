@@ -53,7 +53,7 @@ public class KalturaAnalyticsAndroidTest {
         player.seekTo(seek);
 
         plugin = (KalturaAnalyticsPlugin) KalturaAnalyticsPlugin.factory.newInstance();
-        plugin.onLoad(player, mediaConfig, pluginConfig, messageBus, context);
+        plugin.onLoad(player, pluginConfig, messageBus, context);
     }
 
 

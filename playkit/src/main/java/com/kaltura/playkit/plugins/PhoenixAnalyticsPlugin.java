@@ -104,7 +104,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
         this.mediaConfig = mediaConfig;
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;

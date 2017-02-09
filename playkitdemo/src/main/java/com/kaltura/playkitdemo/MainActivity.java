@@ -212,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             configurePlugins(config.plugins);
 
-            player = PlayKitManager.loadPlayer(config, this);
+            player = PlayKitManager.loadPlayer(config.plugins, this);
 
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
