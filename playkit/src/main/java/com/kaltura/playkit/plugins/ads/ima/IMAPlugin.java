@@ -59,7 +59,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private Player player;
     private Context context;
     private AdInfo adInfo;
-    IMAConfig adConfig;
+    private IMAConfig adConfig;
+    private PlayerConfig.Media mediaConfig;
     //////////////////////
 
 
@@ -87,6 +88,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private boolean appIsInBackground;
     private boolean adManagerInitDuringBackground;
     private boolean applicationInBackgroundDuringLoaded;
+
     ////////////////////
     private MessageBus messageBus;
 
@@ -122,7 +124,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             log.e("Error, player instance is null.");
             return;
         }
-
+        this.mediaConfig = mediaConfig;
         this.context = context;
         this.messageBus = messageBus;
         this.messageBus.listen(new PKEvent.Listener() {
@@ -159,7 +161,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             getAdsConfig().setAdTagURL((String) value);
             isAdRequested = false;
             isAdDisplayed = false;
-            requestAd();
+            onDestroy();
+            onLoad(player, mediaConfig, getAdsConfig().toJSONObject(), messageBus, context);
         } else if (key.equals(IMAConfig.ENABLE_BG_PLAYBACK)) {
             getAdsConfig().setEnableBackgroundPlayback((boolean) value);
         } else if (key.equals(IMAConfig.AUTO_PLAY_AD_BREAK)) {
