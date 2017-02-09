@@ -18,7 +18,6 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     private static final PKLog log = PKLog.get("AdEnablController");
 
     private AdsProvider adsProvider;
-    private boolean isPlayerPrepared;
     private PlayerConfig.Media mediaConfig;
 
     public AdEnabledPlayerController(AdsProvider adsProvider) {
@@ -34,11 +33,9 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     public void prepare(@NonNull final PlayerConfig.Media mediaConfig) {
         this.mediaConfig = mediaConfig;
 
-        isPlayerPrepared = false;
         if (adsProvider != null) {
             if (adsProvider.isAdRequested()) {
                 super.prepare(mediaConfig);
-                isPlayerPrepared = true;
             } else {
                 adsProvider.setAdProviderListener(this);
             }
@@ -124,6 +121,5 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
         if (adsProvider != null) {
             adsProvider.removeAdProviderListener();
         }
-        isPlayerPrepared = true;
     }
 }
