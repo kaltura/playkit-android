@@ -17,8 +17,6 @@ import com.google.ads.interactivemedia.v3.api.ImaSdkSettings;
 import com.google.ads.interactivemedia.v3.api.UiElement;
 import com.google.ads.interactivemedia.v3.api.player.ContentProgressProvider;
 import com.google.ads.interactivemedia.v3.api.player.VideoProgressUpdate;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -118,13 +116,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     ///////////END PKPlugin
     @Override
-    protected void onLoad(Player player, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, Object settings, final MessageBus messageBus, Context context) {
         this.player = player;
         if (player == null) {
             log.e("Error, player instance is null.");
             return;
         }
-        this.mediaConfig = mediaConfig;
         this.context = context;
         this.messageBus = messageBus;
         this.messageBus.listen(new PKEvent.Listener() {
@@ -138,9 +135,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED);
 
         //----------------------------//
-        Gson gson = new Gson();
-        adConfig =  gson.fromJson(pluginConfig, IMAConfig.class);//IMAConfig.fromJsonObject(pluginConfig);
-        adUiContainer = (ViewGroup) player.getView();
+        adConfig = (IMAConfig) settings;
+        adUiContainer = player.getView();
         requestAd();
     }
 
@@ -152,26 +148,30 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     @Override
-    protected void onUpdateConfig(String key, Object value) {
+    protected void onUpdateSettings(Object settings) {
         log.d("Start onUpdateConfig");
 
-        if (key.equals(IMAConfig.AD_TAG_LANGUAGE)) {
-            getAdsConfig().setLanguage((String) value);
-        } else if (key.equals(IMAConfig.AD_TAG_URL)) {
-            getAdsConfig().setAdTagURL((String) value);
-            isAdRequested = false;
-            isAdDisplayed = false;
-            onDestroy();
-            onLoad(player, mediaConfig, getAdsConfig().toJSONObject(), messageBus, context);
-        } else if (key.equals(IMAConfig.ENABLE_BG_PLAYBACK)) {
-            getAdsConfig().setEnableBackgroundPlayback((boolean) value);
-        } else if (key.equals(IMAConfig.AUTO_PLAY_AD_BREAK)) {
-            getAdsConfig().setAutoPlayAdBreaks((boolean) value);
-        } else if (key.equals(IMAConfig.AD_VIDEO_BITRATE)) {
-            getAdsConfig().setVideoBitrate((int) value);
-        } else if (key.equals(IMAConfig.AD_VIDEO_MIME_TYPES)) {
-            getAdsConfig().setVideoMimeTypes((List<String>) value);
-        }
+        // TODO: is this the correct fix?
+        adConfig = (IMAConfig) settings;
+        
+//        
+//        if (key.equals(IMAConfig.AD_TAG_LANGUAGE)) {
+//            getAdsConfig().setLanguage((String) settings);
+//        } else if (key.equals(IMAConfig.AD_TAG_URL)) {
+//            getAdsConfig().setAdTagURL((String) settings);
+//            isAdRequested = false;
+//            isAdDisplayed = false;
+//            onDestroy();
+//            onLoad(player, mediaConfig, getAdsConfig().toJSONObject(), messageBus, context);
+//        } else if (key.equals(IMAConfig.ENABLE_BG_PLAYBACK)) {
+//            getAdsConfig().setEnableBackgroundPlayback((boolean) settings);
+//        } else if (key.equals(IMAConfig.AUTO_PLAY_AD_BREAK)) {
+//            getAdsConfig().setAutoPlayAdBreaks((boolean) settings);
+//        } else if (key.equals(IMAConfig.AD_VIDEO_BITRATE)) {
+//            getAdsConfig().setVideoBitrate((int) settings);
+//        } else if (key.equals(IMAConfig.AD_VIDEO_MIME_TYPES)) {
+//            getAdsConfig().setVideoMimeTypes((List<String>) settings);
+//        }
     }
 
     @Override

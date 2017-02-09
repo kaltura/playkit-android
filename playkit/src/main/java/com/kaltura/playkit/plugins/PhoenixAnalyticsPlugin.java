@@ -77,10 +77,13 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onUpdateConfig(String key, Object value) {
-        if (pluginConfig.has(key)){
-            pluginConfig.addProperty(key, value.toString());
-        }
+    protected void onUpdateSettings(Object settings) {
+        // TODO: is this the right fix?
+        this.pluginConfig = (JsonObject) settings;
+
+//        if (pluginConfig.has(key)){
+//            pluginConfig.addProperty(key, settings.toString());
+//        }
     }
 
     @Override
@@ -104,11 +107,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onLoad(Player player, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, Object settings, final MessageBus messageBus, Context context) {
         this.mediaConfig = mediaConfig;
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
-        this.pluginConfig = pluginConfig;
+        this.pluginConfig = (JsonObject) settings;
         this.mContext = context;
         this.messageBus = messageBus;
         messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA);

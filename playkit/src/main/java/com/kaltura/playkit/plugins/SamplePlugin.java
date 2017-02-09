@@ -42,11 +42,11 @@ public class SamplePlugin extends PKPlugin {
     };
 
     @Override
-    protected void onLoad(Player player, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, Object settings, final MessageBus messageBus, Context context) {
         log.i("Loading");
         this.player = player;
         this.context = context;
-        delay = pluginConfig.getAsJsonPrimitive("delay").getAsInt();
+        delay = ((JsonObject) settings).getAsJsonPrimitive("delay").getAsInt();
         log.v("delay=" + delay);
         
         messageBus.listen(new PKEvent.Listener() {
@@ -63,7 +63,7 @@ public class SamplePlugin extends PKPlugin {
     }
 
     @Override
-    protected void onUpdateConfig(String key, Object value) {
+    protected void onUpdateSettings(Object settings) {
         
     }
 

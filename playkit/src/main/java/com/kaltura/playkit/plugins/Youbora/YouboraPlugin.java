@@ -64,11 +64,15 @@ public class YouboraPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onUpdateConfig(String key, Object value) {
+    protected void onUpdateSettings(Object settings) {
         log.d("youbora - onUpdateConfig");
-        if (pluginConfig.has(key)){
-            pluginConfig.addProperty(key, value.toString());
-        }
+        
+        // TODO: is this the right fix?
+        this.pluginConfig = (JsonObject) settings;
+        
+//        if (pluginConfig.has(key)){
+//            pluginConfig.addProperty(key, settings.toString());
+//        }
         Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig, player);
         // Refresh options with updated media
         pluginManager.setOptions(opt);
@@ -92,10 +96,10 @@ public class YouboraPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onLoad(final Player player, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
+    protected void onLoad(final Player player, Object settings, final MessageBus messageBus, Context context) {
         this.mediaConfig = mediaConfig;
         this.player = player;
-        this.pluginConfig = pluginConfig;
+        this.pluginConfig = (JsonObject) settings;
         this.context = context;
         this.messageBus = messageBus;
         pluginManager = new YouboraLibraryManager(new Options(), messageBus, mediaConfig, player);

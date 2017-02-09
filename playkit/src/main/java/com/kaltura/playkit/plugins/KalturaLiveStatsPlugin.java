@@ -84,12 +84,11 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     };
 
     @Override
-    protected void onLoad(Player player, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, Object settings, final MessageBus messageBus, Context context) {
         messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY);
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
-        this.mediaConfig = mediaConfig;
-        this.pluginConfig = pluginConfig;
+        this.pluginConfig = (JsonObject) settings;
         this.messageBus = messageBus;
     }
 
@@ -107,10 +106,12 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onUpdateConfig(String key, Object value) {
-        if (pluginConfig.has(key)) {
-            pluginConfig.addProperty(key, value.toString());
-        }
+    protected void onUpdateSettings(Object settings) {
+        // TODO: is this the right fix?
+        this.pluginConfig = (JsonObject) settings;
+//        if (pluginConfig.has(key)) {
+//            pluginConfig.addProperty(key, settings.toString());
+//        }
     }
 
     @Override

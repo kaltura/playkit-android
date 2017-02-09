@@ -2,8 +2,6 @@ package com.kaltura.playkit;
 
 import android.content.Context;
 
-import com.google.gson.JsonObject;
-
 public abstract class PKPlugin {
 
     public interface Factory {
@@ -12,9 +10,9 @@ public abstract class PKPlugin {
         void warmUp(Context context);
     }
 
-    protected abstract void onLoad(Player player, JsonObject pluginConfig, MessageBus messageBus, Context context);
+    protected abstract void onLoad(Player player, Object settings, MessageBus messageBus, Context context);
     protected abstract void onUpdateMedia(PlayerConfig.Media mediaConfig);
-    protected abstract void onUpdateConfig(String key, Object value);
+    protected abstract void onUpdateSettings(Object settings);
     protected abstract void onApplicationPaused();
     protected abstract void onApplicationResumed();
 
