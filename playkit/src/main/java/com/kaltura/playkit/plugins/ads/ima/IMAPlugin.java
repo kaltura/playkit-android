@@ -159,6 +159,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     private void imaSetup() {
+        log.d("imaSetup start");
         imaSettingSetup();
         if (sdkFactory == null) {
             sdkFactory = ImaSdkFactory.getInstance();
@@ -188,14 +189,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                         if (isAdRequested) {
                             adPlaybackCancelled = true;
                         }
-//                        Player player = IMAPlugin.this.player;
-//                        if (player != null) {
-//                            PlayerView playerView = player.getView();
-//                            if (playerView != null) {
-//                                playerView.showVideoSurface();
-//                                player.play();
-//                            }
-//                        }
                     }
                 }
             };
@@ -360,6 +353,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     public void start() {
+        log.d("IMA Start  adsManager.init");
         isAdRequested = true;
         if (adsManager != null) {
             if (appIsInBackground) {
