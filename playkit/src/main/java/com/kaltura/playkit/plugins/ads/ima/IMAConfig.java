@@ -14,7 +14,7 @@ import java.util.List;
  */
 
 public class IMAConfig {
-    public static final int DEFAULT_AD_LOAD_TIMEOUT = 15;
+    public static final int DEFAULT_AD_LOAD_TIMEOUT = 10;
 
     public static final String AD_TAG_LANGUAGE     = "language";
     public static final String AD_TAG_URL          = "adTagURL";
