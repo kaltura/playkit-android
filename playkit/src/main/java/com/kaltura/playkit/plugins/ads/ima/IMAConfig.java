@@ -31,8 +31,8 @@ public class IMAConfig {
 
     private String language;
     private String adTagURL;
-    private boolean enableBackgroundPlayback = true;
-    private boolean autoPlayAdBreaks = false;
+    private boolean enableBackgroundPlayback;
+    private boolean autoPlayAdBreaks;
     private int videoBitrate;
     private boolean adAttribution;
     private boolean adCountDown;

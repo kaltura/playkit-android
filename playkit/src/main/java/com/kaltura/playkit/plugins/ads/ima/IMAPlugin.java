@@ -226,7 +226,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             imaSdkSettings = new ImaSdkSettings();
         }
         // Tell the SDK we want to control ad break playback.
-        imaSdkSettings.setAutoPlayAdBreaks(adConfig.getAutoPlayAdBreaks());
+        imaSdkSettings.setAutoPlayAdBreaks(true);
         imaSdkSettings.setLanguage(adConfig.getLanguage());
     }
 
@@ -500,7 +500,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 // ad is played.
                 log.d("AD_CONTENT_PAUSE_REQUESTED");
 
-                if (! adPlaybackCancelled) {
+                if (!adPlaybackCancelled) {
                     messageBus.post(new AdEvent(AdEvent.Type.CONTENT_PAUSE_REQUESTED));
 
                     if (player != null) {
@@ -582,6 +582,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdEvent(AdEvent.Type.ICON_TAPPED));
                 break;
             case AD_BREAK_READY:
+                log.d("AD_BREAK_READY adPlaybackCancelled = " + adPlaybackCancelled);
                 if (adPlaybackCancelled) {
                     log.d("discarding ad break");
                     adsManager.discardAdBreak();
