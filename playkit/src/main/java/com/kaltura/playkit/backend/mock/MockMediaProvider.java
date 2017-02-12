@@ -17,6 +17,7 @@ import com.kaltura.playkit.backend.base.CallableLoader;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.ResultElement;
+import com.kaltura.playkit.PKPublicAPI;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -32,6 +33,7 @@ import static com.kaltura.playkit.PKMediaEntry.MediaEntryType.Unknown;
  * Created by tehilarozin on 06/11/2016.
  */
 
+@PKPublicAPI
 public class MockMediaProvider implements MediaEntryProvider {
 
     public static final String TAG = "MockMediaProvider";

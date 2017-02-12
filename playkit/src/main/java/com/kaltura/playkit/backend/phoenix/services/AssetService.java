@@ -6,7 +6,6 @@ import com.kaltura.playkit.backend.phoenix.PhoenixRequestBuilder;
 /**
  * Created by tehilarozin on 13/11/2016.
  */
-
 public class AssetService extends PhoenixService {
 
     public static PhoenixRequestBuilder assetGet(String baseUrl, String ks, String assetId, String referenceType) {

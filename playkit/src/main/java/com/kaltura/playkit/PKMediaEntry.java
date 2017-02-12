@@ -1,9 +1,9 @@
 package com.kaltura.playkit;
 
-import java.util.Dictionary;
 import java.util.List;
 import java.util.Map;
 
+@PKPublicAPI
 public class PKMediaEntry {
     private String id;
     private List<PKMediaSource> sources;

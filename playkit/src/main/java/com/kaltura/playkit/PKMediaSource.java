@@ -2,6 +2,7 @@ package com.kaltura.playkit;
 
 import java.util.List;
 
+@PKPublicAPI
 public class PKMediaSource {
     private String id;
     private String url;

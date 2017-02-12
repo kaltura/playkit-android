@@ -1,7 +1,9 @@
 package com.kaltura.playkit.ads;
 
+import com.kaltura.playkit.plugins.PKPluginAPI;
 import com.kaltura.playkit.plugins.ads.AdPositionType;
 
+@PKPluginAPI
 public interface PKAdInfo {
 
     String   getAdDescription();

@@ -2,6 +2,8 @@ package com.kaltura.playkit;
 
 import android.util.Log;
 
+import com.kaltura.playkit.plugins.PKPluginAPI;
+
 import java.util.Locale;
 
 /**
@@ -41,6 +43,7 @@ import java.util.Locale;
 
 
 @SuppressWarnings("WeakerAccess")
+@PKPluginAPI
 public class PKLog {
 
     public static final int VERBOSE = Log.VERBOSE;
