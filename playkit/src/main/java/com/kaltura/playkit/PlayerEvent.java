@@ -7,6 +7,7 @@ import com.kaltura.playkit.player.PKTracks;
  */
 
 
+@PKPublicAPI
 public class PlayerEvent implements PKEvent {
     
     public static class Generic extends PlayerEvent {

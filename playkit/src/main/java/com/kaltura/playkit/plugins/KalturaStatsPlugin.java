@@ -21,6 +21,7 @@ import com.kaltura.playkit.connect.ResponseElement;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.PKPublicAPI;
 
 import java.util.TimerTask;
 
@@ -28,6 +29,7 @@ import java.util.TimerTask;
  * Created by zivilan on 02/11/2016.
  */
 
+@PKPublicAPI
 public class KalturaStatsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("KalturaStatsPlugin");
     private static final String TAG = "KalturaStatsPlugin";

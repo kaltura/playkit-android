@@ -1,11 +1,13 @@
 package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.ads.PKAdInfo;
+import com.kaltura.playkit.PKPublicAPI;
 
 /**
  * Created by gilad.nadav on 22/11/2016.
  */
 
+@PKPublicAPI
 public class AdInfo implements PKAdInfo {
 
     private String  adDescription;

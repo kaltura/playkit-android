@@ -5,6 +5,7 @@ package com.kaltura.playkit;
  * Created by anton.afanasiev on 14/12/2016.
  */
 
+@PKPublicAPI
 public class PlaybackParamsInfo {
 
     private long videoBitrate;

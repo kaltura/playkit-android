@@ -11,6 +11,7 @@ import java.util.Map;
  * This object is used by the player in order to preset desired configurations.
  * Created by Noam Tamim @ Kaltura on 18/09/2016.
  */
+@PKPublicAPI
 public class PlayerConfig {
 
     public final Media media = new Media();

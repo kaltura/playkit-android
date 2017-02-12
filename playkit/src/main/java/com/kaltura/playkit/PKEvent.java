@@ -1,5 +1,6 @@
 package com.kaltura.playkit;
 
+@PKPublicAPI
 public interface PKEvent {
     Enum eventType();
 

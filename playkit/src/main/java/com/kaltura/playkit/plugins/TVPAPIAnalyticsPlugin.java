@@ -11,12 +11,14 @@ import com.kaltura.playkit.backend.tvpapi.MediaMarkService;
 import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.ResponseElement;
+import com.kaltura.playkit.PKPublicAPI;
 
 
 /**
  * Created by zivilan on 08/12/2016.
  */
 
+@PKPublicAPI
 public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     private static final PKLog log = PKLog.get("TVPAPIAnalyticsPlugin");
     private static final String TAG = "TVPAPIAnalytics";

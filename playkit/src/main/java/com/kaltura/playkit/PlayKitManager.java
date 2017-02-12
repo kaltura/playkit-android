@@ -10,6 +10,7 @@ import java.util.Map;
 /**
  * Created by Noam Tamim @ Kaltura on 13/10/2016.
  */
+@PKPublicAPI
 public class PlayKitManager {
 
     public static final String VERSION_STRING = BuildConfig.VERSION_NAME;

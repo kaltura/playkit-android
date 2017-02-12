@@ -36,6 +36,7 @@ import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.RequestBuilder;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
+import com.kaltura.playkit.PKPublicAPI;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -67,6 +68,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
  * Created by tehilarozin on 30/10/2016.
  */
 
+@PKPublicAPI
 public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     private static final String TAG = KalturaOvpMediaProvider.class.getSimpleName();
