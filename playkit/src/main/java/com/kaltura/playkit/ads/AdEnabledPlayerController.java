@@ -56,6 +56,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
         log.d("PLAY isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused());
         if (adsProvider != null) {
             if (!adsProvider.isAdRequested()) {
+                super.getView().hideVideoSurface();
                 adsProvider.start();
                 return;
             } else if (adsProvider.isAdDisplayed()) {
