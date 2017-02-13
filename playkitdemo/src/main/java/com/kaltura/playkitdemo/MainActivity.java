@@ -132,8 +132,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void startSimpleOvpMediaLoading(OnMediaLoadCompletion completion) {
-        mediaProvider = new SimpleKalturaOvpMediaProvider("https://cdnapisec.kaltura.com", 1851571).setEntryId("0_pl5lbfo0");
-        mediaProvider.load(completion);
+        SimpleKalturaOvpMediaProvider.loadSingleEntry("https://cdnapisec.kaltura.com", 1851571, "0_pl5lbfo0", completion);
     }
 
     private void startMockMediaLoading(OnMediaLoadCompletion completion) {

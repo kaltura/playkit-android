@@ -23,7 +23,30 @@ public class SimpleKalturaOvpMediaProvider implements MediaEntryProvider {
     private String entryId;
     private int partnerId;
     
-    private MediaEntryProvider currentProvider;
+    private KalturaOvpMediaProvider currentProvider;
+
+    /**
+     * Simple single-entry load. Creates a MediaEntryProvider, sets it to load an entry, and discards it.
+     * @param baseUrl base Kaltura Server URL, such as "https://cdnapisec.kaltura.com".
+     * @param partnerId     Kaltura partner id.
+     * @param ks            Kaltura Session token.
+     * @param entryId       Kaltura entry id.
+     * @param completion    Code to run when load completes/fails.
+     */
+    public static void loadSingleEntry(String baseUrl, int partnerId, String ks, String entryId, OnMediaLoadCompletion completion) {
+        new SimpleKalturaOvpMediaProvider(baseUrl, partnerId, ks).setEntryId(entryId).load(completion);
+    }
+
+    /**
+     * Simple single-entry load. Creates a MediaEntryProvider, sets it to load an entry, and discards it.
+     * @param baseUrl base Kaltura Server URL, such as "https://cdnapisec.kaltura.com".
+     * @param partnerId     Kaltura partner id.
+     * @param entryId       Kaltura entry id.
+     * @param completion    Code to run when load completes/fails.
+     */
+    public static void loadSingleEntry(String baseUrl, int partnerId, String entryId, OnMediaLoadCompletion completion) {
+        new SimpleKalturaOvpMediaProvider(baseUrl, partnerId).setEntryId(entryId).load(completion);
+    }
 
     /**
      * Create a media provider for authenticated access.
@@ -68,32 +91,19 @@ public class SimpleKalturaOvpMediaProvider implements MediaEntryProvider {
     
     @Override
     public void load(final OnMediaLoadCompletion completion) {
-        
-        // Ensure baseUrl, entryId, partnerId are not empty.
-        if (TextUtils.isEmpty(baseUrl)) {
-            throw new IllegalArgumentException("Missing baseUrl");
-        }
+
         if (TextUtils.isEmpty(entryId)) {
             throw new IllegalArgumentException("Missing entryId");
         }
-        if (partnerId == 0) {
-            throw new IllegalArgumentException("Missing partnerId");
+
+        SessionProvider sessionProvider = sessionProvider();
+
+        // Try to reuse the previous media provider
+        if (currentProvider == null) {
+            currentProvider = new KalturaOvpMediaProvider();
         }
-        
-        cancel();
-        
-        if (ks == null) {
-            // No KS? Create widget session.
-            final OvpSessionProvider sessionProvider = new OvpSessionProvider(baseUrl);
-            sessionProvider.startAnonymousSession(partnerId, new OnCompletion<PrimitiveResult>() {
-                @Override
-                public void onComplete(PrimitiveResult response) {
-                    load(sessionProvider, completion);
-                }
-            });
-        } else {
-            load(sessionProvider(baseUrl, partnerId, ks), completion);
-        }
+        currentProvider.setSessionProvider(sessionProvider).setEntryId(entryId);
+        currentProvider.load(completion);
     }
     
     @Override
@@ -103,7 +113,15 @@ public class SimpleKalturaOvpMediaProvider implements MediaEntryProvider {
         }
     }
 
-    private SessionProvider sessionProvider(final String baseUrl, final int partnerId, final String ks) {
+    private SessionProvider sessionProvider() {
+        // Ensure baseUrl, partnerId are not empty.
+        if (TextUtils.isEmpty(baseUrl)) {
+            throw new IllegalArgumentException("Missing baseUrl");
+        }
+        if (partnerId == 0) {
+            throw new IllegalArgumentException("Missing partnerId");
+        }
+
         return new SessionProvider() {
             @Override
             public String baseUrl() {
@@ -122,10 +140,5 @@ public class SimpleKalturaOvpMediaProvider implements MediaEntryProvider {
                 return partnerId;
             }
         };
-    }
-
-    private void load(SessionProvider sessionProvider, OnMediaLoadCompletion completion) {
-        currentProvider = new KalturaOvpMediaProvider().setSessionProvider(sessionProvider).setEntryId(entryId);
-        currentProvider.load(completion);
     }
 }
