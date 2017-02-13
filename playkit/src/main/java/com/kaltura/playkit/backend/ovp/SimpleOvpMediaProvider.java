@@ -17,7 +17,7 @@ import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
  * Unlike {@link KalturaOvpMediaProvider} with {@link OvpSessionProvider}, this class will not 
  * attempt to create an authenticated session.
  */
-public class SimpleKalturaOvpMediaProvider implements MediaEntryProvider {
+public class SimpleOvpMediaProvider implements MediaEntryProvider {
     private String baseUrl;
     private String ks;
     private String entryId;
@@ -34,7 +34,7 @@ public class SimpleKalturaOvpMediaProvider implements MediaEntryProvider {
      * @param completion    Code to run when load completes/fails.
      */
     public static void loadSingleEntry(String baseUrl, int partnerId, String ks, String entryId, OnMediaLoadCompletion completion) {
-        new SimpleKalturaOvpMediaProvider(baseUrl, partnerId, ks).setEntryId(entryId).load(completion);
+        new SimpleOvpMediaProvider(baseUrl, partnerId, ks).setEntryId(entryId).load(completion);
     }
 
     /**
@@ -45,7 +45,7 @@ public class SimpleKalturaOvpMediaProvider implements MediaEntryProvider {
      * @param completion    Code to run when load completes/fails.
      */
     public static void loadSingleEntry(String baseUrl, int partnerId, String entryId, OnMediaLoadCompletion completion) {
-        new SimpleKalturaOvpMediaProvider(baseUrl, partnerId).setEntryId(entryId).load(completion);
+        new SimpleOvpMediaProvider(baseUrl, partnerId).setEntryId(entryId).load(completion);
     }
 
     /**
@@ -54,7 +54,7 @@ public class SimpleKalturaOvpMediaProvider implements MediaEntryProvider {
      * @param partnerId Kaltura partner id.
      * @param ks Kaltura Session token.
      */
-    public SimpleKalturaOvpMediaProvider(String baseUrl, int partnerId, String ks) {
+    public SimpleOvpMediaProvider(String baseUrl, int partnerId, String ks) {
         this.baseUrl = baseUrl;
         this.partnerId = partnerId;
         this.ks = ks;
@@ -65,7 +65,7 @@ public class SimpleKalturaOvpMediaProvider implements MediaEntryProvider {
      * @param baseUrl base Kaltura Server URL, such as "https://cdnapisec.kaltura.com".
      * @param partnerId Kaltura partner id.
      */
-    public SimpleKalturaOvpMediaProvider(String baseUrl, int partnerId) {
+    public SimpleOvpMediaProvider(String baseUrl, int partnerId) {
         this(baseUrl, partnerId, null);
     }
 
@@ -74,7 +74,7 @@ public class SimpleKalturaOvpMediaProvider implements MediaEntryProvider {
      * @param ks    Kaltura Session token
      * @return Self.
      */
-    public SimpleKalturaOvpMediaProvider setKs(String ks) {
+    public SimpleOvpMediaProvider setKs(String ks) {
         this.ks = ks;
         return this;
     }
@@ -84,7 +84,7 @@ public class SimpleKalturaOvpMediaProvider implements MediaEntryProvider {
      * @param entryId    Kaltura entry id.
      * @return Self.
      */
-    public SimpleKalturaOvpMediaProvider setEntryId(String entryId) {
+    public SimpleOvpMediaProvider setEntryId(String entryId) {
         this.entryId = entryId;
         return this;
     }
