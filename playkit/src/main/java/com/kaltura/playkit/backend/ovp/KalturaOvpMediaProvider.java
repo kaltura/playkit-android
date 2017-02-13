@@ -5,12 +5,14 @@ import android.support.annotation.StringDef;
 import android.text.TextUtils;
 
 import com.google.gson.JsonSyntaxException;
+import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.backend.BaseResult;
+import com.kaltura.playkit.backend.PrimitiveResult;
 import com.kaltura.playkit.backend.SessionProvider;
 import com.kaltura.playkit.backend.base.BECallableLoader;
 import com.kaltura.playkit.backend.base.BEMediaProvider;
@@ -79,6 +81,44 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     private Map<String, Object> flavorsFilter;
 
 
+    /**
+     * Create a simple OVP Media Provider with an existing Kaltura Session token (KS). 
+     * No need to set a SessionProvider on the returned object.
+     * 
+     * @param baseUrl       Kaltura Server URL, such as "https://cdnapisec.kaltura.com".
+     * @param partnerId     Kaltura partner id.
+     * @param ks            Kaltura Session token.
+     * @return              A {@link KalturaOvpMediaProvider} initialized with the provided parameters.
+     */
+    public static KalturaOvpMediaProvider simpleProvider(final String baseUrl, final int partnerId, final String ks) {
+        // Ensure baseUrl, partnerId are not empty.
+        if (TextUtils.isEmpty(baseUrl)) {
+            throw new IllegalArgumentException("Missing baseUrl");
+        }
+        if (partnerId == 0) {
+            throw new IllegalArgumentException("Missing partnerId");
+        }
+
+        return new KalturaOvpMediaProvider().setSessionProvider(new SessionProvider() {
+            @Override
+            public String baseUrl() {
+                return baseUrl;
+            }
+
+            @Override
+            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
+                if (completion != null) {
+                    completion.onComplete(new PrimitiveResult(ks));
+                }
+            }
+
+            @Override
+            public int partnerId() {
+                return partnerId;
+            }
+        });
+    }
+    
     public KalturaOvpMediaProvider() {
         super(KalturaOvpMediaProvider.TAG);
     }

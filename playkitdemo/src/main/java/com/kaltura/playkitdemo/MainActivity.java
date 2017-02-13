@@ -27,7 +27,6 @@ import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
-import com.kaltura.playkit.backend.ovp.SimpleOvpMediaProvider;
 import com.kaltura.playkit.backend.phoenix.APIDefines;
 import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
@@ -132,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void startSimpleOvpMediaLoading(OnMediaLoadCompletion completion) {
-        SimpleOvpMediaProvider.loadSingleEntry("https://cdnapisec.kaltura.com", 1851571, "0_pl5lbfo0", completion);
+        KalturaOvpMediaProvider.simpleProvider("https://cdnapisec.kaltura.com", 1851571, null).setEntryId("0_pl5lbfo0").load(completion);
     }
 
     private void startMockMediaLoading(OnMediaLoadCompletion completion) {
