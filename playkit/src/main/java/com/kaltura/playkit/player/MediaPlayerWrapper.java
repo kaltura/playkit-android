@@ -9,6 +9,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.view.SurfaceHolder;
 
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlaybackParamsInfo;
@@ -19,6 +20,7 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.NOT_PREPARED;
 import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARED;
@@ -95,7 +97,6 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
         //player.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
 
         assetUri = mediaSource.getUrl();
-        licenseUri = mediaSource.getDrmData().get(0).getLicenseUri();
         String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
         try {
             mediaPlayerView.getSurfaceHolder().addCallback(this);
@@ -105,8 +106,15 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
         } catch (IOException e) {
             log.e(e.toString());
         }
-        if(drmClient.needToAcquireRights(assetAcquireUri)) {
-            drmClient.acquireRights(assetAcquireUri, licenseUri);
+        if (drmClient.needToAcquireRights(assetAcquireUri)) {
+            List<PKDrmParams> drmData = mediaSource.getDrmData();
+            if (drmData != null) {
+                licenseUri = drmData.get(0).getLicenseUri();
+                drmClient.acquireRights(assetAcquireUri, licenseUri);
+            } else {
+                log.e("Rights acq required but no DRM Params");
+                sendDistinctEvent(PlayerEvent.Type.ERROR);
+            }
         }
     }
 
