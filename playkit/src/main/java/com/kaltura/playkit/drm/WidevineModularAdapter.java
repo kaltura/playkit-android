@@ -299,11 +299,6 @@ class WidevineModularAdapter extends DrmAdapter {
         return null;
     }
 
-    @Override
-    public DRMScheme getScheme() {
-        return DRMScheme.WidevineCENC;
-    }
-
     private HttpDataSource.Factory buildDataSourceFactory() {
         return new DefaultHttpDataSourceFactory(getUserAgent(context), null);
     }

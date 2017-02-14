@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.util.Base64;
 
 import com.kaltura.playkit.drm.DrmAdapter;
+import com.kaltura.playkit.player.MediaSupport;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -99,28 +100,45 @@ public class LocalAssetsManager {
             return;
         }
 
-        doInBackground(new Runnable() {
-            @Override
-            public void run() {
+        final PKDrmParams drmParams = findSupportedDrmParams(mediaSource);
+        
+        if (drmParams != null) {
+            doInBackground(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(drmParams.getScheme(), context, localDrmStorage);
+                        String licenseUri = drmParams.getLicenseUri();
+                        drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, listener);
 
-                try {
-
-                    DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, localDrmStorage, localAssetPath);
-                    DrmAdapter.DRMScheme scheme = drmAdapter.getScheme();
-                    String licenseUri = mediaSource.getDrmData().get(0).getLicenseUri(); //TODO filter and select the correct drmData, based on DrmAdapter.DRMScheme
-                    drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, listener);
-
-                } catch (IOException e) {
-                    log.e("Error", e);
-                    if (listener != null) {
-                        listener.onFailed(localAssetPath, e);
+                    } catch (IOException e) {
+                        log.e("Error", e);
+                        if (listener != null) {
+                            listener.onFailed(localAssetPath, e);
+                        }
                     }
                 }
-
-            }
-        });
+            });
+        }
     }
 
+    private static PKDrmParams findSupportedDrmParams(@NonNull PKMediaSource mediaSource) {
+        for (PKDrmParams params : mediaSource.getDrmData()) {
+            switch (params.getScheme()) {
+                case widevine_cenc:
+                    if (MediaSupport.widevineModular()) {
+                        return params;
+                    }
+                    break;
+                case widevine_classic:
+                    if (MediaSupport.widevineClassic(null)) {
+                        return params;
+                    }
+                    break;
+            }
+        }
+        return null;
+    }
 
     /**
      * Unregister asset. If the asset have drm protection it will be removed from {@link LocalDrmStorage}
@@ -131,12 +149,13 @@ public class LocalAssetsManager {
     public void unregisterAsset(@NonNull final String localAssetPath,
                                    @NonNull final String assetId, final AssetRemovalListener listener) {
 
+        // FIXME: what is the scheme?
+        final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(null, context, localDrmStorage);
+
         doInBackground(new Runnable() {
             @Override
             public void run() {
-                // Remove cache
-                    DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, localDrmStorage, localAssetPath);
-                    drmAdapter.unregisterAsset(localAssetPath, assetId, listener);
+                drmAdapter.unregisterAsset(localAssetPath, assetId, listener);
             }
         });
     }
@@ -150,7 +169,8 @@ public class LocalAssetsManager {
     public void checkAssetStatus(@NonNull final String localAssetPath, @NonNull final String assetId,
                                            @Nullable final AssetStatusListener listener) {
 
-        final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, localDrmStorage, localAssetPath);
+        // FIXME: what is the scheme?
+        final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(null, context, localDrmStorage);
 
         doInBackground(new Runnable() {
             @Override
@@ -249,7 +269,7 @@ public class LocalAssetsManager {
      * Created by anton.afanasiev on 13/12/2016.
      */
 
-    public class DefaultLocalDrmStorage implements LocalDrmStorage {
+    public static class DefaultLocalDrmStorage implements LocalDrmStorage {
 
         private final PKLog log = PKLog.get("DefaultLocalDrmStorage");
 

@@ -24,7 +24,7 @@ public class MediaSupport {
         widevineClassic(context);
         widevineModular();
     }
-
+    
     public static boolean widevineClassic(Context context) {
         if (widevineClassic != null) {
             return widevineClassic;

@@ -1,5 +1,6 @@
 package com.kaltura.playkit.drm;
 
+import android.annotation.TargetApi;
 import android.content.ContentValues;
 import android.content.Context;
 import android.drm.DrmErrorEvent;
@@ -11,12 +12,14 @@ import android.drm.DrmInfoStatus;
 import android.drm.DrmManagerClient;
 import android.drm.DrmStore;
 import android.os.Build;
+import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.PKLog;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Iterator;
 
 /**
@@ -318,6 +321,35 @@ public class WidevineClassicDrm {
 
         return rights;
     }
+    
+    // On Android M and up, Widevine Classic is not officially supported.
+    // On some devices it still works, but a small change in FileDescriptor class
+    // has broke the offline ability: the specialized implementation of toString()
+    // was removed. fdToString() uses reflection to implement it by accessing a hidden
+    // method (FileDescriptor.getInt$).
+    private String fdToString(FileDescriptor fd) {
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return fd.toString();
+        } else {
+            return fdToString23(fd);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    @Nullable
+    private String fdToString23(FileDescriptor fd) {
+        try {
+            Method method = fd.getClass().getMethod("getInt$");
+            Object fdInt = method.invoke(fd);
+            if (fdInt instanceof Integer) {
+                return "FileDescriptor[" + fdInt + "]";
+            }
+        } catch (ReflectiveOperationException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public int acquireLocalAssetRights(String assetPath, String licenseServerUri) {
         DrmInfoRequest drmInfoRequest = createDrmInfoRequest(assetPath, licenseServerUri);
@@ -330,7 +362,7 @@ public class WidevineClassicDrm {
             fis = new FileInputStream(assetPath);
             FileDescriptor fd = fis.getFD();
             if (fd != null && fd.valid()) {
-                drmInfoRequest.put("FileDescriptorKey", fd.toString());
+                drmInfoRequest.put("FileDescriptorKey", fdToString(fd));
                 drmInfo = mDrmManager.acquireDrmInfo(drmInfoRequest);
                 if (drmInfo == null) {
                     throw new IOException("DrmManagerClient couldn't prepare request for asset " + assetPath);
