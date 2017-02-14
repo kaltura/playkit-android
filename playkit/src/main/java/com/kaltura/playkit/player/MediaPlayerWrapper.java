@@ -7,9 +7,6 @@ import android.drm.DrmErrorEvent;
 import android.drm.DrmEvent;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.annotation.Nullable;
 import android.view.SurfaceHolder;
 
 import com.kaltura.playkit.PKLog;
@@ -35,7 +32,6 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
 
     private static final PKLog log = PKLog.get("MediaPlayerWrapper");
 
-    private static final long PLAYHEAD_UPDATE_INTERVAL = 200;
     private static int ILLEGAL_STATEׁ_ORERATION = -38;
 
     private Context context;
@@ -48,8 +44,6 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
     private WidevineClassicDrm drmClient;
     private PlayerEvent.Type currentEvent;
     private PlayerState currentState = PlayerState.IDLE, previousState;
-    @Nullable
-    private PlayheadTracker mPlayheadTracker;
     private long playerPosition;
     private long prevDuration = Consts.TIME_UNSET;
     private PlayerController.EventListener eventListener;
@@ -210,8 +204,7 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
 
     private void handleContentCompleted() {
         pause();
-        seekTo(player.getDuration());
-        stopPlayheadTracker();
+        seekTo(player.getDuration());       // TODO: why?
         currentState = PlayerState.IDLE;
         changeState(PlayerState.IDLE);
         sendDistinctEvent(PlayerEvent.Type.ENDED);
@@ -236,10 +229,7 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
         player.start();
         sendDistinctEvent(PlayerEvent.Type.PLAY);
 
-        if (mPlayheadTracker == null) {
-            mPlayheadTracker = new PlayheadTracker();
-        }
-        mPlayheadTracker.start();
+        // FIXME: this should only be sent after playback as started
         sendDistinctEvent(PlayerEvent.Type.PLAYING);
     }
 
@@ -375,7 +365,6 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
         appInBackground = true;
         if (player != null && prepareState == PREPARED) {
             savePlayerPosition();
-            stopPlayheadTracker();
             pause();
             shouldRestorePlayerToPreviousState = true;
         }
@@ -403,7 +392,6 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
     @Override
     public void destroy() {
         log.d("destroy");
-        stopPlayheadTracker();
         if (player != null) {
             player.release();
             player = null;
@@ -501,15 +489,7 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
         //Do Nothing;
     }
 
-    private void stopPlayheadTracker() {
-        if (mPlayheadTracker != null) {
-            playerPosition = (int) mPlayheadTracker.getPlaybackTime() * 1000;
-            mPlayheadTracker.stop();
-            mPlayheadTracker = null;
-        }
-    }
-
-    public void savePlayerPosition() {
+    private void savePlayerPosition() {
         if (player == null) {
             log.e("Attempt to invoke 'savePlayerPosition()' on null instance");
             return;
@@ -518,80 +498,9 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
         log.d("playerPosition = " + playerPosition);
     }
 
-    public String getLicenseUri() {
-        return licenseUri;
-    }
-
-    public String getAssetUri() {
-        return assetUri;
-    }
-
     enum PrepareState {
         NOT_PREPARED,
         PREPARING,
         PREPARED
-    }
-
-    class PlayheadTracker {
-        private float playbackTime;
-        private Handler trackingHandler;
-        private long duration = -1;
-        private Runnable mRunnable = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (player != null && player.getCurrentPosition() == duration){
-                        log.d("--- Video onCompletion ---");
-                        handleContentCompleted();
-                        return;
-                    }
-
-                    if (player != null && player.isPlaying()) {
-                        int currPos = player.getCurrentPosition();
-                        log.d("progress status = " + currPos + "/" + duration);
-                        if (currPos > duration) {
-                            playbackTime = duration / 1000f;
-                        } else {
-                            playbackTime = currPos / 1000f;
-                        }
-                    }
-
-                } catch (IllegalStateException e) {
-                    String errMsg = "Player Error ";
-                    log.e(errMsg + e.getMessage());
-
-                }
-                if (trackingHandler != null) {
-                    trackingHandler.postDelayed(this, PLAYHEAD_UPDATE_INTERVAL);
-                }
-            }
-        };
-
-        public float getPlaybackTime() {
-            return playbackTime;
-        }
-
-        public void start() {
-            if (player != null) {
-                duration = player.getDuration();
-                log.d("tracker start getDurationXX  = " + duration);
-            }
-            if (trackingHandler == null) {
-                trackingHandler = new Handler(Looper.getMainLooper());
-                trackingHandler.postDelayed(mRunnable, PLAYHEAD_UPDATE_INTERVAL);
-            } else {
-                log.d("Tracker is already started");
-            }
-        }
-
-        public void stop() {
-            duration = -1;
-            if (trackingHandler != null) {
-                trackingHandler.removeCallbacks(mRunnable);
-                trackingHandler = null;
-            } else {
-                log.d("Tracker is not started, nothing to stop");
-            }
-        }
     }
 }
