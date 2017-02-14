@@ -552,6 +552,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 break;
             case RESUMED:
                 log.d("AD RESUMED");
+                if (player != null && player.getView() != null) {
+                    player.getView().hideVideoSurface();
+                }
                 isAdIsPaused = false;
                 messageBus.post(new AdEvent(RESUMED));
                 break;
