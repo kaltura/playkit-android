@@ -60,7 +60,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
-                if (response.isSuccess() && response.getResponse().contains("concurrent")){
+                if (response.isSuccess() && response.getResponse().contains("Concurrent")){
                     messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
                 }
                 log.d("onComplete send event: ");
