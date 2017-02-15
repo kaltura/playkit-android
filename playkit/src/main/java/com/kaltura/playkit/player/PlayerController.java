@@ -150,7 +150,7 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
-         isNewEntry = isPrepareNewEntry(mediaConfig);
+        isNewEntry = isPrepareNewEntry(mediaConfig);
         this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
