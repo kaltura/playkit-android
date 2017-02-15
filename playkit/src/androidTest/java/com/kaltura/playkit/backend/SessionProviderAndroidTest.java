@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.kaltura.playkit.backend.MockParams.FormatHD;
+import static com.kaltura.playkit.backend.MockParams.FormatSD;
 import static com.kaltura.playkit.backend.MockParams.MediaId;
 import static com.kaltura.playkit.backend.MockParams.NonDRMEntryId;
 import static com.kaltura.playkit.backend.MockParams.OvpBaseUrl;
@@ -70,7 +71,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                             new PhoenixMediaProvider()
                                     .setSessionProvider(ottSessionProvider)
                                     .setAssetId(MediaId)
-                                    .setReferenceType(APIDefines.AssetReferenceType.Media)
+                                    .setAssetType(APIDefines.KalturaAssetType.Media)
                                     .setFormats(FormatHD)
                                     .load(new OnMediaLoadCompletion() {
                                         @Override
@@ -79,7 +80,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                                                 Log.i("testOttSessionProvider", "we have mediaEntry");
                                                 assertTrue(response.getResponse().getId().equals(MediaId));
                                                 assertTrue(response.getResponse().getSources().size() == 1);
-                                                assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Vod));
+                                                assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
                                             }
                                             resume();
                                         }
@@ -120,8 +121,8 @@ public class SessionProviderAndroidTest extends BaseTest {
                                     new PhoenixMediaProvider()
                                             .setSessionProvider(ottSessionProvider)
                                             .setAssetId(MediaId)
-                                            .setReferenceType(APIDefines.AssetReferenceType.Media)
-                                            .setFormats(FormatHD)
+                                            .setAssetType(APIDefines.KalturaAssetType.Media)
+                                            .setFormats(FormatSD)
                                             .load(new OnMediaLoadCompletion() {
                                                 @Override
                                                 public void onComplete(ResultElement<PKMediaEntry> response) {
@@ -174,7 +175,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                                     new PhoenixMediaProvider()
                                             .setSessionProvider(ottSessionProvider)
                                             .setAssetId(MediaId)
-                                            .setReferenceType(APIDefines.AssetReferenceType.Media)
+                                            .setAssetType(APIDefines.KalturaAssetType.Media)
                                             .setFormats(FormatHD)
                                             .load(new OnMediaLoadCompletion() {
                                                 @Override

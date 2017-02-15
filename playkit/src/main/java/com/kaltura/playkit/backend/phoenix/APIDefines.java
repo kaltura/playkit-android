@@ -19,8 +19,8 @@ public class APIDefines {
     }
 
     @Retention(SOURCE)
-    @StringDef(value = {BookmarkType.Media, BookmarkType.Epg, BookmarkType.Recording})
-    public @interface BookmarkType {
+    @StringDef(value = {KalturaAssetType.Media, KalturaAssetType.Epg, KalturaAssetType.Recording})
+    public @interface KalturaAssetType {
         String Media = "media";
         String Epg = "epg";
         String Recording = "recording";
@@ -43,6 +43,15 @@ public class APIDefines {
         String Channel = "channel";
         String Program = "program";
         String EPG = "epg";
+    }
+
+    @Retention(SOURCE)
+    @StringDef(value = {PlaybackContextType.Trailer, PlaybackContextType.Catchup, PlaybackContextType.StartOver, PlaybackContextType.Playback})
+    public @interface PlaybackContextType {
+        String Trailer = "TRAILER";
+        String Catchup = "CATCHUP";
+        String StartOver = "START_OVER";
+        String Playback = "PLAYBACK";
     }
 
 }

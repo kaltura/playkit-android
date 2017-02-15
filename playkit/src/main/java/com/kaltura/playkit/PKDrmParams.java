@@ -1,18 +1,20 @@
 package com.kaltura.playkit;
 
+import com.kaltura.playkit.backend.phoenix.data.DrmScheme;
+
 public class PKDrmParams {
 
-    public static enum Scheme {
+    /*public static enum Scheme {
 
         widevine_cenc,
         playready_cenc,
         widevine_classic
-    }
+    }*/
 
     private String licenseUri;
-    private Scheme scheme;
+    private DrmScheme scheme;
 
-    public PKDrmParams(String licenseUrl, Scheme scheme){
+    public PKDrmParams(String licenseUrl, DrmScheme scheme){
         this.licenseUri = licenseUrl;
         this.scheme = scheme;
     }
@@ -25,11 +27,11 @@ public class PKDrmParams {
         this.licenseUri = licenseUri;
     }
 
-    public Scheme getScheme() {
+    public DrmScheme getScheme() {
         return scheme;
     }
 
-    public void setScheme(Scheme scheme) {
+    public void setScheme(DrmScheme scheme) {
         this.scheme = scheme;
     }
 }

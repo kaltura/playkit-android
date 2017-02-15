@@ -69,8 +69,11 @@ public class BaseEntryService extends OvpService {
         JsonObject params = new JsonObject();
         params.addProperty("entryId", entryId);
         params.addProperty("ks", ks);
+
         JsonObject contextDataParams = new JsonObject();
+        contextDataParams.addProperty("flavorTags","all");
         contextDataParams.addProperty("objectType","KalturaContextDataParams");
+
         params.add("contextDataParams", contextDataParams);
 
         return new OvpRequestBuilder().service("baseEntry")

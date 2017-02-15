@@ -1,4 +1,4 @@
-package com.kaltura.playkit.backend.ovp.data;
+package com.kaltura.playkit.backend.phoenix.data;
 
 import com.kaltura.playkit.backend.base.data.BasePlaybackContext;
 
@@ -11,7 +11,6 @@ import java.util.ArrayList;
 public class KalturaPlaybackContext extends BasePlaybackContext{
 
     ArrayList<KalturaPlaybackSource> sources;
-    ArrayList<KalturaFlavorAsset> flavorAssets;
 
     public KalturaPlaybackContext() {
     }
@@ -19,14 +18,6 @@ public class KalturaPlaybackContext extends BasePlaybackContext{
     public ArrayList<KalturaPlaybackSource> getSources() {
         return sources;
     }
-
-    public ArrayList<KalturaFlavorAsset> getFlavorAssets() {
-        return flavorAssets;
-    }
-
-
-
-
 
 
 

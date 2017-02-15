@@ -13,12 +13,11 @@ public class ErrorElement {
     public static ErrorElement ConnectionError = new ErrorElement("ConnectionError", "Failed to connect to source", 408);
     public static ErrorElement BadRequestError = new ErrorElement("BadRequestError", "Invalid or missing request params", 400);
     public static ErrorElement SessionError = new ErrorElement("SessionError", "Failed to obtain session", 601);
-    public static ErrorElement RestrictionError = new ErrorElement("RestrictionError", "Content restricted and currently unavailable", 533);
 
     public String name;
     private String message;
     private String code;
-    private Object extra;
+    protected Object extra;
 
     public ErrorElement(String name, String message, int code) {
         this(message, code);

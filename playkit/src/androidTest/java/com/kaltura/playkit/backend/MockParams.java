@@ -37,7 +37,7 @@ public class MockParams {
 
 
     //OTT:
-    public static final String PnxBaseUrl = "http://api-preprod.ott.kaltura.com/v4_1/api_v3/";//"http://52.210.223.65:8080/v4_1/api_v3/";
+    public static final String PnxBaseUrl = "http://api-preprod.ott.kaltura.com/v4_2/api_v3/";//"http://52.210.223.65:8080/v4_1/api_v3/";
 
     public static final String PnxUsername = "albert@gmail.com";
     public static final String PnxPassword = "123456";
@@ -48,6 +48,16 @@ public class MockParams {
     public static final String MediaId = "258656";//frozen
     public static final String MediaId4 = "258655";//shrek
     public static final String MediaId2 = "437800";//vild
+
+    public static final String MediaId2_File_SD_Dash = "690398";//vild
+    public static final String MediaId2_File_Main_SD = "690396";//vild
+    public static final String MediaId2_File_Main_HD = "690395";//vild
+    public static final String MediaId2_File_Web_HD = "690403";//vild
+
+    public static final String PnxNotEntitledMedia = "482731";
+    public static final String PnxNoFilesFoundMedia = "482550";//no mediaFiles on asset
+
+
     public static final String MediaId3 = "259295";//the salt of earth
     public static final String MediaId5 = "258574";//gladiator  HD id- 508408  SD id- 397243
     public static final String ChannelId = "255854";

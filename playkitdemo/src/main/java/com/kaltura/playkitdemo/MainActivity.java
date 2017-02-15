@@ -30,6 +30,7 @@ import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
 import com.kaltura.playkit.backend.phoenix.APIDefines;
 import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
+import com.kaltura.playkit.backend.phoenix.data.DrmScheme;
 import com.kaltura.playkit.connect.ResultElement;
 import com.kaltura.playkit.player.AudioTrack;
 import com.kaltura.playkit.player.BaseTrack;
@@ -92,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
-    private PKMediaEntry simpleMediaEntry(String id, String contentUrl, String licenseUrl, PKDrmParams.Scheme scheme) {
+    private PKMediaEntry simpleMediaEntry(String id, String contentUrl, String licenseUrl, DrmScheme scheme) {
         return new PKMediaEntry()
                     .setSources(Collections.singletonList(new PKMediaSource()
                             .setUrl(contentUrl)
@@ -144,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onComplete(PrimitiveResult response) {
                 if(response.error == null) {
-                    mediaProvider = new PhoenixMediaProvider().setSessionProvider(ottSessionProvider).setAssetId(MediaId).setReferenceType(APIDefines.AssetReferenceType.Media).setFormats(Format);
+                    mediaProvider = new PhoenixMediaProvider().setSessionProvider(ottSessionProvider).setAssetId(MediaId).setAssetType(APIDefines.KalturaAssetType.Media).setFormats(Format);
 
                     mediaProvider.load(new OnMediaLoadCompletion() {
                         @Override
