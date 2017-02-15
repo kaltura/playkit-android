@@ -150,7 +150,7 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
-        checkIfEntryIsNew(mediaConfig);
+         isNewEntry = isPrepareNewEntry(mediaConfig);
         this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
@@ -173,14 +173,14 @@ public class PlayerController implements Player {
         player.load(source);
     }
 
-    private void checkIfEntryIsNew(PlayerConfig.Media mediaConfig) {
+    private boolean isPrepareNewEntry(PlayerConfig.Media mediaConfig) {
 
         if(this.mediaConfig != null){
             String oldEntryId = this.mediaConfig.getMediaEntry().getId();
             String newEntryId = mediaConfig.getMediaEntry().getId();
-            isNewEntry = !oldEntryId.equals(newEntryId);
+            return !oldEntryId.equals(newEntryId);
         }else{
-            isNewEntry = true;
+            return true;
         }
     }
 
