@@ -35,12 +35,12 @@ public class WidevineClassicDrm {
     private final static String DEVICE_IS_NOT_PROVISIONED = "1";
     private final static String DEVICE_IS_PROVISIONED_SD_ONLY = "2";
 
-    public static final String WV_DRM_SERVER_KEY = "WVDRMServerKey";
-    public static final String WV_ASSET_URI_KEY = "WVAssetURIKey";
-    public static final String WV_DEVICE_ID_KEY = "WVDeviceIDKey";
-    public static final String WV_PORTAL_KEY = "WVPortalKey";
-    public static final String WV_DRM_INFO_REQUEST_STATUS_KEY = "WVDrmInfoRequestStatusKey";
-    public static final String WV_DRM_INFO_REQUEST_VERSION_KEY = "WVDrmInfoRequestVersionKey";
+    private static final String WV_DRM_SERVER_KEY = "WVDRMServerKey";
+    private static final String WV_ASSET_URI_KEY = "WVAssetURIKey";
+    private static final String WV_DEVICE_ID_KEY = "WVDeviceIDKey";
+    private static final String WV_PORTAL_KEY = "WVPortalKey";
+    private static final String WV_DRM_INFO_REQUEST_STATUS_KEY = "WVDrmInfoRequestStatusKey";
+    private static final String WV_DRM_INFO_REQUEST_VERSION_KEY = "WVDrmInfoRequestVersionKey";
 
     private String mWVDrmInfoRequestStatusKey = DEVICE_IS_PROVISIONED;
     public static String WIDEVINE_MIME_TYPE = "video/wvm";
@@ -55,6 +55,7 @@ public class WidevineClassicDrm {
 
     private EventListener mEventListener;
 
+    @SuppressWarnings("WeakerAccess")
     public static class RightsInfo {
 
         public enum Status {
@@ -110,24 +111,6 @@ public class WidevineClassicDrm {
         void onEvent(DrmEvent event);
     }
 
-    public static boolean isSupported(Context context) {
-        DrmManagerClient drmManagerClient = new DrmManagerClient(context);
-        boolean canHandle = false;
-        // adding try catch due some android devices have different canHandle method implementation regarding the arguments validation inside it
-        try {
-            canHandle = drmManagerClient.canHandle("", WIDEVINE_MIME_TYPE);
-        } catch (IllegalArgumentException ex) {
-            log.e("drmManagerClient.canHandle failed");
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                log.i("Assuming WV Classic is supported although canHandle has failed");
-                canHandle = true;
-            }
-        } finally {
-            drmManagerClient.release();
-        }
-        return canHandle;
-    }
-
     public WidevineClassicDrm(Context context) {
 
         mDrmManager = new DrmManagerClient(context) {
@@ -135,8 +118,10 @@ public class WidevineClassicDrm {
             protected void finalize() throws Throwable {
                 // Release on finalize. Doesn't matter when, just prevent Android's CloseGuard errors.
                 try {
+                    //noinspection deprecation
                     release();
                 } finally {
+                    //noinspection ThrowFromFinallyBlock
                     super.finalize();
                 }
             }

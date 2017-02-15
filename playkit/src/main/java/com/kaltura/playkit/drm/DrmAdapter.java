@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.LocalDrmStorage;
 import com.kaltura.playkit.PKDrmParams;
-import com.kaltura.playkit.PKLog;
 
 import java.io.IOException;
 
@@ -15,9 +14,6 @@ import java.io.IOException;
  */
 
 public abstract class DrmAdapter {
-    
-    private static final PKLog log = PKLog.get("DrmAdapter");
-    
 
     @NonNull
     public static DrmAdapter getDrmAdapter(PKDrmParams.Scheme scheme, Context context, LocalDrmStorage localDrmStorage) {
