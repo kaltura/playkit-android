@@ -4,7 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.kaltura.playkit.LocalAssetsManager;
-import com.kaltura.playkit.LocalDrmStorage;
+import com.kaltura.playkit.LocalDataStore;
 import com.kaltura.playkit.PKDrmParams;
 
 import java.io.IOException;
@@ -16,7 +16,7 @@ import java.io.IOException;
 public abstract class DrmAdapter {
 
     @NonNull
-    public static DrmAdapter getDrmAdapter(PKDrmParams.Scheme scheme, Context context, LocalDrmStorage localDrmStorage) {
+    public static DrmAdapter getDrmAdapter(PKDrmParams.Scheme scheme, Context context, LocalDataStore localDataStore) {
 
         if (scheme == null) {
             return new NullDrmAdapter();
@@ -24,7 +24,7 @@ public abstract class DrmAdapter {
         
         switch (scheme) {
             case widevine_cenc:
-                return new WidevineModularAdapter(context, localDrmStorage);
+                return new WidevineModularAdapter(context, localDataStore);
             case widevine_classic:
                 return new WidevineClassicAdapter(context);
         }

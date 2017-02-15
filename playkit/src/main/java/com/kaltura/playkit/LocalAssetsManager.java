@@ -25,7 +25,7 @@ public class LocalAssetsManager {
     private static final PKLog log = PKLog.get("LocalAssetsManager");
 
     private final Context context;
-    private LocalDrmStorage localDrmStorage;
+    private LocalDataStore localDataStore;
 
     /**
      * Listener that notify about the result when registration flow is ended.
@@ -60,27 +60,27 @@ public class LocalAssetsManager {
     }
 
     /**
-     * Constructor which will create {@link DefaultLocalDrmStorage}
+     * Constructor which will create {@link DefaultLocalDataStore}
      * @param context - the application context.
      */
     public LocalAssetsManager(Context context) {
         this.context = context;
-        this.localDrmStorage = new DefaultLocalDrmStorage(context);
+        this.localDataStore = new DefaultLocalDataStore(context);
     }
 
     /**
-     * Constructor with custom implementation of the {@link LocalDrmStorage}
+     * Constructor with custom implementation of the {@link LocalDataStore}
      * @param context - the application context.
-     * @param localDrmStorage - custom implementation of {@link LocalDrmStorage}
+     * @param localDataStore - custom implementation of {@link LocalDataStore}
      */
-    public LocalAssetsManager(Context context, LocalDrmStorage localDrmStorage) {
+    public LocalAssetsManager(Context context, LocalDataStore localDataStore) {
         this.context = context;
-        this.localDrmStorage = localDrmStorage;
+        this.localDataStore = localDataStore;
     }
 
 
     /**
-     * Register the asset. If the asset have drm protection it will store its keySetId in {@link LocalDrmStorage}
+     * Register the asset. If the asset have drm protection it will store its keySetId in {@link LocalDataStore}
      * @param mediaSource - the source to register.
      * @param localAssetPath - the url of the locally stored asset.
      * @param assetId - the asset id.
@@ -107,7 +107,7 @@ public class LocalAssetsManager {
                 @Override
                 public void run() {
                     try {
-                        DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(drmParams.getScheme(), context, localDrmStorage);
+                        DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(drmParams.getScheme(), context, localDataStore);
                         String licenseUri = drmParams.getLicenseUri();
                         drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, listener);
 
@@ -141,7 +141,7 @@ public class LocalAssetsManager {
     }
 
     /**
-     * Unregister asset. If the asset have drm protection it will be removed from {@link LocalDrmStorage}
+     * Unregister asset. If the asset have drm protection it will be removed from {@link LocalDataStore}
      * @param localAssetPath - the url of the locally stored asset.
      * @param assetId - the asset id
      * @param listener - notify when the asset is removed.
@@ -150,7 +150,7 @@ public class LocalAssetsManager {
                                    @NonNull final String assetId, final AssetRemovalListener listener) {
 
         // FIXME: what is the scheme?
-        final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(null, context, localDrmStorage);
+        final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(null, context, localDataStore);
 
         doInBackground(new Runnable() {
             @Override
@@ -170,7 +170,7 @@ public class LocalAssetsManager {
                                            @Nullable final AssetStatusListener listener) {
 
         // FIXME: what is the scheme?
-        final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(null, context, localDrmStorage);
+        final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(null, context, localDataStore);
 
         doInBackground(new Runnable() {
             @Override
@@ -187,7 +187,7 @@ public class LocalAssetsManager {
      * @return - the {@link PKMediaSource} that should be passed to the player.
      */
     public PKMediaSource getLocalMediaSource(@NonNull final String assetId, @NonNull final String localAssetPath) {
-        return new LocalMediaSource(localDrmStorage, localAssetPath, assetId);
+        return new LocalMediaSource(localDataStore, localAssetPath, assetId);
     }
 
     /**
@@ -241,42 +241,42 @@ public class LocalAssetsManager {
      */
     public static class LocalMediaSource extends PKMediaSource {
 
-        private LocalDrmStorage localDrmStorage;
+        private LocalDataStore localDataStore;
 
         /**
-         * @param localDrmStorage - the storage from where drm keySetId is stored.
+         * @param localDataStore - the storage from where drm keySetId is stored.
          * @param localPath - the local url of the media.
          * @param assetId - the id of the media.
          */
-        public LocalMediaSource(LocalDrmStorage localDrmStorage, String localPath, String assetId) {
+        public LocalMediaSource(LocalDataStore localDataStore, String localPath, String assetId) {
             setId(assetId);
             setUrl(localPath);
-            this.localDrmStorage = localDrmStorage;
+            this.localDataStore = localDataStore;
         }
 
         /**
-         * @return - the {@link LocalDrmStorage}
+         * @return - the {@link LocalDataStore}
          */
-        public LocalDrmStorage getStorage() {
-            return localDrmStorage;
+        public LocalDataStore getStorage() {
+            return localDataStore;
         }
 
     }
 
     /**
-     * Default implementation of the {@link LocalDrmStorage}. Actually doing the basic save/load/remove actions
+     * Default implementation of the {@link LocalDataStore}. Actually doing the basic save/load/remove actions
      * to the {@link SharedPreferences}.
      * Created by anton.afanasiev on 13/12/2016.
      */
 
-    public static class DefaultLocalDrmStorage implements LocalDrmStorage {
+    public static class DefaultLocalDataStore implements LocalDataStore {
 
-        private final PKLog log = PKLog.get("DefaultLocalDrmStorage");
+        private final PKLog log = PKLog.get("DefaultLocalDataStore");
 
         private static final String LOCAL_DRM_SHARED_PREFERENCE_STORAGE = "PlayKitLocalDrmStorage";
         private final SharedPreferences sharedPreferences;
 
-        public DefaultLocalDrmStorage(Context context){
+        public DefaultLocalDataStore(Context context){
             sharedPreferences = context.getSharedPreferences(LOCAL_DRM_SHARED_PREFERENCE_STORAGE, 0);
         }
 
