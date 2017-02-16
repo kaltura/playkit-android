@@ -135,6 +135,11 @@ class WidevineModularAdapter extends DrmAdapter {
     private boolean unregisterAsset(String localAssetPath, String assetId) throws RegisterException {
 
         SimpleDashParser dash = parseDash(localAssetPath, assetId);
+        if (!dash.hasContentProtection) {
+            // Not protected -- nothing to do.
+            return true;
+        }
+
         // obtain key with which we will load the saved keySetId.
         String key = encodeToString(dash.widevineInitData);
 

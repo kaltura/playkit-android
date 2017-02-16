@@ -139,6 +139,8 @@ public class LocalAssetsManager {
         }
         return null;
     }
+    
+    
 
     /**
      * Unregister asset. If the asset have drm protection it will be removed from {@link LocalDataStore}
@@ -149,8 +151,8 @@ public class LocalAssetsManager {
     public void unregisterAsset(@NonNull final String localAssetPath,
                                    @NonNull final String assetId, final AssetRemovalListener listener) {
 
-        // FIXME: what is the scheme?
-        final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(null, context, localDataStore);
+        PKDrmParams.Scheme scheme = guessLocalAssetScheme(localAssetPath);
+        final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(scheme, context, localDataStore);
 
         doInBackground(new Runnable() {
             @Override
@@ -160,8 +162,25 @@ public class LocalAssetsManager {
         });
     }
 
+    @Nullable
+    private PKDrmParams.Scheme guessLocalAssetScheme(@NonNull String localAssetPath) {
+        PKMediaFormat format = PKMediaFormat.valueOfUrl(localAssetPath);
+        if (format == null) {
+            return null;
+        }
+        switch (format) {
+            case dash_clear:
+            case dash_drm:
+                return PKDrmParams.Scheme.widevine_cenc;
+            case wvm_widevine:
+                return PKDrmParams.Scheme.widevine_classic;
+            default:
+                return null;
+        }
+    }
+
     /**
-     * Chek the status of the desired asset.
+     * Check the status of the desired asset.
      * @param localAssetPath - the url of the locally stored asset.
      * @param assetId - the asset id.
      * @param listener - will pass the result of the status.
@@ -169,8 +188,8 @@ public class LocalAssetsManager {
     public void checkAssetStatus(@NonNull final String localAssetPath, @NonNull final String assetId,
                                            @Nullable final AssetStatusListener listener) {
 
-        // FIXME: what is the scheme?
-        final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(null, context, localDataStore);
+        PKDrmParams.Scheme scheme = guessLocalAssetScheme(localAssetPath);
+        final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(scheme, context, localDataStore);
 
         doInBackground(new Runnable() {
             @Override

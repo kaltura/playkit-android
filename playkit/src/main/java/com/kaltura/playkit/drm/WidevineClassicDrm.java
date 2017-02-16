@@ -331,7 +331,7 @@ public class WidevineClassicDrm {
                 return "FileDescriptor[" + fdInt + "]";
             }
         } catch (ReflectiveOperationException e) {
-            e.printStackTrace();
+            log.e("Error getting FD to string", e);
         }
         return null;
     }
