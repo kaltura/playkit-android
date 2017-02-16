@@ -25,6 +25,7 @@ import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.RequestElement;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
+import com.kaltura.playkit.connect.RestrictionError;
 import com.kaltura.playkit.connect.ResultElement;
 
 import org.junit.Before;
@@ -50,12 +51,15 @@ import static com.kaltura.playkit.backend.MockParams.MediaId2_File_Web_HD;
 import static com.kaltura.playkit.backend.MockParams.MediaId5;
 import static com.kaltura.playkit.backend.MockParams.PnxBaseUrl;
 import static com.kaltura.playkit.backend.MockParams.PnxKS;
+import static com.kaltura.playkit.backend.MockParams.PnxNotEntitledMedia;
 import static com.kaltura.playkit.backend.MockParams.PnxPartnerId;
 import static com.kaltura.playkit.backend.MockParams.PnxPassword;
 import static com.kaltura.playkit.backend.MockParams.PnxUsername;
+import static com.kaltura.playkit.backend.MockParams.WebHD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -65,6 +69,8 @@ import static org.junit.Assert.fail;
 
 @RunWith(AndroidJUnit4.class)
 public class PhoenixMediaProviderAndroidTest extends BaseTest {
+
+    int latchCount;
 
     OttSessionProvider testSession = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
 
@@ -161,10 +167,9 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
     }
 
-    int latchCount;
 
     @Test
-    public void textPlaybackSourcesByFormats() {
+    public void testPlaybackSourcesByFormats() {
         latchCount = 0;
         final SessionProvider EmptySessionProvider = new SessionProvider() {
             @Override
@@ -222,9 +227,59 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     }
 
     @Test
-    public void textPlaybackSourcesByMediaFiles() {
-//690398- Mobile_Devices_Main_SD_Dash,  690396 - Mobile_Devices_Main_SD ,   690395 - Mobile_Devices_Main_HD
+    public void testFailMessagesOnPlaybackSources() {
+        latchCount = 0;
+        final OttSessionProvider ottSessionProvider = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
 
+        latchCount++;
+        ottSessionProvider.startSession(PnxUsername, PnxPassword, null, new OnCompletion<PrimitiveResult>() {
+            @Override
+            public void onComplete(PrimitiveResult response) {
+
+                latchCount--;
+                if (response.error != null) {
+                    fail(response.error.getMessage());
+                    resume();
+
+                } else {
+                    latchCount++;
+                    ottSessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
+                        @Override
+                        public void onComplete(PrimitiveResult response) {
+                            latchCount--;
+                            phoenixMediaProvider = new PhoenixMediaProvider()
+                                    .setSessionProvider(ottSessionProvider)
+                                    .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(PnxNotEntitledMedia)
+                                    .setFormats(FormatHD, FormatSD, WebHD);
+
+                            latchCount++;
+                            phoenixMediaProvider.load(new OnMediaLoadCompletion() {
+                                @Override
+                                public void onComplete(ResultElement<PKMediaEntry> response) {
+                                    assertFalse(response.isSuccess());
+                                    assertNull(response.getResponse());
+                                    assertNotNull(response.getError());
+                                    assertTrue(response.getError() instanceof RestrictionError);
+                                    assertTrue(((RestrictionError) response.getError()).getExtra().equals(RestrictionError.Restriction.NotEntitled));
+
+                                    latchCount--;
+
+                                    PhoenixMediaProviderAndroidTest.this.resume();
+
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
+
+        PhoenixMediaProviderAndroidTest.this.wait(latchCount);
+
+    }
+
+    @Test
+    public void testPlaybackSourcesByMediaFiles() {
         latchCount = 0;
         final SessionProvider EmptySessionProvider = new SessionProvider() {
             @Override

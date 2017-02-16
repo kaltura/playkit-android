@@ -64,6 +64,7 @@ public class MockParams {
 
     public static final String FormatHD = "Mobile_Devices_Main_HD";
     public static final String FormatSD = "Mobile_Devices_Main_SD";
+    public static final String WebHD = "Web HD";
 
     public static String FrozenAssetInfo = "mock/phoenix.asset.get.258656.json";
 
