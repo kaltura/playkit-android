@@ -70,7 +70,7 @@ import static org.junit.Assert.fail;
 @RunWith(AndroidJUnit4.class)
 public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
-    int latchCount;
+    private int latchCount;
 
     OttSessionProvider testSession = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
 

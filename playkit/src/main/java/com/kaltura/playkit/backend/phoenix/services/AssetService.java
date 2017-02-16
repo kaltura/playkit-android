@@ -62,9 +62,9 @@ public class AssetService extends PhoenixService {
 
     public static class KalturaPlaybackContextOptions{
 
-        String context;
-        String protocol;
-        String assetFileIds;
+        private String context;
+        private String protocol;
+        private String assetFileIds;
 
         public KalturaPlaybackContextOptions(@APIDefines.PlaybackContextType String context){
             this.context = context;

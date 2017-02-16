@@ -10,8 +10,8 @@ import java.util.ArrayList;
 
 public class KalturaPlaybackContext extends BasePlaybackContext{
 
-    ArrayList<KalturaPlaybackSource> sources;
-    ArrayList<KalturaFlavorAsset> flavorAssets;
+    private ArrayList<KalturaPlaybackSource> sources;
+    private ArrayList<KalturaFlavorAsset> flavorAssets;
 
     public KalturaPlaybackContext() {
     }

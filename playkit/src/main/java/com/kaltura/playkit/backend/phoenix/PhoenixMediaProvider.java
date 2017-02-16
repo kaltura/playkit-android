@@ -70,20 +70,20 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     private class MediaAsset {
 
-        String assetId;
+        public String assetId;
 
-        @APIDefines.KalturaAssetType String assetType;
+        public @APIDefines.KalturaAssetType String assetType;
 
-        @APIDefines.PlaybackContextType String contextType;
+        public @APIDefines.PlaybackContextType String contextType;
 
-        List<String> formats;
+        public List<String> formats;
 
-        List<String> mediaFileIds;
+        public List<String> mediaFileIds;
 
-        boolean hasFormats() {
+        public boolean hasFormats() {
             return formats != null && formats.size() > 0;
         }
-        boolean hasFiles() {
+        public boolean hasFiles() {
             return mediaFileIds != null && mediaFileIds.size() > 0;
         }
     }

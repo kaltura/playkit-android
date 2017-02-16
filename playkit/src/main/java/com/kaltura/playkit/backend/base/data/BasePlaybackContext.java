@@ -16,8 +16,6 @@ public class BasePlaybackContext extends BaseResult{
     ArrayList<KalturaRuleAction> actions;
     ArrayList<KalturaAccessControlMessage> messages;
 
-    public BasePlaybackContext() {
-    }
 
     public ArrayList<KalturaAccessControlMessage> getMessages() {
         return messages;

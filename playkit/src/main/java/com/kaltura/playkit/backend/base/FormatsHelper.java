@@ -82,8 +82,9 @@ public class FormatsHelper {
                                 SupportedFormats.get(FormatName.UrlDrm) :
                                 null;*/
 
+            default:return null;
+
         }
-        return null;
     }
 
     /**

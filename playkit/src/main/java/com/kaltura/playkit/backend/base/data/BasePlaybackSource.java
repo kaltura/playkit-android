@@ -62,8 +62,8 @@ public class BasePlaybackSource extends BaseResult {
         StringBuilder schemes = new StringBuilder();
         if(hasDrmData()){
             for (KalturaDrmPlaybackPluginData drmPlaybackPluginData : drm){
-                if(!TextUtils.isEmpty(drmPlaybackPluginData.scheme)) {
-                    schemes.append(drmPlaybackPluginData.scheme).append(",");
+                if(!TextUtils.isEmpty(drmPlaybackPluginData.getScheme())) {
+                    schemes.append(drmPlaybackPluginData.getScheme()).append(",");
                 }
             }
         }

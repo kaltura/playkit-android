@@ -7,9 +7,9 @@ import com.kaltura.playkit.backend.BaseResult;
  */
 
 public class KalturaDrmPlaybackPluginData extends BaseResult {
-    String scheme;
-    String certificate;
-    String licenseURL;
+    private String scheme;
+    private String certificate;
+    private String licenseURL;
 
     public String getLicenseURL() {
         return licenseURL;
