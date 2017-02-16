@@ -174,8 +174,11 @@ public class PlayerController implements Player {
     }
 
     private boolean isPrepareNewEntry(PlayerConfig.Media mediaConfig) {
-
-        if(this.mediaConfig != null){
+        if (this.mediaConfig == null || mediaConfig == null) {
+            return true;
+        }
+        if(this.mediaConfig.getMediaEntry() != null && this.mediaConfig.getMediaEntry().getId() != null &&
+           mediaConfig.getMediaEntry()      != null && mediaConfig.getMediaEntry().getId()      != null){
             String oldEntryId = this.mediaConfig.getMediaEntry().getId();
             String newEntryId = mediaConfig.getMediaEntry().getId();
             return !oldEntryId.equals(newEntryId);
