@@ -87,7 +87,6 @@ public class BaseEntryService extends OvpService {
 
 
 
-
     static class BaseEntryListParams {
         String ks;
         Filter filter;

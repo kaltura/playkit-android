@@ -57,13 +57,14 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
         if (adsProvider != null) {
             if (!adsProvider.isAdRequested()) {
                 super.getView().hideVideoSurface();
-                adsProvider.init();
+                adsProvider.start();
                 return;
             } else if (adsProvider.isAdDisplayed()) {
                 adsProvider.resume();
                 return;
             }
         }
+        getView().showVideoSurface();
         super.play();
 
     }

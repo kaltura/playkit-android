@@ -54,6 +54,7 @@ public class AdEvent implements PKEvent {
         AD_PROGRESS,
         AD_BREAK_STARTED,
         AD_BREAK_ENDED,
+        AD_BREAK_IGNORED,
         CUEPOINTS_CHANGED,
         LOADED,
         CONTENT_PAUSE_REQUESTED,

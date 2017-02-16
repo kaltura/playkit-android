@@ -16,7 +16,6 @@ import com.kaltura.playkit.backend.base.BEMediaProvider;
 import com.kaltura.playkit.backend.base.FormatsHelper;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.base.data.KalturaDrmPlaybackPluginData;
-import com.kaltura.playkit.backend.phoenix.data.DrmScheme;
 import com.kaltura.playkit.backend.phoenix.data.KalturaMediaAsset;
 import com.kaltura.playkit.backend.phoenix.data.KalturaMediaFile;
 import com.kaltura.playkit.backend.phoenix.data.KalturaPlaybackContext;
@@ -37,6 +36,11 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static com.kaltura.playkit.PKDrmParams.Scheme.playready;
+import static com.kaltura.playkit.PKDrmParams.Scheme.playready_cenc;
+import static com.kaltura.playkit.PKDrmParams.Scheme.widevine_cenc;
+import static com.kaltura.playkit.PKDrmParams.Scheme.widevine_classic;
 
 
 /**
@@ -417,7 +421,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     if (drmData != null) {
                         List<PKDrmParams> drmParams = new ArrayList<>();
                         for (KalturaDrmPlaybackPluginData drm : drmData) {
-                            drmParams.add(new PKDrmParams(drm.getLicenseURL(), DrmScheme.valueOf(drm.getScheme())));
+                            drmParams.add(new PKDrmParams(drm.getLicenseURL(), getScheme(drm.getScheme())));
                         }
                         pkMediaSource.setDrmData(drmParams);
                     }
@@ -428,6 +432,22 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 }
             }
             return mediaEntry.setDuration(maxDuration).setSources(sources).setMediaType(MediaTypeConverter.toMediaEntryType(""));
+        }
+    }
+
+    public static PKDrmParams.Scheme getScheme(String scheme) {
+
+        switch (scheme) {
+            case "WIDEVINE_CENC":
+                return widevine_cenc;
+            case "PLAYREADY_CENC":
+                return playready_cenc;
+            case "WIDEVINE":
+                return widevine_classic;
+            case "PLAYREADY":
+                return playready;
+            default:
+                return null;
         }
     }
 

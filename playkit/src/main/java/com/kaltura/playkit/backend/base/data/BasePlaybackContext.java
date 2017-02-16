@@ -2,7 +2,6 @@ package com.kaltura.playkit.backend.base.data;
 
 import com.google.gson.annotations.SerializedName;
 import com.kaltura.playkit.backend.BaseResult;
-import com.kaltura.playkit.backend.ovp.data.KalturaFlavorAsset;
 import com.kaltura.playkit.backend.phoenix.PhoenixErrorHelper;
 import com.kaltura.playkit.connect.ErrorElement;
 
@@ -16,12 +15,9 @@ public class BasePlaybackContext extends BaseResult{
 
     ArrayList<KalturaRuleAction> actions;
     ArrayList<KalturaAccessControlMessage> messages;
-    ArrayList<KalturaFlavorAsset> flavorAssets;
 
     public BasePlaybackContext() {
     }
-
-
 
     public ArrayList<KalturaAccessControlMessage> getMessages() {
         return messages;
@@ -29,10 +25,6 @@ public class BasePlaybackContext extends BaseResult{
 
     public ArrayList<KalturaRuleAction> getActions() {
         return actions;
-    }
-
-    public ArrayList<KalturaFlavorAsset> getFlavorAssets() {
-        return flavorAssets;
     }
 
 

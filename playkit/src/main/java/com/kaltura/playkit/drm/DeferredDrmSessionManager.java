@@ -17,7 +17,6 @@ import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.backend.phoenix.data.DrmScheme;
 import com.kaltura.playkit.utils.EventLogger;
 
 import java.util.List;
@@ -76,7 +75,7 @@ public class DeferredDrmSessionManager<T extends ExoMediaCrypto> implements DrmS
             List<PKDrmParams> drmData = mediaSource.getDrmData();
             for (PKDrmParams pkDrmParam : drmData) {
                 // selecting widevine_cenc as default right now
-                if (DrmScheme.WIDEVINE_CENC == pkDrmParam.getScheme()) {
+                if (PKDrmParams.Scheme.widevine_cenc == pkDrmParam.getScheme()) {
                     licenseUrl = pkDrmParam.getLicenseUri();
                     break;
                 }

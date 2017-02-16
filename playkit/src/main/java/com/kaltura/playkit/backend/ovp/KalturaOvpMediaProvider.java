@@ -31,7 +31,6 @@ import com.kaltura.playkit.backend.ovp.services.BaseEntryService;
 import com.kaltura.playkit.backend.ovp.services.MetaDataService;
 import com.kaltura.playkit.backend.ovp.services.OvpService;
 import com.kaltura.playkit.backend.ovp.services.OvpSessionService;
-import com.kaltura.playkit.backend.phoenix.data.DrmScheme;
 import com.kaltura.playkit.connect.Accessories;
 import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.MultiRequestBuilder;
@@ -59,6 +58,10 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import static com.kaltura.playkit.PKDrmParams.Scheme.playready_cenc;
+import static com.kaltura.playkit.PKDrmParams.Scheme.widevine_cenc;
+import static com.kaltura.playkit.PKDrmParams.Scheme.widevine_classic;
 
 /**
  * Created by tehilarozin on 30/10/2016.
@@ -414,7 +417,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             //-> create PKMediaSource-s according to sources list provided in "getContextData" response
             for (KalturaPlaybackSource playbackSource : playbackContext.getSources()) {
-                //OV
+
                 if (!FormatsHelper.validateFormat(playbackSource)) { // only validated formats will be added to the sources.
                     continue;
                 }
@@ -476,7 +479,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 if (drmData != null) {
                     List<PKDrmParams> drmParams = new ArrayList<>();
                     for (KalturaDrmPlaybackPluginData drm : drmData) {
-                        drmParams.add(new PKDrmParams(drm.getLicenseURL(), getSchemeEnumByName(drm.getScheme())));
+                        drmParams.add(new PKDrmParams(drm.getLicenseURL(), getScheme(drm.getScheme())));
                     }
                     pkMediaSource.setDrmData(drmParams);
                 }
@@ -548,15 +551,15 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
     }
 
-    public static DrmScheme getSchemeEnumByName(String code) {
+    public static PKDrmParams.Scheme getScheme(String name) {
 
-        switch (code) {
+        switch (name) {
             case "drm.WIDEVINE_CENC":
-                return DrmScheme.WIDEVINE_CENC;
+                return widevine_cenc;
             case "drm.PLAYREADY_CENC":
-                return DrmScheme.PLAYREADY_CENC;
-            case "drm.WIDEVINE_CLASSIC":
-                return DrmScheme.WIDEVINE;
+                return playready_cenc;
+            case "widevine.WIDEVINE":
+                return widevine_classic;
             default:
                 return null;
         }

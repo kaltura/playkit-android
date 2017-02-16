@@ -24,10 +24,4 @@ public class KalturaPlaybackContext extends BasePlaybackContext{
         return flavorAssets;
     }
 
-
-
-
-
-
-
 }

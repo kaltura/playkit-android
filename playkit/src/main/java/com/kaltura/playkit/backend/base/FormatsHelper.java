@@ -2,9 +2,9 @@ package com.kaltura.playkit.backend.base;
 
 import android.support.annotation.StringDef;
 
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.backend.base.data.BasePlaybackSource;
-import com.kaltura.playkit.backend.phoenix.data.DrmScheme;
 
 import java.lang.annotation.Retention;
 import java.util.HashMap;
@@ -63,14 +63,14 @@ public class FormatsHelper {
             case FormatName.MpegDash:
                 return schemes == null ?
                         SupportedFormats.get(FormatName.MpegDash) :
-                        schemes.contains(DrmScheme.WIDEVINE_CENC.name()) ?
+                        schemes.contains(PKDrmParams.Scheme.widevine_cenc.name()) ?
                                 SupportedFormats.get(FormatName.MpegDashDrm) :
                                 null;
 
             case FormatName.Url:
                 return schemes == null ?
                         SupportedFormats.get(FormatName.Url) :
-                        schemes.contains(DrmScheme.WIDEVINE.name()) ?
+                        schemes.contains(PKDrmParams.Scheme.widevine_classic.name()) ?
                                 SupportedFormats.get(FormatName.UrlDrm) :
                                 null;
 
@@ -78,7 +78,7 @@ public class FormatsHelper {
                 return schemes == null ?
                         SupportedFormats.get(FormatName.AppleHttp) :
                         null;
-                        /*!schemes.contains(DrmScheme.FAIRPLAY.name()) ?
+                        /*!schemes.contains(PKDrmParams.Scheme.FAIRPLAY.name()) ?
                                 SupportedFormats.get(FormatName.UrlDrm) :
                                 null;*/
 

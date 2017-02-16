@@ -40,6 +40,8 @@ public class PlayerController implements Player {
 
     private PKEvent.Listener eventListener;
 
+    private boolean isNewEntry = true;
+
     public void setEventListener(PKEvent.Listener eventListener) {
         this.eventListener = eventListener;
     }
@@ -64,7 +66,7 @@ public class PlayerController implements Player {
                 switch (eventType) {
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
-                        if(getDuration() != Consts.TIME_UNSET){
+                        if(getDuration() != Consts.TIME_UNSET && isNewEntry){
                             startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                         }
                         break;
@@ -148,6 +150,7 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
+        isNewEntry = isPrepareNewEntry(mediaConfig);
         this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
@@ -168,6 +171,17 @@ public class PlayerController implements Player {
         }
 
         player.load(source);
+    }
+
+    private boolean isPrepareNewEntry(PlayerConfig.Media mediaConfig) {
+
+        if(this.mediaConfig != null){
+            String oldEntryId = this.mediaConfig.getMediaEntry().getId();
+            String newEntryId = mediaConfig.getMediaEntry().getId();
+            return !oldEntryId.equals(newEntryId);
+        }else{
+            return true;
+        }
     }
 
     @Override
