@@ -342,7 +342,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                         return;
                     }
                     adsManager.init(renderingSettings);
-                    sendCuePointsUpdate();
                     isInitWaiting = false;
                 }
 
@@ -360,7 +359,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 adManagerInitDuringBackground = true;
             } else {
                 adsManager.init(renderingSettings);
-                sendCuePointsUpdate();
             }
         } else{
             isInitWaiting = true;
@@ -537,6 +535,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 break;
             case STARTED:
                 log.d("AD STARTED");
+                sendCuePointsUpdate();
                 isAdDisplayed = true;
                 isAdIsPaused = false;
                 if (adsManager != null && appIsInBackground) {
