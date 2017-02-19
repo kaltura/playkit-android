@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Base64;
@@ -26,6 +28,8 @@ public class LocalAssetsManager {
 
     private final Context context;
     private LocalDataStore localDataStore;
+    
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
 
     /**
      * Listener that notify about the result when registration flow is ended.
@@ -111,10 +115,15 @@ public class LocalAssetsManager {
                         String licenseUri = drmParams.getLicenseUri();
                         drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, listener);
 
-                    } catch (IOException e) {
+                    } catch (final IOException e) {
                         log.e("Error", e);
                         if (listener != null) {
-                            listener.onFailed(localAssetPath, e);
+                            mainHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    listener.onFailed(localAssetPath, e);
+                                }
+                            });
                         }
                     }
                 }
@@ -157,7 +166,17 @@ public class LocalAssetsManager {
         doInBackground(new Runnable() {
             @Override
             public void run() {
-                drmAdapter.unregisterAsset(localAssetPath, assetId, listener);
+                drmAdapter.unregisterAsset(localAssetPath, assetId, new AssetRemovalListener() {
+                    @Override
+                    public void onRemoved(final String localAssetPath) {
+                        mainHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onRemoved(localAssetPath);
+                            }
+                        });
+                    }
+                });
             }
         });
     }
@@ -194,7 +213,19 @@ public class LocalAssetsManager {
         doInBackground(new Runnable() {
             @Override
             public void run() {
-                drmAdapter.checkAssetStatus(localAssetPath, assetId, listener);
+                drmAdapter.checkAssetStatus(localAssetPath, assetId, new AssetStatusListener() {
+                    @Override
+                    public void onStatus(final String localAssetPath, final long expiryTimeSeconds, final long availableTimeSeconds, final boolean isRegistered) {
+                        if (listener != null) {
+                            mainHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    listener.onStatus(localAssetPath, expiryTimeSeconds, availableTimeSeconds, isRegistered);
+                                }
+                            });
+                        }
+                    }
+                });
             }
         });
     }
