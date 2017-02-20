@@ -535,13 +535,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 break;
             case STARTED:
                 log.d("AD STARTED");
-                sendCuePointsUpdate();
                 isAdDisplayed = true;
                 isAdIsPaused = false;
                 if (adsManager != null && appIsInBackground) {
                     adsManager.pause();
                 }
-                adInfo = createAdInfo(adEvent.getAd());
+                adInfo = createAdInfo(adEvent.getAd(), new AdCuePoints(getAdCuePoints()));
                 messageBus.post(new AdEvent.AdStartedEvent(adInfo));
                 break;
             case PAUSED:
@@ -649,7 +648,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         return adCuePoints;
     }
 
-    private AdInfo createAdInfo(Ad ad) {
+    private AdInfo createAdInfo(Ad ad, AdCuePoints adCuePoints) {
         String adDescription      = ad.getDescription();
         long adDuration           = (long)(ad.getDuration() * Consts.MILLISECONDS_MULTIPLIER);
         String adTitle            = ad.getTitle();
@@ -664,6 +663,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         long adPodTimeOffset      = (long)(ad.getAdPodInfo().getTimeOffset() * Consts.MILLISECONDS_MULTIPLIER);
 
 
+
         AdInfo adInfo =  new AdInfo(adDescription, adDuration,
                 adTitle, isAdSkippable,
                 contentType, adId,
@@ -671,7 +671,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 adWidth,
                 adPodCount,
                 adPodPosition,
-                adPodTimeOffset);
+                adPodTimeOffset,
+                adCuePoints);
 
         log.v("AdInfo: " + adInfo.toString());
         return adInfo;
