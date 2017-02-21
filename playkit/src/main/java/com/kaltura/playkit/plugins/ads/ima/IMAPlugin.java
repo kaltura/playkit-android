@@ -543,19 +543,20 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 if (adsManager != null && appIsInBackground) {
                     adsManager.pause();
                 }
-                final com.google.ads.interactivemedia.v3.api.AdEvent finalAdEvent = (com.google.ads.interactivemedia.v3.api.AdEvent) adEvent;
-                Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        log.d("AD STARTED TRIGGERED WITH DELAY");
-                        if (adTagCuePoints == null) {
+                adInfo = createAdInfo(adEvent.getAd());
+                messageBus.post(new AdEvent.AdStartedEvent(adInfo));
+
+                if (adTagCuePoints == null) {
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            log.d("AD CUEPOINTS CHANGED TRIGGERED WITH DELAY");
                             adTagCuePoints = new AdCuePoints(getAdCuePoints());
+                            messageBus.post(new AdEvent.AdCuePointsUpdateEvent(adTagCuePoints));
                         }
-                        adInfo = createAdInfo(finalAdEvent.getAd(), adTagCuePoints);
-                        messageBus.post(new AdEvent.AdStartedEvent(adInfo));
-                    }
-                }, IMAConfig.DEFAULT_AD_STARTED_DELAY);
+                    }, IMAConfig.DEFAULT_QUEUE_POINTS_CHANGED_DELAY);
+                }
                 break;
             case PAUSED:
                 log.d("AD PAUSED");
@@ -666,7 +667,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         return adCuePoints;
     }
 
-    private AdInfo createAdInfo(Ad ad, AdCuePoints adCuePoints) {
+    private AdInfo createAdInfo(Ad ad) {
         String adDescription      = ad.getDescription();
         long adDuration           = (long)(ad.getDuration() * Consts.MILLISECONDS_MULTIPLIER);
         String adTitle            = ad.getTitle();
@@ -689,8 +690,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 adWidth,
                 adPodCount,
                 adPodPosition,
-                adPodTimeOffset,
-                adCuePoints);
+                adPodTimeOffset);
 
         log.v("AdInfo: " + adInfo.toString());
         return adInfo;
