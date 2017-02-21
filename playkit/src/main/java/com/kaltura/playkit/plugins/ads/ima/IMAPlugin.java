@@ -308,7 +308,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             adsLoadedListener = null;
             adsLoader = null;
         }
-
+        sdkFactory = null;
+        imaSdkSettings = null;
     }
 
     ////////Ads Plugin
