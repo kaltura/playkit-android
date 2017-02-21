@@ -350,6 +350,9 @@ public class PlayerController implements Player {
         }
 
         String oldEntryId = this.mediaConfig.getMediaEntry().getId();
+        if(oldEntryId == null){
+            return true;
+        }
         String newEntryId = mediaConfig.getMediaEntry().getId();
         return !oldEntryId.equals(newEntryId);
     }
