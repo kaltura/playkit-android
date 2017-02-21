@@ -82,6 +82,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private ImaSdkSettings imaSdkSettings;
     private AdsManager adsManager;
     private AdsRenderingSettings renderingSettings;
+    private AdCuePoints adTagCuePoints;
     // Whether an ad is displayed.
     private boolean isAdDisplayed;
     private boolean isAdIsPaused;
@@ -295,7 +296,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     @Override
     protected void onDestroy() {
         log.d("IMA Start onDestroy");
-
+        adTagCuePoints = null;
         if (adsManager != null) {
             adsManager.destroy();
             adsManager = null;
@@ -547,7 +548,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     @Override
                     public void run() {
                         log.d("AD STARTED TRIGGERED WITH DELAY");
-                        adInfo = createAdInfo(finalAdEvent.getAd(), new AdCuePoints(getAdCuePoints()));
+                        if (adTagCuePoints == null) {
+                            adTagCuePoints = new AdCuePoints(getAdCuePoints());
+                        }
+                        adInfo = createAdInfo(finalAdEvent.getAd(), adTagCuePoints);
                         messageBus.post(new AdEvent.AdStartedEvent(adInfo));
                     }
                 }, IMAConfig.DEFAULT_AD_STARTED_DELAY);
@@ -644,8 +648,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     private List<Long> getAdCuePoints() {
         List<Long> adCuePoints = new ArrayList<>();
+        if (adsManager == null) {
+            return adCuePoints;
+        }
+
         List<Float> adCuePointsFloat = adsManager.getAdCuePoints();
-        if (adsManager != null && adCuePointsFloat != null) {
+        if (adCuePointsFloat != null) {
             for (Float cuePoint : adCuePointsFloat) {
                 if (cuePoint >= 0) {
                     adCuePoints.add(cuePoint.longValue() * Consts.MILLISECONDS_MULTIPLIER);
