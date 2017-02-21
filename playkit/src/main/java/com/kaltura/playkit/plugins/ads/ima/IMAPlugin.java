@@ -555,7 +555,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                             adTagCuePoints = new AdCuePoints(getAdCuePoints());
                             messageBus.post(new AdEvent.AdCuePointsUpdateEvent(adTagCuePoints));
                         }
-                    }, IMAConfig.DEFAULT_QUEUE_POINTS_CHANGED_DELAY);
+                    }, IMAConfig.DEFAULT_CUE_POINTS_CHANGED_DELAY);
                 }
                 break;
             case PAUSED:
