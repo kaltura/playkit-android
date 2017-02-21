@@ -2,6 +2,7 @@ package com.kaltura.playkit.plugins.ads.ima;
 
 import android.content.Context;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.view.ViewGroup;
 
 import com.google.ads.interactivemedia.v3.api.Ad;
@@ -540,8 +541,16 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 if (adsManager != null && appIsInBackground) {
                     adsManager.pause();
                 }
-                adInfo = createAdInfo(adEvent.getAd(), new AdCuePoints(getAdCuePoints()));
-                messageBus.post(new AdEvent.AdStartedEvent(adInfo));
+                final com.google.ads.interactivemedia.v3.api.AdEvent finalAdEvent = (com.google.ads.interactivemedia.v3.api.AdEvent) adEvent;
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        log.d("AD STARTED TRIGGERED WITH DELAY");
+                        adInfo = createAdInfo(finalAdEvent.getAd(), new AdCuePoints(getAdCuePoints()));
+                        messageBus.post(new AdEvent.AdStartedEvent(adInfo));
+                    }
+                }, IMAConfig.DEFAULT_AD_STARTED_DELAY);
                 break;
             case PAUSED:
                 log.d("AD PAUSED");
