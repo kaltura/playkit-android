@@ -252,15 +252,6 @@ public class LocalAssetsManager {
     }
 
     /**
-     * check the passed object for null.
-     * @param obj - object to check.
-     * @param name - the descriptive name of the object.
-     */
-    private void checkNotNull(Object obj, String name) {
-        checkArg(obj == null, name + " must not be null");
-    }
-
-    /**
      * check the passed String.
      * @param obj - String to check.
      * @param name - the descriptive name of the String.
@@ -298,7 +289,7 @@ public class LocalAssetsManager {
          * @param localPath - the local url of the media.
          * @param assetId - the id of the media.
          */
-        public LocalMediaSource(LocalDataStore localDataStore, String localPath, String assetId) {
+        LocalMediaSource(LocalDataStore localDataStore, String localPath, String assetId) {
             setId(assetId);
             setUrl(localPath);
             this.localDataStore = localDataStore;

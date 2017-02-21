@@ -36,7 +36,7 @@ public class PlayerController implements Player {
     private Context context;
     private PlayerView rootPlayerView;
 
-    private PlayerConfig.Media mediaConfig;
+    private PlayerConfig.Media mediaConfig = null;
 
     private PKEvent.Listener eventListener;
     private PlayerView playerEngineView;
@@ -67,7 +67,7 @@ public class PlayerController implements Player {
                 switch (eventType) {
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
-                        if(getDuration() != Consts.TIME_UNSET && isNewEntry){
+                        if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
                             startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                         }
                         break;
@@ -152,7 +152,7 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
-        isNewEntry = isPrepareNewEntry(mediaConfig);
+        isNewEntry = isNewEntry(mediaConfig);
         this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
@@ -179,19 +179,6 @@ public class PlayerController implements Player {
         player.load(source);
     }
 
-    private boolean isPrepareNewEntry(PlayerConfig.Media mediaConfig) {
-        if (this.mediaConfig == null || mediaConfig == null) {
-            return true;
-        }
-        if(this.mediaConfig.getMediaEntry() != null && this.mediaConfig.getMediaEntry().getId() != null &&
-                mediaConfig.getMediaEntry()      != null && mediaConfig.getMediaEntry().getId()      != null){
-            String oldEntryId = this.mediaConfig.getMediaEntry().getId();
-            String newEntryId = mediaConfig.getMediaEntry().getId();
-            return !oldEntryId.equals(newEntryId);
-        }else{
-            return true;
-        }
-    }
 
     @Override
     public void destroy() {
@@ -366,6 +353,19 @@ public class PlayerController implements Player {
         }
 
         player.changeTrack(uniqueId);
+    }
+
+    private boolean isNewEntry(PlayerConfig.Media mediaConfig) {
+        if (this.mediaConfig == null) {
+            return true;
+        }
+
+        String oldEntryId = this.mediaConfig.getMediaEntry().getId();
+        if(oldEntryId == null){
+            return true;
+        }
+        String newEntryId = mediaConfig.getMediaEntry().getId();
+        return !oldEntryId.equals(newEntryId);
     }
 
     private boolean maybeHandleExceptionLocally(PlayerEvent.ExceptionInfo exceptionInfo) {
