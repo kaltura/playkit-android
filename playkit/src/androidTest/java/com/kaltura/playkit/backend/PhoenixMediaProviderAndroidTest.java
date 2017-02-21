@@ -128,12 +128,14 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     @Test
     public void testResponseParsing() {
 
+        latchCount = 0;
         phoenixMediaProvider = new PhoenixMediaProvider().setSessionProvider(ksSessionProvider).
-                setAssetId(MediaId).setAssetType(APIDefines.KalturaAssetType.Media).setFormats(FormatSD).setRequestExecutor(testExecutor);
+                setAssetId(MediaId).setAssetType(APIDefines.KalturaAssetType.Media).setFormats(FormatSD)/*.setRequestExecutor(testExecutor)*/;
+        latchCount++;
         phoenixMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
-
+latchCount--;
                 assertTrue(response.isSuccess());
                 assertTrue(response.getResponse() != null);
                 assertTrue(response.getResponse().getId().equals(MediaId));
@@ -141,7 +143,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                 assertTrue(response.getResponse().getDuration() == 2237);
                 // currently is unknown on phoenix since we don't have that information easily:
                 assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
-
+latchCount++;
                 phoenixMediaProvider.setAssetId(MediaId5).setFormats(FormatHD, FormatSD).setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
                     @Override
                     public void onComplete(ResultElement<PKMediaEntry> response) {
@@ -157,13 +159,13 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                         }
 
                         PhoenixMediaProviderAndroidTest.this.resume();
-
+latchCount--;
                     }
                 });
             }
         });
 
-        wait(1);
+        wait(latchCount);
 
     }
 

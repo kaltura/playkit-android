@@ -1,16 +1,11 @@
 package com.kaltura.playkit.backend.base;
 
-import android.support.annotation.StringDef;
-
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.backend.base.data.BasePlaybackSource;
 
-import java.lang.annotation.Retention;
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
  * Created by tehilarozin on 13/02/2017.
@@ -18,68 +13,86 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 public class FormatsHelper {
 
-    @Retention(SOURCE)
-    @StringDef(value = {FormatName.MpegDash, FormatName.MpegDashDrm, FormatName.AppleHttp,
-            FormatName.Url, FormatName.UrlDrm})
-    public @interface FormatName {
-        String MpegDash = "mpegdash";
-        String MpegDashDrm = "mpegdash+drm";
-        String AppleHttp = "applehttp";
-        String Url = "url";
-        String UrlDrm = "url+drm";
+    public enum StreamFormat {
+        MpegDash("mpegdash"),
+        MpegDashDrm("mpegdash+drm"),
+        AppleHttp("applehttp"),
+        Url("url"),
+        UrlDrm("url+drm"),
+        Unknown;
+
+        StreamFormat(){}
+
+        StreamFormat(String name){
+            this.formatName = name;
+        }
+
+        public String formatName = "";
+
+        public static StreamFormat byValue(String value) {
+            for(StreamFormat streamFormat : values()){
+                if(streamFormat.formatName.equals(value)){
+                    return streamFormat;
+                }
+            }
+            return Unknown;
+        }
     }
 
     /**
      * to map BE format name to the matching format element in the {@link PKMediaFormat} enumeration.
      */
-    private static final Map<String, PKMediaFormat> SupportedFormats = new HashMap<String, PKMediaFormat>() {{
-        put(FormatName.MpegDash, PKMediaFormat.dash_clear);
-        put(FormatName.MpegDashDrm, PKMediaFormat.dash_drm);
-        put(FormatName.AppleHttp, PKMediaFormat.hls_clear);
-        put(FormatName.Url, PKMediaFormat.mp4_clear);
-        put(FormatName.UrlDrm, PKMediaFormat.wvm_widevine);
+    private static final Map<StreamFormat, PKMediaFormat> SupportedFormats = new HashMap<StreamFormat, PKMediaFormat>() {{
+        put(StreamFormat.MpegDash, PKMediaFormat.dash_clear);
+        put(StreamFormat.MpegDashDrm, PKMediaFormat.dash_drm);
+        put(StreamFormat.AppleHttp, PKMediaFormat.hls_clear);
+        put(StreamFormat.Url, PKMediaFormat.mp4_clear);
+        put(StreamFormat.UrlDrm, PKMediaFormat.wvm_widevine);
     }};
 
-    public static Map<String, PKMediaFormat> getSupportedFormats() {
+    public static Map<StreamFormat, PKMediaFormat> getSupportedFormats() {
         return SupportedFormats;
     }
 
     // in the future we may need to check the schemes provided in the drm list and decide if scheme is supported.
     public static PKMediaFormat getPKMediaFormat(String format, boolean hasDrm) {
-        switch (format) {
-            case FormatName.MpegDash:
-                return hasDrm ? SupportedFormats.get(FormatName.MpegDashDrm) : SupportedFormats.get(FormatName.MpegDash);
-            case FormatName.Url:
-                return hasDrm ? SupportedFormats.get(FormatName.UrlDrm) : SupportedFormats.get(FormatName.Url);
-            case FormatName.AppleHttp:
-                return hasDrm ? null : SupportedFormats.get(FormatName.AppleHttp);
+
+        StreamFormat streamFormat = StreamFormat.byValue(format);
+        switch (streamFormat) {
+            case MpegDash:
+                return hasDrm ? SupportedFormats.get(StreamFormat.MpegDashDrm) : SupportedFormats.get(StreamFormat.MpegDash);
+            case Url:
+                return hasDrm ? SupportedFormats.get(StreamFormat.UrlDrm) : SupportedFormats.get(StreamFormat.Url);
+            case AppleHttp:
+                return hasDrm ? null : SupportedFormats.get(StreamFormat.AppleHttp);
         }
         return null;
     }
 
     // for future use
     public static PKMediaFormat getPKMediaFormat(String format, String schemes) {
-        switch (format) {
-            case FormatName.MpegDash:
+        StreamFormat streamFormat = StreamFormat.byValue(format);
+        switch (streamFormat) {
+            case MpegDash:
                 return schemes == null ?
-                        SupportedFormats.get(FormatName.MpegDash) :
+                        SupportedFormats.get(StreamFormat.MpegDash) :
                         schemes.contains(PKDrmParams.Scheme.widevine_cenc.name()) ?
-                                SupportedFormats.get(FormatName.MpegDashDrm) :
+                                SupportedFormats.get(StreamFormat.MpegDashDrm) :
                                 null;
 
-            case FormatName.Url:
+            case Url:
                 return schemes == null ?
-                        SupportedFormats.get(FormatName.Url) :
+                        SupportedFormats.get(StreamFormat.Url) :
                         schemes.contains(PKDrmParams.Scheme.widevine_classic.name()) ?
-                                SupportedFormats.get(FormatName.UrlDrm) :
+                                SupportedFormats.get(StreamFormat.UrlDrm) :
                                 null;
 
-            case FormatName.AppleHttp:
+            case AppleHttp:
                 return schemes == null ?
-                        SupportedFormats.get(FormatName.AppleHttp) :
+                        SupportedFormats.get(StreamFormat.AppleHttp) :
                         null;
                         /*!schemes.contains(PKDrmParams.Scheme.FAIRPLAY.name()) ?
-                                SupportedFormats.get(FormatName.UrlDrm) :
+                                SupportedFormats.get(StreamFormat.UrlDrm) :
                                 null;*/
 
             default:return null;

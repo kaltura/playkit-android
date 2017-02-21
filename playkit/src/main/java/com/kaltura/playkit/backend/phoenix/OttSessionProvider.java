@@ -2,6 +2,7 @@ package com.kaltura.playkit.backend.phoenix;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Base64;
 import android.util.Log;
 
 import com.kaltura.playkit.OnCompletion;
@@ -50,7 +51,7 @@ public class OttSessionProvider extends BaseSessionProvider {
      * @param udid
      */
     public void startAnonymousSession(@Nullable String udid, final OnCompletion<PrimitiveResult> completion) {
-        this.sessionParams = new OttSessionParams().setUdid(udid);
+        this.sessionParams = new OttSessionParams().setAnonymous().setUdid(udid);
 
         MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
         multiRequest.add(OttUserService.anonymousLogin(apiBaseUrl, partnerId, udid),
@@ -90,6 +91,12 @@ public class OttSessionProvider extends BaseSessionProvider {
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
     }
 
+    public void startSession(@NonNull String ks, String refreshToken, String userId, String udid){
+        this.sessionParams = new OttSessionParams().setUdid(udid);
+        this.refreshToken = refreshToken;
+        this.setSession(ks, -1, userId);
+        refreshSessionToken();
+    }
 
     /*
     * !! in case the ks expired we need to relogin
@@ -147,12 +154,15 @@ public class OttSessionProvider extends BaseSessionProvider {
         if (sessionParams != null) {
             if (sessionParams.username != null) {
                 startSession(sessionParams.username, sessionParams.password, sessionParams.udid, completion);
-            } else {
+            } else if(getUserSessionType().equals(UserSessionType.Anonymous) /*sessionParams.isAnonymous*/) {
                 startAnonymousSession(sessionParams.udid, completion);
-            }
+            } // ?? in case session with no user credential expires, should we login as anonymous or return empty ks?
+
         } else {
-            Log.e(TAG, "Session was ended or failed to start when this was called.\nCan't recover session if not started before");
-            completion.onComplete(new PrimitiveResult().error(ErrorElement.SessionError.message("Session expired")));
+            Log.e(TAG, "sessionParams are not available can't create/renew session.");
+            //Log.e(TAG, "Session was ended or failed to start when this was called.\nCan't recover session if not started before");
+            //completion.onComplete(new PrimitiveResult().error(ErrorElement.SessionError.message("Session expired")));
+            completion.onComplete(new PrimitiveResult(""));
         }
     }
 
@@ -220,18 +230,14 @@ public class OttSessionProvider extends BaseSessionProvider {
         long timeLeft = expiryDate - currentDate;
 
         String token = null;
-        if (timeLeft > 0) {
+        if (timeLeft > 0) { // validate refreshToken expiration time
             token = getSessionToken();
 
             if (timeLeft < refreshDelta) {
                 // call refreshToken
                 refreshSessionToken();
             }
-        } /*else { // token expired - we need to relogin
-            //call re-login (renewSession)
-            renewSession(null);
         }
-*/
         return token;
     }
 
@@ -248,11 +254,11 @@ public class OttSessionProvider extends BaseSessionProvider {
                     public void onComplete(ResponseElement response) {
                         if (response != null && response.isSuccess()) {
                             List<BaseResult> responses = PhoenixParser.parse(response.getResponse());
-                            if (responses.get(0).error != null) { // refresh success
+                            if (responses.get(0).error != null) {
                                 PKLog.e(TAG, "failed to refresh session. token may be invalid and cause ");
                                 // session may have still time before it expires so actually if fails, do nothing.
 
-                            } else {
+                            } else {// refresh success
                                 KalturaLoginSession loginSession = (KalturaLoginSession) responses.get(0);
                                 refreshToken = loginSession.getRefreshToken();
 
@@ -286,11 +292,24 @@ public class OttSessionProvider extends BaseSessionProvider {
         refreshDelta = (expiry - currentDate) * DeltaPercent / 100; // 20% of total validation time
     }
 
+    public String storalizeSession(){
+        StringBuilder data = new StringBuilder(getSessionToken()).append("[]")
+                .append(refreshToken).append("[]").append(sessionParams.udid());
 
-    class OttSessionParams {
-        private String udid;
+        return Base64.encodeToString(data.toString().getBytes(), Base64.NO_WRAP);
+    }
+
+    public void recoverSession(String sessionData){
+        String decrypt = new String(Base64.decode(sessionData, Base64.NO_WRAP));
+        String[] data = decrypt.split("$$");
+        startSession(data[0], data[1], "1", data[2]);
+    }
+
+    private class OttSessionParams {
+        private String udid = "";
         private String username;
         private String password;
+        private boolean isAnonymous;
 
         public String udid() {
             return udid;
@@ -316,6 +335,11 @@ public class OttSessionProvider extends BaseSessionProvider {
 
         public OttSessionParams setPassword(String password) {
             this.password = password;
+            return this;
+        }
+
+        public OttSessionParams setAnonymous() {
+            this.isAnonymous = true;
             return this;
         }
     }

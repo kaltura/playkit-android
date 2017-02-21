@@ -83,6 +83,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
         return this;
     }
 
+    //change default request config
     private OkHttpClient getOkClient(RequestConfiguration configuration){
         if(configuration != null) {
             OkHttpClient.Builder builder = configClient(getOkClient().newBuilder(), configuration);
@@ -91,6 +92,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
         return mOkClient;
     }
 
+    //create okClient with default config
     private OkHttpClient getOkClient(){
         if(mOkClient == null){
             mOkClient = configClient(new OkHttpClient.Builder()

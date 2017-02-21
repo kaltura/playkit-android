@@ -50,4 +50,23 @@ public class Utils {
     public static boolean isNullOrEmpty( final Collection< ? > c ) {
         return c == null || c.isEmpty();
     }
+
+
+    public static <E extends Enum<E>> E byValue(Class<E> EClass, String enumValue) {
+        return byValue(EClass, enumValue, null);
+    }
+
+    public static <E extends Enum<E>> E byValue(Class<E> EClass, String enumValue, E defaultOption) {
+
+        try{
+            return Enum.valueOf(EClass, enumValue);
+        } catch (IllegalArgumentException e){
+            if(defaultOption != null) {
+                return defaultOption;
+            }
+        }
+        return null;
+    }
+
+
 }

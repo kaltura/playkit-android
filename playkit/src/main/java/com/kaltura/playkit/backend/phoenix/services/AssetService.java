@@ -14,12 +14,12 @@ import java.util.List;
 
 public class AssetService extends PhoenixService {
 
-    public static PhoenixRequestBuilder get(String baseUrl, String ks, String assetId, @APIDefines.AssetReferenceType String referenceType) {
+    public static PhoenixRequestBuilder get(String baseUrl, String ks, String assetId, APIDefines.AssetReferenceType referenceType) {
         JsonObject params = new JsonObject();
         params.addProperty("ks", ks);
         params.addProperty("id", assetId);
-        params.addProperty("assetReferenceType", referenceType);
-        params.addProperty("type", referenceType); // sometimes request expect type as property sometimes assetReferenceType
+        params.addProperty("assetReferenceType", referenceType.value);
+        params.addProperty("type", referenceType.value); // sometimes request expect type as property sometimes assetReferenceType
         // needed to make sure response will retrieve the media file no matter if apiVersion property supplied or not
         params.addProperty("with","[{\"type\": \"files\"}]");
 
@@ -42,12 +42,12 @@ public class AssetService extends PhoenixService {
      * @return
      */
     public static PhoenixRequestBuilder getPlaybackContext(String baseUrl, String ks, String assetId,
-                           @APIDefines.KalturaAssetType String assetType, KalturaPlaybackContextOptions contextOptions){
+                           APIDefines.KalturaAssetType assetType, KalturaPlaybackContextOptions contextOptions){
 
         JsonObject params = new JsonObject();
         params.addProperty("ks", ks);
         params.addProperty("assetId", assetId);
-        params.addProperty("assetType", assetType);
+        params.addProperty("assetType", assetType.value);
         params.add("contextDataParams", contextOptions != null ? contextOptions.toJson() : new JsonObject());
 
         return new PhoenixRequestBuilder()
@@ -62,11 +62,11 @@ public class AssetService extends PhoenixService {
 
     public static class KalturaPlaybackContextOptions{
 
-        private String context;
+        private APIDefines.PlaybackContextType context;
         private String protocol;
         private String assetFileIds;
 
-        public KalturaPlaybackContextOptions(@APIDefines.PlaybackContextType String context){
+        public KalturaPlaybackContextOptions(APIDefines.PlaybackContextType context){
             this.context = context;
         }
 
@@ -87,8 +87,8 @@ public class AssetService extends PhoenixService {
 
         public JsonObject toJson(){
             JsonObject params = new JsonObject();
-            if(!TextUtils.isEmpty(context)) {
-                params.addProperty("context", context);
+            if(context != null) {
+                params.addProperty("context", context.value);
             }
 
             if(!TextUtils.isEmpty(protocol)) {

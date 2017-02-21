@@ -510,8 +510,8 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                     //-> create PKMediaSource for every predefine extension:
                     //Collection<PKMediaFormat> extensions = FormatsHelper.getSupportedExtensions();
 
-                    for (Map.Entry<String, PKMediaFormat> mediaFormatEntry : FormatsHelper.getSupportedFormats().entrySet()/*extensions*/) {
-                        String formatName = mediaFormatEntry.getKey();//FormatsHelper.getFormatNameByMediaFormat(mediaFormat);
+                    for (Map.Entry<FormatsHelper.StreamFormat, PKMediaFormat> mediaFormatEntry : FormatsHelper.getSupportedFormats().entrySet()/*extensions*/) {
+                        String formatName = mediaFormatEntry.getKey().formatName;//FormatsHelper.getFormatNameByMediaFormat(mediaFormat);
                         String playUrl = new PlaySourceUrlBuilder()
                                 .setEntryId(entry.getId())
                                 .setFlavorIds(flavorIds.toString())

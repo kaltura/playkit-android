@@ -72,9 +72,9 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         public String assetId;
 
-        public @APIDefines.KalturaAssetType String assetType;
+        public APIDefines.KalturaAssetType assetType;
 
-        public @APIDefines.PlaybackContextType String contextType;
+        public APIDefines.PlaybackContextType contextType;
 
         public List<String> formats;
 
@@ -121,7 +121,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
      * @param assetType - can be one of the following types {@link com.kaltura.playkit.backend.phoenix.APIDefines.KalturaAssetType}
      * @return
      */
-    public PhoenixMediaProvider setAssetType(@NonNull @APIDefines.KalturaAssetType String assetType){
+    public PhoenixMediaProvider setAssetType(@NonNull APIDefines.KalturaAssetType assetType){
         this.mediaAsset.assetType = assetType;
         return this;
     }
@@ -132,7 +132,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
      * @param contextType - can be one of the following types {@link com.kaltura.playkit.backend.phoenix.APIDefines.PlaybackContextType}
      * @return
      */
-    public PhoenixMediaProvider setContextType(@NonNull @APIDefines.PlaybackContextType String contextType){
+    public PhoenixMediaProvider setContextType(@NonNull APIDefines.PlaybackContextType contextType){
         this.mediaAsset.contextType = contextType;
         return this;
     }
@@ -193,10 +193,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         } else {
 
             //set Defaults if not provided:
-            if (TextUtils.isEmpty(mediaAsset.assetType)) {
+            if (mediaAsset.assetType == null) {
                 mediaAsset.assetType = APIDefines.KalturaAssetType.Media;
             }
-            if (TextUtils.isEmpty(mediaAsset.contextType)) {
+            if (mediaAsset.contextType == null) {
                 mediaAsset.contextType = APIDefines.PlaybackContextType.Playback;
             }
         }
