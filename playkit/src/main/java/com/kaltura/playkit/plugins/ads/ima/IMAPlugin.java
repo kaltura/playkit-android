@@ -297,6 +297,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     protected void onDestroy() {
         log.d("IMA Start onDestroy");
         adTagCuePoints = null;
+        adPlaybackCancelled = false;
         if (adsManager != null) {
             adsManager.destroy();
             adsManager = null;
@@ -698,7 +699,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     public void onAdError(AdErrorEvent adErrorEvent) {
-
 
         log.e("Ad Error: " + adErrorEvent.getError().getErrorCode().name() + " " + adErrorEvent.getError().getMessage());
         isAdRequested = true;
