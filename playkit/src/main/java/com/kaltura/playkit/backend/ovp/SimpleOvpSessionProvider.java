@@ -12,17 +12,18 @@ import com.kaltura.playkit.backend.SessionProvider;
  * renew, validate, clear) a session. The application is expected to provide a valid KS, which it 
  * can update as required by calling {@link #setKs(String)}.
  * For some use cases, the KS can be null (anonymous media playback, if allowed by access-control).
- * <p>
+ *
  * Basic usage with a {@link KalturaOvpMediaProvider}:
- * <pre>
- * {@code
+ *
+ * Example:
+ *
  *      new KalturaOvpMediaProvider()
  *          .setSessionProvider(new SimpleOvpSessionProvider("https://cdnapisec.kaltura.com", 1851571, null))
  *          .setEntryId("0_pl5lbfo0")
  *          .load(completion);
- * }
- * </pre>
- * </p>
+ *
+ *
+ * 
  */
 public class SimpleOvpSessionProvider implements SessionProvider {
 
