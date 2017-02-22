@@ -1,5 +1,6 @@
 package com.kaltura.playkit.backend.phoenix;
 
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Base64;
@@ -24,6 +25,12 @@ import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.ResponseElement;
 
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by tehilarozin on 27/11/2016.
@@ -34,15 +41,67 @@ public class OttSessionProvider extends BaseSessionProvider {
     public static final long TimeDelta = 2 * 60 * 60;//hour in seconds
     private static final String TAG = "BaseResult";
     public static final int DeltaPercent = 12;
+    public static final long IMMEDIATE_REFRESH = 0;
+    public static final String DummyUserId = "1";
 
     private OttSessionParams sessionParams;
     private String refreshToken;
     private long refreshDelta = 9 * 60 * 60 * 24;//TimeDelta;
     private int partnerId = 0;
 
+    private ScheduledFuture<?> scheduledRefreshTask;
+    private ScheduledThreadPoolExecutor refreshScheduleExecutor;
+    private AtomicBoolean refreshInProgress;
+
+    //region refresh callable
+    private Callable<Boolean> refreshCallable = new Callable<Boolean>() {
+
+        @Override
+        public Boolean call() throws Exception {
+            if(refreshToken == null){
+                Log.d(TAG, "refreshToken is not available, can't activate refresh");
+                return false;
+            }
+
+            if(refreshInProgress.get()){
+                Log.d(TAG, "refresh already in progress");
+                return false;
+            }
+
+            PKLog.d(TAG, "start running refresh token");
+
+
+            if(scheduledRefreshTask != null && scheduledRefreshTask.isCancelled()){
+                scheduledRefreshTask = null;
+                PKLog.d(TAG, "refresh operation got canceled");
+                return false;
+            }
+
+            refreshInProgress.set(true);
+
+            refreshSessionToken();
+            return true;
+        }
+    };
+    //endregion
+
+
     public OttSessionProvider(String baseUrl, int partnerId) {
         super(baseUrl, "");
         this.partnerId = partnerId;
+
+        initRefreshExecutor();
+    }
+
+    private void initRefreshExecutor() {
+        refreshScheduleExecutor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(2);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            refreshScheduleExecutor.setRemoveOnCancelPolicy(true);
+        }
+        refreshScheduleExecutor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+        refreshScheduleExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+        refreshScheduleExecutor.setKeepAliveTime(10, TimeUnit.SECONDS);
     }
 
     /**
@@ -51,7 +110,7 @@ public class OttSessionProvider extends BaseSessionProvider {
      * @param udid
      */
     public void startAnonymousSession(@Nullable String udid, final OnCompletion<PrimitiveResult> completion) {
-        this.sessionParams = new OttSessionParams().setAnonymous().setUdid(udid);
+        this.sessionParams = new OttSessionParams().setUdid(udid);
 
         MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
         multiRequest.add(OttUserService.anonymousLogin(apiBaseUrl, partnerId, udid),
@@ -91,12 +150,6 @@ public class OttSessionProvider extends BaseSessionProvider {
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
     }
 
-    public void startSession(@NonNull String ks, String refreshToken, String userId, String udid){
-        this.sessionParams = new OttSessionParams().setUdid(udid);
-        this.refreshToken = refreshToken;
-        this.setSession(ks, -1, userId);
-        refreshSessionToken();
-    }
 
     /*
     * !! in case the ks expired we need to relogin
@@ -148,12 +201,29 @@ public class OttSessionProvider extends BaseSessionProvider {
     }
 
     /**
-     * try to re-login with current credentials
+     * try to preserve given session token. refresh of token is done immediate by that check if session
+     * is still valid and get a new refreshToken and expiry time.
+     * @param ks
+     * @param refreshToken
+     * @param userId
+     * @param udid
+     */
+    public void maintainSession(@NonNull String ks, String refreshToken, String userId, String udid){
+        this.sessionParams = new OttSessionParams().setUdid(udid);
+        this.refreshToken = refreshToken;
+        this.setSession(ks, Unset, userId);
+        scheduleRefreshSessionTask(IMMEDIATE_REFRESH);
+    }
+
+
+    /**
+     * try to re-login with current credentials, if available
      */
     private void renewSession(OnCompletion<PrimitiveResult> completion) {
         if (sessionParams != null) {
             if (sessionParams.username != null) {
                 startSession(sessionParams.username, sessionParams.password, sessionParams.udid, completion);
+
             } else if(getUserSessionType().equals(UserSessionType.Anonymous) /*sessionParams.isAnonymous*/) {
                 startAnonymousSession(sessionParams.udid, completion);
             } // ?? in case session with no user credential expires, should we login as anonymous or return empty ks?
@@ -235,16 +305,17 @@ public class OttSessionProvider extends BaseSessionProvider {
 
             if (timeLeft < refreshDelta) {
                 // call refreshToken
-                refreshSessionToken();
+                scheduleRefreshSessionTask(IMMEDIATE_REFRESH);
             }
         }
         return token;
     }
 
+
     private void refreshSessionToken() {
-        if (refreshToken == null) {
+        /*if (refreshToken == null) {
             return;
-        }
+        }*/
         // multi request needed to fetch the new expiration date.
         MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
         multiRequest.add(OttUserService.refreshSession(apiBaseUrl, getSessionToken(), refreshToken, sessionParams.udid),
@@ -252,6 +323,7 @@ public class OttSessionProvider extends BaseSessionProvider {
                 .completion(new OnRequestCompletion() {
                     @Override
                     public void onComplete(ResponseElement response) {
+                        refreshInProgress.set(false);
                         if (response != null && response.isSuccess()) {
                             List<BaseResult> responses = PhoenixParser.parse(response.getResponse());
                             if (responses.get(0).error != null) {
@@ -274,17 +346,43 @@ public class OttSessionProvider extends BaseSessionProvider {
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
     }
 
+
+    /**
+     * set scheduler to refresh tokens according to calculated delay. (expiration time and safety padding)
+     * @param delay - the time to schedule the refresh to. if the delay is 0, force refresh.
+     */
+    private synchronized void scheduleRefreshSessionTask(long delay) {
+        PKLog.i(TAG, "scheduling refresh in about " + delay + " sec from now");
+        scheduledRefreshTask = refreshScheduleExecutor.schedule(refreshCallable, delay, TimeUnit.SECONDS);
+    }
+
+    private void clearScheduled() {
+        Log.d(TAG, "clearScheduled: Thread - "+Thread.currentThread().getId());
+
+        if(scheduledRefreshTask != null && !scheduledRefreshTask.isDone()){
+            scheduledRefreshTask.cancel(true);
+        }
+        scheduledRefreshTask = null;
+    }
+
     @Override
-    protected void clearSession() {
+    public void clearSession() {
         super.clearSession();
         refreshToken = null;
         refreshDelta = TimeDelta;
+
+        clearScheduled();
+    }
+
+    private boolean isScheduled() {
+        return scheduledRefreshTask != null && !scheduledRefreshTask.isDone() && !scheduledRefreshTask.isCancelled();
     }
 
     @Override
     protected void setSession(String sessionToken, long expiry, String userId) {
         super.setSession(sessionToken, expiry, userId);
         updateRefreshDelta(expiry);
+        scheduleRefreshSessionTask(expiry - refreshDelta);
     }
 
     private void updateRefreshDelta(long expiry) {
@@ -292,24 +390,34 @@ public class OttSessionProvider extends BaseSessionProvider {
         refreshDelta = (expiry - currentDate) * DeltaPercent / 100; // 20% of total validation time
     }
 
-    public String storalizeSession(){
+    /**
+     * encrypt session info for storage purposes
+     * @return
+     */
+    public String encryptSession(){
         StringBuilder data = new StringBuilder(getSessionToken()).append("[]")
                 .append(refreshToken).append("[]").append(sessionParams.udid());
 
         return Base64.encodeToString(data.toString().getBytes(), Base64.NO_WRAP);
     }
 
-    public void recoverSession(String sessionData){
-        String decrypt = new String(Base64.decode(sessionData, Base64.NO_WRAP));
+    /**
+     * maintain session recovered from encrypt session info.
+     * @param encryptSession
+     */
+    public void recoverSession(String encryptSession){
+        String decrypt = new String(Base64.decode(encryptSession, Base64.NO_WRAP));
         String[] data = decrypt.split("$$");
-        startSession(data[0], data[1], "1", data[2]);
+        maintainSession(data[0], data[1], DummyUserId, data[2]);
     }
+
+
 
     private class OttSessionParams {
         private String udid = "";
         private String username;
         private String password;
-        private boolean isAnonymous;
+        //private boolean isAnonymous = false;
 
         public String udid() {
             return udid;
@@ -338,10 +446,10 @@ public class OttSessionProvider extends BaseSessionProvider {
             return this;
         }
 
-        public OttSessionParams setAnonymous() {
+        /*public OttSessionParams setAnonymous() {
             this.isAnonymous = true;
             return this;
-        }
+        }*/
     }
 
 }
