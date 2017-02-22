@@ -32,4 +32,24 @@ public class PKDrmParams {
     public void setScheme(Scheme scheme) {
         this.scheme = scheme;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PKDrmParams drmParams = (PKDrmParams) o;
+
+        if (licenseUri != null ? !licenseUri.equals(drmParams.licenseUri) : drmParams.licenseUri != null)
+            return false;
+        return scheme == drmParams.scheme;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = licenseUri != null ? licenseUri.hashCode() : 0;
+        result = 31 * result + (scheme != null ? scheme.hashCode() : 0);
+        return result;
+    }
 }
