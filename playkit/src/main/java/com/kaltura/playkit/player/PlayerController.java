@@ -11,7 +11,6 @@ import com.google.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
@@ -37,8 +36,7 @@ public class PlayerController implements Player {
     private Context context;
     private PlayerView wrapperView;
 
-    private PKMediaEntry mediaEntry = new PKMediaEntry();
-    private long startPosition = 0;
+    private PlayerConfig.Media mediaConfig = null;
 
     private PKEvent.Listener eventListener;
 
@@ -69,8 +67,7 @@ public class PlayerController implements Player {
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
                         if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
-                            startPlaybackFrom(startPosition * MILLISECONDS_MULTIPLIER);
-                            startPosition = 0;
+                            startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                         }
                         break;
                     case TRACKS_AVAILABLE:
@@ -152,11 +149,8 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
-        isNewEntry = !mediaConfig.equals(buildMediaConfigWithCurrentValues());
-        log.e("Is new entry " + isNewEntry);
-        mediaEntry = mediaConfig.getMediaEntry();
-        startPosition = mediaConfig.getStartPosition();
-
+        isNewEntry = isNewEntry(mediaConfig);
+        this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
         if (source == null) {
@@ -187,8 +181,7 @@ public class PlayerController implements Player {
             togglePlayerListeners(false);
         }
         player = null;
-        mediaEntry = null;
-        startPosition = 0;
+        mediaConfig = null;
         eventListener = null;
     }
 
@@ -201,7 +194,7 @@ public class PlayerController implements Player {
         if (startPosition <= getDuration()) {
             player.startFrom(startPosition);
         } else {
-            log.w("The start position is grater then duration of the video! Start position " + startPosition + ", duration " + getDuration());
+            log.w("The start position is grater then duration of the video! Start position " + startPosition + ", duration " + mediaConfig.getMediaEntry().getDuration());
         }
     }
 
@@ -337,7 +330,7 @@ public class PlayerController implements Player {
     public void onApplicationResumed() {
         log.d("onApplicationResumed");
         player.restore();
-        prepare(buildMediaConfigWithCurrentValues());
+        prepare(mediaConfig);
         togglePlayerListeners(true);
     }
 
@@ -351,11 +344,17 @@ public class PlayerController implements Player {
         player.changeTrack(uniqueId);
     }
 
-    private PlayerConfig.Media buildMediaConfigWithCurrentValues() {
-        PlayerConfig.Media mediaConfig = new PlayerConfig.Media();
-        mediaConfig.setStartPosition(startPosition);
-        mediaConfig.setMediaEntry(mediaEntry);
-        return mediaConfig;
+    private boolean isNewEntry(PlayerConfig.Media mediaConfig) {
+        if (this.mediaConfig == null) {
+            return true;
+        }
+
+        String oldEntryId = this.mediaConfig.getMediaEntry().getId();
+        if(oldEntryId == null){
+            return true;
+        }
+        String newEntryId = mediaConfig.getMediaEntry().getId();
+        return !oldEntryId.equals(newEntryId);
     }
 
     private boolean maybeHandleExceptionLocally(PlayerEvent.ExceptionInfo exceptionInfo) {
@@ -372,7 +371,7 @@ public class PlayerController implements Player {
                     ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
                     long currentPosition = player.getCurrentPosition();
                     exoPlayerWrapper.savePlayerPosition();
-                    PKMediaSource source = SourceSelector.selectSource(mediaEntry);
+                    PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
                     if (source == null) {
                         log.e("No playable source found for entry");
