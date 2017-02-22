@@ -48,6 +48,25 @@ public class PlayerConfig {
             this.mediaEntry = mediaEntry;
             return this;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Media media = (Media) o;
+
+            if (startPosition != media.startPosition) return false;
+            return mediaEntry != null ? mediaEntry.equals(media.mediaEntry) : media.mediaEntry == null;
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (int) (startPosition ^ (startPosition >>> 32));
+            result = 31 * result + (mediaEntry != null ? mediaEntry.hashCode() : 0);
+            return result;
+        }
     }
     
     public static class Plugins {
