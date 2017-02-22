@@ -36,9 +36,11 @@ public class PlayerController implements Player {
     private Context context;
     private PlayerView wrapperView;
 
-    private PlayerConfig.Media mediaConfig;
+    private PlayerConfig.Media mediaConfig = null;
 
     private PKEvent.Listener eventListener;
+
+    private boolean isNewEntry = true;
 
     public void setEventListener(PKEvent.Listener eventListener) {
         this.eventListener = eventListener;
@@ -64,7 +66,7 @@ public class PlayerController implements Player {
                 switch (eventType) {
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
-                        if(getDuration() != Consts.TIME_UNSET){
+                        if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
                             startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                         }
                         break;
@@ -147,6 +149,7 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
+        isNewEntry = isNewEntry(mediaConfig);
         this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
@@ -168,6 +171,7 @@ public class PlayerController implements Player {
 
         player.load(source);
     }
+
 
     @Override
     public void destroy() {
@@ -338,6 +342,19 @@ public class PlayerController implements Player {
         }
 
         player.changeTrack(uniqueId);
+    }
+
+    private boolean isNewEntry(PlayerConfig.Media mediaConfig) {
+        if (this.mediaConfig == null) {
+            return true;
+        }
+
+        String oldEntryId = this.mediaConfig.getMediaEntry().getId();
+        if(oldEntryId == null){
+            return true;
+        }
+        String newEntryId = mediaConfig.getMediaEntry().getId();
+        return !oldEntryId.equals(newEntryId);
     }
 
     private boolean maybeHandleExceptionLocally(PlayerEvent.ExceptionInfo exceptionInfo) {

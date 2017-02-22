@@ -9,9 +9,8 @@ import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
 
 public interface AdsProvider {
     IMAConfig getAdsConfig();
-    void requestAd();
-    void init();
-    boolean start();
+
+    void start();
     void resume();
     void pause();
     void contentCompleted();

@@ -6,6 +6,8 @@ import android.text.TextUtils;
 import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaMetadata;
 import com.google.android.gms.cast.TextTrackStyle;
+import com.kaltura.playkit.PKLog;
+
 import org.json.JSONObject;
 
 /**
@@ -13,6 +15,10 @@ import org.json.JSONObject;
  */
 
 public abstract class BasicCastBuilder<T extends BasicCastBuilder> {
+
+
+    private static final PKLog log = PKLog.get("BasicCastBuilder");
+
 
 
     public enum StreamType {
@@ -148,7 +154,7 @@ public abstract class BasicCastBuilder<T extends BasicCastBuilder> {
     protected void validate(CastInfo castInfo) throws IllegalArgumentException {
 
         if (TextUtils.isEmpty(castInfo.getUiConfId())) {
-            throw new IllegalArgumentException();
+            log.e("you should set the uiConfId using the CastBuilder or via the google cast console");
         }
 
         if (TextUtils.isEmpty(castInfo.getMediaEntryId())) {

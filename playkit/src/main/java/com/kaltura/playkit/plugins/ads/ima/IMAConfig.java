@@ -14,7 +14,10 @@ import java.util.List;
  */
 
 public class IMAConfig {
-    public static final int DEFAULT_AD_LOAD_TIMEOUT = 15;
+
+    public static final int DEFAULT_AD_LOAD_TIMEOUT = 13;
+    public static final int DEFAULT_CUE_POINTS_CHANGED_DELAY = 2000;
+    public static final int DEFAULT_AD_LOAD_COUNT_DOWN_TICK = 250;
 
     public static final String AD_TAG_LANGUAGE     = "language";
     public static final String AD_TAG_URL          = "adTagURL";
@@ -30,8 +33,8 @@ public class IMAConfig {
 
     private String language;
     private String adTagURL;
-    private boolean enableBackgroundPlayback = true;
-    private boolean autoPlayAdBreaks = false;
+    private boolean enableBackgroundPlayback;
+    private boolean autoPlayAdBreaks;
     private int videoBitrate;
     private boolean adAttribution;
     private boolean adCountDown;

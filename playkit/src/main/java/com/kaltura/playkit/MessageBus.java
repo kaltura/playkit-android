@@ -3,10 +3,10 @@ package com.kaltura.playkit;
 import android.os.Handler;
 import android.os.Looper;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Noam Tamim @ Kaltura on 07/11/2016.
@@ -17,7 +17,7 @@ public class MessageBus {
     private Map<Object, Set<PKEvent.Listener>> listeners;
     
     public MessageBus() {
-        listeners = new HashMap<>();
+        listeners = new ConcurrentHashMap<>();
     }
     
     public void post(final PKEvent event) {
@@ -28,7 +28,7 @@ public class MessageBus {
             postHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    for (PKEvent.Listener listener : listeners) {
+                    for (PKEvent.Listener listener : new HashSet<>(listeners)) {
                         listener.onEvent(event);
                     }
                 }
