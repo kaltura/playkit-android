@@ -60,7 +60,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private Context context;
     private AdInfo adInfo;
     private IMAConfig adConfig;
-    private PKMediaConfig mediaConfig;
     //////////////////////
 
 
