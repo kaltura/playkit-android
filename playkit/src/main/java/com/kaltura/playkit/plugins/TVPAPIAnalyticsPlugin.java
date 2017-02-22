@@ -1,5 +1,7 @@
 package com.kaltura.playkit.plugins;
 
+import android.content.Context;
+
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.OttEvent;
@@ -30,6 +32,11 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         public PKPlugin newInstance() {
             return new TVPAPIAnalyticsPlugin();
         }
+
+        @Override
+        public void warmUp(Context context) {
+            
+        }
     };
     /**
      * Send Bookmark/add event using Kaltura Phoenix Rest API
@@ -53,7 +60,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
-                if (response.isSuccess() && response.getResponse().contains("concurrent")){
+                if (response.isSuccess() && response.getResponse().contains("Concurrent")){
                     messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
                 }
                 log.d("onComplete send event: ");

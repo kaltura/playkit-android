@@ -606,7 +606,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 return widevine_cenc;
             case "drm.PLAYREADY_CENC":
                 return playready_cenc;
-            case "drm.WIDEVINE_CLASSIC":
+            case "widevine.WIDEVINE":
                 return widevine_classic;
             default:
                 return null;

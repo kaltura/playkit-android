@@ -1,32 +1,38 @@
 package com.kaltura.playkit;
 
-import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Noam Tamim @ Kaltura on 07/11/2016.
  */
 @SuppressWarnings("WeakerAccess")
 public class MessageBus {
-    private final Context context;
+    private Handler postHandler = new Handler(Looper.getMainLooper());
     private Map<Object, Set<PKEvent.Listener>> listeners;
-
-    public MessageBus(Context context) {
-        this.context = context;
-        listeners = new HashMap<>();
+    
+    public MessageBus() {
+        listeners = new ConcurrentHashMap<>();
     }
     
-    public void post(PKEvent event) {
+    public void post(final PKEvent event) {
 
-        Set<PKEvent.Listener> listeners = this.listeners.get(event.eventType());
+        final Set<PKEvent.Listener> listeners = this.listeners.get(event.eventType());
+        
         if (listeners != null) {
-            for (PKEvent.Listener listener : listeners) {
-                listener.onEvent(event);
-            }
+            postHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    for (PKEvent.Listener listener : new HashSet<>(listeners)) {
+                        listener.onEvent(event);
+                    }
+                }
+            });
         }
     }
 

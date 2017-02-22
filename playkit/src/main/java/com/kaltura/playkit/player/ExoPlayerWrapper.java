@@ -75,14 +75,14 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private Exception currentException = null;
 
     private boolean isSeeking = false;
+    private boolean shouldRestorePlayerToPreviousState = false;
 
     private int playerWindow;
-    private long playerPosition;
+    private long playerPosition = Consts.TIME_UNSET;
     private Uri lastPlayedSource;
     private Timeline.Window window;
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
-    private long prevDuration = Consts.TIME_UNSET;
     private int sameErrorOccurrenceCounter = 0;
 
 
@@ -98,6 +98,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         public void onTracksInfoReady(PKTracks tracksReady) {
             //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
             tracks = tracksReady;
+            shouldRestorePlayerToPreviousState = false;
             sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
         }
 
@@ -247,8 +248,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     }
 
     private void sendEvent(PlayerEvent.Type event) {
+        if (shouldRestorePlayerToPreviousState) {
+            log.i("Trying to send event " + event.name() + ". Should be blocked from sending now, because the player is restoring to the previous state.");
+            return;
+        }
         currentEvent = event;
         if (eventListener != null) {
+            log.i("Event sent: " + event.name());
             eventListener.onEvent(currentEvent);
         }
     }
@@ -305,6 +311,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
         log.d("onTimelineChanged");
+        sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
+        sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         shouldResetPlayerPosition = timeline != null && !timeline.isEmpty()
                 && !timeline.getWindow(timeline.getWindowCount() - 1, window).isDynamic;
     }
@@ -405,13 +413,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
     @Override
     public long getDuration() {
-        long currentDuration;
-        currentDuration = player == null ? Consts.TIME_UNSET : player.getDuration();
-        if (prevDuration != currentDuration) {
-            sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
-        }
-        prevDuration = currentDuration;
-        return prevDuration;
+        return player == null ? Consts.TIME_UNSET : player.getDuration();
     }
 
     @Override
@@ -434,6 +436,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
             trackSelectionHelper = null;
             eventLogger = null;
         }
+        shouldRestorePlayerToPreviousState = true;
     }
 
     @Override
@@ -460,6 +463,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         eventLogger = null;
         exoPlayerView = null;
         lastPlayedSource = null;
+        playerPosition = Consts.TIME_UNSET;
     }
 
     @Override
@@ -479,6 +483,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     public void startFrom(long position) {
         if (player == null) {
             log.e("Attempt to invoke 'startFrom()' on null instance of the exoplayer");
+            return;
+        }
+
+        if (shouldRestorePlayerToPreviousState) {
+            log.i("Restoring player from previous known state. So skip this block.");
             return;
         }
         isSeeking = false;
@@ -556,7 +565,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         }
         currentException = null;
         playerWindow = player.getCurrentWindowIndex();
-        playerPosition = Consts.TIME_UNSET;
         Timeline timeline = player.getCurrentTimeline();
         if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
             playerPosition = player.getCurrentPosition();

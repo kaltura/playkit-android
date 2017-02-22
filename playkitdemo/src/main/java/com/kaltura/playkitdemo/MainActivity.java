@@ -13,9 +13,11 @@ import android.widget.Toast;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.OnCompletion;
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
@@ -25,6 +27,7 @@ import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.mock.MockMediaProvider;
 import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
+import com.kaltura.playkit.backend.ovp.SimpleOvpSessionProvider;
 import com.kaltura.playkit.backend.phoenix.APIDefines;
 import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
 import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
@@ -42,6 +45,7 @@ import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.kaltura.playkitdemo.MockParams.Format;
@@ -65,9 +69,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void registerPlugins() {
 
-        PlayKitManager.registerPlugins(SamplePlugin.factory);
-        PlayKitManager.registerPlugins(IMAPlugin.factory);
+        PlayKitManager.registerPlugins(this, SamplePlugin.factory);
+        PlayKitManager.registerPlugins(this, IMAPlugin.factory);
         //PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);
+        
+        
     }
 
     @Override
@@ -81,17 +87,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         progressBar.setVisibility(View.INVISIBLE);
         registerPlugins();
 
-        startMockMediaLoading();
-        //startOvpMediaLoading();
-        //startOttMediaLoading();
-
-    }
-
-    private void startMockMediaLoading() {
-
-        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", getApplicationContext(), "hls");
-
-        mediaProvider.load(new OnMediaLoadCompletion() {
+        OnMediaLoadCompletion completion = new OnMediaLoadCompletion() {
             @Override
             public void onComplete(final ResultElement<PKMediaEntry> response) {
                 runOnUiThread(new Runnable() {
@@ -107,9 +103,49 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     }
                 });
             }
-        });
+        };
+
+        startMockMediaLoading(completion);
+//        startOvpMediaLoading(completion);
+//        startOttMediaLoading(completion);
+//        startSimpleOvpMediaLoading(completion);
+
     }
-    private void startOttMediaLoading() {
+
+    private PKMediaEntry simpleMediaEntry(String id, String contentUrl, String licenseUrl, PKDrmParams.Scheme scheme) {
+        return new PKMediaEntry()
+                    .setSources(Collections.singletonList(new PKMediaSource()
+                            .setUrl(contentUrl)
+                            .setDrmData(Collections.singletonList(
+                                    new PKDrmParams(licenseUrl, scheme)
+                            )
+                        )))
+                    .setId(id);
+    }
+
+    private PKMediaEntry simpleMediaEntry(String id, String contentUrl) {
+        return new PKMediaEntry()
+                .setSources(Collections.singletonList(new PKMediaSource()
+                        .setUrl(contentUrl)
+                ))
+                .setId(id);
+    }
+
+    private void startSimpleOvpMediaLoading(OnMediaLoadCompletion completion) {
+        new KalturaOvpMediaProvider()
+                .setSessionProvider(new SimpleOvpSessionProvider("https://cdnapisec.kaltura.com", 1851571, null))
+                .setEntryId("0_pl5lbfo0")
+                .load(completion);
+    }
+
+    private void startMockMediaLoading(OnMediaLoadCompletion completion) {
+
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", getApplicationContext(), "hls");
+
+        mediaProvider.load(completion);
+    }
+    
+    private void startOttMediaLoading(final OnMediaLoadCompletion completion) {
         final OttSessionProvider ottSessionProvider = new OttSessionProvider(MockParams.PhoenixBaseUrl, MockParams.OttPartnerId);
         /* start anonymous session:
         ottSessionProvider.startAnonymousSession(MockParams.OttPartnerId, null, new OnCompletion<PrimitiveResult>() {
@@ -122,29 +158,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if(response.error == null) {
                     mediaProvider = new PhoenixMediaProvider().setSessionProvider(ottSessionProvider).setAssetId(MediaId).setReferenceType(APIDefines.AssetReferenceType.Media).setFormats(Format);
 
-                    mediaProvider.load(new OnMediaLoadCompletion() {
-                        @Override
-                        public void onComplete(final ResultElement<PKMediaEntry> response) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (response.isSuccess()) {
-                                        onMediaLoaded(response.getResponse());
-                                    } else {
-
-                                        Toast.makeText(MainActivity.this, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""), Toast.LENGTH_LONG).show();
-                                        log.e("failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
-                                    }
-                                }
-                            });
-                        }
-                    });
+                    mediaProvider.load(completion);
                 }
             }
         });
     }
 
-    private void startOvpMediaLoading() {
+    private void startOvpMediaLoading(final OnMediaLoadCompletion completion) {
         final OvpSessionProvider ovpSessionProvider = new OvpSessionProvider(MockParams.OvpBaseUrl);
         //ovpSessionProvider.startAnonymousSession(MockParams.OvpPartnerId, new OnCompletion<PrimitiveResult>() {
         //MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getDrmUser(MockParams.UserType.Ovp);
@@ -155,23 +175,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 public void onComplete(PrimitiveResult response) {
                     if (response.error == null) {
                         mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(MockParams.DRMEntryIdAnm);
-                        mediaProvider.load(new OnMediaLoadCompletion() {
-                            @Override
-                            public void onComplete(final ResultElement<PKMediaEntry> response) {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if (response.isSuccess()) {
-                                            onMediaLoaded(response.getResponse());
-                                        } else {
-
-                                            Toast.makeText(MainActivity.this, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""), Toast.LENGTH_LONG).show();
-                                            log.e("failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
-                                        }
-                                    }
-                                });
-                            }
-                        });
+                        mediaProvider.load(completion);
                     }
                 }
             });
@@ -238,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //Map<Double, String> tagTimesMap = new HashMap<>();
         //tagTimesMap.put(2.0,"ADTAG");
 
-        IMAConfig adsConfig = new IMAConfig("en", false, true, 60000, videoMimeTypes, adTagUrl,true, true);
+        IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
         config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
 
     }

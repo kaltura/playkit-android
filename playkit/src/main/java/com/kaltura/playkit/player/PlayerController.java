@@ -36,11 +36,11 @@ public class PlayerController implements Player {
     private Context context;
     private PlayerView wrapperView;
 
-    private PlayerConfig.Media mediaConfig;
-    private boolean wasReleased = false;
+    private PlayerConfig.Media mediaConfig = null;
 
-    //private ViewGroup playerRootView;
     private PKEvent.Listener eventListener;
+
+    private boolean isNewEntry = true;
 
     public void setEventListener(PKEvent.Listener eventListener) {
         this.eventListener = eventListener;
@@ -66,6 +66,9 @@ public class PlayerController implements Player {
                 switch (eventType) {
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
+                        if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
+                            startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+                        }
                         break;
                     case TRACKS_AVAILABLE:
                         event = new PlayerEvent.TracksAvailable(player.getPKTracks());
@@ -121,7 +124,6 @@ public class PlayerController implements Player {
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         this.wrapperView.setLayoutParams(lp);
-        this.mediaConfig = mediaConfig;
     }
 
     private void setVideoSurfaceVisibility(boolean isVisible) {
@@ -147,6 +149,7 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
+        isNewEntry = isNewEntry(mediaConfig);
         this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
@@ -167,8 +170,8 @@ public class PlayerController implements Player {
         }
 
         player.load(source);
-        startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
     }
+
 
     @Override
     public void destroy() {
@@ -188,12 +191,8 @@ public class PlayerController implements Player {
             return;
         }
 
-        if (startPosition <= mediaConfig.getMediaEntry().getDuration()) {
-            if (!wasReleased) {
-                togglePlayerListeners(false);
-                player.startFrom(startPosition);
-                togglePlayerListeners(true);
-            }
+        if (startPosition <= getDuration()) {
+            player.startFrom(startPosition);
         } else {
             log.w("The start position is grater then duration of the video! Start position " + startPosition + ", duration " + mediaConfig.getMediaEntry().getDuration());
         }
@@ -325,18 +324,14 @@ public class PlayerController implements Player {
 
         player.release();
         togglePlayerListeners(false);
-        wasReleased = true;
     }
 
     @Override
     public void onApplicationResumed() {
         log.d("onApplicationResumed");
-        if (wasReleased) {
-            player.restore();
-            prepare(mediaConfig);
-            togglePlayerListeners(true);
-            wasReleased = false;
-        }
+        player.restore();
+        prepare(mediaConfig);
+        togglePlayerListeners(true);
     }
 
     @Override
@@ -349,9 +344,22 @@ public class PlayerController implements Player {
         player.changeTrack(uniqueId);
     }
 
+    private boolean isNewEntry(PlayerConfig.Media mediaConfig) {
+        if (this.mediaConfig == null) {
+            return true;
+        }
+
+        String oldEntryId = this.mediaConfig.getMediaEntry().getId();
+        if(oldEntryId == null){
+            return true;
+        }
+        String newEntryId = mediaConfig.getMediaEntry().getId();
+        return !oldEntryId.equals(newEntryId);
+    }
+
     private boolean maybeHandleExceptionLocally(PlayerEvent.ExceptionInfo exceptionInfo) {
         if (exceptionInfo.getErrorCounter() > ALLOWED_ERROR_RETRIES) {
-            log.w("Amount of the retries that happened on the same error are exceed the allowed amount of retries. Allowed amount of retries " + ALLOWED_ERROR_RETRIES + " actual amount " +exceptionInfo.getErrorCounter());
+            log.w("Amount of the retries that happened on the same error are exceed the allowed amount of retries. Allowed amount of retries " + ALLOWED_ERROR_RETRIES + " actual amount " + exceptionInfo.getErrorCounter());
             return false;
         }
 

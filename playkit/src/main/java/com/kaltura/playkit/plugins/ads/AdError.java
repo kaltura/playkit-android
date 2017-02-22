@@ -36,7 +36,8 @@ public class AdError implements PKEvent {
         VAST_ASSET_NOT_FOUND(2015),
         ADS_REQUEST_NETWORK_ERROR(2016),
         INVALID_ARGUMENTS(2017),
-        PLAYLIST_NO_CONTENT_TRACKING(2018);
+        PLAYLIST_NO_CONTENT_TRACKING(2018),
+        QUIET_LOG_ERROR(2019);
 
         private final int value;
 
