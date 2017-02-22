@@ -9,7 +9,7 @@ import com.kaltura.playkit.player.PlayerView;
 public class PlayerDecoratorBase implements Player {
     
     @Override
-    public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
+    public void prepare(@NonNull PKMediaConfig mediaConfig) {
         player.prepare(mediaConfig);
     }
 
@@ -59,7 +59,7 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
+    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
         player.prepareNext(mediaConfig);
     }
 

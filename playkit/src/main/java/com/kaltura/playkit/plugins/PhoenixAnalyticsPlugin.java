@@ -8,9 +8,9 @@ import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.OttEvent;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.backend.phoenix.services.BookmarkService;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
@@ -45,7 +45,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private boolean isFirstPlay = true;
     private boolean intervalOn = false;
     private long mContinueTime;
-    public PlayerConfig.Media mediaConfig;
+    public PKMediaConfig mediaConfig;
     public JsonObject pluginConfig;
     private Context mContext;
     public Player player;
@@ -71,7 +71,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     };
 
     @Override
-    protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
+    protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         isFirstPlay = false;
         this.mediaConfig = mediaConfig;
     }

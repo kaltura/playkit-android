@@ -4,11 +4,11 @@ import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.npaw.youbora.plugins.PluginGeneric;
@@ -36,13 +36,13 @@ public class YouboraLibraryManager extends PluginGeneric {
     private boolean isBuffering = false;
     private Player player;
     private MessageBus messageBus;
-    private PlayerConfig.Media mediaConfig;
+    private PKMediaConfig mediaConfig;
 
     public YouboraLibraryManager(String options) throws JSONException {
         super(options);
     }
 
-    public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus, PlayerConfig.Media mediaConfig, Player player) {
+    public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus, PKMediaConfig mediaConfig, Player player) {
         super(options);
         this.messageBus = messageBus;
         this.mediaConfig = mediaConfig;

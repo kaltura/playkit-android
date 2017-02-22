@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
@@ -32,7 +33,7 @@ public class PhoenixTvpapiAndroidTest {
     private Context context;
     private JsonObject tvpapiPluginConfig;
     private JsonObject phoenixPluginConfig;
-    private PlayerConfig.Media mediaConfig;
+    private PKMediaConfig mediaConfig;
     private MessageBus messageBus;
     private PhoenixAnalyticsPlugin phoenixAnalyticsPlugin;
     private TVPAPIAnalyticsPlugin tvpapiAnalyticsPlugin;

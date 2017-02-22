@@ -6,9 +6,9 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.npaw.youbora.youboralib.data.Options;
 
@@ -25,7 +25,7 @@ public class YouboraPlugin extends PKPlugin {
     private static YouboraLibraryManager pluginManager;
     private static YouboraAdManager adsManager;
 
-    private PlayerConfig.Media mediaConfig;
+    private PKMediaConfig mediaConfig;
     private JsonObject pluginConfig;
     private Context context;
     private Player player;
@@ -53,7 +53,7 @@ public class YouboraPlugin extends PKPlugin {
 
 
     @Override
-    protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
+    protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         stopMonitoring();
         log.d("youbora - onUpdateMedia");
         this.mediaConfig = mediaConfig;

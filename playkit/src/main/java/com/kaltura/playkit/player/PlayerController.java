@@ -11,10 +11,10 @@ import com.google.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
@@ -36,7 +36,7 @@ public class PlayerController implements Player {
     private Context context;
     private PlayerView wrapperView;
 
-    private PlayerConfig.Media mediaConfig = null;
+    private PKMediaConfig mediaConfig = null;
 
     private PKEvent.Listener eventListener;
 
@@ -148,7 +148,7 @@ public class PlayerController implements Player {
         }
     }
 
-    public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
+    public void prepare(@NonNull PKMediaConfig mediaConfig) {
         isNewEntry = isNewEntry(mediaConfig);
         this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
@@ -290,7 +290,7 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
+    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
         Assert.failState("Not implemented");
     }
 
@@ -344,7 +344,7 @@ public class PlayerController implements Player {
         player.changeTrack(uniqueId);
     }
 
-    private boolean isNewEntry(PlayerConfig.Media mediaConfig) {
+    private boolean isNewEntry(PKMediaConfig mediaConfig) {
         if (this.mediaConfig == null) {
             return true;
         }

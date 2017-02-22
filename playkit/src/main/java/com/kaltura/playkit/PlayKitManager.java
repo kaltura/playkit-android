@@ -38,7 +38,7 @@ public class PlayKitManager {
     }
 
     /**
-     * @deprecated Use {@link #loadPlayer(PlayerConfig.Plugins, Context)}
+     * @deprecated Use {@link #loadPlayer(PKPluginSettings, Context)}
      * @param playerConfig
      * @param context
      * @return
@@ -48,7 +48,7 @@ public class PlayKitManager {
         return loadPlayer(playerConfig.plugins, context);
     }
     
-    public static Player loadPlayer(PlayerConfig.Plugins pluginConfigs, Context context) {
+    public static Player loadPlayer(PKPluginSettings pluginConfigs, Context context) {
 
         MediaSupport.initialize(context);
         

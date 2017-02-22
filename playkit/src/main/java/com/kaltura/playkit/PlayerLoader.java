@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.google.gson.JsonObject;
 import com.kaltura.playkit.player.PlayerController;
 
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ class PlayerLoader extends PlayerDecoratorBase {
         this.messageBus = new MessageBus();
     }
     
-    public void load(@NonNull PlayerConfig.Plugins pluginsConfig) {
+    public void load(@NonNull PKPluginSettings pluginsConfig) {
         PlayerController playerController = new PlayerController(context);
         
         playerController.setEventListener(new PKEvent.Listener() {
@@ -52,9 +51,9 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         Player player = playerController;
 
-        for (Map.Entry<String, JsonObject> pluginConfig : pluginsConfig.getPluginConfigMap().entrySet()) {
-            String name = pluginConfig.getKey();
-            PKPlugin plugin = loadPlugin(name, player, pluginConfig.getValue(), messageBus, context);
+        for (Map.Entry<String, Object> entry : pluginsConfig.getPluginSettingsMap().entrySet()) {
+            String name = entry.getKey();
+            PKPlugin plugin = loadPlugin(name, player, entry.getValue(), messageBus, context);
 
             if (plugin == null) {
                 log.w("Plugin not found: " + name);
@@ -136,10 +135,10 @@ class PlayerLoader extends PlayerDecoratorBase {
         setPlayer(currentLayer);
     }
 
-    private PKPlugin loadPlugin(String name, Player player, JsonObject config, MessageBus messageBus, Context context) {
+    private PKPlugin loadPlugin(String name, Player player, Object settings, MessageBus messageBus, Context context) {
         PKPlugin plugin = PlayKitManager.createPlugin(name);
         if (plugin != null) {
-            plugin.onLoad(player, config, messageBus, context);
+            plugin.onLoad(player, settings, messageBus, context);
         }
         return plugin;
     }

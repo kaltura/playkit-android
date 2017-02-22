@@ -16,11 +16,12 @@ import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKPluginSettings;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.backend.PrimitiveResult;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
@@ -183,21 +184,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void onMediaLoaded(PKMediaEntry mediaEntry) {
-
-        PlayerConfig config = new PlayerConfig();
-
-        config.media.setMediaEntry(mediaEntry).setStartPosition(0);
-        LinearLayout layout = null;
+        
+        PKMediaConfig mediaConfig = new PKMediaConfig().setMediaEntry(mediaEntry).setStartPosition(0);
+        PKPluginSettings pluginConfig = new PKPluginSettings();
         if (player == null) {
 
-            configurePlugins(config.plugins);
+            configurePlugins(pluginConfig);
 
-            player = PlayKitManager.loadPlayer(config.plugins, this);
+            player = PlayKitManager.loadPlayer(pluginConfig, this);
 
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
 
-            layout = (LinearLayout) findViewById(R.id.player_root);
+            LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
             layout.addView(player.getView());
 
             controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
@@ -205,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             initSpinners();
         }
 
-        player.prepare(config.media);
+        player.prepare(mediaConfig);
 
         player.play();
     }
@@ -220,10 +219,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         videoSpinner.setOnItemSelectedListener(this);
     }
 
-    private void configurePlugins(PlayerConfig.Plugins config) {
+    private void configurePlugins(PKPluginSettings config) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("delay", 1200);
-        config.setPluginConfig("Sample", jsonObject);
+        config.setPluginSettings("Sample", jsonObject);
         addIMAPluginConfig(config);
         //config.setPluginConfig("IMASimplePlugin", jsonObject);
         //config.setPluginConfig("KalturaStatistics", jsonObject);
@@ -232,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
-    private void addIMAPluginConfig(PlayerConfig.Plugins config) {
+    private void addIMAPluginConfig(PKPluginSettings config) {
         String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
@@ -243,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //tagTimesMap.put(2.0,"ADTAG");
 
         IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
-        config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
+        config.setPluginSettings(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
 
     }
     @Override

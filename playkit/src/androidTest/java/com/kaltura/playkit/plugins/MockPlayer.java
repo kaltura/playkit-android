@@ -4,8 +4,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
 
@@ -19,12 +19,12 @@ public class MockPlayer implements Player {
     private long currentPosition = 0;
 
     @Override
-    public void prepare(@NonNull PlayerConfig.Media playerConfig) {
+    public void prepare(@NonNull PKMediaConfig playerConfig) {
 
     }
 
     @Override
-    public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
+    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
 
     }
 

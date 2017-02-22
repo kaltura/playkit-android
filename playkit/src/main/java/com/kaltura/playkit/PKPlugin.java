@@ -11,7 +11,7 @@ public abstract class PKPlugin {
     }
 
     protected abstract void onLoad(Player player, Object settings, MessageBus messageBus, Context context);
-    protected abstract void onUpdateMedia(PlayerConfig.Media mediaConfig);
+    protected abstract void onUpdateMedia(PKMediaConfig mediaConfig);
     protected abstract void onUpdateSettings(Object settings);
     protected abstract void onApplicationPaused();
     protected abstract void onApplicationResumed();

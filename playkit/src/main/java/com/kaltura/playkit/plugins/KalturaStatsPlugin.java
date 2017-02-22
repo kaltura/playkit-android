@@ -7,10 +7,10 @@ import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.backend.ovp.services.StatsService;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
@@ -106,7 +106,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     }
 
     private Player player;
-    private PlayerConfig.Media mediaConfig;
+    private PKMediaConfig mediaConfig;
     private JsonObject pluginConfig;
     private MessageBus messageBus;
     private RequestQueue requestsExecutor;
@@ -163,7 +163,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
+    protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         this.mediaConfig = mediaConfig;
         resetPlayerFlags();
     }
