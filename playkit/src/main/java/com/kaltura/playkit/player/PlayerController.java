@@ -1,4 +1,3 @@
-
 package com.kaltura.playkit.player;
 
 import android.content.Context;
@@ -125,7 +124,6 @@ public class PlayerController implements Player {
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         this.rootPlayerView.setLayoutParams(lp);
-        this.mediaConfig = mediaConfig;
     }
 
     private void setVideoSurfaceVisibility(boolean isVisible) {
