@@ -23,7 +23,7 @@ import com.kaltura.playkit.utils.Consts;
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 
 /**
- * Created by anton.afanasiev on 01/11/2016.
+ * @hide
  */
 
 public class PlayerController implements Player {

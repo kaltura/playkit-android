@@ -1,7 +1,7 @@
 package com.kaltura.playkit.connect;
 
 /**
- * Created by tehilarozin on 06/09/2016.
+ * @hide
  */
 public class ExecutedRequest implements ResponseElement {
 

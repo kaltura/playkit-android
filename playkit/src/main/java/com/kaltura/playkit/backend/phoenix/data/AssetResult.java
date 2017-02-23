@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import com.kaltura.playkit.backend.BaseResult;
 
 /**
- * Created by tehilarozin on 13/11/2016.
+ * @hide
  */
 
 public class AssetResult extends BaseResult {

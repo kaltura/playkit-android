@@ -8,10 +8,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by tehilarozin on 01/12/2016.
+ * @hide
  */
-
-
 public class FlavorAssetsFilter {
 
     public interface Filterable{

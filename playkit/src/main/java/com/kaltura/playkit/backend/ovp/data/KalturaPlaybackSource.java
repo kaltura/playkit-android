@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by tehilarozin on 17/11/2016.
+ * @hide
  */
 
 public class KalturaPlaybackSource {
