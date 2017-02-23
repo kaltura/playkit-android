@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.util.Base64;
 
 import com.kaltura.playkit.drm.DrmAdapter;
+import com.kaltura.playkit.drm.WidevineNotSupportedException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -107,7 +108,11 @@ public class LocalAssetsManager {
 
                     DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(context, localDrmStorage, localAssetPath);
                     DrmAdapter.DRMScheme scheme = drmAdapter.getScheme();
-                    String licenseUri = mediaSource.getDrmData().get(0).getLicenseUri(); //TODO filter and select the correct drmData, based on DrmAdapter.DRMScheme
+                    String licenseUri = getDrmLicense(mediaSource); //TODO filter and select the correct drmData, based on DrmAdapter.DRMScheme
+                    if(licenseUri == null){
+                        listener.onFailed(localAssetPath, new WidevineNotSupportedException("No widevine_cenc license found."));
+                        return;
+                    }
                     drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, listener);
 
                 } catch (IOException e) {
@@ -119,6 +124,15 @@ public class LocalAssetsManager {
 
             }
         });
+    }
+
+    private String getDrmLicense(PKMediaSource mediaSource) {
+        for (PKDrmParams drmParam : mediaSource.getDrmData()){
+            if(drmParam.getScheme().equals(PKDrmParams.Scheme.widevine_cenc)){
+                return drmParam.getLicenseUri();
+            }
+        }
+        return null;
     }
 
 

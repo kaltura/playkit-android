@@ -10,4 +10,8 @@ public class WidevineNotSupportedException extends RuntimeException {
         super(throwable);
     }
 
+    public WidevineNotSupportedException(String message) {
+        super(message);
+    }
+
 }
