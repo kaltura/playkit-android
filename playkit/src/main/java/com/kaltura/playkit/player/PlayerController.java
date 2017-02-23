@@ -4,7 +4,6 @@ import android.content.Context;
 import android.media.MediaCodec;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -34,11 +33,12 @@ public class PlayerController implements Player {
 
     private PlayerEngine player;
     private Context context;
-    private PlayerView wrapperView;
+    private PlayerView rootPlayerView;
 
     private PlayerConfig.Media mediaConfig = null;
 
     private PKEvent.Listener eventListener;
+    private PlayerView playerEngineView;
 
     private boolean isNewEntry = true;
 
@@ -82,7 +82,7 @@ public class PlayerController implements Player {
                     case ERROR:
                         event = player.getCurrentException();
                         PlayerEvent.ExceptionInfo exceptionInfo = (PlayerEvent.ExceptionInfo) event;
-                        if (exceptionInfo.getException() == null) {
+                        if (exceptionInfo == null || exceptionInfo.getException() == null) {
                             return;
                         }
 
@@ -111,7 +111,7 @@ public class PlayerController implements Player {
 
     public PlayerController(Context context, PlayerConfig.Media mediaConfig) {
         this.context = context;
-        this.wrapperView = new PlayerView(context) {
+        this.rootPlayerView = new PlayerView(context) {
             @Override
             public void hideVideoSurface() {
                 setVideoSurfaceVisibility(false);
@@ -123,28 +123,29 @@ public class PlayerController implements Player {
             }
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        this.wrapperView.setLayoutParams(lp);
+        this.rootPlayerView.setLayoutParams(lp);
     }
 
     private void setVideoSurfaceVisibility(boolean isVisible) {
-        View videoSurface = wrapperView.getChildAt(0);
-        if (videoSurface != null) {
-            if (videoSurface instanceof PlayerView) {
-                PlayerView playerView = (PlayerView) wrapperView.getChildAt(0);
-                if (playerView != null) {
-                    if (isVisible) {
-                        playerView.showVideoSurface();
-                    } else {
-                        playerView.hideVideoSurface();
-                    }
-                }
+        String visibilityFunction = "showVideoSurface";
+        if (!isVisible) {
+            visibilityFunction = "hideVideoSurface";
+        }
+
+        if (player == null) {
+            log.e("Error in " + visibilityFunction + " player is null");
+            return;
+        }
+
+        PlayerView playerView = player.getView();
+        if (playerView != null) {
+            if (isVisible) {
+                playerView.showVideoSurface();
             } else {
-                String visibilityFunction = "showVideoSurface";
-                if (!isVisible) {
-                    visibilityFunction = "hideVideoSurface";
-                }
-                log.e("Error in " + visibilityFunction + " cannot cast to PlayerView,  class = " + videoSurface.getClass().getName());
+                playerView.hideVideoSurface();
             }
+        } else {
+            log.e("Error in " + visibilityFunction + " playerView is null");
         }
     }
 
@@ -161,14 +162,18 @@ public class PlayerController implements Player {
         if (source.getMediaFormat() != PKMediaFormat.wvm_widevine) {
             if (player == null) {
                 player = new ExoPlayerWrapper(context);
-                wrapperView.addView(player.getView());
                 togglePlayerListeners(true);
             }
         } else {
-            //WVM Player
-            return;
+            if (player == null) {
+                player = new MediaPlayerWrapper(context);
+                togglePlayerListeners(true);
+            }
         }
-
+        if (playerEngineView == null) {
+            playerEngineView = player.getView();
+            rootPlayerView.addView(playerEngineView);
+        }
         player.load(source);
     }
 
@@ -199,7 +204,7 @@ public class PlayerController implements Player {
     }
 
     public PlayerView getView() {
-        return wrapperView;
+        return rootPlayerView;
     }
 
     public long getDuration() {
@@ -243,6 +248,8 @@ public class PlayerController implements Player {
             log.e("Attempt to invoke 'play()' on null instance of the player engine");
             return;
         }
+
+
         player.play();
     }
 
@@ -329,9 +336,11 @@ public class PlayerController implements Player {
     @Override
     public void onApplicationResumed() {
         log.d("onApplicationResumed");
-        player.restore();
-        prepare(mediaConfig);
-        togglePlayerListeners(true);
+        if (player != null) {
+            player.restore();
+            prepare(mediaConfig);
+            togglePlayerListeners(true);
+        }
     }
 
     @Override

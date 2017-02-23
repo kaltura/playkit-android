@@ -4,7 +4,9 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.kaltura.playkit.LocalAssetsManager;
-import com.kaltura.playkit.LocalDrmStorage;
+import com.kaltura.playkit.LocalDataStore;
+import com.kaltura.playkit.PKDrmParams;
+import com.kaltura.playkit.PKLog;
 
 import java.io.IOException;
 
@@ -13,15 +15,25 @@ import java.io.IOException;
  */
 
 public abstract class DrmAdapter {
+    
+    private static final PKLog log = PKLog.get("DrmAdapter");
+    
 
     @NonNull
-    public static DrmAdapter getDrmAdapter(final Context context, LocalDrmStorage localDrmStorage, final String localAssetPath) {
-        if (localAssetPath.endsWith(".wvm")) {
-            return new WidevineClassicAdapter(context);
-        }
+    public static DrmAdapter getDrmAdapter(PKDrmParams.Scheme scheme, Context context, LocalDataStore localDataStore) {
 
-        if (localAssetPath.endsWith(".mpd")) {
-            return new WidevineModularAdapter(context, localDrmStorage);
+        if (scheme == null) {
+            return new NullDrmAdapter();
+        }
+        
+        switch (scheme) {
+            case widevine_cenc:
+                return new WidevineModularAdapter(context, localDataStore);
+            case widevine_classic:
+                return new WidevineClassicAdapter(context);
+            case playready_cenc:
+                log.d("Unsupported scheme PlayReady");
+                break;
         }
 
         return new NullDrmAdapter();
@@ -35,12 +47,6 @@ public abstract class DrmAdapter {
 
     public abstract boolean checkAssetStatus(final String localAssetPath, final String assetId, final LocalAssetsManager.AssetStatusListener listener);
 
-    public abstract DRMScheme getScheme();
-
-    public enum DRMScheme {
-        Null, WidevineClassic, WidevineCENC
-    }
-
     private static class NullDrmAdapter extends DrmAdapter {
         @Override
         public boolean checkAssetStatus(String localAssetPath, String assetId, LocalAssetsManager.AssetStatusListener listener) {
@@ -48,11 +54,6 @@ public abstract class DrmAdapter {
                 listener.onStatus(localAssetPath, -1, -1, false);
             }
             return true;
-        }
-
-        @Override
-        public DRMScheme getScheme() {
-            return DRMScheme.Null;
         }
 
         @Override
