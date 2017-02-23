@@ -14,7 +14,7 @@ import com.kaltura.playkit.connect.GsonParser;
 import com.kaltura.playkit.utils.RuntimeTypeAdapterFactory;
 
 /**
- * Created by tehilarozin on 24/11/2016.
+ * @hide
  */
 
 public class KalturaOvpParser {

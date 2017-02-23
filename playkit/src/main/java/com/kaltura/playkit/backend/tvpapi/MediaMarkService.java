@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.connect.RequestBuilder;
 
 /**
- * Created by zivilan on 08/12/2016.
+ * @hide
  */
 
 public class MediaMarkService {

@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import java.util.Map;
 
 /**
- * Created by tehilarozin on 09/08/2016.
  */
 public interface RequestElement {
 

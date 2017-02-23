@@ -8,7 +8,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * Created by tehilarozin on 01/09/2016.
+ * @hide
  */
 public class IdInterceptor implements Interceptor {
     @Override

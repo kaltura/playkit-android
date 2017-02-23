@@ -19,6 +19,11 @@ android {
     }
 }
 
+repositories {
+    jcenter()
+    maven { url "https://jitpack.io" }
+}
+
 dependencies {
     compile project(path: ':playkit')
     compile 'com.android.support:appcompat-v7:24.2.1'

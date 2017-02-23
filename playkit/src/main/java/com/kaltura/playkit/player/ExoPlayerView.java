@@ -19,7 +19,7 @@ import com.google.android.exoplayer2.ui.SubtitleView;
 import java.util.List;
 
 /**
- * Created by anton.afanasiev on 13/11/2016.
+ * @hide
  */
 
 public class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener, TextRenderer.Output{

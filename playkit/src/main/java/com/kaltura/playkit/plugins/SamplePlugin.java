@@ -12,7 +12,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerDecorator;
 
 /**
- * Created by Noam Tamim @ Kaltura on 26/10/2016.
+ * @hide
  */
 
 public class SamplePlugin extends PKPlugin {

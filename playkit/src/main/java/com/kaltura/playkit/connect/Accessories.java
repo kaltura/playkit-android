@@ -1,7 +1,7 @@
 package com.kaltura.playkit.connect;
 
 /**
- * Created by tehilarozin on 10/11/2016.
+ * @hide
  */
 
 public class Accessories {

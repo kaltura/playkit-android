@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
- * Created by tehilarozin on 20/11/2016.
+ * @hide
  */
 
 public class APIDefines {
