@@ -3,7 +3,7 @@ package com.kaltura.playkit.backend.ovp.data;
 import com.kaltura.playkit.backend.BaseResult;
 
 /**
- * Created by tehilarozin on 28/11/2016.
+ * @hide
  */
 
 public class KalturaSessionInfo extends BaseResult {

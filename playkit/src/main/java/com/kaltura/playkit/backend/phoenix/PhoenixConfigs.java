@@ -1,7 +1,7 @@
 package com.kaltura.playkit.backend.phoenix;
 
 /**
- * Created by tehilarozin on 14/11/2016.
+ * @hide
  */
 
 public class PhoenixConfigs {

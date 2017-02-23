@@ -9,7 +9,7 @@ import static com.kaltura.playkit.backend.ovp.APIDefines.ResponseProfileType.Inc
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
- * Created by tehilarozin on 20/11/2016.
+ * @hide
  */
 
 public class APIDefines {

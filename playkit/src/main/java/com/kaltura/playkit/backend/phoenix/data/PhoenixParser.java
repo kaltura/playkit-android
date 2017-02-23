@@ -9,7 +9,7 @@ import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.connect.GsonParser;
 
 /**
- * Created by tehilarozin on 15/11/2016.
+ * @hide
  */
 
 public class PhoenixParser {

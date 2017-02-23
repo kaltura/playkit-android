@@ -3,7 +3,7 @@ package com.kaltura.playkit.backend.phoenix.data;
 import com.kaltura.playkit.backend.ovp.data.KalturaSessionInfo;
 
 /**
- * Created by tehilarozin on 28/11/2016.
+ * @hide
  */
 
 public class KalturaSession extends KalturaSessionInfo {

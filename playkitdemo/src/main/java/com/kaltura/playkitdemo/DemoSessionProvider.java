@@ -5,7 +5,7 @@ import com.kaltura.playkit.backend.SessionProvider;
 import com.kaltura.playkit.backend.PrimitiveResult;
 
 /**
- * Created by tehilarozin on 16/11/2016.
+ * @hide
  */
 
 public class DemoSessionProvider implements SessionProvider {

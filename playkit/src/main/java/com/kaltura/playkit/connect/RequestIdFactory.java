@@ -3,7 +3,7 @@ package com.kaltura.playkit.connect;
 import java.util.UUID;
 
 /**
- * Created by tehilarozin on 01/12/2016.
+ * @hide
  */
 public class RequestIdFactory implements APIOkRequestsExecutor.IdFactory {
     @Override

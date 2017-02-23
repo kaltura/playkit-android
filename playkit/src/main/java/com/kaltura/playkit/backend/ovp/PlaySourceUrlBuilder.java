@@ -9,7 +9,7 @@ import java.util.UUID;
 import static android.text.TextUtils.isEmpty;
 
 /**
- * Created by tehilarozin on 30/11/2016.
+ * @hide
  */
 
 public class PlaySourceUrlBuilder {

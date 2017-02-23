@@ -5,7 +5,6 @@ import com.kaltura.playkit.backend.BaseResult;
 import java.util.List;
 
 /**
- * Created by tehilarozin on 04/11/2016.
  */
 
 public class KalturaMediaAsset extends BaseResult {

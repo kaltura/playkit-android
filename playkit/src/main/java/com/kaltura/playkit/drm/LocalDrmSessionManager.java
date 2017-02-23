@@ -24,7 +24,7 @@ import com.kaltura.playkit.player.MediaSupport;
 import java.io.FileNotFoundException;
 
 /**
- * Created by anton.afanasiev on 18/12/2016.
+ * @hide
  */
 
 public class LocalDrmSessionManager<T extends ExoMediaCrypto> implements DrmSessionManager<T>, DrmSession<T> {

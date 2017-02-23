@@ -10,6 +10,9 @@ import com.kaltura.playkit.PKLog;
 
 import java.util.UUID;
 
+/**
+ * @hide
+ */
 public class MediaSupport {
 
     public static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");

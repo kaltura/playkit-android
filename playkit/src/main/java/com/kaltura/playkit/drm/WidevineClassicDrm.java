@@ -23,7 +23,7 @@ import java.lang.reflect.Method;
 import java.util.Iterator;
 
 /**
- * Created by anton.afanasiev on 13/12/2016.
+ * @hide
  */
 
 public class WidevineClassicDrm {

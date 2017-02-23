@@ -2,6 +2,7 @@ package com.kaltura.playkit.plugins.ads.ima;
 
 import android.content.Context;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.view.ViewGroup;
 
 import com.google.ads.interactivemedia.v3.api.Ad;
@@ -81,6 +82,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private ImaSdkSettings imaSdkSettings;
     private AdsManager adsManager;
     private AdsRenderingSettings renderingSettings;
+    private AdCuePoints adTagCuePoints;
     // Whether an ad is displayed.
     private boolean isAdDisplayed;
     private boolean isAdIsPaused;
@@ -294,7 +296,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     @Override
     protected void onDestroy() {
         log.d("IMA Start onDestroy");
-
+        if (adManagerTimer != null) {
+            adManagerTimer.cancel();
+            adManagerTimer = null;
+        }
+        adTagCuePoints = null;
+        adPlaybackCancelled = false;
         if (adsManager != null) {
             adsManager.destroy();
             adsManager = null;
@@ -305,7 +312,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             adsLoadedListener = null;
             adsLoader = null;
         }
-
+        sdkFactory = null;
+        imaSdkSettings = null;
     }
 
     ////////Ads Plugin
@@ -342,7 +350,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                         return;
                     }
                     adsManager.init(renderingSettings);
-                    sendCuePointsUpdate();
                     isInitWaiting = false;
                 }
 
@@ -360,7 +367,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 adManagerInitDuringBackground = true;
             } else {
                 adsManager.init(renderingSettings);
-                sendCuePointsUpdate();
             }
         } else{
             isInitWaiting = true;
@@ -544,6 +550,18 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 }
                 adInfo = createAdInfo(adEvent.getAd());
                 messageBus.post(new AdEvent.AdStartedEvent(adInfo));
+
+                if (adTagCuePoints == null) {
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            log.d("AD CUEPOINTS CHANGED TRIGGERED WITH DELAY");
+                            adTagCuePoints = new AdCuePoints(getAdCuePoints());
+                            messageBus.post(new AdEvent.AdCuePointsUpdateEvent(adTagCuePoints));
+                        }
+                    }, IMAConfig.DEFAULT_CUE_POINTS_CHANGED_DELAY);
+                }
                 break;
             case PAUSED:
                 log.d("AD PAUSED");
@@ -637,8 +655,13 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     private List<Long> getAdCuePoints() {
         List<Long> adCuePoints = new ArrayList<>();
-        if (adsManager != null && adsManager.getAdCuePoints() != null) {
-            for (Float cuePoint : adsManager.getAdCuePoints()) {
+        if (adsManager == null) {
+            return adCuePoints;
+        }
+
+        List<Float> adCuePointsFloat = adsManager.getAdCuePoints();
+        if (adCuePointsFloat != null) {
+            for (Float cuePoint : adCuePointsFloat) {
                 if (cuePoint >= 0) {
                     adCuePoints.add(cuePoint.longValue() * Consts.MILLISECONDS_MULTIPLIER);
                 } else {
@@ -664,6 +687,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         long adPodTimeOffset      = (long)(ad.getAdPodInfo().getTimeOffset() * Consts.MILLISECONDS_MULTIPLIER);
 
 
+
         AdInfo adInfo =  new AdInfo(adDescription, adDuration,
                 adTitle, isAdSkippable,
                 contentType, adId,
@@ -680,7 +704,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     public void onAdError(AdErrorEvent adErrorEvent) {
-
 
         log.e("Ad Error: " + adErrorEvent.getError().getErrorCode().name() + " " + adErrorEvent.getError().getMessage());
         isAdRequested = true;

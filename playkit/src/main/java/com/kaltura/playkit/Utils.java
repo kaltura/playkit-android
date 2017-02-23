@@ -10,7 +10,7 @@ import java.io.InputStream;
 import java.util.Collection;
 
 /**
- * Created by Noam Tamim @ Kaltura on 13/10/2016.
+ * @hide
  */
 
 public class Utils {

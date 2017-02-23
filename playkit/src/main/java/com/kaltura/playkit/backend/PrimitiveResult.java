@@ -3,7 +3,6 @@ package com.kaltura.playkit.backend;
 import com.kaltura.playkit.connect.ErrorElement;
 
 /**
- * Created by tehilarozin on 07/12/2016.
  */
 
 public class PrimitiveResult extends BaseResult {

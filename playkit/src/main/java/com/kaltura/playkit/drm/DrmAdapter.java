@@ -10,7 +10,7 @@ import com.kaltura.playkit.PKDrmParams;
 import java.io.IOException;
 
 /**
- * Created by anton.afanasiev on 13/12/2016.
+ * @hide
  */
 
 public abstract class DrmAdapter {
