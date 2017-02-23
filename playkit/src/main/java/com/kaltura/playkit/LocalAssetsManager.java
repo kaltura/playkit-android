@@ -68,8 +68,7 @@ public class LocalAssetsManager {
      * @param context - the application context.
      */
     public LocalAssetsManager(Context context) {
-        this.context = context;
-        this.localDataStore = new DefaultLocalDataStore(context);
+        this(context, new DefaultLocalDataStore(context));
     }
 
     /**
@@ -80,6 +79,8 @@ public class LocalAssetsManager {
     public LocalAssetsManager(Context context, LocalDataStore localDataStore) {
         this.context = context;
         this.localDataStore = localDataStore;
+        
+        MediaSupport.initialize(context);
     }
 
 
@@ -140,7 +141,7 @@ public class LocalAssetsManager {
                     }
                     break;
                 case widevine_classic:
-                    if (MediaSupport.widevineClassic(null)) {
+                    if (MediaSupport.widevineClassic()) {
                         return params;
                     }
                     break;
