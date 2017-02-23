@@ -29,7 +29,6 @@ import java.util.Collections;
 public class LocalAssets {
     private static final PKLog log = PKLog.get("LocalAssets");
     
-    private Context context;
     private PKDrmParams drmParams = new PKDrmParams("https://udrm.kaltura.com/widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVlAiLCJ1c2VyX3Rva2VuIjoiZGpKOE1UZzFNVFUzTVh4NThBVkFQOXo1R0lvU3BXWE95emEtdWlQNnk5cXpBdkpkMzZfUFZOcUNfT0NZWWhLRVh5LThqcGFMRktGcU15d3VTN2ZLZmxibTd1VVJGQkVtSGxsNkc4NEU2LUxrcnFXbVV1ZWEtZnFqdXc9PSIsImFjY291bnRfaWQiOiIxODUxNTcxIiwiY29udGVudF9pZCI6IjBfcGw1bGJmbzAiLCJmaWxlcyI6IjBfendxM2w0NHIsMF91YTYycms2cywwX290bWFxcG5mLDBfeXdrbXFua2csMV9lMHF0YWoxaiwxX2IycXp5dmE3In0%3D&signature=LFiNPZL8%2BNevsZ8cNhrmSDM4SDQ%3D", PKDrmParams.Scheme.widevine_classic);
     private PKMediaSource widevineClassicSource = new PKMediaSource()
             .setId("wvc")
@@ -40,17 +39,14 @@ public class LocalAssets {
 
     private PKMediaEntry widevineClassicEntry = new PKMediaEntry().setId("e1").setMediaType(PKMediaEntry.MediaEntryType.Vod)
             .setSources(Collections.singletonList(widevineClassicSource));
-    private File downloadsDir;
-    private LocalDataStore localDataStore;
     private LocalAssetsManager localAssetsManager;
 
     public LocalAssets(Context context) {
 
-        this.context = context;
-        localDataStore = new LocalAssetsManager.DefaultLocalDataStore(context);
+        LocalDataStore localDataStore = new LocalAssetsManager.DefaultLocalDataStore(context);
         localAssetsManager = new LocalAssetsManager(context, localDataStore);
 
-        downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         File file = new File(downloadsDir, "0_pl5lbfo0.wvm");
         localAssetPath = file.getAbsolutePath();
     }

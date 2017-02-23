@@ -40,7 +40,7 @@ public class WidevineClassicDrm {
     private static final String WV_DEVICE_ID_KEY = "WVDeviceIDKey";
     private static final String WV_PORTAL_KEY = "WVPortalKey";
     private static final String WV_DRM_INFO_REQUEST_STATUS_KEY = "WVDrmInfoRequestStatusKey";
-    private static final String WV_DRM_INFO_REQUEST_VERSION_KEY = "WVDrmInfoRequestVersionKey";
+    //private static final String WV_DRM_INFO_REQUEST_VERSION_KEY = "WVDrmInfoRequestVersionKey";
 
     private String mWVDrmInfoRequestStatusKey = DEVICE_IS_PROVISIONED;
     public static String WIDEVINE_MIME_TYPE = "video/wvm";

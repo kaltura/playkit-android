@@ -144,6 +144,9 @@ public class LocalAssetsManager {
                         return params;
                     }
                     break;
+                case playready_cenc:
+                    log.d("Skipping unsupported PlayReady params");
+                    break;
             }
         }
         return null;

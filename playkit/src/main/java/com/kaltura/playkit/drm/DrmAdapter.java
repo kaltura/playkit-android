@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.LocalDataStore;
 import com.kaltura.playkit.PKDrmParams;
+import com.kaltura.playkit.PKLog;
 
 import java.io.IOException;
 
@@ -14,6 +15,9 @@ import java.io.IOException;
  */
 
 public abstract class DrmAdapter {
+    
+    private static final PKLog log = PKLog.get("DrmAdapter");
+    
 
     @NonNull
     public static DrmAdapter getDrmAdapter(PKDrmParams.Scheme scheme, Context context, LocalDataStore localDataStore) {
@@ -27,6 +31,9 @@ public abstract class DrmAdapter {
                 return new WidevineModularAdapter(context, localDataStore);
             case widevine_classic:
                 return new WidevineClassicAdapter(context);
+            case playready_cenc:
+                log.d("Unsupported scheme PlayReady");
+                break;
         }
 
         return new NullDrmAdapter();
