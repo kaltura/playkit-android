@@ -27,6 +27,10 @@ android {
     }
 }
 
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none')
+}
+
 dependencies {
     // Google Extras
     compile 'com.google.android.exoplayer:exoplayer:r2.1.1'
