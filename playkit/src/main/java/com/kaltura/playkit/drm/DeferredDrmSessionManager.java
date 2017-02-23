@@ -22,7 +22,7 @@ import com.kaltura.playkit.utils.EventLogger;
 import java.util.List;
 
 /**
- * Created by anton.afanasiev on 18/12/2016.
+ * @hide
  */
 
 public class DeferredDrmSessionManager<T extends ExoMediaCrypto> implements DrmSessionManager<T> {

@@ -15,16 +15,13 @@ import com.kaltura.playkit.connect.ErrorElement;
 import java.lang.reflect.Type;
 
 /**
- * Created by tehilarozin on 15/11/2016.
- */
-
-/**
  * Enables parsing of {@link BaseResult} extending classes (such as {@link com.kaltura.playkit.backend.phoenix.data.AssetResult} in a way
  * the we'll have the "result" object, and an {@link ErrorElement} object. in case of server error response - the error located
  * under {@link BaseResult#error} member, in case of success the result will be available in the specific class member.
  * (exp: {@link com.kaltura.playkit.backend.phoenix.data.AssetResult#asset})
  *
  * usage: new GsonBuilder().registerTypeAdapter(AssetResult.class, new OttResultAdapter()).create().fromJson(json, AssetResult.class);
+ * @hide
  */
 public class OvpResultAdapter implements JsonDeserializer<BaseResult> {
     @Override

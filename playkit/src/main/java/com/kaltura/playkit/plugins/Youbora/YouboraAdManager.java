@@ -12,7 +12,7 @@ import com.npaw.youbora.adnalyzers.AdnalyzerGeneric;
 import com.npaw.youbora.plugins.PluginGeneric;
 
 /**
- * Created by zivilan on 05/12/2016.
+ * @hide
  */
 
 public class YouboraAdManager extends AdnalyzerGeneric {

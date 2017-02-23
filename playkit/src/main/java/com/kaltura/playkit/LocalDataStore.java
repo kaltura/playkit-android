@@ -7,7 +7,7 @@ import java.io.FileNotFoundException;
  * in order to save/load/remove the offline Drm keySetId.
  * Created by anton.afanasiev on 13/12/2016.
  */
-public interface LocalDrmStorage {
+public interface LocalDataStore {
 
     /**
      * Save the offline drm keySetId.

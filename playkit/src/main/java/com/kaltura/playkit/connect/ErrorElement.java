@@ -1,7 +1,6 @@
 package com.kaltura.playkit.connect;
 
 /**
- * Created by tehilarozin on 06/11/2016.
  */
 
 public class ErrorElement {

@@ -5,7 +5,7 @@ import android.text.TextUtils;
 import com.kaltura.playkit.backend.BaseResult;
 
 /**
- * Created by tehilarozin on 20/11/2016.
+ * @hide
  */
 
 public class KalturaLicensedUrl extends BaseResult {

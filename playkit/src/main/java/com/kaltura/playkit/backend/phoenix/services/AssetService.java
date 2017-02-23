@@ -9,7 +9,7 @@ import com.kaltura.playkit.backend.phoenix.PhoenixRequestBuilder;
 import java.util.List;
 
 /**
- * Created by tehilarozin on 13/11/2016.
+ * @hide
  */
 
 public class AssetService extends PhoenixService {

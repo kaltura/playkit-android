@@ -2,7 +2,6 @@ package com.kaltura.playkit.connect;
 
 
 /**
- * Created by tehilarozin on 08/08/2016.
  */
 public interface RequestQueue {
 

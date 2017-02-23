@@ -1,7 +1,7 @@
 package com.kaltura.playkit.backend.ovp;
 
 /**
- * Created by tehilarozin on 14/11/2016.
+ * @hide
  */
 
 public class OvpConfigs {

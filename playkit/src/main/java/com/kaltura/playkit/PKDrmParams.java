@@ -3,6 +3,7 @@ package com.kaltura.playkit;
 public class PKDrmParams {
 
     public enum Scheme {
+
         widevine_cenc,
         playready_cenc,
         widevine_classic,

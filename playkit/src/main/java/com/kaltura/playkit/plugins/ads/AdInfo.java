@@ -113,6 +113,10 @@ public class AdInfo implements PKAdInfo {
         return adPodTimeOffset;
     }
 
+    public String getAdContnentType() {
+        return adContnentType;
+    }
+
     @Override
     public String toString() {
         String adType = "";

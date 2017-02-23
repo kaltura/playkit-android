@@ -21,7 +21,7 @@ import java.util.Map;
 import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
 
 /**
- * Created by zivilan on 02/11/2016.
+ * @hide
  */
 
 public class YouboraLibraryManager extends PluginGeneric {

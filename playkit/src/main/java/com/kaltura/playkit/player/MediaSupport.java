@@ -10,6 +10,9 @@ import com.kaltura.playkit.PKLog;
 
 import java.util.UUID;
 
+/**
+ * @hide
+ */
 public class MediaSupport {
 
     public static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
@@ -17,18 +20,25 @@ public class MediaSupport {
 
     private static Boolean widevineClassic;
     private static Boolean widevineModular;
+    private static boolean initialized;
 
     private static final PKLog log = PKLog.get("MediaSupport");
     
-    public static void initialize(@NonNull Context context) {
-        widevineClassic(context);
-        widevineModular();
-    }
-
-    public static boolean widevineClassic(Context context) {
-        if (widevineClassic != null) {
-            return widevineClassic;
+    public static void initialize(@NonNull final Context context) {
+        if (initialized) {
+            return;
         }
+        new Thread() {
+            @Override
+            public void run() {
+                checkWidevineClassic(context);
+                widevineModular();
+                initialized = true;
+            }
+        }.start();
+    }
+    
+    private static void checkWidevineClassic(Context context) {
         DrmManagerClient drmManagerClient = new DrmManagerClient(context);
         try {
             widevineClassic = drmManagerClient.canHandle("", "video/wvm");
@@ -45,7 +55,16 @@ public class MediaSupport {
             //noinspection deprecation
             drmManagerClient.release();
         }
-        return widevineClassic;
+    }
+    
+    public static boolean widevineClassic() {
+        if (widevineClassic != null) {
+            return widevineClassic;
+        }
+        
+        log.w("MediaSupport not initialized; assuming no Widevine Classic support");
+        
+        return false;
     }
 
     public static boolean widevineModular() {
@@ -61,5 +80,9 @@ public class MediaSupport {
             }
         }
         return false;
+    }
+    
+    public static boolean playready() {
+        return false;   // Not yet.
     }
 }

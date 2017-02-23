@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import java.util.LinkedHashMap;
 
 /**
- * Created by tehilarozin on 13/11/2016.
  */
 
 public class MultiRequestBuilder extends RequestBuilder {

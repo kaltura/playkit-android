@@ -4,7 +4,7 @@ import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.RestrictionError;
 
 /**
- * Created by tehilarozin on 18/12/2016.
+ * @hide
  */
 
 public class PhoenixErrorHelper {

@@ -5,7 +5,7 @@ import com.kaltura.playkit.backend.base.data.BasePlaybackContext;
 import java.util.ArrayList;
 
 /**
- * Created by tehilarozin on 02/11/2016.
+ * @hide
  */
 
 public class KalturaPlaybackContext extends BasePlaybackContext{
