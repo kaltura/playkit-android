@@ -16,6 +16,9 @@ android.libraryVariants.all { variant ->
         description "Generates Javadoc for $variant.name."
 
         exclude '**/R.java'
+
+        // reset options
+        options = new StandardJavadocDocletOptions()
         options.doclet("com.google.doclava.Doclava")
         options.docletpath(new File(project.rootDir, "tools/doclava.jar"))
     }
