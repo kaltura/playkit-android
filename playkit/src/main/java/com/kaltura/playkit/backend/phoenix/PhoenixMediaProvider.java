@@ -17,7 +17,6 @@ import com.kaltura.playkit.backend.base.FormatsHelper;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.backend.base.data.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.backend.phoenix.data.KalturaMediaAsset;
-import com.kaltura.playkit.backend.phoenix.data.KalturaMediaFile;
 import com.kaltura.playkit.backend.phoenix.data.KalturaPlaybackContext;
 import com.kaltura.playkit.backend.phoenix.data.KalturaPlaybackSource;
 import com.kaltura.playkit.backend.phoenix.data.PhoenixParser;
@@ -83,6 +82,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         public boolean hasFormats() {
             return formats != null && formats.size() > 0;
         }
+
         public boolean hasFiles() {
             return mediaFileIds != null && mediaFileIds.size() > 0;
         }
@@ -97,6 +97,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     /**
      * MANDATORY! provides the baseUrl and the session token(ks) for the API calls.
+     *
      * @param sessionProvider
      * @return
      */
@@ -107,6 +108,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     /**
      * MANDATORY! the media asset id, to fetch the data for.
+     *
      * @param assetId
      * @return
      */
@@ -118,10 +120,11 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     /**
      * ESSENTIAL!! defines the playing asset group type
      * Defaults to - {@link com.kaltura.playkit.backend.phoenix.APIDefines.KalturaAssetType#Media}
+     *
      * @param assetType - can be one of the following types {@link com.kaltura.playkit.backend.phoenix.APIDefines.KalturaAssetType}
      * @return
      */
-    public PhoenixMediaProvider setAssetType(@NonNull APIDefines.KalturaAssetType assetType){
+    public PhoenixMediaProvider setAssetType(@NonNull APIDefines.KalturaAssetType assetType) {
         this.mediaAsset.assetType = assetType;
         return this;
     }
@@ -129,10 +132,11 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     /**
      * ESSENTIAL!! defines the playing context: Trailer, Catchup, Playback etc
      * Defaults to - {@link com.kaltura.playkit.backend.phoenix.APIDefines.PlaybackContextType#Playback}
+     *
      * @param contextType - can be one of the following types {@link com.kaltura.playkit.backend.phoenix.APIDefines.PlaybackContextType}
      * @return
      */
-    public PhoenixMediaProvider setContextType(@NonNull APIDefines.PlaybackContextType contextType){
+    public PhoenixMediaProvider setContextType(@NonNull APIDefines.PlaybackContextType contextType) {
         this.mediaAsset.contextType = contextType;
         return this;
     }
@@ -140,6 +144,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     /**
      * OPTIONAL
      * defines which of the sources to consider on {@link PKMediaEntry} creation.
+     *
      * @param formats - 1 or more content format definition. can be: Hd, Sd, Download, Trailer etc
      * @return
      */
@@ -151,8 +156,9 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     /**
      * OPTIONAL - if not available all sources will be fetched
      * Provide a list of media files ids. will be used in the getPlaybackContext API request                                                                                                 .
+     *
      * @param mediaFileIds - list of MediaFile ids to narrow sources fetching from API to
-     *                          the specific files
+     *                     the specific files
      * @return
      */
     public PhoenixMediaProvider setFileIds(@NonNull String... mediaFileIds) {
@@ -164,6 +170,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     /**
      * OPTIONAL
      * Defaults to {@link com.kaltura.playkit.connect.APIOkRequestsExecutor} implementation.
+     *
      * @param executor
      * @return
      */
@@ -173,7 +180,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
 
-
     protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
         return new Loader(requestsExecutor, sessionProvider, mediaAsset, completion);
     }
@@ -181,13 +187,14 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     /**
      * Checks for non empty value on the mandatory parameters.
+     *
      * @return - error in case of at least 1 invalid mandatory parameter.
      */
     @Override
     protected ErrorElement validateParams() {
         ErrorElement error = null;
 
-        if(TextUtils.isEmpty(this.mediaAsset.assetId)) {
+        if (TextUtils.isEmpty(this.mediaAsset.assetId)) {
             error = ErrorElement.BadRequestError.addMessage(": Missing required parameter [assetId]");
 
         } else {
@@ -221,28 +228,28 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         @Override
         protected ErrorElement validateKs(String ks) { // enable anonymous session creation
             return EnableEmptyKs || !TextUtils.isEmpty(ks) ? null :
-                    ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token") ;
+                    ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token");
         }
 
 
-        private RequestBuilder getPlaybackContextRequest(String baseUrl, String ks, MediaAsset mediaAsset){
+        private RequestBuilder getPlaybackContextRequest(String baseUrl, String ks, MediaAsset mediaAsset) {
             AssetService.KalturaPlaybackContextOptions contextOptions = new AssetService.KalturaPlaybackContextOptions(mediaAsset.contextType);
-            if(mediaAsset.mediaFileIds != null){ // else - will fetch all available sources
+            if (mediaAsset.mediaFileIds != null) { // else - will fetch all available sources
                 contextOptions.setMediaFileIds(mediaAsset.mediaFileIds);
             }
 
-            return AssetService.getPlaybackContext(sessionProvider.baseUrl(), ks, mediaAsset.assetId,
+            return AssetService.getPlaybackContext(baseUrl, ks, mediaAsset.assetId,
                     mediaAsset.assetType, contextOptions);
         }
 
-        private RequestBuilder getRemoteRequest(String baseUrl, String ks, MediaAsset mediaAsset){
+        private RequestBuilder getRemoteRequest(String baseUrl, String ks, MediaAsset mediaAsset) {
 
             if (TextUtils.isEmpty(ks)) {
                 MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) PhoenixService.getMultirequest(baseUrl, ks)
                         .tag("asset-play-data-multireq");
-                ks = "{1:result:ks}";
+                String multiReqKs = "{1:result:ks}";
                 return multiRequestBuilder.add(OttUserService.anonymousLogin(baseUrl, sessionProvider.partnerId(), null),
-                                                getPlaybackContextRequest(baseUrl, ks, mediaAsset));
+                        getPlaybackContextRequest(baseUrl, multiReqKs, mediaAsset));
             }
 
             return getPlaybackContextRequest(baseUrl, ks, mediaAsset);
@@ -250,6 +257,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         /**
          * Builds and passes to the executor, the Asset info fetching request.
+         *
          * @param ks
          * @throws InterruptedException
          */
@@ -285,6 +293,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         /**
          * Parse and create a {@link PKMediaEntry} object from the API response.
+         *
          * @param response
          * @throws InterruptedException
          */
@@ -293,7 +302,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             PKMediaEntry mediaEntry = null;
 
             if (isCanceled()) {
-                PKLog.v(TAG, loadId+": i am canceled, exit response parsing ");
+                PKLog.v(TAG, loadId + ": i am canceled, exit response parsing ");
                 return;
             }
 
@@ -322,7 +331,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                        case of error object in the response, will be parsed to BaseResult object (error if occurred will be accessible from this object)*/
 
                     Object parsedResponses = PhoenixParser.parse(response.getResponse());
-                    BaseResult playbackContextResult =  parsedResponses instanceof BaseResult ? (BaseResult)parsedResponses : ((List<BaseResult>)parsedResponses).get(1);
+                    BaseResult playbackContextResult = parsedResponses instanceof BaseResult ? (BaseResult) parsedResponses : ((List<BaseResult>) parsedResponses).get(1);
 
                     if (playbackContextResult.error != null) {
                         //error = ErrorElement.LoadError.message("failed to get multirequest responses on load request for asset "+mediaAsset.assetId);
@@ -330,17 +339,17 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                     } else {
 
-                            KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) playbackContextResult;
+                        KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) playbackContextResult;
 
-                            if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error message
+                        if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error message
 
-                                mediaEntry = ProviderParser.getMedia(mediaAsset.assetId, mediaAsset.formats, mediaAsset.mediaFileIds, kalturaPlaybackContext.getSources());
+                            mediaEntry = ProviderParser.getMedia(mediaAsset.assetId, mediaAsset.formats != null ? mediaAsset.formats : mediaAsset.mediaFileIds, kalturaPlaybackContext.getSources());
 
-                                if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
-                                    error = ErrorElement.NotFound.message("Content can't be played due to lack of sources");
-                                }
+                            if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
+                                error = ErrorElement.NotFound.message("Content can't be played due to lack of sources");
                             }
                         }
+                    }
                 } catch (JsonParseException | InvalidParameterException ex) {
                     error = ErrorElement.LoadError.message("failed parsing remote response: " + ex.getMessage());
                 } catch (IndexOutOfBoundsException ex) {
@@ -365,44 +374,26 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     static class ProviderParser {
 
-        @Deprecated
-        static PKMediaEntry getMedia(KalturaMediaAsset assetInfo, List<String> formats) {
-            return getMedia(assetInfo.getId() + "", assetInfo.getFiles(), formats);
-        }
+        public static PKMediaEntry getMedia(String assetId, List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources) {
 
-        /*static PKMediaEntry getMedia(String id, List<KalturaMediaFile> mediaFiles) {
-            return getMedia(id, mediaFiles, null);
-        }*/
-
-        @Deprecated
-        private synchronized static PKMediaEntry getMedia(String assetId, List<KalturaMediaFile> mediaFiles, List<String> formats) {
             PKMediaEntry mediaEntry = new PKMediaEntry();
             mediaEntry.setId("" + assetId);
 
-            ArrayList<PKMediaSource> sources = new ArrayList<>();
-            long maxDuration = 0;
-            if (mediaFiles != null) {
-                // if provided, only the "formats" matching MediaFiles should be parsed and added to the PKMediaEntry media sources
-                for (KalturaMediaFile file : mediaFiles) {
-                    if (formats == null || formats.contains(file.getType())) {
-                        sources.add(new PKMediaSource().setId(file.getId() + "").setUrl(file.getUrl()).setMediaFormat(PKMediaFormat.valueOfUrl(file.getUrl())));
-                        maxDuration = Math.max(file.getDuration(), maxDuration);
-                    }
-                }
-            }
-            return mediaEntry.setDuration(maxDuration).setSources(sources).setMediaType(MediaTypeConverter.toMediaEntryType(""));
-        }
-
-        public static PKMediaEntry getMedia(String assetId, List<String> formats, List<String> mediaFileIds, ArrayList<KalturaPlaybackSource> playbackSources) {
-            PKMediaEntry mediaEntry = new PKMediaEntry();
-            mediaEntry.setId("" + assetId);
-
-            ArrayList<PKMediaSource> sources = new ArrayList<>();
+            ArrayList<PKMediaSource> sources = sourcesFilter!= null ? new ArrayList<PKMediaSource>(sourcesFilter.size()) : new ArrayList<PKMediaSource>();
             long maxDuration = 0;
             if (playbackSources != null) {
                 // if provided, only the "formats" matching MediaFiles should be parsed and added to the PKMediaEntry media sources
                 for (KalturaPlaybackSource playbackSource : playbackSources) {
-                    if (formats != null && !formats.contains(playbackSource.getType())) {// || !FormatsHelper.validateFormat(phoenixPlaybackSource)) { // only validated formats will be added to the sources.
+
+                    int filterValueIndex = -1;
+                    if(sourcesFilter != null) {
+                        filterValueIndex = sourcesFilter.indexOf(playbackSource.getType());
+                        if (filterValueIndex == -1) {
+                            filterValueIndex = sourcesFilter.indexOf(playbackSource.getId() + "");
+                        }
+                    }
+
+                    if (sourcesFilter != null && filterValueIndex == -1) { // if specific formats/fileIds were requested, only those will be added to the sources.
                         continue;
                     }
 
@@ -426,7 +417,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                         pkMediaSource.setDrmData(drmParams);
                     }
 
-                    sources.add(pkMediaSource);
+                    // needed to order the sources according to the requested formats/fileIds order
+                    // can be removed once implemented on server.
+                    int position = filterValueIndex != -1 ? filterValueIndex : sources.size();
+                    sources.add(position, pkMediaSource);
 
                     maxDuration = Math.max(playbackSource.getDuration(), maxDuration);
                 }
@@ -451,10 +445,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
     }
 
-    static class MediaTypeConverter{
+    static class MediaTypeConverter {
 
-        public static PKMediaEntry.MediaEntryType toMediaEntryType(String mediaType){
-            switch (mediaType){
+        public static PKMediaEntry.MediaEntryType toMediaEntryType(String mediaType) {
+            switch (mediaType) {
                 default:
                     return PKMediaEntry.MediaEntryType.Unknown;
             }

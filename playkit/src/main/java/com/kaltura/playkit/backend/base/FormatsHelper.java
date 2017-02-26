@@ -21,13 +21,13 @@ public class FormatsHelper {
         UrlDrm("url+drm"),
         Unknown;
 
+        public String formatName = "";
+
         StreamFormat(){}
 
         StreamFormat(String name){
             this.formatName = name;
         }
-
-        public String formatName = "";
 
         public static StreamFormat byValue(String value) {
             for(StreamFormat streamFormat : values()){
@@ -36,19 +36,22 @@ public class FormatsHelper {
                 }
             }
             return Unknown;
-        }//
+        }
     }
 
     /**
      * to map BE format name to the matching format element in the {@link PKMediaFormat} enumeration.
      */
-    private static final Map<StreamFormat, PKMediaFormat> SupportedFormats = new HashMap<StreamFormat, PKMediaFormat>() {{
-        put(StreamFormat.MpegDash, PKMediaFormat.dash_clear);
-        put(StreamFormat.MpegDashDrm, PKMediaFormat.dash_drm);
-        put(StreamFormat.AppleHttp, PKMediaFormat.hls_clear);
-        put(StreamFormat.Url, PKMediaFormat.mp4_clear);
-        put(StreamFormat.UrlDrm, PKMediaFormat.wvm_widevine);
-    }};
+    private static final Map<StreamFormat, PKMediaFormat> SupportedFormats;
+
+    static{
+        SupportedFormats = new HashMap<StreamFormat, PKMediaFormat>();
+        SupportedFormats.put(StreamFormat.MpegDash, PKMediaFormat.dash_clear);
+        SupportedFormats.put(StreamFormat.MpegDashDrm, PKMediaFormat.dash_drm);
+        SupportedFormats.put(StreamFormat.AppleHttp, PKMediaFormat.hls_clear);
+        SupportedFormats.put(StreamFormat.Url, PKMediaFormat.mp4_clear);
+        SupportedFormats.put(StreamFormat.UrlDrm, PKMediaFormat.wvm_widevine);
+    }
 
     public static Map<StreamFormat, PKMediaFormat> getSupportedFormats() {
         return SupportedFormats;
@@ -95,7 +98,8 @@ public class FormatsHelper {
                                 SupportedFormats.get(StreamFormat.UrlDrm) :
                                 null;*/
 
-            default:return null;
+            default:
+                return null;
 
         }
     }

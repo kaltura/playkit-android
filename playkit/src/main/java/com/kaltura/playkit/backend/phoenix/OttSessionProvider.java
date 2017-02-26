@@ -51,7 +51,7 @@ public class OttSessionProvider extends BaseSessionProvider {
 
     private ScheduledFuture<?> scheduledRefreshTask;
     private ScheduledThreadPoolExecutor refreshScheduleExecutor;
-    private AtomicBoolean refreshInProgress;
+    private AtomicBoolean refreshInProgress = new AtomicBoolean(false);
 
     //region refresh callable
     private Callable<Boolean> refreshCallable = new Callable<Boolean>() {

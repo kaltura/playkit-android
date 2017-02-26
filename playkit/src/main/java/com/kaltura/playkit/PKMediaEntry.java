@@ -1,6 +1,5 @@
 package com.kaltura.playkit;
 
-import java.util.Dictionary;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +30,10 @@ public class PKMediaEntry {
 
     public List<PKMediaSource> getSources() {
         return sources;
+    }
+
+    public boolean hasSources(){
+        return sources != null && sources.size() > 0;
     }
 
     public PKMediaEntry setDuration(long duration) {
