@@ -31,7 +31,7 @@ public class KalturaStatsAndroidTest {
 
     private Player player;
     private Context context;
-    private JsonObject pluginConfig;
+    private JsonObject settings;
     private PKMediaConfig mediaConfig;
     private MessageBus messageBus;
     private KalturaStatsPlugin plugin;
@@ -56,17 +56,17 @@ public class KalturaStatsAndroidTest {
         player.seekTo(seek);
 
         plugin = (KalturaStatsPlugin) KalturaStatsPlugin.factory.newInstance();
-        plugin.onLoad(player, pluginConfig, messageBus, context);
+        plugin.onLoad(player, settings, messageBus, context);
     }
 
 
     private void setPluginConfigObject(){
-        pluginConfig = new JsonObject();
-        pluginConfig.addProperty("sessionId", "b3460681-b994-6fad-cd8b-f0b65736e837");
-        pluginConfig.addProperty("uiconfId", uiconfId);
-        pluginConfig.addProperty("baseUrl", "https://stats.kaltura.com/api_v3/index.php");
-        pluginConfig.addProperty("partnerId", partnerId);
-        pluginConfig.addProperty("timerInterval", 30);
+        settings = new JsonObject();
+        settings.addProperty("sessionId", "b3460681-b994-6fad-cd8b-f0b65736e837");
+        settings.addProperty("uiconfId", uiconfId);
+        settings.addProperty("baseUrl", "https://stats.kaltura.com/api_v3/index.php");
+        settings.addProperty("partnerId", partnerId);
+        settings.addProperty("timerInterval", 30);
     }
 
     private void setMediaObject(){

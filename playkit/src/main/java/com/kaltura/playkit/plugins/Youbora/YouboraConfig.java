@@ -94,35 +94,35 @@ public class YouboraConfig {
 
     private YouboraConfig() {}
 
-    public static Map<String, Object> getYouboraConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig, Player player) {
+    public static Map<String, Object> getYouboraConfig(JsonObject settings, PKMediaConfig mediaConfig, Player player) {
         // load from json
-        setYouboraConfig(pluginConfig, mediaConfig, player);
+        setYouboraConfig(settings, mediaConfig, player);
 
         return youboraConfig;
     }
 
-    private static void setYouboraConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig, Player player){
+    private static void setYouboraConfig(JsonObject settings, PKMediaConfig mediaConfig, Player player){
         youboraConfig = defaultYouboraConfig;
         if (mediaConfig != null) {
             mediaObject.put("resource", !mediaConfig.getMediaEntry().getSources().isEmpty()? mediaConfig.getMediaEntry().getSources().get(0).getUrl():"");
             Long duration = player.getDuration() / 1000;
             mediaObject.put("duration", duration.intValue()); //Duration should be sent in secs
         }
-        if (pluginConfig != null){
-            if (pluginConfig.has("youboraConfig")){
-                setYouboraConfigObject(youboraConfigObject, pluginConfig.getAsJsonObject("youboraConfig"), youboraConfigFieldNames, youboraBooleanConfigFieldNames);
+        if (settings != null){
+            if (settings.has("youboraConfig")){
+                setYouboraConfigObject(youboraConfigObject, settings.getAsJsonObject("youboraConfig"), youboraConfigFieldNames, youboraBooleanConfigFieldNames);
             }
-            if (pluginConfig.has("media")){
-                setYouboraConfigObject(mediaObject, pluginConfig.getAsJsonObject("media"), mediaConfigFieldNames, mediaBooleanConfigFieldNames);
+            if (settings.has("media")){
+                setYouboraConfigObject(mediaObject, settings.getAsJsonObject("media"), mediaConfigFieldNames, mediaBooleanConfigFieldNames);
             }
-            if (pluginConfig.has("ads")){
-                setYouboraConfigObject(adsObject, pluginConfig.getAsJsonObject("ads"), adsConfigFieldNames, adsBooleanConfigFieldNames);
+            if (settings.has("ads")){
+                setYouboraConfigObject(adsObject, settings.getAsJsonObject("ads"), adsConfigFieldNames, adsBooleanConfigFieldNames);
             }
-            if (pluginConfig.has("properties")){
-                setYouboraConfigObject(propertiesObject, pluginConfig.getAsJsonObject("properties"), propertiesConfigFieldNames, null);
+            if (settings.has("properties")){
+                setYouboraConfigObject(propertiesObject, settings.getAsJsonObject("properties"), propertiesConfigFieldNames, null);
             }
-            if (pluginConfig.has("extraParams")){
-                setYouboraConfigObject(extraParamsObject, pluginConfig.getAsJsonObject("extraParams"), extraConfigFieldNames, null);
+            if (settings.has("extraParams")){
+                setYouboraConfigObject(extraParamsObject, settings.getAsJsonObject("extraParams"), extraConfigFieldNames, null);
             }
         }
     }

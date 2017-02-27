@@ -26,7 +26,7 @@ public class YouboraPlugin extends PKPlugin {
     private static YouboraAdManager adsManager;
 
     private PKMediaConfig mediaConfig;
-    private JsonObject pluginConfig;
+    private JsonObject settings;
     private Context context;
     private Player player;
     private MessageBus messageBus;
@@ -57,7 +57,7 @@ public class YouboraPlugin extends PKPlugin {
         stopMonitoring();
         log.d("youbora - onUpdateMedia");
         this.mediaConfig = mediaConfig;
-        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, this.mediaConfig, player);
+        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(settings, this.mediaConfig, player);
         // Refresh options with updated media
         pluginManager.setOptions(opt);
         startMonitoring(player);
@@ -68,12 +68,12 @@ public class YouboraPlugin extends PKPlugin {
         log.d("youbora - onUpdateConfig");
         
         // TODO: is this the right fix?
-        this.pluginConfig = (JsonObject) settings;
+        this.settings = (JsonObject) settings;
         
 //        if (pluginConfig.has(key)){
 //            pluginConfig.addProperty(key, settings.toString());
 //        }
-        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig, player);
+        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(this.settings, mediaConfig, player);
         // Refresh options with updated media
         pluginManager.setOptions(opt);
     }
@@ -99,7 +99,7 @@ public class YouboraPlugin extends PKPlugin {
     protected void onLoad(final Player player, Object settings, final MessageBus messageBus, Context context) {
         this.mediaConfig = mediaConfig;
         this.player = player;
-        this.pluginConfig = (JsonObject) settings;
+        this.settings = (JsonObject) settings;
         this.context = context;
         this.messageBus = messageBus;
         pluginManager = new YouboraLibraryManager(new Options(), messageBus, mediaConfig, player);
@@ -108,14 +108,14 @@ public class YouboraPlugin extends PKPlugin {
 
     private void loadPlugin(){
         log.d("loadPlugin");
-        if (pluginConfig != null) {
-            if (!pluginConfig.has("youboraConfig") || pluginConfig.get("youboraConfig").isJsonNull() ) {
+        if (settings != null) {
+            if (!settings.has("youboraConfig") || settings.get("youboraConfig").isJsonNull() ) {
                 log.e("Youbora PluginConfig is missing the youboraConfig key in json object");
                 return;
             }
-            if (pluginConfig.getAsJsonObject("youboraConfig").has("adsAnalytics")  &&
-                !pluginConfig.getAsJsonObject("youboraConfig").getAsJsonPrimitive("adsAnalytics").isJsonNull()) {
-                adAnalytics = pluginConfig.getAsJsonObject("youboraConfig").getAsJsonPrimitive("adsAnalytics").getAsBoolean();
+            if (settings.getAsJsonObject("youboraConfig").has("adsAnalytics")  &&
+                !settings.getAsJsonObject("youboraConfig").getAsJsonPrimitive("adsAnalytics").isJsonNull()) {
+                adAnalytics = settings.getAsJsonObject("youboraConfig").getAsJsonPrimitive("adsAnalytics").getAsBoolean();
             }
             startMonitoring(this.player);
             log.d("onLoad");
@@ -138,15 +138,15 @@ public class YouboraPlugin extends PKPlugin {
 
     private void setPluginOptions(){
         //update the isLive value
-        if (pluginConfig != null && pluginConfig.has("media")) {
-            if (!((JsonObject) pluginConfig.get("media")).has("isLive")) {
+        if (settings != null && settings.has("media")) {
+            if (!((JsonObject) settings.get("media")).has("isLive")) {
                 boolean isLiveFlag = pluginManager.getIsLive();
                 log.d("isLiveFlag = " + pluginManager.getIsLive());
-                ((JsonObject) pluginConfig.get("media")).addProperty("isLive", isLiveFlag);
+                ((JsonObject) settings.get("media")).addProperty("isLive", isLiveFlag);
             }
         }
 
-        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig, player);
+        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(settings, mediaConfig, player);
         // Set options
         pluginManager.setOptions(opt);
 

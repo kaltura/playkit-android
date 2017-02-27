@@ -46,7 +46,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private boolean intervalOn = false;
     private long mContinueTime;
     public PKMediaConfig mediaConfig;
-    public JsonObject pluginConfig;
+    public JsonObject settings;
     private Context mContext;
     public Player player;
     public RequestQueue requestsExecutor;
@@ -79,7 +79,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onUpdateSettings(Object settings) {
         // TODO: is this the right fix?
-        this.pluginConfig = (JsonObject) settings;
+        this.settings = (JsonObject) settings;
 
 //        if (pluginConfig.has(key)){
 //            pluginConfig.addProperty(key, settings.toString());
@@ -111,7 +111,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.mediaConfig = mediaConfig;
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
-        this.pluginConfig = (JsonObject) settings;
+        this.settings = (JsonObject) settings;
         this.mContext = context;
         this.messageBus = messageBus;
         messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA);
@@ -170,7 +170,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      */
     private void startMediaHitInterval(){
         log.d("timer interval");
-        int mediaHitInterval = pluginConfig.has("timerInterval")? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
+        int mediaHitInterval = settings.has("timerInterval")? settings.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -187,10 +187,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * @param eventType - Enum stating the event type to send
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType){
-        String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"464302";
-        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://api-preprod.ott.kaltura.com/v4_1/api_v3/";
-        String ks = pluginConfig.has("ks")? pluginConfig.getAsJsonPrimitive("ks").getAsString():"djJ8MTk4fN86RC6KBjyHtmG9bIBounF1ewb1SMnFNtAvaxKIAfHUwW0rT4GAYQf8wwUKmmRAh7G0olZ7IyFS1FTpwskuqQPVQwrSiy_J21kLxIUl_V9J";
-        int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt():198;
+        String fileId = settings.has("fileId")? settings.getAsJsonPrimitive("fileId").getAsString():"464302";
+        String baseUrl = settings.has("baseUrl")? settings.getAsJsonPrimitive("baseUrl").getAsString():"http://api-preprod.ott.kaltura.com/v4_1/api_v3/";
+        String ks = settings.has("ks")? settings.getAsJsonPrimitive("ks").getAsString():"djJ8MTk4fN86RC6KBjyHtmG9bIBounF1ewb1SMnFNtAvaxKIAfHUwW0rT4GAYQf8wwUKmmRAh7G0olZ7IyFS1FTpwskuqQPVQwrSiy_J21kLxIUl_V9J";
+        int partnerId = settings.has("partnerId")? settings.getAsJsonPrimitive("partnerId").getAsInt():198;
 
 
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,

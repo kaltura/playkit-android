@@ -198,12 +198,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void onMediaLoaded(PKMediaEntry mediaEntry) {
         
         PKMediaConfig mediaConfig = new PKMediaConfig().setMediaEntry(mediaEntry).setStartPosition(0);
-        PKPluginSettings pluginConfig = new PKPluginSettings();
+        PKPluginSettings pluginSettings = new PKPluginSettings();
         if (player == null) {
 
-            configurePlugins(pluginConfig);
+            configurePlugins(pluginSettings);
 
-            player = PlayKitManager.loadPlayer(pluginConfig, this);
+            player = PlayKitManager.loadPlayer(pluginSettings, this);
 
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
@@ -231,11 +231,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         videoSpinner.setOnItemSelectedListener(this);
     }
 
-    private void configurePlugins(PKPluginSettings config) {
+    private void configurePlugins(PKPluginSettings settings) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("delay", 1200);
-        config.setPluginSettings("Sample", jsonObject);
-        addIMAPluginConfig(config);
+        settings.setPluginSettings("Sample", jsonObject);
+        addIMAPluginConfig(settings);
         //config.setPluginConfig("IMASimplePlugin", jsonObject);
         //config.setPluginConfig("KalturaStatistics", jsonObject);
         //config.setPluginConfig("PhoenixAnalytics", jsonObject);
@@ -243,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
-    private void addIMAPluginConfig(PKPluginSettings config) {
+    private void addIMAPluginConfig(PKPluginSettings settings) {
         String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
@@ -254,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //tagTimesMap.put(2.0,"ADTAG");
 
         IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
-        config.setPluginSettings(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
+        settings.setPluginSettings(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
 
     }
     @Override
