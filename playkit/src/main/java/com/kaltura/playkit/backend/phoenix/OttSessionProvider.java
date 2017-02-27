@@ -395,7 +395,7 @@ public class OttSessionProvider extends BaseSessionProvider {
      * @return
      */
     public String encryptSession(){
-        StringBuilder data = new StringBuilder(getSessionToken()).append("[]")
+        StringBuilder data = new StringBuilder(getSessionToken()).append(" ~~ ")
                 .append(refreshToken).append(" ~~ ").append(sessionParams.udid());
 
         return Base64.encodeToString(data.toString().getBytes(), Base64.NO_WRAP);
