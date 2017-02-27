@@ -19,6 +19,8 @@ import com.google.ads.interactivemedia.v3.api.ImaSdkSettings;
 import com.google.ads.interactivemedia.v3.api.UiElement;
 import com.google.ads.interactivemedia.v3.api.player.ContentProgressProvider;
 import com.google.ads.interactivemedia.v3.api.player.VideoProgressUpdate;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -147,12 +149,22 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED);
 
         //----------------------------//
-        adConfig = (IMAConfig) config;
+        adConfig = parseConfig(config);
         adUiContainer = player.getView();
 
         imaSetup();
 
         requestAdsFromIMA(adConfig.getAdTagURL());
+    }
+    
+    private static IMAConfig parseConfig(Object config) {
+        if (config instanceof IMAConfig) {
+            return ((IMAConfig) config);
+        
+        } else if (config instanceof JsonObject) {
+            return new Gson().fromJson(((JsonObject) config), IMAConfig.class);
+        }
+        return null;
     }
 
     private void imaSetup() {
@@ -239,7 +251,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         log.d("Start onUpdateConfig");
 
         // TODO: is this the correct fix?
-        adConfig = (IMAConfig) config;
+        adConfig = parseConfig(config);
         
 //        
 //        if (key.equals(IMAConfig.AD_TAG_LANGUAGE)) {
