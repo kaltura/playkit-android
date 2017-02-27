@@ -100,11 +100,11 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     };
 
     @Override
-    protected void onLoad(Player player, Object settings, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
         messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
-        this.pluginConfig = (JsonObject) settings;
+        this.pluginConfig = (JsonObject) config;
         this.messageBus = messageBus;
     }
 
@@ -123,10 +123,10 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     }
 
     @Override
-    protected void onUpdateSettings(Object settings) {
+    protected void onUpdateConfig(Object config) {
         
         // TODO: is this the correct fix?
-        this.pluginConfig = (JsonObject) settings;
+        this.pluginConfig = (JsonObject) config;
         
 //        if (pluginConfig.has(key)){
 //            pluginConfig.addProperty(key, settings.toString());

@@ -64,11 +64,11 @@ public class YouboraPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onUpdateSettings(Object settings) {
+    protected void onUpdateConfig(Object config) {
         log.d("youbora - onUpdateConfig");
         
         // TODO: is this the right fix?
-        this.pluginConfig = (JsonObject) settings;
+        this.pluginConfig = (JsonObject) config;
         
 //        if (pluginConfig.has(key)){
 //            pluginConfig.addProperty(key, settings.toString());
@@ -96,10 +96,10 @@ public class YouboraPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onLoad(final Player player, Object settings, final MessageBus messageBus, Context context) {
+    protected void onLoad(final Player player, Object config, final MessageBus messageBus, Context context) {
         this.mediaConfig = mediaConfig;
         this.player = player;
-        this.pluginConfig = (JsonObject) settings;
+        this.pluginConfig = (JsonObject) config;
         this.context = context;
         this.messageBus = messageBus;
         pluginManager = new YouboraLibraryManager(new Options(), messageBus, mediaConfig, player);

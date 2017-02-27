@@ -38,7 +38,8 @@ public class PlayKitManager {
     }
 
     /**
-     * @deprecated Use {@link #loadPlayer(PKPluginSettings, Context)}
+     * @deprecated Use {@link #loadPlayer(PKPluginConfigs, Context)}. The {@link PlayerConfig#media} 
+     * field is ignored when loading the player.
      * @param playerConfig
      * @param context
      * @return
@@ -48,7 +49,7 @@ public class PlayKitManager {
         return loadPlayer(playerConfig.plugins, context);
     }
     
-    public static Player loadPlayer(PKPluginSettings pluginConfigs, Context context) {
+    public static Player loadPlayer(PKPluginConfigs pluginConfigs, Context context) {
 
         MediaSupport.initialize(context);
         

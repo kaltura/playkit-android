@@ -39,7 +39,7 @@ class PlayerLoader extends PlayerDecoratorBase {
         this.messageBus = new MessageBus();
     }
     
-    public void load(@NonNull PKPluginSettings pluginsConfig) {
+    public void load(@NonNull PKPluginConfigs pluginsConfig) {
         PlayerController playerController = new PlayerController(context);
         
         playerController.setEventListener(new PKEvent.Listener() {
@@ -51,7 +51,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         Player player = playerController;
 
-        for (Map.Entry<String, Object> entry : pluginsConfig.getPluginSettingsMap().entrySet()) {
+        for (Map.Entry<String, Object> entry : pluginsConfig.getPluginConfigsMap().entrySet()) {
             String name = entry.getKey();
             PKPlugin plugin = loadPlugin(name, player, entry.getValue(), messageBus, context);
 
@@ -77,7 +77,7 @@ class PlayerLoader extends PlayerDecoratorBase {
     public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
         LoadedPlugin loadedPlugin = loadedPlugins.get(pluginName);
         if (loadedPlugin != null) {
-            loadedPlugin.plugin.onUpdateSettings(value);
+            loadedPlugin.plugin.onUpdateConfig(value);
         }
     }
 
@@ -135,10 +135,10 @@ class PlayerLoader extends PlayerDecoratorBase {
         setPlayer(currentLayer);
     }
 
-    private PKPlugin loadPlugin(String name, Player player, Object settings, MessageBus messageBus, Context context) {
+    private PKPlugin loadPlugin(String name, Player player, Object config, MessageBus messageBus, Context context) {
         PKPlugin plugin = PlayKitManager.createPlugin(name);
         if (plugin != null) {
-            plugin.onLoad(player, settings, messageBus, context);
+            plugin.onLoad(player, config, messageBus, context);
         }
         return plugin;
     }

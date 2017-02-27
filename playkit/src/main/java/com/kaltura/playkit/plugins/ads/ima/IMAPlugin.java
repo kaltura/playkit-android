@@ -128,7 +128,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     ///////////END PKPlugin
     @Override
-    protected void onLoad(Player player, Object settings, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
         this.player = player;
         if (player == null) {
             log.e("Error, player instance is null.");
@@ -147,7 +147,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED);
 
         //----------------------------//
-        adConfig = (IMAConfig) settings;
+        adConfig = (IMAConfig) config;
         adUiContainer = player.getView();
 
         imaSetup();
@@ -235,11 +235,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     @Override
-    protected void onUpdateSettings(Object settings) {
+    protected void onUpdateConfig(Object config) {
         log.d("Start onUpdateConfig");
 
         // TODO: is this the correct fix?
-        adConfig = (IMAConfig) settings;
+        adConfig = (IMAConfig) config;
         
 //        
 //        if (key.equals(IMAConfig.AD_TAG_LANGUAGE)) {
