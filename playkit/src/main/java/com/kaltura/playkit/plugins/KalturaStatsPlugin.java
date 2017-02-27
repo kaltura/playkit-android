@@ -107,7 +107,7 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     private Player player;
     private PKMediaConfig mediaConfig;
-    private JsonObject settings;
+    private JsonObject pluginConfig;
     private MessageBus messageBus;
     private RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
@@ -150,7 +150,7 @@ public class KalturaStatsPlugin extends PKPlugin {
         messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
-        this.settings = (JsonObject) settings;
+        this.pluginConfig = (JsonObject) settings;
         this.messageBus = messageBus;
         log.d("onLoad finished");
     }
@@ -171,7 +171,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     @Override
     protected void onUpdateSettings(Object settings) {
         // TODO: is this the right fix?
-        this.settings = (JsonObject) settings;
+        this.pluginConfig = (JsonObject) settings;
 //        if (pluginConfig.has(key)) {
 //            pluginConfig.addProperty(key, settings.toString());
 //        }
@@ -373,7 +373,7 @@ public class KalturaStatsPlugin extends PKPlugin {
      * Time interval handling play reached events
      */
     private void startTimerInterval() {
-        int timerInterval = settings.has("timerInterval") ? settings.getAsJsonPrimitive("timerInterval").getAsInt() * (int)Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
+        int timerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int)Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
         if (timer == null) {
             timer = new java.util.Timer();
         }
@@ -404,10 +404,10 @@ public class KalturaStatsPlugin extends PKPlugin {
      * @param eventType - Enum stating Kaltura state events
      */
     private void sendAnalyticsEvent(final KStatsEvent eventType) {
-        String sessionId = settings.has("sessionId") ? settings.getAsJsonPrimitive("sessionId").getAsString() : "";
-        int uiconfId = settings.has("uiconfId") ? settings.getAsJsonPrimitive("uiconfId").getAsInt() : 0;
-        String baseUrl = settings.has("baseUrl") ? settings.getAsJsonPrimitive("baseUrl").getAsString() : BASE_URL;
-        int partnerId = settings.has("partnerId") ? settings.getAsJsonPrimitive("partnerId").getAsInt() : 0;
+        String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
+        int uiconfId = pluginConfig.has("uiconfId") ? pluginConfig.getAsJsonPrimitive("uiconfId").getAsInt() : 0;
+        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : BASE_URL;
+        int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
         long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration() / 1000;
 
         // Parameters for the request -

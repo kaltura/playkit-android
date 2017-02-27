@@ -55,7 +55,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private long lastReportedBitrate = -1;
     private Player player;
     private PKMediaConfig mediaConfig;
-    private JsonObject settings;
+    private JsonObject pluginConfig;
     private MessageBus messageBus;
     private RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
@@ -88,7 +88,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY);
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
-        this.settings = (JsonObject) settings;
+        this.pluginConfig = (JsonObject) settings;
         this.messageBus = messageBus;
     }
 
@@ -108,7 +108,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     @Override
     protected void onUpdateSettings(Object settings) {
         // TODO: is this the right fix?
-        this.settings = (JsonObject) settings;
+        this.pluginConfig = (JsonObject) settings;
 //        if (pluginConfig.has(key)) {
 //            pluginConfig.addProperty(key, settings.toString());
 //        }
@@ -181,7 +181,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     }
 
     private void startTimerInterval() {
-        int timerInterval = settings.has("timerInterval") ? settings.getAsJsonPrimitive("timerInterval").getAsInt() * (int)Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
+        int timerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int)Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
 
         if (timer == null) {
             timer = new java.util.Timer();
@@ -212,9 +212,9 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     }
 
     private void sendLiveEvent(long bufferTime) {
-        String sessionId = settings.has("sessionId") ? settings.getAsJsonPrimitive("sessionId").getAsString() : "";
-        String baseUrl = settings.has("baseUrl") ? settings.getAsJsonPrimitive("baseUrl").getAsString() : BASE_URL;
-        int partnerId = settings.has("partnerId") ? settings.getAsJsonPrimitive("partnerId").getAsInt() : 0;
+        String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
+        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : BASE_URL;
+        int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
 
         // Parameters for the request -
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,

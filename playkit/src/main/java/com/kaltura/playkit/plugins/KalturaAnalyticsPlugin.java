@@ -63,7 +63,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
 
     private Player player;
     private PKMediaConfig mediaConfig;
-    private JsonObject settings;
+    private JsonObject pluginConfig;
     private MessageBus messageBus;
     private RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
@@ -104,7 +104,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
-        this.settings = (JsonObject) settings;
+        this.pluginConfig = (JsonObject) settings;
         this.messageBus = messageBus;
     }
 
@@ -126,7 +126,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     protected void onUpdateSettings(Object settings) {
         
         // TODO: is this the correct fix?
-        this.settings = (JsonObject) settings;
+        this.pluginConfig = (JsonObject) settings;
         
 //        if (pluginConfig.has(key)){
 //            pluginConfig.addProperty(key, settings.toString());
@@ -234,7 +234,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     }
 
     private void startTimeObservorInterval() {
-        int timerInterval = settings.has("timerInterval") ? settings.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
+        int timerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
         if (timer == null) {
             timer = new java.util.Timer();
         }
@@ -260,10 +260,10 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     }
 
     private void sendAnalyticsEvent(final KAnalonyEvents eventType) {
-        String sessionId = settings.has("sessionId")? settings.get("sessionId").toString(): "";
-        int uiconfId = settings.has("uiconfId")? Integer.valueOf(settings.get("uiconfId").toString()): 0;
-        String baseUrl = settings.has("baseUrl")? settings.getAsJsonPrimitive("baseUrl").getAsString(): BASE_URL;
-        int partnerId = settings.has("partnerId")? settings.getAsJsonPrimitive("partnerId").getAsInt(): 0;
+        String sessionId = pluginConfig.has("sessionId")? pluginConfig.get("sessionId").toString(): "";
+        int uiconfId = pluginConfig.has("uiconfId")? Integer.valueOf(pluginConfig.get("uiconfId").toString()): 0;
+        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString(): BASE_URL;
+        int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt(): 0;
         String playbackType = isDvr? "dvr":"live";
         int flavourId = -1;
 
