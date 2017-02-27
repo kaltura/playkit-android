@@ -119,7 +119,7 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
-        player.updatePluginConfig(pluginName, key, value);
+    public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
+        player.updatePluginConfig(pluginName, pluginConfig);
     }
 }

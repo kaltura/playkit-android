@@ -74,10 +74,10 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     @Override
-    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
+    public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         LoadedPlugin loadedPlugin = loadedPlugins.get(pluginName);
         if (loadedPlugin != null) {
-            loadedPlugin.plugin.onUpdateConfig(value);
+            loadedPlugin.plugin.onUpdateConfig(pluginConfig);
         }
     }
 

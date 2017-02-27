@@ -317,7 +317,7 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
+    public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         Assert.shouldNeverHappen();
     }
 

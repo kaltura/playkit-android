@@ -25,7 +25,7 @@ public interface Player {
      */
     void prepareNext(@NonNull PKMediaConfig mediaConfig);
 
-    void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value);
+    void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
 
     /**
      * Load the entry that was prepared with {@link #prepareNext(PKMediaConfig)}.
