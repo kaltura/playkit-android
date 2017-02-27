@@ -278,7 +278,6 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
 
     @Override
     public long getCurrentPosition() {
-        log.d("getCurrentPosition");
         if (player == null || !PREPARED.equals(prepareState)) {
             return 0;
         }
@@ -288,7 +287,6 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
 
     @Override
     public long getDuration() {
-        log.d("getDuration ");
         if (player == null || !PREPARED.equals(prepareState)) {
             return 0;
         }
