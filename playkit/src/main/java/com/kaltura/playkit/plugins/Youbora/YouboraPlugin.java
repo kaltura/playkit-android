@@ -19,7 +19,6 @@ import java.util.Map;
  */
 
 public class YouboraPlugin extends PKPlugin {
-    private static final String TAG = "YouboraPlugin";
     private static final PKLog log = PKLog.get("YouboraPlugin");
 
     private static YouboraLibraryManager pluginManager;
@@ -27,7 +26,6 @@ public class YouboraPlugin extends PKPlugin {
 
     private PKMediaConfig mediaConfig;
     private JsonObject pluginConfig;
-    private Context context;
     private Player player;
     private MessageBus messageBus;
     private boolean adAnalytics = false;
@@ -97,10 +95,8 @@ public class YouboraPlugin extends PKPlugin {
 
     @Override
     protected void onLoad(final Player player, Object config, final MessageBus messageBus, Context context) {
-        this.mediaConfig = mediaConfig;
         this.player = player;
         this.pluginConfig = (JsonObject) config;
-        this.context = context;
         this.messageBus = messageBus;
         pluginManager = new YouboraLibraryManager(new Options(), messageBus, mediaConfig, player);
         loadPlugin();

@@ -187,7 +187,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public Double getMediaDuration() {
-        return Long.valueOf(mediaConfig.getMediaEntry().getDuration()).doubleValue();
+        return mediaConfig == null ? 0 : Long.valueOf(mediaConfig.getMediaEntry().getDuration()).doubleValue();
     }
 
     public String getRendition() {
@@ -207,7 +207,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public Boolean getIsLive() {
-        return (mediaConfig.getMediaEntry().getMediaType() == PKMediaEntry.MediaEntryType.Live);
+        return mediaConfig != null && (mediaConfig.getMediaEntry().getMediaType() == PKMediaEntry.MediaEntryType.Live);
     }
 
 }
