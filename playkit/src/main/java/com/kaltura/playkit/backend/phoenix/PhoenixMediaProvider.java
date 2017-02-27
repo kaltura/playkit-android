@@ -34,6 +34,8 @@ import com.kaltura.playkit.connect.ResponseElement;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static com.kaltura.playkit.PKDrmParams.Scheme.playready;
@@ -374,26 +376,28 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     static class ProviderParser {
 
-        public static PKMediaEntry getMedia(String assetId, List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources) {
+        public static PKMediaEntry getMedia(String assetId, final List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources) {
 
             PKMediaEntry mediaEntry = new PKMediaEntry();
             mediaEntry.setId("" + assetId);
 
-            ArrayList<PKMediaSource> sources = sourcesFilter!= null ? new ArrayList<PKMediaSource>(sourcesFilter.size()) : new ArrayList<PKMediaSource>();
+            // until the response will be delivered in the right order:
+            playbackSourcesSort(sourcesFilter, playbackSources);
+
+            ArrayList<PKMediaSource> sources = new ArrayList<>();
+
             long maxDuration = 0;
+
             if (playbackSources != null) {
+
                 // if provided, only the "formats" matching MediaFiles should be parsed and added to the PKMediaEntry media sources
                 for (KalturaPlaybackSource playbackSource : playbackSources) {
 
-                    int filterValueIndex = -1;
-                    if(sourcesFilter != null) {
-                        filterValueIndex = sourcesFilter.indexOf(playbackSource.getType());
-                        if (filterValueIndex == -1) {
-                            filterValueIndex = sourcesFilter.indexOf(playbackSource.getId() + "");
-                        }
-                    }
+                    boolean inSourceFilter = sourcesFilter != null &&
+                            (sourcesFilter.contains(playbackSource.getType()) ||
+                                    sourcesFilter.contains(playbackSource.getId()+""));
 
-                    if (sourcesFilter != null && filterValueIndex == -1) { // if specific formats/fileIds were requested, only those will be added to the sources.
+                    if (sourcesFilter != null && !inSourceFilter) { // if specific formats/fileIds were requested, only those will be added to the sources.
                         continue;
                     }
 
@@ -417,15 +421,35 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                         pkMediaSource.setDrmData(drmParams);
                     }
 
-                    // needed to order the sources according to the requested formats/fileIds order
-                    // can be removed once implemented on server.
-                    int position = filterValueIndex != -1 ? filterValueIndex : sources.size();
-                    sources.add(position, pkMediaSource);
-
+                    sources.add(pkMediaSource);
                     maxDuration = Math.max(playbackSource.getDuration(), maxDuration);
                 }
             }
             return mediaEntry.setDuration(maxDuration).setSources(sources).setMediaType(MediaTypeConverter.toMediaEntryType(""));
+        }
+
+        //TODO: check why we get all sources while we asked for 4 specific formats
+
+        // needed to sort the playback source result to be in the same order as in the requested list.
+        private static void playbackSourcesSort(final List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources) {
+            Collections.sort(playbackSources, new Comparator<KalturaPlaybackSource>() {
+                @Override
+                public int compare(KalturaPlaybackSource o1, KalturaPlaybackSource o2) {
+
+                    int valueIndex1 = -1;
+                    int valueIndex2 = -1;
+                    if(sourcesFilter != null) {
+                        valueIndex1 = sourcesFilter.indexOf(o1.getType());
+                        if (valueIndex1 == -1) {
+                            valueIndex1 = sourcesFilter.indexOf(o1.getId() + "");
+                            valueIndex2 = sourcesFilter.indexOf(o2.getId() + "");
+                        } else {
+                            valueIndex2 = sourcesFilter.indexOf(o2.getType());
+                        }
+                    }
+                    return valueIndex1 - valueIndex2;
+                }
+            });
         }
     }
 

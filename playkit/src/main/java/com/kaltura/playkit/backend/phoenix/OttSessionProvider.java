@@ -396,7 +396,7 @@ public class OttSessionProvider extends BaseSessionProvider {
      */
     public String encryptSession(){
         StringBuilder data = new StringBuilder(getSessionToken()).append("[]")
-                .append(refreshToken).append("[]").append(sessionParams.udid());
+                .append(refreshToken).append(" ~~ ").append(sessionParams.udid());
 
         return Base64.encodeToString(data.toString().getBytes(), Base64.NO_WRAP);
     }
@@ -407,7 +407,7 @@ public class OttSessionProvider extends BaseSessionProvider {
      */
     public void recoverSession(String encryptSession){
         String decrypt = new String(Base64.decode(encryptSession, Base64.NO_WRAP));
-        String[] data = decrypt.split("[/]");
+        String[] data = decrypt.split(" ~~ ");
         maintainSession(data[0], data[1], DummyUserId, data[2]);
     }
 
