@@ -95,6 +95,42 @@ public class SessionProviderAndroidTest extends BaseTest {
     }
 
     @Test
+    public void testOttSessionProviderRecovery() {
+        final OttSessionProvider ottSessionProvider = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
+        String sessionData;
+        ottSessionProvider.startSession(PnxUsername, PnxPassword, null, new OnCompletion<PrimitiveResult>() {
+            @Override
+            public void onComplete(PrimitiveResult response) {
+                if (response.error != null) {
+                    Log.e("testOttSessionProvider", "failed to establish a session: " + response.error.getMessage());
+                    resume();
+                } else {
+                    ottSessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
+                        @Override
+                        public void onComplete(PrimitiveResult response) {
+                            assertNotNull(response.getResult());
+                            assertFalse(response.getResult().equals(""));
+                        }
+                    });
+                    String encryptedSession = ottSessionProvider.encryptSession();
+                    OttSessionProvider newSession = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
+                    newSession.recoverSession(encryptedSession);
+                    SessionProviderAndroidTest.this.wait(10000);
+                    newSession.getSessionToken(new OnCompletion<PrimitiveResult>() {
+                        @Override
+                        public void onComplete(PrimitiveResult response) {
+                            assertNotNull(response.getResult());
+                            resume();
+                        }
+                    });
+                }
+            }
+        });
+        wait(1);
+    }
+
+
+                            @Test
     public void testOttAnonymousSession() {
         final OttSessionProvider ottSessionProvider = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
 

@@ -41,7 +41,7 @@ public class OttSessionProvider extends BaseSessionProvider {
     public static final long TimeDelta = 2 * 60 * 60;//hour in seconds
     private static final String TAG = "BaseResult";
     public static final int DeltaPercent = 12;
-    public static final long IMMEDIATE_REFRESH = 0;
+    public static final long IMMEDIATE_REFRESH = 1;
     public static final String DummyUserId = "1";
 
     private OttSessionParams sessionParams;
@@ -212,7 +212,7 @@ public class OttSessionProvider extends BaseSessionProvider {
         this.sessionParams = new OttSessionParams().setUdid(udid);
         this.refreshToken = refreshToken;
         this.setSession(ks, Unset, userId);
-        scheduleRefreshSessionTask(IMMEDIATE_REFRESH);
+        //scheduleRefreshSessionTask(IMMEDIATE_REFRESH);
     }
 
 
@@ -381,8 +381,12 @@ public class OttSessionProvider extends BaseSessionProvider {
     @Override
     protected void setSession(String sessionToken, long expiry, String userId) {
         super.setSession(sessionToken, expiry, userId);
-        updateRefreshDelta(expiry);
-        scheduleRefreshSessionTask(expiry - refreshDelta);
+        long delay = 1;
+        if(expiry != Unset) {
+            updateRefreshDelta(expiry);
+            delay = expiry - refreshDelta;
+        }
+        scheduleRefreshSessionTask(delay);
     }
 
     private void updateRefreshDelta(long expiry) {
@@ -405,10 +409,14 @@ public class OttSessionProvider extends BaseSessionProvider {
      * maintain session recovered from encrypt session info.
      * @param encryptSession
      */
-    public void recoverSession(String encryptSession){
+    public boolean recoverSession(String encryptSession){
         String decrypt = new String(Base64.decode(encryptSession, Base64.NO_WRAP));
         String[] data = decrypt.split(" ~~ ");
+        if(data.length < 2){
+            return false;
+        }
         maintainSession(data[0], data[1], DummyUserId, data[2]);
+        return true;
     }
 
 
