@@ -41,6 +41,7 @@ import static com.kaltura.playkit.backend.MockParams.PnxPassword;
 import static com.kaltura.playkit.backend.MockParams.PnxUsername;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
@@ -119,6 +120,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                         public void onComplete(PrimitiveResult response) {
 
                             assertNotNull(response.getResult());
+                            assertNull(response.error);
                             resume();
 
                         }

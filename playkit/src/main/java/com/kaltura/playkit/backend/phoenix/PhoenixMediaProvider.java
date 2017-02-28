@@ -81,6 +81,12 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         public List<String> mediaFileIds;
 
+        public String protocol;
+
+        public MediaAsset(){
+            protocol = "https";
+        }
+
         public boolean hasFormats() {
             return formats != null && formats.size() > 0;
         }
@@ -239,6 +245,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             if (mediaAsset.mediaFileIds != null) { // else - will fetch all available sources
                 contextOptions.setMediaFileIds(mediaAsset.mediaFileIds);
             }
+
+            contextOptions.setMediaProtocol(mediaAsset.protocol);
 
             return AssetService.getPlaybackContext(baseUrl, ks, mediaAsset.assetId,
                     mediaAsset.assetType, contextOptions);
