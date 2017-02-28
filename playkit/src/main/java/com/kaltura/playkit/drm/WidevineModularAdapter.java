@@ -300,8 +300,8 @@ class WidevineModularAdapter extends DrmAdapter {
             return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest);
         } catch (Exception e) {
             e.printStackTrace();
+            throw new IOException("Can't send key request for registration", e);
         }
-        return null;
     }
 
     private HttpDataSource.Factory buildDataSourceFactory() {
