@@ -114,15 +114,16 @@ public class SessionProviderAndroidTest extends BaseTest {
                     });
                     String encryptedSession = ottSessionProvider.encryptSession();
                     OttSessionProvider newSession = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
-                    newSession.recoverSession(encryptedSession);
-                    SessionProviderAndroidTest.this.wait(10000);
-                    newSession.getSessionToken(new OnCompletion<PrimitiveResult>() {
+                    newSession.recoverSession(encryptedSession, new OnCompletion<PrimitiveResult>() {
                         @Override
                         public void onComplete(PrimitiveResult response) {
+
                             assertNotNull(response.getResult());
                             resume();
+
                         }
                     });
+
                 }
             }
         });

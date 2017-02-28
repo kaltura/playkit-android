@@ -53,6 +53,9 @@ public class OttSessionProvider extends BaseSessionProvider {
     private ScheduledThreadPoolExecutor refreshScheduleExecutor;
     private AtomicBoolean refreshInProgress = new AtomicBoolean(false);
 
+    private OnCompletion<PrimitiveResult> sessionRecoveryCallback;
+
+
     //region refresh callable
     private Callable<Boolean> refreshCallable = new Callable<Boolean>() {
 
@@ -79,7 +82,7 @@ public class OttSessionProvider extends BaseSessionProvider {
 
             refreshInProgress.set(true);
 
-            refreshSessionToken();
+            refreshSessionCall();
             return true;
         }
     };
@@ -208,11 +211,11 @@ public class OttSessionProvider extends BaseSessionProvider {
      * @param userId
      * @param udid
      */
-    public void maintainSession(@NonNull String ks, String refreshToken, String userId, String udid){
+    public void maintainSession(@NonNull String ks, String refreshToken, String userId, String udid, OnCompletion<PrimitiveResult> sessionRecoveryCallback){
         this.sessionParams = new OttSessionParams().setUdid(udid);
         this.refreshToken = refreshToken;
-        this.setSession(ks, Unset, userId);
-        //scheduleRefreshSessionTask(IMMEDIATE_REFRESH);
+        this.sessionRecoveryCallback = sessionRecoveryCallback;
+        setSession(ks, Unset, userId);
     }
 
 
@@ -312,10 +315,7 @@ public class OttSessionProvider extends BaseSessionProvider {
     }
 
 
-    private void refreshSessionToken() {
-        /*if (refreshToken == null) {
-            return;
-        }*/
+    private void refreshSessionCall() {
         // multi request needed to fetch the new expiration date.
         MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
         multiRequest.add(OttUserService.refreshSession(apiBaseUrl, getSessionToken(), refreshToken, sessionParams.udid),
@@ -323,11 +323,15 @@ public class OttSessionProvider extends BaseSessionProvider {
                 .completion(new OnRequestCompletion() {
                     @Override
                     public void onComplete(ResponseElement response) {
+
                         refreshInProgress.set(false);
+
+                        PrimitiveResult refreshResult = null;
+
                         if (response != null && response.isSuccess()) {
                             List<BaseResult> responses = PhoenixParser.parse(response.getResponse());
                             if (responses.get(0).error != null) {
-                                PKLog.e(TAG, "failed to refresh session. token may be invalid and cause ");
+                                PKLog.e(TAG, "failed to refresh session. token may be invalid and cause access issues. ");
                                 // session may have still time before it expires so actually if fails, do nothing.
 
                             } else {// refresh success
@@ -339,7 +343,15 @@ public class OttSessionProvider extends BaseSessionProvider {
                                     setSession(session.getKs(), session.getExpiry(), session.getUserId()); // save new session
                                 }
 
+                                refreshResult = new PrimitiveResult(getSessionToken());
                             }
+                        }
+                        if(sessionRecoveryCallback != null){
+                            sessionRecoveryCallback.onComplete(refreshResult != null ?
+                                    refreshResult :
+                                    new PrimitiveResult(ErrorElement.SessionError.message("failed to recover session")));
+
+                            sessionRecoveryCallback = null;
                         }
                     }
                 });
@@ -409,13 +421,13 @@ public class OttSessionProvider extends BaseSessionProvider {
      * maintain session recovered from encrypt session info.
      * @param encryptSession
      */
-    public boolean recoverSession(String encryptSession){
+    public boolean recoverSession(String encryptSession, OnCompletion<PrimitiveResult> sessionRecoveryCallback){
         String decrypt = new String(Base64.decode(encryptSession, Base64.NO_WRAP));
         String[] data = decrypt.split(" ~~ ");
         if(data.length < 2){
             return false;
         }
-        maintainSession(data[0], data[1], DummyUserId, data[2]);
+        maintainSession(data[0], data[1], DummyUserId, data.length >= 3 && !data[2].equals("null") ? data[2] : null, sessionRecoveryCallback);
         return true;
     }
 
