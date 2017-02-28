@@ -41,6 +41,8 @@ import com.kaltura.playkit.utils.Consts;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_ENDED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_STARTED;
@@ -95,6 +97,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     ////////////////////
     private MessageBus messageBus;
 
+    private AdDisplayContainer adDisplayContainer;
+    private CountDownTimer adManagerTimer;
+    private boolean adPlaybackCancelled;
+    private Timer adDisplayedCheckTimer;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -119,9 +125,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             });
         }
     };
-    private AdDisplayContainer adDisplayContainer;
-    private CountDownTimer adManagerTimer;
-    private boolean adPlaybackCancelled;
 
     @Override
     protected PlayerDecorator getPlayerDecorator() {
@@ -267,6 +270,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         log.d("IMA onApplicationPaused");
         appIsInBackground = true;
         pause();
+        cancelAdDisplayedCheckTimer();
     }
 
     @Override
@@ -291,11 +295,14 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 //adsManager.resume();
             }
         }
+        initAdDisplayedCheckTimer();
     }
 
     @Override
     protected void onDestroy() {
         log.d("IMA Start onDestroy");
+        cancelAdDisplayedCheckTimer();
+
         if (adManagerTimer != null) {
             adManagerTimer.cancel();
             adManagerTimer = null;
@@ -516,6 +523,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                         player.getView().hideVideoSurface();
                     }
                 }
+                initAdDisplayedCheckTimer();
                 break;
             case CONTENT_RESUME_REQUESTED:
                 // AdEventType.CONTENT_RESUME_REQUESTED is fired when the ad is completed
@@ -579,6 +587,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             case COMPLETED:
                 log.d("AD COMPLETED");
                 messageBus.post(new AdEvent(AdEvent.Type.COMPLETED));
+                cancelAdDisplayedCheckTimer();
                 break;
             case FIRST_QUARTILE:
                 messageBus.post(new AdEvent(AdEvent.Type.FIRST_QUARTILE));
@@ -591,6 +600,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 break;
             case SKIPPED:
                 messageBus.post(new AdEvent(AdEvent.Type.SKIPPED));
+                cancelAdDisplayedCheckTimer();
                 break;
             case CLICKED:
                 isAdIsPaused = true;
@@ -639,10 +649,48 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     }
                     log.e("Ad Error " + error);
                 }
+                if (!isAdDisplayed) {
+                    cancelAdDisplayedCheckTimer();
+                }
+
                 messageBus.post(new AdError(AdError.Type.QUIET_LOG_ERROR, error));
                 break;
             default:
                 break;
+        }
+    }
+
+    private void initAdDisplayedCheckTimer() {
+        final Handler handler = new Handler();
+        adDisplayedCheckTimer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    public void run() {
+                        try {
+                            if (adsManager != null && adsManager.getAdProgress() != null) {
+                                float currentTime = adsManager.getAdProgress().getCurrentTime();
+                                if (currentTime > 0) {
+                                    log.d("AD Displayed delay check : ad duration " + currentTime);
+                                    isAdDisplayed = true;
+                                    messageBus.post(new AdEvent(AdEvent.Type.AD_DISPLAYED_AFTER_CONTENT_PAUSE));
+                                    adDisplayedCheckTimer.cancel();
+                                }
+                            }
+                        } catch (Exception e) {
+                            // TODO Auto-generated catch block
+                        }
+                    }
+                });
+            }
+        };
+        adDisplayedCheckTimer.schedule(timerTask, 0, IMAConfig.DEFAULT_AD_LOAD_COUNT_DOWN_TICK);
+    }
+
+    private void cancelAdDisplayedCheckTimer() {
+        if (adDisplayedCheckTimer != null) {
+            adDisplayedCheckTimer.cancel();
         }
     }
 
@@ -709,6 +757,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         isAdRequested = true;
         isAdDisplayed = false;
 
+        cancelAdDisplayedCheckTimer();
         String errorMessage = adErrorEvent.getError().getMessage();
         switch (adErrorEvent.getError().getErrorCode()) {
             case INTERNAL_ERROR:
