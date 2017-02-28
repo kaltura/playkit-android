@@ -226,17 +226,19 @@ public class OttSessionProvider extends BaseSessionProvider {
         if (sessionParams != null) {
             if (sessionParams.username != null) {
                 startSession(sessionParams.username, sessionParams.password, sessionParams.udid, completion);
+                return;
 
             } else if(getUserSessionType().equals(UserSessionType.Anonymous) /*sessionParams.isAnonymous*/) {
                 startAnonymousSession(sessionParams.udid, completion);
+                return;
             } // ?? in case session with no user credential expires, should we login as anonymous or return empty ks?
 
-        } else {
-            Log.e(TAG, "sessionParams are not available can't create/renew session.");
-            //Log.e(TAG, "Session was ended or failed to start when this was called.\nCan't recover session if not started before");
-            //completion.onComplete(new PrimitiveResult().error(ErrorElement.SessionError.message("Session expired")));
-            completion.onComplete(new PrimitiveResult(""));
         }
+
+        Log.e(TAG, "parameters needed for background session reneal are not available.");
+        //completion.onComplete(new PrimitiveResult().error(ErrorElement.SessionError.message("Session expired")));
+        completion.onComplete(new PrimitiveResult((String)null));//returns empty ks
+
     }
 
     /**
@@ -349,7 +351,7 @@ public class OttSessionProvider extends BaseSessionProvider {
                         if(sessionRecoveryCallback != null){
                             sessionRecoveryCallback.onComplete(refreshResult != null ?
                                     refreshResult :
-                                    new PrimitiveResult(ErrorElement.SessionError.message("failed to recover session")));
+                                    new PrimitiveResult(ErrorElement.SessionError.addMessage(" FAILED TO RECOVER SESSION!!")));
 
                             sessionRecoveryCallback = null;
                         }
