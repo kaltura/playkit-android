@@ -142,7 +142,7 @@ public class OttSessionProvider extends BaseSessionProvider {
         this.sessionParams = new OttSessionParams().setPassword(password).setUsername(username).setUdid(udid);
 
         MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
-        multiRequest.add(OttUserService.userLogin(apiBaseUrl, partnerId, sessionParams.username, sessionParams.password),
+        multiRequest.add(OttUserService.userLogin(apiBaseUrl, partnerId, sessionParams.username, sessionParams.password, udid),
                 PhoenixSessionService.get(apiBaseUrl, "{1:result:loginSession:ks}")).
                 completion(new OnRequestCompletion() {
                     @Override
