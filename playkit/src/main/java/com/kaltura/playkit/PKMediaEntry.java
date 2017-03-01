@@ -1,5 +1,6 @@
 package com.kaltura.playkit;
 
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -79,6 +80,8 @@ public class PKMediaEntry implements Parcelable{
         dest.writeString(mediaType.name());
         if(metadata != null) {
             dest.writeBundle(Utils.mapToBundle(metadata));
+        } else {
+            dest.writeBundle(new Bundle());
         }
         if(sources != null){
             dest.writeTypedList(sources);
