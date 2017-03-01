@@ -1,6 +1,9 @@
 package com.kaltura.playkit;
 
-public class PKDrmParams {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class PKDrmParams implements Parcelable {
 
     public enum Scheme {
 
@@ -20,6 +23,11 @@ public class PKDrmParams {
         this.scheme = scheme;
     }
 
+    protected PKDrmParams(Parcel in) {
+        licenseUri = in.readString();
+        scheme = Utils.byValue(Scheme.class, in.readString());//Scheme.valueOf(in.readString());
+    }
+
     public String getLicenseUri() {
         return licenseUri;
     }
@@ -34,5 +42,28 @@ public class PKDrmParams {
 
     public void setScheme(Scheme scheme) {
         this.scheme = scheme;
+    }
+
+    public static final Creator<PKDrmParams> CREATOR = new Creator<PKDrmParams>() {
+        @Override
+        public PKDrmParams createFromParcel(Parcel in) {
+            return new PKDrmParams(in);
+        }
+
+        @Override
+        public PKDrmParams[] newArray(int size) {
+            return new PKDrmParams[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(licenseUri);
+        dest.writeString(scheme.name());
     }
 }

@@ -235,7 +235,7 @@ public class OttSessionProvider extends BaseSessionProvider {
 
         }
 
-        Log.e(TAG, "parameters needed for background session reneal are not available.");
+        Log.e(TAG, "parameters needed for background session renewal are not available.");
         //completion.onComplete(new PrimitiveResult().error(ErrorElement.SessionError.message("Session expired")));
         completion.onComplete(new PrimitiveResult((String)null));//returns empty ks
 
@@ -302,7 +302,7 @@ public class OttSessionProvider extends BaseSessionProvider {
 
     protected String validateSession() {
         long currentDate = System.currentTimeMillis() / 1000;
-        long timeLeft = expiryDate - currentDate;
+        long timeLeft = expiryDate == Unset ? IMMEDIATE_REFRESH : expiryDate - currentDate;
 
         String token = null;
         if (timeLeft > 0) { // validate refreshToken expiration time
