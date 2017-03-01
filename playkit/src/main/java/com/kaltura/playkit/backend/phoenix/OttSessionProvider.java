@@ -129,7 +129,7 @@ public class OttSessionProvider extends BaseSessionProvider {
 
     /**
      * starts new user session
-     * login and gets the session expiration for refresh purposes.
+     * login and get the session expiration for refresh purposes.
      *
      * @param username
      * @param password
