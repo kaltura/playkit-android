@@ -35,7 +35,7 @@ public class DeferredDrmSessionManager<T extends ExoMediaCrypto> implements DrmS
     private EventLogger eventLogger;
     private HttpDataSource.Factory dataSourceFactory;
 
-   public DeferredDrmSessionManager(Handler mainHandler, EventLogger eventLogger, HttpDataSource.Factory factory) {
+    public DeferredDrmSessionManager(Handler mainHandler, EventLogger eventLogger, HttpDataSource.Factory factory) {
         this.mainHandler = mainHandler;
         this.eventLogger = eventLogger;
 
@@ -47,6 +47,7 @@ public class DeferredDrmSessionManager<T extends ExoMediaCrypto> implements DrmS
             drmSessionManager = null;
             return;
         }
+        
         if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
             buildLocalDrmSessionManager(mediaSource);
         } else {
@@ -86,20 +87,57 @@ public class DeferredDrmSessionManager<T extends ExoMediaCrypto> implements DrmS
 
     @Override
     public DrmSession<T> acquireSession(Looper playbackLooper, DrmInitData drmInitData) {
-        if(drmSessionManager == null){
+        if (drmSessionManager == null){
             return null;
         }
 
-        //noinspection unchecked
-        return (DrmSession<T>) drmSessionManager.acquireSession(playbackLooper, drmInitData);
+        return new SessionWrapper<>(playbackLooper, drmInitData, (DrmSessionManager<T>) drmSessionManager);
     }
 
     @Override
     public void releaseSession(DrmSession drmSession) {
-        if(drmSessionManager == null){
-            return;
-        }
-        //noinspection unchecked
-        drmSessionManager.releaseSession(drmSession);
+
+        if (drmSession instanceof SessionWrapper) {
+            ((SessionWrapper) drmSession).release();
+        } else {
+            throw new IllegalStateException("Can't release unknown session");
+        }        
+    }
+}
+
+class SessionWrapper<T extends ExoMediaCrypto> implements DrmSession<T> {
+
+    private DrmSession<T> realDrmSession;
+    private DrmSessionManager<T> realDrmSessionManager;
+
+    SessionWrapper(Looper playbackLooper, DrmInitData drmInitData, DrmSessionManager<T> drmSessionManager) {
+        this.realDrmSession = drmSessionManager.acquireSession(playbackLooper, drmInitData);;
+        this.realDrmSessionManager = drmSessionManager;
+    }
+
+    void release() {
+        realDrmSessionManager.releaseSession(realDrmSession);
+        realDrmSessionManager = null;
+        realDrmSession = null;
+    }
+
+    @Override
+    public int getState() {
+        return realDrmSession.getState();
+    }
+
+    @Override
+    public T getMediaCrypto() {
+        return realDrmSession.getMediaCrypto();
+    }
+
+    @Override
+    public boolean requiresSecureDecoderComponent(String mimeType) {
+        return realDrmSession.requiresSecureDecoderComponent(mimeType);
+    }
+
+    @Override
+    public Exception getError() {
+        return realDrmSession.getError();
     }
 }
