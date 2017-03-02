@@ -6,7 +6,6 @@ import android.os.Looper;
 import com.google.android.exoplayer2.drm.DrmInitData;
 import com.google.android.exoplayer2.drm.DrmSession;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
-import com.google.android.exoplayer2.drm.ExoMediaCrypto;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.google.android.exoplayer2.drm.HttpMediaDrmCallback;
 import com.google.android.exoplayer2.drm.StreamingDrmSessionManager;
@@ -25,7 +24,7 @@ import java.util.List;
  * @hide
  */
 
-public class DeferredDrmSessionManager<T extends ExoMediaCrypto> implements DrmSessionManager<T> {
+public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMediaCrypto> {
 
     private static final PKLog log = PKLog.get("DeferredDrmSessionManager");
 
@@ -86,12 +85,12 @@ public class DeferredDrmSessionManager<T extends ExoMediaCrypto> implements DrmS
     }
 
     @Override
-    public DrmSession<T> acquireSession(Looper playbackLooper, DrmInitData drmInitData) {
+    public DrmSession<FrameworkMediaCrypto> acquireSession(Looper playbackLooper, DrmInitData drmInitData) {
         if (drmSessionManager == null){
             return null;
         }
 
-        return new SessionWrapper<>(playbackLooper, drmInitData, (DrmSessionManager<T>) drmSessionManager);
+        return new SessionWrapper(playbackLooper, drmInitData, drmSessionManager);
     }
 
     @Override
@@ -105,12 +104,12 @@ public class DeferredDrmSessionManager<T extends ExoMediaCrypto> implements DrmS
     }
 }
 
-class SessionWrapper<T extends ExoMediaCrypto> implements DrmSession<T> {
+class SessionWrapper implements DrmSession<FrameworkMediaCrypto> {
 
-    private DrmSession<T> realDrmSession;
-    private DrmSessionManager<T> realDrmSessionManager;
+    private DrmSession<FrameworkMediaCrypto> realDrmSession;
+    private DrmSessionManager<FrameworkMediaCrypto> realDrmSessionManager;
 
-    SessionWrapper(Looper playbackLooper, DrmInitData drmInitData, DrmSessionManager<T> drmSessionManager) {
+    SessionWrapper(Looper playbackLooper, DrmInitData drmInitData, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager) {
         this.realDrmSession = drmSessionManager.acquireSession(playbackLooper, drmInitData);;
         this.realDrmSessionManager = drmSessionManager;
     }
@@ -127,7 +126,7 @@ class SessionWrapper<T extends ExoMediaCrypto> implements DrmSession<T> {
     }
 
     @Override
-    public T getMediaCrypto() {
+    public FrameworkMediaCrypto getMediaCrypto() {
         return realDrmSession.getMediaCrypto();
     }
 
