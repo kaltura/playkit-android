@@ -118,9 +118,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         };
 
-       // startMockMediaLoading(playLoadedEntry);
+        startMockMediaLoading(playLoadedEntry);
 //        startOvpMediaLoading(playLoadedEntry);
-        startOttMediaLoading(playLoadedEntry);
+//        startOttMediaLoading(playLoadedEntry);
 //        startSimpleOvpMediaLoading(playLoadedEntry);
 //        LocalAssets.start(this, playLoadedEntry);
 

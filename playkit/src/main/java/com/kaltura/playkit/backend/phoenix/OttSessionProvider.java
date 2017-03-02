@@ -153,16 +153,13 @@ public class OttSessionProvider extends BaseSessionProvider {
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
     }
 
-
-    /*
-    * !! in case the ks expired we need to relogin
-    *
-    * in case the login fails - or the second request fails message will be passed to the using app
-    * session is not valid.
-    *
-    * */
-
-
+    /**
+     * handles start session response.
+     * if session was established update members and pass "ks" on the callback
+     * if failed pass {@link ErrorElement#SessionError}
+     * @param response
+     * @param completion
+     */
     private void handleStartSession(ResponseElement response, OnCompletion<PrimitiveResult> completion) {
 
         ErrorElement error = null;

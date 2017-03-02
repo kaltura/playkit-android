@@ -107,9 +107,6 @@ public class APIOkRequestsExecutor implements RequestQueue {
                 .writeTimeout(config.getWriteTimeout(), TimeUnit.MILLISECONDS)
                 .retryOnConnectionFailure(config.getRetry() > 0);
 
-        /*if (!builder.interceptors().contains(idInterceptor)) {
-            builder.addInterceptor(idInterceptor);
-        }*/
         return builder;
     }
 
