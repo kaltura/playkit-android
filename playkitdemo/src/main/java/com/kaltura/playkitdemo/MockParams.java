@@ -10,12 +10,13 @@ import java.util.List;
 public class MockParams {
 
 /*Ott Mock params: */
-    public static final String PhoenixBaseUrl = "http://api-preprod.ott.kaltura.com/v4_1/api_v3/";
+    public static final String PhoenixBaseUrl = "http://api-preprod.ott.kaltura.com/v4_2/api_v3/";
     public static final int OttPartnerId = 198;
 
     //result of login with : [username: albert@gmail.com, pass: 123456]
     public static final String KS = "djJ8MTk4fPjQkM96OQ7N4GBL73vbOrbUMx7QNMEdoJ5kc6pLFCbgoTHIOAAmIO3ny2Ro0MnKMqGEGpRGM2fq5schRQ8PzqODmb0yegckE6qH5j9hqNig";
 
+    public static final String ArrivalMediaId = "484730";//frozen
     public static final String MediaId = "258656";//frozen
     public static final String MediaId2 = "437800";//vild-wV
     public static final String MediaId3 = "259295";//the salt of earth
@@ -23,6 +24,8 @@ public class MockParams {
     public static final String MediaType = "media";
 
     public static final String Format = "Mobile_Devices_Main_HD";
+    public static final String Format_HD_Dash = "Mobile_Devices_Main_HD_Dash";
+    public static final String Format_SD_Dash = "Mobile_Devices_Main_SD_Dash";
     public static final String Format2 = "Mobile_Devices_Main_SD";
     public static String FrozenAssetInfo = "mock/phoenix.asset.get.258656.json";
 //---------------------------------------

@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.kaltura.playkit.backend.MockParams.FormatHD;
+import static com.kaltura.playkit.backend.MockParams.FormatSD;
 import static com.kaltura.playkit.backend.MockParams.MediaId;
 import static com.kaltura.playkit.backend.MockParams.NonDRMEntryId;
 import static com.kaltura.playkit.backend.MockParams.OvpBaseUrl;
@@ -40,6 +41,7 @@ import static com.kaltura.playkit.backend.MockParams.PnxPassword;
 import static com.kaltura.playkit.backend.MockParams.PnxUsername;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
@@ -70,7 +72,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                             new PhoenixMediaProvider()
                                     .setSessionProvider(ottSessionProvider)
                                     .setAssetId(MediaId)
-                                    .setReferenceType(APIDefines.AssetReferenceType.Media)
+                                    .setAssetType(APIDefines.KalturaAssetType.Media)
                                     .setFormats(FormatHD)
                                     .load(new OnMediaLoadCompletion() {
                                         @Override
@@ -79,7 +81,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                                                 Log.i("testOttSessionProvider", "we have mediaEntry");
                                                 assertTrue(response.getResponse().getId().equals(MediaId));
                                                 assertTrue(response.getResponse().getSources().size() == 1);
-                                                assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Vod));
+                                                assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
                                             }
                                             resume();
                                         }
@@ -94,6 +96,44 @@ public class SessionProviderAndroidTest extends BaseTest {
     }
 
     @Test
+    public void testOttSessionProviderRecovery() {
+        final OttSessionProvider ottSessionProvider = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
+        String sessionData;
+        ottSessionProvider.startSession(PnxUsername, PnxPassword, null, new OnCompletion<PrimitiveResult>() {
+            @Override
+            public void onComplete(PrimitiveResult response) {
+                if (response.error != null) {
+                    Log.e("testOttSessionProvider", "failed to establish a session: " + response.error.getMessage());
+                    resume();
+                } else {
+                    ottSessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
+                        @Override
+                        public void onComplete(PrimitiveResult response) {
+                            assertNotNull(response.getResult());
+                            assertFalse(response.getResult().equals(""));
+                        }
+                    });
+                    String encryptedSession = ottSessionProvider.encryptSession();
+                    OttSessionProvider newSession = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
+                    newSession.recoverSession(encryptedSession, new OnCompletion<PrimitiveResult>() {
+                        @Override
+                        public void onComplete(PrimitiveResult response) {
+
+                            assertNotNull(response.getResult());
+                            assertNull(response.error);
+                            resume();
+
+                        }
+                    });
+
+                }
+            }
+        });
+        wait(1);
+    }
+
+
+                            @Test
     public void testOttAnonymousSession() {
         final OttSessionProvider ottSessionProvider = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
 
@@ -120,8 +160,8 @@ public class SessionProviderAndroidTest extends BaseTest {
                                     new PhoenixMediaProvider()
                                             .setSessionProvider(ottSessionProvider)
                                             .setAssetId(MediaId)
-                                            .setReferenceType(APIDefines.AssetReferenceType.Media)
-                                            .setFormats(FormatHD)
+                                            .setAssetType(APIDefines.KalturaAssetType.Media)
+                                            .setFormats(FormatSD)
                                             .load(new OnMediaLoadCompletion() {
                                                 @Override
                                                 public void onComplete(ResultElement<PKMediaEntry> response) {
@@ -174,7 +214,7 @@ public class SessionProviderAndroidTest extends BaseTest {
                                     new PhoenixMediaProvider()
                                             .setSessionProvider(ottSessionProvider)
                                             .setAssetId(MediaId)
-                                            .setReferenceType(APIDefines.AssetReferenceType.Media)
+                                            .setAssetType(APIDefines.KalturaAssetType.Media)
                                             .setFormats(FormatHD)
                                             .load(new OnMediaLoadCompletion() {
                                                 @Override

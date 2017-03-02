@@ -1,13 +1,17 @@
 package com.kaltura.playkit;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @hide
@@ -19,7 +23,7 @@ public class Utils {
     public static String readAssetToString(Context context, String asset) {
         try {
             InputStream assetStream = context.getAssets().open(asset);
-            return fullyReadInputStream(assetStream, 1024*1024).toString();
+            return fullyReadInputStream(assetStream, 1024 * 1024).toString();
         } catch (IOException e) {
             Log.e(TAG, "Failed reading asset " + asset, e);
             return null;
@@ -47,7 +51,41 @@ public class Utils {
         return bos;
     }
 
-    public static boolean isNullOrEmpty( final Collection< ? > c ) {
+    public static boolean isNullOrEmpty(final Collection<?> c) {
         return c == null || c.isEmpty();
     }
+
+
+    public static <E extends Enum<E>> E byValue(Class<E> EClass, String enumValue) {
+        return byValue(EClass, enumValue, null);
+    }
+
+    public static <E extends Enum<E>> E byValue(Class<E> EClass, String enumValue, E defaultOption) {
+
+        try {
+            return Enum.valueOf(EClass, enumValue);
+        } catch (IllegalArgumentException e) {
+            if (defaultOption != null) {
+                return defaultOption;
+            }
+        }
+        return null;
+    }
+
+    public static Bundle mapToBundle(Map<String, ? extends Serializable> input) {
+        Bundle output = new Bundle();
+        for (String key : input.keySet()) {
+            output.putSerializable(key, input.get(key));
+        }
+        return output;
+    }
+
+    public static <T extends Serializable> Map<String, T> bundleToMap(Bundle input, Class<T> c) {
+        Map<String, T> output = new HashMap<String, T>();
+        for (String key : input.keySet()) {
+            output.put(key, c.cast(input.getParcelable(key)));
+        }
+        return output;
+    }
+
 }

@@ -1,7 +1,9 @@
 package com.kaltura.playkit.backend.phoenix;
 
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Base64;
 import android.util.Log;
 
 import com.kaltura.playkit.OnCompletion;
@@ -23,6 +25,12 @@ import com.kaltura.playkit.connect.OnRequestCompletion;
 import com.kaltura.playkit.connect.ResponseElement;
 
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by tehilarozin on 27/11/2016.
@@ -33,15 +41,70 @@ public class OttSessionProvider extends BaseSessionProvider {
     public static final long TimeDelta = 2 * 60 * 60;//hour in seconds
     private static final String TAG = "BaseResult";
     public static final int DeltaPercent = 12;
+    public static final long IMMEDIATE_REFRESH = 1;
+    public static final String DummyUserId = "1";
 
     private OttSessionParams sessionParams;
     private String refreshToken;
     private long refreshDelta = 9 * 60 * 60 * 24;//TimeDelta;
     private int partnerId = 0;
 
+    private ScheduledFuture<?> scheduledRefreshTask;
+    private ScheduledThreadPoolExecutor refreshScheduleExecutor;
+    private AtomicBoolean refreshInProgress = new AtomicBoolean(false);
+
+    private OnCompletion<PrimitiveResult> sessionRecoveryCallback;
+
+
+    //region refresh callable
+    private Callable<Boolean> refreshCallable = new Callable<Boolean>() {
+
+        @Override
+        public Boolean call() throws Exception {
+            if(refreshToken == null){
+                Log.d(TAG, "refreshToken is not available, can't activate refresh");
+                return false;
+            }
+
+            if(refreshInProgress.get()){
+                Log.d(TAG, "refresh already in progress");
+                return false;
+            }
+
+            PKLog.d(TAG, "start running refresh token");
+
+
+            if(scheduledRefreshTask != null && scheduledRefreshTask.isCancelled()){
+                scheduledRefreshTask = null;
+                PKLog.d(TAG, "refresh operation got canceled");
+                return false;
+            }
+
+            refreshInProgress.set(true);
+
+            refreshSessionCall();
+            return true;
+        }
+    };
+    //endregion
+
+
     public OttSessionProvider(String baseUrl, int partnerId) {
         super(baseUrl, "");
         this.partnerId = partnerId;
+
+        initRefreshExecutor();
+    }
+
+    private void initRefreshExecutor() {
+        refreshScheduleExecutor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(2);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            refreshScheduleExecutor.setRemoveOnCancelPolicy(true);
+        }
+        refreshScheduleExecutor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+        refreshScheduleExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+        refreshScheduleExecutor.setKeepAliveTime(10, TimeUnit.SECONDS);
     }
 
     /**
@@ -66,7 +129,7 @@ public class OttSessionProvider extends BaseSessionProvider {
 
     /**
      * starts new user session
-     * login and gets the session expiration for refresh purposes.
+     * login and get the session expiration for refresh purposes.
      *
      * @param username
      * @param password
@@ -79,7 +142,7 @@ public class OttSessionProvider extends BaseSessionProvider {
         this.sessionParams = new OttSessionParams().setPassword(password).setUsername(username).setUdid(udid);
 
         MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
-        multiRequest.add(OttUserService.userLogin(apiBaseUrl, partnerId, sessionParams.username, sessionParams.password),
+        multiRequest.add(OttUserService.userLogin(apiBaseUrl, partnerId, sessionParams.username, sessionParams.password, udid),
                 PhoenixSessionService.get(apiBaseUrl, "{1:result:loginSession:ks}")).
                 completion(new OnRequestCompletion() {
                     @Override
@@ -90,16 +153,13 @@ public class OttSessionProvider extends BaseSessionProvider {
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
     }
 
-
-    /*
-    * !! in case the ks expired we need to relogin
-    *
-    * in case the login fails - or the second request fails message will be passed to the using app
-    * session is not valid.
-    *
-    * */
-
-
+    /**
+     * handles start session response.
+     * if session was established update members and pass "ks" on the callback
+     * if failed pass {@link ErrorElement#SessionError}
+     * @param response
+     * @param completion
+     */
     private void handleStartSession(ResponseElement response, OnCompletion<PrimitiveResult> completion) {
 
         ErrorElement error = null;
@@ -141,19 +201,41 @@ public class OttSessionProvider extends BaseSessionProvider {
     }
 
     /**
-     * try to re-login with current credentials
+     * try to preserve given session token. refresh of token is done immediate by that check if session
+     * is still valid and get a new refreshToken and expiry time.
+     * @param ks
+     * @param refreshToken
+     * @param userId
+     * @param udid
+     */
+    public void maintainSession(@NonNull String ks, String refreshToken, String userId, String udid, OnCompletion<PrimitiveResult> sessionRecoveryCallback){
+        this.sessionParams = new OttSessionParams().setUdid(udid);
+        this.refreshToken = refreshToken;
+        this.sessionRecoveryCallback = sessionRecoveryCallback;
+        setSession(ks, Unset, userId);
+    }
+
+
+    /**
+     * try to re-login with current credentials, if available
      */
     private void renewSession(OnCompletion<PrimitiveResult> completion) {
         if (sessionParams != null) {
             if (sessionParams.username != null) {
                 startSession(sessionParams.username, sessionParams.password, sessionParams.udid, completion);
-            } else {
+                return;
+
+            } else if(getUserSessionType().equals(UserSessionType.Anonymous) /*sessionParams.isAnonymous*/) {
                 startAnonymousSession(sessionParams.udid, completion);
-            }
-        } else {
-            Log.e(TAG, "Session was ended or failed to start when this was called.\nCan't recover session if not started before");
-            completion.onComplete(new PrimitiveResult().error(ErrorElement.SessionError.message("Session expired")));
+                return;
+            } // ?? in case session with no user credential expires, should we login as anonymous or return empty ks?
+
         }
+
+        Log.e(TAG, "parameters needed for background session renewal are not available.");
+        //completion.onComplete(new PrimitiveResult().error(ErrorElement.SessionError.message("Session expired")));
+        completion.onComplete(new PrimitiveResult((String)null));//returns empty ks
+
     }
 
     /**
@@ -217,28 +299,22 @@ public class OttSessionProvider extends BaseSessionProvider {
 
     protected String validateSession() {
         long currentDate = System.currentTimeMillis() / 1000;
-        long timeLeft = expiryDate - currentDate;
+        long timeLeft = expiryDate == Unset ? IMMEDIATE_REFRESH : expiryDate - currentDate;
 
         String token = null;
-        if (timeLeft > 0) {
+        if (timeLeft > 0) { // validate refreshToken expiration time
             token = getSessionToken();
 
             if (timeLeft < refreshDelta) {
                 // call refreshToken
-                refreshSessionToken();
+                scheduleRefreshSessionTask(IMMEDIATE_REFRESH);
             }
-        } /*else { // token expired - we need to relogin
-            //call re-login (renewSession)
-            renewSession(null);
         }
-*/
         return token;
     }
 
-    private void refreshSessionToken() {
-        if (refreshToken == null) {
-            return;
-        }
+
+    private void refreshSessionCall() {
         // multi request needed to fetch the new expiration date.
         MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
         multiRequest.add(OttUserService.refreshSession(apiBaseUrl, getSessionToken(), refreshToken, sessionParams.udid),
@@ -246,13 +322,18 @@ public class OttSessionProvider extends BaseSessionProvider {
                 .completion(new OnRequestCompletion() {
                     @Override
                     public void onComplete(ResponseElement response) {
+
+                        refreshInProgress.set(false);
+
+                        PrimitiveResult refreshResult = null;
+
                         if (response != null && response.isSuccess()) {
                             List<BaseResult> responses = PhoenixParser.parse(response.getResponse());
-                            if (responses.get(0).error != null) { // refresh success
-                                PKLog.e(TAG, "failed to refresh session. token may be invalid and cause ");
+                            if (responses.get(0).error != null) {
+                                PKLog.e(TAG, "failed to refresh session. token may be invalid and cause access issues. ");
                                 // session may have still time before it expires so actually if fails, do nothing.
 
-                            } else {
+                            } else {// refresh success
                                 KalturaLoginSession loginSession = (KalturaLoginSession) responses.get(0);
                                 refreshToken = loginSession.getRefreshToken();
 
@@ -261,24 +342,62 @@ public class OttSessionProvider extends BaseSessionProvider {
                                     setSession(session.getKs(), session.getExpiry(), session.getUserId()); // save new session
                                 }
 
+                                refreshResult = new PrimitiveResult(getSessionToken());
                             }
+                        }
+                        if(sessionRecoveryCallback != null){
+                            sessionRecoveryCallback.onComplete(refreshResult != null ?
+                                    refreshResult :
+                                    new PrimitiveResult(ErrorElement.SessionError.addMessage(" FAILED TO RECOVER SESSION!!")));
+
+                            sessionRecoveryCallback = null;
                         }
                     }
                 });
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
     }
 
+
+    /**
+     * set scheduler to refresh tokens according to calculated delay. (expiration time and safety padding)
+     * @param delay - the time to schedule the refresh to. if the delay is 0, force refresh.
+     */
+    private synchronized void scheduleRefreshSessionTask(long delay) {
+        PKLog.i(TAG, "scheduling refresh in about " + delay + " sec from now");
+        scheduledRefreshTask = refreshScheduleExecutor.schedule(refreshCallable, delay, TimeUnit.SECONDS);
+    }
+
+    private void clearScheduled() {
+        Log.d(TAG, "clearScheduled: Thread - "+Thread.currentThread().getId());
+
+        if(scheduledRefreshTask != null && !scheduledRefreshTask.isDone()){
+            scheduledRefreshTask.cancel(true);
+        }
+        scheduledRefreshTask = null;
+    }
+
     @Override
-    protected void clearSession() {
+    public void clearSession() {
         super.clearSession();
         refreshToken = null;
         refreshDelta = TimeDelta;
+
+        clearScheduled();
+    }
+
+    private boolean isScheduled() {
+        return scheduledRefreshTask != null && !scheduledRefreshTask.isDone() && !scheduledRefreshTask.isCancelled();
     }
 
     @Override
     protected void setSession(String sessionToken, long expiry, String userId) {
         super.setSession(sessionToken, expiry, userId);
-        updateRefreshDelta(expiry);
+        long delay = 1;
+        if(expiry != Unset) {
+            updateRefreshDelta(expiry);
+            delay = expiry - refreshDelta;
+        }
+        scheduleRefreshSessionTask(delay);
     }
 
     private void updateRefreshDelta(long expiry) {
@@ -286,11 +405,38 @@ public class OttSessionProvider extends BaseSessionProvider {
         refreshDelta = (expiry - currentDate) * DeltaPercent / 100; // 20% of total validation time
     }
 
+    /**
+     * encrypt session info for storage purposes
+     * @return
+     */
+    public String encryptSession(){
+        StringBuilder data = new StringBuilder(getSessionToken()).append(" ~~ ")
+                .append(refreshToken).append(" ~~ ").append(sessionParams.udid());
 
-    class OttSessionParams {
-        private String udid;
+        return Base64.encodeToString(data.toString().getBytes(), Base64.NO_WRAP);
+    }
+
+    /**
+     * maintain session recovered from encrypt session info.
+     * @param encryptSession
+     */
+    public boolean recoverSession(String encryptSession, OnCompletion<PrimitiveResult> sessionRecoveryCallback){
+        String decrypt = new String(Base64.decode(encryptSession, Base64.NO_WRAP));
+        String[] data = decrypt.split(" ~~ ");
+        if(data.length < 2){
+            return false;
+        }
+        maintainSession(data[0], data[1], DummyUserId, data.length >= 3 && !data[2].equals("null") ? data[2] : null, sessionRecoveryCallback);
+        return true;
+    }
+
+
+
+    private class OttSessionParams {
+        private String udid = "";
         private String username;
         private String password;
+        //private boolean isAnonymous = false;
 
         public String udid() {
             return udid;
@@ -318,6 +464,11 @@ public class OttSessionProvider extends BaseSessionProvider {
             this.password = password;
             return this;
         }
+
+        /*public OttSessionParams setAnonymous() {
+            this.isAnonymous = true;
+            return this;
+        }*/
     }
 
 }
