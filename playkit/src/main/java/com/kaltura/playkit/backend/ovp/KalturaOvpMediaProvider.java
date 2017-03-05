@@ -3,6 +3,7 @@ package com.kaltura.playkit.backend.ovp;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringDef;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.google.gson.JsonSyntaxException;
 import com.kaltura.playkit.PKDrmParams;
@@ -39,7 +40,6 @@ import com.kaltura.playkit.connect.ResponseElement;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -322,8 +322,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
 
     private static class ProviderParser {
-
-
+        
         /**
          * creates {@link PKMediaEntry} from entry's data and contextData
          *
@@ -363,39 +362,45 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         private static Map<String, String> parseMetadata(KalturaMetadataListResponse metadataList) {
             Map<String, String> metadata = new HashMap<>();
 
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder;
+            try {
+                builder = factory.newDocumentBuilder();
+            } catch (ParserConfigurationException e) {
+                throw new IllegalStateException("Failed to create DocumentBuilder", e);
+            }
+
             if (metadataList != null && metadataList.objects != null && metadataList.objects.size() > 0) {
                 for (KalturaMetadata metadataItem : metadataList.objects) {
-                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                    DocumentBuilder builder = null;
-                    try {
-                        builder = factory.newDocumentBuilder();
-                    } catch (ParserConfigurationException e) {
-                        e.printStackTrace();
-                    }
-                    InputSource is = new InputSource(new StringReader(metadataItem.xml));
-                    Document doc = null;
-                    try {
-                        doc = builder.parse(is);
-                    } catch (SAXException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    if (doc != null) {
-                        NodeList list = doc.getElementsByTagName("metadata");
-                        if (list != null && list.getLength() == 1) {
-                            NodeList childList = list.item(0).getChildNodes();
-                            for (int i = 0; i < childList.getLength(); i++) {
-                                Node currentItem = childList.item(i);
-                                metadata.put(currentItem.getNodeName(), currentItem.getFirstChild().getNodeValue());
-                            }
+                    extractMetadata(builder, metadataItem.xml, metadata);
+                }
+            }
+            
+            return metadata;
+        }
+
+        private static void extractMetadata(DocumentBuilder builder, String xml, Map<String, String> metadataMap) {
+            InputSource is = new InputSource(new StringReader(xml));
+            Document doc;
+            try {
+                doc = builder.parse(is);
+            } catch (SAXException | IOException e) {
+                Log.e(TAG, "extractMetadata: XML parsing failed", e);
+                return;
+            }
+
+            Node rootElement = doc.getDocumentElement();
+            if ("metadata".equals(rootElement.getNodeName())) {
+                for (Node node = rootElement.getFirstChild(); node != null; node = node.getNextSibling()) {
+                    if (node.getNodeType() == Node.ELEMENT_NODE) {
+                        Node text = node.getFirstChild();
+                        if (text != null) {
+                            metadataMap.put(node.getNodeName(), text.getNodeValue());
                         }
                     }
                 }
             }
-            return metadata;
         }
-
 
         /**
          * Parse PKMediaSource objects from the getPlaybackContext API response.
@@ -531,6 +536,8 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
 
     }
+
+
 
 
     static class FormatsHelper {

@@ -14,7 +14,9 @@ import java.util.List;
  */
 
 public class IMAConfig {
-    public static final int DEFAULT_AD_LOAD_TIMEOUT = 10;
+
+    public static final int DEFAULT_AD_LOAD_TIMEOUT = 13;
+    public static final int DEFAULT_CUE_POINTS_CHANGED_DELAY = 2000;
     public static final int DEFAULT_AD_LOAD_COUNT_DOWN_TICK = 250;
 
     public static final String AD_TAG_LANGUAGE     = "language";
@@ -171,9 +173,11 @@ public class IMAConfig {
 
         Gson gson = new Gson();
         JsonArray jArray = new JsonArray();
-        for (String mimeType : videoMimeTypes) {
-            JsonPrimitive element = new JsonPrimitive(mimeType);
-            jArray.add(element);
+        if (videoMimeTypes != null) {
+            for (String mimeType : videoMimeTypes) {
+                JsonPrimitive element = new JsonPrimitive(mimeType);
+                jArray.add(element);
+            }
         }
         jsonObject.add(AD_VIDEO_MIME_TYPES, jArray);
 
