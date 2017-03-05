@@ -16,6 +16,8 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 public abstract class BaseSessionProvider implements SessionProvider{
 
+    protected static final int Unset = -1;
+
     @Retention(SOURCE)
     @StringDef(value = {User, Anonymous})
     public @interface UserSessionType {
@@ -46,7 +48,7 @@ public abstract class BaseSessionProvider implements SessionProvider{
         clearSession();
     }
 
-    protected void clearSession() {
+    public void clearSession() {
         sessionToken = null;
         expiryDate = 0;
     }

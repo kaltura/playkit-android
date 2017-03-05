@@ -170,7 +170,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
 
         switch (format) {
+            // mp4 and mp3 both use ExtractorMediaSource
             case mp4_clear:
+            case mp3_clear:
                 return new ExtractorMediaSource(uri, mediaDataSourceFactory, new DefaultExtractorsFactory(),
                         mainHandler, eventLogger);
 

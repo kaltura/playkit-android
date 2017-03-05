@@ -28,6 +28,7 @@ import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARI
 
 /**
  * Created by gilad.nadav on 30/12/2016.
+ * @hide
  */
 
 public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback {

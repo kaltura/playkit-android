@@ -10,7 +10,8 @@ public enum PKMediaFormat {
     dash_clear("application/dash+xml", "mpd"),
     dash_drm("application/dash+xml", "mpd"),
     wvm_widevine("video/wvm", "wvm"),
-    hls_clear("application/x-mpegURL", "m3u8");
+    hls_clear("application/x-mpegURL", "m3u8"),
+    mp3_clear("audio/mpeg", "mp3");
 
     public final String mimeType;
     public final String pathExt;
