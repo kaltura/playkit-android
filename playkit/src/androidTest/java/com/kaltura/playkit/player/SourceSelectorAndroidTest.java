@@ -23,6 +23,7 @@ public class SourceSelectorAndroidTest {
     PKMediaSource mp4 = new PKMediaSource().setMediaFormat(PKMediaFormat.mp4_clear).setUrl("http://example.com/a.mp4");
     PKMediaSource hls = new PKMediaSource().setMediaFormat(PKMediaFormat.hls_clear).setUrl("http://example.com/a.m3u8");
     PKMediaSource wvm = new PKMediaSource().setMediaFormat(PKMediaFormat.wvm_widevine).setUrl("http://example.com/a.wvm");
+    PKMediaSource mp3 = new PKMediaSource().setMediaFormat(PKMediaFormat.mp3_clear).setUrl("http://example.com/a.mp3");
 
     private PKMediaEntry entry(PKMediaSource... sources) {
         return new PKMediaEntry().setSources(Arrays.asList(sources));
@@ -52,6 +53,7 @@ public class SourceSelectorAndroidTest {
         assertTrue(SourceSelector.selectSource(entry(mp4, hls)) == hls);
         assertTrue(SourceSelector.selectSource(entry(hls, mp4, dashClear)) == dashClear);
         assertTrue(SourceSelector.selectSource(entry(hls, wvm)) == hls);
+        assertTrue(SourceSelector.selectSource(entry(mp3)) == mp3);
 //        assertTrue(SourceSelector.selectSource(entry(mp4, wvm)) == wvm);
 
     }

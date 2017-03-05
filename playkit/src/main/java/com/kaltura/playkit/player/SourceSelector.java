@@ -67,6 +67,9 @@ class SourceSelector {
         // MP4 is always available, but gives inferior performance.
         pref.add(PKMediaFormat.mp4_clear);
         
+        // If the entry is mp3-only, select it here.
+        pref.add(PKMediaFormat.mp3_clear);
+        
         for (PKMediaFormat format : pref) {
             PKMediaSource source = sourceByFormat(format);
             if (source != null) {
