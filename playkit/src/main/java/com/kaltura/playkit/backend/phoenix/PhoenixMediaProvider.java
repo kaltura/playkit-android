@@ -82,6 +82,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         public List<String> mediaFileIds;
 
         public String protocol;
+        public APIDefines.MediaType mediaType;
 
         public MediaAsset(){
             protocol = "https";
@@ -149,6 +150,11 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return this;
     }
 
+    public PhoenixMediaProvider setMediaType(@NonNull APIDefines.MediaType mediaType) {
+        this.mediaAsset.mediaType = mediaType;
+        return this;
+    }
+
     /**
      * OPTIONAL
      * defines which of the sources to consider on {@link PKMediaEntry} creation.
@@ -207,10 +213,13 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         } else {
 
-            //set Defaults if not provided:
-            if (mediaAsset.assetType == null) {
-                mediaAsset.assetType = APIDefines.KalturaAssetType.Media;
+            if(mediaAsset.mediaType == null) {
+                //set Defaults if not provided:
+                if (mediaAsset.assetType == null) {
+                    mediaAsset.assetType = APIDefines.KalturaAssetType.Media;
+                }
             }
+
             if (mediaAsset.contextType == null) {
                 mediaAsset.contextType = APIDefines.PlaybackContextType.Playback;
             }
@@ -353,7 +362,9 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                         if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error message
 
-                            mediaEntry = ProviderParser.getMedia(mediaAsset.assetId, mediaAsset.formats != null ? mediaAsset.formats : mediaAsset.mediaFileIds, kalturaPlaybackContext.getSources());
+                            mediaEntry = ProviderParser.getMedia(mediaAsset.assetId, mediaAsset.mediaType,
+                                    mediaAsset.formats != null ? mediaAsset.formats : mediaAsset.mediaFileIds,
+                                    kalturaPlaybackContext.getSources());
 
                             if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
                                 error = ErrorElement.NotFound.message("Content can't be played due to lack of sources");
@@ -384,7 +395,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     static class ProviderParser {
 
-        public static PKMediaEntry getMedia(String assetId, final List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources) {
+        public static PKMediaEntry getMedia(String assetId, APIDefines.MediaType mediaType, final List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources) {
 
             PKMediaEntry mediaEntry = new PKMediaEntry();
             mediaEntry.setId("" + assetId);
@@ -433,7 +444,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     maxDuration = Math.max(playbackSource.getDuration(), maxDuration);
                 }
             }
-            return mediaEntry.setDuration(maxDuration).setSources(sources).setMediaType(MediaTypeConverter.toMediaEntryType(""));
+            return mediaEntry.setDuration(maxDuration).setSources(sources).setMediaType(mediaType != null ? mediaType.getMediaEntryType() : PKMediaEntry.MediaEntryType.Unknown);
         }
 
         //TODO: check why we get all sources while we asked for 4 specific formats
@@ -477,14 +488,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
     }
 
-    static class MediaTypeConverter {
 
-        public static PKMediaEntry.MediaEntryType toMediaEntryType(String mediaType) {
-            switch (mediaType) {
-                default:
-                    return PKMediaEntry.MediaEntryType.Unknown;
-            }
-        }
-    }
 
 }
