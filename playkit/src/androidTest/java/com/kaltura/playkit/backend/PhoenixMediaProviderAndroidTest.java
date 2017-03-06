@@ -1,7 +1,6 @@
 package com.kaltura.playkit.backend;
 
 import android.os.Bundle;
-import android.os.Parcel;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
@@ -11,7 +10,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.kaltura.playkit.BaseTest;
 import com.kaltura.playkit.OnCompletion;
-import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
@@ -679,10 +677,10 @@ latchCount--;
                                     Bundle mediaBundle = new Bundle();
                                     mediaBundle.putParcelable("mediatest", baseMedia);
 
-                                    Parcel parcel = Parcel.obtain();
+                                    /*Parcel parcel = Parcel.obtain();
                                     parcel.writeTypedList(baseMedia.getSources().get(0).getDrmData());
                                     parcel.setDataPosition(0);
-                                    List<PKDrmParams> drmParamses = parcel.createTypedArrayList(PKDrmParams.CREATOR);
+                                    List<PKDrmParams> drmParamses = parcel.createTypedArrayList(PKDrmParams.CREATOR);*/
 
                                     PKMediaEntry newMedia = mediaBundle.getParcelable("mediatest");
                                     assertNotNull(newMedia);
