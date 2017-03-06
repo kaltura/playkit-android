@@ -14,6 +14,14 @@ public class PKDrmParams implements Parcelable {
         fairplay,
         none
     }
+    /*in IOS:
+    public enum Scheme: Int {
+        case widevineCenc
+        case playreadyCenc
+        case widevineClassic
+        case fairplay
+        case unknown
+    }*/
 
     private String licenseUri;
     private Scheme scheme = Scheme.none;
