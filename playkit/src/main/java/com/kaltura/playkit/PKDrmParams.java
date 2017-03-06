@@ -16,7 +16,7 @@ public class PKDrmParams implements Parcelable {
     }
 
     private String licenseUri;
-    private Scheme scheme;
+    private Scheme scheme = Scheme.none;
 
     public PKDrmParams(String licenseUrl, Scheme scheme){
         this.licenseUri = licenseUrl;
@@ -25,7 +25,7 @@ public class PKDrmParams implements Parcelable {
 
     protected PKDrmParams(Parcel in) {
         licenseUri = in.readString();
-        scheme = Utils.byValue(Scheme.class, in.readString());//Scheme.valueOf(in.readString());
+        scheme = Utils.byValue(Scheme.class, in.readString(), Scheme.none);//Scheme.valueOf(in.readString());
     }
 
     public String getLicenseUri() {
