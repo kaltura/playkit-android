@@ -105,6 +105,12 @@ public class PKLog {
         }
     }
 
+    public static void v(String tag, String msg) {
+        if (globalLevel <= VERBOSE) {
+            Log.v(tag, msg);
+        }
+    }
+
     // DEBUG
 
     public void d(String msg) {
@@ -118,7 +124,12 @@ public class PKLog {
             Log.d(tag, msg, tr);
         }
     }
-    
+
+    public static void d(String tag, String msg) {
+        if (globalLevel <= DEBUG) {
+            Log.d(tag, msg);
+        }
+    }
 
     // INFO
 
@@ -133,7 +144,13 @@ public class PKLog {
             Log.i(tag, msg, tr);
         }
     }
-    
+
+    public static void i(String tag, String msg) {
+        if (globalLevel <= INFO) {
+            Log.i(tag, msg);
+        }
+    }
+
 
     // WARN
 
@@ -149,6 +166,12 @@ public class PKLog {
         }
     }
 
+    public static void w(String tag, String msg) {
+        if (globalLevel <= WARN) {
+            Log.w(tag, msg);
+        }
+    }
+
 
     // ERROR
     public void e(String msg) {
@@ -160,6 +183,12 @@ public class PKLog {
     public void e(String msg, Throwable tr) {
         if (level <= ERROR && globalLevel <= ERROR) {
             Log.e(tag, msg, tr);
+        }
+    }
+
+    public static void e(String tag, String msg) {
+        if (globalLevel <= ERROR) {
+            Log.e(tag, msg);
         }
     }
 }
