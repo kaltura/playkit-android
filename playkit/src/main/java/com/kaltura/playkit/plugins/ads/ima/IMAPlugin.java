@@ -506,7 +506,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                         log.d("discarding ad break");
                         adsManager.discardAdBreak();
                     } else {
-                        if(!AdResponseType.VAMP.equals(adConfig.getAdResponseType())){
+                        if(!AdResponseType.VMAP.equals(adConfig.getAdResponseType())){
                             adsManager.start();
                         }
                     }
