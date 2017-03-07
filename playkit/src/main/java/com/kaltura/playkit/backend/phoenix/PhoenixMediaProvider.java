@@ -353,7 +353,9 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                         if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error message
 
-                            mediaEntry = ProviderParser.getMedia(mediaAsset.assetId, mediaAsset.formats != null ? mediaAsset.formats : mediaAsset.mediaFileIds, kalturaPlaybackContext.getSources());
+                            mediaEntry = ProviderParser.getMedia(mediaAsset.assetId,
+                                    mediaAsset.formats != null ? mediaAsset.formats : mediaAsset.mediaFileIds,
+                                    kalturaPlaybackContext.getSources());
 
                             if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
                                 error = ErrorElement.NotFound.message("Content can't be played due to lack of sources");

@@ -1,5 +1,6 @@
 package com.kaltura.playkit.backend;
 
+import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
@@ -37,9 +38,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.kaltura.playkit.backend.MockParams.ChannelId;
 import static com.kaltura.playkit.backend.MockParams.FormatHD;
+import static com.kaltura.playkit.backend.MockParams.FormatHDDash;
 import static com.kaltura.playkit.backend.MockParams.FormatSD;
 import static com.kaltura.playkit.backend.MockParams.FrozenAssetInfo;
 import static com.kaltura.playkit.backend.MockParams.MediaId;
@@ -55,6 +58,7 @@ import static com.kaltura.playkit.backend.MockParams.PnxNotEntitledMedia;
 import static com.kaltura.playkit.backend.MockParams.PnxPartnerId;
 import static com.kaltura.playkit.backend.MockParams.PnxPassword;
 import static com.kaltura.playkit.backend.MockParams.PnxUsername;
+import static com.kaltura.playkit.backend.MockParams.ToystoryMediaId;
 import static com.kaltura.playkit.backend.MockParams.WebHD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -641,6 +645,68 @@ latchCount--;
 
     }
 
+    @Test
+    public void testPKMediaEntryParceling() {
+        latchCount = 0;
+        final OttSessionProvider ottSessionProvider = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
+        final AtomicReference<AssertionError> failure = new AtomicReference<>();
+
+        latchCount++;
+        ottSessionProvider.startSession(PnxUsername, PnxPassword, null, new OnCompletion<PrimitiveResult>() {
+            @Override
+            public void onComplete(PrimitiveResult response) {
+                latchCount--;
+                if (response.error != null) {
+                    failure.set(new AssertionError(response.error.getMessage()));
+                    //fail(response.error.getMessage());
+                    resume();
+
+                } else {
+                    phoenixMediaProvider = new PhoenixMediaProvider()
+                            .setSessionProvider(ottSessionProvider)
+                            .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(ToystoryMediaId) // cannel considered as media
+                            .setFormats(FormatSD, FormatHDDash);
+
+                    latchCount++;
+                    phoenixMediaProvider.load(new OnMediaLoadCompletion() {
+                        @Override
+                        public void onComplete(ResultElement<PKMediaEntry> response) {
+                            try {
+                                if (response.isSuccess()) {
+                                    final PKMediaEntry baseMedia = response.getResponse();
+                                    Bundle mediaBundle = new Bundle();
+                                    mediaBundle.putParcelable("mediatest", baseMedia);
+
+                                    /*Parcel parcel = Parcel.obtain();
+                                    parcel.writeTypedList(baseMedia.getSources().get(0).getDrmData());
+                                    parcel.setDataPosition(0);
+                                    List<PKDrmParams> drmParamses = parcel.createTypedArrayList(PKDrmParams.CREATOR);*/
+
+                                    PKMediaEntry newMedia = mediaBundle.getParcelable("mediatest");
+                                    assertNotNull(newMedia);
+                                    assertEquals(baseMedia.hasSources(), newMedia.hasSources());
+                                    assertEquals(baseMedia.getSources().size(), newMedia.getSources().size());
+                                    assertEquals(baseMedia.getSources().get(0).hasDrmParams(), newMedia.getSources().get(0).hasDrmParams());
+
+                                    assertEquals(baseMedia.getSources().get(0).getDrmData().size(), newMedia.getSources().get(0).getDrmData().size());
+                                }
+                            } catch (AssertionError ae){
+                                failure.set(ae);
+                            }
+                            latchCount--;
+                            PhoenixMediaProviderAndroidTest.this.resume();
+                        }
+                    });
+                }
+            }
+        });
+
+        wait(latchCount);
+
+        if (failure.get() != null) {
+            throw failure.get();
+        }
+    }
 
     @Test
     public void testInvalidSession() {

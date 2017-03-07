@@ -57,6 +57,7 @@ import static com.kaltura.playkitdemo.MockParams.ArrivalMediaId;
 import static com.kaltura.playkitdemo.MockParams.Format;
 import static com.kaltura.playkitdemo.MockParams.Format2;
 import static com.kaltura.playkitdemo.MockParams.Format_HD_Dash;
+import static com.kaltura.playkitdemo.MockParams.Format_SD_Dash;
 
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
@@ -173,9 +174,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if(response.error == null) {
                     mediaProvider = new PhoenixMediaProvider()
                             .setSessionProvider(ottSessionProvider)
-                            .setAssetId(ArrivalMediaId)
+                            .setAssetId(ArrivalMediaId) //bunny no horses id = "485380"
                             .setAssetType(APIDefines.KalturaAssetType.Media)
-                            .setFormats(MockParams.Format_SD_Dash, Format_HD_Dash, Format, Format2);
+                            .setFormats(Format_SD_Dash, Format_HD_Dash, Format, Format2);
 
                     mediaProvider.load(completion);
                 }

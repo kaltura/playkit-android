@@ -43,6 +43,7 @@ public class FormatsHelper {
      * to map BE format name to the matching format element in the {@link PKMediaFormat} enumeration.
      */
     private static final Map<StreamFormat, PKMediaFormat> SupportedFormats;
+//TODO: add supported schemes
 
     static{
         SupportedFormats = new HashMap<StreamFormat, PKMediaFormat>();
