@@ -63,13 +63,11 @@ public class Utils {
     public static <E extends Enum<E>> E byValue(Class<E> EClass, String enumValue, E defaultOption) {
 
         try {
-            return Enum.valueOf(EClass, enumValue);
-        } catch (IllegalArgumentException e) {
-            if (defaultOption != null) {
-                return defaultOption;
-            }
+            return enumValue != null ? Enum.valueOf(EClass, enumValue) : defaultOption;
+
+        } catch (IllegalArgumentException | NullPointerException e) {
+            return defaultOption;
         }
-        return null;
     }
 
     public static Bundle mapToBundle(Map<String, ? extends Serializable> input) {
