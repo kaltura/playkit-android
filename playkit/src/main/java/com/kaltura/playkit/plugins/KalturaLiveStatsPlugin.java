@@ -107,11 +107,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateConfig(Object config) {
-        // TODO: is this the right fix?
         this.pluginConfig = (JsonObject) config;
-//        if (pluginConfig.has(key)) {
-//            pluginConfig.addProperty(key, settings.toString());
-//        }
     }
 
     @Override

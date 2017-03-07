@@ -64,13 +64,7 @@ public class YouboraPlugin extends PKPlugin {
     @Override
     protected void onUpdateConfig(Object config) {
         log.d("youbora - onUpdateConfig");
-        
-        // TODO: is this the right fix?
         this.pluginConfig = (JsonObject) config;
-        
-//        if (pluginConfig.has(key)){
-//            pluginConfig.addProperty(key, settings.toString());
-//        }
         Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig, player);
         // Refresh options with updated media
         pluginManager.setOptions(opt);
