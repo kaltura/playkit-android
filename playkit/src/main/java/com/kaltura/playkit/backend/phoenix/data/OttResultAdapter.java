@@ -9,6 +9,8 @@ import com.google.gson.JsonParseException;
 import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.connect.ErrorElement;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 
 /**
@@ -32,7 +34,25 @@ public class OttResultAdapter implements JsonDeserializer<BaseResult> {
         BaseResult baseResult = null;
 
         if(result != null && result.has("error")){
-             baseResult = new BaseResult(new Gson().fromJson(result.get("error"), ErrorElement.class));
+
+            try {
+                Constructor<? extends Type> constructor = null;
+                constructor = typeOfT.getClass().getConstructor(ErrorElement.class);
+                baseResult = (BaseResult) constructor.newInstance(new Gson().fromJson(result.get("error"), ErrorElement.class));
+
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+
+            if(baseResult == null){
+                baseResult = new BaseResult(new Gson().fromJson(result.get("error"), ErrorElement.class));
+            }
 
         } else if(result != null && result.has("objectType")){
             String objectType=  result.getAsJsonPrimitive("objectType").getAsString();
