@@ -23,7 +23,7 @@ import okhttp3.Response;
 import okio.Buffer;
 
 /**
- * Created by tehilarozin on 21/07/2016.
+ * @hide
  */
 public class APIOkRequestsExecutor implements RequestQueue {
 
@@ -83,6 +83,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
         return this;
     }
 
+    //change default request config
     private OkHttpClient getOkClient(RequestConfiguration configuration){
         if(configuration != null) {
             OkHttpClient.Builder builder = configClient(getOkClient().newBuilder(), configuration);
@@ -91,6 +92,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
         return mOkClient;
     }
 
+    //create okClient with default config
     private OkHttpClient getOkClient(){
         if(mOkClient == null){
             mOkClient = configClient(new OkHttpClient.Builder()
@@ -105,9 +107,6 @@ public class APIOkRequestsExecutor implements RequestQueue {
                 .writeTimeout(config.getWriteTimeout(), TimeUnit.MILLISECONDS)
                 .retryOnConnectionFailure(config.getRetry() > 0);
 
-        /*if (!builder.interceptors().contains(idInterceptor)) {
-            builder.addInterceptor(idInterceptor);
-        }*/
         return builder;
     }
 

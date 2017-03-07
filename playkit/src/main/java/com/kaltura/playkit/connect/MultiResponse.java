@@ -7,7 +7,7 @@ import com.kaltura.playkit.backend.BaseResult;
 import java.util.ArrayList;
 
 /**
- * Created by tehilarozin on 24/11/2016.
+ * @hide
  */
 
 public class MultiResponse extends ArrayList<BaseResult> {

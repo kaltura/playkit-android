@@ -18,11 +18,6 @@ class WidevineClassicAdapter extends DrmAdapter {
 
     private final Context context;
 
-    @Override
-    public DRMScheme getScheme() {
-        return DRMScheme.WidevineClassic;
-    }
-
     WidevineClassicAdapter(Context context) {
         this.context = context;
     }

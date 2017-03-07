@@ -60,12 +60,15 @@ class SourceSelector {
         pref.add(PKMediaFormat.hls_clear);
         
         // Widevine Classic is OPTIONAL from Android 6. 
-        if (MediaSupport.widevineClassic(null)) {
+        if (MediaSupport.widevineClassic()) {
             pref.add(PKMediaFormat.wvm_widevine);
         }
         
         // MP4 is always available, but gives inferior performance.
         pref.add(PKMediaFormat.mp4_clear);
+        
+        // If the entry is mp3-only, select it here.
+        pref.add(PKMediaFormat.mp3_clear);
         
         for (PKMediaFormat format : pref) {
             PKMediaSource source = sourceByFormat(format);

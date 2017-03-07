@@ -4,9 +4,8 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.backend.ovp.OvpRequestBuilder;
 
 /**
- * Created by tehilarozin on 12/01/2017.
+ * @hide
  */
-
 public class MetaDataService extends OvpService {
 
     public static OvpRequestBuilder list(String baseUrl, String ks, String entryId) {

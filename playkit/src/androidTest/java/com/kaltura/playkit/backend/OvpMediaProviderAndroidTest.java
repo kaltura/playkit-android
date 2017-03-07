@@ -21,6 +21,7 @@ import com.kaltura.playkit.connect.ErrorElement;
 import com.kaltura.playkit.connect.RequestElement;
 import com.kaltura.playkit.connect.RequestQueue;
 import com.kaltura.playkit.connect.ResponseElement;
+import com.kaltura.playkit.connect.RestrictionError;
 import com.kaltura.playkit.connect.ResultElement;
 
 import org.junit.Before;
@@ -480,7 +481,8 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
                                 assertNotNull(response);
                                 assertNotNull(response.getError());
                                 assertNull(response.getResponse());
-                                assertTrue(response.getError().equals(ErrorElement.RestrictionError));
+                                assertTrue(response.getError() instanceof RestrictionError);
+                                assertTrue(((RestrictionError)response.getError()).getExtra().equals(RestrictionError.Restriction.NotAllowed));
                                 PKLog.i(TAG, "Anonymous user got restriction error: " + response.getError());
 
                             } catch (AssertionError e) {

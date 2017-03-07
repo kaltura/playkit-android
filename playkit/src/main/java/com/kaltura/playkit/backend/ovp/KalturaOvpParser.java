@@ -14,7 +14,7 @@ import com.kaltura.playkit.connect.GsonParser;
 import com.kaltura.playkit.utils.RuntimeTypeAdapterFactory;
 
 /**
- * Created by tehilarozin on 24/11/2016.
+ * @hide
  */
 
 public class KalturaOvpParser {
@@ -55,16 +55,16 @@ public class KalturaOvpParser {
     public static Gson getRuntimeGson(Class clz) {
         RuntimeTypeAdapterFactory adapterFactory = null;
         switch (clz.getSimpleName()){
-            case "KalturaPlaybackContext":
+            case "BasePlaybackContext":
                 /*!! for now - since we are not using the parsed action objects, there's no need to use this runtime factory
                   !! all items in the "actions" list will be of the base class type "KalturaRuleAction"
                   !! once needed - set adapterFactory to the commented code and make sure to register each of the subclasses that may
                   !! return in the response */
                 adapterFactory = null;
                         /*RuntimeTypeAdapterFactory
-                        .of(KalturaPlaybackContext.KalturaRuleAction.class, "objectType")
-                        .registerSubtype(KalturaPlaybackContext.KalturaAccessControlDrmPolicyAction.class, "KalturaAccessControlDrmPolicyAction")
-                        .registerSubtype(KalturaPlaybackContext.KalturaAccessControlDrmPolicyAction.class, "KalturaAccessControlLimitDeliveryProfilesAction");*/
+                        .of(BasePlaybackContext.KalturaRuleAction.class, "objectType")
+                        .registerSubtype(BasePlaybackContext.KalturaAccessControlDrmPolicyAction.class, "KalturaAccessControlDrmPolicyAction")
+                        .registerSubtype(BasePlaybackContext.KalturaAccessControlDrmPolicyAction.class, "KalturaAccessControlLimitDeliveryProfilesAction");*/
         }
 
         GsonBuilder gsonBuilder = new GsonBuilder();

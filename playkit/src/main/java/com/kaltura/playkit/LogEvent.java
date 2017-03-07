@@ -1,7 +1,7 @@
 package com.kaltura.playkit;
 
 /**
- * Created by zivilan on 24/11/2016.
+ * @hide
  */
 
 public class LogEvent implements PKEvent {

@@ -21,7 +21,7 @@ import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import java.io.IOException;
 
 /**
- * Created by anton.afanasiev on 31/10/2016.
+ * @hide
  */
 
 public class EventLogger implements ExoPlayer.EventListener, AudioRendererEventListener, VideoRendererEventListener,  MetadataRenderer.Output,

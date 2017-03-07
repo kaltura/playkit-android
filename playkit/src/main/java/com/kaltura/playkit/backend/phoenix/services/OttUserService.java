@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.backend.phoenix.PhoenixRequestBuilder;
 
 /**
- * Created by tehilarozin on 13/11/2016.
+ * @hide
  */
 
 public class OttUserService extends PhoenixService {

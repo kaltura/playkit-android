@@ -8,7 +8,7 @@ import com.kaltura.playkit.backend.phoenix.PhoenixConfigs;
 import com.kaltura.playkit.connect.MultiRequestBuilder;
 
 /**
- * Created by tehilarozin on 14/11/2016.
+ * @hide
  */
 public class PhoenixService {
 

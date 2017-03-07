@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by tehilarozin on 23/11/2016.
+ * @hide
  */
 
 public class GsonParser {
