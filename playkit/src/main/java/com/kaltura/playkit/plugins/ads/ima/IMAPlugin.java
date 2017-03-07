@@ -30,6 +30,7 @@ import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdEnabledPlayerController;
+import com.kaltura.playkit.ads.AdResponseType;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdError;
@@ -505,7 +506,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                         log.d("discarding ad break");
                         adsManager.discardAdBreak();
                     } else {
-                        adsManager.start();
+                        if(!AdResponseType.VAMP.equals(adConfig.getAdResponseType())){
+                            adsManager.start();
+                        }
                     }
                 }
                 break;
