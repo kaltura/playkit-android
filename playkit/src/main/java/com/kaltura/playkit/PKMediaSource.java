@@ -3,6 +3,7 @@ package com.kaltura.playkit;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.Collections;
 import java.util.List;
 
 public class PKMediaSource implements Parcelable {
@@ -75,7 +76,10 @@ public class PKMediaSource implements Parcelable {
         dest.writeString(mediaFormat.name());
         if(drmData != null) {
             dest.writeTypedList(drmData);
+        } else {
+            dest.writeTypedList(Collections.EMPTY_LIST);
         }
+
     }
 
     public static final Creator<PKMediaSource> CREATOR = new Creator<PKMediaSource>() {

@@ -1,5 +1,7 @@
 package com.kaltura.playkit.backend.phoenix;
 
+import com.kaltura.playkit.PKMediaEntry;
+
 /**
  * @hide
  */
@@ -21,19 +23,6 @@ public class APIDefines {
 
     }
 
-    public enum KalturaAssetType {
-        Media("media"),
-        Epg("epg"),
-        Recording("recording");
-
-        KalturaAssetType(String value){
-            this.value = value;
-        }
-
-        public String value;
-    }
-
-
     public enum LiveStreamType {
         Catchup("catchup"),
         StartOver("startOver"),
@@ -48,12 +37,35 @@ public class APIDefines {
 
 
     public enum MediaType {
-        Vod("vod"),
-        Channel("channel"),
-        Program("program"),
-        EPG("epg");
+        Vod(KalturaAssetType.Media, PKMediaEntry.MediaEntryType.Vod),
+        Channel(KalturaAssetType.Media, PKMediaEntry.MediaEntryType.Live),
+        Recording(KalturaAssetType.Recording,PKMediaEntry.MediaEntryType.Vod),
+        EPG(KalturaAssetType.Epg, PKMediaEntry.MediaEntryType.Live);
 
-        MediaType(String value){
+        MediaType(KalturaAssetType assetType, PKMediaEntry.MediaEntryType mediaEntryType){
+            this.assetType = assetType;
+            this.mediaEntryType = mediaEntryType;
+        }
+
+        private KalturaAssetType assetType;
+        private PKMediaEntry.MediaEntryType mediaEntryType;
+
+        public KalturaAssetType getAssetType() {
+            return assetType;
+        }
+
+        public PKMediaEntry.MediaEntryType getMediaEntryType() {
+            return mediaEntryType;
+        }
+    }
+
+
+    public enum KalturaAssetType {
+        Media("media"),
+        Epg("epg"),
+        Recording("recording");
+
+        KalturaAssetType(String value){
             this.value = value;
         }
 

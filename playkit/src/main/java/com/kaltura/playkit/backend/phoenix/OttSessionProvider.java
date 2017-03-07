@@ -225,7 +225,7 @@ public class OttSessionProvider extends BaseSessionProvider {
                 startSession(sessionParams.username, sessionParams.password, sessionParams.udid, completion);
                 return;
 
-            } else if(getUserSessionType().equals(UserSessionType.Anonymous) /*sessionParams.isAnonymous*/) {
+            } else if(isAnonymousSession() /*sessionParams.isAnonymous*/) {
                 startAnonymousSession(sessionParams.udid, completion);
                 return;
             } // ?? in case session with no user credential expires, should we login as anonymous or return empty ks?
@@ -236,6 +236,10 @@ public class OttSessionProvider extends BaseSessionProvider {
         //completion.onComplete(new PrimitiveResult().error(ErrorElement.SessionError.message("Session expired")));
         completion.onComplete(new PrimitiveResult((String)null));//returns empty ks
 
+    }
+
+    public boolean isAnonymousSession() {
+        return getUserSessionType().equals(UserSessionType.Anonymous);
     }
 
     /**
@@ -249,7 +253,7 @@ public class OttSessionProvider extends BaseSessionProvider {
 
         if (hasActiveSession()) {
 
-            if (getUserSessionType().equals(UserSessionType.Anonymous)) { //no need to logout anonymous session
+            if (isAnonymousSession()) { //no need to logout anonymous session
                 if (completion != null) {
                     completion.onComplete(new BaseResult());
                 }

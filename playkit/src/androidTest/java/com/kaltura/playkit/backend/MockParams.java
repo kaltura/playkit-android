@@ -48,6 +48,8 @@ public class MockParams {
     public static final String MediaId = "258656";//frozen //trailer 428345
     public static final String MediaId4 = "258655";//shrek
     public static final String MediaId2 = "437800";//vild
+    public static final String SpongeMediaId = "258660";//sponge bob
+    public static final String ToystoryMediaId = "485293";//toystory
 
     public static final String MediaId2_File_SD_Dash = "690398";//vild
     public static final String MediaId2_File_Main_SD = "690396";//vild
@@ -63,6 +65,7 @@ public class MockParams {
     public static final String ChannelId = "255854";
 
     public static final String FormatHD = "Mobile_Devices_Main_HD";
+    public static final String FormatHDDash = "Mobile_Devices_Main_HD_Dash";
     public static final String FormatSD = "Mobile_Devices_Main_SD";
     public static final String WebHD = "Web HD";
 

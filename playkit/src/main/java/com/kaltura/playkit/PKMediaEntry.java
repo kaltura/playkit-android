@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -85,6 +86,8 @@ public class PKMediaEntry implements Parcelable{
         }
         if(sources != null){
             dest.writeTypedList(sources);
+        } else {
+            dest.writeTypedList(Collections.EMPTY_LIST);
         }
     }
 
