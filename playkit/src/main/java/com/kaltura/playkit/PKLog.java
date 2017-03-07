@@ -49,7 +49,10 @@ import static android.util.Log.WARN;
 
 @SuppressWarnings("WeakerAccess")
 public class PKLog {
-    
+
+    public final String tag;
+    private int level = DEBUG;
+
     public enum Level {
         verbose(VERBOSE), debug(DEBUG), info(INFO), warn(WARN), error(ERROR), off(Integer.MAX_VALUE);
         
@@ -74,9 +77,6 @@ public class PKLog {
     public static void setGlobalLevel(Level level) {
         PKLog.globalLevel = level.value;
     }
-
-    public final String tag;
-    private int level = DEBUG;
     
     public void setLevel(Level level) {
         this.level = level.value;
