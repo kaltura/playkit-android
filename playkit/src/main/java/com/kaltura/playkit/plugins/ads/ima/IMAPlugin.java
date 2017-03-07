@@ -268,10 +268,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     protected void onApplicationPaused() {
-        log.d("IMA onApplicationPaused");
         appIsInBackground = true;
         pause();
         cancelAdDisplayedCheckTimer();
+        log.d("IMA onApplicationPaused");
     }
 
     @Override
@@ -293,7 +293,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 adsManager.start();
             } else if (isAdDisplayed) {
                 log.d("IMA onApplicationResumed and ad is displayed");
-                //adsManager.resume();
+                adsManager.resume();
             }
         }
         initAdDisplayedCheckTimer();
