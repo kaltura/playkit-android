@@ -159,7 +159,7 @@ public class PlayerController implements Player {
             return;
         }
 
-        if (source.getMediaFormat() != PKMediaFormat.wvm_widevine) {
+        if (source.getMediaFormat() != PKMediaFormat.wvm) {
             if (player == null) {
                 player = new ExoPlayerWrapper(context);
                 togglePlayerListeners(true);

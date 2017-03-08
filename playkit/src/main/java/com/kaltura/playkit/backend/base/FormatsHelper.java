@@ -1,6 +1,5 @@
 package com.kaltura.playkit.backend.base;
 
-import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.backend.base.data.BasePlaybackSource;
 
@@ -15,7 +14,6 @@ public class FormatsHelper {
 
     public enum StreamFormat {
         MpegDash("mpegdash"),
-        MpegDashDrm("mpegdash+drm"),
         AppleHttp("applehttp"),
         Url("url"),
         UrlDrm("url+drm"),
@@ -47,11 +45,10 @@ public class FormatsHelper {
 
     static{
         SupportedFormats = new HashMap<StreamFormat, PKMediaFormat>();
-        SupportedFormats.put(StreamFormat.MpegDash, PKMediaFormat.dash_clear);
-        SupportedFormats.put(StreamFormat.MpegDashDrm, PKMediaFormat.dash_drm);
-        SupportedFormats.put(StreamFormat.AppleHttp, PKMediaFormat.hls_clear);
-        SupportedFormats.put(StreamFormat.Url, PKMediaFormat.mp4_clear);
-        SupportedFormats.put(StreamFormat.UrlDrm, PKMediaFormat.wvm_widevine);
+        SupportedFormats.put(StreamFormat.MpegDash, PKMediaFormat.dash);
+        SupportedFormats.put(StreamFormat.AppleHttp, PKMediaFormat.hls);
+        SupportedFormats.put(StreamFormat.Url, PKMediaFormat.mp4);
+        SupportedFormats.put(StreamFormat.UrlDrm, PKMediaFormat.wvm);
     }
 
     public static Map<StreamFormat, PKMediaFormat> getSupportedFormats() {
@@ -64,11 +61,11 @@ public class FormatsHelper {
         StreamFormat streamFormat = StreamFormat.byValue(format);
         switch (streamFormat) {
             case MpegDash:
-                return hasDrm ? SupportedFormats.get(StreamFormat.MpegDashDrm) : SupportedFormats.get(StreamFormat.MpegDash);
+                return PKMediaFormat.dash;
             case Url:
-                return hasDrm ? SupportedFormats.get(StreamFormat.UrlDrm) : SupportedFormats.get(StreamFormat.Url);
+                return hasDrm ? PKMediaFormat.wvm : PKMediaFormat.mp4;
             case AppleHttp:
-                return hasDrm ? null : SupportedFormats.get(StreamFormat.AppleHttp);
+                return PKMediaFormat.hls;
         }
         return null;
     }
@@ -78,29 +75,16 @@ public class FormatsHelper {
         StreamFormat streamFormat = StreamFormat.byValue(format);
         switch (streamFormat) {
             case MpegDash:
-                return schemes == null ?
-                        SupportedFormats.get(StreamFormat.MpegDash) :
-                        schemes.contains(PKDrmParams.Scheme.widevine_cenc.name()) ?
-                                SupportedFormats.get(StreamFormat.MpegDashDrm) :
-                                null;
+                return PKMediaFormat.dash;
 
             case Url:
-                return schemes == null ?
-                        SupportedFormats.get(StreamFormat.Url) :
-                        schemes.contains(PKDrmParams.Scheme.widevine_classic.name()) ?
-                                SupportedFormats.get(StreamFormat.UrlDrm) :
-                                null;
+                return schemes == null ? PKMediaFormat.mp4 : PKMediaFormat.wvm;
 
             case AppleHttp:
-                return schemes == null ?
-                        SupportedFormats.get(StreamFormat.AppleHttp) :
-                        null;
-                        /*!schemes.contains(PKDrmParams.Scheme.FAIRPLAY.name()) ?
-                                SupportedFormats.get(StreamFormat.UrlDrm) :
-                                null;*/
+                return PKMediaFormat.hls;
 
             default:
-                return null;
+                return PKMediaFormat.unknown;
 
         }
     }

@@ -3,28 +3,32 @@ package com.kaltura.playkit;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.kaltura.playkit.player.MediaSupport;
+
 public class PKDrmParams implements Parcelable {
 
     public enum Scheme {
 
-        widevine_cenc,
-        playready_cenc,
-        widevine_classic,
-        playready,
-        fairplay,
-        none
+        WidevineCENC(MediaSupport.widevineModular()),
+        PlayReadyCENC(MediaSupport.playready()),
+        WidevineClassic(MediaSupport.widevineClassic()),
+        PlayReadyClassic(false),
+        FairPlay(false),
+        Unknown(false);
+
+        public boolean isSupported() {
+            return supported;
+        }
+
+        private final boolean supported;
+
+        Scheme(boolean supported) {
+            this.supported = supported;
+        }
     }
-    /*in IOS:
-    public enum Scheme: Int {
-        case widevineCenc
-        case playreadyCenc
-        case widevineClassic
-        case fairplay
-        case unknown
-    }*/
 
     private String licenseUri;
-    private Scheme scheme = Scheme.none;
+    private Scheme scheme = Scheme.Unknown;
 
     public PKDrmParams(String licenseUrl, Scheme scheme){
         this.licenseUri = licenseUrl;
@@ -33,9 +37,13 @@ public class PKDrmParams implements Parcelable {
 
     protected PKDrmParams(Parcel in) {
         licenseUri = in.readString();
-        scheme = Utils.byValue(Scheme.class, in.readString(), Scheme.none);//Scheme.valueOf(in.readString());
+        scheme = Utils.byValue(Scheme.class, in.readString(), Scheme.Unknown);//Scheme.valueOf(in.readString());
     }
 
+    public boolean isSchemeSupported() {
+        return scheme != null && scheme.isSupported();
+    }
+    
     public String getLicenseUri() {
         return licenseUri;
     }
