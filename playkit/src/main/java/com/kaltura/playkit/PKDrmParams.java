@@ -9,22 +9,37 @@ public class PKDrmParams implements Parcelable {
 
     public enum Scheme {
 
-        WidevineCENC(MediaSupport.widevineModular()),
-        PlayReadyCENC(MediaSupport.playready()),
-        WidevineClassic(MediaSupport.widevineClassic()),
-        PlayReadyClassic(false),
-        FairPlay(false),
-        Unknown(false);
+        WidevineCENC,
+        PlayReadyCENC,
+        WidevineClassic,
+        PlayReadyClassic,
+        FairPlay,
+        Unknown;
 
         public boolean isSupported() {
+            if (supported == null) {
+                switch (this) {
+                    case WidevineCENC:
+                        supported = MediaSupport.widevineModular();
+                        break;
+                    case PlayReadyCENC:
+                        supported = MediaSupport.playReady();
+                        break;
+                    case WidevineClassic:
+                        supported = MediaSupport.widevineClassic();
+                        break;
+                    case PlayReadyClassic:
+                    case FairPlay:
+                    case Unknown:
+                        supported = false;
+                        break;
+                }
+            }
             return supported;
+            
         }
 
-        private final boolean supported;
-
-        Scheme(boolean supported) {
-            this.supported = supported;
-        }
+        private Boolean supported;
     }
 
     private String licenseUri;

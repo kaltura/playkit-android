@@ -18,9 +18,9 @@ public class MediaSupport {
     public static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
 
 
-    private static Boolean widevineClassic;
-    private static Boolean widevineModular;
-    private static boolean initialized;
+    private static boolean widevineClassic = false;
+    private static boolean widevineModular = false;
+    private static boolean initialized = false;
 
     private static final PKLog log = PKLog.get("MediaSupport");
     
@@ -58,7 +58,7 @@ public class MediaSupport {
     }
     
     public static boolean widevineClassic() {
-        if (widevineClassic != null) {
+        if (initialized) {
             return widevineClassic;
         }
         
@@ -68,21 +68,19 @@ public class MediaSupport {
     }
 
     public static boolean widevineModular() {
-        if (widevineModular != null) {
-            return widevineModular;
-        }
-        // Encrypted dash is only supported in Android v4.3 and up -- needs MediaDrm class.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            // Make sure Widevine is supported.
-            if (MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID)) {
-                widevineModular = true;
-                return true;
+        if (!initialized) {
+            // Encrypted dash is only supported in Android v4.3 and up -- needs MediaDrm class.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                // Make sure Widevine is supported.
+                if (MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID)) {
+                    widevineModular = true;
+                }
             }
         }
-        return false;
+        return widevineModular;
     }
     
-    public static boolean playready() {
+    public static boolean playReady() {
         return false;   // Not yet.
     }
 }
