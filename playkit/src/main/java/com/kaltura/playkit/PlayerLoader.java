@@ -41,7 +41,7 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
     
     public void load(@NonNull PlayerConfig playerConfig) {
-        PlayerController playerController = new PlayerController(context, playerConfig.media);
+        PlayerController playerController = new PlayerController(context);
         
         playerController.setEventListener(new PKEvent.Listener() {
             @Override
