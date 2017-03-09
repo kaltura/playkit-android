@@ -35,7 +35,7 @@ public class IMAConfig {
     private String adTagURL;
     private boolean enableBackgroundPlayback;
     private boolean autoPlayAdBreaks;
-    private int videoBitrate;
+    private int videoBitrate; // in KB
     private boolean adAttribution;
     private boolean adCountDown;
     private int  adLoadTimeOut;
@@ -90,7 +90,7 @@ public class IMAConfig {
         return this;
     }
 
-    public long getVideoBitrate() {
+    public int getVideoBitrate() {
         return videoBitrate;
     }
 
