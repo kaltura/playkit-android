@@ -46,7 +46,7 @@
       {
         "id": "0_uka1msg4",
         "mimeType": "application/x-mpegURL",
-        "url": "http://cdnapi.kaltura.com/p/243342/sp/24334200/playManifest/entryId/0_uka1msg4/flavorIds/1_vqhfu6uy,1_80sohj7p/format/applehttp/protocol/http/a.m3u8"
+        "url": "http://api-preprod.ott.kaltura.com/v4_2/api_v3/service/assetFile/action/playManifest/partnerId/198/assetId/259295/assetType/media/assetFileId/516109/contextType/PLAYBACK/a.m3u8"
       }
     ]
   },

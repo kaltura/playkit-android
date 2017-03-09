@@ -1,8 +1,6 @@
 package com.kaltura.playkit.backend.phoenix;
 
-import android.support.annotation.StringDef;
-import java.lang.annotation.Retention;
-import static java.lang.annotation.RetentionPolicy.SOURCE;
+import com.kaltura.playkit.PKMediaEntry;
 
 /**
  * @hide
@@ -10,39 +8,81 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 public class APIDefines {
 
-    @Retention(SOURCE)
-    @StringDef(value = {AssetReferenceType.Media, AssetReferenceType.InternalEpg, AssetReferenceType.ExternalEpg})
-    public @interface AssetReferenceType {
-        String Media = "media";
-        String InternalEpg = "epg_internal";
-        String ExternalEpg = "epg_external";
+
+
+    public enum AssetReferenceType {
+        Media("media"),
+        InternalEpg("epg_internal"),
+        ExternalEpg("epg_external");
+
+        AssetReferenceType(String value){
+            this.value = value;
+        }
+
+        public String value;
+
     }
 
-    @Retention(SOURCE)
-    @StringDef(value = {BookmarkType.Media, BookmarkType.Epg, BookmarkType.Recording})
-    public @interface BookmarkType {
-        String Media = "media";
-        String Epg = "epg";
-        String Recording = "recording";
+    public enum LiveStreamType {
+        Catchup("catchup"),
+        StartOver("startOver"),
+        TrickPlay("trickPlay");
+
+        LiveStreamType(String value){
+            this.value = value;
+        }
+
+        public String value;
     }
 
 
-    @Retention(SOURCE)
-    @StringDef(value = {LiveStreamType.Catchup, LiveStreamType.StartOver, LiveStreamType.TrickPlay})
-    public @interface LiveStreamType {
-        String Catchup = "catchup";
-        String StartOver = "startOver";
-        String TrickPlay = "trickPlay";
+    public enum MediaType {
+        Vod(KalturaAssetType.Media, PKMediaEntry.MediaEntryType.Vod),
+        Channel(KalturaAssetType.Media, PKMediaEntry.MediaEntryType.Live),
+        Recording(KalturaAssetType.Recording,PKMediaEntry.MediaEntryType.Vod),
+        EPG(KalturaAssetType.Epg, PKMediaEntry.MediaEntryType.Live);
+
+        MediaType(KalturaAssetType assetType, PKMediaEntry.MediaEntryType mediaEntryType){
+            this.assetType = assetType;
+            this.mediaEntryType = mediaEntryType;
+        }
+
+        private KalturaAssetType assetType;
+        private PKMediaEntry.MediaEntryType mediaEntryType;
+
+        public KalturaAssetType getAssetType() {
+            return assetType;
+        }
+
+        public PKMediaEntry.MediaEntryType getMediaEntryType() {
+            return mediaEntryType;
+        }
     }
 
 
-    @Retention(SOURCE)
-    @StringDef(value = {MediaType.Vod, MediaType.Channel, MediaType.Program})
-    public @interface MediaType {
-        String Vod = "vod";
-        String Channel = "channel";
-        String Program = "program";
-        String EPG = "epg";
+    public enum KalturaAssetType {
+        Media("media"),
+        Epg("epg"),
+        Recording("recording");
+
+        KalturaAssetType(String value){
+            this.value = value;
+        }
+
+        public String value;
+    }
+
+    public enum PlaybackContextType {
+        Trailer("TRAILER"),
+        Catchup("CATCHUP"),
+        StartOver("START_OVER"),
+        Playback("PLAYBACK");
+
+        PlaybackContextType(String value){
+            this.value = value;
+        }
+
+        public String value;
     }
 
 }

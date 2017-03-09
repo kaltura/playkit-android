@@ -1,12 +1,25 @@
 package com.kaltura.playkit;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import java.util.Collections;
 import java.util.List;
 
-public class PKMediaSource {
+public class PKMediaSource implements Parcelable {
     private String id;
     private String url;
     private PKMediaFormat mediaFormat;
     private List<PKDrmParams> drmData;
+
+    public PKMediaSource(){}
+
+    protected PKMediaSource(Parcel in) {
+        id = in.readString();
+        url = in.readString();
+        mediaFormat = Utils.byValue(PKMediaFormat.class, in.readString());//mediaFormat = PKMediaFormat.valueOf(in.readString());
+        drmData = in.createTypedArrayList(PKDrmParams.CREATOR);
+    }
 
     public String getId() {
         return id;
@@ -50,4 +63,34 @@ public class PKMediaSource {
     public boolean hasDrmParams() {
         return (drmData != null && drmData.size() > 0) ? true : false;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(url);
+        dest.writeString(mediaFormat.name());
+        if(drmData != null) {
+            dest.writeTypedList(drmData);
+        } else {
+            dest.writeTypedList(Collections.EMPTY_LIST);
+        }
+
+    }
+
+    public static final Creator<PKMediaSource> CREATOR = new Creator<PKMediaSource>() {
+        @Override
+        public PKMediaSource createFromParcel(Parcel in) {
+            return new PKMediaSource(in);
+        }
+
+        @Override
+        public PKMediaSource[] newArray(int size) {
+            return new PKMediaSource[size];
+        }
+    };
 }
