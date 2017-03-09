@@ -173,9 +173,11 @@ public class IMAConfig {
 
         Gson gson = new Gson();
         JsonArray jArray = new JsonArray();
-        for (String mimeType : videoMimeTypes) {
-            JsonPrimitive element = new JsonPrimitive(mimeType);
-            jArray.add(element);
+        if (videoMimeTypes != null) {
+            for (String mimeType : videoMimeTypes) {
+                JsonPrimitive element = new JsonPrimitive(mimeType);
+                jArray.add(element);
+            }
         }
         jsonObject.add(AD_VIDEO_MIME_TYPES, jArray);
 
