@@ -233,6 +233,7 @@ public class LocalAssetsManager {
     }
 
     private void checkDrmAssetStatus(final String localAssetPath, final String assetId, PKDrmParams.Scheme scheme, final AssetStatusListener listener) {
+
         final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(scheme, context, localDataStore);
 
         doInBackground(new Runnable() {
