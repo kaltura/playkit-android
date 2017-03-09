@@ -668,18 +668,14 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             public void run() {
                 handler.post(new Runnable() {
                     public void run() {
-                        try {
-                            if (adsManager != null && adsManager.getAdProgress() != null) {
-                                float currentTime = adsManager.getAdProgress().getCurrentTime();
-                                if (currentTime > 0) {
-                                    log.d("AD Displayed delay check : ad duration " + currentTime);
-                                    isAdDisplayed = true;
-                                    messageBus.post(new AdEvent(AdEvent.Type.AD_DISPLAYED_AFTER_CONTENT_PAUSE));
-                                    adDisplayedCheckTimer.cancel();
-                                }
+                        if (adsManager != null && adsManager.getAdProgress() != null) {
+                            float currentTime = adsManager.getAdProgress().getCurrentTime();
+                            if (currentTime > 0) {
+                                log.d("AD Displayed delay check : ad duration " + currentTime);
+                                isAdDisplayed = true;
+                                messageBus.post(new AdEvent(AdEvent.Type.AD_DISPLAYED_AFTER_CONTENT_PAUSE));
+                                adDisplayedCheckTimer.cancel();
                             }
-                        } catch (Exception e) {
-                            // TODO Auto-generated catch block
                         }
                     }
                 });
