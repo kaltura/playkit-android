@@ -69,26 +69,7 @@ public class FormatsHelper {
         }
         return null;
     }
-
-    // for future use
-    public static PKMediaFormat getPKMediaFormat(String format, String schemes) {
-        StreamFormat streamFormat = StreamFormat.byValue(format);
-        switch (streamFormat) {
-            case MpegDash:
-                return PKMediaFormat.dash;
-
-            case Url:
-                return schemes == null ? PKMediaFormat.mp4 : PKMediaFormat.wvm;
-
-            case AppleHttp:
-                return PKMediaFormat.hls;
-
-            default:
-                return PKMediaFormat.unknown;
-
-        }
-    }
-
+    
     /**
      * checks if the format name from the source parameter has a matching supported {@link PKMediaFormat}
      * element.
