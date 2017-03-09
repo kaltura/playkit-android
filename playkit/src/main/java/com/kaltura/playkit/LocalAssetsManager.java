@@ -25,10 +25,12 @@ import java.io.IOException;
 public class LocalAssetsManager {
 
     private static final PKLog log = PKLog.get("LocalAssetsManager");
+    private static final String ASSET_ID_PREFIX = "assetId:";
+    private static final String MEDIA_FORMAT_SUFFIX = "_type:";
 
     private final Context context;
     private LocalDataStore localDataStore;
-    
+
     private Handler mainHandler = new Handler(Looper.getMainLooper());
 
     /**
@@ -37,14 +39,16 @@ public class LocalAssetsManager {
     public interface AssetRegistrationListener {
         /**
          * Will notify about success.
+         *
          * @param localAssetPath - the path of the local asset.
          */
         void onRegistered(String localAssetPath);
 
         /**
          * Will notify if registration process was not successful.
+         *
          * @param localAssetPath - the path of the local asset.
-         * @param error - error that occured during the registration process.
+         * @param error          - error that occured during the registration process.
          */
         void onFailed(String localAssetPath, Exception error);
     }
@@ -65,6 +69,7 @@ public class LocalAssetsManager {
 
     /**
      * Constructor which will create {@link DefaultLocalDataStore}
+     *
      * @param context - the application context.
      */
     public LocalAssetsManager(Context context) {
@@ -73,98 +78,116 @@ public class LocalAssetsManager {
 
     /**
      * Constructor with custom implementation of the {@link LocalDataStore}
-     * @param context - the application context.
+     *
+     * @param context        - the application context.
      * @param localDataStore - custom implementation of {@link LocalDataStore}
      */
     public LocalAssetsManager(Context context, LocalDataStore localDataStore) {
         this.context = context;
         this.localDataStore = localDataStore;
-        
+
         MediaSupport.initialize(context);
     }
 
-
     /**
-     * Register the asset. If the asset have drm protection it will store its keySetId in {@link LocalDataStore}
-     * @param mediaSource - the source to register.
+     * Register the asset. If the asset have drm protection it will store keySetId and {@link PKMediaFormat} in {@link LocalDataStore}
+     * If no drm available only {@link PKMediaFormat as byte[]} will be stored.
+     *
+     * @param mediaSource    - the source to register.
      * @param localAssetPath - the url of the locally stored asset.
-     * @param assetId - the asset id.
-     * @param listener - notify about the success/fail after the completion of the registration process.
+     * @param assetId        - the asset id.
+     * @param listener       - notify about the success/fail after the completion of the registration process.
      */
     public void registerAsset(@NonNull final PKMediaSource mediaSource, @NonNull final String localAssetPath,
-                                 @NonNull final String assetId, final AssetRegistrationListener listener) {
+                              @NonNull final String assetId, final AssetRegistrationListener listener) {
 
-        // Preflight: check that all parameters are valid.
-        checkNotEmpty(mediaSource.getUrl(), "mediaSource.url");
-        checkNotEmpty(localAssetPath, "localAssetPath");
-        checkNotEmpty(assetId, "assetId");
+        checkIfParamsAreValid(mediaSource.getUrl(), localAssetPath, assetId);
 
         if (!isOnline(context)) {
-            //TODO check with noam if it is alright to return an exception at this stage.
             listener.onFailed(localAssetPath, new Exception("Can't register/refresh when offline"));
             return;
         }
 
-        final PKDrmParams drmParams = findSupportedDrmParams(mediaSource);
-        
-        if (drmParams != null) {
-            doInBackground(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(drmParams.getScheme(), context, localDataStore);
-                        String licenseUri = drmParams.getLicenseUri();
-                        drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, listener);
+        PKDrmParams drmParams = findSupportedDrmParams(mediaSource);
 
-                    } catch (final IOException e) {
-                        log.e("Error", e);
-                        if (listener != null) {
-                            mainHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    listener.onFailed(localAssetPath, e);
-                                }
-                            });
-                        }
+        //Convert the media format to byte[] in order to store it in the LocalDataStore.
+        byte[] mediaFormat = mediaSource.getMediaFormat().toString().getBytes();
+
+        if (drmParams != null) {
+            registerDrmAsset(localAssetPath, assetId, mediaFormat, drmParams, listener);
+        } else {
+            registerClearAsset(localAssetPath, assetId, mediaFormat, listener);
+        }
+    }
+
+    /**
+     * Will register the drm asset and store the keyset id and {@link PKMediaFormat} in local storage.
+     *
+     * @param localAssetPath - the local asset path of the asset.
+     * @param assetId        - the asset id.
+     * @param mediaFormat    - the media format converted to byte[].
+     * @param drmParams      - drm params of the media.
+     * @param listener       - notify about the success/fail after the completion of the registration process.
+     */
+    private void registerDrmAsset(final String localAssetPath, final String assetId, final byte[] mediaFormat, final PKDrmParams drmParams, final AssetRegistrationListener listener) {
+        doInBackground(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(drmParams.getScheme(), context, localDataStore);
+                    String licenseUri = drmParams.getLicenseUri();
+
+                    boolean isRegistered = drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, listener);
+                    if (isRegistered) {
+                        localDataStore.save(buildAssetKey(assetId), mediaFormat);
+                    }
+                } catch (final IOException e) {
+                    log.e("Error", e);
+                    if (listener != null) {
+                        mainHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onFailed(localAssetPath, e);
+                            }
+                        });
                     }
                 }
-            });
-        }
+            }
+        });
     }
 
-    private static PKDrmParams findSupportedDrmParams(@NonNull PKMediaSource mediaSource) {
-        for (PKDrmParams params : mediaSource.getDrmData()) {
-            switch (params.getScheme()) {
-                case widevine_cenc:
-                    if (MediaSupport.widevineModular()) {
-                        return params;
-                    }
-                    break;
-                case widevine_classic:
-                    if (MediaSupport.widevineClassic()) {
-                        return params;
-                    }
-                    break;
-                case playready_cenc:
-                    log.d("Skipping unsupported PlayReady params");
-                    break;
-            }
-        }
-        return null;
+    /**
+     * Will register clear asset and store {@link PKMediaFormat} in local storage.
+     *
+     * @param localAssetPath - the local asset path of the asset.
+     * @param assetId        - the asset id.
+     * @param mediaFormat    - the media format converted to byte[].
+     * @param listener       - notify about the success/fail after the completion of the registration process.
+     */
+    private void registerClearAsset(String localAssetPath, String assetId, byte[] mediaFormat, AssetRegistrationListener listener) {
+        localDataStore.save(buildAssetKey(assetId), mediaFormat);
+        listener.onRegistered(localAssetPath);
     }
-    
-    
 
     /**
      * Unregister asset. If the asset have drm protection it will be removed from {@link LocalDataStore}
+     * In any case the {@link PKMediaFormat} will be removed from {@link LocalDataStore}
+     *
      * @param localAssetPath - the url of the locally stored asset.
-     * @param assetId - the asset id
-     * @param listener - notify when the asset is removed.
+     * @param assetId        - the asset id
+     * @param listener       - notify when the asset is removed.
      */
     public void unregisterAsset(@NonNull final String localAssetPath,
-                                   @NonNull final String assetId, final AssetRemovalListener listener) {
+                                @NonNull final String assetId, final AssetRemovalListener listener) {
 
-        PKDrmParams.Scheme scheme = guessLocalAssetScheme(localAssetPath);
+
+        PKDrmParams.Scheme scheme = getLocalAssetScheme(assetId);
+
+        if (scheme == null) {
+            removeAsset(localAssetPath, assetId, listener);
+            return;
+        }
+
         final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(scheme, context, localDataStore);
 
         doInBackground(new Runnable() {
@@ -176,7 +199,7 @@ public class LocalAssetsManager {
                         mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
-                                listener.onRemoved(localAssetPath);
+                                removeAsset(localAssetPath, assetId, listener);
                             }
                         });
                     }
@@ -185,33 +208,31 @@ public class LocalAssetsManager {
         });
     }
 
-    @Nullable
-    private PKDrmParams.Scheme guessLocalAssetScheme(@NonNull String localAssetPath) {
-        PKMediaFormat format = PKMediaFormat.valueOfUrl(localAssetPath);
-        if (format == null) {
-            return null;
-        }
-        switch (format) {
-            case dash_clear:
-            case dash_drm:
-                return PKDrmParams.Scheme.widevine_cenc;
-            case wvm_widevine:
-                return PKDrmParams.Scheme.widevine_classic;
-            default:
-                return null;
-        }
+    private void removeAsset(String localAssetPath, String assetId, AssetRemovalListener listener) {
+        localDataStore.remove(buildAssetKey(assetId));
+        listener.onRemoved(localAssetPath);
     }
+
 
     /**
      * Check the status of the desired asset.
+     *
      * @param localAssetPath - the url of the locally stored asset.
-     * @param assetId - the asset id.
-     * @param listener - will pass the result of the status.
+     * @param assetId        - the asset id.
+     * @param listener       - will pass the result of the status.
      */
     public void checkAssetStatus(@NonNull final String localAssetPath, @NonNull final String assetId,
-                                           @Nullable final AssetStatusListener listener) {
+                                 @Nullable final AssetStatusListener listener) {
 
-        PKDrmParams.Scheme scheme = guessLocalAssetScheme(localAssetPath);
+        PKDrmParams.Scheme scheme = getLocalAssetScheme(assetId);
+        if (scheme == null) {
+            checkClearAssetStatus(localAssetPath, assetId, listener);
+        }else {
+            checkDrmAssetStatus(localAssetPath, assetId, scheme, listener);
+        }
+    }
+
+    private void checkDrmAssetStatus(final String localAssetPath, final String assetId, PKDrmParams.Scheme scheme, final AssetStatusListener listener) {
         final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(scheme, context, localDataStore);
 
         doInBackground(new Runnable() {
@@ -234,9 +255,70 @@ public class LocalAssetsManager {
         });
     }
 
+    private void checkClearAssetStatus(String localAssetPath, String assetId, AssetStatusListener listener) {
+        try {
+            localDataStore.load(buildAssetKey(assetId));
+            listener.onStatus(localAssetPath, 0, 0, true);
+            return;
+        } catch (FileNotFoundException e) {
+            listener.onStatus(localAssetPath, 0, 0, false);
+        }
+    }
+
+    private static PKDrmParams findSupportedDrmParams(@NonNull PKMediaSource mediaSource) {
+        if (mediaSource.getDrmData() == null) {
+            return null;
+        }
+
+        for (PKDrmParams params : mediaSource.getDrmData()) {
+            switch (params.getScheme()) {
+                case widevine_cenc:
+                    if (MediaSupport.widevineModular()) {
+                        return params;
+                    }
+                    break;
+                case widevine_classic:
+                    if (MediaSupport.widevineClassic()) {
+                        return params;
+                    }
+                    break;
+                case playready_cenc:
+                    log.d("Skipping unsupported PlayReady params");
+                    break;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private PKDrmParams.Scheme getLocalAssetScheme(@NonNull String assetId) {
+        PKMediaFormat format;
+
+        try {
+            String formatName = new String(localDataStore.load(buildAssetKey(assetId)));
+            format = PKMediaFormat.valueOf(formatName);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        if (format == null) {
+            return null;
+        }
+
+        switch (format) {
+            case dash_clear:
+            case dash_drm:
+                return PKDrmParams.Scheme.widevine_cenc;
+            case wvm_widevine:
+                return PKDrmParams.Scheme.widevine_classic;
+            default:
+                return null;
+        }
+    }
+
     /**
-     *
-     * @param assetId - the id of the asset.
+     * @param assetId        - the id of the asset.
      * @param localAssetPath - the actual url of the video that should be played.
      * @return - the {@link PKMediaSource} that should be passed to the player.
      */
@@ -245,7 +327,21 @@ public class LocalAssetsManager {
     }
 
     /**
+     * Will check if passed parameters are valid.
+     *
+     * @param url            - url of the media.
+     * @param localAssetPath - the local asset path of the media.
+     * @param assetId        - the asset id.
+     */
+    private void checkIfParamsAreValid(String url, String localAssetPath, String assetId) {
+        checkNotEmpty(url, "mediaSource.url");
+        checkNotEmpty(localAssetPath, "localAssetPath");
+        checkNotEmpty(assetId, "assetId");
+    }
+
+    /**
      * Checking arguments. if the argument is not valid, will throw an {@link IllegalArgumentException}
+     *
      * @param invalid - the state of the argument.
      * @param message - message to print, to the console.
      */
@@ -257,7 +353,8 @@ public class LocalAssetsManager {
 
     /**
      * check the passed String.
-     * @param obj - String to check.
+     *
+     * @param obj  - String to check.
      * @param name - the descriptive name of the String.
      */
     private void checkNotEmpty(String obj, String name) {
@@ -270,6 +367,7 @@ public class LocalAssetsManager {
 
     /**
      * Check if network connection is available.
+     *
      * @param context - context.
      * @return - true if there is network connection, otherwise - false.
      */
@@ -277,6 +375,13 @@ public class LocalAssetsManager {
         ConnectivityManager conMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = conMgr.getActiveNetworkInfo();
         return !(netInfo == null || !netInfo.isConnected() || !netInfo.isAvailable());
+    }
+
+    private String buildAssetKey(String assetId) {
+        StringBuilder builder = new StringBuilder(ASSET_ID_PREFIX);
+        builder.append(assetId);
+        builder.append(MEDIA_FORMAT_SUFFIX);
+        return builder.toString();
     }
 
     /**
@@ -290,8 +395,8 @@ public class LocalAssetsManager {
 
         /**
          * @param localDataStore - the storage from where drm keySetId is stored.
-         * @param localPath - the local url of the media.
-         * @param assetId - the id of the media.
+         * @param localPath      - the local url of the media.
+         * @param assetId        - the id of the media.
          */
         LocalMediaSource(LocalDataStore localDataStore, String localPath, String assetId) {
             setId(assetId);
@@ -318,11 +423,11 @@ public class LocalAssetsManager {
 
         private final PKLog log = PKLog.get("DefaultLocalDataStore");
 
-        private static final String LOCAL_DRM_SHARED_PREFERENCE_STORAGE = "PlayKitLocalDrmStorage";
+        private static final String LOCAL_SHARED_PREFERENCE_STORAGE = "PlayKitLocalStorage";
         private final SharedPreferences sharedPreferences;
 
-        public DefaultLocalDataStore(Context context){
-            sharedPreferences = context.getSharedPreferences(LOCAL_DRM_SHARED_PREFERENCE_STORAGE, 0);
+        public DefaultLocalDataStore(Context context) {
+            sharedPreferences = context.getSharedPreferences(LOCAL_SHARED_PREFERENCE_STORAGE, 0);
         }
 
         @Override
