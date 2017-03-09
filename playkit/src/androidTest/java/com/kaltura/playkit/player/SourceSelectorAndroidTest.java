@@ -20,15 +20,23 @@ import static org.junit.Assert.assertTrue;
 @RunWith(AndroidJUnit4.class)
 public class SourceSelectorAndroidTest {
 
+    public static final String MPD_EXAMPLE = "http://example.com/a.mpd";
+    public static final String MP4_EXAMPLE = "http://example.com/a.mp4";
+    public static final String M3U8_EXAMPLE = "http://example.com/a.m3u8";
+    public static final String WVM_EXAMPLE = "http://example.com/a.wvm";
+    public static final String MP3_EXAMPLE = "http://example.com/a.mp3";
+
+
+
     PKMediaSource dashWidevine = new PKMediaSource()
             .setMediaFormat(PKMediaFormat.dash)
             .setUrl("http://example.com/a.mpd")
             .setDrmData(Collections.singletonList(new PKDrmParams("http://whatever", PKDrmParams.Scheme.WidevineCENC)));
-    PKMediaSource dashClear = new PKMediaSource().setMediaFormat(PKMediaFormat.dash).setUrl("http://example.com/a.mpd");
-    PKMediaSource mp4 = new PKMediaSource().setMediaFormat(PKMediaFormat.mp4).setUrl("http://example.com/a.mp4");
-    PKMediaSource hls = new PKMediaSource().setMediaFormat(PKMediaFormat.hls).setUrl("http://example.com/a.m3u8");
-    PKMediaSource wvm = new PKMediaSource().setMediaFormat(PKMediaFormat.wvm).setUrl("http://example.com/a.wvm");
-    PKMediaSource mp3 = new PKMediaSource().setMediaFormat(PKMediaFormat.mp3).setUrl("http://example.com/a.mp3");
+    PKMediaSource dashClear = new PKMediaSource().setMediaFormat(PKMediaFormat.dash).setUrl(MPD_EXAMPLE);
+    PKMediaSource mp4 = new PKMediaSource().setMediaFormat(PKMediaFormat.mp4).setUrl(MP4_EXAMPLE);
+    PKMediaSource hls = new PKMediaSource().setMediaFormat(PKMediaFormat.hls).setUrl(M3U8_EXAMPLE);
+    PKMediaSource wvm = new PKMediaSource().setMediaFormat(PKMediaFormat.wvm).setUrl(WVM_EXAMPLE);
+    PKMediaSource mp3 = new PKMediaSource().setMediaFormat(PKMediaFormat.mp3).setUrl(MP3_EXAMPLE);
 
     private PKMediaEntry entry(PKMediaSource... sources) {
         return new PKMediaEntry().setSources(Arrays.asList(sources));

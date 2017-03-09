@@ -67,13 +67,12 @@ public class MediaSupport {
     }
 
     public static boolean widevineModular() {
-        if (!initialized) {
-            // Encrypted dash is only supported in Android v4.3 and up -- needs MediaDrm class.
-            // Make sure Widevine is supported
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID)) {
-                widevineModular = true;
-            }
+        // Encrypted dash is only supported in Android v4.3 and up -- needs MediaDrm class.
+        // Make sure Widevine is supported
+        if (!initialized && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID)) {
+            widevineModular = true;
         }
+
         return widevineModular;
     }
 

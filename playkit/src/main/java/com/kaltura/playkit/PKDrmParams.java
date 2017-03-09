@@ -34,6 +34,9 @@ public class PKDrmParams implements Parcelable {
                     case Unknown:
                         supported = false;
                         break;
+                    default:
+                        supported = false;
+                        break;
                 }
             }
             return supported;
