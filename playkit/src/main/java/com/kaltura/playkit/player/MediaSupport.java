@@ -23,7 +23,7 @@ public class MediaSupport {
     private static boolean initialized = false;
 
     private static final PKLog log = PKLog.get("MediaSupport");
-    
+
     public static void initialize(@NonNull final Context context) {
         if (initialized) {
             return;
@@ -37,7 +37,7 @@ public class MediaSupport {
             }
         }.start();
     }
-    
+
     private static void checkWidevineClassic(Context context) {
         DrmManagerClient drmManagerClient = new DrmManagerClient(context);
         try {
@@ -56,30 +56,27 @@ public class MediaSupport {
             drmManagerClient.release();
         }
     }
-    
+
     public static boolean widevineClassic() {
         if (initialized) {
             return widevineClassic;
         }
-        
+
         log.w("MediaSupport not initialized; assuming no Widevine Classic support");
-        
         return false;
     }
 
     public static boolean widevineModular() {
         if (!initialized) {
             // Encrypted dash is only supported in Android v4.3 and up -- needs MediaDrm class.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                // Make sure Widevine is supported.
-                if (MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID)) {
-                    widevineModular = true;
-                }
+            // Make sure Widevine is supported
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID)) {
+                widevineModular = true;
             }
         }
         return widevineModular;
     }
-    
+
     public static boolean playReady() {
         return false;   // Not yet.
     }

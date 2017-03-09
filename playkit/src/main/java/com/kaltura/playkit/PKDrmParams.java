@@ -16,6 +16,7 @@ public class PKDrmParams implements Parcelable {
         FairPlay,
         Unknown;
 
+        private Boolean supported;
         public boolean isSupported() {
             if (supported == null) {
                 switch (this) {
@@ -38,8 +39,6 @@ public class PKDrmParams implements Parcelable {
             return supported;
             
         }
-
-        private Boolean supported;
     }
 
     private String licenseUri;
