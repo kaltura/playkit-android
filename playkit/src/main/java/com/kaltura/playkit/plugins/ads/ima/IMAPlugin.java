@@ -221,6 +221,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         if (!adConfig.getAdAttribution() && !adConfig.getAdCountDown()) {
             renderingSettings.setUiElements(Collections.<UiElement>emptySet());
         }
+
+        if (adConfig.getVideoBitrate() != -1) {
+            renderingSettings.setBitrateKbps(adConfig.getVideoBitrate());
+        }
     }
 
     private void imaSettingSetup() {
