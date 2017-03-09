@@ -242,35 +242,17 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         log.d("Start onUpdateMedia");
-        isAdRequested = false;
-        isAdDisplayed = false;
     }
 
     @Override
     protected void onUpdateConfig(Object config) {
         log.d("Start onUpdateConfig");
 
-        // TODO: is this the correct fix?
         adConfig = parseConfig(config);
-        
-//        
-//        if (key.equals(IMAConfig.AD_TAG_LANGUAGE)) {
-//            getAdsConfig().setLanguage((String) settings);
-//        } else if (key.equals(IMAConfig.AD_TAG_URL)) {
-//            getAdsConfig().setAdTagURL((String) settings);
-//            isAdRequested = false;
-//            isAdDisplayed = false;
-//            onDestroy();
-//            onLoad(player, mediaConfig, getAdsConfig().toJSONObject(), messageBus, context);
-//        } else if (key.equals(IMAConfig.ENABLE_BG_PLAYBACK)) {
-//            getAdsConfig().setEnableBackgroundPlayback((boolean) settings);
-//        } else if (key.equals(IMAConfig.AUTO_PLAY_AD_BREAK)) {
-//            getAdsConfig().setAutoPlayAdBreaks((boolean) settings);
-//        } else if (key.equals(IMAConfig.AD_VIDEO_BITRATE)) {
-//            getAdsConfig().setVideoBitrate((int) settings);
-//        } else if (key.equals(IMAConfig.AD_VIDEO_MIME_TYPES)) {
-//            getAdsConfig().setVideoMimeTypes((List<String>) settings);
-//        }
+        isAdRequested = false;
+        isAdDisplayed = false;
+        onDestroy();
+        onLoad(player, config, messageBus, context);
     }
 
     @Override
