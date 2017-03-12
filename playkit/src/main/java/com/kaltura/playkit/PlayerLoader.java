@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.google.gson.JsonObject;
 import com.kaltura.playkit.player.PlayerController;
 
 import java.util.ArrayList;
@@ -40,8 +39,8 @@ class PlayerLoader extends PlayerDecoratorBase {
         this.messageBus = new MessageBus();
     }
     
-    public void load(@NonNull PlayerConfig playerConfig) {
-        PlayerController playerController = new PlayerController(context, playerConfig.media);
+    public void load(@NonNull PKPluginConfigs pluginsConfig) {
+        PlayerController playerController = new PlayerController(context);
         
         playerController.setEventListener(new PKEvent.Listener() {
             @Override
@@ -52,9 +51,9 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         Player player = playerController;
 
-        for (Map.Entry<String, JsonObject> pluginConfig : playerConfig.plugins.getPluginConfigMap().entrySet()) {
-            String name = pluginConfig.getKey();
-            PKPlugin plugin = loadPlugin(name, player, playerConfig, messageBus, context);
+        for (Map.Entry<String, Object> entry : pluginsConfig.getPluginConfigsMap().entrySet()) {
+            String name = entry.getKey();
+            PKPlugin plugin = loadPlugin(name, player, entry.getValue(), messageBus, context);
 
             if (plugin == null) {
                 log.w("Plugin not found: " + name);
@@ -75,10 +74,10 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     @Override
-    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
+    public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         LoadedPlugin loadedPlugin = loadedPlugins.get(pluginName);
         if (loadedPlugin != null) {
-            loadedPlugin.plugin.onUpdateConfig(key, value);
+            loadedPlugin.plugin.onUpdateConfig(pluginConfig);
         }
     }
 
@@ -136,10 +135,10 @@ class PlayerLoader extends PlayerDecoratorBase {
         setPlayer(currentLayer);
     }
 
-    private PKPlugin loadPlugin(String name, Player player, PlayerConfig config, MessageBus messageBus, Context context) {
+    private PKPlugin loadPlugin(String name, Player player, Object config, MessageBus messageBus, Context context) {
         PKPlugin plugin = PlayKitManager.createPlugin(name);
         if (plugin != null) {
-            plugin.onLoad(player, config.media, config.plugins.getPluginConfig(name), messageBus, context);
+            plugin.onLoad(player, config, messageBus, context);
         }
         return plugin;
     }

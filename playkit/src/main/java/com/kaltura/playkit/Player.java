@@ -17,18 +17,18 @@ public interface Player {
      * Prepare the player for playback.
      * @param playerConfig - media configurations to apply on the player.
      */
-    void prepare(@NonNull PlayerConfig.Media playerConfig);
+    void prepare(@NonNull PKMediaConfig playerConfig);
 
     /**
      * Prepare for playing the next entry. If config.shouldAutoPlay is true, the entry will automatically
      * play when it's ready and the current entry is ended.
      */
-    void prepareNext(@NonNull PlayerConfig.Media mediaConfig);
+    void prepareNext(@NonNull PKMediaConfig mediaConfig);
 
-    void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value);
+    void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
 
     /**
-     * Load the entry that was prepared with {@link #prepareNext(PlayerConfig.Media)}.
+     * Load the entry that was prepared with {@link #prepareNext(PKMediaConfig)}.
      */
     void skip();
 

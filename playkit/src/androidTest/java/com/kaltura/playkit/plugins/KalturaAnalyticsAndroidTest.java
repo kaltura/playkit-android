@@ -31,7 +31,6 @@ public class KalturaAnalyticsAndroidTest {
     private Player player;
     private Context context;
     private JsonObject pluginConfig;
-    private PlayerConfig.Media mediaConfig;
     private MessageBus messageBus;
     private KalturaAnalyticsPlugin plugin;
     private int duration = 3000;
@@ -53,7 +52,7 @@ public class KalturaAnalyticsAndroidTest {
         player.seekTo(seek);
 
         plugin = (KalturaAnalyticsPlugin) KalturaAnalyticsPlugin.factory.newInstance();
-        plugin.onLoad(player, mediaConfig, pluginConfig, messageBus, context);
+        plugin.onLoad(player, pluginConfig, messageBus, context);
     }
 
 
@@ -74,7 +73,6 @@ public class KalturaAnalyticsAndroidTest {
         sourceList.add(mediaSource);
         PKMediaEntry mediaEntryProvider = new PKMediaEntry().setId(entryId).setDuration(duration).setSources(sourceList);
         config.media.setMediaEntry(mediaEntryProvider);
-        mediaConfig = config.media;
     }
 
     @Test
