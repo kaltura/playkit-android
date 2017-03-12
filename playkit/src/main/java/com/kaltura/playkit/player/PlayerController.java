@@ -150,6 +150,13 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
+        this.selectSource(mediaConfig);
+        this.selectPlayer();
+        this.load();
+    }
+
+    @Override
+    public void selectSource(@NonNull PlayerConfig.Media mediaConfig){
         isNewEntry = isNewEntry(mediaConfig);
         this.mediaConfig = mediaConfig;
         this.source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
@@ -158,7 +165,10 @@ public class PlayerController implements Player {
             log.e("No playable source found for entry");
             return;
         }
+    }
 
+    @Override
+    public void selectPlayer(){
         if (this.source.getMediaFormat() != PKMediaFormat.wvm_widevine) {
             if (player == null) {
                 player = new ExoPlayerWrapper(context);
@@ -169,9 +179,9 @@ public class PlayerController implements Player {
             //WVM Player
             return;
         }
-
-       // player.load(source);
     }
+
+
 
     @Override
     public void load(){

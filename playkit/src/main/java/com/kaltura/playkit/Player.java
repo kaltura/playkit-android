@@ -19,6 +19,8 @@ public interface Player {
      */
     void prepare(@NonNull PlayerConfig.Media playerConfig);
 
+    void selectSource(@NonNull PlayerConfig.Media mediaConfig);
+    void selectPlayer();
     void load();
 
     /**

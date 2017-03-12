@@ -123,6 +123,16 @@ public class PlayerDecoratorBase implements Player {
         player.updatePluginConfig(pluginName, key, value);
     }
 
+    @Override
+    public void selectSource(@NonNull PlayerConfig.Media mediaConfig){
+        player.selectSource(mediaConfig);
+    }
+
+    @Override
+    public void selectPlayer(){
+        player.selectPlayer();
+    }
+    @Override
     public void load(){
         player.load();
     }

@@ -98,9 +98,10 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
-    public void load(){
-        //do nothing
-    }
+    public void prepare(PlayerConfig.Media mediaConfig){
+        super.selectSource(mediaConfig);
+        super.selectPlayer();
+     }
 
     @Override
     public AdController getAdController() {
