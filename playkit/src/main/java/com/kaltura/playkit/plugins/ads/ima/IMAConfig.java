@@ -53,7 +53,7 @@ public class IMAConfig {
         this.adCountDown              = true;
         this.adLoadTimeOut            = DEFAULT_AD_LOAD_TIMEOUT;
         this.videoMimeTypes           = new ArrayList<>();
-        this.videoMimeTypes.add(PKMediaFormat.mp4_clear.mimeType);
+        this.videoMimeTypes.add(PKMediaFormat.mp4.mimeType);
         this.adTagURL = null;         //=> must be set via setter
 
         //if (tagTimes == null) {

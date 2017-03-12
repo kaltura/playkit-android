@@ -61,7 +61,7 @@ public class PKMediaSource implements Parcelable {
     }
 
     public boolean hasDrmParams() {
-        return (drmData != null && drmData.size() > 0) ? true : false;
+        return (drmData != null && drmData.size() > 0);
     }
 
     @Override

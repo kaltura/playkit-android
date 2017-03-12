@@ -38,10 +38,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static com.kaltura.playkit.PKDrmParams.Scheme.playready;
-import static com.kaltura.playkit.PKDrmParams.Scheme.playready_cenc;
-import static com.kaltura.playkit.PKDrmParams.Scheme.widevine_cenc;
-import static com.kaltura.playkit.PKDrmParams.Scheme.widevine_classic;
+import static com.kaltura.playkit.PKDrmParams.Scheme.PlayReadyClassic;
+import static com.kaltura.playkit.PKDrmParams.Scheme.PlayReadyCENC;
+import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineCENC;
+import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineClassic;
 
 
 /**
@@ -467,13 +467,13 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         switch (scheme) {
             case "WIDEVINE_CENC":
-                return widevine_cenc;
+                return WidevineCENC;
             case "PLAYREADY_CENC":
-                return playready_cenc;
+                return PlayReadyCENC;
             case "WIDEVINE":
-                return widevine_classic;
+                return WidevineClassic;
             case "PLAYREADY":
-                return playready;
+                return PlayReadyClassic;
             default:
                 return null;
         }

@@ -29,11 +29,11 @@ import java.util.Collections;
 public class LocalAssets {
     private static final PKLog log = PKLog.get("LocalAssets");
     
-    private PKDrmParams drmParams = new PKDrmParams("https://udrm.kaltura.com/widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVlAiLCJ1c2VyX3Rva2VuIjoiZGpKOE1UZzFNVFUzTVh4NThBVkFQOXo1R0lvU3BXWE95emEtdWlQNnk5cXpBdkpkMzZfUFZOcUNfT0NZWWhLRVh5LThqcGFMRktGcU15d3VTN2ZLZmxibTd1VVJGQkVtSGxsNkc4NEU2LUxrcnFXbVV1ZWEtZnFqdXc9PSIsImFjY291bnRfaWQiOiIxODUxNTcxIiwiY29udGVudF9pZCI6IjBfcGw1bGJmbzAiLCJmaWxlcyI6IjBfendxM2w0NHIsMF91YTYycms2cywwX290bWFxcG5mLDBfeXdrbXFua2csMV9lMHF0YWoxaiwxX2IycXp5dmE3In0%3D&signature=LFiNPZL8%2BNevsZ8cNhrmSDM4SDQ%3D", PKDrmParams.Scheme.widevine_classic);
+    private PKDrmParams drmParams = new PKDrmParams("https://udrm.kaltura.com/widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVlAiLCJ1c2VyX3Rva2VuIjoiZGpKOE1UZzFNVFUzTVh4NThBVkFQOXo1R0lvU3BXWE95emEtdWlQNnk5cXpBdkpkMzZfUFZOcUNfT0NZWWhLRVh5LThqcGFMRktGcU15d3VTN2ZLZmxibTd1VVJGQkVtSGxsNkc4NEU2LUxrcnFXbVV1ZWEtZnFqdXc9PSIsImFjY291bnRfaWQiOiIxODUxNTcxIiwiY29udGVudF9pZCI6IjBfcGw1bGJmbzAiLCJmaWxlcyI6IjBfendxM2w0NHIsMF91YTYycms2cywwX290bWFxcG5mLDBfeXdrbXFua2csMV9lMHF0YWoxaiwxX2IycXp5dmE3In0%3D&signature=LFiNPZL8%2BNevsZ8cNhrmSDM4SDQ%3D", PKDrmParams.Scheme.WidevineClassic);
     private PKMediaSource widevineClassicSource = new PKMediaSource()
             .setId("wvc")
             .setDrmData(Collections.singletonList(drmParams))
-            .setMediaFormat(PKMediaFormat.wvm_widevine)
+            .setMediaFormat(PKMediaFormat.wvm)
             .setUrl("http://cdnapi.kaltura.com/p/1851571/playManifest/entryId/0_pl5lbfo0/format/url/tags/widevine/protocol/http/a.wvm");
     private String localAssetPath;
 

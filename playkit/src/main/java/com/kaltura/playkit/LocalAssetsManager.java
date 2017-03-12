@@ -135,17 +135,17 @@ public class LocalAssetsManager {
     private static PKDrmParams findSupportedDrmParams(@NonNull PKMediaSource mediaSource) {
         for (PKDrmParams params : mediaSource.getDrmData()) {
             switch (params.getScheme()) {
-                case widevine_cenc:
+                case WidevineCENC:
                     if (MediaSupport.widevineModular()) {
                         return params;
                     }
                     break;
-                case widevine_classic:
+                case WidevineClassic:
                     if (MediaSupport.widevineClassic()) {
                         return params;
                     }
                     break;
-                case playready_cenc:
+                case PlayReadyCENC:
                     log.d("Skipping unsupported PlayReady params");
                     break;
             }
@@ -192,11 +192,10 @@ public class LocalAssetsManager {
             return null;
         }
         switch (format) {
-            case dash_clear:
-            case dash_drm:
-                return PKDrmParams.Scheme.widevine_cenc;
-            case wvm_widevine:
-                return PKDrmParams.Scheme.widevine_classic;
+            case dash:
+                return PKDrmParams.Scheme.WidevineCENC;
+            case wvm:
+                return PKDrmParams.Scheme.WidevineClassic;
             default:
                 return null;
         }
