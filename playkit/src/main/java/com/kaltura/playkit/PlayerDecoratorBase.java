@@ -122,4 +122,8 @@ public class PlayerDecoratorBase implements Player {
     public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
         player.updatePluginConfig(pluginName, key, value);
     }
+
+    public void load(){
+        player.load();
+    }
 }

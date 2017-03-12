@@ -19,6 +19,8 @@ public interface Player {
      */
     void prepare(@NonNull PlayerConfig.Media playerConfig);
 
+    void load();
+
     /**
      * Prepare for playing the next entry. If config.shouldAutoPlay is true, the entry will automatically
      * play when it's ready and the current entry is ended.
