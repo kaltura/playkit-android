@@ -24,9 +24,9 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdEnabledPlayerController;
@@ -62,7 +62,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private Context context;
     private AdInfo adInfo;
     private IMAConfig adConfig;
-    private PlayerConfig.Media mediaConfig;
     //////////////////////
 
 
@@ -131,13 +130,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     ///////////END PKPlugin
     @Override
-    protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
         this.player = player;
         if (player == null) {
             log.e("Error, player instance is null.");
             return;
         }
-        this.mediaConfig = mediaConfig;
         this.context = context;
         this.messageBus = messageBus;
         this.messageBus.listen(new PKEvent.Listener() {
@@ -151,13 +149,22 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED);
 
         //----------------------------//
-        Gson gson = new Gson();
-        adConfig =  gson.fromJson(pluginConfig, IMAConfig.class);//IMAConfig.fromJsonObject(pluginConfig);
-
+        adConfig = parseConfig(config);
         adUiContainer = player.getView();
+
         imaSetup();
 
         requestAdsFromIMA(adConfig.getAdTagURL());
+    }
+    
+    private static IMAConfig parseConfig(Object config) {
+        if (config instanceof IMAConfig) {
+            return ((IMAConfig) config);
+        
+        } else if (config instanceof JsonObject) {
+            return new Gson().fromJson(((JsonObject) config), IMAConfig.class);
+        }
+        return null;
     }
 
     private void imaSetup() {
@@ -237,33 +244,19 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     @Override
-    protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
+    protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         log.d("Start onUpdateMedia");
-        isAdRequested = false;
-        isAdDisplayed = false;
     }
 
     @Override
-    protected void onUpdateConfig(String key, Object value) {
+    protected void onUpdateConfig(Object config) {
         log.d("Start onUpdateConfig");
 
-        if (key.equals(IMAConfig.AD_TAG_LANGUAGE)) {
-            getAdsConfig().setLanguage((String) value);
-        } else if (key.equals(IMAConfig.AD_TAG_URL)) {
-            getAdsConfig().setAdTagURL((String) value);
-            isAdRequested = false;
-            isAdDisplayed = false;
-            onDestroy();
-            onLoad(player, mediaConfig, getAdsConfig().toJSONObject(), messageBus, context);
-        } else if (key.equals(IMAConfig.ENABLE_BG_PLAYBACK)) {
-            getAdsConfig().setEnableBackgroundPlayback((boolean) value);
-        } else if (key.equals(IMAConfig.AUTO_PLAY_AD_BREAK)) {
-            getAdsConfig().setAutoPlayAdBreaks((boolean) value);
-        } else if (key.equals(IMAConfig.AD_VIDEO_BITRATE)) {
-            getAdsConfig().setVideoBitrate((int) value);
-        } else if (key.equals(IMAConfig.AD_VIDEO_MIME_TYPES)) {
-            getAdsConfig().setVideoMimeTypes((List<String>) value);
-        }
+        adConfig = parseConfig(config);
+        isAdRequested = false;
+        isAdDisplayed = false;
+        onDestroy();
+        onLoad(player, config, messageBus, context);
     }
 
     @Override

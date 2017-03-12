@@ -37,12 +37,24 @@ public class PlayKitManager {
         return pluginFactory == null ? null : pluginFactory.newInstance();
     }
 
+    /**
+     * @deprecated Use {@link #loadPlayer(PKPluginConfigs, Context)}. The {@link PlayerConfig#media} 
+     * field is ignored when loading the player.
+     * @param playerConfig
+     * @param context
+     * @return
+     */
+    @Deprecated
     public static Player loadPlayer(PlayerConfig playerConfig, Context context) {
+        return loadPlayer(playerConfig.plugins, context);
+    }
+    
+    public static Player loadPlayer(PKPluginConfigs pluginConfigs, Context context) {
 
         MediaSupport.initialize(context);
         
         PlayerLoader playerLoader = new PlayerLoader(context);
-        playerLoader.load(playerConfig);
+        playerLoader.load(pluginConfigs);
         return playerLoader;
     }
 }

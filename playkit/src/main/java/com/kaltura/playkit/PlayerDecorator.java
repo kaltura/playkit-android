@@ -47,8 +47,8 @@ public abstract class PlayerDecorator extends PlayerDecoratorBase {
     }
 
     @Override
-    final public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
-        super.updatePluginConfig(pluginName, key, value);
+    final public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
+        super.updatePluginConfig(pluginName, pluginConfig);
     }
 
     final void setPlayer(Player player) {
