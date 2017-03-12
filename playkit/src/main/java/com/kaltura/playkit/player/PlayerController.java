@@ -41,6 +41,7 @@ public class PlayerController implements Player {
     private PKEvent.Listener eventListener;
 
     private boolean isNewEntry = true;
+    private PKMediaSource source = null;
 
     public void setEventListener(PKEvent.Listener eventListener) {
         this.eventListener = eventListener;
@@ -149,16 +150,26 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
+        this.selectSource(mediaConfig);
+        this.selectPlayer();
+        this.load();
+    }
+
+    @Override
+    public void selectSource(@NonNull PlayerConfig.Media mediaConfig){
         isNewEntry = isNewEntry(mediaConfig);
         this.mediaConfig = mediaConfig;
-        PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
+        this.source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
-        if (source == null) {
+        if (this.source == null) {
             log.e("No playable source found for entry");
             return;
         }
+    }
 
-        if (source.getMediaFormat() != PKMediaFormat.wvm_widevine) {
+    @Override
+    public void selectPlayer(){
+        if (this.source.getMediaFormat() != PKMediaFormat.wvm_widevine) {
             if (player == null) {
                 player = new ExoPlayerWrapper(context);
                 wrapperView.addView(player.getView());
@@ -168,8 +179,15 @@ public class PlayerController implements Player {
             //WVM Player
             return;
         }
+    }
 
-        player.load(source);
+
+
+    @Override
+    public void load(){
+        if (this.source != null) {
+            player.load(this.source);
+        }
     }
 
 

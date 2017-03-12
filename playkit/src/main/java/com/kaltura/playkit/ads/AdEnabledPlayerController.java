@@ -1,6 +1,7 @@
 package com.kaltura.playkit.ads;
 
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
@@ -14,6 +15,8 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     private static final PKLog log = PKLog.get("AdEnablController");
 
     AdsProvider adsProvider;
+    PlayerConfig.Media mediaConfig;
+    boolean isLoaded = false;
     public AdEnabledPlayerController(AdsProvider adsProvider) {
         log.d("Init AdEnabledPlayerController");
         this.adsProvider = adsProvider;
@@ -65,6 +68,9 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
             }
         }
         getView().showVideoSurface();
+        if (!this.isLoaded){
+            this.loadMediaWhileAdIsPlaying();
+        }
         super.play();
 
     }
@@ -83,6 +89,19 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     public void skipAd() {
         adsProvider.skipAd();
     }
+
+
+    @Override
+    public void loadMediaWhileAdIsPlaying(){
+        this.isLoaded = true;
+        super.load();
+    }
+
+    @Override
+    public void prepare(PlayerConfig.Media mediaConfig){
+        super.selectSource(mediaConfig);
+        super.selectPlayer();
+     }
 
     @Override
     public AdController getAdController() {

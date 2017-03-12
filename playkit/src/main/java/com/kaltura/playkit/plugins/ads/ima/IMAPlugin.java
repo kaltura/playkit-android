@@ -29,6 +29,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.ads.AdEnabledPlayerController;
 import com.kaltura.playkit.ads.AdResponseType;
 import com.kaltura.playkit.ads.PKAdInfo;
@@ -102,6 +103,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private CountDownTimer adManagerTimer;
     private boolean adPlaybackCancelled;
     private Timer adDisplayedCheckTimer;
+    private PlayerDecorator adController;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -129,7 +131,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     protected PlayerDecorator getPlayerDecorator() {
-        return new AdEnabledPlayerController(this);
+        if (this.adController == null) {
+            this.adController = new AdEnabledPlayerController(this);
+        }
+        return this.adController;
     }
     ////////PKPlugin
 
@@ -566,6 +571,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 break;
             case STARTED:
                 log.d("AD STARTED");
+                ((AdController)this.adController).loadMediaWhileAdIsPlaying();
                 isAdDisplayed = true;
                 isAdIsPaused = false;
                 if (adsManager != null && appIsInBackground) {

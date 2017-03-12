@@ -5,4 +5,5 @@ package com.kaltura.playkit.ads;
  */
 public interface AdController {
     void skipAd();
+    void loadMediaWhileAdIsPlaying();
 }
