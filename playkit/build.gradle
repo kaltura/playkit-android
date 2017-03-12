@@ -33,7 +33,7 @@ tasks.withType(Javadoc) {
 
 dependencies {
     // Google Extras
-    compile 'com.google.android.exoplayer:exoplayer:r2.1.1'
+    compile 'com.google.android.exoplayer:exoplayer:r2.2.0'
     compile 'com.google.code.gson:gson:2.7'
 
     // Google Ads
