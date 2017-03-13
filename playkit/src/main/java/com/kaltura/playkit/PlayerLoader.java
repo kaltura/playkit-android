@@ -110,7 +110,7 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     @Override
-    public void prepare(@NonNull PKMediaConfig mediaConfig) {
+    public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
         
         super.prepare(mediaConfig);
         
