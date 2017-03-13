@@ -108,6 +108,16 @@ class PlayerLoader extends PlayerDecoratorBase {
         getPlayer().destroy();
     }
 
+    @Override
+    public void prepare(@NonNull PKMediaConfig mediaConfig) {
+        
+        super.prepare(mediaConfig);
+        
+        for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
+            loadedPluginEntry.getValue().plugin.onUpdateMedia(mediaConfig);
+        }
+    }
+
     private void releasePlugins() {
         // Unload in the reversed order they were loaded, peeling off the decorators.
         List<Map.Entry<String, LoadedPlugin>> plugins = new ArrayList<>(loadedPlugins.entrySet());
