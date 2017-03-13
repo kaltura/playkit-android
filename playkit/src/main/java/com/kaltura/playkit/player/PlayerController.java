@@ -179,7 +179,9 @@ public class PlayerController implements Player {
     public void destroy() {
         log.d("destroy");
         if (player != null) {
-            rootPlayerView.removeView(playerEngineView);
+            if (playerEngineView != null) {
+                rootPlayerView.removeView(playerEngineView);
+            }
             player.destroy();
             togglePlayerListeners(false);
         }
@@ -330,7 +332,9 @@ public class PlayerController implements Player {
             log.e("Attempt to invoke 'release()' on null instance of the player engine");
             return;
         }
-        rootPlayerView.removeView(playerEngineView);
+        if (playerEngineView != null) {
+            rootPlayerView.removeView(playerEngineView);
+        }
         player.release();
         togglePlayerListeners(false);
     }
