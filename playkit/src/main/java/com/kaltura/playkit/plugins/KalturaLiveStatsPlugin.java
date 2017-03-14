@@ -8,11 +8,11 @@ import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.backend.ovp.services.LiveStatsService;
 import com.kaltura.playkit.connect.APIOkRequestsExecutor;
@@ -54,7 +54,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     private long lastReportedBitrate = -1;
     private Player player;
-    private PlayerConfig.Media mediaConfig;
+    private PKMediaConfig mediaConfig;
     private JsonObject pluginConfig;
     private MessageBus messageBus;
     private RequestQueue requestsExecutor;
@@ -84,12 +84,11 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     };
 
     @Override
-    protected void onLoad(Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
         messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY);
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
-        this.mediaConfig = mediaConfig;
-        this.pluginConfig = pluginConfig;
+        this.pluginConfig = (JsonObject) config;
         this.messageBus = messageBus;
     }
 
@@ -101,16 +100,14 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
+    protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         eventIdx = 0;
         this.mediaConfig = mediaConfig;
     }
 
     @Override
-    protected void onUpdateConfig(String key, Object value) {
-        if (pluginConfig.has(key)) {
-            pluginConfig.addProperty(key, value.toString());
-        }
+    protected void onUpdateConfig(Object config) {
+        this.pluginConfig = (JsonObject) config;
     }
 
     @Override

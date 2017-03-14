@@ -111,12 +111,12 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
                             assertNotNull(firstSource.getDrmData());
                             assertTrue(firstSource.getDrmData().size() >= 0);
                             assertTrue(firstSource.getUrl().endsWith("mpd"));
-                            assertTrue(firstSource.getMediaFormat().equals(PKMediaFormat.dash_drm));
+                            assertTrue(firstSource.getMediaFormat().equals(PKMediaFormat.dash));
 
                             PKMediaSource secondSource = data.getResponse().getSources().get(1);
                             assertTrue(secondSource.getDrmData().size() >= 0);
                             assertTrue(secondSource.getUrl().endsWith("mpd"));
-                            assertTrue(secondSource.getMediaFormat().equals(PKMediaFormat.dash_drm));
+                            assertTrue(secondSource.getMediaFormat().equals(PKMediaFormat.dash));
                         }
                     });
                 } else {
@@ -148,7 +148,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
                             assertNotNull(firstSource.getDrmData());
                             assertTrue(firstSource.getDrmData().size() == 2);
                             assertTrue(firstSource.getUrl().endsWith("mpd"));
-                            assertTrue(firstSource.getMediaFormat().equals(PKMediaFormat.dash_drm));
+                            assertTrue(firstSource.getMediaFormat().equals(PKMediaFormat.dash));
 
                             /*someone added drm data to the third retrieved source (applehttp), so this section is not valid
                             PKMediaSource secondSource = data.getResponse().getSources().get(1);

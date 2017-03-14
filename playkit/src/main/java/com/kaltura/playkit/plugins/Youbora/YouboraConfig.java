@@ -2,9 +2,9 @@ package com.kaltura.playkit.plugins.Youbora;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -94,14 +94,14 @@ public class YouboraConfig {
 
     private YouboraConfig() {}
 
-    public static Map<String, Object> getYouboraConfig(JsonObject pluginConfig, PlayerConfig.Media mediaConfig, Player player) {
+    public static Map<String, Object> getYouboraConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig, Player player) {
         // load from json
         setYouboraConfig(pluginConfig, mediaConfig, player);
 
         return youboraConfig;
     }
 
-    private static void setYouboraConfig(JsonObject pluginConfig, PlayerConfig.Media mediaConfig, Player player){
+    private static void setYouboraConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig, Player player){
         youboraConfig = defaultYouboraConfig;
         if (mediaConfig != null) {
             mediaObject.put("resource", !mediaConfig.getMediaEntry().getSources().isEmpty()? mediaConfig.getMediaEntry().getSources().get(0).getUrl():"");

@@ -10,10 +10,10 @@ import com.google.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
@@ -35,7 +35,7 @@ public class PlayerController implements Player {
     private Context context;
     private PlayerView rootPlayerView;
 
-    private PlayerConfig.Media mediaConfig = null;
+    private PKMediaConfig mediaConfig = null;
 
     private PKEvent.Listener eventListener;
     private PlayerView playerEngineView;
@@ -109,7 +109,7 @@ public class PlayerController implements Player {
         }
     };
 
-    public PlayerController(Context context, PlayerConfig.Media mediaConfig) {
+    public PlayerController(Context context) {
         this.context = context;
         this.rootPlayerView = new PlayerView(context) {
             @Override
@@ -149,7 +149,7 @@ public class PlayerController implements Player {
         }
     }
 
-    public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
+    public void prepare(@NonNull PKMediaConfig mediaConfig) {
         isNewEntry = isNewEntry(mediaConfig);
         this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
@@ -159,7 +159,7 @@ public class PlayerController implements Player {
             return;
         }
 
-        if (source.getMediaFormat() != PKMediaFormat.wvm_widevine) {
+        if (source.getMediaFormat() != PKMediaFormat.wvm) {
             if (player == null) {
                 player = new ExoPlayerWrapper(context);
                 togglePlayerListeners(true);
@@ -297,7 +297,7 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
+    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
         Assert.failState("Not implemented");
     }
 
@@ -317,7 +317,7 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
+    public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         Assert.shouldNeverHappen();
     }
 
@@ -353,7 +353,7 @@ public class PlayerController implements Player {
         player.changeTrack(uniqueId);
     }
 
-    private boolean isNewEntry(PlayerConfig.Media mediaConfig) {
+    private boolean isNewEntry(PKMediaConfig mediaConfig) {
         if (this.mediaConfig == null) {
             return true;
         }

@@ -27,11 +27,11 @@ public abstract class DrmAdapter {
         }
         
         switch (scheme) {
-            case widevine_cenc:
+            case WidevineCENC:
                 return new WidevineModularAdapter(context, localDataStore);
-            case widevine_classic:
+            case WidevineClassic:
                 return new WidevineClassicAdapter(context);
-            case playready_cenc:
+            case PlayReadyCENC:
                 log.d("Unsupported scheme PlayReady");
                 break;
         }

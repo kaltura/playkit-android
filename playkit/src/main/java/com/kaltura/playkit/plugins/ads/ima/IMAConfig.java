@@ -35,7 +35,7 @@ public class IMAConfig {
     private String adTagURL;
     private boolean enableBackgroundPlayback;
     private boolean autoPlayAdBreaks;
-    private int videoBitrate;
+    private int videoBitrate; // in KB
     private boolean adAttribution;
     private boolean adCountDown;
     private int  adLoadTimeOut;
@@ -53,7 +53,7 @@ public class IMAConfig {
         this.adCountDown              = true;
         this.adLoadTimeOut            = DEFAULT_AD_LOAD_TIMEOUT;
         this.videoMimeTypes           = new ArrayList<>();
-        this.videoMimeTypes.add(PKMediaFormat.mp4_clear.mimeType);
+        this.videoMimeTypes.add(PKMediaFormat.mp4.mimeType);
         this.adTagURL = null;         //=> must be set via setter
 
         //if (tagTimes == null) {
@@ -90,7 +90,7 @@ public class IMAConfig {
         return this;
     }
 
-    public long getVideoBitrate() {
+    public int getVideoBitrate() {
         return videoBitrate;
     }
 
@@ -173,9 +173,11 @@ public class IMAConfig {
 
         Gson gson = new Gson();
         JsonArray jArray = new JsonArray();
-        for (String mimeType : videoMimeTypes) {
-            JsonPrimitive element = new JsonPrimitive(mimeType);
-            jArray.add(element);
+        if (videoMimeTypes != null) {
+            for (String mimeType : videoMimeTypes) {
+                JsonPrimitive element = new JsonPrimitive(mimeType);
+                jArray.add(element);
+            }
         }
         jsonObject.add(AD_VIDEO_MIME_TYPES, jArray);
 
