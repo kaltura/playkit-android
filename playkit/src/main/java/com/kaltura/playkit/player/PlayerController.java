@@ -329,9 +329,6 @@ public class PlayerController implements Player {
             log.e("Attempt to invoke 'release()' on null instance of the player engine");
             return;
         }
-        if (playerEngineView != null) {
-            rootPlayerView.removeView(playerEngineView);
-        }
         player.release();
         togglePlayerListeners(false);
     }
