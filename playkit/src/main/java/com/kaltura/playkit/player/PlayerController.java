@@ -339,7 +339,9 @@ public class PlayerController implements Player {
     @Override
     public void onApplicationResumed() {
         log.d("onApplicationResumed");
-        player.restore();
+        if (player != null) {
+            player.restore();
+        }
         prepare(mediaConfig);
         togglePlayerListeners(true);
     }
