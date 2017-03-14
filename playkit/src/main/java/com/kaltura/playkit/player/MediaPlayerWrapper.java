@@ -83,7 +83,10 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
     public void load(PKMediaSource mediaSource) {
         log.d("load");
         this.mediaSource = mediaSource;
-
+        if (currentState != null && currentState != PlayerState.IDLE) {
+            player.reset();
+            currentState = PlayerState.IDLE;
+        }
         if (currentState == null || currentState == PlayerState.IDLE) {
             initializePlayer();
         }
