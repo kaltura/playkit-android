@@ -96,6 +96,7 @@ public class YouboraLibraryManager extends PluginGeneric {
                 switch (((PlayerEvent) event).type) {
                     case DURATION_CHANGE:
                         log.d("new duration = " + ((PlayerEvent.DurationChanged) event).duration);
+                        playHandler();
                         break;
                     case STATE_CHANGED:
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
@@ -118,7 +119,6 @@ public class YouboraLibraryManager extends PluginGeneric {
                             resumeHandler();
                         } else {
                             isFirstPlay = false;
-                            playHandler();
                         }
                         break;
                     case PLAYING:
