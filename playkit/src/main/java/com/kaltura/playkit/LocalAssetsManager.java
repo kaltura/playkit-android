@@ -169,6 +169,29 @@ public class LocalAssetsManager {
         listener.onRegistered(localAssetPath);
     }
 
+    private static PKDrmParams findSupportedDrmParams(@NonNull PKMediaSource mediaSource) {
+        for (PKDrmParams params : mediaSource.getDrmData()) {
+            switch (params.getScheme()) {
+                case WidevineCENC:
+                    if (MediaSupport.widevineModular()) {
+                        return params;
+                    }
+                    break;
+                case WidevineClassic:
+                    if (MediaSupport.widevineClassic()) {
+                        return params;
+                    }
+                    break;
+                case PlayReadyCENC:
+                    log.d("Skipping unsupported PlayReady params");
+                    break;
+            }
+        }
+        return null;
+    }
+    
+    
+
     /**
      * Unregister asset. If the asset have drm protection it will be removed from {@link LocalDataStore}
      * In any case the {@link PKMediaFormat} will be removed from {@link LocalDataStore}

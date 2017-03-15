@@ -31,7 +31,6 @@ public class KalturaStatsAndroidTest {
     private Player player;
     private Context context;
     private JsonObject pluginConfig;
-    private PlayerConfig.Media mediaConfig;
     private MessageBus messageBus;
     private KalturaStatsPlugin plugin;
     private int duration = 3000;
@@ -55,7 +54,7 @@ public class KalturaStatsAndroidTest {
         player.seekTo(seek);
 
         plugin = (KalturaStatsPlugin) KalturaStatsPlugin.factory.newInstance();
-        plugin.onLoad(player, mediaConfig, pluginConfig, messageBus, context);
+        plugin.onLoad(player, pluginConfig, messageBus, context);
     }
 
 
@@ -76,7 +75,6 @@ public class KalturaStatsAndroidTest {
         sourceList.add(mediaSource);
         PKMediaEntry mediaEntryProvider = new PKMediaEntry().setId(entryId).setDuration(duration).setSources(sourceList);
         config.media.setMediaEntry(mediaEntryProvider);
-        mediaConfig = config.media;
     }
 
     @Test

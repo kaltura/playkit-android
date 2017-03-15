@@ -74,8 +74,8 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
         if (mediaSource.hasDrmParams()) {
             List<PKDrmParams> drmData = mediaSource.getDrmData();
             for (PKDrmParams pkDrmParam : drmData) {
-                // selecting widevine_cenc as default right now
-                if (PKDrmParams.Scheme.widevine_cenc == pkDrmParam.getScheme()) {
+                // selecting WidevineCENC as default right now
+                if (PKDrmParams.Scheme.WidevineCENC == pkDrmParam.getScheme()) {
                     licenseUrl = pkDrmParam.getLicenseUri();
                     break;
                 }

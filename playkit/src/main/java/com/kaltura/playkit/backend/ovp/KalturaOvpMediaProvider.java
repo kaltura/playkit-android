@@ -59,9 +59,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import static com.kaltura.playkit.PKDrmParams.Scheme.playready_cenc;
-import static com.kaltura.playkit.PKDrmParams.Scheme.widevine_cenc;
-import static com.kaltura.playkit.PKDrmParams.Scheme.widevine_classic;
+import static com.kaltura.playkit.PKDrmParams.Scheme.PlayReadyCENC;
+import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineCENC;
+import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineClassic;
 
 /**
  * Created by tehilarozin on 30/10/2016.
@@ -560,11 +560,11 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
         switch (name) {
             case "drm.WIDEVINE_CENC":
-                return widevine_cenc;
+                return WidevineCENC;
             case "drm.PLAYREADY_CENC":
-                return playready_cenc;
+                return PlayReadyCENC;
             case "widevine.WIDEVINE":
-                return widevine_classic;
+                return WidevineClassic;
             default:
                 return null;
         }

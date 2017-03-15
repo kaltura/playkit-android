@@ -6,20 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum PKMediaFormat {
-    mp4_clear("video/mp4", "mp4"),
-    dash_clear("application/dash+xml", "mpd"),
-    dash_drm("application/dash+xml", "mpd"),
-    wvm_widevine("video/wvm", "wvm"),
-    hls_clear("application/x-mpegURL", "m3u8"),
-    mp3_clear("audio/mpeg", "mp3");
-
-    /* in IOS:
-     case dash
-        case hls
-        case wvm
-        case mp4
-        case mp3
-        case unknown*/
+    dash("application/dash+xml", "mpd"),
+    hls("application/x-mpegURL", "m3u8"),
+    wvm("video/wvm", "wvm"),
+    mp4("video/mp4", "mp4"),
+    mp3("audio/mpeg", "mp3"),
+    unknown(null, null),
+    ;
 
     public final String mimeType;
     public final String pathExt;

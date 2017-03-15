@@ -3,12 +3,12 @@ package com.kaltura.playkit.player;
 import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.LocalAssetsManager;
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,37 +44,27 @@ class SourceSelector {
             return localMediaSource;
         }
 
-        // Default preference: DASH, HLS, WVM, MP4
+        // Default preference: DASH, HLS, WVM, MP4, MP3
 
-        List<PKMediaFormat> pref = new ArrayList<>(10);
-
-        // Dash is always available.
-        pref.add(PKMediaFormat.dash_clear);
-        
-        // Dash+Widevine is only available from Android 4.3 
-        if (MediaSupport.widevineModular()) {
-            pref.add(PKMediaFormat.dash_drm);
-        }
-        
-        // HLS clear is always available
-        pref.add(PKMediaFormat.hls_clear);
-        
-        // Widevine Classic is OPTIONAL from Android 6. 
-        if (MediaSupport.widevineClassic()) {
-            pref.add(PKMediaFormat.wvm_widevine);
-        }
-        
-        // MP4 is always available, but gives inferior performance.
-        pref.add(PKMediaFormat.mp4_clear);
-        
-        // If the entry is mp3-only, select it here.
-        pref.add(PKMediaFormat.mp3_clear);
+        PKMediaFormat[] pref = {PKMediaFormat.dash, PKMediaFormat.hls, PKMediaFormat.wvm, PKMediaFormat.mp4, PKMediaFormat.mp3};
         
         for (PKMediaFormat format : pref) {
             PKMediaSource source = sourceByFormat(format);
-            if (source != null) {
-                return source;
+            if (source == null) {
+                continue;
             }
+
+            List<PKDrmParams> drmParams = source.getDrmData();
+            if (drmParams != null) {
+                for (PKDrmParams params : drmParams) {
+                    if (params.isSchemeSupported()) {
+                        return source;
+                    }
+                }
+                // This source doesn't have supported params
+                continue;
+            }
+            return source;
         }
 
         log.e("No playable sources found!");

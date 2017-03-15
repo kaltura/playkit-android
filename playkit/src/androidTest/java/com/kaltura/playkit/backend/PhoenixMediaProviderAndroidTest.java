@@ -326,13 +326,13 @@ latchCount--;
                             assertTrue(sources.size() == 3);
                             for (PKMediaSource source : sources) {
                                 if (source.getId().equals(MediaId2_File_Main_SD)) {
-                                    assertTrue(source.getMediaFormat().equals(PKMediaFormat.wvm_widevine));
+                                    assertTrue(source.getMediaFormat().equals(PKMediaFormat.wvm));
                                 }
                                 if (source.getId().equals(MediaId2_File_Web_HD)) {
-                                    assertTrue(source.getMediaFormat().equals(PKMediaFormat.hls_clear));
+                                    assertTrue(source.getMediaFormat().equals(PKMediaFormat.hls));
                                 }
                                 if (source.getId().equals(MediaId2_File_SD_Dash)) {
-                                    assertTrue(source.getMediaFormat().equals(PKMediaFormat.dash_clear));
+                                    assertTrue(source.getMediaFormat().equals(PKMediaFormat.dash));
                                 }
                             }
                             assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
