@@ -168,23 +168,27 @@ public class PlayerController implements Player {
         boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
 
         if (shouldSwitchBetweenPlayers) {
-            removeAllViews();
+            switchPlayers(source.getMediaFormat());
         }
-
-        if (player == null || shouldSwitchBetweenPlayers) {
-            initializePlayer(source.getMediaFormat());
-        }
-
-        addPlayerView();
 
         player.load(source);
     }
 
+    private void switchPlayers(PKMediaFormat mediaFormat) {
+        removeAllViews();
+        player.destroy();
+
+        if (player == null) {
+            initializePlayer(mediaFormat);
+        }
+
+        addPlayerView();
+    }
 
 
     private void initializePlayer(PKMediaFormat mediaFormat) {
         //Decide which player wrapper should be initialized.
-        if (mediaFormat != PKMediaFormat.wvm_widevine) {
+        if (mediaFormat != PKMediaFormat.wvm) {
             player = new ExoPlayerWrapper(context);
             togglePlayerListeners(true);
         } else {
@@ -393,11 +397,11 @@ public class PlayerController implements Player {
     private boolean shouldSwitchBetweenPlayers(PKMediaSource newSource) {
 
         PKMediaFormat currentMediaFormat = newSource.getMediaFormat();
-        if (currentMediaFormat != PKMediaFormat.wvm_widevine && player instanceof MediaPlayerWrapper) {
+        if (currentMediaFormat != PKMediaFormat.wvm && player instanceof MediaPlayerWrapper) {
             return true;
         }
 
-        if (currentMediaFormat == PKMediaFormat.wvm_widevine && player instanceof ExoPlayerWrapper) {
+        if (currentMediaFormat == PKMediaFormat.wvm && player instanceof ExoPlayerWrapper) {
             return true;
         }
 
@@ -408,7 +412,6 @@ public class PlayerController implements Player {
         togglePlayerListeners(false);
         rootPlayerView.removeAllViews();
         playerEngineView = null;
-        player.destroy();
     }
 
     private boolean maybeHandleExceptionLocally(PlayerEvent.ExceptionInfo exceptionInfo) {
