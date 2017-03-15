@@ -31,7 +31,7 @@ public class PlayerController implements Player {
     private static final int ALLOWED_ERROR_RETRIES = 3;
 
 
-    private PlayerEngine player;
+    private PlayerEngine player = null;
     private Context context;
     private PlayerView rootPlayerView;
 
@@ -167,7 +167,7 @@ public class PlayerController implements Player {
 
         boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
 
-        if (shouldSwitchBetweenPlayers) {
+        if (shouldSwitchBetweenPlayers || player == null) { //if player is null consider it as switch player flow.
             switchPlayers(source.getMediaFormat());
         }
 
@@ -176,11 +176,11 @@ public class PlayerController implements Player {
 
     private void switchPlayers(PKMediaFormat mediaFormat) {
         removeAllViews();
-        player.destroy();
 
-        if (player == null) {
-            initializePlayer(mediaFormat);
+        if (player != null) {
+            player.destroy();
         }
+        initializePlayer(mediaFormat);
 
         addPlayerView();
     }
@@ -315,6 +315,9 @@ public class PlayerController implements Player {
     }
 
     private void togglePlayerListeners(boolean enable) {
+        if (player == null) {
+            return;
+        }
         if (enable) {
             player.setEventListener(eventTrigger);
             player.setStateChangedListener(stateChangedTrigger);
