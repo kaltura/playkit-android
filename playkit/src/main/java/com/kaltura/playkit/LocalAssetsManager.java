@@ -169,29 +169,6 @@ public class LocalAssetsManager {
         listener.onRegistered(localAssetPath);
     }
 
-    private static PKDrmParams findSupportedDrmParams(@NonNull PKMediaSource mediaSource) {
-        for (PKDrmParams params : mediaSource.getDrmData()) {
-            switch (params.getScheme()) {
-                case WidevineCENC:
-                    if (MediaSupport.widevineModular()) {
-                        return params;
-                    }
-                    break;
-                case WidevineClassic:
-                    if (MediaSupport.widevineClassic()) {
-                        return params;
-                    }
-                    break;
-                case PlayReadyCENC:
-                    log.d("Skipping unsupported PlayReady params");
-                    break;
-            }
-        }
-        return null;
-    }
-    
-    
-
     /**
      * Unregister asset. If the asset have drm protection it will be removed from {@link LocalDataStore}
      * In any case the {@link PKMediaFormat} will be removed from {@link LocalDataStore}
@@ -250,7 +227,7 @@ public class LocalAssetsManager {
         PKDrmParams.Scheme scheme = getLocalAssetScheme(assetId);
         if (scheme == null) {
             checkClearAssetStatus(localAssetPath, assetId, listener);
-        }else {
+        } else {
             checkDrmAssetStatus(localAssetPath, assetId, scheme, listener);
         }
     }
@@ -283,7 +260,6 @@ public class LocalAssetsManager {
         try {
             localDataStore.load(buildAssetKey(assetId));
             listener.onStatus(localAssetPath, 0, 0, true);
-            return;
         } catch (FileNotFoundException e) {
             listener.onStatus(localAssetPath, 0, 0, false);
         }
@@ -296,17 +272,17 @@ public class LocalAssetsManager {
 
         for (PKDrmParams params : mediaSource.getDrmData()) {
             switch (params.getScheme()) {
-                case widevine_cenc:
+                case WidevineCENC:
                     if (MediaSupport.widevineModular()) {
                         return params;
                     }
                     break;
-                case widevine_classic:
+                case WidevineClassic:
                     if (MediaSupport.widevineClassic()) {
                         return params;
                     }
                     break;
-                case playready_cenc:
+                case PlayReadyCENC:
                     log.d("Skipping unsupported PlayReady params");
                     break;
             }
@@ -322,20 +298,15 @@ public class LocalAssetsManager {
             String formatName = new String(localDataStore.load(buildAssetKey(assetId)));
             format = PKMediaFormat.valueOf(formatName);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        if (format == null) {
+            log.e(e.getMessage());
             return null;
         }
 
         switch (format) {
-            case dash_clear:
-            case dash_drm:
-                return PKDrmParams.Scheme.widevine_cenc;
-            case wvm_widevine:
-                return PKDrmParams.Scheme.widevine_classic;
+            case dash:
+                return PKDrmParams.Scheme.WidevineCENC;
+            case wvm:
+                return PKDrmParams.Scheme.WidevineClassic;
             default:
                 return null;
         }
@@ -402,10 +373,8 @@ public class LocalAssetsManager {
     }
 
     private String buildAssetKey(String assetId) {
-        StringBuilder builder = new StringBuilder(ASSET_ID_PREFIX);
-        builder.append(assetId);
-        builder.append(MEDIA_FORMAT_SUFFIX);
-        return builder.toString();
+        return ASSET_ID_PREFIX + assetId +
+                MEDIA_FORMAT_SUFFIX;
     }
 
     /**
