@@ -243,13 +243,15 @@ public class PlayerController implements Player {
 
     public void play() {
         log.d("play");
-        if (playerEngineView == null) {
-            playerEngineView = player.getView();
-            rootPlayerView.addView(playerEngineView);
-        }
+
         if (player == null) {
             log.e("Attempt to invoke 'play()' on null instance of the player engine");
             return;
+        }
+        
+        if (playerEngineView == null) {
+            playerEngineView = player.getView();
+            rootPlayerView.addView(playerEngineView);
         }
         player.play();
     }
