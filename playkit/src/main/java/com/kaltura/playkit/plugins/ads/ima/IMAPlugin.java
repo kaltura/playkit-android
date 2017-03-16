@@ -208,6 +208,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 }
             };
             adManagerTimer.start();
+            messageBus.post(new AdEvent(AD_LOAD_TIMEOUT_TIMER_STARTED));
         }
 
         adDisplayContainer = sdkFactory.createAdDisplayContainer();
@@ -745,7 +746,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             }
         };
         adDisplayedCheckTimer.schedule(timerTask, 0, IMAConfig.DEFAULT_AD_LOAD_COUNT_DOWN_TICK);
-        messageBus.post(new AdEvent(AD_LOAD_TIMEOUT_TIMER_STARTED));
     }
 
     private void cancelAdDisplayedCheckTimer() {
