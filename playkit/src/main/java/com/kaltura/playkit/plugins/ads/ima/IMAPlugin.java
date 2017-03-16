@@ -105,6 +105,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private CountDownTimer adManagerTimer;
     private boolean adPlaybackCancelled;
     private Timer adDisplayedCheckTimer;
+    private boolean isContentPrepared;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -195,6 +196,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     if (adsManager == null) {
                         log.d("adsManager is null, will play content");
                         if (pkAdProviderListener != null) {
+                            isContentPrepared = true;
                             pkAdProviderListener.onAdLoadingFinished();
                         }
 
@@ -321,6 +323,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     protected void onDestroy() {
         log.d("IMA Start onDestroy");
         cancelAdDisplayedCheckTimer();
+        isContentPrepared = false;
 
         if (adManagerTimer != null) {
             adManagerTimer.cancel();
@@ -564,7 +567,18 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED");
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_RESUME_REQUESTED));
                 isAdDisplayed = false;
-                if (player != null) {
+
+                if (!isContentPrepared) {
+                    log.d("Content not prepared.. Preparing and calling play.");
+                    if (pkAdProviderListener != null) {
+                        pkAdProviderListener.onAdLoadingFinished();
+                        if (player != null){
+                            log.d("Content not prepared.. Play called.");
+                            player.getView().showVideoSurface();
+                            player.play();
+                        }
+                    }
+                } else if (player != null) {
                     player.getView().showVideoSurface();
                     long duration = player.getDuration();
                     if (duration < 0 || player.getCurrentPosition() < duration) {
@@ -593,6 +607,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 }
 
                 if (pkAdProviderListener != null) {
+                    isContentPrepared = true;
                     pkAdProviderListener.onAdLoadingFinished();
                 }
 
@@ -678,6 +693,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 //for this case no AD ERROR is fired need to show view {type=adLoadError, errorCode=1009, errorMessage=The response does not contain any valid ads.}
                 if (adEvent.getAd() == null) {
                     if (pkAdProviderListener != null) {
+                        isContentPrepared = true;
                         pkAdProviderListener.onAdLoadingFinished();
                     }
                     log.e("Ad is null - back to playback");
@@ -866,6 +882,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
 
         if (pkAdProviderListener != null) {
+            isContentPrepared = true;
             pkAdProviderListener.onAdLoadingFinished();
         }
 
