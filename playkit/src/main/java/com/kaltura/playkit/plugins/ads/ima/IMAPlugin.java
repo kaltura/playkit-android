@@ -415,14 +415,16 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         request.setContentProgressProvider(new ContentProgressProvider() {
             @Override
             public VideoProgressUpdate getContentProgress() {
-                if (adsManager == null) {
+                if (adsManager == null || player == null) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
-                if (isAdDisplayed || player == null || player.getDuration() <= 0) {
+                long currentPosition = player.getCurrentPosition();
+                long duration = player.getDuration();
+
+                if (isAdDisplayed || currentPosition < 0 || duration <= 0 ) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
-                VideoProgressUpdate videoProgress = new VideoProgressUpdate(player.getCurrentPosition(),
-                        player.getDuration());
+                VideoProgressUpdate videoProgress = new VideoProgressUpdate(currentPosition, duration);
                 return videoProgress;
             }
         });
