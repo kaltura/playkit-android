@@ -74,6 +74,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         isFirstPlay = false;
         this.mediaConfig = mediaConfig;
+        if (this.mediaConfig.getStartPosition() != -1){
+            this.mContinueTime = this.mediaConfig.getStartPosition();
+        }
     }
 
     @Override
@@ -103,16 +106,12 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
-        this.mediaConfig = mediaConfig;
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
         this.pluginConfig = (JsonObject) config;
         this.mContext = context;
         this.messageBus = messageBus;
         messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA);
-        if (this.mediaConfig.getStartPosition() != -1){
-            this.mContinueTime = this.mediaConfig.getStartPosition();
-        }
         log.d("onLoad");
     }
 
