@@ -35,7 +35,7 @@ public class IMAConfig {
     private String adTagURL;
     private boolean enableBackgroundPlayback;
     private boolean autoPlayAdBreaks;
-    private int videoBitrate;
+    private int videoBitrate; // in KB
     private boolean adAttribution;
     private boolean adCountDown;
     private int  adLoadTimeOut;
@@ -53,7 +53,7 @@ public class IMAConfig {
         this.adCountDown              = true;
         this.adLoadTimeOut            = DEFAULT_AD_LOAD_TIMEOUT;
         this.videoMimeTypes           = new ArrayList<>();
-        this.videoMimeTypes.add(PKMediaFormat.mp4_clear.mimeType);
+        this.videoMimeTypes.add(PKMediaFormat.mp4.mimeType);
         this.adTagURL = null;         //=> must be set via setter
 
         //if (tagTimes == null) {
@@ -67,6 +67,7 @@ public class IMAConfig {
         return language;
     }
 
+    // Language - default is en.
     public IMAConfig setLanguage(String language) {
         this.language = language;
         return this;
@@ -76,24 +77,30 @@ public class IMAConfig {
         return enableBackgroundPlayback;
     }
 
+    // default is false
     public IMAConfig setEnableBackgroundPlayback(boolean enableBackgroundPlayback) {
         this.enableBackgroundPlayback = enableBackgroundPlayback;
         return this;
     }
 
+
     public boolean getAutoPlayAdBreaks() {
         return autoPlayAdBreaks;
     }
 
+    // default is true - must be true for VAST
     public IMAConfig setAutoPlayAdBreaks(boolean autoPlayAdBreaks) {
         this.autoPlayAdBreaks = autoPlayAdBreaks;
         return this;
     }
 
-    public long getVideoBitrate() {
+    public int getVideoBitrate() {
         return videoBitrate;
     }
 
+    // Maximum recommended bitrate. The value is in kbit/s.
+    // The IMA SDK will pick media with bitrate below the specified max, or the closest bitrate if there is no media with lower bitrate found.
+    // Default value, -1, means the bitrate will be selected by the IMA SDK.
     public IMAConfig setVideoBitrate(int videoBitrate) {
         this.videoBitrate = videoBitrate;
         return this;
@@ -103,6 +110,10 @@ public class IMAConfig {
         return videoMimeTypes;
     }
 
+    // select the MIME TYPE that IMA will play instead of letting it select it by itself
+    // default selected MIME TYPE by plugin is MP4
+    // if null or empty list is set then it will be selected automatically
+    // if MIME TYPE is sent it will try playing one of the given MIME TYPE in the list i.e "video/mp4", "video/webm", "video/3gpp"
     public IMAConfig setVideoMimeTypes(List<String> videoMimeTypes) {
         this.videoMimeTypes = videoMimeTypes;
         return this;
@@ -112,6 +123,7 @@ public class IMAConfig {
         return adTagURL;
     }
 
+    // set the adTag URL to be used
     public IMAConfig setAdTagURL(String adTagURL) {
         this.adTagURL = adTagURL;
         return this;
@@ -120,6 +132,10 @@ public class IMAConfig {
     public boolean getAdAttribution() {
         return adAttribution;
     }
+
+
+    //ad attribution true is required for a countdown timer to be displayed
+    // default is true
     public IMAConfig setAdAttribution(boolean adAttribution) {
         this.adAttribution = adAttribution;
         return this;
@@ -129,6 +145,8 @@ public class IMAConfig {
         return adCountDown;
     }
 
+    // set if ad countdown will be shown or not.
+    // default is true
     public IMAConfig setAdCountDown(boolean adCountDown) {
         this.adCountDown = adCountDown;
         return this;
@@ -173,9 +191,11 @@ public class IMAConfig {
 
         Gson gson = new Gson();
         JsonArray jArray = new JsonArray();
-        for (String mimeType : videoMimeTypes) {
-            JsonPrimitive element = new JsonPrimitive(mimeType);
-            jArray.add(element);
+        if (videoMimeTypes != null) {
+            for (String mimeType : videoMimeTypes) {
+                JsonPrimitive element = new JsonPrimitive(mimeType);
+                jArray.add(element);
+            }
         }
         jsonObject.add(AD_VIDEO_MIME_TYPES, jArray);
 

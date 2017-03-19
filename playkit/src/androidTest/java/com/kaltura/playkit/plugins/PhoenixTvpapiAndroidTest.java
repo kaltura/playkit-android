@@ -8,10 +8,10 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 
 import org.junit.Assert;
@@ -32,7 +32,6 @@ public class PhoenixTvpapiAndroidTest {
     private Context context;
     private JsonObject tvpapiPluginConfig;
     private JsonObject phoenixPluginConfig;
-    private PlayerConfig.Media mediaConfig;
     private MessageBus messageBus;
     private PhoenixAnalyticsPlugin phoenixAnalyticsPlugin;
     private TVPAPIAnalyticsPlugin tvpapiAnalyticsPlugin;
@@ -96,19 +95,18 @@ public class PhoenixTvpapiAndroidTest {
     }
 
     private void setMediaObject() {
-        PlayerConfig config = new PlayerConfig();
+        PKMediaConfig config = new PKMediaConfig();
         PKMediaSource mediaSource = new PKMediaSource().setUrl("http://cdnapi.kaltura.com/p/1774581/sp/177458100/playManifest/entryId/1_mphei4ku/format/applehttp/tags/mbr/protocol/http/f/a.m3u8");
         mediaSource.setId("516109");
         ArrayList<PKMediaSource> sourceList = new ArrayList<>();
         sourceList.add(mediaSource);
         PKMediaEntry mediaEntryProvider = new PKMediaEntry().setId(entryId).setDuration(duration).setSources(sourceList);
-        config.media.setMediaEntry(mediaEntryProvider);
-        mediaConfig = config.media;
+        config.setMediaEntry(mediaEntryProvider);
     }
 
     @Test
     public void testTvpapiPlugin() {
-        tvpapiAnalyticsPlugin.onLoad(player, mediaConfig, tvpapiPluginConfig, messageBus, context);
+        tvpapiAnalyticsPlugin.onLoad(player, tvpapiPluginConfig, messageBus, context);
 
         event = new PlayerEvent(PlayerEvent.Type.PAUSE);
         messageBus.listen(new PKEvent.Listener() {
@@ -129,7 +127,7 @@ public class PhoenixTvpapiAndroidTest {
 
     @Test
     public void testPhoenixPlugin() {
-        phoenixAnalyticsPlugin.onLoad(player, mediaConfig, phoenixPluginConfig, messageBus, context);
+        phoenixAnalyticsPlugin.onLoad(player, phoenixPluginConfig, messageBus, context);
         event = new PlayerEvent(PlayerEvent.Type.PAUSE);
         messageBus.listen(new PKEvent.Listener() {
             @Override

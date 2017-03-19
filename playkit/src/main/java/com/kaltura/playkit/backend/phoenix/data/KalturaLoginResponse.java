@@ -8,11 +8,15 @@ import com.kaltura.playkit.backend.BaseResult;
 
 public class KalturaLoginResponse extends BaseResult {
 
-    KalturaLoginSession loginSession;
-    //User object in response is currently irrelevant
+    private KalturaLoginSession loginSession;
+    private KalturaOTTUser user;
 
 
     public KalturaLoginSession getLoginSession() {
         return loginSession;
+    }
+
+    public KalturaOTTUser getUser() {
+        return user;
     }
 }

@@ -6,9 +6,9 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.npaw.youbora.youboralib.data.Options;
 
@@ -19,15 +19,13 @@ import java.util.Map;
  */
 
 public class YouboraPlugin extends PKPlugin {
-    private static final String TAG = "YouboraPlugin";
     private static final PKLog log = PKLog.get("YouboraPlugin");
 
     private static YouboraLibraryManager pluginManager;
     private static YouboraAdManager adsManager;
 
-    private PlayerConfig.Media mediaConfig;
+    private PKMediaConfig mediaConfig;
     private JsonObject pluginConfig;
-    private Context context;
     private Player player;
     private MessageBus messageBus;
     private boolean adAnalytics = false;
@@ -53,7 +51,7 @@ public class YouboraPlugin extends PKPlugin {
 
 
     @Override
-    protected void onUpdateMedia(PlayerConfig.Media mediaConfig) {
+    protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         stopMonitoring();
         log.d("youbora - onUpdateMedia");
         this.mediaConfig = mediaConfig;
@@ -64,11 +62,9 @@ public class YouboraPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onUpdateConfig(String key, Object value) {
+    protected void onUpdateConfig(Object config) {
         log.d("youbora - onUpdateConfig");
-        if (pluginConfig.has(key)){
-            pluginConfig.addProperty(key, value.toString());
-        }
+        this.pluginConfig = (JsonObject) config;
         Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig, player);
         // Refresh options with updated media
         pluginManager.setOptions(opt);
@@ -92,11 +88,9 @@ public class YouboraPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onLoad(final Player player, PlayerConfig.Media mediaConfig, JsonObject pluginConfig, final MessageBus messageBus, Context context) {
-        this.mediaConfig = mediaConfig;
+    protected void onLoad(final Player player, Object config, final MessageBus messageBus, Context context) {
         this.player = player;
-        this.pluginConfig = pluginConfig;
-        this.context = context;
+        this.pluginConfig = (JsonObject) config;
         this.messageBus = messageBus;
         pluginManager = new YouboraLibraryManager(new Options(), messageBus, mediaConfig, player);
         loadPlugin();
