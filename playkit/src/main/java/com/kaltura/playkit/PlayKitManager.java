@@ -54,12 +54,8 @@ public class PlayKitManager {
         
         MediaSupport.initialize(context);
         
-        if (pluginConfigs == null) {
-            pluginConfigs = new PKPluginConfigs();
-        }
-        
         PlayerLoader playerLoader = new PlayerLoader(context);
-        playerLoader.load(pluginConfigs);
+        playerLoader.load(pluginConfigs != null ? pluginConfigs : new PKPluginConfigs());
         return playerLoader;
     }
 }
