@@ -31,7 +31,7 @@ public class PlayerController implements Player {
     private static final int ALLOWED_ERROR_RETRIES = 3;
 
 
-    private PlayerEngine player;
+    private PlayerEngine player = null;
     private Context context;
     private PlayerView rootPlayerView;
 
@@ -111,6 +111,10 @@ public class PlayerController implements Player {
 
     public PlayerController(Context context) {
         this.context = context;
+        initializeRootPlayerView();
+    }
+
+    private void initializeRootPlayerView() {
         this.rootPlayerView = new PlayerView(context) {
             @Override
             public void hideVideoSurface() {
@@ -150,8 +154,10 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
+
         isNewEntry = isNewEntry(mediaConfig);
         this.mediaConfig = mediaConfig;
+
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
         if (source == null) {
@@ -159,24 +165,46 @@ public class PlayerController implements Player {
             return;
         }
 
-        if (source.getMediaFormat() != PKMediaFormat.wvm) {
-            if (player == null) {
-                player = new ExoPlayerWrapper(context);
-                togglePlayerListeners(true);
-            }
-        } else {
-            if (player == null) {
-                player = new MediaPlayerWrapper(context);
-                togglePlayerListeners(true);
-            }
+        boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
+
+        if (shouldSwitchBetweenPlayers || player == null) { //if player is null consider it as switch player flow.
+            switchPlayers(source.getMediaFormat());
         }
-        if (playerEngineView == null) {
-            playerEngineView = player.getView();
-            rootPlayerView.addView(playerEngineView);
-        }
+
         player.load(source);
     }
 
+    private void switchPlayers(PKMediaFormat mediaFormat) {
+        removeAllViews();
+
+        if (player != null) {
+            player.destroy();
+        }
+        initializePlayer(mediaFormat);
+
+        addPlayerView();
+    }
+
+
+    private void initializePlayer(PKMediaFormat mediaFormat) {
+        //Decide which player wrapper should be initialized.
+        if (mediaFormat != PKMediaFormat.wvm) {
+            player = new ExoPlayerWrapper(context);
+            togglePlayerListeners(true);
+        } else {
+            player = new MediaPlayerWrapper(context);
+            togglePlayerListeners(true);
+        }
+    }
+
+    private void addPlayerView() {
+        if (playerEngineView != null) {
+            return;
+        }
+
+        playerEngineView = player.getView();
+        rootPlayerView.addView(playerEngineView);
+    }
 
     @Override
     public void destroy() {
@@ -287,6 +315,9 @@ public class PlayerController implements Player {
     }
 
     private void togglePlayerListeners(boolean enable) {
+        if (player == null) {
+            return;
+        }
         if (enable) {
             player.setEventListener(eventTrigger);
             player.setStateChangedListener(stateChangedTrigger);
@@ -359,11 +390,31 @@ public class PlayerController implements Player {
         }
 
         String oldEntryId = this.mediaConfig.getMediaEntry().getId();
-        if(oldEntryId == null){
+        if (oldEntryId == null) {
             return true;
         }
         String newEntryId = mediaConfig.getMediaEntry().getId();
         return !oldEntryId.equals(newEntryId);
+    }
+
+    private boolean shouldSwitchBetweenPlayers(PKMediaSource newSource) {
+
+        PKMediaFormat currentMediaFormat = newSource.getMediaFormat();
+        if (currentMediaFormat != PKMediaFormat.wvm && player instanceof MediaPlayerWrapper) {
+            return true;
+        }
+
+        if (currentMediaFormat == PKMediaFormat.wvm && player instanceof ExoPlayerWrapper) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private void removeAllViews() {
+        togglePlayerListeners(false);
+        rootPlayerView.removeAllViews();
+        playerEngineView = null;
     }
 
     private boolean maybeHandleExceptionLocally(PlayerEvent.ExceptionInfo exceptionInfo) {
