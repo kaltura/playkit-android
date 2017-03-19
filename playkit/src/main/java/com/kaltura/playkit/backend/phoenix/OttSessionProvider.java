@@ -194,7 +194,7 @@ public class OttSessionProvider extends BaseSessionProvider {
 
         MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
         multiRequest.add(PhoenixSessionService.switchUser(apiBaseUrl, getSessionToken(), userId),
-                PhoenixSessionService.get(apiBaseUrl, "{1:result:loginSession:ks}")).
+                PhoenixSessionService.get(apiBaseUrl, "{1:result:ks}")).
                 completion(new OnRequestCompletion() {
                     @Override
                     public void onComplete(ResponseElement response) {

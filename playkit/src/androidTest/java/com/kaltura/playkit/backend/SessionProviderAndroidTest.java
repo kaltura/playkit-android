@@ -237,7 +237,7 @@ public class SessionProviderAndroidTest extends BaseTest {
 
     @Test
     public void testOttSwitchUser(){
-        
+
     }
 
 
