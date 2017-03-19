@@ -51,7 +51,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         Player player = playerController;
 
-        for (Map.Entry<String, Object> entry : pluginsConfig.getPluginConfigsMap().entrySet()) {
+        for (Map.Entry<String, Object> entry : pluginsConfig) {
             String name = entry.getKey();
             PKPlugin plugin = loadPlugin(name, player, entry.getValue(), messageBus, context);
 
@@ -106,6 +106,16 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     private void releasePlayer() {
         getPlayer().destroy();
+    }
+
+    @Override
+    public void prepare(@NonNull PKMediaConfig mediaConfig) {
+        
+        super.prepare(mediaConfig);
+        
+        for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
+            loadedPluginEntry.getValue().plugin.onUpdateMedia(mediaConfig);
+        }
     }
 
     private void releasePlugins() {
