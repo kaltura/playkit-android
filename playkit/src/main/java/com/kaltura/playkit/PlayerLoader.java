@@ -51,7 +51,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         Player player = playerController;
 
-        for (Map.Entry<String, Object> entry : pluginsConfig.getPluginConfigsMap().entrySet()) {
+        for (Map.Entry<String, Object> entry : pluginsConfig) {
             String name = entry.getKey();
             PKPlugin plugin = loadPlugin(name, player, entry.getValue(), messageBus, context);
 

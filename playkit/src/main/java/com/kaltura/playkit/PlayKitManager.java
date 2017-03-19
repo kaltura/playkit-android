@@ -1,6 +1,7 @@
 package com.kaltura.playkit;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.player.MediaSupport;
 
@@ -38,7 +39,7 @@ public class PlayKitManager {
     }
 
     /**
-     * @deprecated Use {@link #loadPlayer(PKPluginConfigs, Context)}. The {@link PlayerConfig#media} 
+     * @deprecated Use {@link #loadPlayer(Context, PKPluginConfigs)}. The {@link PlayerConfig#media} 
      * field is ignored when loading the player.
      * @param playerConfig
      * @param context
@@ -46,12 +47,16 @@ public class PlayKitManager {
      */
     @Deprecated
     public static Player loadPlayer(PlayerConfig playerConfig, Context context) {
-        return loadPlayer(playerConfig.plugins, context);
+        return loadPlayer(context, playerConfig.plugins);
     }
     
-    public static Player loadPlayer(PKPluginConfigs pluginConfigs, Context context) {
-
+    public static Player loadPlayer(Context context, @Nullable PKPluginConfigs pluginConfigs) {
+        
         MediaSupport.initialize(context);
+        
+        if (pluginConfigs == null) {
+            pluginConfigs = new PKPluginConfigs();
+        }
         
         PlayerLoader playerLoader = new PlayerLoader(context);
         playerLoader.load(pluginConfigs);
