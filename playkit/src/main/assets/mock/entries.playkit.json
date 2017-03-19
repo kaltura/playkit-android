@@ -46,7 +46,7 @@
         "url": "https://cdnapisec.kaltura.com/p/1982551/sp/198255100/playManifest/entryId/0_zrv9wz9o/format/url/tags/widevine_mbr/protocol/https/f/a.wvm?playSessionId=f9c76dbf-3fbf-c598-fa00-0c8835964fc1",
         "mimeType": "video/wvm",
         "drmData":[ {
-          "scheme": "WidevineCENC",
+          "scheme": "WidevineClassic",
           "licenseUri": "https://udrm.kaltura.com//widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVFQiLCJ1c2VyX3Rva2VuIjoiIiwiYWNjb3VudF9pZCI6MTk4MjU1MSwiY29udGVudF9pZCI6IjBfenJ2OXd6OW9fMF9odWl5aTF1eSIsImZpbGVzIjoiIiwidWRpZCI6ImFhNWUxYjZjOTY5ODhkNjgiLCJhZGRpdGlvbmFsX2Nhc19zeXN0ZW0iOjB9&signature=qzMfJhsLXCypwI%2FeiuRpBXMVkoE%3D&"
         }
         ]
