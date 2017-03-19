@@ -1,13 +1,13 @@
 package com.kaltura.playkit;
 
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
  * Created by Noam Tamim @ Kaltura on 22/02/2017.
  */
-public class PKPluginConfigs {
+public class PKPluginConfigs implements Iterable<Map.Entry<String, Object>> {
 
     private Map<String, Object> configs = new HashMap<>();
 
@@ -19,7 +19,7 @@ public class PKPluginConfigs {
         this.configs.put(pluginName, settings);
     }
 
-    public Map<String, Object> getPluginConfigsMap() {
-        return Collections.unmodifiableMap(configs);
+    public Iterator<Map.Entry<String, Object>> iterator() {
+        return configs.entrySet().iterator();
     }
 }
