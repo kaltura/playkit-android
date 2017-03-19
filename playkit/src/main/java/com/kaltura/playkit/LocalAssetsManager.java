@@ -26,7 +26,6 @@ public class LocalAssetsManager {
 
     private static final PKLog log = PKLog.get("LocalAssetsManager");
     private static final String ASSET_ID_PREFIX = "assetId:";
-    private static final String MEDIA_FORMAT_SUFFIX = "_type:";
 
     private final Context context;
     private LocalDataStore localDataStore;
@@ -110,8 +109,11 @@ public class LocalAssetsManager {
 
         PKDrmParams drmParams = findSupportedDrmParams(mediaSource);
 
-        //Convert the media format to byte[] in order to store it in the LocalDataStore.
-        byte[] mediaFormat = mediaSource.getMediaFormat().toString().getBytes();
+        PKMediaFormat mediaFormat = mediaSource.getMediaFormat();
+        if(mediaFormat == null){
+            listener.onFailed(localAssetPath,
+                    new IllegalArgumentException("Can not register media, when PKMediaFormat and url of PKMediaSource not exist."));
+        }
 
         if (drmParams != null) {
             registerDrmAsset(localAssetPath, assetId, mediaFormat, drmParams, listener);
@@ -129,7 +131,7 @@ public class LocalAssetsManager {
      * @param drmParams      - drm params of the media.
      * @param listener       - notify about the success/fail after the completion of the registration process.
      */
-    private void registerDrmAsset(final String localAssetPath, final String assetId, final byte[] mediaFormat, final PKDrmParams drmParams, final AssetRegistrationListener listener) {
+    private void registerDrmAsset(final String localAssetPath, final String assetId, final PKMediaFormat mediaFormat, final PKDrmParams drmParams, final AssetRegistrationListener listener) {
         doInBackground(new Runnable() {
             @Override
             public void run() {
@@ -139,7 +141,7 @@ public class LocalAssetsManager {
 
                     boolean isRegistered = drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, listener);
                     if (isRegistered) {
-                        localDataStore.save(buildAssetKey(assetId), mediaFormat);
+                        localDataStore.save(buildAssetKey(assetId), buildMediaFormatValueAsByteArray(mediaFormat, drmParams.getScheme()));
                     }
                 } catch (final IOException e) {
                     log.e("Error", e);
@@ -164,8 +166,8 @@ public class LocalAssetsManager {
      * @param mediaFormat    - the media format converted to byte[].
      * @param listener       - notify about the success/fail after the completion of the registration process.
      */
-    private void registerClearAsset(String localAssetPath, String assetId, byte[] mediaFormat, AssetRegistrationListener listener) {
-        localDataStore.save(buildAssetKey(assetId), mediaFormat);
+    private void registerClearAsset(String localAssetPath, String assetId, PKMediaFormat mediaFormat, AssetRegistrationListener listener) {
+        localDataStore.save(buildAssetKey(assetId), buildMediaFormatValueAsByteArray(mediaFormat, null));
         listener.onRegistered(localAssetPath);
     }
 
@@ -292,23 +294,19 @@ public class LocalAssetsManager {
 
     @Nullable
     private PKDrmParams.Scheme getLocalAssetScheme(@NonNull String assetId) {
-        PKMediaFormat format;
-
         try {
-            String formatName = new String(localDataStore.load(buildAssetKey(assetId)));
-            format = PKMediaFormat.valueOf(formatName);
+            String mediaFormatValue = new String(localDataStore.load(buildAssetKey(assetId)));
+            String[] splitFormatValue = mediaFormatValue.split(":");
+            String schemeName = splitFormatValue[1];
+            if(schemeName.equals("null")) {
+                return null;
+            }
+
+            return PKDrmParams.Scheme.valueOf(schemeName);
+
         } catch (FileNotFoundException e) {
             log.e(e.getMessage());
             return null;
-        }
-
-        switch (format) {
-            case dash:
-                return PKDrmParams.Scheme.WidevineCENC;
-            case wvm:
-                return PKDrmParams.Scheme.WidevineClassic;
-            default:
-                return null;
         }
     }
 
@@ -373,8 +371,19 @@ public class LocalAssetsManager {
     }
 
     private String buildAssetKey(String assetId) {
-        return ASSET_ID_PREFIX + assetId +
-                MEDIA_FORMAT_SUFFIX;
+        return ASSET_ID_PREFIX + assetId;
+    }
+
+    private byte[] buildMediaFormatValueAsByteArray(PKMediaFormat mediaFormat, PKDrmParams.Scheme scheme) {
+        String mediaFormatName = mediaFormat.toString();
+        String schemeName = "null";
+        if(scheme != null) {
+            schemeName = scheme.toString();
+        }
+        String stringBuilder = mediaFormatName +
+                ":" +
+                schemeName;
+        return stringBuilder.getBytes();
     }
 
     /**
