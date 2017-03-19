@@ -118,7 +118,7 @@ public class OttSessionProvider extends BaseSessionProvider {
      * @param udid
      */
     public void startAnonymousSession(@Nullable String udid, final OnCompletion<PrimitiveResult> completion) {
-        //this.sessionParams = new OttSessionParams().setUdid(udid);
+
         this.sessionUdid = udid;
 
         MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
@@ -143,9 +143,9 @@ public class OttSessionProvider extends BaseSessionProvider {
      * @param completion
      */
     public void startSession(@NonNull String username, @NonNull String password, @Nullable String udid, final OnCompletion<PrimitiveResult> completion) {
-        // login user
-        //get session data for expiration time
-        //this.sessionParams = new OttSessionParams().setPassword(password).setUsername(username).setUdid(udid);
+        //1. login user
+        //2. get session data: expiration time
+
         this.sessionUdid = udid;
 
         MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
@@ -170,6 +170,7 @@ public class OttSessionProvider extends BaseSessionProvider {
      * @param completion
      */
     public void startSocialSession(@NonNull OttUserService.KalturaSocialNetwork socialNetwork, @NonNull String socialToken, @Nullable String udid, final OnCompletion<PrimitiveResult> completion) {
+
         this.sessionUdid = udid;
 
         MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
@@ -184,13 +185,15 @@ public class OttSessionProvider extends BaseSessionProvider {
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
     }
 
-    public void switchUser(@NonNull String userId, @Nullable String udid, final OnCompletion<PrimitiveResult> completion) {
-        // switchUser
-        //get session data for expiration time
-        this.sessionUdid = udid;
+    /**
+     * switch to another user in household
+     * @param userId
+     * @param completion
+     */
+    public void switchUser(@NonNull String userId, final OnCompletion<PrimitiveResult> completion) {
 
         MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
-        multiRequest.add(PhoenixSessionService.switchUser(apiBaseUrl, getSessionToken(), userId, udid),
+        multiRequest.add(PhoenixSessionService.switchUser(apiBaseUrl, getSessionToken(), userId),
                 PhoenixSessionService.get(apiBaseUrl, "{1:result:loginSession:ks}")).
                 completion(new OnRequestCompletion() {
                     @Override

@@ -1,8 +1,5 @@
 package com.kaltura.playkit.backend.phoenix.services;
 
-import android.support.annotation.Nullable;
-import android.text.TextUtils;
-
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.backend.phoenix.PhoenixRequestBuilder;
 
@@ -25,13 +22,10 @@ public class PhoenixSessionService extends PhoenixService {
                 .params(params);
     }
 
-    public static PhoenixRequestBuilder switchUser(String baseUrl, String ks, String userIdToSwitch, @Nullable String udid){
+    public static PhoenixRequestBuilder switchUser(String baseUrl, String ks, String userIdToSwitch){
         JsonObject params = new JsonObject();
         params.addProperty("ks", ks);
         params.addProperty("userIdToSwitch", userIdToSwitch);
-        if(!TextUtils.isEmpty(udid)){
-            params.addProperty("udid", udid);
-        }
 
         return new PhoenixRequestBuilder()
                 .service("session")
