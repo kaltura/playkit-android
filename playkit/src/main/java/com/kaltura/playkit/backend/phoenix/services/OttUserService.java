@@ -1,5 +1,6 @@
 package com.kaltura.playkit.backend.phoenix.services;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
@@ -83,4 +84,31 @@ public class OttUserService extends PhoenixService {
                 .params(params);
     }
 
+    public static PhoenixRequestBuilder socialLogin(@NonNull String baseUrl, int partnerId, @NonNull String token, String socialNetwork, @Nullable String udid) {
+        JsonObject params = new JsonObject();
+        params.addProperty("token", token);
+        params.addProperty("partnerId", partnerId);
+        params.addProperty("type", socialNetwork);
+        if(udid != null) {
+            params.addProperty("udid", udid);
+        }
+
+        return new PhoenixRequestBuilder()
+                .service("social")
+                .action("login")
+                .method("POST")
+                .url(baseUrl)
+                .tag("social-login")
+                .params(params);
+    }
+
+    public enum KalturaSocialNetwork{
+        FACEBOOK("facebook");
+
+        KalturaSocialNetwork(String value){
+            this.value = value;
+        }
+
+        public String value;
+    }
 }

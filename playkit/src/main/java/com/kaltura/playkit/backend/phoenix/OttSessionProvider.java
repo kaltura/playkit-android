@@ -160,6 +160,47 @@ public class OttSessionProvider extends BaseSessionProvider {
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
     }
 
+
+    /**
+     * starts social network related session
+     * login and get the session expiration for refresh purposes.
+     *
+     * @param socialToken - social network valid token
+     * @param udid
+     * @param completion
+     */
+    public void startSocialSession(@NonNull OttUserService.KalturaSocialNetwork socialNetwork, @NonNull String socialToken, @Nullable String udid, final OnCompletion<PrimitiveResult> completion) {
+        this.sessionUdid = udid;
+
+        MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
+        multiRequest.add(OttUserService.socialLogin(apiBaseUrl, partnerId, socialToken, socialNetwork.value, udid),
+                PhoenixSessionService.get(apiBaseUrl, "{1:result:loginSession:ks}")).
+                completion(new OnRequestCompletion() {
+                    @Override
+                    public void onComplete(ResponseElement response) {
+                        handleStartSession(response, completion);
+                    }
+                });
+        APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
+    }
+
+    public void switchUser(@NonNull String userId, @Nullable String udid, final OnCompletion<PrimitiveResult> completion) {
+        // switchUser
+        //get session data for expiration time
+        this.sessionUdid = udid;
+
+        MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
+        multiRequest.add(PhoenixSessionService.switchUser(apiBaseUrl, getSessionToken(), userId, udid),
+                PhoenixSessionService.get(apiBaseUrl, "{1:result:loginSession:ks}")).
+                completion(new OnRequestCompletion() {
+                    @Override
+                    public void onComplete(ResponseElement response) {
+                        handleStartSession(response, completion);
+                    }
+                });
+        APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
+    }
+
     /**
      * handles start session response.
      * if session was established update members and pass "ks" on the callback
