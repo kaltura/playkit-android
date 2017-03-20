@@ -103,6 +103,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private CountDownTimer adManagerTimer;
     private boolean adPlaybackCancelled;
     private Timer adDisplayedCheckTimer;
+    private boolean isContentPrepared;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -199,6 +200,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 public void onFinish() {
                     log.d("adManagerTimer.onFinish, adsManager=" + adsManager);
                     if (pkAdProviderListener != null) {
+                        isContentPrepared = true;
                         pkAdProviderListener.onAdLoadingFinished();
                     }
                     if (adsManager == null) {
@@ -310,6 +312,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     protected void onDestroy() {
         log.d("IMA Start onDestroy");
         cancelAdDisplayedCheckTimer();
+        isContentPrepared = false;
 
         if (adManagerTimer != null) {
             adManagerTimer.cancel();
@@ -550,7 +553,18 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED");
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_RESUME_REQUESTED));
                 isAdDisplayed = false;
-                if (player != null) {
+                if (!isContentPrepared) {
+                    log.d("Content not prepared.. Preparing and calling play.");
+                    if (pkAdProviderListener != null) {
+                        isContentPrepared = true;
+                        pkAdProviderListener.onAdLoadingFinished();
+                        if (player != null){
+                            log.d("Content not prepared.. Play called.");
+                            player.getView().showVideoSurface();
+                            player.play();
+                        }
+                    }
+                } else if (player != null) {
                     player.getView().showVideoSurface();
                     long duration = player.getDuration();
                     if (duration < 0 || player.getCurrentPosition() < duration) {
@@ -578,6 +592,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     adsManager.pause();
                 }
                 if (pkAdProviderListener != null) {
+                    isContentPrepared = true;
                     pkAdProviderListener.onAdLoadingFinished();
                 }
 
@@ -665,6 +680,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     log.e("Ad is null - back to playback");
 
                     if (pkAdProviderListener != null) {
+                        isContentPrepared = true;
                         pkAdProviderListener.onAdLoadingFinished();
                     }
 
@@ -703,7 +719,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                             if (currentTime > 0) {
                                 log.d("AD Displayed delay check : ad duration " + currentTime);
                                 isAdDisplayed = true;
-                                messageBus.post(new AdEvent(AdEvent.Type.AD_DISPLAYED));
+                                messageBus.post(new AdEvent(AdEvent.Type.AD_IN_PROGRESS));
                                 adDisplayedCheckTimer.cancel();
                             }
                         }
@@ -848,6 +864,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
 
         if (pkAdProviderListener != null) {
+            isContentPrepared = true;
             pkAdProviderListener.onAdLoadingFinished();
         }
 

@@ -40,7 +40,7 @@ public class AdEvent implements PKEvent {
 
     public enum Type {
         STARTED,
-        AD_DISPLAYED,
+        AD_IN_PROGRESS,
         PAUSED,
         RESUMED,
         COMPLETED,
