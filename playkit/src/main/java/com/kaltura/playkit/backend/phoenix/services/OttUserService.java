@@ -105,10 +105,10 @@ public class OttUserService extends PhoenixService {
     public enum KalturaSocialNetwork{
         FACEBOOK("facebook");
 
+        public String value;
+
         KalturaSocialNetwork(String value){
             this.value = value;
         }
-
-        public String value;
     }
 }

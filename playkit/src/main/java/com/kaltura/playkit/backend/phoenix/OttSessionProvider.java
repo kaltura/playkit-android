@@ -39,15 +39,20 @@ public class OttSessionProvider extends BaseSessionProvider {
 
     private static final String TAG = "BaseResult";
 
-    public static final long TimeDelta = 2 * 60 * 60;//hour in seconds
-    public static final int DeltaPercent = 12;
+    private static final long TimeDelta = 2 * 60 * 60;//2 hours in seconds - default refresh delta for 24h session
+    private static final int DeltaPercent = 12;
     public static final long NEED_REFRESH = 0;
-    public static final String DummyUserId = "1";
+    private static final String DummyUserId = "1";
+    private static final int EXECUTOR_KEEP_ALIVE = 10;
+    private static final int MilliInSecond = 1000;
 
-    //private OttSessionParams sessionParams;
+    public static final int KsParam = 0;
+    public static final int RefreshTokenParam = 1;
+    public static final int UdidParam = 2;
+
     private String sessionUdid;
     private String refreshToken;
-    private long refreshDelta = 9 * 60 * 60 * 24;//TimeDelta;
+    private long refreshDelta = TimeDelta;
     private int partnerId = 0;
 
     private Future<?> refreshTaskFurure;
@@ -99,7 +104,7 @@ public class OttSessionProvider extends BaseSessionProvider {
 
     private void initRefreshExecutor() {
         refreshExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
-        refreshExecutor.setKeepAliveTime(10, TimeUnit.SECONDS);
+        refreshExecutor.setKeepAliveTime(EXECUTOR_KEEP_ALIVE, TimeUnit.SECONDS);
     }
 
     /**
@@ -298,7 +303,7 @@ public class OttSessionProvider extends BaseSessionProvider {
      * Ends current active session. if it's a {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#User} session
      * logout, if {@link com.kaltura.playkit.backend.base.BaseSessionProvider.UserSessionType#Anonymous} will return, since
      * logout on anonymous session doesn't make the session invalid.
-     * <p>
+     *
      * If logout was activated, session params are cleared.
      */
     public void endSession(final OnCompletion<BaseResult> completion) {
@@ -446,9 +451,9 @@ public class OttSessionProvider extends BaseSessionProvider {
         cancelCurrentRefreshTask();
     }
 
-    private boolean hasActiveRefreshTask() {
+    /*private boolean hasActiveRefreshTask() {
         return refreshTaskFurure != null && !refreshTaskFurure.isDone() && !refreshTaskFurure.isCancelled();
-    }
+    }*/
 
     @Override
     protected void setSession(String sessionToken, long expiry, String userId) {
@@ -463,7 +468,7 @@ public class OttSessionProvider extends BaseSessionProvider {
     }
 
     private void updateRefreshDelta(long expiry) {
-        long currentDate = System.currentTimeMillis() / 1000;
+        long currentDate = System.currentTimeMillis() / MilliInSecond;
         refreshDelta = (expiry - currentDate) * DeltaPercent / 100; // 20% of total validation time
     }
 
@@ -488,7 +493,7 @@ public class OttSessionProvider extends BaseSessionProvider {
         if(data.length < 2){
             return false;
         }
-        maintainSession(data[0], data[1], DummyUserId, data.length >= 3 && !data[2].equals("null") ? data[2] : null, sessionRecoveryCallback);
+        maintainSession(data[KsParam], data[RefreshTokenParam], DummyUserId, data.length >= 3 && !data[UdidParam].equals("null") ? data[UdidParam] : null, sessionRecoveryCallback);
         return true;
     }
 
