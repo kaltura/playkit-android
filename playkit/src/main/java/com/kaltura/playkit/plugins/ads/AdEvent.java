@@ -40,7 +40,7 @@ public class AdEvent implements PKEvent {
 
     public enum Type {
         STARTED,
-        AD_DISPLAYED_AFTER_CONTENT_PAUSE,
+        AD_DISPLAYED,
         PAUSED,
         RESUMED,
         COMPLETED,
@@ -60,6 +60,7 @@ public class AdEvent implements PKEvent {
         LOADED,
         CONTENT_PAUSE_REQUESTED,
         CONTENT_RESUME_REQUESTED,
+        AD_LOAD_TIMEOUT_TIMER_STARTED,
         ALL_ADS_COMPLETED
     }
 

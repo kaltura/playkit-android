@@ -47,6 +47,7 @@ import java.util.TimerTask;
 
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_ENDED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_STARTED;
+import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_LOAD_TIMEOUT_TIMER_STARTED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_PROGRESS;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.PAUSED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.RESUMED;
@@ -210,6 +211,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 }
             };
             adManagerTimer.start();
+            messageBus.post(new AdEvent(AD_LOAD_TIMEOUT_TIMER_STARTED));
         }
 
         adDisplayContainer = sdkFactory.createAdDisplayContainer();
@@ -701,7 +703,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                             if (currentTime > 0) {
                                 log.d("AD Displayed delay check : ad duration " + currentTime);
                                 isAdDisplayed = true;
-                                messageBus.post(new AdEvent(AdEvent.Type.AD_DISPLAYED_AFTER_CONTENT_PAUSE));
+                                messageBus.post(new AdEvent(AdEvent.Type.AD_DISPLAYED));
                                 adDisplayedCheckTimer.cancel();
                             }
                         }
