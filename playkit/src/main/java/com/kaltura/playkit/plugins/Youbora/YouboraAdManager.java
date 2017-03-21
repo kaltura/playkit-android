@@ -6,6 +6,7 @@ import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.plugins.AnalyticsEvent;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.npaw.youbora.adnalyzers.AdnalyzerGeneric;
@@ -50,6 +51,8 @@ public class YouboraAdManager extends AdnalyzerGeneric {
         }
         log.d(event.newState.toString());
         messageBus.post(new LogEvent(TAG + " " + event.newState.toString()));
+        messageBus.post(new AnalyticsEvent.BaseAnalyticsReportEvent(AnalyticsEvent.Type.YOUBORA_REPORT, event.newState.toString()));
+
     }
 
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
@@ -110,6 +113,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                 }
                 log.d(event.eventType().name());
                 messageBus.post(new LogEvent(TAG + " " + ((AdEvent) event).type.toString()));
+                messageBus.post(new AnalyticsEvent.BaseAnalyticsReportEvent(AnalyticsEvent.Type.YOUBORA_REPORT, event.toString()));
             } else if (event instanceof PlayerEvent) {
                 switch (((PlayerEvent) event).type) {
                     case STATE_CHANGED:
