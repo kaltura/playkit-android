@@ -427,6 +427,15 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
         return null;
     }
 
+    @Override
+    public void reset() {
+        if (player != null) {
+            player.pause();
+            player.seekTo(0);
+            player.reset();
+        }
+    }
+
     public static String getWidevineAssetPlaybackUri(String assetUri) {
         String assetUriForPlayback = assetUri;
         if (assetUri.startsWith("file:")) {
