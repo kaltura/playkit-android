@@ -46,13 +46,13 @@ public class OttResultAdapter implements JsonDeserializer<BaseResult> {
                     baseResult = (BaseResult) constructor.newInstance(error);
                 }
             } catch (NoSuchMethodException e) {
-
+                // do nothing
             } catch (IllegalAccessException e) {
-
+                // do nothing
             } catch (InstantiationException e) {
-
+                // do nothing
             } catch (InvocationTargetException e) {
-
+                // do nothing - next code section will handle this
             }
 
             if (baseResult == null) {
