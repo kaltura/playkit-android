@@ -133,7 +133,7 @@ public class SessionProviderAndroidTest extends BaseTest {
     }
 
 
-                            @Test
+    @Test
     public void testOttAnonymousSession() {
         final OttSessionProvider ottSessionProvider = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
 
@@ -234,6 +234,14 @@ public class SessionProviderAndroidTest extends BaseTest {
 
         wait(1);
     }
+
+    @Test
+    public void testOttSwitchUser(){
+
+    }
+
+
+
 
     @Test
     public void testOvpSessionProviderBaseFlow() {

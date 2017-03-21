@@ -21,4 +21,18 @@ public class PhoenixSessionService extends PhoenixService {
                 .tag("session-get")
                 .params(params);
     }
+
+    public static PhoenixRequestBuilder switchUser(String baseUrl, String ks, String userIdToSwitch){
+        JsonObject params = new JsonObject();
+        params.addProperty("ks", ks);
+        params.addProperty("userIdToSwitch", userIdToSwitch);
+
+        return new PhoenixRequestBuilder()
+                .service("session")
+                .action("switchUser")
+                .method("POST")
+                .url(baseUrl)
+                .tag("session-switchUser")
+                .params(params);
+    }
 }
