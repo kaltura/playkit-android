@@ -46,6 +46,12 @@ public interface Player {
      * Should be called when you want to destroy the player.
      */
     void destroy();
+
+    /**
+     * reset player to be in the initial playback state.
+     */
+
+    void reset();
     /**
      * Start playback of the media.
      */

@@ -167,4 +167,7 @@ interface PlayerEngine {
      * @return - the last {@link PlayerEvent.ExceptionInfo} that happened.
      */
     PlayerEvent.ExceptionInfo getCurrentException();
+
+    // reset the player to initial playback state
+    void reset();
 }

@@ -54,6 +54,11 @@ public class MockPlayer implements Player {
     }
 
     @Override
+    public void reset() {
+        
+    }
+
+    @Override
     public void play() {
         isPlaying = true;
     }
