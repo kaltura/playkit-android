@@ -195,18 +195,28 @@ public class OttSessionProvider extends BaseSessionProvider {
      * @param userId
      * @param completion
      */
-    public void switchUser(@NonNull String userId, final OnCompletion<PrimitiveResult> completion) {
+    public void switchUser(@NonNull final String userId, final OnCompletion<PrimitiveResult> completion) {
 
-        MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
-        multiRequest.add(PhoenixSessionService.switchUser(apiBaseUrl, getSessionToken(), userId),
-                PhoenixSessionService.get(apiBaseUrl, "{1:result:ks}")).
-                completion(new OnRequestCompletion() {
-                    @Override
-                    public void onComplete(ResponseElement response) {
-                        handleStartSession(response, completion);
-                    }
-                });
-        APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
+        getSessionToken(new OnCompletion<PrimitiveResult>() {
+            @Override
+            public void onComplete(PrimitiveResult response) {
+                if(response.error == null) { // in case the session checked for expiry and ready to use:
+                    MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
+                    multiRequest.add(PhoenixSessionService.switchUser(apiBaseUrl, getSessionToken(), userId),
+                            PhoenixSessionService.get(apiBaseUrl, "{1:result:ks}")).
+                            completion(new OnRequestCompletion() {
+                                @Override
+                                public void onComplete(ResponseElement response) {
+                                    handleStartSession(response, completion);
+                                }
+                            });
+                    APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
+
+                } else { // in case ks retrieval failed:
+                    completion.onComplete(response);
+                }
+            }
+        });
     }
 
     /**
