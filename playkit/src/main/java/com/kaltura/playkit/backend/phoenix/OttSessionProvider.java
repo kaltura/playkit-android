@@ -273,28 +273,6 @@ public class OttSessionProvider extends BaseSessionProvider {
         setSession(ks, Unset, userId);
     }
 
-
-    /**
-     * try to re-login with current credentials, if available
-     */
-    /*private void renewSession(OnCompletion<PrimitiveResult> completion) {
-        if (sessionParams != null) {
-            if (sessionParams.username != null) {
-                startSession(sessionParams.username, sessionParams.password, sessionParams.udid, completion);
-                return;
-
-            } else if(isAnonymousSession() *//*sessionParams.isAnonymous*//*) {
-                startAnonymousSession(sessionParams.udid, completion);
-                return;
-            } // ?? in case session with no user credential expires, should we login as anonymous or return empty ks?
-
-        }
-
-        Log.e(TAG, "parameters needed for background session renewal are not available.");
-        //completion.onComplete(new PrimitiveResult().error(ErrorElement.SessionError.message("Session expired")));
-        completion.onComplete(new PrimitiveResult((String)null));//returns empty ks
-    }*/
-
     public boolean isAnonymousSession() {
         return getUserSessionType().equals(UserSessionType.Anonymous);
     }
@@ -451,17 +429,12 @@ public class OttSessionProvider extends BaseSessionProvider {
         cancelCurrentRefreshTask();
     }
 
-    /*private boolean hasActiveRefreshTask() {
-        return refreshTaskFurure != null && !refreshTaskFurure.isDone() && !refreshTaskFurure.isCancelled();
-    }*/
-
     @Override
     protected void setSession(String sessionToken, long expiry, String userId) {
         super.setSession(sessionToken, expiry, userId);
-        //long delay = 1;
         if(expiry != Unset) {
             updateRefreshDelta(expiry);
-            //delay = expiry - refreshDelta;
+
         } else {
             submitRefreshSessionTask();
         }
@@ -496,46 +469,4 @@ public class OttSessionProvider extends BaseSessionProvider {
         maintainSession(data[KsParam], data[RefreshTokenParam], DummyUserId, data.length >= 3 && !data[UdidParam].equals("null") ? data[UdidParam] : null, sessionRecoveryCallback);
         return true;
     }
-
-
-
-    /*private class OttSessionParams {
-        private String udid = "";
-        private String username;
-        private String password;
-        //private boolean isAnonymous = false;
-
-        public String udid() {
-            return udid;
-        }
-
-        public OttSessionParams setUdid(String udid) {
-            this.udid = udid;
-            return this;
-        }
-
-        public String username() {
-            return username;
-        }
-
-        public OttSessionParams setUsername(String username) {
-            this.username = username;
-            return this;
-        }
-
-        public String password() {
-            return password;
-        }
-
-        public OttSessionParams setPassword(String password) {
-            this.password = password;
-            return this;
-        }
-
-        *//*public OttSessionParams setAnonymous() {
-            this.isAnonymous = true;
-            return this;
-        }*//*
-    }*/
-
 }
