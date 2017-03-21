@@ -560,10 +560,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
     @Override
     public void reset() {
-        player.setPlayWhenReady(false);
-        player.seekTo(0);
-        player.stop();
-
+        if (player != null) {
+            player.setPlayWhenReady(false);
+            player.seekTo(0);
+            player.stop();
+        }
     }
 
     void savePlayerPosition() {
