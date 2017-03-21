@@ -11,6 +11,8 @@ import com.kaltura.playkit.PKMediaSource;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
+
 /**
  * Created by Noam Tamim @ Kaltura on 29/11/2016.
  */
@@ -35,7 +37,7 @@ class SourceSelector {
     }
     
     @Nullable
-    PKMediaSource getPreferredSource() {
+    PKMediaSource getPreferredSource(String sessionId) {
 
         // If PKMediaSource is local, there is no need to look for the preferred source,
         // because it is only one.
@@ -70,6 +72,13 @@ class SourceSelector {
         for (PKMediaFormat format : pref) {
             PKMediaSource source = sourceByFormat(format);
             if (source != null) {
+                String sourceUrl = source.getUrl();
+
+
+                if (sourceUrl.contains("/playManifest/")) {
+                    sourceUrl += "?" + "playSessionId=" + sessionId +"&clientTag=" + CLIENT_TAG;
+                }
+                source.setUrl(sourceUrl);
                 return source;
             }
         }
@@ -78,8 +87,8 @@ class SourceSelector {
         return null;
     }
 
-    static PKMediaSource selectSource(PKMediaEntry mediaEntry) {
-        return new SourceSelector(mediaEntry).getPreferredSource();
+    static PKMediaSource selectSource(PKMediaEntry mediaEntry, String sessionId) {
+        return new SourceSelector(mediaEntry).getPreferredSource(sessionId);
     }
 
     private PKMediaSource getLocalSource(){

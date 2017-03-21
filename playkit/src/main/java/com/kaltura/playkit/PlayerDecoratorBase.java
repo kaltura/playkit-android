@@ -34,6 +34,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public String getSessionId() {
+        return player.getSessionId();
+    }
+
+    @Override
     public void play() {
         player.play();
     }

@@ -403,7 +403,8 @@ public class KalturaStatsPlugin extends PKPlugin {
      * @param eventType - Enum stating Kaltura state events
      */
     private void sendAnalyticsEvent(final KStatsEvent eventType) {
-        String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
+        String playerSessionId = player.getSessionId();
+        String sessionId = (playerSessionId != null) ? playerSessionId : "";
         int uiconfId = pluginConfig.has("uiconfId") ? pluginConfig.getAsJsonPrimitive("uiconfId").getAsInt() : 0;
         String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : BASE_URL;
         int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;

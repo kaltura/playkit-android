@@ -40,6 +40,7 @@ public class PlayerConfig {
             return this;
         }
 
+
         public PKMediaEntry getMediaEntry() {
             return mediaEntry;
         }

@@ -48,10 +48,10 @@ public class SourceSelectorAndroidTest {
     @Test
     public void sourceSelector() {
         
-        assertTrue(SourceSelector.selectSource(entry(mp4, dashClear)) == dashClear);
-        assertTrue(SourceSelector.selectSource(entry(mp4, hls)) == hls);
-        assertTrue(SourceSelector.selectSource(entry(hls, mp4, dashClear)) == dashClear);
-        assertTrue(SourceSelector.selectSource(entry(hls, wvm)) == hls);
+        assertTrue(SourceSelector.selectSource(entry(mp4, dashClear), "1234") == dashClear);
+        assertTrue(SourceSelector.selectSource(entry(mp4, hls), "1234") == hls);
+        assertTrue(SourceSelector.selectSource(entry(hls, mp4, dashClear), "1234") == dashClear);
+        assertTrue(SourceSelector.selectSource(entry(hls, wvm) , "1234") == hls);
 //        assertTrue(SourceSelector.selectSource(entry(mp4, wvm)) == wvm);
 
     }

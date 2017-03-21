@@ -19,6 +19,8 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.UUID;
+
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 
 /**
@@ -36,6 +38,7 @@ public class PlayerController implements Player {
     private PlayerView rootPlayerView;
     private PlayerView playerEngineView;
     private PlayerConfig.Media mediaConfig = null;
+    private String sessionId = null;
 
     private PKEvent.Listener eventListener;
 
@@ -153,8 +156,15 @@ public class PlayerController implements Player {
     public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
         isNewEntry = isNewEntry(mediaConfig);
         this.mediaConfig = mediaConfig;
-        PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
+        if (this.mediaConfig == null) {
+            return;
+        }
+        if (this.sessionId == null) {
+            this.sessionId = UUID.randomUUID().toString();
+        }
 
+        PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry(), sessionId);
+//
         if (source == null) {
             log.e("No playable source found for entry");
             return;
@@ -382,7 +392,7 @@ public class PlayerController implements Player {
                     ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
                     long currentPosition = player.getCurrentPosition();
                     exoPlayerWrapper.savePlayerPosition();
-                    PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
+                    PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry(), sessionId);
 
                     if (source == null) {
                         log.e("No playable source found for entry");
@@ -395,5 +405,9 @@ public class PlayerController implements Player {
             }
         }
         return false;
+    }
+
+    public String getSessionId() {
+        return sessionId;
     }
 }

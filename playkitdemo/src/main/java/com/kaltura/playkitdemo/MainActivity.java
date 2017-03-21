@@ -37,6 +37,7 @@ import com.kaltura.playkit.player.BaseTrack;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
 import com.kaltura.playkit.player.VideoTrack;
+import com.kaltura.playkit.plugins.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
@@ -71,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         PlayKitManager.registerPlugins(this, SamplePlugin.factory);
         PlayKitManager.registerPlugins(this, IMAPlugin.factory);
-        //PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);
+        PlayKitManager.registerPlugins(this,KalturaStatsPlugin.factory);
         
         
     }
@@ -225,8 +226,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         jsonObject.addProperty("delay", 1200);
         config.setPluginConfig("Sample", jsonObject);
         addIMAPluginConfig(config);
+        JsonObject pluginConfig = new JsonObject();
+
+        pluginConfig = new JsonObject();
+        pluginConfig.addProperty("uiconfId", "123");
+        pluginConfig.addProperty("baseUrl", "https://stats.kaltura.com/api_v3/index.php");
+        pluginConfig.addProperty("partnerId", "456");
+        pluginConfig.addProperty("timerInterval", 30);
         //config.setPluginConfig("IMASimplePlugin", jsonObject);
-        //config.setPluginConfig("KalturaStatistics", jsonObject);
+        config.setPluginConfig(KalturaStatsPlugin.factory.getName(), pluginConfig);
         //config.setPluginConfig("PhoenixAnalytics", jsonObject);
         //config.setPluginConfig("Youbora", jsonObject);
 

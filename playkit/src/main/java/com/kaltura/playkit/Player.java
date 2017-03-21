@@ -128,5 +128,7 @@ public interface Player {
     void seekTo(long position);
 
     AdController getAdController();
+
+    String getSessionId();
 }
 
