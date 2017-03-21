@@ -208,7 +208,8 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     }
 
     private void sendLiveEvent(long bufferTime) {
-        String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
+        String playerSessionId = player.getSessionId();
+        String sessionId = (playerSessionId != null) ? playerSessionId : "";
         String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : BASE_URL;
         int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
 

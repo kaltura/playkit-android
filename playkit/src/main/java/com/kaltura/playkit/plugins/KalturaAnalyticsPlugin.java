@@ -254,7 +254,8 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     }
 
     private void sendAnalyticsEvent(final KAnalonyEvents eventType) {
-        String sessionId = pluginConfig.has("sessionId")? pluginConfig.get("sessionId").toString(): "";
+        String playerSessionId = player.getSessionId();
+        String sessionId = (playerSessionId != null) ? playerSessionId : "";
         int uiconfId = pluginConfig.has("uiconfId")? Integer.valueOf(pluginConfig.get("uiconfId").toString()): 0;
         String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString(): BASE_URL;
         int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt(): 0;
