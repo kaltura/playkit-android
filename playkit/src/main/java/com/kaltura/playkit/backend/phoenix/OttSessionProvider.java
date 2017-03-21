@@ -202,7 +202,7 @@ public class OttSessionProvider extends BaseSessionProvider {
             public void onComplete(PrimitiveResult response) {
                 if(response.error == null) { // in case the session checked for expiry and ready to use:
                     MultiRequestBuilder multiRequest = PhoenixService.getMultirequest(apiBaseUrl, null);
-                    multiRequest.add(PhoenixSessionService.switchUser(apiBaseUrl, getSessionToken(), userId),
+                    multiRequest.add(PhoenixSessionService.switchUser(apiBaseUrl, response.getResult(), userId),
                             PhoenixSessionService.get(apiBaseUrl, "{1:result:ks}")).
                             completion(new OnRequestCompletion() {
                                 @Override
