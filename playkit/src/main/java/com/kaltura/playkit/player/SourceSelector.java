@@ -18,14 +18,14 @@ import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
  */
 
 class SourceSelector {
-    
+
     private static final PKLog log = PKLog.get("SourceSelector");
     private final PKMediaEntry mediaEntry;
-    
+
     SourceSelector(PKMediaEntry mediaEntry) {
         this.mediaEntry = mediaEntry;
     }
-    
+
     @Nullable
     private PKMediaSource sourceByFormat(PKMediaFormat format) {
         for (PKMediaSource source : mediaEntry.getSources()) {
@@ -35,7 +35,7 @@ class SourceSelector {
         }
         return null;
     }
-    
+
     @Nullable
     PKMediaSource getPreferredSource(String sessionId) {
 
@@ -52,39 +52,47 @@ class SourceSelector {
 
         // Dash is always available.
         pref.add(PKMediaFormat.dash_clear);
-        
+
         // Dash+Widevine is only available from Android 4.3 
         if (MediaSupport.widevineModular()) {
             pref.add(PKMediaFormat.dash_drm);
         }
-        
+
         // HLS clear is always available
         pref.add(PKMediaFormat.hls_clear);
-        
+
         // Widevine Classic is OPTIONAL from Android 6. 
         if (MediaSupport.widevineClassic(null)) {
             pref.add(PKMediaFormat.wvm_widevine);
         }
-        
+
         // MP4 is always available, but gives inferior performance.
         pref.add(PKMediaFormat.mp4_clear);
-        
+
         for (PKMediaFormat format : pref) {
             PKMediaSource source = sourceByFormat(format);
             if (source != null) {
-                String sourceUrl = source.getUrl();
-
-
-                if (sourceUrl.contains("/playManifest/")) {
-                    sourceUrl += "?" + "playSessionId=" + sessionId +"&clientTag=" + CLIENT_TAG;
-                }
-                source.setUrl(sourceUrl);
+                source.setUrl(fixPlayManifest(source.getUrl(), sessionId));
                 return source;
             }
         }
 
         log.e("No playable sources found!");
         return null;
+    }
+
+    private String fixPlayManifest(String origURL, String sessionId) {
+        String fixedURL = origURL;
+        if (origURL.contains("/playManifest/")) {
+            if (origURL.contains("?")) {
+                fixedURL += "&playSessionId=" + sessionId;
+            } else {
+                fixedURL += "?playSessionId=" + sessionId;
+            }
+            fixedURL += "&clientTag=" + CLIENT_TAG;
+            return fixedURL;
+        }
+        return origURL;
     }
 
     static PKMediaSource selectSource(PKMediaEntry mediaEntry, String sessionId) {

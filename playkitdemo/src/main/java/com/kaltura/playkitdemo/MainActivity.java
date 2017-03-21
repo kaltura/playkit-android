@@ -226,15 +226,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         jsonObject.addProperty("delay", 1200);
         config.setPluginConfig("Sample", jsonObject);
         addIMAPluginConfig(config);
-        JsonObject pluginConfig = new JsonObject();
-
-        pluginConfig = new JsonObject();
-        pluginConfig.addProperty("uiconfId", "123");
-        pluginConfig.addProperty("baseUrl", "https://stats.kaltura.com/api_v3/index.php");
-        pluginConfig.addProperty("partnerId", "456");
-        pluginConfig.addProperty("timerInterval", 30);
+        addKalturaStatsConfig(config);
         //config.setPluginConfig("IMASimplePlugin", jsonObject);
-        config.setPluginConfig(KalturaStatsPlugin.factory.getName(), pluginConfig);
         //config.setPluginConfig("PhoenixAnalytics", jsonObject);
         //config.setPluginConfig("Youbora", jsonObject);
 
@@ -252,8 +245,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
         config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
-
     }
+
+    private void addKalturaStatsConfig(PlayerConfig.Plugins config) {
+        JsonObject pluginConfig = new JsonObject();
+
+        pluginConfig = new JsonObject();
+        pluginConfig.addProperty("uiconfId", "123");
+        pluginConfig.addProperty("baseUrl", "https://stats.kaltura.com/api_v3/index.php");
+        pluginConfig.addProperty("partnerId", "456");
+        pluginConfig.addProperty("timerInterval", 30);
+
+        config.setPluginConfig(KalturaStatsPlugin.factory.getName(), pluginConfig);
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
