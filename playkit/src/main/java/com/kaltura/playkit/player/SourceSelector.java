@@ -55,7 +55,7 @@ class SourceSelector {
             }
 
             List<PKDrmParams> drmParams = source.getDrmData();
-            if (drmParams != null) {
+            if (drmParams != null && !drmParams.isEmpty()) {
                 for (PKDrmParams params : drmParams) {
                     if (params.isSchemeSupported()) {
                         return source;
