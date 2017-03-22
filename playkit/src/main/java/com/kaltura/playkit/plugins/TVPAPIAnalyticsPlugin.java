@@ -44,17 +44,18 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
      */
     @Override
     protected void sendAnalyticsEvent(final PhoenixActionType eventType){
-        String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"000000";
-        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://tvpapi-preprod.ott.kaltura.com/v3_9/gateways/jsonpostgw.aspx?";
-        JsonObject initObj = pluginConfig.has("initObj")? pluginConfig.getAsJsonObject("initObj") : testInitObj;
+        JsonObject paramsJson = pluginConfig.has("params") ? pluginConfig.getAsJsonObject("params") : new JsonObject();
+        JsonObject initObjJson = paramsJson.has("initObj") ? paramsJson.getAsJsonObject("initObj") : new JsonObject();
+        String baseUrl = paramsJson.has("baseUrl")? paramsJson.getAsJsonPrimitive("baseUrl").getAsString():"http://tvpapi-preprod.ott.kaltura.com/v3_9/gateways/jsonpostgw.aspx?";
+        String fileId = paramsJson.has("fileId")? paramsJson.getAsJsonPrimitive("fileId").getAsString():"000000";
         String action = eventType.name().toLowerCase();
         String method = action.equals("hit")? "MediaHit": "MediaMark";
 
-        if (initObj == null) {
+        if (initObjJson == null) {
             return;
         }
 
-        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObj, action,
+        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObjJson, action,
                 mediaConfig.getMediaEntry().getId(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId, player.getCurrentPosition());
 
         requestBuilder.completion(new OnRequestCompletion() {
