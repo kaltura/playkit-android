@@ -146,7 +146,7 @@ public class YouboraLibraryManager extends PluginGeneric {
                 log.d(event.eventType().name());
                 if (((PlayerEvent) event).type != STATE_CHANGED){
                     messageBus.post(new LogEvent(TAG + " " + ((PlayerEvent) event).type.toString()));
-                    messageBus.post(new AnalyticsEvent.BaseAnalyticsReportEvent(AnalyticsEvent.Type.YOUBORA_REPORT, event.toString()));
+                    messageBus.post(new AnalyticsEvent.BaseAnalyticsReportEvent(AnalyticsEvent.Type.YOUBORA_REPORT, event.eventType().toString()));
                 }
             } else if (event instanceof AdEvent){
                 onAdEvent((AdEvent) event);

@@ -113,7 +113,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                 }
                 log.d(event.eventType().name());
                 messageBus.post(new LogEvent(TAG + " " + ((AdEvent) event).type.toString()));
-                messageBus.post(new AnalyticsEvent.BaseAnalyticsReportEvent(AnalyticsEvent.Type.YOUBORA_REPORT, event.toString()));
+                messageBus.post(new AnalyticsEvent.BaseAnalyticsReportEvent(AnalyticsEvent.Type.YOUBORA_REPORT, event.eventType().toString()));
             } else if (event instanceof PlayerEvent) {
                 switch (((PlayerEvent) event).type) {
                     case STATE_CHANGED:
