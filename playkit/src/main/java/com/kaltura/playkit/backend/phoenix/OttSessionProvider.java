@@ -243,9 +243,12 @@ public class OttSessionProvider extends BaseSessionProvider {
         ErrorElement error = null;
 
         if (response != null && response.isSuccess()) {
+            PKLog.d(TAG, "handleStartSession: response success, checking inner responses");
             List<BaseResult> responses = PhoenixParser.parse(response.getResponse()); // parses KalturaLoginResponse, KalturaSession
 
             if (responses.get(0).error != null) { //!- failed to login
+                PKLog.d(TAG, "handleStartSession: first response failure: "+responses.get(0).error);
+
                 //?? clear session?
                 error = ErrorElement.SessionError;
 
@@ -255,6 +258,8 @@ public class OttSessionProvider extends BaseSessionProvider {
                 // session data is taken from second response since its common for both user/anonymous login
                 // and we need this response for the expiry.
                 if (responses.get(1).error == null) { // get session data success
+                    PKLog.d(TAG, "handleStartSession: second response success");
+
                     KalturaSession session = (KalturaSession) responses.get(1);
                     setSession(session.getKs(), session.getExpiry(), session.getUserId()); // save new session
 
@@ -262,6 +267,8 @@ public class OttSessionProvider extends BaseSessionProvider {
                         completion.onComplete(new PrimitiveResult(session.getKs()));
                     }
                 } else {
+                    PKLog.d(TAG, "handleStartSession: second response failure: "+responses.get(1).error);
+
                     error = ErrorElement.SessionError;
                 }
 
