@@ -69,6 +69,7 @@ public class OttSessionProvider extends BaseSessionProvider {
         public Boolean call() throws Exception {
             if(refreshToken == null){
                 Log.d(TAG, "refreshToken is not available, can't activate refresh");
+                onSessionRefreshTaskResults(new PrimitiveResult(ErrorElement.SessionError.addMessage(" FAILED TO RECOVER SESSION!!")));
                 return false;
             }
 
@@ -92,6 +93,17 @@ public class OttSessionProvider extends BaseSessionProvider {
             return true;
         }
     };
+
+    private void onSessionRefreshTaskResults(PrimitiveResult result) {
+        if(sessionRecoveryCallback != null){
+            sessionRecoveryCallback.onComplete(result);
+            sessionRecoveryCallback = null;
+        }
+
+        if(sessionRefreshListener != null ){
+            sessionRefreshListener.onComplete(result.error == null? result.getResult() : null);
+        }
+    }
     //endregion
 
 
@@ -399,14 +411,15 @@ public class OttSessionProvider extends BaseSessionProvider {
                                     refreshResult :
                                     new PrimitiveResult(ErrorElement.SessionError.addMessage(" FAILED TO RECOVER SESSION!!"));
 
-                        if(sessionRecoveryCallback != null){
+                        onSessionRefreshTaskResults(refreshedKsResult);
+                        /*if(sessionRecoveryCallback != null){
                             sessionRecoveryCallback.onComplete(refreshedKsResult);
                             sessionRecoveryCallback = null;
                         }
 
                         if(sessionRefreshListener != null && refreshResult != null){
                             sessionRefreshListener.onComplete(refreshResult.getResult());
-                        }
+                        }*/
                     }
                 });
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
