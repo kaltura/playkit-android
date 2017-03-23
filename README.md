@@ -4,7 +4,6 @@
 ![Android](https://img.shields.io/badge/platform-android-green.svg)
 
 # Kaltura Player SDK
-## Note: The Kaltura SDK v3 is in beta
 
 *If you are a Kaltura customer, please contact your Kaltura Customer Success Manager to help facilitate use of this component.*
 
