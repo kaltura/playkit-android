@@ -317,26 +317,39 @@ public class OttSessionProvider extends BaseSessionProvider {
                 return;
             }
 
-            APIOkRequestsExecutor.getSingleton().queue(OttUserService.logout(apiBaseUrl, getSessionToken(), sessionUdid)
-                    .completion(new OnRequestCompletion() {
-                        @Override
-                        public void onComplete(ResponseElement response) {
-                            ErrorElement error = null;
-                            if (response != null && response.isSuccess()) {
-                                PKLog.d(TAG, "endSession: logout user session success. clearing session data.");
-                            } else {
-                                error = response.getError() != null ? response.getError() : ErrorElement.GeneralError.message("failed to end session");
-                                PKLog.e(TAG, "endSession: session logout failed. clearing session data. " + error.getMessage());
-                            }
-                            OttSessionProvider.super.endSession();
-                            sessionUdid = null;
-                            if (completion != null) {
-                                completion.onComplete(new BaseResult(error));
-                            }
-                        }
-                    }).build());
+            // make sure the ks is valid for the request (refreshes it if needed)
+            getSessionToken(new OnCompletion<PrimitiveResult>() {
+                @Override
+                public void onComplete(PrimitiveResult response) {
+                    if(response.error == null) { // in case the session checked for expiry and ready to use:
+
+                        APIOkRequestsExecutor.getSingleton().queue(OttUserService.logout(apiBaseUrl, response.getResult(), sessionUdid)
+                                .completion(new OnRequestCompletion() {
+                                    @Override
+                                    public void onComplete(ResponseElement response) {
+                                        ErrorElement error = null;
+                                        if (response != null && response.isSuccess()) {
+                                            PKLog.d(TAG, "endSession: logout user session success. clearing session data.");
+                                        } else {
+                                            error = response.getError() != null ? response.getError() : ErrorElement.GeneralError.message("failed to end session");
+                                            PKLog.e(TAG, "endSession: session logout failed. clearing session data. " + error.getMessage());
+                                        }
+                                        OttSessionProvider.super.endSession();
+                                        sessionUdid = null;
+                                        if (completion != null) {
+                                            completion.onComplete(new BaseResult(error));
+                                        }
+                                    }
+                                }).build());
+
+                    } else { // in case ks retrieval failed:
+                        completion.onComplete(response);
+                    }
+                }
+            });
 
         } else {
+            Log.w(TAG, "endSession: but no active session available");
             sessionUdid = null;
         }
     }
@@ -412,14 +425,6 @@ public class OttSessionProvider extends BaseSessionProvider {
                                     new PrimitiveResult(ErrorElement.SessionError.addMessage(" FAILED TO RECOVER SESSION!!"));
 
                         onSessionRefreshTaskResults(refreshedKsResult);
-                        /*if(sessionRecoveryCallback != null){
-                            sessionRecoveryCallback.onComplete(refreshedKsResult);
-                            sessionRecoveryCallback = null;
-                        }
-
-                        if(sessionRefreshListener != null && refreshResult != null){
-                            sessionRefreshListener.onComplete(refreshResult.getResult());
-                        }*/
                     }
                 });
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
