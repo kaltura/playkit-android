@@ -305,6 +305,10 @@ public class PlayerController implements Player {
     }
 
     private void togglePlayerListeners(boolean enable) {
+        if (player == null) {
+            return;
+        }
+        
         if (enable) {
             player.setEventListener(eventTrigger);
             player.setStateChangedListener(stateChangedTrigger);
