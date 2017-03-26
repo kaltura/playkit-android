@@ -490,7 +490,7 @@ public class OttSessionProvider extends BaseSessionProvider {
         if(sessionToken == null){
             return null;
         }
-        
+
         StringBuilder data = new StringBuilder(sessionToken).append(" ~~ ")
                 .append(refreshToken).append(" ~~ ").append(sessionUdid);
 

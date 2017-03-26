@@ -89,7 +89,7 @@ public abstract class BECallableLoader extends CallableLoader {
 
         waitCompletion();
 
-        PKLog.i(TAG, loadId+": wait for completion released");
+        PKLog.i(TAG, loadId+": load: wait for completion released");
     }
 
 }

@@ -295,6 +295,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             }
 
             waitCompletion();
+            PKLog.d(TAG, loadId + ": requestRemote: latch wait released");
         }
 
         private String getApiBaseUrl() {
