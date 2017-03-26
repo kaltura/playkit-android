@@ -293,6 +293,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 loadReq = requestQueue.queue(requestBuilder.build());
                 PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
+
             waitCompletion();
         }
 
@@ -378,6 +379,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 completion.onComplete(Accessories.buildResult(mediaEntry, error));
             }
 
+            PKLog.w(TAG, loadId + "media load finished, callback passed...notifyCompletion");
             notifyCompletion();
 
         }

@@ -45,7 +45,7 @@ public abstract class BECallableLoader extends CallableLoader {
         }
 
         isCanceled = true;
-        PKLog.i(TAG, loadId+": i am canceled ");
+        PKLog.i(TAG, loadId+": i am canceled ...notifyCompletion");
 
         notifyCompletion();
     }
@@ -54,11 +54,13 @@ public abstract class BECallableLoader extends CallableLoader {
     protected void load() throws InterruptedException {
 
         PKLog.i(TAG, loadId + ": load: start on get ks ");
+        //final boolean needWait = true;
 
         sessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
             @Override
             public void onComplete(PrimitiveResult response) {
                 if(isCanceled()){
+                    notifyCompletion();
                     return;
                 }
 
@@ -66,8 +68,9 @@ public abstract class BECallableLoader extends CallableLoader {
                 if (error == null) {
                     try {
                         requestRemote(response.getResult());
+                        PKLog.d(TAG, loadId + "remote load request finished...notifyCompletion");
                         notifyCompletion();
-                        
+
                     } catch (InterruptedException e) {
                          interrupted();
                     }
@@ -77,6 +80,8 @@ public abstract class BECallableLoader extends CallableLoader {
                     if (completion != null) {
                         completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
                     }
+
+                    PKLog.d(TAG, loadId + "remote load error finished...notifyCompletion");
                     notifyCompletion();
                 }
             }
