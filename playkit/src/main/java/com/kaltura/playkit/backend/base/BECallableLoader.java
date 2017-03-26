@@ -66,7 +66,8 @@ public abstract class BECallableLoader extends CallableLoader {
                 if (error == null) {
                     try {
                         requestRemote(response.getResult());
-
+                        notifyCompletion();
+                        
                     } catch (InterruptedException e) {
                          interrupted();
                     }
