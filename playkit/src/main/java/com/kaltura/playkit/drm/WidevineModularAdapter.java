@@ -294,9 +294,8 @@ class WidevineModularAdapter extends DrmAdapter {
         try {
             return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IOException(e);
         }
-        return null;
     }
 
     @Override
