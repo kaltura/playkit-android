@@ -281,7 +281,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                             loadReq = null;
 
                             try {
-                                onAssetGetResponse(response/*, requestBuilder instanceof MultiRequestBuilder*/);
+                                onAssetGetResponse(response);
 
                             } catch (InterruptedException e) {
                                 interrupted();
@@ -295,7 +295,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             }
 
             waitCompletion();
-            PKLog.d(TAG, loadId + ": requestRemote: latch wait released");
+            PKLog.v(TAG, loadId + ": requestRemote wait released");
         }
 
         private String getApiBaseUrl() {

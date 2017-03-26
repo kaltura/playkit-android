@@ -55,7 +55,7 @@ public abstract class BECallableLoader extends CallableLoader {
     @Override
     protected void load() throws InterruptedException {
 
-        PKLog.i(TAG, loadId + ": load: start on get ks ");
+        PKLog.v(TAG, loadId + ": load: start on get ks ");
         waitForCompletion = true;
 
         sessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
@@ -91,11 +91,11 @@ public abstract class BECallableLoader extends CallableLoader {
             }
         });
 
-        if(waitForCompletion) { // prevent lock thread on done load
-            PKLog.i(TAG, loadId+": load: setting outer completion wait lock");
+        if(waitForCompletion) { // prevent lock thread on already completed load //TODO: replace latch locks
+            PKLog.v(TAG, loadId+": load: setting outer completion wait lock");
             waitCompletion();
         }
-        PKLog.i(TAG, loadId+": load: wait for completion released");
+        PKLog.d(TAG, loadId+": load: wait for completion released");
     }
 
 }

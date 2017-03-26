@@ -165,7 +165,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
                     }
                     // handle failures: create response from exception
                     action.onComplete(new ExecutedRequest().error(e).success(false));
-                    Log.d(TAG, "enqueued request finished with failure, results passed to callback");
+                    Log.v(TAG, "enqueued request finished with failure, results passed to callback");
                 }
 
                 @Override
@@ -178,7 +178,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
                     // pass parsed response to action completion block
                     ResponseElement responseElement = onGotResponse(response, action);
                     action.onComplete(responseElement);
-                    Log.d(TAG, "enqueued request finished with success, results passed to callback");
+                    Log.v(TAG, "enqueued request finished with success, results passed to callback");
                 }
             });
             return  (String) call.request().tag();

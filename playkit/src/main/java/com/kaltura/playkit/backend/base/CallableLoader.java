@@ -34,7 +34,7 @@ public abstract class CallableLoader implements Callable<Void> {
     protected void notifyCompletion() {
         if (waitCompletion != null) {
             synchronized (syncObject) {
-                PKLog.i(TAG, loadId + ": notifyCompletion: countDown =  " + waitCompletion.getCount());
+                PKLog.v(TAG, loadId + ": notifyCompletion: countDown =  " + waitCompletion.getCount());
                 waitCompletion.countDown();
             }
         }
