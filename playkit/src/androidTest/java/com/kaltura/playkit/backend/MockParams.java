@@ -56,6 +56,10 @@ public class MockParams {
     public static final String MediaId2_File_Main_HD = "690395";//vild
     public static final String MediaId2_File_Web_HD = "690403";//vild
 
+    public static final String Toystory_File_SD_Dash = "737631";//vild
+    public static final String Toystory_File_Main_HD_Dash = "737630";//vild
+    public static final String Toystory_File_Main_HD = "737629";//vild
+
     public static final String PnxNotEntitledMedia = "482731";
     public static final String PnxNoFilesFoundMedia = "482550";//no mediaFiles on asset
 

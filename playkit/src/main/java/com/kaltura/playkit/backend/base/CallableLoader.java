@@ -41,12 +41,16 @@ public abstract class CallableLoader implements Callable<Void> {
     }
 
     protected void waitCompletion(int countDownLatch) throws InterruptedException {
+        if(waitCompletion != null && waitCompletion.getCount() == countDownLatch){
+            return;
+        }
+
         synchronized (syncObject) {
-            PKLog.i(TAG, loadId + ": waitCompletion: set new counDown" + (waitCompletion != null ? "already has counter " + waitCompletion.getCount() : ""));
+            PKLog.i(TAG, loadId + ": waitCompletion: set new counDown " + (waitCompletion != null ? "already has counter " + waitCompletion.getCount() : ""));
             waitCompletion = new CountDownLatch(countDownLatch);
         }
         waitCompletion.await();
-
+        waitCompletion = null;
     }
 
     protected void waitCompletion() throws InterruptedException {

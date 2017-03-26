@@ -380,7 +380,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 completion.onComplete(Accessories.buildResult(mediaEntry, error));
             }
 
-            PKLog.w(TAG, loadId + "media load finished, callback passed...notifyCompletion");
+            PKLog.w(TAG, loadId + " media load finished, callback passed...notifyCompletion");
             notifyCompletion();
 
         }

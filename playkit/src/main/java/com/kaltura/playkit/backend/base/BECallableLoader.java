@@ -19,6 +19,8 @@ public abstract class BECallableLoader extends CallableLoader {
     protected RequestQueue requestQueue;
     protected SessionProvider sessionProvider;
 
+    private boolean waitForCompletion = false;
+
 
     protected BECallableLoader(String tag, RequestQueue requestsExecutor, SessionProvider sessionProvider, OnCompletion completion){
         super(tag, completion);
@@ -54,13 +56,14 @@ public abstract class BECallableLoader extends CallableLoader {
     protected void load() throws InterruptedException {
 
         PKLog.i(TAG, loadId + ": load: start on get ks ");
-        //final boolean needWait = true;
+        waitForCompletion = true;
 
         sessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
             @Override
             public void onComplete(PrimitiveResult response) {
                 if(isCanceled()){
                     notifyCompletion();
+                    waitForCompletion = false;
                     return;
                 }
 
@@ -68,9 +71,9 @@ public abstract class BECallableLoader extends CallableLoader {
                 if (error == null) {
                     try {
                         requestRemote(response.getResult());
-                        PKLog.d(TAG, loadId + "remote load request finished...notifyCompletion");
+                        PKLog.d(TAG, loadId + " remote load request finished...notifyCompletion");
                         notifyCompletion();
-
+                        waitForCompletion = false;
                     } catch (InterruptedException e) {
                          interrupted();
                     }
@@ -83,12 +86,15 @@ public abstract class BECallableLoader extends CallableLoader {
 
                     PKLog.d(TAG, loadId + "remote load error finished...notifyCompletion");
                     notifyCompletion();
+                    waitForCompletion = false;
                 }
             }
         });
 
-        waitCompletion();
-
+        if(waitForCompletion) { // prevent lock thread on done load
+            PKLog.i(TAG, loadId+": load: setting outer completion wait lock");
+            waitCompletion();
+        }
         PKLog.i(TAG, loadId+": load: wait for completion released");
     }
 
