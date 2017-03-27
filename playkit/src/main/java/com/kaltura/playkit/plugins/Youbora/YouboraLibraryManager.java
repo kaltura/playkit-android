@@ -54,12 +54,11 @@ public class YouboraLibraryManager extends PluginGeneric {
     protected void init() {
         super.init();
         this.pluginName = PlayKitManager.CLIENT_TAG;
-        this.pluginVersion = "5.3.0-"+ PlayKitManager.CLIENT_TAG;
+        this.pluginVersion = "5.3.0-" + PlayKitManager.CLIENT_TAG;
         ViewManager.setMonitoringInterval(MONITORING_INTERVAL);
     }
 
     private void onEvent(PlayerEvent.StateChanged event) {
-        log.d(event.newState.toString());
         switch (event.newState) {
             case READY:
                 if (isBuffering && !isFirstPlay) {
@@ -76,8 +75,7 @@ public class YouboraLibraryManager extends PluginGeneric {
             default:
                 break;
         }
-        log.d(event.newState.toString());
-        messageBus.post(new LogEvent(TAG + " " + event.newState.toString()));
+        sendReportEvent(event);
     }
 
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
@@ -122,7 +120,7 @@ public class YouboraLibraryManager extends PluginGeneric {
                         }
                         break;
                     case PLAYING:
-                        if (isFirstPlay){
+                        if (isFirstPlay) {
                             isFirstPlay = false;
                             playHandler();
                         }
@@ -140,18 +138,16 @@ public class YouboraLibraryManager extends PluginGeneric {
                     default:
                         break;
                 }
-                log.d(event.eventType().name());
-                if (((PlayerEvent) event).type != STATE_CHANGED){
-                    messageBus.post(new LogEvent(TAG + " " + ((PlayerEvent) event).type.toString()));
+                if (((PlayerEvent) event).type != STATE_CHANGED) {
+                    sendReportEvent(event);
                 }
-            } else if (event instanceof AdEvent){
+            } else if (event instanceof AdEvent) {
                 onAdEvent((AdEvent) event);
             }
         }
     };
 
     private void onAdEvent(AdEvent event) {
-        log.d(event.type.toString());
         switch (event.type) {
             case STARTED:
                 ignoringAdHandler();
@@ -163,9 +159,9 @@ public class YouboraLibraryManager extends PluginGeneric {
             default:
                 break;
         }
-        log.d(event.type.toString());
-        messageBus.post(new LogEvent(TAG + " " + event.type.toString()));
+        sendReportEvent(event);
     }
+
 
     public void startMonitoring(Object player) {
         log.d("startMonitoring");
@@ -199,7 +195,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public String getResource() {
-            return this.mediaUrl;
+        return this.mediaUrl;
     }
 
     public Double getPlayhead() {
@@ -208,6 +204,13 @@ public class YouboraLibraryManager extends PluginGeneric {
 
     public Boolean getIsLive() {
         return mediaConfig != null && (mediaConfig.getMediaEntry().getMediaType() == PKMediaEntry.MediaEntryType.Live);
+    }
+
+    private void sendReportEvent(PKEvent event) {
+        String reportedEventName = event.eventType().name();
+        log.d(reportedEventName);
+        messageBus.post(new LogEvent(TAG + " " + reportedEventName));
+        messageBus.post(new YouboraEvent.YouboraReport(reportedEventName));
     }
 
 }
