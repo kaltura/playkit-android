@@ -43,7 +43,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
      * @param eventType - Enum stating the event type to send
      */
     @Override
-    protected void sendAnalyticsEvent(PhoenixActionType eventType){
+    protected void sendAnalyticsEvent(final PhoenixActionType eventType){
         String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"000000";
         String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://tvpapi-preprod.ott.kaltura.com/v3_9/gateways/jsonpostgw.aspx?";
         JsonObject initObj = pluginConfig.has("initObj")? pluginConfig.getAsJsonObject("initObj") : testInitObj;

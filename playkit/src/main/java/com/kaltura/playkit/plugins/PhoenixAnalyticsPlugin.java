@@ -180,7 +180,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * Send Bookmark/add event using Kaltura Phoenix Rest API
      * @param eventType - Enum stating the event type to send
      */
-    protected void sendAnalyticsEvent(PhoenixActionType eventType){
+    protected void sendAnalyticsEvent(final PhoenixActionType eventType){
         String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"464302";
         String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://api-preprod.ott.kaltura.com/v4_1/api_v3/";
         String ks = pluginConfig.has("ks")? pluginConfig.getAsJsonPrimitive("ks").getAsString():"djJ8MTk4fN86RC6KBjyHtmG9bIBounF1ewb1SMnFNtAvaxKIAfHUwW0rT4GAYQf8wwUKmmRAh7G0olZ7IyFS1FTpwskuqQPVQwrSiy_J21kLxIUl_V9J";
