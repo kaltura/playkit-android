@@ -10,7 +10,6 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.plugins.AnalyticsEvent;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.managers.ViewManager;
@@ -79,8 +78,6 @@ public class YouboraLibraryManager extends PluginGeneric {
         }
         log.d(event.newState.toString());
         messageBus.post(new LogEvent(TAG + " " + event.newState.toString()));
-        messageBus.post(new AnalyticsEvent.BaseAnalyticsReportEvent(AnalyticsEvent.Type.YOUBORA_REPORT, event.newState.toString()));
-
     }
 
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
@@ -146,7 +143,6 @@ public class YouboraLibraryManager extends PluginGeneric {
                 log.d(event.eventType().name());
                 if (((PlayerEvent) event).type != STATE_CHANGED){
                     messageBus.post(new LogEvent(TAG + " " + ((PlayerEvent) event).type.toString()));
-                    messageBus.post(new AnalyticsEvent.BaseAnalyticsReportEvent(AnalyticsEvent.Type.YOUBORA_REPORT, event.toString()));
                 }
             } else if (event instanceof AdEvent){
                 onAdEvent((AdEvent) event);
