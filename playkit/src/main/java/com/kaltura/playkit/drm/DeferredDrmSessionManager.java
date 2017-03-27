@@ -3,12 +3,12 @@ package com.kaltura.playkit.drm;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.google.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.google.android.exoplayer2.drm.DrmInitData;
 import com.google.android.exoplayer2.drm.DrmSession;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.google.android.exoplayer2.drm.HttpMediaDrmCallback;
-import com.google.android.exoplayer2.drm.StreamingDrmSessionManager;
 import com.google.android.exoplayer2.drm.UnsupportedDrmException;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.Util;
@@ -19,6 +19,7 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.utils.EventLogger;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @hide
@@ -50,7 +51,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
         if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
             buildLocalDrmSessionManager(mediaSource);
         } else {
-            buildStreamingDrmSessionManager(getLicenseUrl(mediaSource));
+            buildDefaultDrmSessionManager(getLicenseUrl(mediaSource));
         }
     }
 
@@ -59,9 +60,9 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
         drmSessionManager = new LocalDrmSessionManager<>(localMediaSource);
     }
 
-    private void buildStreamingDrmSessionManager(String licenseUrl) {
+    private void buildDefaultDrmSessionManager(String licenseUrl) {
         try {
-            drmSessionManager = StreamingDrmSessionManager.newWidevineInstance(new HttpMediaDrmCallback(licenseUrl, dataSourceFactory), null, mainHandler, eventLogger);
+            drmSessionManager = DefaultDrmSessionManager.newWidevineInstance(new HttpMediaDrmCallback(licenseUrl, dataSourceFactory), null, mainHandler, eventLogger);
 
         } catch (UnsupportedDrmException exception) {
             log.w("This device doesn't support widevine modular " + exception.getMessage());
@@ -136,7 +137,18 @@ class SessionWrapper implements DrmSession<FrameworkMediaCrypto> {
     }
 
     @Override
-    public Exception getError() {
+    public DrmSessionException getError() {
         return realDrmSession.getError();
+    }
+
+
+    @Override
+    public Map<String, String> queryKeyStatus() {
+        return null;
+    }
+
+    @Override
+    public byte[] getOfflineLicenseKeySetId() {
+        return new byte[0];
     }
 }
