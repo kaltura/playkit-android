@@ -43,7 +43,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
      * @param eventType - Enum stating the event type to send
      */
     @Override
-    protected void sendAnalyticsEvent(final PhoenixActionType eventType){
+    protected void sendAnalyticsEvent(PhoenixActionType eventType){
         String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"000000";
         String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://tvpapi-preprod.ott.kaltura.com/v3_9/gateways/jsonpostgw.aspx?";
         JsonObject initObj = pluginConfig.has("initObj")? pluginConfig.getAsJsonObject("initObj") : testInitObj;
@@ -62,7 +62,6 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
             public void onComplete(ResponseElement response) {
                 if (response.isSuccess() && response.getResponse().toLowerCase().contains("concurrent")){
                     messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
-                    messageBus.post(new AnalyticsEvent.BaseAnalyticsReportEvent(AnalyticsEvent.Type.TVPAPI_REPORT, eventType.toString()));
                 }
                 log.d("onComplete send event: ");
             }

@@ -416,7 +416,6 @@ public class KalturaStatsPlugin extends PKPlugin {
             @Override
             public void onComplete(ResponseElement response) {
                 log.d("onComplete send event: " + eventType.toString());
-                messageBus.post(new AnalyticsEvent.BaseAnalyticsReportEvent(AnalyticsEvent.Type.KALTURA_STATS_REPORT, eventType.toString()));
             }
         });
         requestsExecutor.queue(requestBuilder.build());

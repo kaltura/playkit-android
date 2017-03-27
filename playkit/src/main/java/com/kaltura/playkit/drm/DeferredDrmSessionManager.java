@@ -51,7 +51,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
         if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
             buildLocalDrmSessionManager(mediaSource);
         } else {
-            buildStreamingDrmSessionManager(getLicenseUrl(mediaSource));
+            buildDefaultDrmSessionManager(getLicenseUrl(mediaSource));
         }
     }
 
@@ -60,7 +60,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
         drmSessionManager = new LocalDrmSessionManager<>(localMediaSource);
     }
 
-    private void buildStreamingDrmSessionManager(String licenseUrl) {
+    private void buildDefaultDrmSessionManager(String licenseUrl) {
         try {
             drmSessionManager = DefaultDrmSessionManager.newWidevineInstance(new HttpMediaDrmCallback(licenseUrl, dataSourceFactory), null, mainHandler, eventLogger);
 
