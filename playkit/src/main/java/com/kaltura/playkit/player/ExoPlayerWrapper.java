@@ -210,7 +210,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
      */
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
         return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? BANDWIDTH_METER : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, true);
+                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, false);
     }
     
     private static String getUserAgent(Context context) {

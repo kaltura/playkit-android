@@ -49,8 +49,6 @@ import static com.kaltura.playkit.backend.MockParams.MediaId;
 import static com.kaltura.playkit.backend.MockParams.MediaId2;
 import static com.kaltura.playkit.backend.MockParams.MediaId2_File_Main_HD;
 import static com.kaltura.playkit.backend.MockParams.MediaId2_File_Main_SD;
-import static com.kaltura.playkit.backend.MockParams.MediaId2_File_SD_Dash;
-import static com.kaltura.playkit.backend.MockParams.MediaId2_File_Web_HD;
 import static com.kaltura.playkit.backend.MockParams.MediaId5;
 import static com.kaltura.playkit.backend.MockParams.PnxBaseUrl;
 import static com.kaltura.playkit.backend.MockParams.PnxKS;
@@ -59,6 +57,9 @@ import static com.kaltura.playkit.backend.MockParams.PnxPartnerId;
 import static com.kaltura.playkit.backend.MockParams.PnxPassword;
 import static com.kaltura.playkit.backend.MockParams.PnxUsername;
 import static com.kaltura.playkit.backend.MockParams.ToystoryMediaId;
+import static com.kaltura.playkit.backend.MockParams.Toystory_File_Main_HD;
+import static com.kaltura.playkit.backend.MockParams.Toystory_File_Main_HD_Dash;
+import static com.kaltura.playkit.backend.MockParams.Toystory_File_SD_Dash;
 import static com.kaltura.playkit.backend.MockParams.WebHD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -312,28 +313,28 @@ latchCount--;
                 latchCount--;
                 phoenixMediaProvider = new PhoenixMediaProvider()
                         .setSessionProvider(EmptySessionProvider)
-                        .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(MediaId2)
-                        .setFileIds(MediaId2_File_Main_SD, MediaId2_File_SD_Dash, MediaId2_File_Web_HD);
+                        .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(ToystoryMediaId)
+                        .setFileIds(Toystory_File_Main_HD_Dash, Toystory_File_SD_Dash, Toystory_File_Main_HD);
                 latchCount++;
                 phoenixMediaProvider.load(new OnMediaLoadCompletion() {
                     @Override
                     public void onComplete(ResultElement<PKMediaEntry> response) {
                         if (response.isSuccess()) {
                             assertTrue(response.getResponse() != null);
-                            assertTrue(response.getResponse().getId().equals(MediaId2));
+                            assertTrue(response.getResponse().getId().equals(ToystoryMediaId));
                             List<PKMediaSource> sources = response.getResponse().getSources();
                             assertNotNull(sources);
-                            assertTrue(sources.size() == 3);
+                            assertTrue(sources.size() == 1);
                             for (PKMediaSource source : sources) {
-                                if (source.getId().equals(MediaId2_File_Main_SD)) {
-                                    assertTrue(source.getMediaFormat().equals(PKMediaFormat.wvm));
-                                }
-                                if (source.getId().equals(MediaId2_File_Web_HD)) {
-                                    assertTrue(source.getMediaFormat().equals(PKMediaFormat.hls));
-                                }
-                                if (source.getId().equals(MediaId2_File_SD_Dash)) {
+                                if (source.getId().equals(Toystory_File_Main_HD_Dash)) {
                                     assertTrue(source.getMediaFormat().equals(PKMediaFormat.dash));
                                 }
+                                /*if (source.getId().equals(Toystory_File_SD_Dash)) {
+                                    assertTrue(source.getMediaFormat().equals(PKMediaFormat.dash));
+                                }
+                                if (source.getId().equals(Toystory_File_Main_HD)) {
+                                    assertTrue(source.getMediaFormat().equals(PKMediaFormat.wvm));
+                                }*/
                             }
                             assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
 

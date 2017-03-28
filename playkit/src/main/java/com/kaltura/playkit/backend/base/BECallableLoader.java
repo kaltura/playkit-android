@@ -19,6 +19,8 @@ public abstract class BECallableLoader extends CallableLoader {
     protected RequestQueue requestQueue;
     protected SessionProvider sessionProvider;
 
+    private boolean waitForCompletion = false;
+
 
     protected BECallableLoader(String tag, RequestQueue requestsExecutor, SessionProvider sessionProvider, OnCompletion completion){
         super(tag, completion);
@@ -45,7 +47,7 @@ public abstract class BECallableLoader extends CallableLoader {
         }
 
         isCanceled = true;
-        PKLog.i(TAG, loadId+": i am canceled ");
+        PKLog.i(TAG, loadId+": i am canceled ...notifyCompletion");
 
         notifyCompletion();
     }
@@ -53,12 +55,15 @@ public abstract class BECallableLoader extends CallableLoader {
     @Override
     protected void load() throws InterruptedException {
 
-        PKLog.i(TAG, loadId + ": load: start on get ks ");
+        PKLog.v(TAG, loadId + ": load: start on get ks ");
+        waitForCompletion = true;
 
         sessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
             @Override
             public void onComplete(PrimitiveResult response) {
                 if(isCanceled()){
+                    notifyCompletion();
+                    waitForCompletion = false;
                     return;
                 }
 
@@ -66,7 +71,9 @@ public abstract class BECallableLoader extends CallableLoader {
                 if (error == null) {
                     try {
                         requestRemote(response.getResult());
-
+                        PKLog.d(TAG, loadId + " remote load request finished...notifyCompletion");
+                        notifyCompletion();
+                        waitForCompletion = false;
                     } catch (InterruptedException e) {
                          interrupted();
                     }
@@ -76,14 +83,19 @@ public abstract class BECallableLoader extends CallableLoader {
                     if (completion != null) {
                         completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
                     }
+
+                    PKLog.d(TAG, loadId + "remote load error finished...notifyCompletion");
                     notifyCompletion();
+                    waitForCompletion = false;
                 }
             }
         });
 
-        waitCompletion();
-
-        PKLog.i(TAG, loadId+": wait for completion released");
+        if(waitForCompletion) { // prevent lock thread on already completed load //TODO: replace latch locks
+            PKLog.v(TAG, loadId+": load: setting outer completion wait lock");
+            waitCompletion();
+        }
+        PKLog.d(TAG, loadId+": load: wait for completion released");
     }
 
 }
