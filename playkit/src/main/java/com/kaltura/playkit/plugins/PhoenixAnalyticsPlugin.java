@@ -3,7 +3,6 @@ package com.kaltura.playkit.plugins;
 import android.content.Context;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.OttEvent;
 import com.kaltura.playkit.PKEvent;
@@ -195,12 +194,12 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             public void onComplete(ResponseElement response) {
                 if (response.isSuccess() && response.getError() != null && response.getError().getCode().equals("4001")){
                     messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
+                    messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString()));
                 }
                 log.d("onComplete send event: ");
             }
         });
         requestsExecutor.queue(requestBuilder.build());
-        messageBus.post(new LogEvent(TAG + " " + eventType.toString(), requestBuilder.build().getBody()));
     }
 
 }

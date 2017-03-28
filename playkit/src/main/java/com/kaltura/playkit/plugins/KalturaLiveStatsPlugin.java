@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -207,7 +206,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         isLive = false;
     }
 
-    private void sendLiveEvent(long bufferTime) {
+    private void sendLiveEvent(final long bufferTime) {
         String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
         String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : BASE_URL;
         int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
@@ -222,7 +221,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
             @Override
             public void onComplete(ResponseElement response) {
                 Log.d(TAG, "onComplete: " + isLive);
-                messageBus.post(new LogEvent(TAG + " " + isLive));
+                messageBus.post(new KalturaLiveStatsEvent.KalturaLiveStatsReport(bufferTime));
             }
         });
         requestsExecutor.queue(requestBuilder.build());
