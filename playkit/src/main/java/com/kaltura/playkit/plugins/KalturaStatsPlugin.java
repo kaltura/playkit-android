@@ -420,6 +420,5 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
         });
         requestsExecutor.queue(requestBuilder.build());
-        messageBus.post(new LogEvent(TAG + " " + eventType.toString(), requestBuilder.build().getUrl()));
     }
 }

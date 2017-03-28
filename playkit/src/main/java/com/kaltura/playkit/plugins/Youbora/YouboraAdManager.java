@@ -1,6 +1,5 @@
 package com.kaltura.playkit.plugins.Youbora;
 
-import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -158,7 +157,6 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     private void sendReportEvent(PKEvent event) {
         String reportedEventName = event.eventType().name();
         log.d(reportedEventName);
-        messageBus.post(new LogEvent(TAG + " " + reportedEventName));
         messageBus.post(new YouboraEvent.YouboraReport(reportedEventName));
     }
 }

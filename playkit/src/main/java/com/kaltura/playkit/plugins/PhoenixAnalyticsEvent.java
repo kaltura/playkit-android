@@ -9,7 +9,7 @@ import com.kaltura.playkit.PKEvent;
 public class PhoenixAnalyticsEvent implements PKEvent {
 
     public enum Type {
-        PHOENIX_ANALYTICS_REPORT
+        REPORT_SENT
     }
 
     public static class PhoenixAnalyticsReport extends PhoenixAnalyticsEvent {
@@ -28,6 +28,6 @@ public class PhoenixAnalyticsEvent implements PKEvent {
 
     @Override
     public Enum eventType() {
-        return Type.PHOENIX_ANALYTICS_REPORT;
+        return Type.REPORT_SENT;
     }
 }

@@ -9,7 +9,7 @@ import com.kaltura.playkit.PKEvent;
 public class YouboraEvent implements PKEvent {
 
     public enum Type {
-        YOUBORA_REPORT
+        REPORT_SENT
     }
 
     public static class YouboraReport extends YouboraEvent{
@@ -28,6 +28,6 @@ public class YouboraEvent implements PKEvent {
 
     @Override
     public Enum eventType() {
-        return Type.YOUBORA_REPORT;
+        return Type.REPORT_SENT;
     }
 }

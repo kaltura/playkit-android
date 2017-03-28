@@ -9,7 +9,7 @@ import com.kaltura.playkit.PKEvent;
 public class TVPapiAnalyticsEvent implements PKEvent {
 
     public enum Type {
-        TVPAPI_ANALYTICS_REPORT
+        REPORT_SENT
     }
 
     public static class TVPapiAnalyticsReport extends TVPapiAnalyticsEvent {
@@ -28,6 +28,6 @@ public class TVPapiAnalyticsEvent implements PKEvent {
 
     @Override
     public Enum eventType() {
-        return Type.TVPAPI_ANALYTICS_REPORT;
+        return Type.REPORT_SENT;
     }
 }

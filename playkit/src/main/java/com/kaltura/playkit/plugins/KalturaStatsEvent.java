@@ -9,7 +9,7 @@ import com.kaltura.playkit.PKEvent;
 public class KalturaStatsEvent implements PKEvent{
 
     public enum Type {
-        KALTURA_STATS_REPORT
+        REPORT_SENT
     }
 
     public static class KalturaStatsReport extends KalturaStatsEvent {
@@ -28,6 +28,6 @@ public class KalturaStatsEvent implements PKEvent{
 
     @Override
     public Enum eventType() {
-        return Type.KALTURA_STATS_REPORT;
+        return Type.REPORT_SENT;
     }
 }

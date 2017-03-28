@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -222,7 +221,6 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
             @Override
             public void onComplete(ResponseElement response) {
                 Log.d(TAG, "onComplete: " + isLive);
-                messageBus.post(new LogEvent(TAG + " " + isLive));
                 messageBus.post(new KalturaLiveStatsEvent.KalturaLiveStatsReport(bufferTime));
             }
         });
