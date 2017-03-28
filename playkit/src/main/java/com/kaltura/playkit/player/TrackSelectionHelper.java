@@ -5,7 +5,7 @@ import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
@@ -532,13 +532,13 @@ class TrackSelectionHelper {
             String auto = "";
             if ((sampleMimeType.contains(VIDEO) || containerMimeType.contains(VIDEO))) {
 
-                if (trackSelection instanceof AdaptiveVideoTrackSelection) {
+                if (trackSelection instanceof AdaptiveTrackSelection) {
                     auto = " Auto";
                 }
                 log.d("Selected" + auto + " video bitrate = " + trackSelection.getSelectedFormat().bitrate);
                 currentVideoBitrate = trackSelection.getSelectedFormat().bitrate;
             } else if ((sampleMimeType.contains(AUDIO) || containerMimeType.contains(AUDIO))) {
-                if (trackSelection instanceof AdaptiveVideoTrackSelection) {
+                if (trackSelection instanceof AdaptiveTrackSelection) {
                     auto = " Auto";
                 }
                 log.d("Selected" + auto + " audio bitrate = " + trackSelection.getSelectedFormat().bitrate);
