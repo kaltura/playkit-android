@@ -6,6 +6,7 @@ package com.kaltura.playkit;
 public class PKMediaConfig {
     private long startPosition = 0;
     private PKMediaEntry mediaEntry;
+    //If set to true, will allow crossprotocol redirection.
     private boolean allowCrossProtocolRedirect = false;
 
     /**
@@ -39,11 +40,21 @@ public class PKMediaConfig {
         return this;
     }
 
+    /**
+     * Setting this to true, will allow cross protocol redirection from http to https and
+     * vice versa. Note, by default it will be alwayas set to false.
+     * @param allowCrossProtocolRedirect - should allow cross protocol redirect
+     * @return - the config object.
+     */
     public PKMediaConfig setAllowCrossProtocolRedirect(boolean allowCrossProtocolRedirect) {
         this.allowCrossProtocolRedirect = allowCrossProtocolRedirect;
         return this;
     }
 
+    /**
+     * Getter for allowCrossProtocolRedirect field.
+     * @return - allowCrossProtocolRedirect.
+     */
     public boolean isAllowCrossProtocolRedirect() {
         return allowCrossProtocolRedirect;
     }
