@@ -11,6 +11,8 @@ import com.kaltura.playkit.PKMediaSource;
 
 import java.util.List;
 
+import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
+
 /**
  * Created by Noam Tamim @ Kaltura on 29/11/2016.
  */
@@ -35,7 +37,7 @@ class SourceSelector {
     }
     
     @Nullable
-    PKMediaSource getPreferredSource() {
+    PKMediaSource getPreferredSource(String sessionId) {
 
         // If PKMediaSource is local, there is no need to look for the preferred source,
         // because it is only one.
@@ -58,12 +60,14 @@ class SourceSelector {
             if (drmParams != null && !drmParams.isEmpty()) {
                 for (PKDrmParams params : drmParams) {
                     if (params.isSchemeSupported()) {
+                        source.setUrl(fixPlayManifest(source.getUrl(), sessionId));
                         return source;
                     }
                 }
                 // This source doesn't have supported params
                 continue;
             }
+            source.setUrl(fixPlayManifest(source.getUrl(), sessionId));
             return source;
         }
 
@@ -71,8 +75,22 @@ class SourceSelector {
         return null;
     }
 
-    static PKMediaSource selectSource(PKMediaEntry mediaEntry) {
-        return new SourceSelector(mediaEntry).getPreferredSource();
+    private String fixPlayManifest(String origURL, String sessionId) {
+        String fixedURL = origURL;
+        if (origURL.contains("/playManifest/")) {
+            if (origURL.contains("?")) {
+                fixedURL += "&playSessionId=" + sessionId;
+            } else {
+                fixedURL += "?playSessionId=" + sessionId;
+            }
+            fixedURL += "&clientTag=" + CLIENT_TAG;
+            return fixedURL;
+        }
+        return origURL;
+    }
+
+    static PKMediaSource selectSource(PKMediaEntry mediaEntry, String sessionId) {
+        return new SourceSelector(mediaEntry).getPreferredSource(sessionId);
     }
 
     private PKMediaSource getLocalSource(){

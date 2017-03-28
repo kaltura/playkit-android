@@ -123,6 +123,11 @@ public class MockPlayer implements Player {
         return null;
     }
 
+    @Override
+    public String getSessionId() {
+        return "";
+    }
+
     public void setDuration(int duration){
         this.duration = duration;
     }
