@@ -20,7 +20,7 @@ interface PlayerEngine {
      * that should be played.
      * @param mediaSource - the source to be played.
      */
-    void load(PKMediaSource mediaSource);
+    void load(PKMediaSource mediaSource, boolean allowCrossProtocolRedirect);
 
     /**
      * Getter for the View to which current

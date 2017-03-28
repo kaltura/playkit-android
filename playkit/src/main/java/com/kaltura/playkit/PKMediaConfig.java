@@ -6,6 +6,7 @@ package com.kaltura.playkit;
 public class PKMediaConfig {
     private long startPosition = 0;
     private PKMediaEntry mediaEntry;
+    private boolean allowCrossProtocolRedirect = false;
 
     /**
      * Getter for start position. Default is 0.
@@ -36,5 +37,14 @@ public class PKMediaConfig {
     public PKMediaConfig setMediaEntry(PKMediaEntry mediaEntry) {
         this.mediaEntry = mediaEntry;
         return this;
+    }
+
+    public PKMediaConfig setAllowCrossProtocolRedirect(boolean allowCrossProtocolRedirect) {
+        this.allowCrossProtocolRedirect = allowCrossProtocolRedirect;
+        return this;
+    }
+
+    public boolean isAllowCrossProtocolRedirect() {
+        return allowCrossProtocolRedirect;
     }
 }

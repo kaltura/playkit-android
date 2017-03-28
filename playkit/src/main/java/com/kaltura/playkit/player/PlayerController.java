@@ -62,7 +62,6 @@ public class PlayerController implements Player {
 
                 PlayerEvent event;
 
-                // TODO: use specific event class
                 switch (eventType) {
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
@@ -171,7 +170,7 @@ public class PlayerController implements Player {
             switchPlayers(source.getMediaFormat());
         }
 
-        player.load(source);
+        player.load(source, mediaConfig.isAllowCrossProtocolRedirect());
     }
 
     private void switchPlayers(PKMediaFormat mediaFormat) {
@@ -437,7 +436,7 @@ public class PlayerController implements Player {
                         log.e("No playable source found for entry");
                         return false;
                     }
-                    exoPlayerWrapper.load(source);
+                    exoPlayerWrapper.load(source, mediaConfig.isAllowCrossProtocolRedirect());
                     exoPlayerWrapper.startFrom(currentPosition);
                     return true;
                 }

@@ -85,6 +85,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
     private int sameErrorOccurrenceCounter = 0;
+    private boolean allowCrossProtocolRedirects = false;
 
 
     interface TracksInfoListener {
@@ -112,7 +113,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
     ExoPlayerWrapper(Context context) {
         this.context = context;
-        mediaDataSourceFactory = buildDataSourceFactory(true);
+        mediaDataSourceFactory = buildDataSourceFactory(true, allowCrossProtocolRedirects);
         exoPlayerView = new ExoPlayerView(context);
         window = new Timeline.Window();
     }
@@ -121,7 +122,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         eventLogger = new EventLogger();
 
         DefaultTrackSelector trackSelector = initializeTrackSelector();
-        drmSessionManager = new DeferredDrmSessionManager(mainHandler, eventLogger, buildHttpDataSourceFactory(false));
+        drmSessionManager = new DeferredDrmSessionManager(mainHandler, eventLogger, buildHttpDataSourceFactory(false, false));
         player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager);
         setPlayerListeners();
         exoPlayerView.setPlayer(player);
@@ -149,7 +150,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         return trackSelector;
     }
 
-    private void preparePlayer(PKMediaSource pkMediaSource) {
+    private void preparePlayer(PKMediaSource pkMediaSource, boolean allowCrossProtocolRedirects) {
+        this.allowCrossProtocolRedirects = allowCrossProtocolRedirects;
+        mediaDataSourceFactory = buildDataSourceFactory(true, allowCrossProtocolRedirects);
         sameErrorOccurrenceCounter = 0;
         drmSessionManager.setMediaSource(pkMediaSource);
 
@@ -178,7 +181,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
                         mainHandler, eventLogger);
 
             case dash:
-                return new DashMediaSource(uri, buildDataSourceFactory(false),
+                return new DashMediaSource(uri, buildDataSourceFactory(false, allowCrossProtocolRedirects),
                         new DefaultDashChunkSource.Factory(mediaDataSourceFactory), mainHandler, eventLogger);
 
             case hls:
@@ -196,9 +199,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
      *                          DataSource factory.
      * @return A new DataSource factory.
      */
-    private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
+    private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter, boolean shouldAllowCrossProtocolRedirect) {
         return new DefaultDataSourceFactory(context, useBandwidthMeter ? BANDWIDTH_METER : null,
-                buildHttpDataSourceFactory(useBandwidthMeter));
+                buildHttpDataSourceFactory(useBandwidthMeter, shouldAllowCrossProtocolRedirect));
     }
 
     /**
@@ -208,9 +211,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
      *                          DataSource factory.
      * @return A new HttpDataSource factory.
      */
-    private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
+    private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter, boolean shouldAllowCrossProtocolRedirect) {
         return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? BANDWIDTH_METER : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, true);
+                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, shouldAllowCrossProtocolRedirect);
     }
     
     private static String getUserAgent(Context context) {
@@ -357,13 +360,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     }
 
     @Override
-    public void load(PKMediaSource mediaSource) {
+    public void load(PKMediaSource mediaSource, boolean allowCrossProtocolRedirects) {
         log.d("load");
         if (player == null) {
             initializePlayer();
         }
 
-        preparePlayer(mediaSource);
+        preparePlayer(mediaSource, allowCrossProtocolRedirects);
     }
 
     @Override

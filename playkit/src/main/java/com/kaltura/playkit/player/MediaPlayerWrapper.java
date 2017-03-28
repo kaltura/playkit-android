@@ -80,7 +80,7 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
     }
 
     @Override
-    public void load(PKMediaSource mediaSource) {
+    public void load(PKMediaSource mediaSource, boolean allowCrossProtocolRedirect) {
         log.d("load");
 
         if (currentState != null && this.mediaSource != null && !this.mediaSource.equals(mediaSource)) {
