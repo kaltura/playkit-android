@@ -69,6 +69,7 @@ public class OttSessionProvider extends BaseSessionProvider {
         public Boolean call() throws Exception {
             if(refreshToken == null){
                 Log.d(TAG, "refreshToken is not available, can't activate refresh");
+                onSessionRefreshTaskResults(new PrimitiveResult(ErrorElement.SessionError.addMessage(" FAILED TO RECOVER SESSION!!")));
                 return false;
             }
 
@@ -92,6 +93,17 @@ public class OttSessionProvider extends BaseSessionProvider {
             return true;
         }
     };
+
+    private void onSessionRefreshTaskResults(PrimitiveResult result) {
+        if(sessionRecoveryCallback != null){
+            sessionRecoveryCallback.onComplete(result);
+            sessionRecoveryCallback = null;
+        }
+
+        if(sessionRefreshListener != null ){
+            sessionRefreshListener.onComplete(result.error == null? result.getResult() : null);
+        }
+    }
     //endregion
 
 
@@ -231,9 +243,12 @@ public class OttSessionProvider extends BaseSessionProvider {
         ErrorElement error = null;
 
         if (response != null && response.isSuccess()) {
+            PKLog.d(TAG, "handleStartSession: response success, checking inner responses");
             List<BaseResult> responses = PhoenixParser.parse(response.getResponse()); // parses KalturaLoginResponse, KalturaSession
 
             if (responses.get(0).error != null) { //!- failed to login
+                PKLog.d(TAG, "handleStartSession: first response failure: "+responses.get(0).error);
+
                 //?? clear session?
                 error = ErrorElement.SessionError;
 
@@ -243,6 +258,8 @@ public class OttSessionProvider extends BaseSessionProvider {
                 // session data is taken from second response since its common for both user/anonymous login
                 // and we need this response for the expiry.
                 if (responses.get(1).error == null) { // get session data success
+                    PKLog.d(TAG, "handleStartSession: second response success");
+
                     KalturaSession session = (KalturaSession) responses.get(1);
                     setSession(session.getKs(), session.getExpiry(), session.getUserId()); // save new session
 
@@ -250,6 +267,8 @@ public class OttSessionProvider extends BaseSessionProvider {
                         completion.onComplete(new PrimitiveResult(session.getKs()));
                     }
                 } else {
+                    PKLog.d(TAG, "handleStartSession: second response failure: "+responses.get(1).error);
+
                     error = ErrorElement.SessionError;
                 }
 
@@ -305,26 +324,39 @@ public class OttSessionProvider extends BaseSessionProvider {
                 return;
             }
 
-            APIOkRequestsExecutor.getSingleton().queue(OttUserService.logout(apiBaseUrl, getSessionToken(), sessionUdid)
-                    .completion(new OnRequestCompletion() {
-                        @Override
-                        public void onComplete(ResponseElement response) {
-                            ErrorElement error = null;
-                            if (response != null && response.isSuccess()) {
-                                PKLog.d(TAG, "endSession: logout user session success. clearing session data.");
-                            } else {
-                                error = response.getError() != null ? response.getError() : ErrorElement.GeneralError.message("failed to end session");
-                                PKLog.e(TAG, "endSession: session logout failed. clearing session data. " + error.getMessage());
-                            }
-                            OttSessionProvider.super.endSession();
-                            sessionUdid = null;
-                            if (completion != null) {
-                                completion.onComplete(new BaseResult(error));
-                            }
-                        }
-                    }).build());
+            // make sure the ks is valid for the request (refreshes it if needed)
+            getSessionToken(new OnCompletion<PrimitiveResult>() {
+                @Override
+                public void onComplete(PrimitiveResult response) {
+                    if(response.error == null) { // in case the session checked for expiry and ready to use:
+
+                        APIOkRequestsExecutor.getSingleton().queue(OttUserService.logout(apiBaseUrl, response.getResult(), sessionUdid)
+                                .completion(new OnRequestCompletion() {
+                                    @Override
+                                    public void onComplete(ResponseElement response) {
+                                        ErrorElement error = null;
+                                        if (response != null && response.isSuccess()) {
+                                            PKLog.d(TAG, "endSession: logout user session success. clearing session data.");
+                                        } else {
+                                            error = response.getError() != null ? response.getError() : ErrorElement.GeneralError.message("failed to end session");
+                                            PKLog.e(TAG, "endSession: session logout failed. clearing session data. " + error.getMessage());
+                                        }
+                                        OttSessionProvider.super.endSession();
+                                        sessionUdid = null;
+                                        if (completion != null) {
+                                            completion.onComplete(new BaseResult(error));
+                                        }
+                                    }
+                                }).build());
+
+                    } else { // in case ks retrieval failed:
+                        completion.onComplete(response);
+                    }
+                }
+            });
 
         } else {
+            Log.w(TAG, "endSession: but no active session available");
             sessionUdid = null;
         }
     }
@@ -399,14 +431,7 @@ public class OttSessionProvider extends BaseSessionProvider {
                                     refreshResult :
                                     new PrimitiveResult(ErrorElement.SessionError.addMessage(" FAILED TO RECOVER SESSION!!"));
 
-                        if(sessionRecoveryCallback != null){
-                            sessionRecoveryCallback.onComplete(refreshedKsResult);
-                            sessionRecoveryCallback = null;
-                        }
-
-                        if(sessionRefreshListener != null && refreshResult != null){
-                            sessionRefreshListener.onComplete(refreshResult.getResult());
-                        }
+                        onSessionRefreshTaskResults(refreshedKsResult);
                     }
                 });
         APIOkRequestsExecutor.getSingleton().queue(multiRequest.build());
@@ -460,7 +485,13 @@ public class OttSessionProvider extends BaseSessionProvider {
      * @return
      */
     public String encryptSession(){
-        StringBuilder data = new StringBuilder(getSessionToken()).append(" ~~ ")
+
+        String sessionToken = getSessionToken();
+        if(sessionToken == null){
+            return null;
+        }
+
+        StringBuilder data = new StringBuilder(sessionToken).append(" ~~ ")
                 .append(refreshToken).append(" ~~ ").append(sessionUdid);
 
         return Base64.encodeToString(data.toString().getBytes(), Base64.NO_WRAP);
