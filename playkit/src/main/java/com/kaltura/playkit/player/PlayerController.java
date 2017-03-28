@@ -35,7 +35,8 @@ public class PlayerController implements Player {
     private Context context;
     private PlayerView rootPlayerView;
 
-    private PKMediaConfig mediaConfig = null;
+    private PKMediaConfig mediaConfig;
+    private PKMediaSourceConfig sourceConfig;
 
     private PKEvent.Listener eventListener;
     private PlayerView playerEngineView;
@@ -171,7 +172,10 @@ public class PlayerController implements Player {
             switchPlayers(source.getMediaFormat());
         }
 
-        player.load(source);
+
+        this.sourceConfig = new PKMediaSourceConfig(source, mediaConfig.getUrlDecorator());
+        
+        player.load(sourceConfig);
     }
 
     private void switchPlayers(PKMediaFormat mediaFormat) {
@@ -431,13 +435,8 @@ public class PlayerController implements Player {
                     ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
                     long currentPosition = player.getCurrentPosition();
                     exoPlayerWrapper.savePlayerPosition();
-                    PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
-                    if (source == null) {
-                        log.e("No playable source found for entry");
-                        return false;
-                    }
-                    exoPlayerWrapper.load(source);
+                    exoPlayerWrapper.load(sourceConfig);
                     exoPlayerWrapper.startFrom(currentPosition);
                     return true;
                 }

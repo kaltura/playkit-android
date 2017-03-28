@@ -1,8 +1,11 @@
 package com.kaltura.playkit.player;
 
+import android.net.Uri;
+
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.UrlDecorator;
 import com.kaltura.playkit.utils.Consts;
 
 
@@ -18,9 +21,9 @@ interface PlayerEngine {
     /**
      * Initialize player (if needed), and load the mediaSourceUri
      * that should be played.
-     * @param mediaSource - the source to be played.
+     * @param mediaSourceConfig - the source to be played.
      */
-    void load(PKMediaSource mediaSource);
+    void load(PKMediaSourceConfig mediaSourceConfig);
 
     /**
      * Getter for the View to which current
@@ -167,4 +170,42 @@ interface PlayerEngine {
      * @return - the last {@link PlayerEvent.ExceptionInfo} that happened.
      */
     PlayerEvent.ExceptionInfo getCurrentException();
+}
+
+class PKMediaSourceConfig {
+    PKMediaSource mediaSource;
+    UrlDecorator urlDecorator;
+
+    public PKMediaSourceConfig(PKMediaSource mediaSource, UrlDecorator urlDecorator) {
+        this.mediaSource = mediaSource;
+        this.urlDecorator = urlDecorator;
+    }
+
+    Uri getUrl() {
+        Uri uri = Uri.parse(mediaSource.getUrl());
+        if (urlDecorator == null) {
+            return uri;
+        } else {
+            return urlDecorator.getDecoratedUrl(uri);
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PKMediaSourceConfig that = (PKMediaSourceConfig) o;
+
+        if (mediaSource != null ? !mediaSource.equals(that.mediaSource) : that.mediaSource != null)
+            return false;
+        return urlDecorator != null ? urlDecorator.equals(that.urlDecorator) : that.urlDecorator == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mediaSource != null ? mediaSource.hashCode() : 0;
+        result = 31 * result + (urlDecorator != null ? urlDecorator.hashCode() : 0);
+        return result;
+    }
 }
