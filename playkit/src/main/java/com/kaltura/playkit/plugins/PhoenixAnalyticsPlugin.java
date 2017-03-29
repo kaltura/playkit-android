@@ -193,7 +193,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://api-preprod.ott.kaltura.com/v4_1/api_v3/";
         String ks = pluginConfig.has("ks")? pluginConfig.getAsJsonPrimitive("ks").getAsString():"djJ8MTk4fN86RC6KBjyHtmG9bIBounF1ewb1SMnFNtAvaxKIAfHUwW0rT4GAYQf8wwUKmmRAh7G0olZ7IyFS1FTpwskuqQPVQwrSiy_J21kLxIUl_V9J";
         int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt():198;
-        String action = eventType.name().toLowerCase();
+        String action = eventType.name().toLowerCase(); // used only for copmare
 
         if (!"stop".equals(action)) {
             lastKnownPlayerPosition = player.getCurrentPosition();
