@@ -166,5 +166,12 @@ interface PlayerEngine {
      * @return - the last {@link PlayerEvent.ExceptionInfo} that happened.
      */
     PlayerEvent.ExceptionInfo getCurrentException();
+
+
+    /**
+     * Stop player executing the {@link PlayerEngine} implementation.
+     * stop the player and seek to start position.
+     */
+    void stop();
 }
 

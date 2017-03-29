@@ -86,6 +86,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public void stop() {
+        player.stop();
+    }
+
+    @Override
     public PlayerView getView() {
         return player.getView();
     }

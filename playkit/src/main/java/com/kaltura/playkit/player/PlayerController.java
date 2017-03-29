@@ -256,6 +256,11 @@ public class PlayerController implements Player {
         eventListener = null;
     }
 
+    @Override
+    public void stop() {
+        player.stop();
+    }
+
     private void startPlaybackFrom(long startPosition) {
         if (player == null) {
             log.e("Attempt to invoke 'startPlaybackFrom()' on null instance of the player engine");

@@ -560,6 +560,16 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         return new PlayerEvent.ExceptionInfo(currentException, sameErrorOccurrenceCounter);
     }
 
+    @Override
+    public void stop() {
+        if (player != null) {
+            player.setPlayWhenReady(false);
+            player.seekTo(0);
+            player.stop();
+            sendDistinctEvent(PlayerEvent.Type.STOPPED);
+        }
+    }
+
     void savePlayerPosition() {
         if (player == null) {
             log.e("Attempt to invoke 'savePlayerPosition()' on null instance of the exoplayer");
