@@ -74,8 +74,8 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void reset() {
-        player.reset();
+    public void stop() {
+        player.stop();
     }
 
     @Override

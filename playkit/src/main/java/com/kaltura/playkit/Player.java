@@ -48,10 +48,10 @@ public interface Player {
     void destroy();
 
     /**
-     * reset player to be in the initial playback state.
+     * stop player and back to initial playback state.
      */
+    void stop();
 
-    void reset();
     /**
      * Start playback of the media.
      */

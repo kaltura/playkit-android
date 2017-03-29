@@ -168,6 +168,10 @@ interface PlayerEngine {
      */
     PlayerEvent.ExceptionInfo getCurrentException();
 
-    // reset the player to initial playback state
-    void reset();
+
+    /**
+     * Stop player executing the {@link PlayerEngine} implementation.
+     * stop the player and seek to start position.
+     */
+    void stop();
 }

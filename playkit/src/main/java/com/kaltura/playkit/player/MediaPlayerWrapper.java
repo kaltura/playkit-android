@@ -428,11 +428,12 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
     }
 
     @Override
-    public void reset() {
+    public void stop() {
         if (player != null) {
             player.pause();
             player.seekTo(0);
             player.reset();
+            sendDistinctEvent(PlayerEvent.Type.STOPPED);
         }
     }
 
