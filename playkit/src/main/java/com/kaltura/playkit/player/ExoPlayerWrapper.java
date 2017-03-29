@@ -563,10 +563,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public void stop() {
         if (player != null) {
+            sendDistinctEvent(PlayerEvent.Type.STOPPED);
             player.setPlayWhenReady(false);
             player.seekTo(0);
             player.stop();
-            sendDistinctEvent(PlayerEvent.Type.STOPPED);
         }
     }
 

@@ -68,7 +68,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
         @Override
         public void warmUp(Context context) {
-            
+
         }
     };
 
@@ -113,6 +113,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.mContext = context;
         this.messageBus = messageBus;
         messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED);
+
         log.d("onLoad");
     }
 
@@ -120,17 +121,18 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         @Override
         public void onEvent(PKEvent event) {
             if (event instanceof PlayerEvent) {
-                log.d(((PlayerEvent) event).type.toString());
+                log.d("Player Event = " + ((PlayerEvent) event).type.name() + " , lastKnownPlayerPosition = " + lastKnownPlayerPosition);
                 switch (((PlayerEvent) event).type) {
+                    case STOPPED:
+                        sendAnalyticsEvent(PhoenixActionType.STOP);
+                        timer.cancel();
+                        timer = new java.util.Timer();
+                        break;
                     case ENDED:
                         timer.cancel();
                         timer = new java.util.Timer();
                         sendAnalyticsEvent(PhoenixActionType.FINISH);
                         break;
-                    case STOPPED:
-                        timer.cancel();
-                        timer = new java.util.Timer();
-                        sendAnalyticsEvent(PhoenixActionType.STOP);
                     case ERROR:
                         timer.cancel();
                         timer = new java.util.Timer();
@@ -174,7 +176,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             @Override
             public void run() {
                 sendAnalyticsEvent(PhoenixActionType.HIT);
-                if ((float) player.getCurrentPosition() / player.getDuration() > 0.98){
+                lastKnownPlayerPosition = player.getCurrentPosition();
+                if ((float) lastKnownPlayerPosition / player.getDuration() > 0.98){
                     sendAnalyticsEvent(PhoenixActionType.FINISH);
                 }
             }
