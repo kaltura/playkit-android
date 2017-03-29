@@ -19,6 +19,8 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.UUID;
+
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 
 /**
@@ -41,10 +43,16 @@ public class PlayerController implements Player {
     private PKEvent.Listener eventListener;
     private PlayerView playerEngineView;
 
+    private UUID sessionId = UUID.randomUUID();
     private boolean isNewEntry = true;
 
     public void setEventListener(PKEvent.Listener eventListener) {
         this.eventListener = eventListener;
+    }
+
+    @Override
+    public UUID getSessionId() {
+        return sessionId;
     }
 
     interface EventListener {

@@ -2,6 +2,7 @@ package com.kaltura.playkit.backend;
 
 import android.net.Uri;
 
+import com.kaltura.playkit.Player;
 import com.kaltura.playkit.UrlDecorator;
 
 import java.util.UUID;
@@ -15,8 +16,12 @@ public class PlayManifestSessionIdDecorator implements UrlDecorator {
     
     private UUID playSessionId;
 
-    public PlayManifestSessionIdDecorator() {
-        playSessionId = UUID.randomUUID();
+    public PlayManifestSessionIdDecorator(UUID playSessionId) {
+        this.playSessionId = playSessionId;
+    }
+    
+    public PlayManifestSessionIdDecorator(Player player) {
+        this.playSessionId = player.getSessionId();
     }
 
     @Override

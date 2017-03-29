@@ -9,6 +9,8 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
 
+import java.util.UUID;
+
 /**
  * Created by zivilan on 11/12/2016.
  */
@@ -120,6 +122,11 @@ public class MockPlayer implements Player {
 
     @Override
     public AdController getAdController() {
+        return null;
+    }
+
+    @Override
+    public UUID getSessionId() {
         return null;
     }
 

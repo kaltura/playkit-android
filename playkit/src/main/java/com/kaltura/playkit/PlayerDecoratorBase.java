@@ -6,6 +6,8 @@ import android.support.annotation.Nullable;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
 
+import java.util.UUID;
+
 public class PlayerDecoratorBase implements Player {
     
     @Override
@@ -31,6 +33,11 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public AdController getAdController() {
         return player.getAdController();
+    }
+
+    @Override
+    public final UUID getSessionId() {
+        return player.getSessionId();
     }
 
     @Override

@@ -7,6 +7,8 @@ import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.UUID;
+
 /**
  * Created by Noam Tamim @ Kaltura on 18/09/2016.
  */
@@ -128,5 +130,7 @@ public interface Player {
     void seekTo(long position);
 
     AdController getAdController();
+
+    UUID getSessionId();
 }
 
