@@ -33,7 +33,7 @@ public class PlayerController implements Player {
     private static final PKLog log = PKLog.get("PlayerController");
     private static final int ALLOWED_ERROR_RETRIES = 3;
 
-    
+
 
     private PlayerEngine player = null;
     private Context context;
@@ -49,7 +49,8 @@ public class PlayerController implements Player {
     private PKRequestInfo.Decorator contentRequestDecorator;
 
     private boolean isNewEntry = true;
-    
+    private Settings settings = new Settings();
+
     private class Settings implements Player.Settings {
 
         @Override
@@ -63,8 +64,8 @@ public class PlayerController implements Player {
             return this;
         }
     }
-    
-    private Settings settings = new Settings(); 
+
+
 
     public void setEventListener(PKEvent.Listener eventListener) {
         this.eventListener = eventListener;
@@ -207,7 +208,7 @@ public class PlayerController implements Player {
 
 
         this.sourceConfig = new PKMediaSourceConfig(source, contentRequestDecorator);
-        
+
         player.load(sourceConfig);
     }
 
