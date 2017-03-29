@@ -5,8 +5,8 @@ import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaConfig;
+import com.kaltura.playkit.PKRequestInfo;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.UrlDecorator;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
 
@@ -22,8 +22,18 @@ public class MockPlayer implements Player {
     private long currentPosition = 0;
 
     @Override
-    public void setUrlDecorator(UrlDecorator urlDecorator) {
-        
+    public Settings getSettings() {
+        return new Settings() {
+            @Override
+            public PKRequestInfo.Decorator getContentRequestDecorator() {
+                return null;
+            }
+
+            @Override
+            public Settings setContentRequestDecorator(PKRequestInfo.Decorator contentRequestDecorator) {
+                return null;
+            }
+        };
     }
 
     @Override

@@ -15,7 +15,13 @@ import java.util.UUID;
 public interface Player {
 
 
-    void setUrlDecorator(UrlDecorator urlDecorator);
+    interface Settings {
+        public PKRequestInfo.Decorator getContentRequestDecorator();
+
+        public Settings setContentRequestDecorator(PKRequestInfo.Decorator contentRequestDecorator);
+    }
+    
+    Settings getSettings();
 
     /**
      * Prepare the player for playback.

@@ -1,11 +1,7 @@
 package com.kaltura.playkit.player;
 
-import android.net.Uri;
-
-import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.UrlDecorator;
 import com.kaltura.playkit.utils.Consts;
 
 
@@ -172,40 +168,3 @@ interface PlayerEngine {
     PlayerEvent.ExceptionInfo getCurrentException();
 }
 
-class PKMediaSourceConfig {
-    PKMediaSource mediaSource;
-    UrlDecorator urlDecorator;
-
-    public PKMediaSourceConfig(PKMediaSource mediaSource, UrlDecorator urlDecorator) {
-        this.mediaSource = mediaSource;
-        this.urlDecorator = urlDecorator;
-    }
-
-    Uri getUrl() {
-        Uri uri = Uri.parse(mediaSource.getUrl());
-        if (urlDecorator == null) {
-            return uri;
-        } else {
-            return urlDecorator.getDecoratedUrl(uri);
-        }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        PKMediaSourceConfig that = (PKMediaSourceConfig) o;
-
-        if (mediaSource != null ? !mediaSource.equals(that.mediaSource) : that.mediaSource != null)
-            return false;
-        return urlDecorator != null ? urlDecorator.equals(that.urlDecorator) : that.urlDecorator == null;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = mediaSource != null ? mediaSource.hashCode() : 0;
-        result = 31 * result + (urlDecorator != null ? urlDecorator.hashCode() : 0);
-        return result;
-    }
-}

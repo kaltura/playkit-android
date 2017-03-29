@@ -13,10 +13,10 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKRequestInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.UrlDecorator;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
@@ -33,6 +33,7 @@ public class PlayerController implements Player {
     private static final PKLog log = PKLog.get("PlayerController");
     private static final int ALLOWED_ERROR_RETRIES = 3;
 
+    
 
     private PlayerEngine player = null;
     private Context context;
@@ -45,9 +46,25 @@ public class PlayerController implements Player {
     private PlayerView playerEngineView;
 
     private UUID sessionId = UUID.randomUUID();
-    private UrlDecorator urlDecorator;
+    private PKRequestInfo.Decorator contentRequestDecorator;
 
     private boolean isNewEntry = true;
+    
+    private class Settings implements Player.Settings {
+
+        @Override
+        public PKRequestInfo.Decorator getContentRequestDecorator() {
+            return contentRequestDecorator;
+        }
+
+        @Override
+        public Player.Settings setContentRequestDecorator(PKRequestInfo.Decorator contentRequestDecorator) {
+            PlayerController.this.contentRequestDecorator = contentRequestDecorator;
+            return this;
+        }
+    }
+    
+    private Settings settings = new Settings(); 
 
     public void setEventListener(PKEvent.Listener eventListener) {
         this.eventListener = eventListener;
@@ -56,11 +73,6 @@ public class PlayerController implements Player {
     @Override
     public UUID getSessionId() {
         return sessionId;
-    }
-
-    @Override
-    public void setUrlDecorator(UrlDecorator urlDecorator) {
-        this.urlDecorator = urlDecorator;
     }
 
     interface EventListener {
@@ -170,6 +182,11 @@ public class PlayerController implements Player {
         }
     }
 
+    @Override
+    public Player.Settings getSettings() {
+        return settings;
+    }
+
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
 
         isNewEntry = isNewEntry(mediaConfig);
@@ -189,7 +206,7 @@ public class PlayerController implements Player {
         }
 
 
-        this.sourceConfig = new PKMediaSourceConfig(source, urlDecorator);
+        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestDecorator);
         
         player.load(sourceConfig);
     }

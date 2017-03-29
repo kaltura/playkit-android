@@ -11,8 +11,8 @@ import java.util.UUID;
 public class PlayerDecoratorBase implements Player {
 
     @Override
-    public final void setUrlDecorator(UrlDecorator urlDecorator) {
-        player.setUrlDecorator(urlDecorator);
+    public Settings getSettings() {
+        return player.getSettings();
     }
 
     @Override

@@ -2,8 +2,8 @@ package com.kaltura.playkit.backend;
 
 import android.net.Uri;
 
+import com.kaltura.playkit.PKRequestInfo;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.UrlDecorator;
 
 import java.util.UUID;
 
@@ -12,7 +12,7 @@ import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
 /**
  * Created by Noam Tamim @ Kaltura on 28/03/2017.
  */
-public class PlayManifestSessionIdDecorator implements UrlDecorator {
+public class PlayManifestSessionIdDecorator implements PKRequestInfo.Decorator {
     
     private UUID playSessionId;
 
@@ -25,15 +25,16 @@ public class PlayManifestSessionIdDecorator implements UrlDecorator {
     }
 
     @Override
-    public Uri getDecoratedUrl(Uri url) {
-
+    public PKRequestInfo getRequestInfo(PKRequestInfo requestInfo) {
+        Uri url = requestInfo.getUrl();
         if (url.getPath().contains("/playManifest/")) {
-            return url.buildUpon()
-                    .appendQueryParameter("playSessionId", playSessionId.toString())
+            Uri alt = url.buildUpon()
                     .appendQueryParameter("clientTag", CLIENT_TAG)
+                    .appendQueryParameter("playSessionId", playSessionId.toString())
                     .build();
+            return new PKRequestInfo(alt, requestInfo.getHeaders());
         }
 
-        return url;
+        return requestInfo;
     }
 }
