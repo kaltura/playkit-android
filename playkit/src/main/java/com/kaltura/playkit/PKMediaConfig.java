@@ -6,7 +6,6 @@ package com.kaltura.playkit;
 public class PKMediaConfig {
     private long startPosition = 0;
     private PKMediaEntry mediaEntry;
-    private UrlDecorator urlDecorator;
 
     /**
      * Getter for start position. Default is 0.
@@ -36,15 +35,6 @@ public class PKMediaConfig {
 
     public PKMediaConfig setMediaEntry(PKMediaEntry mediaEntry) {
         this.mediaEntry = mediaEntry;
-        return this;
-    }
-
-    public UrlDecorator getUrlDecorator() {
-        return urlDecorator;
-    }
-
-    public PKMediaConfig setUrlDecorator(UrlDecorator urlDecorator) {
-        this.urlDecorator = urlDecorator;
         return this;
     }
 }

@@ -9,7 +9,12 @@ import com.kaltura.playkit.player.PlayerView;
 import java.util.UUID;
 
 public class PlayerDecoratorBase implements Player {
-    
+
+    @Override
+    public final void setUrlDecorator(UrlDecorator urlDecorator) {
+        player.setUrlDecorator(urlDecorator);
+    }
+
     @Override
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
         player.prepare(mediaConfig);

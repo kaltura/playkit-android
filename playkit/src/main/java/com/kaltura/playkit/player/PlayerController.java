@@ -16,6 +16,7 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.UrlDecorator;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
@@ -44,6 +45,8 @@ public class PlayerController implements Player {
     private PlayerView playerEngineView;
 
     private UUID sessionId = UUID.randomUUID();
+    private UrlDecorator urlDecorator;
+
     private boolean isNewEntry = true;
 
     public void setEventListener(PKEvent.Listener eventListener) {
@@ -53,6 +56,11 @@ public class PlayerController implements Player {
     @Override
     public UUID getSessionId() {
         return sessionId;
+    }
+
+    @Override
+    public void setUrlDecorator(UrlDecorator urlDecorator) {
+        this.urlDecorator = urlDecorator;
     }
 
     interface EventListener {
@@ -181,7 +189,7 @@ public class PlayerController implements Player {
         }
 
 
-        this.sourceConfig = new PKMediaSourceConfig(source, mediaConfig.getUrlDecorator());
+        this.sourceConfig = new PKMediaSourceConfig(source, urlDecorator);
         
         player.load(sourceConfig);
     }

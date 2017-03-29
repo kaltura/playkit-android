@@ -15,6 +15,8 @@ import java.util.UUID;
 public interface Player {
 
 
+    void setUrlDecorator(UrlDecorator urlDecorator);
+
     /**
      * Prepare the player for playback.
      * @param playerConfig - media configurations to apply on the player.

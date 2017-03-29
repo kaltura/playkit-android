@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.UrlDecorator;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
 
@@ -19,6 +20,11 @@ public class MockPlayer implements Player {
     private boolean isPlaying = false;
     private int duration = 100;
     private long currentPosition = 0;
+
+    @Override
+    public void setUrlDecorator(UrlDecorator urlDecorator) {
+        
+    }
 
     @Override
     public void prepare(@NonNull PKMediaConfig playerConfig) {
