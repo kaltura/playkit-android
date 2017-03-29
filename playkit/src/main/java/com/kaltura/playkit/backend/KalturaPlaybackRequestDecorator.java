@@ -12,15 +12,15 @@ import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
 /**
  * Created by Noam Tamim @ Kaltura on 28/03/2017.
  */
-public class PlayManifestSessionIdDecorator implements PKRequestInfo.Decorator {
+public class KalturaPlaybackRequestDecorator implements PKRequestInfo.Decorator {
     
     private UUID playSessionId;
 
-    public PlayManifestSessionIdDecorator(UUID playSessionId) {
+    public KalturaPlaybackRequestDecorator(UUID playSessionId) {
         this.playSessionId = playSessionId;
     }
     
-    public PlayManifestSessionIdDecorator(Player player) {
+    public KalturaPlaybackRequestDecorator(Player player) {
         this.playSessionId = player.getSessionId();
     }
 
