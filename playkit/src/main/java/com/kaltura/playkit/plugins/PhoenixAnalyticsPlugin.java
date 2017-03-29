@@ -21,6 +21,7 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.util.TimerTask;
 
+
 /**
  * Created by zivilan on 02/11/2016.
  */
@@ -50,7 +51,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     public Player player;
     public RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
-    public MessageBus messageBus;
+    private long lastKnownPlayerPosition = 0;
+    public MessageBus messageBus; // used also by TVPAI Analytics
+
 
     public static final Factory factory = new Factory() {
         @Override
@@ -99,7 +102,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     public void onDestroy() {
         log.d("onDestroy");
-        sendAnalyticsEvent(PhoenixActionType.STOP);
         timer.cancel();
     }
 
@@ -110,7 +112,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.pluginConfig = (JsonObject) config;
         this.mContext = context;
         this.messageBus = messageBus;
-        messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA);
+        messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED);
         log.d("onLoad");
     }
 
@@ -125,6 +127,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         timer = new java.util.Timer();
                         sendAnalyticsEvent(PhoenixActionType.FINISH);
                         break;
+                    case STOPPED:
+                        timer.cancel();
+                        timer = new java.util.Timer();
+                        sendAnalyticsEvent(PhoenixActionType.STOP);
                     case ERROR:
                         timer.cancel();
                         timer = new java.util.Timer();
@@ -184,10 +190,13 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://api-preprod.ott.kaltura.com/v4_1/api_v3/";
         String ks = pluginConfig.has("ks")? pluginConfig.getAsJsonPrimitive("ks").getAsString():"djJ8MTk4fN86RC6KBjyHtmG9bIBounF1ewb1SMnFNtAvaxKIAfHUwW0rT4GAYQf8wwUKmmRAh7G0olZ7IyFS1FTpwskuqQPVQwrSiy_J21kLxIUl_V9J";
         int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt():198;
+        String action = eventType.name().toLowerCase();
 
-
+        if (!"stop".equals(action)) {
+            lastKnownPlayerPosition = player.getCurrentPosition();
+        }
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
-                "media", mediaConfig.getMediaEntry().getId(), eventType.name(), player.getCurrentPosition(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId);
+                "media", mediaConfig.getMediaEntry().getId(), eventType.name(), lastKnownPlayerPosition, /*mediaConfig.getMediaEntry().getFileId()*/ fileId);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override

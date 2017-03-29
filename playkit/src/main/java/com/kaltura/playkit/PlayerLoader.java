@@ -83,6 +83,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     @Override
     public void destroy() {
+        stop();
         releasePlugins();
         releasePlayer();
     }
