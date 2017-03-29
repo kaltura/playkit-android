@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.backend.KalturaPlaybackRequestDecorator;
 import com.kaltura.playkit.player.PlayerController;
 
 import java.util.ArrayList;
@@ -41,6 +42,10 @@ class PlayerLoader extends PlayerDecoratorBase {
     
     public void load(@NonNull PKPluginConfigs pluginsConfig) {
         PlayerController playerController = new PlayerController(context);
+
+        // By default, set Kaltura decorator.
+        KalturaPlaybackRequestDecorator contentRequestDecorator = new KalturaPlaybackRequestDecorator(playerController);
+        playerController.getSettings().setContentRequestDecorator(contentRequestDecorator);
         
         playerController.setEventListener(new PKEvent.Listener() {
             @Override
