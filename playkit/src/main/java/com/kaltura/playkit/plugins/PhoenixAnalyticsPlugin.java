@@ -29,6 +29,7 @@ import java.util.TimerTask;
 public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
     private static final String TAG = "PhoenixAnalytics";
+    private static final double MEDIA_ENDED_THRESHOLD = 0.98;
 
     public enum PhoenixActionType{
         HIT,
@@ -177,7 +178,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             public void run() {
                 sendAnalyticsEvent(PhoenixActionType.HIT);
                 lastKnownPlayerPosition = player.getCurrentPosition();
-                if ((float) lastKnownPlayerPosition / player.getDuration() > 0.98){
+                if ((float) lastKnownPlayerPosition / player.getDuration() > MEDIA_ENDED_THRESHOLD){
                     sendAnalyticsEvent(PhoenixActionType.FINISH);
                 }
             }
