@@ -54,11 +54,6 @@ public class PlayerController implements Player {
     private class Settings implements Player.Settings {
 
         @Override
-        public PKRequestInfo.Decorator getContentRequestDecorator() {
-            return contentRequestDecorator;
-        }
-
-        @Override
         public Player.Settings setContentRequestDecorator(PKRequestInfo.Decorator contentRequestDecorator) {
             PlayerController.this.contentRequestDecorator = contentRequestDecorator;
             return this;

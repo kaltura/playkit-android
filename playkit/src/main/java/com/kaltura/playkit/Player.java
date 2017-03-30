@@ -14,13 +14,22 @@ import java.util.UUID;
  */
 public interface Player {
 
-
+    /**
+     * Interface used for setting optional Player settings. 
+     */
     interface Settings {
-        public PKRequestInfo.Decorator getContentRequestDecorator();
-
-        public Settings setContentRequestDecorator(PKRequestInfo.Decorator contentRequestDecorator);
+        /**
+         * Set the Player's contentRequestDecorator.
+         * @param contentRequestDecorator 
+         * @return Player Settings.
+         */
+        Settings setContentRequestDecorator(PKRequestInfo.Decorator contentRequestDecorator);
     }
-    
+
+    /**
+     * Get the Player's {@link Settings} object, for setting some optional properties. 
+     * @return Player Settings.
+     */
     Settings getSettings();
 
     /**
@@ -145,6 +154,10 @@ public interface Player {
 
     AdController getAdController();
 
+    /**
+     * Get the Player's SessionId. The SessionId is initialized when the player loads. 
+     * @return Player's SessionId, as a UUID object.
+     */
     UUID getSessionId();
 }
 

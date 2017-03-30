@@ -24,10 +24,6 @@ public class MockPlayer implements Player {
     @Override
     public Settings getSettings() {
         return new Settings() {
-            @Override
-            public PKRequestInfo.Decorator getContentRequestDecorator() {
-                return null;
-            }
 
             @Override
             public Settings setContentRequestDecorator(PKRequestInfo.Decorator contentRequestDecorator) {
