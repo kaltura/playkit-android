@@ -1,4 +1,4 @@
-package com.kaltura.playkit.backend;
+package com.kaltura.playkit.plugins.playback;
 
 import android.net.Uri;
 
