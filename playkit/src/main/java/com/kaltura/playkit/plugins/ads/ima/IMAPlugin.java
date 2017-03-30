@@ -227,6 +227,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
 
         renderingSettings = ImaSdkFactory.getInstance().createAdsRenderingSettings();
+        if (mediaConfig != null && mediaConfig.getStartPosition() > 0) {
+            renderingSettings.setPlayAdsAfterTime(mediaConfig.getStartPosition());
+        }
+
         if (adConfig.getVideoMimeTypes() != null && adConfig.getVideoMimeTypes().size() > 0) {
             renderingSettings.setMimeTypes(adConfig.getVideoMimeTypes());
         }
@@ -585,6 +589,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     player.getView().showVideoSurface();
                     long duration = player.getDuration();
                     if (duration < 0 || player.getCurrentPosition() < duration) {
+                        log.d("Content prepared.. Play called.");
                         player.play();
                     }
                 }
@@ -737,7 +742,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                                     log.d("AD Displayed delay check : ad duration " + currentTime);
                                     isAdDisplayed = true;
                                     messageBus.post(new AdEvent(AdEvent.Type.AD_DISPLAYED_AFTER_CONTENT_PAUSE));
-                                    adDisplayedCheckTimer.cancel();
+                                    cancelAdDisplayedCheckTimer();
                                 }
                             }
                         } catch (Exception e) {
@@ -747,12 +752,15 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 });
             }
         };
-        adDisplayedCheckTimer.schedule(timerTask, 0, IMAConfig.DEFAULT_AD_LOAD_COUNT_DOWN_TICK);
+        if (adDisplayedCheckTimer != null) {
+            adDisplayedCheckTimer.schedule(timerTask, 0, IMAConfig.DEFAULT_AD_LOAD_COUNT_DOWN_TICK);
+        }
     }
 
     private void cancelAdDisplayedCheckTimer() {
         if (adDisplayedCheckTimer != null) {
             adDisplayedCheckTimer.cancel();
+            adDisplayedCheckTimer = null;
         }
     }
 
