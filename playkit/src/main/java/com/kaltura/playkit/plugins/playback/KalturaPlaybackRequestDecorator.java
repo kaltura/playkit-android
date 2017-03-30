@@ -15,15 +15,16 @@ import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
 public class KalturaPlaybackRequestDecorator implements PKRequestInfo.Decorator {
     
     private UUID playSessionId;
+    
+    public static void setup(Player player) {
+        KalturaPlaybackRequestDecorator decorator = new KalturaPlaybackRequestDecorator(player.getSessionId());
+        player.getSettings().setContentRequestDecorator(decorator);
+    }
 
     public KalturaPlaybackRequestDecorator(UUID playSessionId) {
         this.playSessionId = playSessionId;
     }
     
-    public KalturaPlaybackRequestDecorator(Player player) {
-        this.playSessionId = player.getSessionId();
-    }
-
     @Override
     public PKRequestInfo getRequestInfo(PKRequestInfo requestInfo) {
         Uri url = requestInfo.getUrl();

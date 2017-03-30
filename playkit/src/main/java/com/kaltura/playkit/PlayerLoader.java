@@ -44,8 +44,7 @@ class PlayerLoader extends PlayerDecoratorBase {
         PlayerController playerController = new PlayerController(context);
 
         // By default, set Kaltura decorator.
-        KalturaPlaybackRequestDecorator contentRequestDecorator = new KalturaPlaybackRequestDecorator(playerController);
-        playerController.getSettings().setContentRequestDecorator(contentRequestDecorator);
+        KalturaPlaybackRequestDecorator.setup(playerController);
         
         playerController.setEventListener(new PKEvent.Listener() {
             @Override
