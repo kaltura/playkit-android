@@ -3,14 +3,13 @@ package com.kaltura.playkit.plugins;
 import android.content.Context;
 
 import com.google.gson.JsonObject;
+import com.kaltura.netkit.backend.tvpapi.MediaMarkService;
+import com.kaltura.netkit.connect.RequestBuilder;
+import com.kaltura.netkit.utils.OnRequestCompletion;
+import com.kaltura.netkit.utils.ResponseElement;
 import com.kaltura.playkit.OttEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
-import com.kaltura.playkit.backend.tvpapi.MediaMarkService;
-import com.kaltura.playkit.connect.OnRequestCompletion;
-import com.kaltura.playkit.connect.RequestBuilder;
-import com.kaltura.playkit.connect.ResponseElement;
-
 
 /**
  * Created by zivilan on 08/12/2016.

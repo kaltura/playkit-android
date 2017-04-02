@@ -1,8 +1,8 @@
 package com.kaltura.playkitdemo;
 
-import com.kaltura.playkit.OnCompletion;
-import com.kaltura.playkit.backend.SessionProvider;
-import com.kaltura.playkit.backend.PrimitiveResult;
+import com.kaltura.netkit.backend.session.SessionProvider;
+import com.kaltura.netkit.utils.OnCompletion;
+import com.kaltura.netkit.utils.PrimitiveResult;
 
 /**
  * @hide
