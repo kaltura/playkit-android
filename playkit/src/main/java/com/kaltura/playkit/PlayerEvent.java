@@ -8,7 +8,7 @@ import com.kaltura.playkit.player.PKTracks;
 
 
 public class PlayerEvent implements PKEvent {
-    
+
     public static class Generic extends PlayerEvent {
         public Generic(Type type) {
             super(type);
@@ -25,7 +25,7 @@ public class PlayerEvent implements PKEvent {
             this.oldState = oldState;
         }
     }
-    
+
     public static class DurationChanged extends PlayerEvent {
 
         public final long duration;
@@ -40,7 +40,7 @@ public class PlayerEvent implements PKEvent {
 
         private final PKTracks tracksInfo;
 
-        public TracksAvailable(PKTracks tracksInfo){
+        public TracksAvailable(PKTracks tracksInfo) {
             super(Type.TRACKS_AVAILABLE);
             this.tracksInfo = tracksInfo;
         }
@@ -67,7 +67,7 @@ public class PlayerEvent implements PKEvent {
     public static class PlaybackParamsUpdated extends PlayerEvent {
         private PlaybackParamsInfo playbackParamsInfo;
 
-        public PlaybackParamsUpdated(PlaybackParamsInfo playbackParamsInfo){
+        public PlaybackParamsUpdated(PlaybackParamsInfo playbackParamsInfo) {
             super(Type.PLAYBACK_PARAMS_UPDATED);
             this.playbackParamsInfo = playbackParamsInfo;
         }
@@ -97,6 +97,34 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class Id3MetadataAvailable extends PlayerEvent {
+
+        private PKId3Metadata id3Metadata;
+
+        public Id3MetadataAvailable(PKId3Metadata id3Metadata) {
+            super(Type.ID3_METADATA_AVAILABLE);
+            this.id3Metadata = id3Metadata;
+        }
+
+        public PKId3Metadata getId3Metadata() {
+            return id3Metadata;
+        }
+    }
+
+    public static class EmsgMetadataAvailable extends PlayerEvent {
+
+        private PKEmsgMetadata emsgMetadata;
+
+        public EmsgMetadataAvailable(PKEmsgMetadata emsgMetadata) {
+            super(Type.EMSG_METADATA_AVAILABLE);
+            this.emsgMetadata = emsgMetadata;
+        }
+
+        public PKEmsgMetadata getEmsgMetadata() {
+            return emsgMetadata;
+        }
+    }
+
     public final Type type;
 
     public PlayerEvent(Type type) {
@@ -118,7 +146,9 @@ public class PlayerEvent implements PKEvent {
         TRACKS_AVAILABLE, // Sent when track info is available.
         REPLAY, //Sent when replay happened.
         PLAYBACK_PARAMS_UPDATED, // Sent event that notify about changes in the playback parameters. When bitrate of the video or audio track changes or new media loaded. Holds the PlaybackParamsInfo.java object with relevant data.
-        VOLUME_CHANGED // Sent when volume is changed.
+        VOLUME_CHANGED, // Sent when volume is changed.
+        ID3_METADATA_AVAILABLE, // Sent when there is id3 (hls) metadata available for this entry.
+        EMSG_METADATA_AVAILABLE // Sent when there is emsg (dash) metadata available for this entry.
     }
 
     @Override

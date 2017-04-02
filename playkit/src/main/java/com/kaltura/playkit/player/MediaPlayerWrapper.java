@@ -10,6 +10,8 @@ import android.net.Uri;
 import android.view.SurfaceHolder;
 
 import com.kaltura.playkit.PKDrmParams;
+import com.kaltura.playkit.PKEmsgMetadata;
+import com.kaltura.playkit.PKId3Metadata;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlaybackParamsInfo;
@@ -31,7 +33,7 @@ import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARI
  * @hide
  */
 
-public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback {
+class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback {
 
     private static final PKLog log = PKLog.get("MediaPlayerWrapper");
 
@@ -57,7 +59,7 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
     private boolean isPauseAfterPrepare = false;
     private boolean appInBackground;
 
-    public MediaPlayerWrapper(Context context) {
+     MediaPlayerWrapper(Context context) {
         this.context = context;
         player = new MediaPlayer();
         mediaPlayerView = new MediaPlayerView(context);
@@ -427,6 +429,8 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
         return null;
     }
 
+
+
     public static String getWidevineAssetPlaybackUri(String assetUri) {
         String assetUriForPlayback = assetUri;
         if (assetUri.startsWith("file:")) {
@@ -515,5 +519,15 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
         NOT_PREPARED,
         PREPARING,
         PREPARED
+    }
+
+    @Override
+    public PKId3Metadata getId3Metadata() {
+        return null;
+    }
+
+    @Override
+    public PKEmsgMetadata getEmsgMetadata() {
+        return null;
     }
 }

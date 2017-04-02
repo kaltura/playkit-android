@@ -1,5 +1,7 @@
 package com.kaltura.playkit.player;
 
+import com.kaltura.playkit.PKEmsgMetadata;
+import com.kaltura.playkit.PKId3Metadata;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
@@ -167,4 +169,17 @@ interface PlayerEngine {
      * @return - the last {@link PlayerEvent.ExceptionInfo} that happened.
      */
     PlayerEvent.ExceptionInfo getCurrentException();
+
+    /**
+     * Will return the id3 metadata object.
+     * @return - {@link PKId3Metadata}
+     */
+    PKId3Metadata getId3Metadata();
+
+    /**
+     * Will return the emsg metadata object.
+     * @return - {@link PKEmsgMetadata}
+     */
+    PKEmsgMetadata getEmsgMetadata();
+
 }

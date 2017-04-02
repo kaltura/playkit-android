@@ -91,6 +91,12 @@ public class PlayerController implements Player {
                             return;
                         }
                         break;
+                    case ID3_METADATA_AVAILABLE:
+                        event = new PlayerEvent.Id3MetadataAvailable(player.getId3Metadata());
+                        break;
+                    case EMSG_METADATA_AVAILABLE:
+                        event = new PlayerEvent.EmsgMetadataAvailable(player.getEmsgMetadata());
+                        break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
                 }
