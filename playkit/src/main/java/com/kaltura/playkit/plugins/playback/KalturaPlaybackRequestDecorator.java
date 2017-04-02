@@ -21,7 +21,7 @@ public class KalturaPlaybackRequestDecorator implements PKRequestInfo.Decorator 
         player.getSettings().setContentRequestDecorator(decorator);
     }
 
-    public KalturaPlaybackRequestDecorator(UUID playSessionId) {
+    private KalturaPlaybackRequestDecorator(UUID playSessionId) {
         this.playSessionId = playSessionId;
     }
     
