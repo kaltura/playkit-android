@@ -22,7 +22,6 @@ public class IMAConfig {
     public static final String AD_TAG_LANGUAGE          = "language";
     public static final String AD_TAG_URL               = "adTagURL";
     public static final String ENABLE_BG_PLAYBACK       = "enableBackgroundPlayback";
-    //public static final String AUTO_PLAY_AD_BREAK     = "autoPlayAdBreaks";
     public static final String AD_VIDEO_BITRATE         = "videoBitrate";
     public static final String AD_VIDEO_MIME_TYPES      = "videoMimeTypes";
     //public static final String AD_TAG_TIMES             = "tagsTimes";
@@ -34,7 +33,6 @@ public class IMAConfig {
     private String language;
     private String adTagURL;
     private boolean enableBackgroundPlayback;
-   // private boolean autoPlayAdBreaks;
     private int videoBitrate; // in KB
     private boolean adAttribution;
     private boolean adCountDown;
@@ -47,7 +45,6 @@ public class IMAConfig {
     public IMAConfig() {
         this.language                 = "en";
         this.enableBackgroundPlayback = false;
-        //this.autoPlayAdBreaks         = true;
         this.videoBitrate             = -1;
         this.adAttribution            = true;
         this.adCountDown              = true;
@@ -82,17 +79,6 @@ public class IMAConfig {
         this.enableBackgroundPlayback = enableBackgroundPlayback;
         return this;
     }
-
-
-    //public boolean getAutoPlayAdBreaks() {
-    //    return autoPlayAdBreaks;
-    //}
-
-    // default is true - must be true for VAST
-    //public IMAConfig setAutoPlayAdBreaks(boolean autoPlayAdBreaks) {
-    //    this.autoPlayAdBreaks = autoPlayAdBreaks;
-    //    return this;
-    //}
 
     public int getVideoBitrate() {
         return videoBitrate;
@@ -182,7 +168,6 @@ public class IMAConfig {
         jsonObject.addProperty(AD_TAG_LANGUAGE, language);
         jsonObject.addProperty(AD_TAG_URL, adTagURL);
         jsonObject.addProperty(ENABLE_BG_PLAYBACK, enableBackgroundPlayback);
-        //jsonObject.addProperty(AUTO_PLAY_AD_BREAK, autoPlayAdBreaks);
         jsonObject.addProperty(AD_VIDEO_BITRATE, videoBitrate);
         jsonObject.addProperty(AD_ATTRIBUTION_UIELEMENT, adAttribution);
         jsonObject.addProperty(AD_COUNTDOWN_UIELEMENT, adCountDown);
