@@ -29,7 +29,6 @@ public class IMAConfig {
     public static final String AD_ATTRIBUTION_UIELEMENT = "adAttribution";
     public static final String AD_COUNTDOWN_UIELEMENT   = "adCountDown";
     public static final String AD_LOAD_TIMEOUT          = "adLoadTimeOut";
-    public static final String PLAYER_START_POSITION    = "playerStartPosition";
 
 
     private String language;
@@ -40,7 +39,6 @@ public class IMAConfig {
     private boolean adAttribution;
     private boolean adCountDown;
     private int  adLoadTimeOut;
-    private long playerStartPosition;
     private List<String> videoMimeTypes;
     //private Map<Double,String> tagsTimes; // <AdTime,URL_to_execute>
 
@@ -57,7 +55,6 @@ public class IMAConfig {
         this.videoMimeTypes           = new ArrayList<>();
         this.videoMimeTypes.add(PKMediaFormat.mp4.mimeType);
         this.adTagURL = null;         //=> must be set via setter
-        this.playerStartPosition = 0;
 
         //if (tagTimes == null) {
         //    tagTimes = new HashMap<>();
@@ -163,14 +160,6 @@ public class IMAConfig {
         return this;
     }
 
-    public long getPlayerStartPosition() {
-        return playerStartPosition;
-    }
-
-    public IMAConfig setPlayerStartPosition(long playerStartPosition) {
-        this.playerStartPosition = playerStartPosition;
-        return this;
-    }
 //    public Map<Double, String> getTagsTimes() {
 //        return tagsTimes;
 //    }
@@ -198,7 +187,6 @@ public class IMAConfig {
         jsonObject.addProperty(AD_ATTRIBUTION_UIELEMENT, adAttribution);
         jsonObject.addProperty(AD_COUNTDOWN_UIELEMENT, adCountDown);
         jsonObject.addProperty(AD_LOAD_TIMEOUT, adLoadTimeOut);
-        jsonObject.addProperty(PLAYER_START_POSITION, playerStartPosition);
 
         Gson gson = new Gson();
         JsonArray jArray = new JsonArray();
