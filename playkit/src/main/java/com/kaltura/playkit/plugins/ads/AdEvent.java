@@ -59,7 +59,8 @@ public class AdEvent implements PKEvent {
         LOADED,
         CONTENT_PAUSE_REQUESTED,
         CONTENT_RESUME_REQUESTED,
-        ALL_ADS_COMPLETED
+        ALL_ADS_COMPLETED,
+        AD_LOAD_TIMEOUT_TIMER_STARTED
     }
 
 

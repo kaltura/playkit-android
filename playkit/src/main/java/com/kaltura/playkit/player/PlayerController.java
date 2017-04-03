@@ -34,14 +34,11 @@ public class PlayerController implements Player {
     private static final int ALLOWED_ERROR_RETRIES = 3;
 
 
-
-    private PlayerEngine player = null;
+    private PlayerEngine player;
     private Context context;
     private PlayerView rootPlayerView;
-
     private PKMediaConfig mediaConfig;
     private PKMediaSourceConfig sourceConfig;
-
     private PKEvent.Listener eventListener;
     private PlayerView playerEngineView;
 
@@ -59,8 +56,6 @@ public class PlayerController implements Player {
             return this;
         }
     }
-
-
 
     public void setEventListener(PKEvent.Listener eventListener) {
         this.eventListener = eventListener;
@@ -183,6 +178,7 @@ public class PlayerController implements Player {
         return settings;
     }
 
+
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
 
         isNewEntry = isNewEntry(mediaConfig);
@@ -195,29 +191,31 @@ public class PlayerController implements Player {
             return;
         }
 
-        boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
 
-        if (shouldSwitchBetweenPlayers || player == null) { //if player is null consider it as switch player flow.
-            switchPlayers(source.getMediaFormat());
+        boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
+        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestDecorator);
+        if (player == null) {
+            switchPlayers(source.getMediaFormat(), false);
+        } else if (shouldSwitchBetweenPlayers) {
+            switchPlayers(source.getMediaFormat(), true);
         }
 
-
-        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestDecorator);
-
         player.load(sourceConfig);
+
     }
 
-    private void switchPlayers(PKMediaFormat mediaFormat) {
-        removeAllViews();
+    private void switchPlayers(PKMediaFormat mediaFormat, boolean removePlayerView) {
+        if (removePlayerView) {
+            removePlayerView();
+        }
 
         if (player != null) {
             player.destroy();
         }
         initializePlayer(mediaFormat);
 
-        addPlayerView();
-    }
 
+    }
 
     private void initializePlayer(PKMediaFormat mediaFormat) {
         //Decide which player wrapper should be initialized.
@@ -241,8 +239,11 @@ public class PlayerController implements Player {
 
     @Override
     public void destroy() {
-        log.e("destroy");
+        log.d("destroy");
         if (player != null) {
+            if (playerEngineView != null) {
+                rootPlayerView.removeView(playerEngineView);
+            }
             player.destroy();
             togglePlayerListeners(false);
         }
@@ -253,7 +254,9 @@ public class PlayerController implements Player {
 
     @Override
     public void stop() {
-        player.stop();
+        if (player != null) {
+            player.stop();
+        }
     }
 
     private void startPlaybackFrom(long startPosition) {
@@ -310,12 +313,12 @@ public class PlayerController implements Player {
 
     public void play() {
         log.d("play");
+
         if (player == null) {
             log.e("Attempt to invoke 'play()' on null instance of the player engine");
             return;
         }
-
-
+        addPlayerView();
         player.play();
     }
 
@@ -407,9 +410,10 @@ public class PlayerController implements Player {
         log.d("onApplicationResumed");
         if (player != null) {
             player.restore();
-            prepare(mediaConfig);
-            togglePlayerListeners(true);
         }
+        prepare(mediaConfig);
+        togglePlayerListeners(true);
+
     }
 
     @Override
@@ -449,9 +453,9 @@ public class PlayerController implements Player {
         return false;
     }
 
-    private void removeAllViews() {
+    private void removePlayerView() {
         togglePlayerListeners(false);
-        rootPlayerView.removeAllViews();
+        rootPlayerView.removeView(playerEngineView);
         playerEngineView = null;
     }
 
@@ -469,7 +473,6 @@ public class PlayerController implements Player {
                     ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
                     long currentPosition = player.getCurrentPosition();
                     exoPlayerWrapper.savePlayerPosition();
-
                     exoPlayerWrapper.load(sourceConfig);
                     exoPlayerWrapper.startFrom(currentPosition);
                     return true;
