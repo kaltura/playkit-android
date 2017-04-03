@@ -16,7 +16,7 @@ public class MockParams {
     //result of login with : [username: albert@gmail.com, pass: 123456]
     public static final String KS = "djJ8MTk4fPjQkM96OQ7N4GBL73vbOrbUMx7QNMEdoJ5kc6pLFCbgoTHIOAAmIO3ny2Ro0MnKMqGEGpRGM2fq5schRQ8PzqODmb0yegckE6qH5j9hqNig";
 
-    public static final String ArrivalMediaId = "484730";//frozen
+    public static final String SingMediaId = "480989";
     public static final String MediaId = "258656";//frozen
     public static final String MediaId2 = "437800";//vild-wV
     public static final String MediaId3 = "259295";//the salt of earth

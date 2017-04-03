@@ -53,7 +53,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.kaltura.playkitdemo.MockParams.ArrivalMediaId;
+import static com.kaltura.playkitdemo.MockParams.SingMediaId;
 import static com.kaltura.playkitdemo.MockParams.Format;
 import static com.kaltura.playkitdemo.MockParams.Format2;
 import static com.kaltura.playkitdemo.MockParams.Format_HD_Dash;
@@ -121,10 +121,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         };
 
         startMockMediaLoading(playLoadedEntry);
-//        startOvpMediaLoading(playLoadedEntry);
-//        startOttMediaLoading(playLoadedEntry);
-//        startSimpleOvpMediaLoading(playLoadedEntry);
-//        LocalAssets.start(this, playLoadedEntry);
+//      startOvpMediaLoading(playLoadedEntry);
+//      startOttMediaLoading(playLoadedEntry);
+//      startSimpleOvpMediaLoading(playLoadedEntry);
+//      LocalAssets.start(this, playLoadedEntry);
 
     }
 
@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if(response.error == null) {
                     mediaProvider = new PhoenixMediaProvider()
                             .setSessionProvider(ottSessionProvider)
-                            .setAssetId(ArrivalMediaId) //bunny no horses id = "485380"
+                            .setAssetId(SingMediaId) //bunny no horses id = "485380"
                             .setAssetType(APIDefines.KalturaAssetType.Media)
                             .setFormats(Format_SD_Dash, Format_HD_Dash, Format, Format2);
 
