@@ -201,7 +201,9 @@ public class PlayerController implements Player {
 
     @Override
     public void reset() {
-        player.reset();
+        if (player != null) {
+            player.reset();
+        }
     }
 
     private void startPlaybackFrom(long startPosition) {
