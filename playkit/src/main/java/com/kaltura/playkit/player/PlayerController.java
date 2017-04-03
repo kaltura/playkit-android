@@ -195,10 +195,13 @@ public class PlayerController implements Player {
             return;
         }
 
+
         boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
 
-        if (shouldSwitchBetweenPlayers || player == null) { //if player is null consider it as switch player flow.
-            switchPlayers(source.getMediaFormat());
+        if (player == null) {
+            switchPlayers(source.getMediaFormat(), false);
+        } else if (shouldSwitchBetweenPlayers) {
+            switchPlayers(source.getMediaFormat(), true);
         }
 
 
@@ -207,15 +210,17 @@ public class PlayerController implements Player {
         player.load(sourceConfig);
     }
 
-    private void switchPlayers(PKMediaFormat mediaFormat) {
-        removeAllViews();
+    private void switchPlayers(PKMediaFormat mediaFormat, boolean removePlayerView) {
+        if (removePlayerView) {
+            removePLayerView();
+        }
 
         if (player != null) {
             player.destroy();
         }
         initializePlayer(mediaFormat);
 
-        addPlayerView();
+
     }
 
 
@@ -241,8 +246,11 @@ public class PlayerController implements Player {
 
     @Override
     public void destroy() {
-        log.e("destroy");
+        log.d("destroy");
         if (player != null) {
+            if (playerEngineView != null) {
+                rootPlayerView.removeView(playerEngineView);
+            }
             player.destroy();
             togglePlayerListeners(false);
         }
@@ -310,12 +318,12 @@ public class PlayerController implements Player {
 
     public void play() {
         log.d("play");
+
         if (player == null) {
             log.e("Attempt to invoke 'play()' on null instance of the player engine");
             return;
         }
-
-
+        addPlayerView();
         player.play();
     }
 
@@ -407,9 +415,10 @@ public class PlayerController implements Player {
         log.d("onApplicationResumed");
         if (player != null) {
             player.restore();
-            prepare(mediaConfig);
-            togglePlayerListeners(true);
         }
+        prepare(mediaConfig);
+        togglePlayerListeners(true);
+
     }
 
     @Override
@@ -449,9 +458,9 @@ public class PlayerController implements Player {
         return false;
     }
 
-    private void removeAllViews() {
+    private void removePLayerView() {
         togglePlayerListeners(false);
-        rootPlayerView.removeAllViews();
+        rootPlayerView.removeView(playerEngineView);
         playerEngineView = null;
     }
 

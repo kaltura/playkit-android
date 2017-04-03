@@ -1,6 +1,9 @@
 package com.kaltura.playkit.ads;
 
+import android.support.annotation.NonNull;
+
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
@@ -9,14 +12,33 @@ import com.kaltura.playkit.utils.Consts;
  * @hide
  */
 
-public class AdEnabledPlayerController extends PlayerDecorator implements AdController {
+public class AdEnabledPlayerController extends PlayerDecorator implements AdController, PKAdProviderListener {
 
     private static final PKLog log = PKLog.get("AdEnablController");
 
-    AdsProvider adsProvider;
+    private AdsProvider adsProvider;
+    private PKMediaConfig mediaConfig;
+
     public AdEnabledPlayerController(AdsProvider adsProvider) {
         log.d("Init AdEnabledPlayerController");
         this.adsProvider = adsProvider;
+    }
+
+    /*
+     In order to avoid network resources race between IMA and Content CDN
+     we prevent the prepare until AD is STARTED, No Pre-Roll or AD ERROR is received
+    */
+    @Override
+    public void prepare(@NonNull final PKMediaConfig mediaConfig) {
+        this.mediaConfig = mediaConfig;
+
+        if (adsProvider != null) {
+            if (adsProvider.isAdRequested()) {
+                super.prepare(mediaConfig);
+            } else {
+                adsProvider.setAdProviderListener(this);
+            }
+        }
     }
 
     @Override
@@ -56,7 +78,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
         log.d("PLAY isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused());
         if (adsProvider != null) {
             if (!adsProvider.isAdRequested()) {
-                super.getView().hideVideoSurface();
+                //super.getView().hideVideoSurface();
                 adsProvider.start();
                 return;
             } else if (adsProvider.isAdDisplayed()) {
@@ -87,5 +109,15 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public AdController getAdController() {
         return this;
+    }
+
+    @Override
+    public void onAdLoadingFinished() {
+        log.d("onAdLoadingFinished");
+
+        prepare(mediaConfig);
+        if (adsProvider != null) {
+            adsProvider.removeAdProviderListener();
+        }
     }
 }
