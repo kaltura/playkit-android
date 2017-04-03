@@ -34,10 +34,10 @@ public class PlayerController implements Player {
     private static final int ALLOWED_ERROR_RETRIES = 3;
 
 
-    private PlayerEngine player = null;
+    private PlayerEngine player;
     private Context context;
     private PlayerView rootPlayerView;
-    private PKMediaConfig mediaConfig = null;
+    private PKMediaConfig mediaConfig;
     private PKMediaSourceConfig sourceConfig;
     private PKEvent.Listener eventListener;
     private PlayerView playerEngineView;
