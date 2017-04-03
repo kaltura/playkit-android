@@ -707,8 +707,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 if (!isAdDisplayed) {
                     cancelAdDisplayedCheckTimer();
                 }
+                
                 log.e("Ad LogError - back to playback");
-                adsManager.discardAdBreak();
                 if (player != null && player.getView() != null) {
                     player.getView().showVideoSurface();
                     player.play();
@@ -731,28 +731,19 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     private void initAdDisplayedCheckTimer() {
-        final Handler handler = new Handler();
         adDisplayedCheckTimer = new Timer();
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                handler.post(new Runnable() {
-                    public void run() {
-                        try {
-                            if (adsManager != null && adsManager.getAdProgress() != null) {
-                                float currentTime = adsManager.getAdProgress().getCurrentTime();
-                                if (currentTime > 0) {
-                                    log.d("AD Displayed delay check : ad posiiton " + currentTime);
-                                    isAdDisplayed = true;
-                                    messageBus.post(new AdEvent(AdEvent.Type.AD_PROGRESS));
-                                    cancelAdDisplayedCheckTimer();
-                                }
-                            }
-                        } catch (Exception e) {
-                            // TODO Auto-generated catch block
-                        }
+                if (adsManager != null && adsManager.getAdProgress() != null) {
+                    float currentTime = adsManager.getAdProgress().getCurrentTime();
+                    if (currentTime > 0) {
+                        log.d("AD Displayed delay check : ad posiiton " + currentTime);
+                        isAdDisplayed = true;
+                        messageBus.post(new AdEvent(AdEvent.Type.AD_PROGRESS));
+                        cancelAdDisplayedCheckTimer();
                     }
-                });
+                }
             }
         };
         if (adDisplayedCheckTimer != null) {
