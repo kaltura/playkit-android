@@ -13,11 +13,14 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKRequestInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
+
+import java.util.UUID;
 
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 
@@ -30,20 +33,40 @@ public class PlayerController implements Player {
     private static final PKLog log = PKLog.get("PlayerController");
     private static final int ALLOWED_ERROR_RETRIES = 3;
 
-
-    private PlayerEngine player;
+    private PlayerEngine player = null;
     private Context context;
     private PlayerView rootPlayerView;
 
-    private PKMediaConfig mediaConfig = null;
+    private PKMediaConfig mediaConfig;
+    private PKMediaSourceConfig sourceConfig;
 
     private PKEvent.Listener eventListener;
     private PlayerView playerEngineView;
 
+    private UUID sessionId = UUID.randomUUID();
+    private PKRequestInfo.Decorator contentRequestDecorator;
+
     private boolean isNewEntry = true;
+    private Settings settings = new Settings();
+
+    private class Settings implements Player.Settings {
+
+        @Override
+        public Player.Settings setContentRequestDecorator(PKRequestInfo.Decorator contentRequestDecorator) {
+            PlayerController.this.contentRequestDecorator = contentRequestDecorator;
+            return this;
+        }
+    }
+
+
 
     public void setEventListener(PKEvent.Listener eventListener) {
         this.eventListener = eventListener;
+    }
+
+    @Override
+    public UUID getSessionId() {
+        return sessionId;
     }
 
     interface EventListener {
@@ -149,6 +172,11 @@ public class PlayerController implements Player {
         }
     }
 
+    @Override
+    public Player.Settings getSettings() {
+        return settings;
+    }
+
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
         isNewEntry = isNewEntry(mediaConfig);
         this.mediaConfig = mediaConfig;
@@ -171,7 +199,10 @@ public class PlayerController implements Player {
             }
         }
 
-        player.load(source);
+
+        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestDecorator);
+
+        player.load(sourceConfig);
     }
 
 
@@ -390,13 +421,8 @@ public class PlayerController implements Player {
                     ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
                     long currentPosition = player.getCurrentPosition();
                     exoPlayerWrapper.savePlayerPosition();
-                    PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
-                    if (source == null) {
-                        log.e("No playable source found for entry");
-                        return false;
-                    }
-                    exoPlayerWrapper.load(source);
+                    exoPlayerWrapper.load(sourceConfig);
                     exoPlayerWrapper.startFrom(currentPosition);
                     return true;
                 }
