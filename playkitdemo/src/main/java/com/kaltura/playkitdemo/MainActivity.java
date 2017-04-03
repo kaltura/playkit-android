@@ -204,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void onMediaLoaded(PKMediaEntry mediaEntry) {
         
-        PKMediaConfig mediaConfig = new PKMediaConfig().setMediaEntry(mediaEntry).setStartPosition(0);
+        PKMediaConfig mediaConfig = new PKMediaConfig().setMediaEntry(mediaEntry).setStartPosition(10);
         PKPluginConfigs pluginConfig = new PKPluginConfigs();
         if (player == null) {
 
