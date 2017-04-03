@@ -408,13 +408,15 @@ public class KalturaStatsPlugin extends PKPlugin {
         int uiconfId = pluginConfig.has("uiconfId") ? pluginConfig.getAsJsonPrimitive("uiconfId").getAsInt() : 0;
         String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : BASE_URL;
         int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
+        String entryId = pluginConfig.has("entryId") ? pluginConfig.getAsJsonPrimitive("entryId").getAsString() : "";
+
         long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration() / 1000;
 
         // Parameters for the request -
         //        String baseUrl, int partnerId, int eventType, String clientVer, long duration,
         //        String sessionId, long position, String uiConfId, String entryId, String widgetId,  boolean isSeek
         final RequestBuilder requestBuilder = StatsService.sendStatsEvent(baseUrl, partnerId, eventType.getValue(), PlayKitManager.CLIENT_TAG, duration,
-                sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), "_" + partnerId, hasSeeked);
+                sessionId, player.getCurrentPosition(), uiconfId, entryId, "_" + partnerId, hasSeeked);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
