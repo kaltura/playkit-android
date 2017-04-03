@@ -168,22 +168,26 @@ public class PlayerController implements Player {
 
         boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
 
-        if (shouldSwitchBetweenPlayers || player == null) { //if player is null consider it as switch player flow.
-            switchPlayers(source.getMediaFormat());
+        if (player == null) {
+            switchPlayers(source.getMediaFormat(), false);
+        } else if (shouldSwitchBetweenPlayers) {
+            switchPlayers(source.getMediaFormat(), true);
         }
 
         player.load(source);
     }
 
-    private void switchPlayers(PKMediaFormat mediaFormat) {
-        removeAllViews();
+    private void switchPlayers(PKMediaFormat mediaFormat, boolean removePlayerView) {
+        if (removePlayerView) {
+            removePLayerView();
+        }
 
         if (player != null) {
             player.destroy();
         }
         initializePlayer(mediaFormat);
 
-        addPlayerView();
+
     }
 
 
@@ -281,12 +285,7 @@ public class PlayerController implements Player {
             log.e("Attempt to invoke 'play()' on null instance of the player engine");
             return;
         }
-        
-        if (playerEngineView == null) {
-            playerEngineView = player.getView();
-            rootPlayerView.addView(playerEngineView);
-        }
-
+        addPlayerView();
         player.play();
     }
 
@@ -421,9 +420,9 @@ public class PlayerController implements Player {
         return false;
     }
 
-    private void removeAllViews() {
+    private void removePLayerView() {
         togglePlayerListeners(false);
-        rootPlayerView.removeAllViews();
+        rootPlayerView.removeView(playerEngineView);
         playerEngineView = null;
     }
 
