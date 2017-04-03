@@ -48,7 +48,6 @@ import com.kaltura.playkit.PKEmsgMetadata;
 import com.kaltura.playkit.PKId3Metadata;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaFormat;
-import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
@@ -81,7 +80,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private DeferredDrmSessionManager drmSessionManager;
 
     private PlayerEvent.Type currentEvent;
-    private PlayerState currentState = PlayerState.IDLE, previousState;
+    private PlayerState currentState = PlayerState.IDLE;
+    private PlayerState previousState;
 
     private Factory mediaDataSourceFactory;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -162,25 +162,25 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         return trackSelector;
     }
 
-    private void preparePlayer(PKMediaSource pkMediaSource) {
+    private void preparePlayer(PKMediaSourceConfig sourceConfig) {
         sameErrorOccurrenceCounter = 0;
-        drmSessionManager.setMediaSource(pkMediaSource);
+        drmSessionManager.setMediaSource(sourceConfig.mediaSource);
 
         shouldGetTracksInfo = true;
-        this.lastPlayedSource = Uri.parse(pkMediaSource.getUrl());
-        MediaSource mediaSource = buildExoMediaSource(pkMediaSource);
+        this.lastPlayedSource = sourceConfig.getUrl();
+        MediaSource mediaSource = buildExoMediaSource(sourceConfig);
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
     }
 
-    private MediaSource buildExoMediaSource(PKMediaSource source) {
-        PKMediaFormat format = source.getMediaFormat();
+    private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig) {
+        PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
         if (format == null) {
             // TODO: error?
             return null;
         }
 
-        Uri uri = Uri.parse(source.getUrl());
+        Uri uri = sourceConfig.getUrl();
 
 
         switch (format) {
@@ -408,13 +408,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     }
 
     @Override
-    public void load(PKMediaSource mediaSource) {
+    public void load(PKMediaSourceConfig mediaSourceConfig) {
         log.d("load");
         if (player == null) {
             initializePlayer();
         }
 
-        preparePlayer(mediaSource);
+        preparePlayer(mediaSourceConfig);
     }
 
     @Override
@@ -611,6 +611,15 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         return new PlayerEvent.ExceptionInfo(currentException, sameErrorOccurrenceCounter);
     }
 
+    @Override
+    public void stop() {
+        if (player != null) {
+            player.setPlayWhenReady(false);
+            player.seekTo(0);
+            player.stop();
+            sendDistinctEvent(PlayerEvent.Type.STOPPED);
+        }
+    }
 
     void savePlayerPosition() {
         if (player == null) {

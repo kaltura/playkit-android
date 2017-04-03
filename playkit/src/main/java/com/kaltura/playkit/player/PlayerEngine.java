@@ -20,9 +20,9 @@ interface PlayerEngine {
     /**
      * Initialize player (if needed), and load the mediaSourceUri
      * that should be played.
-     * @param mediaSource - the source to be played.
+     * @param mediaSourceConfig - the source to be played.
      */
-    void load(PKMediaSource mediaSource);
+    void load(PKMediaSourceConfig mediaSourceConfig);
 
     /**
      * Getter for the View to which current
@@ -169,6 +169,13 @@ interface PlayerEngine {
      * @return - the last {@link PlayerEvent.ExceptionInfo} that happened.
      */
     PlayerEvent.ExceptionInfo getCurrentException();
+
+
+    /**
+     * Stop player executing the {@link PlayerEngine} implementation.
+     * stop the player and seek to start position.
+     */
+    void stop();
 
     /**
      * Will return the id3 metadata object.

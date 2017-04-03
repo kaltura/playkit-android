@@ -147,6 +147,7 @@ public class PlayerEvent implements PKEvent {
         REPLAY, //Sent when replay happened.
         PLAYBACK_PARAMS_UPDATED, // Sent event that notify about changes in the playback parameters. When bitrate of the video or audio track changes or new media loaded. Holds the PlaybackParamsInfo.java object with relevant data.
         VOLUME_CHANGED, // Sent when volume is changed.
+        STOPPED, // sent when stop player api is called
         ID3_METADATA_AVAILABLE, // Sent when there is id3 (hls) metadata available for this entry.
         EMSG_METADATA_AVAILABLE // Sent when there is emsg (dash) metadata available for this entry.
     }

@@ -90,6 +90,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private boolean appIsInBackground;
     private boolean adManagerInitDuringBackground;
     private boolean applicationInBackgroundDuringLoaded;
+    private PKMediaConfig mediaConfig;
+
 
     ////////////////////
     private MessageBus messageBus;
@@ -152,9 +154,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         adConfig = parseConfig(config);
         adUiContainer = player.getView();
 
-        imaSetup();
 
-        requestAdsFromIMA(adConfig.getAdTagURL());
     }
     
     private static IMAConfig parseConfig(Object config) {
@@ -220,6 +220,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
 
         renderingSettings = ImaSdkFactory.getInstance().createAdsRenderingSettings();
+        if (mediaConfig != null && mediaConfig.getStartPosition() > 0) {
+            renderingSettings.setPlayAdsAfterTime(mediaConfig.getStartPosition());
+        }
+
         if (adConfig.getVideoMimeTypes() != null && adConfig.getVideoMimeTypes().size() > 0) {
             renderingSettings.setMimeTypes(adConfig.getVideoMimeTypes());
         }
@@ -246,6 +250,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         log.d("Start onUpdateMedia");
+        this.mediaConfig = mediaConfig;
+        imaSetup();
+        requestAdsFromIMA(adConfig.getAdTagURL());
     }
 
     @Override
