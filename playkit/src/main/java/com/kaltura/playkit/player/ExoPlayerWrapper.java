@@ -20,6 +20,9 @@ import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataRenderer;
 import com.google.android.exoplayer2.metadata.emsg.EventMessage;
 import com.google.android.exoplayer2.metadata.id3.ApicFrame;
+import com.google.android.exoplayer2.metadata.id3.BinaryFrame;
+import com.google.android.exoplayer2.metadata.id3.ChapterFrame;
+import com.google.android.exoplayer2.metadata.id3.ChapterTocFrame;
 import com.google.android.exoplayer2.metadata.id3.CommentFrame;
 import com.google.android.exoplayer2.metadata.id3.GeobFrame;
 import com.google.android.exoplayer2.metadata.id3.Id3Frame;
@@ -380,7 +383,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             metadataEntry = metadata.get(i);
 
             if (metadataEntry instanceof TextInformationFrame) {
-                id3Metadata.setTextInfoFram((TextInformationFrame) metadataEntry);
+                id3Metadata.setTextInfoFrame((TextInformationFrame) metadataEntry);
             } else if (metadataEntry instanceof UrlLinkFrame) {
                 id3Metadata.setUrlLinkFrame((UrlLinkFrame) metadataEntry);
             } else if (metadataEntry instanceof PrivFrame) {
@@ -393,6 +396,12 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
                 id3Metadata.setCommentFrame((CommentFrame) metadataEntry);
             } else if (metadataEntry instanceof Id3Frame) {
                 id3Metadata.setId3Frame((Id3Frame) metadataEntry);
+            } else if (metadataEntry instanceof ChapterFrame) {
+                id3Metadata.setChapterFrame((ChapterFrame) metadataEntry);
+            } else if (metadataEntry instanceof ChapterTocFrame) {
+                id3Metadata.setChapterTocFrame((ChapterTocFrame) metadataEntry);
+            } else if (metadataEntry instanceof BinaryFrame) {
+                id3Metadata.setBinaryFrame((BinaryFrame) metadataEntry);
             } else if (metadataEntry instanceof EventMessage) {
                 emsgMetadata.setEventMessage((EventMessage) metadataEntry);
             }

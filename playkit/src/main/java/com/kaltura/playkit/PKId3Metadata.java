@@ -1,6 +1,9 @@
 package com.kaltura.playkit;
 
 import com.google.android.exoplayer2.metadata.id3.ApicFrame;
+import com.google.android.exoplayer2.metadata.id3.BinaryFrame;
+import com.google.android.exoplayer2.metadata.id3.ChapterFrame;
+import com.google.android.exoplayer2.metadata.id3.ChapterTocFrame;
 import com.google.android.exoplayer2.metadata.id3.CommentFrame;
 import com.google.android.exoplayer2.metadata.id3.GeobFrame;
 import com.google.android.exoplayer2.metadata.id3.Id3Frame;
@@ -21,8 +24,11 @@ public class PKId3Metadata {
     private ApicFrame apicFrame = null;
     private CommentFrame commentFrame = null;
     private Id3Frame id3Frame = null;
+    private ChapterFrame chapterFrame = null;
+    private ChapterTocFrame chapterTocFrame = null;
+    private BinaryFrame binaryFrame = null;
 
-    public PKId3Metadata setTextInfoFram(TextInformationFrame textInfoFrame) {
+    public PKId3Metadata setTextInfoFrame(TextInformationFrame textInfoFrame) {
         this.textInformationFrame = textInfoFrame;
         return this;
     }
@@ -57,6 +63,21 @@ public class PKId3Metadata {
         return this;
     }
 
+    public PKId3Metadata setChapterFrame(ChapterFrame chapterFrame) {
+        this.chapterFrame = chapterFrame;
+        return this;
+    }
+
+    public PKId3Metadata setChapterTocFrame(ChapterTocFrame chapterTocFrame) {
+        this.chapterTocFrame = chapterTocFrame;
+        return this;
+    }
+
+    public PKId3Metadata setBinaryFrame(BinaryFrame binaryFrame) {
+        this.binaryFrame = binaryFrame;
+        return this;
+    }
+
     public boolean hasTextInfoFrame() {
         return textInformationFrame != null;
     }
@@ -83,6 +104,18 @@ public class PKId3Metadata {
 
     public boolean hasId3Frame() {
         return id3Frame != null;
+    }
+
+    public boolean hasChapterFrame() {
+        return chapterFrame != null;
+    }
+
+    public boolean hasChapterTocFrame() {
+        return chapterTocFrame != null;
+    }
+
+    public boolean hasBinaryFrame() {
+        return binaryFrame != null;
     }
 
     public TextInformationFrame getTextInformationFrame() {
@@ -113,6 +146,18 @@ public class PKId3Metadata {
         return id3Frame;
     }
 
+    public ChapterFrame getChapterFrame() {
+        return chapterFrame;
+    }
+
+    public ChapterTocFrame getChapterTocFrame() {
+        return chapterTocFrame;
+    }
+
+    public BinaryFrame getBinaryFrame() {
+        return binaryFrame;
+    }
+
     public boolean hasMetadata() {
         return textInformationFrame != null
                 || urlLinkFrame != null
@@ -120,6 +165,9 @@ public class PKId3Metadata {
                 || geobFrame != null
                 || apicFrame != null
                 || commentFrame != null
-                || id3Frame != null;
+                || id3Frame != null
+                || chapterFrame != null
+                || chapterTocFrame != null
+                || binaryFrame != null;
     }
 }
