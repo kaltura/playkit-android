@@ -254,7 +254,9 @@ public class PlayerController implements Player {
 
     @Override
     public void stop() {
-        player.stop();
+        if (player != null) {
+            player.stop();
+        }
     }
 
     private void startPlaybackFrom(long startPosition) {
