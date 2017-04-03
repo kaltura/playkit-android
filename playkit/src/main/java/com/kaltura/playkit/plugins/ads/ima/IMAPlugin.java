@@ -579,6 +579,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     log.d("Content not prepared.. Preparing and calling play.");
                     if (pkAdProviderListener != null) {
                         pkAdProviderListener.onAdLoadingFinished();
+                        isContentPrepared = true;
                         if (player != null){
                             log.d("Content not prepared.. Play called.");
                             player.getView().showVideoSurface();
