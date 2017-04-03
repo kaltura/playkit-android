@@ -206,7 +206,7 @@ public class PlayerController implements Player {
 
     private void switchPlayers(PKMediaFormat mediaFormat, boolean removePlayerView) {
         if (removePlayerView) {
-            removePLayerView();
+            removePlayerView();
         }
 
         if (player != null) {
@@ -451,7 +451,7 @@ public class PlayerController implements Player {
         return false;
     }
 
-    private void removePLayerView() {
+    private void removePlayerView() {
         togglePlayerListeners(false);
         rootPlayerView.removeView(playerEngineView);
         playerEngineView = null;
