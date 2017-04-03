@@ -5,9 +5,12 @@ import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaConfig;
+import com.kaltura.playkit.PKRequestInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
+
+import java.util.UUID;
 
 /**
  * Created by zivilan on 11/12/2016.
@@ -17,6 +20,17 @@ public class MockPlayer implements Player {
     private boolean isPlaying = false;
     private int duration = 100;
     private long currentPosition = 0;
+
+    @Override
+    public Settings getSettings() {
+        return new Settings() {
+
+            @Override
+            public Settings setContentRequestDecorator(PKRequestInfo.Decorator contentRequestDecorator) {
+                return null;
+            }
+        };
+    }
 
     @Override
     public void prepare(@NonNull PKMediaConfig playerConfig) {
@@ -125,6 +139,11 @@ public class MockPlayer implements Player {
 
     @Override
     public AdController getAdController() {
+        return null;
+    }
+
+    @Override
+    public UUID getSessionId() {
         return null;
     }
 

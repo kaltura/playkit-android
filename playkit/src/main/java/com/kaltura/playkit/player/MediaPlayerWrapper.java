@@ -11,7 +11,6 @@ import android.view.SurfaceHolder;
 
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
@@ -37,12 +36,12 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback,
 
     private static final PKLog log = PKLog.get("MediaPlayerWrapper");
 
-    private static int ILLEGAL_STATEׁ_OPERATION = -38;
+    private static final int ILLEGAL_STATEׁ_OPERATION = -38;
 
     private Context context;
     private MediaPlayer player;
     private MediaPlayerView mediaPlayerView;
-    private PKMediaSource mediaSource;
+    private PKMediaSourceConfig mediaSourceConfig;
     private String assetUri;
 
     private String licenseUri;
@@ -82,14 +81,16 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback,
     }
 
     @Override
-    public void load(PKMediaSource mediaSource) {
+    public void load(PKMediaSourceConfig mediaSourceConfig) {
         log.d("load");
-        if (currentState != null && this.mediaSource != null && !this.mediaSource.equals(mediaSource) && prepareState != PREPARING) {
+
+        if (currentState != null && this.mediaSourceConfig != null && !this.mediaSourceConfig.equals(mediaSourceConfig) && prepareState != PREPARING) {
             player.reset();
             currentState = PlayerState.IDLE;
             prepareState = PrepareState.NOT_PREPARED;
         }
-        this.mediaSource = mediaSource;
+
+        this.mediaSourceConfig = mediaSourceConfig;
         if ((currentState == null || currentState == PlayerState.IDLE) && prepareState != PREPARING) {
             initializePlayer();
         }
@@ -103,7 +104,7 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback,
         //player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         //player.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
 
-        assetUri = mediaSource.getUrl();
+        assetUri = mediaSourceConfig.getUrl().toString();
         String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
         try {
             mediaPlayerView.getSurfaceHolder().addCallback(this);
@@ -113,7 +114,7 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback,
             log.e(e.toString());
         }
         if (drmClient.needToAcquireRights(assetAcquireUri)) {
-            List<PKDrmParams> drmData = mediaSource.getDrmData();
+            List<PKDrmParams> drmData = mediaSourceConfig.mediaSource.getDrmData();
             if (drmData != null) {
                 licenseUri = drmData.get(0).getLicenseUri();
                 drmClient.acquireRights(assetAcquireUri, licenseUri);

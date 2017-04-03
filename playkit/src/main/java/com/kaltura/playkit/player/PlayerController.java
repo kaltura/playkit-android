@@ -13,11 +13,14 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKRequestInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
+
+import java.util.UUID;
 
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 
@@ -31,19 +34,36 @@ public class PlayerController implements Player {
     private static final int ALLOWED_ERROR_RETRIES = 3;
 
 
-    private PlayerEngine player = null;
+    private PlayerEngine player;
     private Context context;
     private PlayerView rootPlayerView;
-
-    private PKMediaConfig mediaConfig = null;
-
+    private PKMediaConfig mediaConfig;
+    private PKMediaSourceConfig sourceConfig;
     private PKEvent.Listener eventListener;
     private PlayerView playerEngineView;
 
+    private UUID sessionId = UUID.randomUUID();
+    private PKRequestInfo.Decorator contentRequestDecorator;
+
     private boolean isNewEntry = true;
+    private Settings settings = new Settings();
+
+    private class Settings implements Player.Settings {
+
+        @Override
+        public Player.Settings setContentRequestDecorator(PKRequestInfo.Decorator contentRequestDecorator) {
+            PlayerController.this.contentRequestDecorator = contentRequestDecorator;
+            return this;
+        }
+    }
 
     public void setEventListener(PKEvent.Listener eventListener) {
         this.eventListener = eventListener;
+    }
+
+    @Override
+    public UUID getSessionId() {
+        return sessionId;
     }
 
     interface EventListener {
@@ -153,6 +173,12 @@ public class PlayerController implements Player {
         }
     }
 
+    @Override
+    public Player.Settings getSettings() {
+        return settings;
+    }
+
+
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
 
         isNewEntry = isNewEntry(mediaConfig);
@@ -165,26 +191,31 @@ public class PlayerController implements Player {
             return;
         }
 
-        boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
 
-        if (shouldSwitchBetweenPlayers || player == null) { //if player is null consider it as switch player flow.
-            switchPlayers(source.getMediaFormat());
+        boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
+        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestDecorator);
+        if (player == null) {
+            switchPlayers(source.getMediaFormat(), false);
+        } else if (shouldSwitchBetweenPlayers) {
+            switchPlayers(source.getMediaFormat(), true);
         }
 
-        player.load(source);
+        player.load(sourceConfig);
+
     }
 
-    private void switchPlayers(PKMediaFormat mediaFormat) {
-        removeAllViews();
+    private void switchPlayers(PKMediaFormat mediaFormat, boolean removePlayerView) {
+        if (removePlayerView) {
+            removePlayerView();
+        }
 
         if (player != null) {
             player.destroy();
         }
         initializePlayer(mediaFormat);
 
-        addPlayerView();
-    }
 
+    }
 
     private void initializePlayer(PKMediaFormat mediaFormat) {
         //Decide which player wrapper should be initialized.
@@ -208,8 +239,11 @@ public class PlayerController implements Player {
 
     @Override
     public void destroy() {
-        log.e("destroy");
+        log.d("destroy");
         if (player != null) {
+            if (playerEngineView != null) {
+                rootPlayerView.removeView(playerEngineView);
+            }
             player.destroy();
             togglePlayerListeners(false);
         }
@@ -220,7 +254,9 @@ public class PlayerController implements Player {
 
     @Override
     public void stop() {
-        player.stop();
+        if (player != null) {
+            player.stop();
+        }
     }
 
     private void startPlaybackFrom(long startPosition) {
@@ -277,12 +313,12 @@ public class PlayerController implements Player {
 
     public void play() {
         log.d("play");
+
         if (player == null) {
             log.e("Attempt to invoke 'play()' on null instance of the player engine");
             return;
         }
-
-
+        addPlayerView();
         player.play();
     }
 
@@ -374,9 +410,10 @@ public class PlayerController implements Player {
         log.d("onApplicationResumed");
         if (player != null) {
             player.restore();
-            prepare(mediaConfig);
-            togglePlayerListeners(true);
         }
+        prepare(mediaConfig);
+        togglePlayerListeners(true);
+
     }
 
     @Override
@@ -416,9 +453,9 @@ public class PlayerController implements Player {
         return false;
     }
 
-    private void removeAllViews() {
+    private void removePlayerView() {
         togglePlayerListeners(false);
-        rootPlayerView.removeAllViews();
+        rootPlayerView.removeView(playerEngineView);
         playerEngineView = null;
     }
 
@@ -436,13 +473,7 @@ public class PlayerController implements Player {
                     ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
                     long currentPosition = player.getCurrentPosition();
                     exoPlayerWrapper.savePlayerPosition();
-                    PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
-
-                    if (source == null) {
-                        log.e("No playable source found for entry");
-                        return false;
-                    }
-                    exoPlayerWrapper.load(source);
+                    exoPlayerWrapper.load(sourceConfig);
                     exoPlayerWrapper.startFrom(currentPosition);
                     return true;
                 }
