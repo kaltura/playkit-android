@@ -78,7 +78,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
         @Override
         public void warmUp(Context context) {
-            
+
         }
     };
 
@@ -207,10 +207,10 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     }
 
     private void sendLiveEvent(final long bufferTime) {
-        String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
+        String sessionId = (player != null && player.getSessionId() != null) ? player.getSessionId().toString() :"";
         String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : BASE_URL;
         int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
-        String entryId = pluginConfig.has("entryId") ? pluginConfig.getAsJsonPrimitive("entryId").getAsString() : "";
+        String entryId = pluginConfig.has("entryId") ? pluginConfig.getAsJsonPrimitive("entryId").getAsString() : mediaConfig.getMediaEntry().getId();
 
         // Parameters for the request -
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
