@@ -707,7 +707,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 if (!isAdDisplayed) {
                     cancelAdDisplayedCheckTimer();
                 }
-                
+
                 log.e("Ad LogError - back to playback");
                 if (player != null && player.getView() != null) {
                     player.getView().showVideoSurface();
@@ -740,7 +740,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     if (currentTime > 0) {
                         log.d("AD Displayed delay check : ad posiiton " + currentTime);
                         isAdDisplayed = true;
-                        messageBus.post(new AdEvent(AdEvent.Type.AD_PROGRESS));
+                        messageBus.post(new AdEvent(AD_PROGRESS));
                         cancelAdDisplayedCheckTimer();
                     }
                 }
