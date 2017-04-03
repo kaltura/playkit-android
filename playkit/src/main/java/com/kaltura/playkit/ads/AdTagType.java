@@ -1,6 +1,6 @@
 package com.kaltura.playkit.ads;
 
-public enum AdResponseType {
+public enum AdTagType {
     UNKNOWN,
     VMAP,
     VAST,

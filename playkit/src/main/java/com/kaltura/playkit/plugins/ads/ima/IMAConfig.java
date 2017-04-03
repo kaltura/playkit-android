@@ -5,7 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.kaltura.playkit.PKMediaFormat;
-import com.kaltura.playkit.ads.AdResponseType;
+import com.kaltura.playkit.ads.AdTagType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ public class IMAConfig {
     public static final int DEFAULT_AD_LOAD_COUNT_DOWN_TICK = 250;
 
     public static final String AD_TAG_LANGUAGE     = "language";
-    public static final String AD_RESPONSE_TYPE     = "adResponseType";
+    public static final String AD_TAG_TYPE = "adTagType";
     public static final String AD_TAG_URL          = "adTagURL";
     public static final String ENABLE_BG_PLAYBACK  = "enableBackgroundPlayback";
     public static final String AD_VIDEO_BITRATE    = "videoBitrate";
@@ -34,7 +34,7 @@ public class IMAConfig {
 
     private String language;
     private String adTagURL;
-    private AdResponseType adResponseType;
+    private AdTagType adTagType;
     private boolean enableBackgroundPlayback;
     private int videoBitrate; // in KB
     private boolean adAttribution;
@@ -47,7 +47,7 @@ public class IMAConfig {
 
     public IMAConfig() {
         this.language                 = "en";
-        this.adResponseType           = AdResponseType.VAST;
+        this.adTagType = AdTagType.VAST;
         this.enableBackgroundPlayback = false;
         this.videoBitrate             = -1;
         this.adAttribution            = true;
@@ -74,8 +74,8 @@ public class IMAConfig {
         return this;
     }
 
-    public IMAConfig setAdResponseType(AdResponseType adResponseType) {
-        this.adResponseType = adResponseType;
+    public IMAConfig setAdTagType(AdTagType adTagType) {
+        this.adTagType = adTagType;
         return this;
     }
 
@@ -128,8 +128,8 @@ public class IMAConfig {
         return adAttribution;
     }
 
-    public AdResponseType getAdResponseType() {
-        return adResponseType;
+    public AdTagType getAdTagType() {
+        return adTagType;
     }
 
 
@@ -180,7 +180,7 @@ public class IMAConfig {
     public JsonObject toJSONObject() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(AD_TAG_LANGUAGE, language);
-        jsonObject.addProperty(AD_RESPONSE_TYPE, adResponseType.name());
+        jsonObject.addProperty(AD_TAG_TYPE, adTagType.name());
         jsonObject.addProperty(AD_TAG_URL, adTagURL);
         jsonObject.addProperty(ENABLE_BG_PLAYBACK, enableBackgroundPlayback);
         jsonObject.addProperty(AD_VIDEO_BITRATE, videoBitrate);
