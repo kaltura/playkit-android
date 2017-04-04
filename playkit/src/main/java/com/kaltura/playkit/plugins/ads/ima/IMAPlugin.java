@@ -204,10 +204,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     log.d("adManagerTimer.onFinish, adsManager=" + adsManager);
                     if (adsManager == null) {
                         log.d("adsManager is null, will play content");
-                        if (pkAdProviderListener != null) {
-                            isContentPrepared = true;
-                            pkAdProviderListener.onAdLoadingFinished();
-                        }
+                        preparePlayerOnAdLoadingFinished();
 
                         messageBus.post(new AdEvent(AdEvent.Type.AD_BREAK_IGNORED));
                         if (isAdRequested) {
@@ -622,13 +619,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     adsManager.pause();
                 }
 
-                if (pkAdProviderListener != null) {
-                    isContentPrepared = true;
-                    pkAdProviderListener.onAdLoadingFinished();
-                }
-
                 adInfo = createAdInfo(adEvent.getAd());
                 messageBus.post(new AdEvent.AdStartedEvent(adInfo));
+
+                if (!appIsInBackground) {
+                    preparePlayerOnAdLoadingFinished();
+                }
 
                 if (adTagCuePoints == null) {
                     Handler handler = new Handler();
@@ -636,10 +632,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                         @Override
                         public void run() {
                             log.d("AD CUEPOINTS CHANGED TRIGGERED WITH DELAY");
-                            if (pkAdProviderListener != null) {
-                                isContentPrepared = true;
-                                pkAdProviderListener.onAdLoadingFinished();
-                            }
+
                             adTagCuePoints = new AdCuePoints(getAdCuePoints());
                             messageBus.post(new AdEvent.AdCuePointsUpdateEvent(adTagCuePoints));
                         }
@@ -711,10 +704,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 break;
             case LOG:
                 //for this case no AD ERROR is fired need to show view {type=adLoadError, errorCode=1009, errorMessage=The response does not contain any valid ads.}
-                if (pkAdProviderListener != null) {
-                    isContentPrepared = true;
-                    pkAdProviderListener.onAdLoadingFinished();
-                }
+                preparePlayerOnAdLoadingFinished();
                 if (!isAdDisplayed) {
                     cancelAdDisplayedCheckTimer();
                 }
@@ -910,14 +900,18 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdError(AdError.Type.UNKNOWN_ERROR, errorMessage));
         }
 
-        if (pkAdProviderListener != null) {
-            isContentPrepared = true;
-            pkAdProviderListener.onAdLoadingFinished();
-        }
+        preparePlayerOnAdLoadingFinished();
 
         if (player != null && player.getView() != null) {
             player.getView().showVideoSurface();
             player.play();
+        }
+    }
+
+    private void preparePlayerOnAdLoadingFinished() {
+        if (pkAdProviderListener != null) {
+            isContentPrepared = true;
+            pkAdProviderListener.onAdLoadingFinished();
         }
     }
 }
