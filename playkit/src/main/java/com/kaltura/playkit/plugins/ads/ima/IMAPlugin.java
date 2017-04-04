@@ -215,8 +215,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     }
                 }
             };
-            adManagerTimer.start();
-            messageBus.post(new AdEvent(AD_LOAD_TIMEOUT_TIMER_STARTED));
+            if (adManagerTimer != null) {
+                adManagerTimer.start();
+                messageBus.post(new AdEvent(AD_LOAD_TIMEOUT_TIMER_STARTED));
+            }
         }
 
         adDisplayContainer = sdkFactory.createAdDisplayContainer();
@@ -329,10 +331,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         cancelAdDisplayedCheckTimer();
         isContentPrepared = false;
 
-        if (adManagerTimer != null) {
-            adManagerTimer.cancel();
-            adManagerTimer = null;
-        }
+        cancelAdManagerTimer();
 
         adTagCuePoints = null;
         adPlaybackCancelled = false;
@@ -351,6 +350,14 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         removeAdProviderListener();
     }
 
+    private void cancelAdManagerTimer() {
+        log.d("cancelAdManagerTimer");
+        if (adManagerTimer != null) {
+            adManagerTimer.cancel();
+            adManagerTimer = null;
+        }
+    }
+
     ////////Ads Plugin
 
     @Override
@@ -367,8 +374,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             public void onAdsManagerLoaded(AdsManagerLoadedEvent adsManagerLoadedEvent) {
 
                 log.d("AdsManager loaded");
-
-                adManagerTimer.cancel();
+                cancelAdManagerTimer();
 
                 // Ads were successfully loaded, so get the AdsManager instance. AdsManager has
                 // events for ad playback and errors.
@@ -822,6 +828,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         isAdDisplayed = false;
 
         cancelAdDisplayedCheckTimer();
+        cancelAdManagerTimer();
         String errorMessage = adErrorEvent.getError().getMessage();
         switch (adErrorEvent.getError().getErrorCode()) {
             case INTERNAL_ERROR:
