@@ -1,7 +1,7 @@
 package com.kaltura.playkit.mediaproviders.base;
 
-import com.kaltura.netkit.backend.data.BasePlaybackSource;
 import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.api.base.model.BasePlaybackSource;
 
 import java.util.HashMap;
 import java.util.Map;

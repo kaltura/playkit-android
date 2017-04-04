@@ -3,13 +3,13 @@ package com.kaltura.playkit.mediaproviders.base;
 
 import android.util.Log;
 
-import com.kaltura.netkit.backend.session.SessionProvider;
-import com.kaltura.netkit.connect.RequestQueue;
+import com.kaltura.netkit.connect.executor.RequestQueue;
+import com.kaltura.netkit.connect.response.PrimitiveResult;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.CallableLoader;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.OnCompletion;
-import com.kaltura.netkit.utils.PrimitiveResult;
+import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 

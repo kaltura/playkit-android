@@ -8,8 +8,8 @@ import android.os.Looper;
 import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
 
+import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.netkit.utils.ResultElement;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.LocalDataStore;
 import com.kaltura.playkit.PKDrmParams;

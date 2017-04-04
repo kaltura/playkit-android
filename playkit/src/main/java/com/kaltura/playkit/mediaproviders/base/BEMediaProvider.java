@@ -1,13 +1,13 @@
 package com.kaltura.playkit.mediaproviders.base;
 
+import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
+import com.kaltura.netkit.connect.executor.RequestQueue;
+import com.kaltura.netkit.utils.Accessories;
+import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.netkit.backend.session.SessionProvider;
-import com.kaltura.netkit.connect.APIOkRequestsExecutor;
-import com.kaltura.netkit.utils.Accessories;
-import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.netkit.connect.RequestQueue;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;

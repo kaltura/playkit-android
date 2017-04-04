@@ -3,7 +3,7 @@ package com.kaltura.playkit.mediaproviders.ovp;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.kaltura.netkit.backend.ovp.OvpConfigs;
+import com.kaltura.playkit.api.ovp.OvpConfigs;
 
 import java.util.List;
 import java.util.UUID;

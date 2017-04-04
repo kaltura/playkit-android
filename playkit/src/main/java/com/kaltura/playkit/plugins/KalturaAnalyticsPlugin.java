@@ -3,12 +3,11 @@ package com.kaltura.playkit.plugins;
 import android.content.Context;
 
 import com.google.gson.JsonObject;
-import com.kaltura.netkit.backend.ovp.services.AnalyticsService;
-import com.kaltura.netkit.connect.APIOkRequestsExecutor;
-import com.kaltura.netkit.connect.RequestBuilder;
-import com.kaltura.netkit.connect.RequestQueue;
+import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
+import com.kaltura.netkit.connect.executor.RequestQueue;
+import com.kaltura.netkit.connect.request.RequestBuilder;
+import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
-import com.kaltura.netkit.utils.ResponseElement;
 import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
@@ -18,6 +17,7 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.api.ovp.services.AnalyticsService;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.TimerTask;

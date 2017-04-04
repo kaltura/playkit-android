@@ -1,7 +1,7 @@
 package com.kaltura.playkit.mediaproviders.base;
 
-import com.kaltura.netkit.backend.phoenix.APIDefines;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.api.phoenix.APIDefines;
 
 /**
  * Created by tehilarozin on 02/04/2017.

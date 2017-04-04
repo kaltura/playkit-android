@@ -8,27 +8,26 @@ import android.util.Log;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
-import com.kaltura.netkit.backend.phoenix.APIDefines;
-import com.kaltura.netkit.backend.phoenix.OttSessionProvider;
-import com.kaltura.netkit.backend.phoenix.data.KalturaMediaAsset;
-import com.kaltura.netkit.backend.phoenix.data.PhoenixParser;
-import com.kaltura.netkit.backend.session.SessionProvider;
-import com.kaltura.netkit.connect.APIOkRequestsExecutor;
-import com.kaltura.netkit.connect.RequestElement;
-import com.kaltura.netkit.connect.RequestQueue;
+import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
+import com.kaltura.netkit.connect.executor.RequestQueue;
+import com.kaltura.netkit.connect.request.RequestElement;
+import com.kaltura.netkit.connect.response.BaseResult;
+import com.kaltura.netkit.connect.response.PrimitiveResult;
+import com.kaltura.netkit.connect.response.ResponseElement;
+import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.Accessories;
-import com.kaltura.netkit.utils.BaseResult;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.OnCompletion;
-import com.kaltura.netkit.utils.PrimitiveResult;
-import com.kaltura.netkit.utils.ResponseElement;
 import com.kaltura.netkit.utils.RestrictionError;
-import com.kaltura.netkit.utils.ResultElement;
+import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.BaseTest;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.api.phoenix.APIDefines;
+import com.kaltura.playkit.api.phoenix.PhoenixParser;
+import com.kaltura.playkit.api.phoenix.model.KalturaMediaAsset;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.ott.PhoenixMediaProvider;
 
@@ -57,8 +56,6 @@ import static com.kaltura.playkit.mediaproviders.MockParams.PnxBaseUrl;
 import static com.kaltura.playkit.mediaproviders.MockParams.PnxKS;
 import static com.kaltura.playkit.mediaproviders.MockParams.PnxNotEntitledMedia;
 import static com.kaltura.playkit.mediaproviders.MockParams.PnxPartnerId;
-import static com.kaltura.playkit.mediaproviders.MockParams.PnxPassword;
-import static com.kaltura.playkit.mediaproviders.MockParams.PnxUsername;
 import static com.kaltura.playkit.mediaproviders.MockParams.ToystoryMediaId;
 import static com.kaltura.playkit.mediaproviders.MockParams.Toystory_File_Main_HD;
 import static com.kaltura.playkit.mediaproviders.MockParams.Toystory_File_Main_HD_Dash;
@@ -78,11 +75,11 @@ import static org.junit.Assert.fail;
 @RunWith(AndroidJUnit4.class)
 public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
+    private RequestQueue testExecutor;
+    private PhoenixMediaProvider phoenixMediaProvider;
     private int latchCount;
 
-    OttSessionProvider testSession = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
-
-    SessionProvider ksSessionProvider = new SessionProvider() {
+    private SessionProvider ksSessionProvider = new SessionProvider() {
         @Override
         public String baseUrl() {
             return PnxBaseUrl;
@@ -101,7 +98,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         }
     };
 
-    SessionProvider InvalidSessionProvider = new SessionProvider() {
+    private SessionProvider InvalidSessionProvider = new SessionProvider() {
         @Override
         public String baseUrl() {
             return PnxBaseUrl;
@@ -120,9 +117,6 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         }
     };
 
-    RequestQueue testExecutor;
-
-    PhoenixMediaProvider phoenixMediaProvider;
 
     public PhoenixMediaProviderAndroidTest() {
         super("PhoenixMediaProviderAndroidTest");
@@ -136,14 +130,14 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     @Test
     public void testResponseParsing() {
 
-        latchCount = 0;
         phoenixMediaProvider = new PhoenixMediaProvider().setSessionProvider(ksSessionProvider).
                 setAssetId(MediaId).setAssetType(APIDefines.KalturaAssetType.Media).setFormats(FormatSD)/*.setRequestExecutor(testExecutor)*/;
-        latchCount++;
+
+        latchCount = 1;
         phoenixMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
-latchCount--;
+                latchCount--;
                 assertTrue(response.isSuccess());
                 assertTrue(response.getResponse() != null);
                 assertTrue(response.getResponse().getId().equals(MediaId));
@@ -151,7 +145,8 @@ latchCount--;
                 assertTrue(response.getResponse().getDuration() == 2237);
                 // currently is unknown on phoenix since we don't have that information easily:
                 assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
-latchCount++;
+
+                latchCount++;
                 phoenixMediaProvider.setAssetId(MediaId5).setFormats(FormatHD, FormatSD).setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
                     @Override
                     public void onComplete(ResultElement<PKMediaEntry> response) {
@@ -167,7 +162,7 @@ latchCount++;
                         }
 
                         PhoenixMediaProviderAndroidTest.this.resume();
-latchCount--;
+                        latchCount--;
                     }
                 });
             }
@@ -238,54 +233,36 @@ latchCount--;
 
     @Test
     public void testFailMessagesOnPlaybackSources() {
-        latchCount = 0;
-        final OttSessionProvider ottSessionProvider = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
-
-        latchCount++;
-        ottSessionProvider.startSession(PnxUsername, PnxPassword, null, new OnCompletion<PrimitiveResult>() {
+        latchCount = 1;
+        ksSessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
             @Override
             public void onComplete(PrimitiveResult response) {
-
                 latchCount--;
-                if (response.error != null) {
-                    fail(response.error.getMessage());
-                    resume();
+                phoenixMediaProvider = new PhoenixMediaProvider()
+                        .setSessionProvider(ksSessionProvider)
+                        .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(PnxNotEntitledMedia)
+                        .setFormats(FormatHD, FormatSD, WebHD);
 
-                } else {
-                    latchCount++;
-                    ottSessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
-                        @Override
-                        public void onComplete(PrimitiveResult response) {
-                            latchCount--;
-                            phoenixMediaProvider = new PhoenixMediaProvider()
-                                    .setSessionProvider(ottSessionProvider)
-                                    .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(PnxNotEntitledMedia)
-                                    .setFormats(FormatHD, FormatSD, WebHD);
+                latchCount++;
+                phoenixMediaProvider.load(new OnMediaLoadCompletion() {
+                    @Override
+                    public void onComplete(ResultElement<PKMediaEntry> response) {
+                        assertFalse(response.isSuccess());
+                        assertNull(response.getResponse());
+                        assertNotNull(response.getError());
+                        assertTrue(response.getError() instanceof RestrictionError);
+                        assertTrue(((RestrictionError) response.getError()).getExtra().equals(RestrictionError.Restriction.NotEntitled));
 
-                            latchCount++;
-                            phoenixMediaProvider.load(new OnMediaLoadCompletion() {
-                                @Override
-                                public void onComplete(ResultElement<PKMediaEntry> response) {
-                                    assertFalse(response.isSuccess());
-                                    assertNull(response.getResponse());
-                                    assertNotNull(response.getError());
-                                    assertTrue(response.getError() instanceof RestrictionError);
-                                    assertTrue(((RestrictionError) response.getError()).getExtra().equals(RestrictionError.Restriction.NotEntitled));
+                        latchCount--;
 
-                                    latchCount--;
+                        PhoenixMediaProviderAndroidTest.this.resume();
 
-                                    PhoenixMediaProviderAndroidTest.this.resume();
-
-                                }
-                            });
-                        }
-                    });
-                }
+                    }
+                });
             }
         });
 
         PhoenixMediaProviderAndroidTest.this.wait(latchCount);
-
     }
 
     @Test
@@ -362,70 +339,56 @@ latchCount--;
 
     @Test
     public void testFormatsFilesLoadCompare() {
-        latchCount = 0; // counts total asynchronous section latch should wait for, prevents test stack on wait.
 
         final List<PKMediaSource> sources = new ArrayList<>();
 
-        final OttSessionProvider ottSessionProvider = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
-        ottSessionProvider.startSession(PnxUsername, PnxPassword, null, new OnCompletion<PrimitiveResult>() {
+        phoenixMediaProvider = new PhoenixMediaProvider()
+                .setSessionProvider(ksSessionProvider)
+                .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(MediaId2) // cannel considered as media
+                .setFormats(FormatHD, FormatSD);
+
+        latchCount = 1; // counts total asynchronous section latch should wait for, prevents test stack on wait.
+
+        phoenixMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
-            public void onComplete(PrimitiveResult response) {
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                if (response.isSuccess()) {
+                    assertNotNull(response.getResponse());
+                    if (sources.size() > 0) {
+                        validateSources(sources, response.getResponse().getSources());
+                    } else {
+                        synchronized (sources) {
+                            sources.addAll(response.getResponse().getSources());
+                        }
+                    }
+                }
+                latchCount--;
+                PhoenixMediaProviderAndroidTest.this.resume();
+            }
+        });
+
+        PhoenixMediaProvider phoenixMediaProvider2 = new PhoenixMediaProvider()
+                .setSessionProvider(ksSessionProvider)
+                .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(MediaId2) // cannel considered as media
+                .setFileIds(MediaId2_File_Main_HD, MediaId2_File_Main_SD);
+
+        latchCount++;
+        phoenixMediaProvider2.load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                if (response.isSuccess()) {
+                    assertNotNull(response.getResponse());
+                    if (sources.size() > 0) {
+                        validateSources(sources, response.getResponse().getSources());
+                    } else {
+                        synchronized (sources) {
+                            sources.addAll(response.getResponse().getSources());
+                        }
+                    }
+                }
 
                 latchCount--;
-                if (response.error != null) {
-                    fail(response.error.getMessage());
-                    resume();
-
-                } else {
-                    phoenixMediaProvider = new PhoenixMediaProvider()
-                            .setSessionProvider(ottSessionProvider)
-                            .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(MediaId2) // cannel considered as media
-                            .setFormats(FormatHD, FormatSD);
-
-                    latchCount++;
-                    phoenixMediaProvider.load(new OnMediaLoadCompletion() {
-                        @Override
-                        public void onComplete(ResultElement<PKMediaEntry> response) {
-                            if (response.isSuccess()) {
-                                assertNotNull(response.getResponse());
-                                if (sources.size() > 0) {
-                                    validateSources(sources, response.getResponse().getSources());
-                                } else {
-                                    synchronized (sources) {
-                                        sources.addAll(response.getResponse().getSources());
-                                    }
-                                }
-                            }
-                            latchCount--;
-                            PhoenixMediaProviderAndroidTest.this.resume();
-                        }
-                    });
-
-                    PhoenixMediaProvider phoenixMediaProvider2 = new PhoenixMediaProvider()
-                            .setSessionProvider(ottSessionProvider)
-                            .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(MediaId2) // cannel considered as media
-                            .setFileIds(MediaId2_File_Main_HD, MediaId2_File_Main_SD);
-
-                    latchCount++;
-                    phoenixMediaProvider2.load(new OnMediaLoadCompletion() {
-                        @Override
-                        public void onComplete(ResultElement<PKMediaEntry> response) {
-                            if (response.isSuccess()) {
-                                assertNotNull(response.getResponse());
-                                if (sources.size() > 0) {
-                                    validateSources(sources, response.getResponse().getSources());
-                                } else {
-                                    synchronized (sources) {
-                                        sources.addAll(response.getResponse().getSources());
-                                    }
-                                }
-                            }
-
-                            latchCount--;
-                            PhoenixMediaProviderAndroidTest.this.resume();
-                        }
-                    });
-                }
+                PhoenixMediaProviderAndroidTest.this.resume();
             }
         });
 
@@ -454,47 +417,31 @@ latchCount--;
 
     @Test
     public void testLiveRemoteLoading() {
-        latchCount = 0;
-        final OttSessionProvider ottSessionProvider = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
+        phoenixMediaProvider = new PhoenixMediaProvider()
+                .setSessionProvider(ksSessionProvider)
+                .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(ChannelId) // cannel considered as media
+                .setFormats(FormatHD, FormatSD);
 
-        latchCount++;
-        ottSessionProvider.startSession(PnxUsername, PnxPassword, null, new OnCompletion<PrimitiveResult>() {
+        latchCount = 1;
+        phoenixMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
-            public void onComplete(PrimitiveResult response) {
-                latchCount--;
-                if (response.error != null) {
-                    fail(response.error.getMessage());
-                    resume();
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                if (response.isSuccess()) {
+                    assertTrue(response.getResponse() != null);
+                    assertTrue(response.getResponse().getId().equals(ChannelId));
+                    // as response to the API, we get 2 sources one of them is "Web HD", the other can be played
+                    // by android, and the source we get here in the PKMediaEntry
+                    assertTrue(response.getResponse().getSources().size() == 1);
+                    assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
 
                 } else {
-                    phoenixMediaProvider = new PhoenixMediaProvider()
-                            .setSessionProvider(ottSessionProvider)
-                            .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(ChannelId) // cannel considered as media
-                            .setFormats(FormatHD, FormatSD);
-
-                    latchCount++;
-                    phoenixMediaProvider.load(new OnMediaLoadCompletion() {
-                        @Override
-                        public void onComplete(ResultElement<PKMediaEntry> response) {
-                            if (response.isSuccess()) {
-                                assertTrue(response.getResponse() != null);
-                                assertTrue(response.getResponse().getId().equals(ChannelId));
-                                // as response to the API, we get 2 sources one of them is "Web HD", the other can be played
-                                // by android, and the source we get here in the PKMediaEntry
-                                assertTrue(response.getResponse().getSources().size() == 1);
-                                assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
-
-                            } else {
-                                assertNotNull(response.getError());
-                                Log.e("PhoenixMediaProvider", "asset can't be played: " + response.getError());
-                            }
-
-                            latchCount--;
-                            PhoenixMediaProviderAndroidTest.this.resume();
-
-                        }
-                    });
+                    assertNotNull(response.getError());
+                    Log.e("PhoenixMediaProvider", "asset can't be played: " + response.getError());
                 }
+
+                latchCount--;
+                PhoenixMediaProviderAndroidTest.this.resume();
+
             }
         });
 
@@ -505,31 +452,19 @@ latchCount--;
     public void testLoadCancel() {
 
         phoenixMediaProvider = new PhoenixMediaProvider()
-                .setSessionProvider(testSession)
+                .setSessionProvider(ksSessionProvider)
                 .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(MediaId5)
                 .setFormats(FormatHD, FormatSD);
 
-        testSession.startSession(PnxUsername, PnxPassword, null, new OnCompletion<PrimitiveResult>() {
-            @Override
-            public void onComplete(PrimitiveResult response) {
+        int wait = 1;
+        loadCancelTest1();
+        wait--;
+        wait(wait);
 
-                if (response.error != null) {
-                    fail("failed to start session: " + response.error.getMessage());
-                    resume();
-                    resume();
-                } else {
-                    PKLog.i("phoenix testing", "session ready start testing");
-
-                    loadCancelTest1();
-
-                    while (testWaitCount.getCount() > 1) {
-                    }
-
-                    loadCancelTest2(true);
-                }
-            }
-        });
-        wait(2);
+        wait = 1;
+        loadCancelTest2(true);
+        wait--;
+        wait(wait);
     }
 
     private void loadCancelTest1() {
@@ -651,57 +586,42 @@ latchCount--;
 
     @Test
     public void testPKMediaEntryParceling() {
-        latchCount = 0;
-        final OttSessionProvider ottSessionProvider = new OttSessionProvider(PnxBaseUrl, PnxPartnerId);
         final AtomicReference<AssertionError> failure = new AtomicReference<>();
 
-        latchCount++;
-        ottSessionProvider.startSession(PnxUsername, PnxPassword, null, new OnCompletion<PrimitiveResult>() {
+        latchCount = 1;
+
+        phoenixMediaProvider = new PhoenixMediaProvider()
+                .setSessionProvider(ksSessionProvider)
+                .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(ToystoryMediaId) // cannel considered as media
+                .setFormats(FormatSD, FormatHDDash);
+
+        phoenixMediaProvider.load(new OnMediaLoadCompletion() {
             @Override
-            public void onComplete(PrimitiveResult response) {
-                latchCount--;
-                if (response.error != null) {
-                    failure.set(new AssertionError(response.error.getMessage()));
-                    //fail(response.error.getMessage());
-                    resume();
-
-                } else {
-                    phoenixMediaProvider = new PhoenixMediaProvider()
-                            .setSessionProvider(ottSessionProvider)
-                            .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(ToystoryMediaId) // cannel considered as media
-                            .setFormats(FormatSD, FormatHDDash);
-
-                    latchCount++;
-                    phoenixMediaProvider.load(new OnMediaLoadCompletion() {
-                        @Override
-                        public void onComplete(ResultElement<PKMediaEntry> response) {
-                            try {
-                                if (response.isSuccess()) {
-                                    final PKMediaEntry baseMedia = response.getResponse();
-                                    Bundle mediaBundle = new Bundle();
-                                    mediaBundle.putParcelable("mediatest", baseMedia);
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                try {
+                    if (response.isSuccess()) {
+                        final PKMediaEntry baseMedia = response.getResponse();
+                        Bundle mediaBundle = new Bundle();
+                        mediaBundle.putParcelable("mediatest", baseMedia);
 
                                     /*Parcel parcel = Parcel.obtain();
                                     parcel.writeTypedList(baseMedia.getSources().get(0).getDrmData());
                                     parcel.setDataPosition(0);
                                     List<PKDrmParams> drmParamses = parcel.createTypedArrayList(PKDrmParams.CREATOR);*/
 
-                                    PKMediaEntry newMedia = mediaBundle.getParcelable("mediatest");
-                                    assertNotNull(newMedia);
-                                    assertEquals(baseMedia.hasSources(), newMedia.hasSources());
-                                    assertEquals(baseMedia.getSources().size(), newMedia.getSources().size());
-                                    assertEquals(baseMedia.getSources().get(0).hasDrmParams(), newMedia.getSources().get(0).hasDrmParams());
+                        PKMediaEntry newMedia = mediaBundle.getParcelable("mediatest");
+                        assertNotNull(newMedia);
+                        assertEquals(baseMedia.hasSources(), newMedia.hasSources());
+                        assertEquals(baseMedia.getSources().size(), newMedia.getSources().size());
+                        assertEquals(baseMedia.getSources().get(0).hasDrmParams(), newMedia.getSources().get(0).hasDrmParams());
 
-                                    assertEquals(baseMedia.getSources().get(0).getDrmData().size(), newMedia.getSources().get(0).getDrmData().size());
-                                }
-                            } catch (AssertionError ae){
-                                failure.set(ae);
-                            }
-                            latchCount--;
-                            PhoenixMediaProviderAndroidTest.this.resume();
-                        }
-                    });
+                        assertEquals(baseMedia.getSources().get(0).getDrmData().size(), newMedia.getSources().get(0).getDrmData().size());
+                    }
+                } catch (AssertionError ae) {
+                    failure.set(ae);
                 }
+                latchCount--;
+                PhoenixMediaProviderAndroidTest.this.resume();
             }
         });
 

@@ -1,6 +1,6 @@
 package com.kaltura.playkitdemo.data;
 
-import com.kaltura.netkit.utils.BaseResult;
+import com.kaltura.netkit.connect.response.BaseResult;
 
 /**
  * @hide

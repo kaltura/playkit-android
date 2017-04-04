@@ -33,17 +33,17 @@ public class MockParams {
     public static final int OvpPartnerId = 2222401;
     public static final String OvpLoginId = "kaltura.fe@icloud.com";
     public static final String OvpPassword = "abcd1234*";
+    public static final String OvpUserKS = "djJ8MjIyMjQwMXx2RAtiYX9vr3hnwdyi1rM78jFD15pr8XYnbhu9iuUy3KXt_NEQK0JV9bdRdaBpohgY5mQW88kKvKu5EC15wfDceyj_37BTG3UYd5LvVa7GbmWxr9YrEpFTxrAPpgeMvYBV-mooSL7YbDqp_kvDqKW3";
     public static final String OvpAnonymousKS = "djJ8MjIyMjQwMXzXI4NeVu8er1kyU5oUr9CQfR79mb3mpSxSnRM99MaITqbLMQMmATdEhAyESU7-IW7YxYwDdHvd2XPz7xVVCaV1y1fIx34NM69w9pJLcrZPiw==";
 
-
     //OTT:
-    public static final String PnxBaseUrl = "http://api-preprod.ott.kaltura.com/v4_2/api_v3/";//"http://52.210.223.65:8080/v4_1/api_v3/";
+    public static final String PnxBaseUrl = "https://api-preprod.ott.kaltura.com/v4_2/api_v3/";//"http://52.210.223.65:8080/v4_1/api_v3/";
 
     public static final String PnxUsername = "albert@gmail.com";
     public static final String PnxPassword = "123456";
     public static final int PnxPartnerId = 198;
 
-    public static final String PnxKS = "djJ8MTk4fJIH_vOOwg_8s7ZoleGRXM3XpmAW5_-D8JEFMOIL-70ELzSMwyHosPaiAqtqHCJ01Ekc0Opa5eJjYEq6u63zTRrrG_ngIQKgHqysBVGYxoGe";
+    public static final String PnxKS = "djJ8MTk4fH6bz_2197wFUNBqv2zRZ3h5YlTwiAEJZvVhJJut1pq13CMVSpgmD-NLVco4pJuthWU9b8Z_XEV7h6uvg5tpJbCj4ODWAzWhslokulcfUrgG0WISPD3wq1YWwD1lzuJ109OFrezv9Ih5Wa8qrUIsaz8=";
 
     public static final String MediaId = "258656";//frozen //trailer 428345
     public static final String MediaId4 = "258655";//shrek

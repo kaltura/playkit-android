@@ -4,30 +4,30 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.google.gson.JsonParseException;
-import com.kaltura.netkit.backend.data.KalturaDrmPlaybackPluginData;
-import com.kaltura.netkit.backend.phoenix.APIDefines;
-import com.kaltura.netkit.backend.phoenix.PhoenixErrorHelper;
-import com.kaltura.netkit.backend.phoenix.data.KalturaMediaAsset;
-import com.kaltura.netkit.backend.phoenix.data.KalturaPlaybackContext;
-import com.kaltura.netkit.backend.phoenix.data.KalturaPlaybackSource;
-import com.kaltura.netkit.backend.phoenix.data.PhoenixParser;
-import com.kaltura.netkit.backend.phoenix.services.AssetService;
-import com.kaltura.netkit.backend.phoenix.services.OttUserService;
-import com.kaltura.netkit.backend.phoenix.services.PhoenixService;
-import com.kaltura.netkit.backend.session.SessionProvider;
-import com.kaltura.netkit.connect.MultiRequestBuilder;
-import com.kaltura.netkit.connect.RequestBuilder;
-import com.kaltura.netkit.connect.RequestQueue;
+import com.kaltura.netkit.connect.executor.RequestQueue;
+import com.kaltura.netkit.connect.request.MultiRequestBuilder;
+import com.kaltura.netkit.connect.request.RequestBuilder;
+import com.kaltura.netkit.connect.response.BaseResult;
+import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.Accessories;
-import com.kaltura.netkit.utils.BaseResult;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
-import com.kaltura.netkit.utils.ResponseElement;
+import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.api.base.model.KalturaDrmPlaybackPluginData;
+import com.kaltura.playkit.api.phoenix.APIDefines;
+import com.kaltura.playkit.api.phoenix.PhoenixErrorHelper;
+import com.kaltura.playkit.api.phoenix.PhoenixParser;
+import com.kaltura.playkit.api.phoenix.model.KalturaMediaAsset;
+import com.kaltura.playkit.api.phoenix.model.KalturaPlaybackContext;
+import com.kaltura.playkit.api.phoenix.model.KalturaPlaybackSource;
+import com.kaltura.playkit.api.phoenix.services.AssetService;
+import com.kaltura.playkit.api.phoenix.services.OttUserService;
+import com.kaltura.playkit.api.phoenix.services.PhoenixService;
 import com.kaltura.playkit.mediaproviders.base.BECallableLoader;
 import com.kaltura.playkit.mediaproviders.base.BEMediaProvider;
 import com.kaltura.playkit.mediaproviders.base.FormatsHelper;
@@ -129,9 +129,9 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     /**
      * ESSENTIAL!! defines the playing asset group type
-     * Defaults to - {@link com.kaltura.netkit.backend.phoenix.APIDefines.KalturaAssetType#Media}
+     * Defaults to - {@link APIDefines.KalturaAssetType#Media}
      *
-     * @param assetType - can be one of the following types {@link com.kaltura.netkit.backend.phoenix.APIDefines.KalturaAssetType}
+     * @param assetType - can be one of the following types {@link APIDefines.KalturaAssetType}
      * @return
      */
     public PhoenixMediaProvider setAssetType(@NonNull APIDefines.KalturaAssetType assetType) {
@@ -141,9 +141,9 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     /**
      * ESSENTIAL!! defines the playing context: Trailer, Catchup, Playback etc
-     * Defaults to - {@link com.kaltura.netkit.backend.phoenix.APIDefines.PlaybackContextType#Playback}
+     * Defaults to - {@link APIDefines.PlaybackContextType#Playback}
      *
-     * @param contextType - can be one of the following types {@link com.kaltura.netkit.backend.phoenix.APIDefines.PlaybackContextType}
+     * @param contextType - can be one of the following types {@link APIDefines.PlaybackContextType}
      * @return
      */
     public PhoenixMediaProvider setContextType(@NonNull APIDefines.PlaybackContextType contextType) {
@@ -179,7 +179,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     /**
      * OPTIONAL
-     * Defaults to {@link com.kaltura.netkit.connect.APIOkRequestsExecutor} implementation.
+     * Defaults to {@link com.kaltura.netkit.connect.executor.APIOkRequestsExecutor} implementation.
      *
      * @param executor
      * @return

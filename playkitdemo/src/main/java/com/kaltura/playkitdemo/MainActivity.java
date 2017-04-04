@@ -15,13 +15,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
-import com.kaltura.netkit.backend.ovp.OvpSessionProvider;
-import com.kaltura.netkit.backend.ovp.SimpleOvpSessionProvider;
-import com.kaltura.netkit.backend.phoenix.APIDefines;
-import com.kaltura.netkit.backend.phoenix.OttSessionProvider;
+import com.kaltura.netkit.connect.response.PrimitiveResult;
+import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.OnCompletion;
-import com.kaltura.netkit.utils.PrimitiveResult;
-import com.kaltura.netkit.utils.ResultElement;
+import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
@@ -33,6 +30,8 @@ import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.api.ovp.SimpleOvpSessionProvider;
+import com.kaltura.playkit.api.phoenix.APIDefines;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.mock.MockMediaProvider;
 import com.kaltura.playkit.mediaproviders.ott.PhoenixMediaProvider;
@@ -53,11 +52,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.kaltura.playkitdemo.MockParams.SingMediaId;
 import static com.kaltura.playkitdemo.MockParams.Format;
 import static com.kaltura.playkitdemo.MockParams.Format2;
 import static com.kaltura.playkitdemo.MockParams.Format_HD_Dash;
 import static com.kaltura.playkitdemo.MockParams.Format_SD_Dash;
+import static com.kaltura.playkitdemo.MockParams.OvpUserKS;
+import static com.kaltura.playkitdemo.MockParams.PnxKS;
+import static com.kaltura.playkitdemo.MockParams.SingMediaId;
 
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
@@ -162,44 +163,56 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
     
     private void startOttMediaLoading(final OnMediaLoadCompletion completion) {
-        final OttSessionProvider ottSessionProvider = new OttSessionProvider(MockParams.PhoenixBaseUrl, MockParams.OttPartnerId);
-        /* start anonymous session:
-        ottSessionProvider.startAnonymousSession(MockParams.OttPartnerId, null, new OnCompletion<PrimitiveResult>() {
-        OR
-        start user session:    */
-        MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getUser(MockParams.UserType.Ott);
-        ottSessionProvider.startSession(user.username, user.password, null, new OnCompletion<PrimitiveResult>() {
+        SessionProvider ksSessionProvider = new SessionProvider() {
             @Override
-            public void onComplete(PrimitiveResult response) {
-                if(response.error == null) {
-                    mediaProvider = new PhoenixMediaProvider()
-                            .setSessionProvider(ottSessionProvider)
-                            .setAssetId(SingMediaId) //bunny no horses id = "485380"
-                            .setAssetType(APIDefines.KalturaAssetType.Media)
-                            .setFormats(Format_SD_Dash, Format_HD_Dash, Format, Format2);
+            public String baseUrl() {
+                return MockParams.PhoenixBaseUrl;
+            }
 
-                    mediaProvider.load(completion);
+            @Override
+            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
+                if (completion != null) {
+                    completion.onComplete(new PrimitiveResult(PnxKS));
                 }
             }
-        });
+
+            @Override
+            public int partnerId() {
+                return MockParams.OttPartnerId;
+            }
+        };
+
+        mediaProvider = new PhoenixMediaProvider()
+                .setSessionProvider(ksSessionProvider)
+                .setAssetId(SingMediaId) //bunny no horses id = "485380"
+                .setAssetType(APIDefines.KalturaAssetType.Media)
+                .setFormats(Format_SD_Dash, Format_HD_Dash, Format, Format2);
+
+        mediaProvider.load(completion);
     }
 
     private void startOvpMediaLoading(final OnMediaLoadCompletion completion) {
-        final OvpSessionProvider ovpSessionProvider = new OvpSessionProvider(MockParams.OvpBaseUrl);
-        //ovpSessionProvider.startAnonymousSession(MockParams.OvpPartnerId, new OnCompletion<PrimitiveResult>() {
-        //MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getDrmUser(MockParams.UserType.Ovp);
-        MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getUser(MockParams.UserType.Ovp);
-        if(user != null) {
-            ovpSessionProvider.startAnonymousSession(/*user.username, user.password,*/ user.partnerId, new OnCompletion<PrimitiveResult>() {
-                @Override
-                public void onComplete(PrimitiveResult response) {
-                    if (response.error == null) {
-                        mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(MockParams.DRMEntryIdAnm);
-                        mediaProvider.load(completion);
-                    }
+        SessionProvider ksSessionProvider = new SessionProvider() {
+            @Override
+            public String baseUrl() {
+                return MockParams.OvpBaseUrl;
+            }
+
+            @Override
+            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
+                if (completion != null) {
+                    completion.onComplete(new PrimitiveResult(OvpUserKS));
                 }
-            });
-        }
+            }
+
+            @Override
+            public int partnerId() {
+                return MockParams.OvpPartnerId;
+            }
+        };
+
+        mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ksSessionProvider).setEntryId(MockParams.DRMEntryIdAnm);
+        mediaProvider.load(completion);
     }
 
     private void onMediaLoaded(PKMediaEntry mediaEntry) {

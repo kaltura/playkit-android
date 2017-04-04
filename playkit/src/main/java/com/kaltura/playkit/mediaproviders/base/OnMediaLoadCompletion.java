@@ -1,7 +1,7 @@
 package com.kaltura.playkit.mediaproviders.base;
 
+import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.OnCompletion;
-import com.kaltura.netkit.utils.ResultElement;
 import com.kaltura.playkit.PKMediaEntry;
 
 /**

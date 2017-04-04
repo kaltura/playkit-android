@@ -5,39 +5,39 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.gson.JsonSyntaxException;
-import com.kaltura.netkit.backend.data.BasePlaybackContext;
-import com.kaltura.netkit.backend.data.KalturaDrmPlaybackPluginData;
-import com.kaltura.netkit.backend.ovp.KalturaOvpErrorHelper;
-import com.kaltura.netkit.backend.ovp.KalturaOvpParser;
-import com.kaltura.netkit.backend.ovp.OvpConfigs;
-import com.kaltura.netkit.backend.ovp.data.FlavorAssetsFilter;
-import com.kaltura.netkit.backend.ovp.data.KalturaBaseEntryListResponse;
-import com.kaltura.netkit.backend.ovp.data.KalturaEntryContextDataResult;
-import com.kaltura.netkit.backend.ovp.data.KalturaEntryType;
-import com.kaltura.netkit.backend.ovp.data.KalturaFlavorAsset;
-import com.kaltura.netkit.backend.ovp.data.KalturaMediaEntry;
-import com.kaltura.netkit.backend.ovp.data.KalturaMetadata;
-import com.kaltura.netkit.backend.ovp.data.KalturaMetadataListResponse;
-import com.kaltura.netkit.backend.ovp.data.KalturaPlaybackContext;
-import com.kaltura.netkit.backend.ovp.data.KalturaPlaybackSource;
-import com.kaltura.netkit.backend.ovp.services.BaseEntryService;
-import com.kaltura.netkit.backend.ovp.services.MetaDataService;
-import com.kaltura.netkit.backend.ovp.services.OvpService;
-import com.kaltura.netkit.backend.ovp.services.OvpSessionService;
-import com.kaltura.netkit.backend.session.SessionProvider;
-import com.kaltura.netkit.connect.MultiRequestBuilder;
-import com.kaltura.netkit.connect.RequestBuilder;
-import com.kaltura.netkit.connect.RequestQueue;
+import com.kaltura.netkit.connect.executor.RequestQueue;
+import com.kaltura.netkit.connect.request.MultiRequestBuilder;
+import com.kaltura.netkit.connect.request.RequestBuilder;
+import com.kaltura.netkit.connect.response.BaseResult;
+import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.Accessories;
-import com.kaltura.netkit.utils.BaseResult;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
-import com.kaltura.netkit.utils.ResponseElement;
+import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.api.base.model.BasePlaybackContext;
+import com.kaltura.playkit.api.base.model.KalturaDrmPlaybackPluginData;
+import com.kaltura.playkit.api.ovp.KalturaOvpErrorHelper;
+import com.kaltura.playkit.api.ovp.KalturaOvpParser;
+import com.kaltura.playkit.api.ovp.OvpConfigs;
+import com.kaltura.playkit.api.ovp.model.FlavorAssetsFilter;
+import com.kaltura.playkit.api.ovp.model.KalturaBaseEntryListResponse;
+import com.kaltura.playkit.api.ovp.model.KalturaEntryContextDataResult;
+import com.kaltura.playkit.api.ovp.model.KalturaEntryType;
+import com.kaltura.playkit.api.ovp.model.KalturaFlavorAsset;
+import com.kaltura.playkit.api.ovp.model.KalturaMediaEntry;
+import com.kaltura.playkit.api.ovp.model.KalturaMetadata;
+import com.kaltura.playkit.api.ovp.model.KalturaMetadataListResponse;
+import com.kaltura.playkit.api.ovp.model.KalturaPlaybackContext;
+import com.kaltura.playkit.api.ovp.model.KalturaPlaybackSource;
+import com.kaltura.playkit.api.ovp.services.BaseEntryService;
+import com.kaltura.playkit.api.ovp.services.MetaDataService;
+import com.kaltura.playkit.api.ovp.services.OvpService;
+import com.kaltura.playkit.api.ovp.services.OvpSessionService;
 import com.kaltura.playkit.mediaproviders.base.BECallableLoader;
 import com.kaltura.playkit.mediaproviders.base.BEMediaProvider;
 import com.kaltura.playkit.mediaproviders.base.FormatsHelper;
@@ -110,7 +110,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     /**
      * optional parameter.
-     * Defaults to {@link com.kaltura.netkit.connect.APIOkRequestsExecutor} implementation.
+     * Defaults to {@link com.kaltura.netkit.connect.executor.APIOkRequestsExecutor} implementation.
      *
      * @param executor
      * @return

@@ -3,8 +3,8 @@ package com.kaltura.playkit.mediaproviders;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
+import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.netkit.utils.ResultElement;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.mock.MockMediaProvider;
