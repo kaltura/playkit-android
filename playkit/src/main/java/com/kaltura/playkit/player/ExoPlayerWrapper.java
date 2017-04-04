@@ -18,17 +18,6 @@ import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataRenderer;
-import com.google.android.exoplayer2.metadata.emsg.EventMessage;
-import com.google.android.exoplayer2.metadata.id3.ApicFrame;
-import com.google.android.exoplayer2.metadata.id3.BinaryFrame;
-import com.google.android.exoplayer2.metadata.id3.ChapterFrame;
-import com.google.android.exoplayer2.metadata.id3.ChapterTocFrame;
-import com.google.android.exoplayer2.metadata.id3.CommentFrame;
-import com.google.android.exoplayer2.metadata.id3.GeobFrame;
-import com.google.android.exoplayer2.metadata.id3.Id3Frame;
-import com.google.android.exoplayer2.metadata.id3.PrivFrame;
-import com.google.android.exoplayer2.metadata.id3.TextInformationFrame;
-import com.google.android.exoplayer2.metadata.id3.UrlLinkFrame;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
@@ -47,8 +36,6 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.BuildConfig;
-import com.kaltura.playkit.PKEmsgMetadata;
-import com.kaltura.playkit.PKId3Metadata;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PlaybackParamsInfo;
@@ -100,8 +87,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
     private int sameErrorOccurrenceCounter = 0;
-    private PKId3Metadata id3Metadata = null;
-    private PKEmsgMetadata emsgMetadata = null;
+    private Metadata metadata = null;
 
     interface TracksInfoListener {
 
@@ -166,6 +152,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     }
 
     private void preparePlayer(PKMediaSourceConfig sourceConfig) {
+        //reset metadata on prepare.
+        metadata = null;
+
         sameErrorOccurrenceCounter = 0;
         drmSessionManager.setMediaSource(sourceConfig.mediaSource);
 
@@ -374,46 +363,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public void onMetadata(Metadata metadata) {
-
-        Metadata.Entry metadataEntry;
-        id3Metadata = new PKId3Metadata();
-        emsgMetadata = new PKEmsgMetadata();
-
-        for (int i = 0; i < metadata.length(); i++) {
-            metadataEntry = metadata.get(i);
-
-            if (metadataEntry instanceof TextInformationFrame) {
-                id3Metadata.setTextInfoFrame((TextInformationFrame) metadataEntry);
-            } else if (metadataEntry instanceof UrlLinkFrame) {
-                id3Metadata.setUrlLinkFrame((UrlLinkFrame) metadataEntry);
-            } else if (metadataEntry instanceof PrivFrame) {
-                id3Metadata.setPrivFrame((PrivFrame) metadataEntry);
-            } else if (metadataEntry instanceof GeobFrame) {
-                id3Metadata.setGeobFrame((GeobFrame) metadataEntry);
-            } else if (metadataEntry instanceof ApicFrame) {
-                id3Metadata.setApicFrame((ApicFrame) metadataEntry);
-            } else if (metadataEntry instanceof CommentFrame) {
-                id3Metadata.setCommentFrame((CommentFrame) metadataEntry);
-            } else if (metadataEntry instanceof Id3Frame) {
-                id3Metadata.setId3Frame((Id3Frame) metadataEntry);
-            } else if (metadataEntry instanceof ChapterFrame) {
-                id3Metadata.setChapterFrame((ChapterFrame) metadataEntry);
-            } else if (metadataEntry instanceof ChapterTocFrame) {
-                id3Metadata.setChapterTocFrame((ChapterTocFrame) metadataEntry);
-            } else if (metadataEntry instanceof BinaryFrame) {
-                id3Metadata.setBinaryFrame((BinaryFrame) metadataEntry);
-            } else if (metadataEntry instanceof EventMessage) {
-                emsgMetadata.setEventMessage((EventMessage) metadataEntry);
-            }
-        }
-
-        if (id3Metadata.hasMetadata()) {
-            sendEvent(PlayerEvent.Type.ID3_METADATA_AVAILABLE);
-        }
-
-        if (emsgMetadata.hasMetadata()) {
-            sendEvent(PlayerEvent.Type.EMSG_METADATA_AVAILABLE);
-        }
+        this.metadata = metadata;
+        sendEvent(PlayerEvent.Type.METADATA_AVAILABLE);
     }
 
     @Override
@@ -643,13 +594,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         }
     }
 
-    public PKId3Metadata getId3Metadata() {
-        return id3Metadata;
+    public Metadata getMetadata() {
+        return metadata;
     }
 
-    public PKEmsgMetadata getEmsgMetadata() {
-        return emsgMetadata;
-    }
 }
 
 

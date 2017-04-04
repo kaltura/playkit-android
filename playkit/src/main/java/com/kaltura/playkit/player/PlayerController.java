@@ -34,7 +34,6 @@ public class PlayerController implements Player {
     private static final int ALLOWED_ERROR_RETRIES = 3;
 
 
-
     private PlayerEngine player = null;
     private Context context;
     private PlayerView rootPlayerView;
@@ -59,7 +58,6 @@ public class PlayerController implements Player {
             return this;
         }
     }
-
 
 
     public void setEventListener(PKEvent.Listener eventListener) {
@@ -116,11 +114,11 @@ public class PlayerController implements Player {
                             return;
                         }
                         break;
-                    case ID3_METADATA_AVAILABLE:
-                        event = new PlayerEvent.Id3MetadataAvailable(player.getId3Metadata());
-                        break;
-                    case EMSG_METADATA_AVAILABLE:
-                        event = new PlayerEvent.EmsgMetadataAvailable(player.getEmsgMetadata());
+                    case METADATA_AVAILABLE:
+                        if (player.getMetadata() == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.MetadataAvailable(player.getMetadata());
                         break;
                     default:
                         event = new PlayerEvent.Generic(eventType);

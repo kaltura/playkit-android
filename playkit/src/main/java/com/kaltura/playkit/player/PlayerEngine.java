@@ -1,8 +1,6 @@
 package com.kaltura.playkit.player;
 
-import com.kaltura.playkit.PKEmsgMetadata;
-import com.kaltura.playkit.PKId3Metadata;
-import com.kaltura.playkit.PKMediaSource;
+import com.google.android.exoplayer2.metadata.Metadata;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.utils.Consts;
@@ -178,15 +176,9 @@ interface PlayerEngine {
     void stop();
 
     /**
-     * Will return the id3 metadata object.
-     * @return - {@link PKId3Metadata}
+     * Will return the metadata object of the loaded entry.
+     * @return - {@link com.google.android.exoplayer2.metadata.Metadata}
      */
-    PKId3Metadata getId3Metadata();
-
-    /**
-     * Will return the emsg metadata object.
-     * @return - {@link PKEmsgMetadata}
-     */
-    PKEmsgMetadata getEmsgMetadata();
+    Metadata getMetadata();
 
 }

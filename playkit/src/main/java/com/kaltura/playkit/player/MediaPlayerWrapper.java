@@ -9,9 +9,8 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.view.SurfaceHolder;
 
+import com.google.android.exoplayer2.metadata.Metadata;
 import com.kaltura.playkit.PKDrmParams;
-import com.kaltura.playkit.PKEmsgMetadata;
-import com.kaltura.playkit.PKId3Metadata;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
@@ -527,12 +526,8 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public PKId3Metadata getId3Metadata() {
+    public Metadata getMetadata() {
         return null;
     }
 
-    @Override
-    public PKEmsgMetadata getEmsgMetadata() {
-        return null;
-    }
 }

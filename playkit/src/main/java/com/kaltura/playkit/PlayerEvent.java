@@ -1,5 +1,6 @@
 package com.kaltura.playkit;
 
+import com.google.android.exoplayer2.metadata.Metadata;
 import com.kaltura.playkit.player.PKTracks;
 
 /**
@@ -97,31 +98,17 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
-    public static class Id3MetadataAvailable extends PlayerEvent {
+    public static class MetadataAvailable extends PlayerEvent {
 
-        private PKId3Metadata id3Metadata;
+        private Metadata metadata;
 
-        public Id3MetadataAvailable(PKId3Metadata id3Metadata) {
-            super(Type.ID3_METADATA_AVAILABLE);
-            this.id3Metadata = id3Metadata;
+        public MetadataAvailable(Metadata metadata) {
+            super(Type.METADATA_AVAILABLE);
+            this.metadata = metadata;
         }
 
-        public PKId3Metadata getId3Metadata() {
-            return id3Metadata;
-        }
-    }
-
-    public static class EmsgMetadataAvailable extends PlayerEvent {
-
-        private PKEmsgMetadata emsgMetadata;
-
-        public EmsgMetadataAvailable(PKEmsgMetadata emsgMetadata) {
-            super(Type.EMSG_METADATA_AVAILABLE);
-            this.emsgMetadata = emsgMetadata;
-        }
-
-        public PKEmsgMetadata getEmsgMetadata() {
-            return emsgMetadata;
+        public Metadata getMetadata() {
+            return metadata;
         }
     }
 
@@ -148,8 +135,7 @@ public class PlayerEvent implements PKEvent {
         PLAYBACK_PARAMS_UPDATED, // Sent event that notify about changes in the playback parameters. When bitrate of the video or audio track changes or new media loaded. Holds the PlaybackParamsInfo.java object with relevant data.
         VOLUME_CHANGED, // Sent when volume is changed.
         STOPPED, // sent when stop player api is called
-        ID3_METADATA_AVAILABLE, // Sent when there is id3 (hls) metadata available for this entry.
-        EMSG_METADATA_AVAILABLE // Sent when there is emsg (dash) metadata available for this entry.
+        METADATA_AVAILABLE, // Sent when there is metadata available for this entry.
     }
 
     @Override
