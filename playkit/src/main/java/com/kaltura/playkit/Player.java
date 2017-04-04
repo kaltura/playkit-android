@@ -7,11 +7,30 @@ import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.UUID;
+
 /**
  * Created by Noam Tamim @ Kaltura on 18/09/2016.
  */
 public interface Player {
 
+    /**
+     * Interface used for setting optional Player settings. 
+     */
+    interface Settings {
+        /**
+         * Set the Player's contentRequestDecorator.
+         * @param contentRequestDecorator 
+         * @return Player Settings.
+         */
+        Settings setContentRequestDecorator(PKRequestInfo.Decorator contentRequestDecorator);
+    }
+
+    /**
+     * Get the Player's {@link Settings} object, for setting some optional properties. 
+     * @return Player Settings.
+     */
+    Settings getSettings();
 
     /**
      * Prepare the player for playback.
@@ -134,5 +153,11 @@ public interface Player {
     void seekTo(long position);
 
     AdController getAdController();
+
+    /**
+     * Get the Player's SessionId. The SessionId is initialized when the player loads. 
+     * @return Player's SessionId, as a UUID object.
+     */
+    UUID getSessionId();
 }
 
