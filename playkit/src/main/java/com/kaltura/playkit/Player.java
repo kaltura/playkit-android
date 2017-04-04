@@ -19,11 +19,11 @@ public interface Player {
      */
     interface Settings {
         /**
-         * Set the Player's contentRequestDecorator.
-         * @param contentRequestDecorator 
+         * Set the Player's contentRequestAdapter.
+         * @param contentRequestAdapter 
          * @return Player Settings.
          */
-        Settings setContentRequestDecorator(PKRequestInfo.Decorator contentRequestDecorator);
+        Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter);
     }
 
     /**
