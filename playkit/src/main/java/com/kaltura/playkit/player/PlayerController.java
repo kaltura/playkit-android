@@ -182,6 +182,11 @@ public class PlayerController implements Player {
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
 
         isNewEntry = isNewEntry(mediaConfig);
+        if (mediaConfig == null) {
+            log.e("No playable mediaConfig found, mediaConfig = null");
+            return;
+        }
+        
         this.mediaConfig = mediaConfig;
 
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
