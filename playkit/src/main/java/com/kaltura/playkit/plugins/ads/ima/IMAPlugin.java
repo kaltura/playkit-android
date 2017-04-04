@@ -352,8 +352,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     private void cancelAdManagerTimer() {
-        log.d("cancelAdManagerTimer");
         if (adManagerTimer != null) {
+            log.d("cancelAdManagerTimer");
             adManagerTimer.cancel();
             adManagerTimer = null;
         }
