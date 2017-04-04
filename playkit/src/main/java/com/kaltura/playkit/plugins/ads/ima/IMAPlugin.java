@@ -148,7 +148,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             log.e("Error, player instance is null.");
             return;
         }
-        this.mediaConfig = mediaConfig;
         this.context = context;
         this.messageBus = messageBus;
         this.messageBus.listen(new PKEvent.Listener() {
