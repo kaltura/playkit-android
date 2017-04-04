@@ -19,6 +19,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     private static final PKLog log = PKLog.get("TVPAPIAnalyticsPlugin");
     private static final String TAG = "TVPAPIAnalytics";
     private JsonObject testInitObj = new JsonObject();
+    private long lastKnownPlayerPosition = 0;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -51,9 +52,11 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         if (initObj == null) {
             return;
         }
-
+        if (!"stop".equals(action)) {
+            lastKnownPlayerPosition = player.getCurrentPosition();
+        }
         RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObj, action,
-                mediaConfig.getMediaEntry().getId(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId, player.getCurrentPosition());
+                mediaConfig.getMediaEntry().getId(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId, lastKnownPlayerPosition);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override

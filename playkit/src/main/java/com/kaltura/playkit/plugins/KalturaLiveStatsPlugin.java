@@ -78,7 +78,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
         @Override
         public void warmUp(Context context) {
-            
+
         }
     };
 
@@ -207,15 +207,16 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     }
 
     private void sendLiveEvent(final long bufferTime) {
-        String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
+        String sessionId = (player.getSessionId() != null) ? player.getSessionId().toString() : "";
         String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : BASE_URL;
         int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
+        String entryId = pluginConfig.has("entryId") ? pluginConfig.getAsJsonPrimitive("entryId").getAsString() : mediaConfig.getMediaEntry().getId();
 
         // Parameters for the request -
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
         // String sessionId, String startTime,  String entryId,  boolean isLive, String referrer
         RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(baseUrl, partnerId, isLive ? 1 : 2, eventIdx++, bufferTime,
-                lastReportedBitrate, sessionId, mediaConfig.getStartPosition(), mediaConfig.getMediaEntry().getId(), isLive, PlayKitManager.CLIENT_TAG, "hls");
+                lastReportedBitrate, sessionId, mediaConfig.getStartPosition(), entryId, isLive, PlayKitManager.CLIENT_TAG, "hls");
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
