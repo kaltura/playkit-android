@@ -56,6 +56,7 @@ import static com.kaltura.playkit.mediaproviders.MockParams.PnxBaseUrl;
 import static com.kaltura.playkit.mediaproviders.MockParams.PnxKS;
 import static com.kaltura.playkit.mediaproviders.MockParams.PnxNotEntitledMedia;
 import static com.kaltura.playkit.mediaproviders.MockParams.PnxPartnerId;
+import static com.kaltura.playkit.mediaproviders.MockParams.SpongeMediaId;
 import static com.kaltura.playkit.mediaproviders.MockParams.ToystoryMediaId;
 import static com.kaltura.playkit.mediaproviders.MockParams.Toystory_File_Main_HD;
 import static com.kaltura.playkit.mediaproviders.MockParams.Toystory_File_Main_HD_Dash;
@@ -131,7 +132,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     public void testResponseParsing() {
 
         phoenixMediaProvider = new PhoenixMediaProvider().setSessionProvider(ksSessionProvider).
-                setAssetId(MediaId).setAssetType(APIDefines.KalturaAssetType.Media).setFormats(FormatSD)/*.setRequestExecutor(testExecutor)*/;
+                setAssetId(ToystoryMediaId).setAssetType(APIDefines.KalturaAssetType.Media)/*.setFormats(FormatSD)*//*.setRequestExecutor(testExecutor)*/;
 
         latchCount = 1;
         phoenixMediaProvider.load(new OnMediaLoadCompletion() {
@@ -140,20 +141,20 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                 latchCount--;
                 assertTrue(response.isSuccess());
                 assertTrue(response.getResponse() != null);
-                assertTrue(response.getResponse().getId().equals(MediaId));
+                assertTrue(response.getResponse().getId().equals(ToystoryMediaId));
                 assertTrue(response.getResponse().getSources().size() == 1);
-                assertTrue(response.getResponse().getDuration() == 2237);
+                assertTrue(response.getResponse().getDuration() == 149000);
                 // currently is unknown on phoenix since we don't have that information easily:
                 assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
 
                 latchCount++;
-                phoenixMediaProvider.setAssetId(MediaId5).setFormats(FormatHD, FormatSD).setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
+                phoenixMediaProvider.setAssetId(SpongeMediaId).setFormats(FormatHD, FormatSD).setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
                     @Override
                     public void onComplete(ResultElement<PKMediaEntry> response) {
                         if (response.isSuccess()) {
                             assertTrue(response.getResponse() != null);
-                            assertTrue(response.getResponse().getId().equals(MediaId5));
-                            assertTrue(response.getResponse().getSources().size() == 2);
+                            assertTrue(response.getResponse().getId().equals(SpongeMediaId));
+                            assertTrue(response.getResponse().getSources().size() == 1);
                             assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
 
                         } else {
@@ -201,7 +202,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                 latchCount--;
                 phoenixMediaProvider = new PhoenixMediaProvider()
                         .setSessionProvider(EmptySessionProvider)
-                        .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(MediaId2)
+                        .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(SpongeMediaId)
                         .setFormats(FormatHD, FormatSD);
 
                 latchCount++;
@@ -210,8 +211,8 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                     public void onComplete(ResultElement<PKMediaEntry> response) {
                         if (response.isSuccess()) {
                             assertTrue(response.getResponse() != null);
-                            assertTrue(response.getResponse().getId().equals(MediaId2));
-                            assertTrue(response.getResponse().getSources().size() == 2);
+                            assertTrue(response.getResponse().getId().equals(SpongeMediaId));
+                            assertTrue(response.getResponse().getSources().size() == 1);
                             assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
 
                         } else {
