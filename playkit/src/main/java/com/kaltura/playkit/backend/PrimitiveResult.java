@@ -6,7 +6,7 @@ import com.kaltura.playkit.connect.ErrorElement;
  */
 
 public class PrimitiveResult extends BaseResult {
-    private String result;
+    private String result = null;
 
     public PrimitiveResult(String result) {
         super();

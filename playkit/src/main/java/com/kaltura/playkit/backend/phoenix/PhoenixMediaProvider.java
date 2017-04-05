@@ -281,7 +281,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                             loadReq = null;
 
                             try {
-                                onAssetGetResponse(response/*, requestBuilder instanceof MultiRequestBuilder*/);
+                                onAssetGetResponse(response);
 
                             } catch (InterruptedException e) {
                                 interrupted();
@@ -293,7 +293,9 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 loadReq = requestQueue.queue(requestBuilder.build());
                 PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
+
             waitCompletion();
+            PKLog.v(TAG, loadId + ": requestRemote wait released");
         }
 
         private String getApiBaseUrl() {
@@ -378,6 +380,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 completion.onComplete(Accessories.buildResult(mediaEntry, error));
             }
 
+            PKLog.w(TAG, loadId + " media load finished, callback passed...notifyCompletion");
             notifyCompletion();
 
         }

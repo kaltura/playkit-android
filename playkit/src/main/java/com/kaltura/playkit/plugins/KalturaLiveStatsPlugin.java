@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -79,7 +78,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
         @Override
         public void warmUp(Context context) {
-            
+
         }
     };
 
@@ -207,22 +206,23 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         isLive = false;
     }
 
-    private void sendLiveEvent(long bufferTime) {
-        String sessionId = pluginConfig.has("sessionId") ? pluginConfig.getAsJsonPrimitive("sessionId").getAsString() : "";
+    private void sendLiveEvent(final long bufferTime) {
+        String sessionId = (player.getSessionId() != null) ? player.getSessionId().toString() : "";
         String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : BASE_URL;
         int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
+        String entryId = pluginConfig.has("entryId") ? pluginConfig.getAsJsonPrimitive("entryId").getAsString() : mediaConfig.getMediaEntry().getId();
 
         // Parameters for the request -
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
         // String sessionId, String startTime,  String entryId,  boolean isLive, String referrer
         RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(baseUrl, partnerId, isLive ? 1 : 2, eventIdx++, bufferTime,
-                lastReportedBitrate, sessionId, mediaConfig.getStartPosition(), mediaConfig.getMediaEntry().getId(), isLive, PlayKitManager.CLIENT_TAG, "hls");
+                lastReportedBitrate, sessionId, mediaConfig.getStartPosition(), entryId, isLive, PlayKitManager.CLIENT_TAG, "hls");
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
                 Log.d(TAG, "onComplete: " + isLive);
-                messageBus.post(new LogEvent(TAG + " " + isLive));
+                messageBus.post(new KalturaLiveStatsEvent.KalturaLiveStatsReport(bufferTime));
             }
         });
         requestsExecutor.queue(requestBuilder.build());

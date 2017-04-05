@@ -22,8 +22,7 @@
         "url": "http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/mpegdash/protocol/http/a.mpd"
       }
     ]
-  }
-,
+  },
   "mp4": {
     "duration": 102000,
     "id": "1_1h1vsv3z",
@@ -36,8 +35,24 @@
       }
     ]
 
-  }
-,
+  },
+  "wvc": {
+    "duration": 102000,
+    "id": "0_hbhe2o9x",
+    "name": "testing",
+    "sources": [
+      {
+        "id": "0_hbhe2o9x",
+        "url": "https://cdnapisec.kaltura.com/p/1982551/sp/198255100/playManifest/entryId/0_zrv9wz9o/format/url/tags/widevine_mbr/protocol/https/f/a.wvm?playSessionId=f9c76dbf-3fbf-c598-fa00-0c8835964fc1",
+        "mimeType": "video/wvm",
+        "drmData":[ {
+          "scheme": "WidevineClassic",
+          "licenseUri": "https://udrm.kaltura.com//widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVFQiLCJ1c2VyX3Rva2VuIjoiIiwiYWNjb3VudF9pZCI6MTk4MjU1MSwiY29udGVudF9pZCI6IjBfenJ2OXd6OW9fMF9odWl5aTF1eSIsImZpbGVzIjoiIiwidWRpZCI6ImFhNWUxYjZjOTY5ODhkNjgiLCJhZGRpdGlvbmFsX2Nhc19zeXN0ZW0iOjB9&signature=qzMfJhsLXCypwI%2FeiuRpBXMVkoE%3D&"
+        }
+        ]
+      }
+    ]
+  },
   "hls": {
     "duration": 102000,
     "id": "0_uka1msg4",

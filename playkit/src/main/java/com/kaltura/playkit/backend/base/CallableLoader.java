@@ -34,19 +34,23 @@ public abstract class CallableLoader implements Callable<Void> {
     protected void notifyCompletion() {
         if (waitCompletion != null) {
             synchronized (syncObject) {
-                PKLog.i(TAG, loadId + ": notifyCompletion: countDown =  " + waitCompletion.getCount());
+                PKLog.v(TAG, loadId + ": notifyCompletion: countDown =  " + waitCompletion.getCount());
                 waitCompletion.countDown();
             }
         }
     }
 
     protected void waitCompletion(int countDownLatch) throws InterruptedException {
+        if(waitCompletion != null && waitCompletion.getCount() == countDownLatch){
+            return;
+        }
+
         synchronized (syncObject) {
-            PKLog.i(TAG, loadId + ": waitCompletion: set new counDown" + (waitCompletion != null ? "already has counter " + waitCompletion.getCount() : ""));
+            PKLog.i(TAG, loadId + ": waitCompletion: set new counDown " + (waitCompletion != null ? "already has counter " + waitCompletion.getCount() : ""));
             waitCompletion = new CountDownLatch(countDownLatch);
         }
         waitCompletion.await();
-
+        waitCompletion = null;
     }
 
     protected void waitCompletion() throws InterruptedException {

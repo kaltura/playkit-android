@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.player.PlayerController;
+import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestDecorator;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -41,6 +42,9 @@ class PlayerLoader extends PlayerDecoratorBase {
     
     public void load(@NonNull PKPluginConfigs pluginsConfig) {
         PlayerController playerController = new PlayerController(context);
+
+        // By default, set Kaltura decorator.
+        KalturaPlaybackRequestDecorator.setup(playerController);
         
         playerController.setEventListener(new PKEvent.Listener() {
             @Override
@@ -51,7 +55,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         Player player = playerController;
 
-        for (Map.Entry<String, Object> entry : pluginsConfig.getPluginConfigsMap().entrySet()) {
+        for (Map.Entry<String, Object> entry : pluginsConfig) {
             String name = entry.getKey();
             PKPlugin plugin = loadPlugin(name, player, entry.getValue(), messageBus, context);
 
@@ -83,6 +87,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     @Override
     public void destroy() {
+        stop();
         releasePlugins();
         releasePlayer();
     }
@@ -106,6 +111,16 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     private void releasePlayer() {
         getPlayer().destroy();
+    }
+
+    @Override
+    public void prepare(@NonNull PKMediaConfig mediaConfig) {
+        
+        super.prepare(mediaConfig);
+        
+        for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
+            loadedPluginEntry.getValue().plugin.onUpdateMedia(mediaConfig);
+        }
     }
 
     private void releasePlugins() {

@@ -87,7 +87,7 @@ class SimpleDashParser {
         FileDataSource initChunkSource = new FileDataSource();
         DataSpec initDataSpec = new DataSpec(initFile);
         int trigger = C.SELECTION_REASON_MANUAL;
-        ChunkExtractorWrapper extractorWrapper = new ChunkExtractorWrapper(new FragmentedMp4Extractor(), format, false ,false);
+        ChunkExtractorWrapper extractorWrapper = new ChunkExtractorWrapper(new FragmentedMp4Extractor(), format);
         InitializationChunk chunk = new InitializationChunk(initChunkSource, initDataSpec, format, trigger, format, extractorWrapper); // TODO why do we need the 5 -fth argument
         try {
             chunk.load();
@@ -95,7 +95,7 @@ class SimpleDashParser {
             log.e("Interrupted! " + e.getMessage());
         }
         if (!chunk.isLoadCanceled()) {
-            drmInitData = chunk.getSampleFormat().drmInitData;
+            drmInitData = extractorWrapper.getSampleFormats()[0].drmInitData;
         }
 
         if (drmInitData != null) {

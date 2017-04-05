@@ -3,7 +3,6 @@ package com.kaltura.playkit.plugins;
 import android.content.Context;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.OttEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
@@ -21,6 +20,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     private static final PKLog log = PKLog.get("TVPAPIAnalyticsPlugin");
     private static final String TAG = "TVPAPIAnalytics";
     private JsonObject testInitObj = new JsonObject();
+    private long lastKnownPlayerPosition = 0;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -53,20 +53,22 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         if (initObj == null) {
             return;
         }
-
+        if (!"stop".equals(action)) {
+            lastKnownPlayerPosition = player.getCurrentPosition();
+        }
         RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObj, action,
-                mediaConfig.getMediaEntry().getId(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId, player.getCurrentPosition());
+                mediaConfig.getMediaEntry().getId(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId, lastKnownPlayerPosition);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
                 if (response.isSuccess() && response.getResponse().toLowerCase().contains("concurrent")){
                     messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
+                    messageBus.post(new TVPapiAnalyticsEvent.TVPapiAnalyticsReport(eventType.toString()));
                 }
                 log.d("onComplete send event: ");
             }
         });
         requestsExecutor.queue(requestBuilder.build());
-        messageBus.post(new LogEvent(TAG + " " + eventType.toString(), requestBuilder.build().getBody()));
     }
 }
