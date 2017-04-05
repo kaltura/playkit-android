@@ -1,6 +1,5 @@
 package com.kaltura.playkit;
 
-import com.google.android.exoplayer2.metadata.Metadata;
 import com.kaltura.playkit.player.PKTracks;
 
 /**
@@ -100,14 +99,14 @@ public class PlayerEvent implements PKEvent {
 
     public static class MetadataAvailable extends PlayerEvent {
 
-        private Metadata metadata;
+        private PKMetadata metadata;
 
-        public MetadataAvailable(Metadata metadata) {
+        public MetadataAvailable(PKMetadata metadata) {
             super(Type.METADATA_AVAILABLE);
             this.metadata = metadata;
         }
 
-        public Metadata getMetadata() {
+        public PKMetadata getMetadata() {
             return metadata;
         }
     }

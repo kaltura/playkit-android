@@ -115,8 +115,8 @@ public class PlayerController implements Player {
                         }
                         break;
                     case METADATA_AVAILABLE:
-                        if (player.getMetadata() == null) {
-                            log.w("Received event: METADATA_AVAILABLE, but metadata was null.");
+                        if (player.getMetadata().getMetadataEntries().isEmpty()) {
+                            log.w("Received event: METADATA_AVAILABLE, but no metadata found.");
                             return;
                         }
                         event = new PlayerEvent.MetadataAvailable(player.getMetadata());

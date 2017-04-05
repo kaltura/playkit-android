@@ -1,6 +1,6 @@
 package com.kaltura.playkit.player;
 
-import com.google.android.exoplayer2.metadata.Metadata;
+import com.kaltura.playkit.PKMetadata;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.utils.Consts;
@@ -179,6 +179,6 @@ interface PlayerEngine {
      * Will return the metadata object of the loaded entry.
      * @return - {@link com.google.android.exoplayer2.metadata.Metadata}
      */
-    Metadata getMetadata();
+    PKMetadata getMetadata();
 
 }
