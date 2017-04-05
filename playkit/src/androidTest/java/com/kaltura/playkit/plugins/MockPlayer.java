@@ -27,7 +27,7 @@ public class MockPlayer implements Player {
 
             @Override
             public Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
-                return null;
+                return this;
             }
         };
     }
