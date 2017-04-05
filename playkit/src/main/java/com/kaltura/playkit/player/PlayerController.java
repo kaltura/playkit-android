@@ -13,7 +13,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.PKRequestInfo;
+import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
@@ -43,7 +43,7 @@ public class PlayerController implements Player {
     private PlayerView playerEngineView;
 
     private UUID sessionId = UUID.randomUUID();
-    private PKRequestInfo.Decorator contentRequestDecorator;
+    private PKRequestParams.Adapter contentRequestAdapter;
 
     private boolean isNewEntry = true;
     private Settings settings = new Settings();
@@ -51,8 +51,8 @@ public class PlayerController implements Player {
     private class Settings implements Player.Settings {
 
         @Override
-        public Player.Settings setContentRequestDecorator(PKRequestInfo.Decorator contentRequestDecorator) {
-            PlayerController.this.contentRequestDecorator = contentRequestDecorator;
+        public Player.Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
+            PlayerController.this.contentRequestAdapter = contentRequestAdapter;
             return this;
         }
     }
@@ -193,7 +193,7 @@ public class PlayerController implements Player {
 
 
         boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
-        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestDecorator);
+        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestAdapter);
         if (player == null) {
             switchPlayers(source.getMediaFormat(), false);
         } else if (shouldSwitchBetweenPlayers) {
