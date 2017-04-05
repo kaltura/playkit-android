@@ -48,7 +48,7 @@ import static com.kaltura.playkit.mediaproviders.MockParams.FormatHDDash;
 import static com.kaltura.playkit.mediaproviders.MockParams.FormatSD;
 import static com.kaltura.playkit.mediaproviders.MockParams.FrozenAssetInfo;
 import static com.kaltura.playkit.mediaproviders.MockParams.MediaId;
-import static com.kaltura.playkit.mediaproviders.MockParams.MediaId2;
+import static com.kaltura.playkit.mediaproviders.MockParams.ShlomoArMediaId;
 import static com.kaltura.playkit.mediaproviders.MockParams.MediaId2_File_Main_HD;
 import static com.kaltura.playkit.mediaproviders.MockParams.MediaId2_File_Main_SD;
 import static com.kaltura.playkit.mediaproviders.MockParams.MediaId5;
@@ -56,7 +56,6 @@ import static com.kaltura.playkit.mediaproviders.MockParams.PnxBaseUrl;
 import static com.kaltura.playkit.mediaproviders.MockParams.PnxKS;
 import static com.kaltura.playkit.mediaproviders.MockParams.PnxNotEntitledMedia;
 import static com.kaltura.playkit.mediaproviders.MockParams.PnxPartnerId;
-import static com.kaltura.playkit.mediaproviders.MockParams.SpongeMediaId;
 import static com.kaltura.playkit.mediaproviders.MockParams.ToystoryMediaId;
 import static com.kaltura.playkit.mediaproviders.MockParams.Toystory_File_Main_HD;
 import static com.kaltura.playkit.mediaproviders.MockParams.Toystory_File_Main_HD_Dash;
@@ -132,7 +131,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     public void testResponseParsing() {
 
         phoenixMediaProvider = new PhoenixMediaProvider().setSessionProvider(ksSessionProvider).
-                setAssetId(ToystoryMediaId).setAssetType(APIDefines.KalturaAssetType.Media)/*.setFormats(FormatSD)*//*.setRequestExecutor(testExecutor)*/;
+                setAssetId(ShlomoArMediaId).setAssetType(APIDefines.KalturaAssetType.Media)/*.setFormats(FormatSD)*//*.setRequestExecutor(testExecutor)*/;
 
         latchCount = 1;
         phoenixMediaProvider.load(new OnMediaLoadCompletion() {
@@ -141,19 +140,19 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                 latchCount--;
                 assertTrue(response.isSuccess());
                 assertTrue(response.getResponse() != null);
-                assertTrue(response.getResponse().getId().equals(ToystoryMediaId));
-                assertTrue(response.getResponse().getSources().size() == 1);
-                assertTrue(response.getResponse().getDuration() == 149000);
+                assertTrue(response.getResponse().getId().equals(ShlomoArMediaId));
+                assertTrue(response.getResponse().getSources().size() == 2);
+                assertTrue(response.getResponse().getDuration() == 224000);
                 // currently is unknown on phoenix since we don't have that information easily:
                 assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
 
                 latchCount++;
-                phoenixMediaProvider.setAssetId(SpongeMediaId).setFormats(FormatHD, FormatSD).setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
+                phoenixMediaProvider.setAssetId(ToystoryMediaId).setFormats(FormatHDDash, FormatSD).setRequestExecutor(APIOkRequestsExecutor.getSingleton()).load(new OnMediaLoadCompletion() {
                     @Override
                     public void onComplete(ResultElement<PKMediaEntry> response) {
                         if (response.isSuccess()) {
                             assertTrue(response.getResponse() != null);
-                            assertTrue(response.getResponse().getId().equals(SpongeMediaId));
+                            assertTrue(response.getResponse().getId().equals(ToystoryMediaId));
                             assertTrue(response.getResponse().getSources().size() == 1);
                             assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
 
@@ -202,8 +201,8 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                 latchCount--;
                 phoenixMediaProvider = new PhoenixMediaProvider()
                         .setSessionProvider(EmptySessionProvider)
-                        .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(SpongeMediaId)
-                        .setFormats(FormatHD, FormatSD);
+                        .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(ToystoryMediaId)
+                        .setFormats(FormatHD, FormatSD, FormatHDDash);
 
                 latchCount++;
                 phoenixMediaProvider.load(new OnMediaLoadCompletion() {
@@ -211,7 +210,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                     public void onComplete(ResultElement<PKMediaEntry> response) {
                         if (response.isSuccess()) {
                             assertTrue(response.getResponse() != null);
-                            assertTrue(response.getResponse().getId().equals(SpongeMediaId));
+                            assertTrue(response.getResponse().getId().equals(ToystoryMediaId));
                             assertTrue(response.getResponse().getSources().size() == 1);
                             assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
 
@@ -345,7 +344,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
         phoenixMediaProvider = new PhoenixMediaProvider()
                 .setSessionProvider(ksSessionProvider)
-                .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(MediaId2) // cannel considered as media
+                .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(ShlomoArMediaId) // cannel considered as media
                 .setFormats(FormatHD, FormatSD);
 
         latchCount = 1; // counts total asynchronous section latch should wait for, prevents test stack on wait.
@@ -370,7 +369,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
         PhoenixMediaProvider phoenixMediaProvider2 = new PhoenixMediaProvider()
                 .setSessionProvider(ksSessionProvider)
-                .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(MediaId2) // cannel considered as media
+                .setAssetType(APIDefines.KalturaAssetType.Media).setAssetId(ShlomoArMediaId) // cannel considered as media
                 .setFileIds(MediaId2_File_Main_HD, MediaId2_File_Main_SD);
 
         latchCount++;
@@ -536,7 +535,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
             }
         });
         PKLog.i("phoenix testing", "starting load 3:");
-        phoenixMediaProvider.setAssetId(MediaId2).setFormats(FormatHD, FormatSD).load(new OnMediaLoadCompletion() {
+        phoenixMediaProvider.setAssetId(ShlomoArMediaId).setFormats(FormatHD, FormatSD).load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
                 if (cancelAtEnd) {
@@ -545,7 +544,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                     resume();
                 } else {
                     assertTrue(response.getResponse() != null);
-                    assertTrue(response.getResponse().getId().equals(MediaId2));
+                    assertTrue(response.getResponse().getId().equals(ShlomoArMediaId));
                     assertTrue(response.getResponse().getSources().size() == 2);
                     assertTrue(response.getResponse().getMediaType().equals(PKMediaEntry.MediaEntryType.Unknown));
                     resume();

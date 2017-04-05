@@ -47,7 +47,7 @@ public class MockParams {
 
     public static final String MediaId = "258656";//frozen //trailer 428345
     public static final String MediaId4 = "258655";//shrek
-    public static final String MediaId2 = "437800";//vild
+    public static final String ShlomoArMediaId = "485384";//vild
     public static final String SpongeMediaId = "258660";//sponge bob
     public static final String ToystoryMediaId = "485293";//toystory
 
