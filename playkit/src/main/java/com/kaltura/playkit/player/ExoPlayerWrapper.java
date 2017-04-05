@@ -87,7 +87,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
     private int sameErrorOccurrenceCounter = 0;
-    private Metadata metadata = null;
+    private Metadata metadata;
 
     interface TracksInfoListener {
 
