@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import com.google.ads.interactivemedia.v3.api.Ad;
 import com.google.ads.interactivemedia.v3.api.AdDisplayContainer;
 import com.google.ads.interactivemedia.v3.api.AdErrorEvent;
+import com.google.ads.interactivemedia.v3.api.AdPodInfo;
 import com.google.ads.interactivemedia.v3.api.AdsLoader;
 import com.google.ads.interactivemedia.v3.api.AdsManager;
 import com.google.ads.interactivemedia.v3.api.AdsManagerLoadedEvent;
@@ -712,7 +713,17 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 if (!isAdDisplayed) {
                     cancelAdDisplayedCheckTimer();
                 }
-
+                Ad adInfo = adEvent.getAd();
+                if (adInfo != null) {
+                    //incase one ad in the pod fails to play we want next one to be played
+                    AdPodInfo adPoidInfo = adInfo.getAdPodInfo();
+                    //
+                    if (adPoidInfo != null && adPoidInfo.getTotalAds() > 1 && adPoidInfo.getPodIndex() < adPoidInfo.getTotalAds()) {
+                        return;
+                    } else {
+                        adsManager.discardAdBreak();
+                    }
+                }
                 log.e("Ad LogError - back to playback");
                 if (player != null && player.getView() != null) {
                     player.getView().showVideoSurface();
