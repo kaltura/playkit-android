@@ -394,10 +394,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         adsLoadedListener = new AdsLoader.AdsLoadedListener() {
             @Override
             public void onAdsManagerLoaded(AdsManagerLoadedEvent adsManagerLoadedEvent) {
-
-                log.d("AdsManager loaded");
-
-                adManagerTimer.cancel();
+                log.d("AdsManager loaded isInitWaiting = " + isInitWaiting);
+                cancelAdManagerTimer();
 
                 // Ads were successfully loaded, so get the AdsManager instance. AdsManager has
                 // events for ad playback and errors.
@@ -410,9 +408,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
                 if (isInitWaiting) {
                     if (appIsInBackground) {
+                        log.d("IMA app in background return");
                         adManagerInitDuringBackground = true;
                         return;
                     }
+                    log.d("IMA adsManager.init called");
                     adsManager.init(renderingSettings);
                     isInitWaiting = false;
                 }
@@ -427,7 +427,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         log.d("IMA Start adsManager.init");
         isAdRequested = true;
         if (adsManager != null) {
+            log.d(" Start: Ad manager: " + adsManager);
             if (appIsInBackground) {
+                log.d("Start: Ad Manager Init : " + adManagerInitDuringBackground);
                 adManagerInitDuringBackground = true;
             } else {
                 adsManager.init(renderingSettings);
