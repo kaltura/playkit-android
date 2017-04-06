@@ -34,8 +34,10 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
 
         if (adsProvider != null) {
             if (adsProvider.isAdRequested()) {
+                log.d("IMA calling super.prepare");
                 super.prepare(mediaConfig);
             } else {
+                log.d("IMA setAdProviderListener");
                 adsProvider.setAdProviderListener(this);
             }
         }
@@ -127,6 +129,10 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public void onAdLoadingFinished() {
         log.d("onAdLoadingFinished pkPrepareReason");
+        if (mediaConfig == null) {
+            log.e("IMA onAdLoadingFinished mediaConfig == null");
+            return;
+        }
         prepare(mediaConfig);
         if (adsProvider != null) {
             adsProvider.removeAdProviderListener();
