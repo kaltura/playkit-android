@@ -31,10 +31,6 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public void prepare(@NonNull final PlayerConfig.Media mediaConfig) {
         this.mediaConfig = mediaConfig;
-            if (mediaConfig == null) {
-                log.e("IMA mediaConfig == null");
-                return;
-            }
         if (adsProvider != null) {
             if (adsProvider.isAdRequested()) {
                 log.d("IMA calling super.prepare");
