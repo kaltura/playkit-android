@@ -165,7 +165,6 @@ public class YouboraLibraryManager extends PluginGeneric {
     public void startMonitoring(Object player) {
         log.d("startMonitoring");
         super.startMonitoring(player);
-        this.enableBufferMonitor();
     }
 
     public void stopMonitoring() {
