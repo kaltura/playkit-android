@@ -314,7 +314,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onEvent(PKEvent event) {
                 log.d("Ad Event AD_ALL_ADS_COMPLETED");
                 appProgressBar.setVisibility(View.INVISIBLE);
-                player.play();
             }
         }, AdEvent.Type.ALL_ADS_COMPLETED);
         player.addEventListener(new PKEvent.Listener() {
@@ -335,7 +334,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onEvent(PKEvent event) {
                 nowPlaying = true;
-                player.play();
             }
         }, AdEvent.Type.SKIPPED);
 
