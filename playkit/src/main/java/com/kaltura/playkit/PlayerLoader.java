@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.player.PlayerController;
-import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestDecorator;
+import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -44,7 +44,7 @@ class PlayerLoader extends PlayerDecoratorBase {
         PlayerController playerController = new PlayerController(context);
 
         // By default, set Kaltura decorator.
-        KalturaPlaybackRequestDecorator.setup(playerController);
+        KalturaPlaybackRequestAdapter.setup(playerController);
         
         playerController.setEventListener(new PKEvent.Listener() {
             @Override
@@ -87,6 +87,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     @Override
     public void destroy() {
+        stop();
         releasePlugins();
         releasePlayer();
     }
