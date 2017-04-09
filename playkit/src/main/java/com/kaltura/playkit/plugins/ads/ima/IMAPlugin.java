@@ -108,6 +108,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private boolean adPlaybackCancelled;
     private Timer adDisplayedCheckTimer;
     private boolean isContentPrepared;
+    boolean isAllAdsCompleted;
     private com.google.ads.interactivemedia.v3.api.AdEvent.AdEventType lastEventReceived;
 
     public static final Factory factory = new Factory() {
@@ -148,13 +149,13 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             log.e("Error, player instance is null.");
             return;
         }
-        this.mediaConfig = mediaConfig;
+        this.isAllAdsCompleted = false;
         this.context = context;
         this.messageBus = messageBus;
         this.messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                log.d("onLoad:PlayerEvent:" + event.eventType().name());
+                log.d("Received:PlayerEvent:" + event.eventType().name());
                 if (event.eventType() == PlayerEvent.Type.ENDED) {
                     contentCompleted();
                 }
@@ -353,6 +354,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     protected void onDestroy() {
         log.d("IMA Start onDestroy");
         resetIMA();
+        isContentPrepared = false;
         removeAdProviderListener();
     }
 
@@ -360,7 +362,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         log.d("Start resetIMA");
         isAdRequested = false;
         isAdDisplayed = false;
-        isContentPrepared = false;
 
         cancelAdDisplayedCheckTimer();
         cancelAdManagerTimer();
@@ -527,6 +528,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     @Override
+    public boolean isAllAdsCompleted() {
+        return isAllAdsCompleted;
+    }
+
+    @Override
     public long getDuration() {
         if (adsManager != null) {
             return (long) adsManager.getAdProgress().getDuration();
@@ -646,11 +652,13 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 break;
             case ALL_ADS_COMPLETED:
                 log.d("AD_ALL_ADS_COMPLETED");
+                isAllAdsCompleted = true;
+                isAdDisplayed = false;
                 messageBus.post(new AdEvent(AdEvent.Type.ALL_ADS_COMPLETED));
                 player.getView().showVideoSurface();
                 if (adsManager != null) {
-                    log.d("AD_ALL_ADS_COMPLETED onDestroy");
-                    onDestroy();
+                    log.d("AD_ALL_ADS_COMPLETED resetIMA");
+                    resetIMA();
                 }
 
                 break;

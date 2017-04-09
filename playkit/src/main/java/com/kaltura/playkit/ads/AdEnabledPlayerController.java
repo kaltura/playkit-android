@@ -83,8 +83,8 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
 
     @Override
     public void play() {
-        log.d("PLAY isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused());
-        if (adsProvider != null) {
+        log.d("PLAY IMA decorator isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted = " + adsProvider.isAllAdsCompleted());
+        if (!adsProvider.isAllAdsCompleted() && adsProvider != null) {
             if (!adsProvider.isAdRequested()) {
                 adsProvider.start();
                 return;
@@ -93,6 +93,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
                 return;
             }
         }
+        log.d("Calling player play");
         getView().showVideoSurface();
         super.play();
 
@@ -100,10 +101,11 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
 
     @Override
     public void pause() {
-        log.d("PAUSE isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused());
+        log.d("PAUSE IMA decorator isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
         if (adsProvider.isAdDisplayed()) {
             adsProvider.pause();
         } else {
+            log.d("Calling player pause");
             super.pause();
         }
     }
