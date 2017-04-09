@@ -1,6 +1,9 @@
 package com.kaltura.playkit;
 
 import com.kaltura.playkit.player.PKTracks;
+import com.kaltura.playkit.player.metadata.PKMetadata;
+
+import java.util.List;
 
 /**
  * Created by Noam Tamim @ Kaltura on 24/10/2016.
@@ -99,15 +102,15 @@ public class PlayerEvent implements PKEvent {
 
     public static class MetadataAvailable extends PlayerEvent {
 
-        private PKMetadata metadata;
+        private List<PKMetadata> metadataList;
 
-        public MetadataAvailable(PKMetadata metadata) {
+        public MetadataAvailable(List<PKMetadata> metadataList) {
             super(Type.METADATA_AVAILABLE);
-            this.metadata = metadata;
+            this.metadataList = metadataList;
         }
 
-        public PKMetadata getMetadata() {
-            return metadata;
+        public List<PKMetadata> getMetadataList() {
+            return metadataList;
         }
     }
 

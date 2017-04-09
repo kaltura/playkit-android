@@ -38,13 +38,14 @@ import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaFormat;
-import com.kaltura.playkit.PKMetadata;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.player.PlayerController.EventListener;
 import com.kaltura.playkit.player.PlayerController.StateChangedListener;
+import com.kaltura.playkit.player.metadata.MetadataConverter;
+import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.EventLogger;
 
@@ -91,7 +92,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
     private int sameErrorOccurrenceCounter = 0;
-    private PKMetadata metadata;
+    private List<PKMetadata> metadataList = new ArrayList<>();
 
     interface TracksInfoListener {
 
@@ -157,7 +158,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     private void preparePlayer(PKMediaSourceConfig sourceConfig) {
         //reset metadata on prepare.
-        metadata = null;
+        metadataList.clear();
         sameErrorOccurrenceCounter = 0;
         drmSessionManager.setMediaSource(sourceConfig.mediaSource);
 
@@ -366,18 +367,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public void onMetadata(Metadata metadata) {
-        this.metadata = obtainMetadataEntries(metadata);
+
+        this.metadataList = MetadataConverter.convert(metadata);
+
         sendEvent(PlayerEvent.Type.METADATA_AVAILABLE);
-    }
-
-    private PKMetadata obtainMetadataEntries(Metadata metadata) {
-        List<Metadata.Entry> entryList = new ArrayList<>();
-
-        for (int i = 0; i < metadata.length(); i++) {
-            entryList.add(metadata.get(i));
-        }
-
-        return new PKMetadata(entryList);
     }
 
     @Override
@@ -607,8 +600,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         }
     }
 
-    public PKMetadata getMetadata() {
-        return metadata;
+    public List<PKMetadata> getMetadata() {
+        return metadataList;
     }
 
 }
