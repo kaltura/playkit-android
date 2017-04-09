@@ -75,7 +75,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-        isFirstPlay = false;
+        isFirstPlay = true;
         this.mediaConfig = mediaConfig;
         if (this.mediaConfig.getStartPosition() != -1){
             this.mContinueTime = this.mediaConfig.getStartPosition();
