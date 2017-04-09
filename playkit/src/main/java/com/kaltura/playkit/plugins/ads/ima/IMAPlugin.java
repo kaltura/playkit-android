@@ -766,6 +766,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     AdPodInfo adPoidInfo = adInfo.getAdPodInfo();
                     log.d("adPoidInfo.getAdPosition() = " + adPoidInfo.getAdPosition()  +   " adPoidInfo.getTotalAds() = " + adPoidInfo.getTotalAds());
                     if (adPoidInfo != null && adPoidInfo.getTotalAds() > 1 && adPoidInfo.getAdPosition() < adPoidInfo.getTotalAds()) {
+                        log.d("LOG Error but continue to next ad in pod");
                         return;
                     } else {
                         adsManager.discardAdBreak();
