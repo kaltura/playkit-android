@@ -43,6 +43,36 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
+    public void play() {
+        log.d("PLAY IMA decorator isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted = " + adsProvider.isAllAdsCompleted());
+        if (!adsProvider.isAllAdsCompleted() && adsProvider != null) {
+            if (!adsProvider.isAdRequested()) {
+                //super.getView().hideVideoSurface();
+                adsProvider.start();
+                return;
+            } else if (adsProvider.isAdDisplayed()) {
+                adsProvider.resume();
+                return;
+            }
+        }
+        log.d("Calling player play");
+        getView().showVideoSurface();
+        super.play();
+
+    }
+
+    @Override
+    public void pause() {
+        log.d("PAUSE IMA decorator isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
+        if (adsProvider.isAdDisplayed()) {
+            adsProvider.pause();
+        } else {
+            log.d("Calling player pause");
+            super.pause();
+        }
+    }
+
+    @Override
     public long getDuration() {
         if (adsProvider.isAdDisplayed()) {
             long adDuration = adsProvider.getDuration();
@@ -71,34 +101,6 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
             return;
         } else {
             super.seekTo(position);
-        }
-    }
-
-    @Override
-    public void play() {
-        log.d("PLAY isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused());
-        if (adsProvider != null) {
-            if (!adsProvider.isAdRequested()) {
-                //super.getView().hideVideoSurface();
-                adsProvider.start();
-                return;
-            } else if (adsProvider.isAdDisplayed()) {
-                adsProvider.resume();
-                return;
-            }
-        }
-        getView().showVideoSurface();
-        super.play();
-
-    }
-
-    @Override
-    public void pause() {
-        log.d("PAUSE isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused());
-        if (adsProvider.isAdDisplayed()) {
-            adsProvider.pause();
-        } else {
-            super.pause();
         }
     }
 
