@@ -648,7 +648,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdEvent(AdEvent.Type.ALL_ADS_COMPLETED));
                 player.getView().showVideoSurface();
                 if (adsManager != null) {
-                    log.d("AD_ALL_ADS_COMPLETED onDestroy");
+                    log.d("AD_ALL_ADS_COMPLETED resetIMA");
                     resetIMA();
                 }
 
