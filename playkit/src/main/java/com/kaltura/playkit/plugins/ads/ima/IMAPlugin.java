@@ -108,7 +108,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private boolean adPlaybackCancelled;
     private Timer adDisplayedCheckTimer;
     private boolean isContentPrepared;
-    boolean isAllAdsCompleted;
+    private boolean isAllAdsCompleted;
     private com.google.ads.interactivemedia.v3.api.AdEvent.AdEventType lastEventReceived;
 
     public static final Factory factory = new Factory() {
