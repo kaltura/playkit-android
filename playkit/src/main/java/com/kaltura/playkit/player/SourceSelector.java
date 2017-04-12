@@ -82,17 +82,18 @@ class SourceSelector {
     }
 
     private String fixPlayManifest(String origURL, String sessionId) {
-        String fixedURL = origURL;
-        if (origURL.contains("/playManifest/")) {
-            if (origURL.contains("?")) {
-                fixedURL += "&playSessionId=" + sessionId;
-            } else {
-                fixedURL += "?playSessionId=" + sessionId;
-            }
-            fixedURL += "&clientTag=" + CLIENT_TAG;
-            return fixedURL;
+        if (origURL.contains("playSessionId") || !origURL.contains("/playManifest/")) {
+            return origURL;
         }
-        return origURL;
+
+        String fixedURL = origURL;
+        if (origURL.contains("?")) {
+            fixedURL += "&playSessionId=" + sessionId;
+        } else {
+            fixedURL += "?playSessionId=" + sessionId;
+        }
+        fixedURL += "&clientTag=" + CLIENT_TAG;
+        return fixedURL;
     }
 
     static PKMediaSource selectSource(PKMediaEntry mediaEntry, String sessionId) {
