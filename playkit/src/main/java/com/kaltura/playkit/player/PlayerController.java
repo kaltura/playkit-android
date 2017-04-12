@@ -159,7 +159,7 @@ public class PlayerController implements Player {
         if (this.mediaConfig == null) {
             return;
         }
-        if (this.sessionId == null) {
+        if (this.sessionId == null || isNewEntry) {
             this.sessionId = UUID.randomUUID().toString();
         }
 
