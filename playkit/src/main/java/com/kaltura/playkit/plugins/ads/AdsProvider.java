@@ -9,6 +9,7 @@ public interface AdsProvider {
     IMAConfig getAdsConfig();
 
     void start();
+    void destroy();
     void resume();
     void pause();
     void contentCompleted();
@@ -16,6 +17,7 @@ public interface AdsProvider {
     boolean isAdDisplayed();
     boolean isAdPaused();
     boolean isAdRequested();
+    boolean isAllAdsCompleted();
     long getDuration();
     long getCurrentPosition();
     void setAdProviderListener(AdEnabledPlayerController adEnabledPlayerController);
