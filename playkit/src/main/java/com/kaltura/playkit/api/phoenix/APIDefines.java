@@ -8,8 +8,6 @@ import com.kaltura.playkit.PKMediaEntry;
 
 public class APIDefines {
 
-
-
     public enum AssetReferenceType {
         Media("media"),
         InternalEpg("epg_internal"),

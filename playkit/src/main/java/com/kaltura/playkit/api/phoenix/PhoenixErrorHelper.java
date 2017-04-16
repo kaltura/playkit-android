@@ -41,6 +41,9 @@ public class PhoenixErrorHelper {
      */
     private static ErrorElement getDefinedErrorElement(String code, String message) {
         switch (code){
+            case "2016":
+                return new ErrorElement(message, code);
+
             case "500016":
                 return ErrorElement.SessionError.message("session token has been expired");
 

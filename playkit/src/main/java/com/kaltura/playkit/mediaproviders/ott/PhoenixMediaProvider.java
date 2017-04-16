@@ -1,6 +1,7 @@
 package com.kaltura.playkit.mediaproviders.ott;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.StringDef;
 import android.text.TextUtils;
 
 import com.google.gson.JsonParseException;
@@ -33,6 +34,8 @@ import com.kaltura.playkit.mediaproviders.base.BEMediaProvider;
 import com.kaltura.playkit.mediaproviders.base.FormatsHelper;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -153,6 +156,17 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     /**
      * OPTIONAL
+     *
+     * @param protocol - the desired protocol (http/https) for the playback sources
+     * @return
+     */
+    public PhoenixMediaProvider setProtocol(@NonNull @HttpProtocol String protocol) {
+        this.mediaAsset.protocol = protocol;
+        return this;
+    }
+
+    /**
+     * OPTIONAL
      * defines which of the sources to consider on {@link PKMediaEntry} creation.
      *
      * @param formats - 1 or more content format definition. can be: Hd, Sd, Download, Trailer etc
@@ -162,6 +176,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         this.mediaAsset.formats = new ArrayList<>(Arrays.asList(formats));
         return this;
     }
+
+
 
     /**
      * OPTIONAL - if not available all sources will be fetched
@@ -492,6 +508,13 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     return PKMediaEntry.MediaEntryType.Unknown;
             }
         }
+    }
+
+    @StringDef({HttpProtocol.Http, HttpProtocol.Https})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface HttpProtocol {
+        public static final String Http = "http";
+        public static final String Https = "https";
     }
 
 }
