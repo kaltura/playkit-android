@@ -208,8 +208,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     if (adsManager == null) {
                         log.d("adsManager is null, will play content");
                         preparePlayer();
-                        messageBus.post(new AdEvent(AdEvent.Type.AD_BREAK_IGNORED));
                         if (isAdRequested) {
+                            messageBus.post(new AdEvent(AdEvent.Type.AD_BREAK_IGNORED));
                             adPlaybackCancelled = true;
                         }
                     }
@@ -590,11 +590,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     appInBackgroundDuringAdLoad = true;
                     adsManager.pause();
                 } else {
-                    messageBus.post(new AdEvent(AdEvent.Type.LOADED));
                     if (adPlaybackCancelled) {
                         log.d("discarding ad break");
                         adsManager.discardAdBreak();
                     } else {
+                        messageBus.post(new AdEvent(AdEvent.Type.LOADED));
                         if(AdTagType.VMAP != adConfig.getAdTagType()){
                             adsManager.start();
                         }
