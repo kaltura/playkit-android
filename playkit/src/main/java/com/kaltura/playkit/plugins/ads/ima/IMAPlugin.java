@@ -213,7 +213,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                             adPlaybackCancelled = true;
                             if (player != null && player.getView() != null) {
                                 player.getView().showVideoSurface();
-                                player.play();
                             }
                         }
                     }
@@ -807,6 +806,14 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             log.d("IMA prepare player");
             isContentPrepared = true;
             pkAdProviderListener.onAdLoadingFinished();
+            messageBus.listen(new PKEvent.Listener() {
+                @Override
+                public void onEvent(PKEvent event) {
+                    player.play();
+                    messageBus.remove(this);
+                }
+            }, PlayerEvent.Type.DURATION_CHANGE);
+
         }
     }
 
