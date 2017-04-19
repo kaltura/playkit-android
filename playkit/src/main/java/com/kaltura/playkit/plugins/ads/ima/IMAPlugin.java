@@ -775,11 +775,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     adsManager.discardAdBreak();
                 }
 
-                log.e("Ad LogError - back to playback");
+                /*log.e("Ad LogError - back to playback");
                 if (player != null && player.getView() != null) {
                     player.getView().showVideoSurface();
                     player.play();
-                }
+                }*/
 
                 String error = "Unknown Error";
                 if (adEvent.getAdData() != null) {

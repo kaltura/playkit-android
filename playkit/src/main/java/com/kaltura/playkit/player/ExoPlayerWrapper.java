@@ -375,7 +375,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public void play() {
         log.d("play");
-        if (player == null || player.getPlayWhenReady()) {
+        if (player == null || player.getPlayWhenReady() || currentState != PlayerState.READY) {
             log.e("Attempt to invoke 'play()' on null instance of the exoplayer");
             return;
         }
