@@ -717,6 +717,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             case SKIPPED:
                 messageBus.post(new AdEvent(AdEvent.Type.SKIPPED));
                 cancelAdDisplayedCheckTimer();
+                preparePlayer(true);
                 break;
             case CLICKED:
                 isAdIsPaused = true;
