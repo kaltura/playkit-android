@@ -462,7 +462,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void restore() {
         log.d("resume");
-        initializePlayer();
+        if (player == null) {
+            initializePlayer();
+        }
         if (shouldResetPlayerPosition) {
             if (playerPosition == Consts.TIME_UNSET) {
                 player.seekToDefaultPosition(playerWindow);
