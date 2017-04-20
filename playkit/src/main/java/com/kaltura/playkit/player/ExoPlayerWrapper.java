@@ -213,7 +213,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
         return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? BANDWIDTH_METER : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, false);
     }
-    
+
     private static String getUserAgent(Context context) {
         String applicationName;
         try {
@@ -445,7 +445,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public void restore() {
         log.d("resume");
-        initializePlayer();
+        if (player == null) {
+            initializePlayer();
+        }
         if (shouldResetPlayerPosition) {
             if (playerPosition == Consts.TIME_UNSET) {
                 player.seekToDefaultPosition(playerWindow);

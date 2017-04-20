@@ -24,18 +24,23 @@ import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
  */
 
 public class YouboraLibraryManager extends PluginGeneric {
-    private static final PKLog log = PKLog.get("YouboraLibraryManager");
-    private static final String TAG = "YouboraPlugin";
 
-    private Double lastReportedBitrate = -1.0;
-    private Double lastReportedthroughput = super.getThroughput();
-    private String mediaUrl = "unknown";
+    private static final PKLog log = PKLog.get("YouboraLibraryManager");
+
     private static final long MONITORING_INTERVAL = 200L;
-    private boolean isFirstPlay = true;
-    private boolean isBuffering = false;
+
     private Player player;
     private MessageBus messageBus;
     private PKMediaConfig mediaConfig;
+
+    private boolean isFirstPlay = true;
+    private boolean isBuffering = false;
+    private boolean allowSendingYouboraBufferEvents = false; //When false will prevent from sending bufferUnderrun event.
+
+    private String mediaUrl = "unknown";
+    private Double lastReportedBitrate = -1.0;
+    private Double lastReportedthroughput = super.getThroughput();
+
 
     public YouboraLibraryManager(String options) throws JSONException {
         super(options);
@@ -43,9 +48,10 @@ public class YouboraLibraryManager extends PluginGeneric {
 
     public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus, PKMediaConfig mediaConfig, Player player) {
         super(options);
+        this.player = player;
         this.messageBus = messageBus;
         this.mediaConfig = mediaConfig;
-        this.player = player;
+
         messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
         messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
     }
@@ -58,17 +64,24 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     private void onEvent(PlayerEvent.StateChanged event) {
+        //If it is first play, do not continue with the flow.
+        if (isFirstPlay) {
+            return;
+        }
+
         switch (event.newState) {
             case READY:
-                if (isBuffering && !isFirstPlay) {
+                if (isBuffering) {
                     isBuffering = false;
                     bufferedHandler();
                 }
                 break;
             case BUFFERING:
-                if (!isFirstPlay) {
+                if (allowSendingYouboraBufferEvents) {
                     isBuffering = true;
                     bufferingHandler();
+                } else {
+                    allowSendingYouboraBufferEvents = true;
                 }
                 break;
             default:
@@ -150,9 +163,9 @@ public class YouboraLibraryManager extends PluginGeneric {
         switch (event.type) {
             case STARTED:
                 ignoringAdHandler();
+                allowSendingYouboraBufferEvents = false;
                 break;
-            case SKIPPED:
-            case COMPLETED:
+            case CONTENT_RESUME_REQUESTED:
                 ignoredAdHandler();
                 break;
             default:
@@ -161,11 +174,16 @@ public class YouboraLibraryManager extends PluginGeneric {
         sendReportEvent(event);
     }
 
+    @Override
+    public void pauseMonitoring() {
+        super.pauseMonitoring();
+        allowSendingYouboraBufferEvents = false;
+    }
 
     public void startMonitoring(Object player) {
         log.d("startMonitoring");
         super.startMonitoring(player);
-        this.enableBufferMonitor();
+        allowSendingYouboraBufferEvents = false;
     }
 
     public void stopMonitoring() {
