@@ -111,6 +111,13 @@ public class PlayerController implements Player {
                             return;
                         }
                         break;
+                    case METADATA_AVAILABLE:
+                        if(player.getMetadata() == null || player.getMetadata().isEmpty()) {
+                            log.w("METADATA_AVAILABLE event received, but player engine have no metadata.");
+                            return;
+                        }
+                        event = new PlayerEvent.MetadataAvailable(player.getMetadata());
+                        break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
                 }
@@ -186,7 +193,7 @@ public class PlayerController implements Player {
             log.e("No playable mediaConfig found, mediaConfig = null");
             return;
         }
-        
+
         this.mediaConfig = mediaConfig;
 
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());

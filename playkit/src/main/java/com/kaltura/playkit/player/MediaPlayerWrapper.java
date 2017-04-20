@@ -15,6 +15,7 @@ import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.WidevineClassicDrm;
+import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
@@ -30,7 +31,7 @@ import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARI
  * @hide
  */
 
-public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaPlayer.OnPreparedListener,
+class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaPlayer.OnPreparedListener,
         MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener,
         MediaPlayer.OnSeekCompleteListener {
 
@@ -58,7 +59,7 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback,
     private boolean isPauseAfterPrepare = false;
     private boolean appInBackground;
 
-    public MediaPlayerWrapper(Context context) {
+     MediaPlayerWrapper(Context context) {
         this.context = context;
         player = new MediaPlayer();
         mediaPlayerView = new MediaPlayerView(context);
@@ -523,4 +524,10 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback,
         PREPARING,
         PREPARED
     }
+
+    @Override
+    public List<PKMetadata> getMetadata() {
+        return null;
+    }
+
 }

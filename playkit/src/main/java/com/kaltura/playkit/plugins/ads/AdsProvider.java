@@ -9,7 +9,7 @@ public interface AdsProvider {
     IMAConfig getAdsConfig();
 
     void start();
-    void destroy();
+    void destroyAdsManager();
     void resume();
     void pause();
     void contentCompleted();
