@@ -89,7 +89,7 @@ public class YouboraLibraryManager extends PluginGeneric {
             }
 
             if (event instanceof PlayerEvent && viewManager != null) {
-                log.d(((PlayerEvent) event).type.toString());
+                log.d("PlayerEvent: " + ((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
                     case DURATION_CHANGE:
                         log.d("new duration = " + ((PlayerEvent.DurationChanged) event).duration);
@@ -158,7 +158,6 @@ public class YouboraLibraryManager extends PluginGeneric {
             default:
                 break;
         }
-        sendReportEvent(event);
     }
 
 
@@ -207,7 +206,6 @@ public class YouboraLibraryManager extends PluginGeneric {
 
     private void sendReportEvent(PKEvent event) {
         String reportedEventName = event.eventType().name();
-        log.d(reportedEventName);
         messageBus.post(new YouboraEvent.YouboraReport(reportedEventName));
     }
 

@@ -129,12 +129,6 @@ public class YouboraAdManager extends AdnalyzerGeneric {
             } else if (event instanceof AdError) {
                 AdError.Type adError =  (((AdError) event).errorType);
                 YBLog.debug("onAdError");
-
-            } else if (event instanceof PlayerEvent) {
-                switch (((PlayerEvent) event).type) {
-                    case STATE_CHANGED:
-                        YouboraAdManager.this.onEvent((PlayerEvent.StateChanged) event);
-                }
             }
         }
     };
@@ -179,18 +173,22 @@ public class YouboraAdManager extends AdnalyzerGeneric {
 
     private void sendReportEvent(PKEvent event) {
         String reportedEventName = event.eventType().name();
-        log.d(reportedEventName);
-        messageBus.post(new YouboraEvent.YouboraReport(reportedEventName));
+        if (event instanceof AdError ||event instanceof AdEvent) {
+            messageBus.post(new YouboraEvent.YouboraReport(reportedEventName));
+        }
     }
 
     public Double getAdPlayhead() {
         if (player != null && player.getAdController() != null) {
-            return Long.valueOf(player.getAdController().getAdCurrentPosition()).doubleValue() / 1000;
+            double playHead = Long.valueOf(player.getAdController().getAdCurrentPosition()).doubleValue() / 1000;
+            log.d("XXX getAdPlayhead " + playHead);
+            return playHead;
         }
         return Consts.POSITION_UNSET * 1D;
     }
 
     public String getAdPosition() {
+        //TODO  need to generate thhis value....
             return "pre";
     }
 
