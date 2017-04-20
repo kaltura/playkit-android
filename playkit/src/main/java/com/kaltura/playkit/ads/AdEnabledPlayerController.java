@@ -123,7 +123,25 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
 
     @Override
     public void skipAd() {
-        adsProvider.skipAd();
+        if (adsProvider != null) {
+            adsProvider.skipAd();
+        }
+    }
+
+    @Override
+    public long getAdCurrentPosition() {
+        if (adsProvider != null) {
+            return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
+        }
+        return  Consts.POSITION_UNSET;
+    }
+
+    @Override
+    public long getAdDuration() {
+        if (adsProvider != null) {
+            return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
+        }
+        return Consts.TIME_UNSET;
     }
 
     @Override

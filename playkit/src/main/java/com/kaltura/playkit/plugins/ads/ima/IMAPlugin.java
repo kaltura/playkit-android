@@ -409,7 +409,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AdsManager loaded");
 
                 cancelAdManagerTimer();
-
+                sendCuePointsUpdateEvent();
                 // Ads were successfully loaded, so get the AdsManager instance. AdsManager has
                 // events for ad playback and errors.
                 adsManager = adsManagerLoadedEvent.getAdsManager();
@@ -433,6 +433,13 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             }
         };
         return adsLoadedListener;
+    }
+
+    private void sendCuePointsUpdateEvent() {
+        adTagCuePoints = new AdCuePoints(getAdCuePoints());
+        if (adTagCuePoints != null) {
+            messageBus.post(new AdEvent.AdCuePointsUpdateEvent(adTagCuePoints));
+        }
     }
 
     @Override
@@ -684,8 +691,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                         @Override
                         public void run() {
                             log.d("AD CUEPOINTS CHANGED TRIGGERED WITH DELAY");
-                            adTagCuePoints = new AdCuePoints(getAdCuePoints());
-                            messageBus.post(new AdEvent.AdCuePointsUpdateEvent(adTagCuePoints));
+                            sendCuePointsUpdateEvent();
                         }
                     }, IMAConfig.DEFAULT_CUE_POINTS_CHANGED_DELAY);
                 }
@@ -763,9 +769,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 Ad adInfo = adEvent.getAd();
                 if (adInfo != null) {
                     //incase one ad in the pod fails to play we want next one to be played
-                    AdPodInfo adPoidInfo = adInfo.getAdPodInfo();
-                    log.d("adPoidInfo.getAdPosition() = " + adPoidInfo.getAdPosition()  +   " adPoidInfo.getTotalAds() = " + adPoidInfo.getTotalAds());
-                    if (adPoidInfo != null && adPoidInfo.getTotalAds() > 1 && adPoidInfo.getAdPosition() < adPoidInfo.getTotalAds()) {
+                    AdPodInfo adPodInfo = adInfo.getAdPodInfo();
+                    log.d("adPodInfo.getAdPosition() = " + adPodInfo.getAdPosition()  +   " adPodInfo.getTotalAds() = " + adPodInfo.getTotalAds());
+                    if (adPodInfo != null && adPodInfo.getTotalAds() > 1 && adPodInfo.getAdPosition() < adPodInfo.getTotalAds()) {
                         log.d("LOG Error but continue to next ad in pod");
                         return;
                     } else {
@@ -873,6 +879,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         int adPodCount            = ad.getAdPodInfo().getTotalAds();
         int adPodPosition         = ad.getAdPodInfo().getAdPosition();
         long adPodTimeOffset      = (long)(ad.getAdPodInfo().getTimeOffset() * Consts.MILLISECONDS_MULTIPLIER);
+
 
 
 
