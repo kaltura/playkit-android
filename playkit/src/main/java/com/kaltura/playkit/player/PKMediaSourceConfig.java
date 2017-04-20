@@ -11,12 +11,12 @@ import com.kaltura.playkit.PKRequestParams;
 class PKMediaSourceConfig {
     PKMediaSource mediaSource;
     PKRequestParams.Adapter adapter;
-    boolean enableCea608;
+    boolean cea608CaptionsEnabled;
 
-    PKMediaSourceConfig(PKMediaSource mediaSource, PKRequestParams.Adapter adapter, boolean enableCea608) {
+    PKMediaSourceConfig(PKMediaSource mediaSource, PKRequestParams.Adapter adapter, boolean cea608CaptionsEnabled) {
         this.mediaSource = mediaSource;
         this.adapter = adapter;
-        this.enableCea608 = enableCea608;
+        this.cea608CaptionsEnabled = cea608CaptionsEnabled;
     }
 
     Uri getUrl() {

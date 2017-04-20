@@ -61,7 +61,7 @@ class TrackSelectionHelper {
     private long currentVideoBitrate = Consts.NO_VALUE;
     private long currentAudioBitrate = Consts.NO_VALUE;
 
-    private boolean enableCea608; //Flag that indicates if application initerested in receiving cea-608 text track format.
+    private boolean cea608CaptionsEnabled; //Flag that indicates if application initerested in receiving cea-608 text track format.
 
 
     /**
@@ -140,7 +140,7 @@ class TrackSelectionHelper {
                                 break;
                             case Consts.TRACK_TYPE_TEXT:
                                 if (format.sampleMimeType.equals("application/cea-608")) {
-                                    if (enableCea608) {
+                                    if (cea608CaptionsEnabled) {
                                         textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
                                     }
                                 } else {
@@ -557,8 +557,8 @@ class TrackSelectionHelper {
         tracksInfoListener.onTrackChanged();
     }
 
-    public void setEnableCea608(boolean enableCea608) {
-        this.enableCea608 = enableCea608;
+    public void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
+        this.cea608CaptionsEnabled = cea608CaptionsEnabled;
     }
 }
 
