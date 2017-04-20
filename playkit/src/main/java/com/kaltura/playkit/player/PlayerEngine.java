@@ -2,7 +2,10 @@ package com.kaltura.playkit.player;
 
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
+
+import java.util.List;
 
 
 /**
@@ -173,5 +176,11 @@ interface PlayerEngine {
      * stop the player and seek to start position.
      */
     void stop();
-}
 
+    /**
+     * Will return list of metadata objects, for the loaded entry.
+     * @return - list of {@link PKMetadata}
+     */
+    List<PKMetadata> getMetadata();
+
+}
