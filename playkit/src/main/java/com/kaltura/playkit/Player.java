@@ -7,28 +7,47 @@ import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.UUID;
+
 /**
  * Created by Noam Tamim @ Kaltura on 18/09/2016.
  */
 public interface Player {
 
+    /**
+     * Interface used for setting optional Player settings. 
+     */
+    interface Settings {
+        /**
+         * Set the Player's contentRequestAdapter.
+         * @param contentRequestAdapter 
+         * @return Player Settings.
+         */
+        Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter);
+    }
+
+    /**
+     * Get the Player's {@link Settings} object, for setting some optional properties. 
+     * @return Player Settings.
+     */
+    Settings getSettings();
 
     /**
      * Prepare the player for playback.
      * @param playerConfig - media configurations to apply on the player.
      */
-    void prepare(@NonNull PlayerConfig.Media playerConfig);
+    void prepare(@NonNull PKMediaConfig playerConfig);
 
     /**
      * Prepare for playing the next entry. If config.shouldAutoPlay is true, the entry will automatically
      * play when it's ready and the current entry is ended.
      */
-    void prepareNext(@NonNull PlayerConfig.Media mediaConfig);
+    void prepareNext(@NonNull PKMediaConfig mediaConfig);
 
-    void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value);
+    void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
 
     /**
-     * Load the entry that was prepared with {@link #prepareNext(PlayerConfig.Media)}.
+     * Load the entry that was prepared with {@link #prepareNext(PKMediaConfig)}.
      */
     void skip();
 
@@ -46,6 +65,12 @@ public interface Player {
      * Should be called when you want to destroy the player.
      */
     void destroy();
+
+    /**
+     * stop player and back to initial playback state.
+     */
+    void stop();
+
     /**
      * Start playback of the media.
      */
@@ -128,5 +153,11 @@ public interface Player {
     void seekTo(long position);
 
     AdController getAdController();
+
+    /**
+     * Get the Player's SessionId. The SessionId is initialized when the player loads. 
+     * @return Player's SessionId, as a UUID object.
+     */
+    UUID getSessionId();
 }
 

@@ -6,9 +6,12 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.backend.BaseResult;
 import com.kaltura.playkit.connect.ErrorElement;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 
 /**
@@ -32,9 +35,32 @@ public class OttResultAdapter implements JsonDeserializer<BaseResult> {
         BaseResult baseResult = null;
 
         if(result != null && result.has("error")){
-             baseResult = new BaseResult(new Gson().fromJson(result.get("error"), ErrorElement.class));
+
+            ErrorElement error = new Gson().fromJson(result.get("error"), ErrorElement.class);
+
+            // trying to find constructor that excepts ErrorElement in order to return an object of type "typeOfT" even on error.
+            try {
+                Constructor<? extends Type> constructor = typeOfT.getClass().getConstructor(ErrorElement.class);
+
+                if (constructor != null) {
+                    baseResult = (BaseResult) constructor.newInstance(error);
+                }
+            } catch (NoSuchMethodException e) {
+                // do nothing
+            } catch (IllegalAccessException e) {
+                // do nothing
+            } catch (InstantiationException e) {
+                // do nothing
+            } catch (InvocationTargetException e) {
+                // do nothing - next code section will handle this
+            }
+
+            if (baseResult == null) {
+                baseResult = new BaseResult(error);
+            }
 
         } else if(result != null && result.has("objectType")){
+
             String objectType=  result.getAsJsonPrimitive("objectType").getAsString();
             if(objectType.equals("KalturaAPIException")) {
                 baseResult = new BaseResult(new Gson().fromJson(result, ErrorElement.class));
@@ -44,6 +70,7 @@ public class OttResultAdapter implements JsonDeserializer<BaseResult> {
                     Class clz = Class.forName(clzName);
                     baseResult = (BaseResult) new Gson().fromJson(result, clz);
                 } catch (ClassNotFoundException e) {
+                    PKLog.e("OttResultAdapter","can't find class "+objectType+ " in the provided package\n ");
                     e.printStackTrace();
                 }
             }

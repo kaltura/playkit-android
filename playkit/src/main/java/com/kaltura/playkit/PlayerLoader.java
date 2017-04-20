@@ -4,8 +4,8 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.google.gson.JsonObject;
 import com.kaltura.playkit.player.PlayerController;
+import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -40,8 +40,11 @@ class PlayerLoader extends PlayerDecoratorBase {
         this.messageBus = new MessageBus();
     }
     
-    public void load(@NonNull PlayerConfig playerConfig) {
-        PlayerController playerController = new PlayerController(context, playerConfig.media);
+    public void load(@NonNull PKPluginConfigs pluginsConfig) {
+        PlayerController playerController = new PlayerController(context);
+
+        // By default, set Kaltura decorator.
+        KalturaPlaybackRequestAdapter.setup(playerController);
         
         playerController.setEventListener(new PKEvent.Listener() {
             @Override
@@ -52,9 +55,9 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         Player player = playerController;
 
-        for (Map.Entry<String, JsonObject> pluginConfig : playerConfig.plugins.getPluginConfigMap().entrySet()) {
-            String name = pluginConfig.getKey();
-            PKPlugin plugin = loadPlugin(name, player, playerConfig, messageBus, context);
+        for (Map.Entry<String, Object> entry : pluginsConfig) {
+            String name = entry.getKey();
+            PKPlugin plugin = loadPlugin(name, player, entry.getValue(), messageBus, context);
 
             if (plugin == null) {
                 log.w("Plugin not found: " + name);
@@ -75,15 +78,16 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     @Override
-    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
+    public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         LoadedPlugin loadedPlugin = loadedPlugins.get(pluginName);
         if (loadedPlugin != null) {
-            loadedPlugin.plugin.onUpdateConfig(key, value);
+            loadedPlugin.plugin.onUpdateConfig(pluginConfig);
         }
     }
 
     @Override
     public void destroy() {
+        stop();
         releasePlugins();
         releasePlayer();
     }
@@ -107,6 +111,16 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     private void releasePlayer() {
         getPlayer().destroy();
+    }
+
+    @Override
+    public void prepare(@NonNull PKMediaConfig mediaConfig) {
+        
+        super.prepare(mediaConfig);
+        
+        for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
+            loadedPluginEntry.getValue().plugin.onUpdateMedia(mediaConfig);
+        }
     }
 
     private void releasePlugins() {
@@ -136,10 +150,10 @@ class PlayerLoader extends PlayerDecoratorBase {
         setPlayer(currentLayer);
     }
 
-    private PKPlugin loadPlugin(String name, Player player, PlayerConfig config, MessageBus messageBus, Context context) {
+    private PKPlugin loadPlugin(String name, Player player, Object config, MessageBus messageBus, Context context) {
         PKPlugin plugin = PlayKitManager.createPlugin(name);
         if (plugin != null) {
-            plugin.onLoad(player, config.media, config.plugins.getPluginConfig(name), messageBus, context);
+            plugin.onLoad(player, config, messageBus, context);
         }
         return plugin;
     }

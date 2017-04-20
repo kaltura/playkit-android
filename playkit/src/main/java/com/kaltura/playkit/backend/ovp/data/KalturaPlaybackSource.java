@@ -1,5 +1,6 @@
 package com.kaltura.playkit.backend.ovp.data;
 
+import com.kaltura.playkit.backend.base.data.BasePlaybackSource;
 import com.kaltura.playkit.backend.ovp.OvpConfigs;
 
 import java.util.Arrays;
@@ -9,23 +10,15 @@ import java.util.List;
  * @hide
  */
 
-public class KalturaPlaybackSource {
+public class KalturaPlaybackSource extends BasePlaybackSource {
 
     private int deliveryProfileId;
-    private String format;
-    private String url;
-    private String protocols; // currently list of KalturaString objects
     private String flavorIds; //not clear if should be list<String> or string, currently list of KalturaString objects
-    private List<KalturaDrmEntryPlayingPluginData> drm;
-
 
     public int getDeliveryProfileId() {
         return deliveryProfileId;
     }
 
-    public List<KalturaDrmEntryPlayingPluginData> getDrmData() {
-        return drm;
-    }
 
     /**
      * check if protocol is supported by this source.
@@ -50,7 +43,6 @@ public class KalturaPlaybackSource {
         return null;
     }
 
-
     public String getFlavorIds() {
         return flavorIds;
     }
@@ -63,30 +55,4 @@ public class KalturaPlaybackSource {
         return flavorIds != null && flavorIds.length() > 0;
     }
 
-    public String getFormat() {
-        return format;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public boolean hasDrmData() {
-        return drm != null && drm.size() > 0;
-    }
-
-
-    public class KalturaDrmEntryPlayingPluginData {
-        String scheme;
-        String certificate;
-        String licenseURL;
-
-        public String getLicenseURL() {
-            return licenseURL;
-        }
-
-        public String getScheme() {
-            return scheme;
-        }
-    }
 }

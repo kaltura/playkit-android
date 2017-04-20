@@ -1,6 +1,7 @@
 package com.kaltura.playkit;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.player.MediaSupport;
 
@@ -37,12 +38,12 @@ public class PlayKitManager {
         return pluginFactory == null ? null : pluginFactory.newInstance();
     }
 
-    public static Player loadPlayer(PlayerConfig playerConfig, Context context) {
-
+    public static Player loadPlayer(Context context, @Nullable PKPluginConfigs pluginConfigs) {
+        
         MediaSupport.initialize(context);
         
         PlayerLoader playerLoader = new PlayerLoader(context);
-        playerLoader.load(playerConfig);
+        playerLoader.load(pluginConfigs != null ? pluginConfigs : new PKPluginConfigs());
         return playerLoader;
     }
 }

@@ -22,6 +22,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.player.MediaSupport;
 
 import java.io.FileNotFoundException;
+import java.util.Map;
 
 /**
  * @hide
@@ -161,7 +162,19 @@ public class LocalDrmSessionManager<T extends ExoMediaCrypto> implements DrmSess
     }
 
     @Override
-    public Exception getError() {
-        return lastError;
+    public DrmSessionException getError() {
+        return (DrmSessionException) lastError;
     }
+
+    @Override
+    public Map<String, String> queryKeyStatus() {
+        return null;
+    }
+
+    @Override
+    public byte[] getOfflineLicenseKeySetId() {
+        return new byte[0];
+    }
+
+
 }

@@ -11,11 +11,11 @@ import android.view.SurfaceHolder;
 
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.WidevineClassicDrm;
+import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
@@ -31,16 +31,18 @@ import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARI
  * @hide
  */
 
-public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback {
+class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaPlayer.OnPreparedListener,
+        MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener,
+        MediaPlayer.OnSeekCompleteListener {
 
     private static final PKLog log = PKLog.get("MediaPlayerWrapper");
 
-    private static int ILLEGAL_STATEׁ_ORERATION = -38;
+    private static final int ILLEGAL_STATEׁ_OPERATION = -38;
 
     private Context context;
     private MediaPlayer player;
     private MediaPlayerView mediaPlayerView;
-    private PKMediaSource mediaSource;
+    private PKMediaSourceConfig mediaSourceConfig;
     private String assetUri;
 
     private String licenseUri;
@@ -57,7 +59,7 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
     private boolean isPauseAfterPrepare = false;
     private boolean appInBackground;
 
-    public MediaPlayerWrapper(Context context) {
+     MediaPlayerWrapper(Context context) {
         this.context = context;
         player = new MediaPlayer();
         mediaPlayerView = new MediaPlayerView(context);
@@ -80,11 +82,17 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
     }
 
     @Override
-    public void load(PKMediaSource mediaSource) {
+    public void load(PKMediaSourceConfig mediaSourceConfig) {
         log.d("load");
-        this.mediaSource = mediaSource;
 
-        if (currentState == null || currentState == PlayerState.IDLE) {
+        if (currentState != null && this.mediaSourceConfig != null && !this.mediaSourceConfig.equals(mediaSourceConfig) && prepareState != PREPARING) {
+            player.reset();
+            currentState = PlayerState.IDLE;
+            prepareState = PrepareState.NOT_PREPARED;
+        }
+
+        this.mediaSourceConfig = mediaSourceConfig;
+        if ((currentState == null || currentState == PlayerState.IDLE) && prepareState != PREPARING) {
             initializePlayer();
         }
     }
@@ -97,18 +105,17 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
         //player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         //player.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
 
-        assetUri = mediaSource.getUrl();
+        assetUri = mediaSourceConfig.getUrl().toString();
         String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
         try {
             mediaPlayerView.getSurfaceHolder().addCallback(this);
             player.setDataSource(assetUri);
             setPlayerListeners();
-            prepareState = PREPARING;
         } catch (IOException e) {
             log.e(e.toString());
         }
         if (drmClient.needToAcquireRights(assetAcquireUri)) {
-            List<PKDrmParams> drmData = mediaSource.getDrmData();
+            List<PKDrmParams> drmData = mediaSourceConfig.mediaSource.getDrmData();
             if (drmData != null) {
                 licenseUri = drmData.get(0).getLicenseUri();
                 drmClient.acquireRights(assetAcquireUri, licenseUri);
@@ -121,88 +128,13 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
 
     private void setPlayerListeners() {
         // Set OnCompletionListener to notify our callbacks when the video is completed.
-        player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-
-            @Override
-            public void onCompletion(MediaPlayer mediaPlayer) {
-                log.d("onCompletion");
-                handleContentCompleted();
-            }
-        });
+        player.setOnCompletionListener(this);
 
         // Set OnErrorListener to notify our callbacks if the video errors.
-        player.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-
-            @Override
-            public boolean onError(MediaPlayer mp, int what, int extra) {
-                currentState = PlayerState.IDLE;
-                changeState(PlayerState.IDLE);
-                String errMsg = "onError what = " + what;
-                log.e(errMsg);
-
-                if (what == ILLEGAL_STATEׁ_ORERATION) {
-                    release();
-                    player.reset();
-                    try {
-                        player.setDataSource(assetUri);
-                    } catch (IOException e) {
-                        log.e(e.getMessage());
-                        sendDistinctEvent(PlayerEvent.Type.ERROR);
-                        return true;
-                    }
-                    restore();
-                    return true;
-                }
-                sendDistinctEvent(PlayerEvent.Type.ERROR);
-//                if(what == MediaPlayer.MEDIA_ERROR_SERVER_DIED || what == MediaPlayer.MEDIA_ERROR_UNKNOWN || what == MediaPlayer.MEDIA_ERROR_IO) {
-//
-//                }
-                return true;
-            }
-        });
-
-        player.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
-            @Override
-            public void onBufferingUpdate(MediaPlayer mediaPlayer, int i) {
-                //Do Nothing;
-            }
-        });
-
-        player.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-            @Override
-            public void onSeekComplete(MediaPlayer mediaPlayer) {
-                if (getCurrentPosition() < getDuration()) {
-                    sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
-                    changeState(PlayerState.READY);
-                    if (mediaPlayer.isPlaying()) {
-                        sendDistinctEvent(PlayerEvent.Type.PLAYING);
-                    }
-                }
-            }
-        });
-
-        player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mediaPlayer) {
-                log.d("onPrepared " + prepareState + " isPlayAfterPrepare = " + isPlayAfterPrepare + " appInBackground = " + appInBackground);
-                if (appInBackground) {
-                    return;
-                }
-                prepareState = PREPARED;
-                changeState(PlayerState.READY);
-                if (isPlayAfterPrepare) {
-                    sendDistinctEvent(PlayerEvent.Type.PLAY);
-                    sendOnPreparedEvents();
-                    play();
-                    isPlayAfterPrepare = false;
-                } else if (isPauseAfterPrepare){
-                    sendOnPreparedEvents();
-                    pause();
-                    isPauseAfterPrepare = false;
-                }
-
-            }
-        });
+        player.setOnErrorListener(this);
+        player.setOnBufferingUpdateListener(this);
+        player.setOnSeekCompleteListener(this);
+        player.setOnPreparedListener(this);
     }
 
     private void sendOnPreparedEvents() {
@@ -421,6 +353,16 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
         return null;
     }
 
+    @Override
+    public void stop() {
+        if (player != null) {
+            player.pause();
+            player.seekTo(0);
+            player.reset();
+            sendDistinctEvent(PlayerEvent.Type.STOPPED);
+        }
+    }
+
     public static String getWidevineAssetPlaybackUri(String assetUri) {
         String assetUriForPlayback = assetUri;
         if (assetUri.startsWith("file:")) {
@@ -476,12 +418,33 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
     }
 
     @Override
+    public void onPrepared(MediaPlayer mp) {
+        prepareState = PREPARED;
+        log.d("onPrepared " + prepareState + " isPlayAfterPrepare = " + isPlayAfterPrepare + " appInBackground = " + appInBackground);
+        if (appInBackground) {
+            return;
+        }
+        changeState(PlayerState.READY);
+        if (isPlayAfterPrepare) {
+            sendDistinctEvent(PlayerEvent.Type.PLAY);
+            sendOnPreparedEvents();
+            play();
+            isPlayAfterPrepare = false;
+        } else if (isPauseAfterPrepare){
+            sendOnPreparedEvents();
+            pause();
+            isPauseAfterPrepare = false;
+        }
+    }
+
+    @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         log.d("surfaceCreated state = " + currentState);
         player.setDisplay(surfaceHolder);
 
-        if (!PREPARED.equals(prepareState)) {
+        if (prepareState == NOT_PREPARED) {
             changeState(PlayerState.BUFFERING);
+            prepareState = PREPARING;
             player.prepareAsync();
         }
     }
@@ -505,9 +468,64 @@ public class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback 
         log.d("playerPosition = " + playerPosition);
     }
 
+    @Override
+    public void onBufferingUpdate(MediaPlayer mp, int percent) {
+
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+        log.d("onCompletion");
+        handleContentCompleted();
+    }
+
+    @Override
+    public boolean onError(MediaPlayer mp, int what, int extra) {
+        currentState = PlayerState.IDLE;
+        changeState(PlayerState.IDLE);
+        String errMsg = "onError what = " + what;
+        log.e(errMsg);
+
+        if (what == ILLEGAL_STATEׁ_OPERATION) {
+            release();
+            player.reset();
+            try {
+                player.setDataSource(assetUri);
+            } catch (IOException e) {
+                log.e(e.getMessage());
+                sendDistinctEvent(PlayerEvent.Type.ERROR);
+                return true;
+            }
+            restore();
+            return true;
+        }
+        sendDistinctEvent(PlayerEvent.Type.ERROR);
+//                if(what == MediaPlayer.MEDIA_ERROR_SERVER_DIED || what == MediaPlayer.MEDIA_ERROR_UNKNOWN || what == MediaPlayer.MEDIA_ERROR_IO) {
+//
+//                }
+        return true;
+    }
+
+    @Override
+    public void onSeekComplete(MediaPlayer mediaPlayer) {
+        if (getCurrentPosition() < getDuration()) {
+            sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
+            changeState(PlayerState.READY);
+            if (mediaPlayer.isPlaying()) {
+                sendDistinctEvent(PlayerEvent.Type.PLAYING);
+            }
+        }
+    }
+
     enum PrepareState {
         NOT_PREPARED,
         PREPARING,
         PREPARED
     }
+
+    @Override
+    public List<PKMetadata> getMetadata() {
+        return null;
+    }
+
 }

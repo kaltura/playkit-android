@@ -1,6 +1,7 @@
 package com.kaltura.playkit.backend.phoenix.data;
 
 import com.kaltura.playkit.backend.BaseResult;
+import com.kaltura.playkit.connect.ErrorElement;
 
 /**
  * @hide
@@ -8,11 +9,22 @@ import com.kaltura.playkit.backend.BaseResult;
 
 public class KalturaLoginResponse extends BaseResult {
 
-    KalturaLoginSession loginSession;
-    //User object in response is currently irrelevant
+    private KalturaLoginSession loginSession;
+    private KalturaOTTUser user;
 
+    public KalturaLoginResponse(ErrorElement error) {
+        super(error);
+    }
+
+    public KalturaLoginResponse() {
+        super();
+    }
 
     public KalturaLoginSession getLoginSession() {
         return loginSession;
+    }
+
+    public KalturaOTTUser getUser() {
+        return user;
     }
 }

@@ -83,6 +83,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
         return this;
     }
 
+    //change default request config
     private OkHttpClient getOkClient(RequestConfiguration configuration){
         if(configuration != null) {
             OkHttpClient.Builder builder = configClient(getOkClient().newBuilder(), configuration);
@@ -91,6 +92,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
         return mOkClient;
     }
 
+    //create okClient with default config
     private OkHttpClient getOkClient(){
         if(mOkClient == null){
             mOkClient = configClient(new OkHttpClient.Builder()
@@ -105,9 +107,6 @@ public class APIOkRequestsExecutor implements RequestQueue {
                 .writeTimeout(config.getWriteTimeout(), TimeUnit.MILLISECONDS)
                 .retryOnConnectionFailure(config.getRetry() > 0);
 
-        /*if (!builder.interceptors().contains(idInterceptor)) {
-            builder.addInterceptor(idInterceptor);
-        }*/
         return builder;
     }
 
@@ -166,6 +165,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
                     }
                     // handle failures: create response from exception
                     action.onComplete(new ExecutedRequest().error(e).success(false));
+                    Log.v(TAG, "enqueued request finished with failure, results passed to callback");
                 }
 
                 @Override
@@ -178,6 +178,7 @@ public class APIOkRequestsExecutor implements RequestQueue {
                     // pass parsed response to action completion block
                     ResponseElement responseElement = onGotResponse(response, action);
                     action.onComplete(responseElement);
+                    Log.v(TAG, "enqueued request finished with success, results passed to callback");
                 }
             });
             return  (String) call.request().tag();

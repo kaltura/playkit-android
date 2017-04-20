@@ -20,11 +20,12 @@ import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.backend.PrimitiveResult;
 import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
@@ -52,8 +53,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.kaltura.playkitdemo.MockParams.ArrivalMediaId;
 import static com.kaltura.playkitdemo.MockParams.Format;
-import static com.kaltura.playkitdemo.MockParams.MediaId;
+import static com.kaltura.playkitdemo.MockParams.Format2;
+import static com.kaltura.playkitdemo.MockParams.Format_HD_Dash;
+import static com.kaltura.playkitdemo.MockParams.Format_SD_Dash;
 
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
@@ -145,8 +149,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void startSimpleOvpMediaLoading(OnMediaLoadCompletion completion) {
         new KalturaOvpMediaProvider()
-                .setSessionProvider(new SimpleOvpSessionProvider("https://cdnapisec.kaltura.com", 1851571, null))
-                .setEntryId("0_pl5lbfo0")
+                .setSessionProvider(new SimpleOvpSessionProvider("https://cdnapisec.kaltura.com", 2222401, null))
+                .setEntryId("1_f93tepsn")
                 .load(completion);
     }
 
@@ -168,7 +172,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onComplete(PrimitiveResult response) {
                 if(response.error == null) {
-                    mediaProvider = new PhoenixMediaProvider().setSessionProvider(ottSessionProvider).setAssetId(MediaId).setReferenceType(APIDefines.AssetReferenceType.Media).setFormats(Format);
+                    mediaProvider = new PhoenixMediaProvider()
+                            .setSessionProvider(ottSessionProvider)
+                            .setAssetId(ArrivalMediaId) //bunny no horses id = "485380"
+                            .setAssetType(APIDefines.KalturaAssetType.Media)
+                            .setFormats(Format_SD_Dash, Format_HD_Dash, Format, Format2);
 
                     mediaProvider.load(completion);
                 }
@@ -195,21 +203,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void onMediaLoaded(PKMediaEntry mediaEntry) {
-
-        PlayerConfig config = new PlayerConfig();
-
-        config.media.setMediaEntry(mediaEntry).setStartPosition(0);
-        LinearLayout layout = null;
+        
+        PKMediaConfig mediaConfig = new PKMediaConfig().setMediaEntry(mediaEntry).setStartPosition(0);
+        PKPluginConfigs pluginConfig = new PKPluginConfigs();
         if (player == null) {
 
-            configurePlugins(config.plugins);
+            configurePlugins(pluginConfig);
 
-            player = PlayKitManager.loadPlayer(config, this);
+            player = PlayKitManager.loadPlayer(this, pluginConfig);
 
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
 
-            layout = (LinearLayout) findViewById(R.id.player_root);
+            LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
             layout.addView(player.getView());
 
             controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
@@ -217,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             initSpinners();
         }
 
-        player.prepare(config.media);
+        player.prepare(mediaConfig);
 
         player.play();
     }
@@ -232,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         videoSpinner.setOnItemSelectedListener(this);
     }
 
-    private void configurePlugins(PlayerConfig.Plugins config) {
+    private void configurePlugins(PKPluginConfigs config) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("delay", 1200);
         config.setPluginConfig("Sample", jsonObject);
@@ -244,8 +250,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
-    private void addIMAPluginConfig(PlayerConfig.Plugins config) {
-        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
+    private void addIMAPluginConfig(PKPluginConfigs config) {
+        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";
+                //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
         List<String> videoMimeTypes = new ArrayList<>();
@@ -307,7 +314,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onEvent(PKEvent event) {
                 log.d("Ad Event AD_ALL_ADS_COMPLETED");
                 appProgressBar.setVisibility(View.INVISIBLE);
-                player.play();
             }
         }, AdEvent.Type.ALL_ADS_COMPLETED);
         player.addEventListener(new PKEvent.Listener() {
@@ -328,7 +334,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onEvent(PKEvent event) {
                 nowPlaying = true;
-                player.play();
             }
         }, AdEvent.Type.SKIPPED);
 
