@@ -13,12 +13,11 @@ public class APIDefines {
         InternalEpg("epg_internal"),
         ExternalEpg("epg_external");
 
+        public String value;
+
         AssetReferenceType(String value){
             this.value = value;
         }
-
-        public String value;
-
     }
 
     public enum LiveStreamType {
@@ -26,11 +25,11 @@ public class APIDefines {
         StartOver("startOver"),
         TrickPlay("trickPlay");
 
+        public String value;
+
         LiveStreamType(String value){
             this.value = value;
         }
-
-        public String value;
     }
 
 
@@ -40,13 +39,13 @@ public class APIDefines {
         Recording(KalturaAssetType.Recording,PKMediaEntry.MediaEntryType.Vod),
         EPG(KalturaAssetType.Epg, PKMediaEntry.MediaEntryType.Live);
 
+        private KalturaAssetType assetType;
+        private PKMediaEntry.MediaEntryType mediaEntryType;
+
         MediaType(KalturaAssetType assetType, PKMediaEntry.MediaEntryType mediaEntryType){
             this.assetType = assetType;
             this.mediaEntryType = mediaEntryType;
         }
-
-        private KalturaAssetType assetType;
-        private PKMediaEntry.MediaEntryType mediaEntryType;
 
         public KalturaAssetType getAssetType() {
             return assetType;
@@ -63,11 +62,11 @@ public class APIDefines {
         Epg("epg"),
         Recording("recording");
 
+        public String value;
+
         KalturaAssetType(String value){
             this.value = value;
         }
-
-        public String value;
     }
 
     public enum PlaybackContextType {
@@ -76,11 +75,11 @@ public class APIDefines {
         StartOver("START_OVER"),
         Playback("PLAYBACK");
 
+        public String value;
+
         PlaybackContextType(String value){
             this.value = value;
         }
-
-        public String value;
     }
 
 }

@@ -61,11 +61,11 @@ import static junit.framework.Assert.fail;
 @RunWith(AndroidJUnit4.class)
 public class OvpMediaProviderAndroidTest extends BaseTest {
 
-    RequestQueue testExecutor;
-    KalturaOvpMediaProvider kalturaOvpMediaProvider;
+    private RequestQueue testExecutor;
+    private KalturaOvpMediaProvider kalturaOvpMediaProvider;
 
 
-    SessionProvider ksSessionProvider = new SessionProvider() {
+    private SessionProvider ksSessionProvider = new SessionProvider() {
         @Override
         public String baseUrl() {
             return OvpBaseUrl;
