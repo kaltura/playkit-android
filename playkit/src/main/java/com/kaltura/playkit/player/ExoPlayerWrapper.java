@@ -156,6 +156,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
         shouldGetTracksInfo = true;
         this.lastPlayedSource = sourceConfig.getUrl();
+        trackSelectionHelper.setEnableCea608(sourceConfig.enableCea608);
+
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);

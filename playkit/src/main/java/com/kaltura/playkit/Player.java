@@ -24,6 +24,17 @@ public interface Player {
          * @return Player Settings.
          */
         Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter);
+
+        /**
+         * Enable/disable cea-608 text tracks.
+         * By default they are disabled.
+         * Note! Once set, this value will be applied to all mediaSources for that instance of Player.
+         * In order to disable/enable it again, you should update that value once again.
+         * Otherwise it will stay in the previous state.
+         * @param enable - should cea-608 track should be enabled.
+         * @return Player Settings.
+         */
+        Settings enableCea608(boolean enable);
     }
 
     /**

@@ -61,6 +61,8 @@ class TrackSelectionHelper {
     private long currentVideoBitrate = Consts.NO_VALUE;
     private long currentAudioBitrate = Consts.NO_VALUE;
 
+    private boolean enableCea608; //Flag that indicates if application initerested in receiving cea-608 text track format.
+
 
     /**
      * @param selector                      The track selector.
@@ -81,7 +83,7 @@ class TrackSelectionHelper {
      */
     boolean prepareTracks() {
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
-        if(mappedTrackInfo == null){
+        if (mappedTrackInfo == null) {
             log.w("Trying to get current MappedTrackInfo returns null");
             return false;
         }
@@ -126,17 +128,24 @@ class TrackSelectionHelper {
                     maybeAddAdaptiveTrack(rendererIndex, groupIndex, format);
 
                     //filter all the unsupported and unknown formats.
-                    if (isFormatSupported(rendererIndex, groupIndex, trackIndex) && format.id != null) {
+                    if (isFormatSupported(rendererIndex, groupIndex, trackIndex)) {
                         String uniqueId = getUniqueId(rendererIndex, groupIndex, trackIndex);
                         switch (rendererIndex) {
                             case Consts.TRACK_TYPE_VIDEO:
                                 videoTracks.add(new VideoTrack(uniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false));
                                 break;
                             case Consts.TRACK_TYPE_AUDIO:
+
                                 audioTracks.add(new AudioTrack(uniqueId, format.language, format.id, format.bitrate, format.selectionFlags, false));
                                 break;
                             case Consts.TRACK_TYPE_TEXT:
-                                textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
+                                if (format.sampleMimeType.equals("application/cea-608")) {
+                                    if (enableCea608) {
+                                        textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
+                                    }
+                                } else {
+                                    textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
+                                }
                                 break;
                         }
                     } else {
@@ -176,8 +185,8 @@ class TrackSelectionHelper {
      */
     private int getDefaultTrackIndex(List<? extends BaseTrack> trackList) {
         int defaultTrackIndex = 0;
-        for(int i = 0; i < trackList.size(); i++){
-            if(trackList.get(i).getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG){
+        for (int i = 0; i < trackList.size(); i++) {
+            if (trackList.get(i).getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
                 return i;
             }
         }
@@ -262,7 +271,7 @@ class TrackSelectionHelper {
 
         log.i("change track to uniqueID -> " + uniqueId);
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
-        if(mappedTrackInfo == null){
+        if (mappedTrackInfo == null) {
             log.w("Trying to get current MappedTrackInfo returns null. Do not change track with id - " + uniqueId);
             return;
         }
@@ -546,6 +555,10 @@ class TrackSelectionHelper {
             }
         }
         tracksInfoListener.onTrackChanged();
+    }
+
+    public void setEnableCea608(boolean enableCea608) {
+        this.enableCea608 = enableCea608;
     }
 }
 
