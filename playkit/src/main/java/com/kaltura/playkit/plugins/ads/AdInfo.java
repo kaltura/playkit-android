@@ -10,6 +10,7 @@ public class AdInfo implements PKAdInfo {
 
     private String  adDescription;
     private long    adDuration;
+    private long    adPlayHead;
 
     private String  adTitle;
     private boolean isAdSkippable;
@@ -22,12 +23,13 @@ public class AdInfo implements PKAdInfo {
     private int     adPodPosition;
     private long    adPodTimeOffset;
 
-    public AdInfo(String adDescription, long adDuration, String adTitle, boolean isAdSkippable, String adContnentType,
+    public AdInfo(String adDescription, long adDuration, long adPlayHead, String adTitle, boolean isAdSkippable, String adContnentType,
                   String adId, String adSystem, int adHeight, int adWidth,
                   int adPodCount, int adPodPosition, long adPodTimeOffset) {
 
         this.adDescription = adDescription;
         this.adDuration    = adDuration;
+        this.adPlayHead    = adPlayHead;
         this.adTitle       = adTitle;
         this.isAdSkippable = isAdSkippable;
         this.adContnentType  = adContnentType;
@@ -59,6 +61,11 @@ public class AdInfo implements PKAdInfo {
     @Override
     public long getAdDuration() {
         return adDuration;
+    }
+
+    @Override
+    public long getAdPlayHead() {
+        return adPlayHead;
     }
 
     @Override
@@ -113,8 +120,13 @@ public class AdInfo implements PKAdInfo {
         return adPodTimeOffset;
     }
 
+    public void setAdPlayHead(long adPlayHead) {
+        this.adPlayHead = adPlayHead;
+    }
+
     public String getAdContnentType() {
         return adContnentType;
+
     }
 
     @Override

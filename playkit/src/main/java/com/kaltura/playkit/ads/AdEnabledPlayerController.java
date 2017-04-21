@@ -131,7 +131,9 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public long getAdCurrentPosition() {
         if (adsProvider != null) {
-            return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
+            long currPos = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
+            log.d("getAdCurrentPosition currPos = " + currPos);
+            return currPos;
         }
         return  Consts.POSITION_UNSET;
     }
@@ -139,13 +141,16 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public long getAdDuration() {
         if (adsProvider != null) {
-            return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
+            long adDuration  = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
+            log.d("getAdDuration adDuration = " + adDuration);
+            return adDuration;
         }
         return Consts.TIME_UNSET;
     }
 
     @Override
     public AdController getAdController() {
+        log.d("AdDecorator getAdController");
         return this;
     }
 

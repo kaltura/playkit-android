@@ -313,6 +313,7 @@ public class PlayerController implements Player {
 
     @Override
     public AdController getAdController() {
+        log.d("PlayerController getAdController");
         return null;
     }
 

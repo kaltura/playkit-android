@@ -18,12 +18,52 @@ public class AdEvent implements PKEvent {
         this.type = type;
     }
 
+    public static class AdLoadedEvent extends AdEvent {
+
+        public AdInfo adInfo;
+
+        public AdLoadedEvent(AdInfo adInfo) {
+            super(Type.LOADED);
+            this.adInfo = adInfo;
+        }
+    }
+
     public static class AdStartedEvent extends AdEvent {
 
         public AdInfo adInfo;
 
         public AdStartedEvent(AdInfo adInfo) {
             super(Type.STARTED);
+            this.adInfo = adInfo;
+        }
+    }
+
+    public static class AdPausedEvent extends AdEvent {
+
+        public AdInfo adInfo;
+
+        public AdPausedEvent(AdInfo adInfo) {
+            super(Type.PAUSED);
+            this.adInfo = adInfo;
+        }
+    }
+
+    public static class AdResumedEvent extends AdEvent {
+
+        public AdInfo adInfo;
+
+        public AdResumedEvent(AdInfo adInfo) {
+            super(Type.RESUMED);
+            this.adInfo = adInfo;
+        }
+    }
+
+    public static class AdSkippedEvent extends AdEvent {
+
+        public AdInfo adInfo;
+
+        public AdSkippedEvent(AdInfo adInfo) {
+            super(Type.SKIPPED);
             this.adInfo = adInfo;
         }
     }

@@ -16,5 +16,6 @@ public interface PKAdInfo {
     int      getAdPodPosition();
     long     getAdPodTimeOffset();
     long     getAdDuration();
+    long     getAdPlayHead();
     AdPositionType getAdPositionType();
 }
