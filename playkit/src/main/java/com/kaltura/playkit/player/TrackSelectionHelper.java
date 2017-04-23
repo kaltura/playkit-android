@@ -49,6 +49,8 @@ class TrackSelectionHelper {
 
     private static final String TEXT_PREFIX = "Text:";
 
+    private static final String CEA_608 = "application/cea-608";
+
     private final DefaultTrackSelector selector;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
     private final TrackSelection.Factory adaptiveTrackSelectionFactory;
@@ -139,7 +141,7 @@ class TrackSelectionHelper {
                                 audioTracks.add(new AudioTrack(uniqueId, format.language, format.id, format.bitrate, format.selectionFlags, false));
                                 break;
                             case Consts.TRACK_TYPE_TEXT:
-                                if (format.sampleMimeType.equals("application/cea-608")) {
+                                if (CEA_608.equals(format.sampleMimeType)) {
                                     if (cea608CaptionsEnabled) {
                                         textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
                                     }
