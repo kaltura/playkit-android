@@ -18,8 +18,6 @@ public class PlayKitManager {
 
     static {
         PKLog.i("PlayKitManager", "PlayKit " + VERSION_STRING);
-
-        //OvpService.setClient
     }
     
     
