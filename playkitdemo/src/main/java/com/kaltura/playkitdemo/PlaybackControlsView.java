@@ -162,7 +162,9 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.play:
-                player.play();
+                if(player != null) {
+                    player.play();
+                }
                 break;
             case R.id.pause:
                 player.pause();
