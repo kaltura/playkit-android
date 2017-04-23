@@ -46,6 +46,8 @@ public class PlayerController implements Player {
     private PKRequestParams.Adapter contentRequestAdapter;
 
     private boolean isNewEntry = true;
+    private boolean cea608CaptionsEnabled = false;
+
     private Settings settings = new Settings();
 
     private class Settings implements Player.Settings {
@@ -53,6 +55,12 @@ public class PlayerController implements Player {
         @Override
         public Player.Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
             PlayerController.this.contentRequestAdapter = contentRequestAdapter;
+            return this;
+        }
+
+        @Override
+        public Player.Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
+            PlayerController.this.cea608CaptionsEnabled = cea608CaptionsEnabled;
             return this;
         }
     }
@@ -205,7 +213,7 @@ public class PlayerController implements Player {
 
 
         boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
-        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestAdapter);
+        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestAdapter, cea608CaptionsEnabled);
         if (player == null) {
             switchPlayers(source.getMediaFormat(), false);
         } else if (shouldSwitchBetweenPlayers) {

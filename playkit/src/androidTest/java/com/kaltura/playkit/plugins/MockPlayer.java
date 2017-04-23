@@ -29,6 +29,11 @@ public class MockPlayer implements Player {
             public Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
                 return this;
             }
+
+            @Override
+            public Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
+                return this;
+            }
         };
     }
 

@@ -165,6 +165,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
         shouldGetTracksInfo = true;
         this.lastPlayedSource = sourceConfig.getUrl();
+        trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.cea608CaptionsEnabled);
+
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
@@ -392,8 +394,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void play() {
         log.d("play");
-        if (player == null || player.getPlayWhenReady()) {
-            log.e("Attempt to invoke 'play()' on null instance of the exoplayer");
+        if (player == null) {
+            log.w("Attempt to invoke 'play()' on null instance of the exoplayer.");
+            return;
+        }
+
+        //If player already set to play, return.
+        if(player.getPlayWhenReady()) {
             return;
         }
 
@@ -404,10 +411,16 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public void pause() {
-        if (player == null || !player.getPlayWhenReady()) {
-            log.e("Attempt to invoke 'pause()' on null instance of the exoplayer");
+        if (player == null) {
+            log.w("Attempt to invoke 'pause()' on null instance of the exoplayer");
             return;
         }
+
+        //If player already set to pause, return.
+        if(!player.getPlayWhenReady()) {
+            return;
+        }
+
         sendDistinctEvent(PlayerEvent.Type.PAUSE);
         player.setPlayWhenReady(false);
     }
