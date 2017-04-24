@@ -153,16 +153,18 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
         this.isAllAdsCompleted = false;
         this.context = context;
-        this.messageBus = messageBus;
-        this.messageBus.listen(new PKEvent.Listener() {
-            @Override
-            public void onEvent(PKEvent event) {
-                log.d("Received:PlayerEvent:" + event.eventType().name());
-                if (event.eventType() == PlayerEvent.Type.ENDED) {
-                    contentCompleted();
+        if (this.messageBus == null) {
+            this.messageBus = messageBus;
+            this.messageBus.listen(new PKEvent.Listener() {
+                @Override
+                public void onEvent(PKEvent event) {
+                    log.d("Received:PlayerEvent:" + event.eventType().name());
+                    if (event.eventType() == PlayerEvent.Type.ENDED) {
+                        contentCompleted();
+                    }
                 }
-            }
-        }, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED);
+            }, PlayerEvent.Type.ENDED);
+        }
 
         //----------------------------//
         adConfig = parseConfig(config);
