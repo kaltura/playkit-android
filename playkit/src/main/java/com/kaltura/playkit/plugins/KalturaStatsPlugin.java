@@ -233,10 +233,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                     case PLAY:
                         sendWidgetLoaded();
                         sendMediaLoaded();
-                        if (isFirstPlay) {
-                            sendAnalyticsEvent(KStatsEvent.PLAY);
-                            isFirstPlay = false;
-                        }
+
                         break;
                     case SEEKED:
                         hasSeeked = true;
@@ -246,6 +243,11 @@ public class KalturaStatsPlugin extends PKPlugin {
                     case CAN_PLAY:
                         sendWidgetLoaded();
                         sendMediaLoaded();
+                        if (isFirstPlay) {
+                            log.d("CAN_PLAY sending KStatsEvent.PLAY");
+                            sendAnalyticsEvent(KStatsEvent.PLAY);
+                            isFirstPlay = false;
+                        }
                         break;
                     case REPLAY:
                         sendAnalyticsEvent(KStatsEvent.REPLAY);
