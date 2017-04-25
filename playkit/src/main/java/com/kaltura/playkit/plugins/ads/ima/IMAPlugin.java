@@ -51,8 +51,6 @@ import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_ENDED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_STARTED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_LOAD_TIMEOUT_TIMER_STARTED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_PROGRESS;
-import static com.kaltura.playkit.plugins.ads.AdEvent.Type.PAUSED;
-import static com.kaltura.playkit.plugins.ads.AdEvent.Type.RESUMED;
 
 
 /**
@@ -418,7 +416,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AdsManager loaded");
 
                 cancelAdManagerTimer();
-
+                sendCuePointsUpdateEvent();
                 // Ads were successfully loaded, so get the AdsManager instance. AdsManager has
                 // events for ad playback and errors.
                 adsManager = adsManagerLoadedEvent.getAdsManager();
@@ -442,6 +440,13 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             }
         };
         return adsLoadedListener;
+    }
+
+    private void sendCuePointsUpdateEvent() {
+        adTagCuePoints = new AdCuePoints(getAdCuePoints());
+        if (adTagCuePoints != null) {
+            messageBus.post(new AdEvent.AdCuePointsUpdateEvent(adTagCuePoints));
+        }
     }
 
     @Override
@@ -603,7 +608,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                         log.d("discarding ad break");
                         adsManager.discardAdBreak();
                     } else {
-                        messageBus.post(new AdEvent(AdEvent.Type.LOADED));
+                        adInfo = createAdInfo(adEvent.getAd());
+                        messageBus.post(new AdEvent.AdLoadedEvent(adInfo));
                         if(AdTagType.VMAP != adConfig.getAdTagType()){
                             adsManager.start();
                         }
@@ -687,8 +693,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                         @Override
                         public void run() {
                             log.d("AD CUEPOINTS CHANGED TRIGGERED WITH DELAY");
-                            adTagCuePoints = new AdCuePoints(getAdCuePoints());
-                            messageBus.post(new AdEvent.AdCuePointsUpdateEvent(adTagCuePoints));
+                            sendCuePointsUpdateEvent();
+
                         }
                     }, IMAConfig.DEFAULT_CUE_POINTS_CHANGED_DELAY);
                 }
@@ -696,7 +702,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             case PAUSED:
                 log.d("AD PAUSED");
                 isAdIsPaused = true;
-                messageBus.post(new AdEvent(PAUSED));
+                adInfo.setAdPlayHead((long)(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER));
+                messageBus.post(new AdEvent.AdPausedEvent(adInfo));
                 break;
             case RESUMED:
                 log.d("AD RESUMED");
@@ -704,7 +711,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     player.getView().hideVideoSurface();
                 }
                 isAdIsPaused = false;
-                messageBus.post(new AdEvent(RESUMED));
+                adInfo.setAdPlayHead((long)(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER));
+                messageBus.post(new AdEvent.AdResumedEvent(adInfo));
                 break;
             case COMPLETED:
                 log.d("AD COMPLETED");
@@ -721,7 +729,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdEvent(AdEvent.Type.THIRD_QUARTILE));
                 break;
             case SKIPPED:
-                messageBus.post(new AdEvent(AdEvent.Type.SKIPPED));
+                adInfo.setAdPlayHead((long)(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER));
+                messageBus.post(new AdEvent.AdSkippedEvent(adInfo));
                 cancelAdDisplayedCheckTimer();
                 preparePlayer(true);
                 break;
@@ -767,9 +776,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 Ad adInfo = adEvent.getAd();
                 if (adInfo != null) {
                     //incase one ad in the pod fails to play we want next one to be played
-                    AdPodInfo adPoidInfo = adInfo.getAdPodInfo();
-                    log.d("adPoidInfo.getAdPosition() = " + adPoidInfo.getAdPosition()  +   " adPoidInfo.getTotalAds() = " + adPoidInfo.getTotalAds());
-                    if (adPoidInfo != null && adPoidInfo.getTotalAds() > 1 && adPoidInfo.getAdPosition() < adPoidInfo.getTotalAds()) {
+                    AdPodInfo adPodInfo = adInfo.getAdPodInfo();
+                    log.d("adPodInfo.getAdPosition() = " + adPodInfo.getAdPosition() + " adPodInfo.getTotalAds() = " + adPodInfo.getTotalAds());
+                    if (adPodInfo != null && adPodInfo.getTotalAds() > 1 && adPodInfo.getAdPosition() < adPodInfo.getTotalAds()) {
                         log.d("LOG Error but continue to next ad in pod");
                         return;
                     } else {
@@ -874,6 +883,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private AdInfo createAdInfo(Ad ad) {
         String adDescription      = ad.getDescription();
         long adDuration           = (long)(ad.getDuration() * Consts.MILLISECONDS_MULTIPLIER);
+        long adPlayHead           = (long)(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER);
         String adTitle            = ad.getTitle();
         boolean isAdSkippable     = ad.isSkippable();
         String contentType        = ad.getContentType();
@@ -887,7 +897,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
 
 
-        AdInfo adInfo =  new AdInfo(adDescription, adDuration,
+        AdInfo adInfo =  new AdInfo(adDescription, adDuration, adPlayHead,
                 adTitle, isAdSkippable,
                 contentType, adId,
                 adSystem, adHeight,
