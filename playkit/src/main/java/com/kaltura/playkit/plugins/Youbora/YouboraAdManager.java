@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
@@ -14,6 +15,9 @@ import com.npaw.youbora.adnalyzers.AdnalyzerGeneric;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.utils.YBLog;
 
+import java.util.Map;
+
+import static com.kaltura.playkit.PlayerEvent.Type.ENDED;
 import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
 
 /**
@@ -24,11 +28,14 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     private static final PKLog log = PKLog.get("YouboraAdManager");
 
     private Player player;
+    private boolean isFirstPlay = true;
     private boolean isBuffering = false;
     private MessageBus messageBus;
     private double adBitrate = -1;
     private AdInfo currentAdInfo;
 
+    private PKMediaConfig mediaConfig;
+    private JsonObject pluginConfig;
     private String lastReportedAdId;
     private String lastReportedAdTitle;
     private Double lastReportedAdPlayhead;
@@ -43,11 +50,15 @@ public class YouboraAdManager extends AdnalyzerGeneric {
 //                campaign: "Christmas"
 //    },
 
-    public YouboraAdManager(PluginGeneric plugin, JsonObject pluginConfig, MessageBus messageBus, Player player) {
+    public YouboraAdManager(PluginGeneric plugin, JsonObject pluginConfig, PKMediaConfig mediaConfig, MessageBus messageBus, Player player) {
         super(plugin);
         this.messageBus = messageBus;
+        this.pluginConfig = pluginConfig;
+        this.mediaConfig = mediaConfig;
+
         this.player = player;
         this.messageBus.listen(mEventListener, STATE_CHANGED);
+        this.messageBus.listen(mEventListener, ENDED);
         this.messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
         this.messageBus.listen(mEventListener, (Enum[]) AdError.Type.values());
 
@@ -75,14 +86,40 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
+            if (event instanceof PlayerEvent) {
+                log.d("AdManager: " + ((PlayerEvent) event).type.toString());
+                switch (((PlayerEvent) event).type) {
+                    case ENDED:
+                        if (!isFirstPlay) {
+                            if (plugin != null) {
+                                plugin.endedHandler();
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
             if (event instanceof AdEvent) {
                 log.d("AdManager: " + ((AdEvent) event).type.toString());
                 switch (((AdEvent) event).type) {
                     case LOADED:
+                        if (isFirstPlay) {
+                            isFirstPlay = false;
+                            plugin.playHandler();
+                        }
                         currentAdInfo = ((AdEvent.AdLoadedEvent) event).adInfo;
                         lastReportedAdDuration = currentAdInfo.getAdDuration() / 1000D;
                         lastReportedAdId = currentAdInfo.getAdId();
                         lastReportedAdTitle = currentAdInfo.getAdTitle();
+
+                        JsonObject adsConfig = pluginConfig.getAsJsonObject("ads");
+                        JsonObject newAdsConfig = new JsonObject();
+                        adsConfig.addProperty("title", lastReportedAdTitle);
+                        newAdsConfig.add("ads", adsConfig);
+                        Map<String, Object> opt  = YouboraConfig.setYouboraAdsConfig(newAdsConfig);
+                        // Refresh options with updated media
+                        plugin.setOptions(opt);
                         lastReportedAdPlayhead = currentAdInfo.getAdPlayHead() / 1000D;
                         log.d("lastReportedAdDuration: " + lastReportedAdDuration);
                         log.d("lastReportedAdId: " + lastReportedAdId);
@@ -161,12 +198,18 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     public void startMonitoring(Object player) {
         log.d("startMonitoring");
         super.startMonitoring(player);
+        isFirstPlay = true;
     }
 
     public void stopMonitoring() {
         log.d("stopMonitoring");
+
         super.stopMonitoring();
+        if (plugin != null) {
+            plugin.endedHandler();
+        }
         this.messageBus.remove(mEventListener, STATE_CHANGED);
+        this.messageBus.remove(mEventListener, ENDED);
         messageBus.remove(mEventListener,(Enum[]) AdEvent.Type.values());
         messageBus.remove(mEventListener,(Enum[]) AdError.Type.values());
 

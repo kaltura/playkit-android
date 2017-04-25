@@ -101,6 +101,11 @@ public class YouboraConfig {
         return youboraConfig;
     }
 
+    public static Map<String, Object> setYouboraAdsConfig(JsonObject pluginConfig) {
+        setYouboraConfigObject(adsObject, pluginConfig.getAsJsonObject("ads"), adsConfigFieldNames, adsBooleanConfigFieldNames);
+        return youboraConfig;
+    }
+
     private static void setYouboraConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig, Player player){
         youboraConfig = defaultYouboraConfig;
         if (mediaConfig != null) {

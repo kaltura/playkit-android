@@ -63,7 +63,7 @@ public class YouboraPlugin extends PKPlugin {
             pluginManager.startMonitoring(player);
         }
         if (adAnalytics && !isAdsMonitoring){
-            adsManager = new YouboraAdManager(pluginManager, pluginConfig, messageBus, player);
+            adsManager = new YouboraAdManager(pluginManager, pluginConfig, this.mediaConfig, messageBus, player);
             adsManager.startMonitoring(this.player);
             pluginManager.setAdnalyzer(adsManager);
             isAdsMonitoring = true;
@@ -152,13 +152,14 @@ public class YouboraPlugin extends PKPlugin {
 
     private void stopMonitoring() {
         log.d("stop monitoring");
-        if (isMonitoring) {
-            pluginManager.stopMonitoring();
-            isMonitoring = false;
-        }
         if (adsManager != null && isAdsMonitoring) {
             adsManager.stopMonitoring();
             isAdsMonitoring = false;
         }
+        if (isMonitoring) {
+            pluginManager.stopMonitoring();
+            isMonitoring = false;
+        }
+
     }
 }

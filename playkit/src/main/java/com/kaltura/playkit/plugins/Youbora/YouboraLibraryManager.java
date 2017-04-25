@@ -182,6 +182,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     public void startMonitoring(Object player) {
         log.d("startMonitoring");
         super.startMonitoring(player);
+        isFirstPlay = true;
         allowSendingYouboraBufferEvents = false;
     }
 
