@@ -8,6 +8,8 @@ import android.os.Looper;
 import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
 
+import com.kaltura.netkit.connect.response.ResultElement;
+import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.LocalDataStore;
 import com.kaltura.playkit.PKDrmParams;
@@ -15,9 +17,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.connect.ErrorElement;
-import com.kaltura.playkit.connect.ResultElement;
+import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 
 import java.io.File;
 import java.util.Collections;

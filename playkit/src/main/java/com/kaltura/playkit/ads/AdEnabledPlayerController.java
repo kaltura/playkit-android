@@ -115,8 +115,9 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
 
     @Override
     public void stop() {
+        log.d("AdEnabled IMA stop");
         if (adsProvider != null) {
-            adsProvider.destroy();
+            adsProvider.destroyAdsManager();
         }
         super.stop();
     }

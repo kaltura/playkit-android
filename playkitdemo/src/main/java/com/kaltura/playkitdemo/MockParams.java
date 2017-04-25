@@ -14,9 +14,9 @@ public class MockParams {
     public static final int OttPartnerId = 198;
 
     //result of login with : [username: albert@gmail.com, pass: 123456]
-    public static final String KS = "djJ8MTk4fPjQkM96OQ7N4GBL73vbOrbUMx7QNMEdoJ5kc6pLFCbgoTHIOAAmIO3ny2Ro0MnKMqGEGpRGM2fq5schRQ8PzqODmb0yegckE6qH5j9hqNig";
+    public static final String PnxKS = "djJ8MTk4fH6bz_2197wFUNBqv2zRZ3h5YlTwiAEJZvVhJJut1pq13CMVSpgmD-NLVco4pJuthWU9b8Z_XEV7h6uvg5tpJbCj4ODWAzWhslokulcfUrgG0WISPD3wq1YWwD1lzuJ109OFrezv9Ih5Wa8qrUIsaz8=";
 
-    public static final String ArrivalMediaId = "484730";//frozen
+    public static final String SingMediaId = "480989";
     public static final String MediaId = "258656";//frozen
     public static final String MediaId2 = "437800";//vild-wV
     public static final String MediaId3 = "259295";//the salt of earth
@@ -31,10 +31,13 @@ public class MockParams {
 //---------------------------------------
 
 /*Ovp Mock params: */
+    public static final int OvpPartnerId = 2222401;
     public static final String OvpBaseUrl = "https://cdnapisec.kaltura.com/";
     public static final String NonDRMEntryId = "1_xay0wjby"; //works for user/anonymous
     public static final String DRMEntryIdUsr = "1_tmomdals"; //works for logged user
     public static final String DRMEntryIdAnm = "1_ytsd86sc"; //works for anonymous
+
+    public static final String OvpUserKS = "djJ8MjIyMjQwMXx2RAtiYX9vr3hnwdyi1rM78jFD15pr8XYnbhu9iuUy3KXt_NEQK0JV9bdRdaBpohgY5mQW88kKvKu5EC15wfDceyj_37BTG3UYd5LvVa7GbmWxr9YrEpFTxrAPpgeMvYBV-mooSL7YbDqp_kvDqKW3";
 
     public enum UserType{Ott, Ovp}
 

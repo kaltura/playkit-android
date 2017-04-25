@@ -29,11 +29,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.google.gson.GsonBuilder;
-import com.kaltura.playkit.backend.phoenix.data.OttResultAdapter;
-import com.kaltura.playkit.backend.phoenix.services.OttUserService;
-import com.kaltura.playkit.connect.OnRequestCompletion;
-import com.kaltura.playkit.connect.RequestBuilder;
-import com.kaltura.playkit.connect.ResponseElement;
+import com.kaltura.netkit.connect.request.RequestBuilder;
+import com.kaltura.netkit.connect.response.ResponseElement;
+import com.kaltura.netkit.utils.OnRequestCompletion;
+import com.kaltura.playkit.api.phoenix.model.OttResultAdapter;
+import com.kaltura.playkit.api.phoenix.services.OttUserService;
 import com.kaltura.playkitdemo.data.LoginResult;
 
 import java.util.ArrayList;

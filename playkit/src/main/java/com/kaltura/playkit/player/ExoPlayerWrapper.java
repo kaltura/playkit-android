@@ -16,6 +16,8 @@ import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.metadata.Metadata;
+import com.google.android.exoplayer2.metadata.MetadataRenderer;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
@@ -42,14 +44,19 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.player.PlayerController.EventListener;
 import com.kaltura.playkit.player.PlayerController.StateChangedListener;
+import com.kaltura.playkit.player.metadata.MetadataConverter;
+import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.EventLogger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
  * Created by anton.afanasiev on 31/10/2016.
  */
-class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
+class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, MetadataRenderer.Output {
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
 
@@ -85,7 +92,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
     private int sameErrorOccurrenceCounter = 0;
-
+    private List<PKMetadata> metadataList = new ArrayList<>();
 
     interface TracksInfoListener {
 
@@ -135,7 +142,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
             player.addListener(eventLogger);
             player.setVideoDebugListener(eventLogger);
             player.setAudioDebugListener(eventLogger);
-            player.setMetadataOutput(eventLogger);
+            player.setMetadataOutput(this);
         }
     }
 
@@ -151,11 +158,15 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     }
 
     private void preparePlayer(PKMediaSourceConfig sourceConfig) {
+        //reset metadata on prepare.
+        metadataList.clear();
         sameErrorOccurrenceCounter = 0;
         drmSessionManager.setMediaSource(sourceConfig.mediaSource);
 
         shouldGetTracksInfo = true;
         this.lastPlayedSource = sourceConfig.getUrl();
+        trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.cea608CaptionsEnabled);
+
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
@@ -358,6 +369,14 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     }
 
     @Override
+    public void onMetadata(Metadata metadata) {
+
+        this.metadataList = MetadataConverter.convert(metadata);
+
+        sendEvent(PlayerEvent.Type.METADATA_AVAILABLE);
+    }
+
+    @Override
     public void load(PKMediaSourceConfig mediaSourceConfig) {
         log.d("load");
         if (player == null) {
@@ -375,8 +394,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
     @Override
     public void play() {
         log.d("play");
-        if (player == null || player.getPlayWhenReady()) {
-            log.e("Attempt to invoke 'play()' on null instance of the exoplayer");
+        if (player == null) {
+            log.w("Attempt to invoke 'play()' on null instance of the exoplayer.");
+            return;
+        }
+
+        //If player already set to play, return.
+        if(player.getPlayWhenReady()) {
             return;
         }
 
@@ -387,10 +411,16 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
 
     @Override
     public void pause() {
-        if (player == null || !player.getPlayWhenReady()) {
-            log.e("Attempt to invoke 'pause()' on null instance of the exoplayer");
+        if (player == null) {
+            log.w("Attempt to invoke 'pause()' on null instance of the exoplayer");
             return;
         }
+
+        //If player already set to pause, return.
+        if(!player.getPlayWhenReady()) {
+            return;
+        }
+
         sendDistinctEvent(PlayerEvent.Type.PAUSE);
         player.setPlayWhenReady(false);
     }
@@ -585,6 +615,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener {
             playerPosition = player.getCurrentPosition();
         }
     }
+
+    public List<PKMetadata> getMetadata() {
+        return metadataList;
+    }
+
 }
 
 
