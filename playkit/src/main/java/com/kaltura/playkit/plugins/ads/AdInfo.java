@@ -23,7 +23,8 @@ public class AdInfo implements PKAdInfo {
     private int     adPodPosition;
     private long    adPodTimeOffset;
 
-    public AdInfo(String adDescription, long adDuration, long adPlayHead, String adTitle, boolean isAdSkippable, String adContnentType,
+    public AdInfo(String adDescription, long adDuration, long adPlayHead, String adTitle,
+                  boolean isAdSkippable, String adContnentType,
                   String adId, String adSystem, int adHeight, int adWidth,
                   int adPodCount, int adPodPosition, long adPodTimeOffset) {
 

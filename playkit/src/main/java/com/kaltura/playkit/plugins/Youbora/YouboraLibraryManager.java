@@ -112,10 +112,8 @@ public class YouboraLibraryManager extends PluginGeneric {
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
                     case ENDED:
-                        if (!isFirstPlay) {
-                            if ((adCuePoints == null) || (adCuePoints != null && !adCuePoints.hasPostRoll())) {
-                                endedHandler();
-                            }
+                        if (!isFirstPlay && ((adCuePoints == null) || (adCuePoints != null && !adCuePoints.hasPostRoll()))) {
+                            endedHandler();
                         }
                         adCuePoints = null;
                         break;

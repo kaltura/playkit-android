@@ -4,9 +4,7 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PlayKitManager;
-import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdError;
 import com.kaltura.playkit.plugins.ads.AdEvent;
@@ -26,14 +24,12 @@ import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
 public class YouboraAdManager extends AdnalyzerGeneric {
     private static final PKLog log = PKLog.get("YouboraAdManager");
 
-    private Player player;
     private boolean isFirstPlay = true;
     private boolean isBuffering = false;
     private MessageBus messageBus;
     private double adBitrate = -1;
     private AdInfo currentAdInfo;
 
-    private PKMediaConfig mediaConfig;
     private JsonObject pluginConfig;
     private String lastReportedAdId;
     private String lastReportedAdTitle;
@@ -49,13 +45,12 @@ public class YouboraAdManager extends AdnalyzerGeneric {
 //                campaign: "Christmas"
 //    },
 
-    public YouboraAdManager(PluginGeneric plugin, JsonObject pluginConfig, PKMediaConfig mediaConfig, MessageBus messageBus, Player player) {
+    public YouboraAdManager(PluginGeneric plugin, JsonObject pluginConfig, MessageBus messageBus) {
         super(plugin);
         this.messageBus = messageBus;
         this.pluginConfig = pluginConfig;
-        this.mediaConfig = mediaConfig;
 
-        this.player = player;
+
         this.messageBus.listen(mEventListener, STATE_CHANGED);
         this.messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
         this.messageBus.listen(mEventListener, (Enum[]) AdError.Type.values());
@@ -177,7 +172,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                 sendReportEvent(event);
             } else if (event instanceof AdError) {
                 AdError.Type adError =  (((AdError) event).errorType);
-                YBLog.debug("onAdError");
+                YBLog.debug("onAdError " + adError.name());
             }
         }
     };
@@ -267,6 +262,8 @@ public class YouboraAdManager extends AdnalyzerGeneric {
             case POST_ROLL:
                 adPosition = "post";
                 break;
+            default:
+                adPosition = "unknown";
         }
         log.d("adPosition = " + adPosition);
         return  adPosition;
