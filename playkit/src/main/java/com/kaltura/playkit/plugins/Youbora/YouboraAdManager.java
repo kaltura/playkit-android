@@ -172,7 +172,15 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                 sendReportEvent(event);
             } else if (event instanceof AdError) {
                 AdError.Type adError =  (((AdError) event).errorType);
-                YBLog.debug("onAdError " + adError.name());
+                log.d("AdManager Error: " + adError.name());
+                switch (adError) {
+                    case QUIET_LOG_ERROR:
+                        log.d("QUIET_LOG_ERROR avoiding error");
+                        break;
+                    default:
+                        YBLog.debug("onAdError " + adError.name());
+                        endedAdHandler();
+                }
             }
         }
     };
