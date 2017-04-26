@@ -17,7 +17,6 @@ import com.npaw.youbora.youboralib.utils.YBLog;
 
 import java.util.Map;
 
-import static com.kaltura.playkit.PlayerEvent.Type.ENDED;
 import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
 
 /**
@@ -58,7 +57,6 @@ public class YouboraAdManager extends AdnalyzerGeneric {
 
         this.player = player;
         this.messageBus.listen(mEventListener, STATE_CHANGED);
-        this.messageBus.listen(mEventListener, ENDED);
         this.messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
         this.messageBus.listen(mEventListener, (Enum[]) AdError.Type.values());
 
@@ -87,13 +85,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
         @Override
         public void onEvent(PKEvent event) {
             if (event instanceof PlayerEvent) {
-                log.d("AdManager: " + ((PlayerEvent) event).type.toString());
-                switch (((PlayerEvent) event).type) {
-                    case ENDED:
-                        break;
-                    default:
-                        break;
-                }
+                return;
             }
             if (event instanceof AdEvent) {
                 log.d("AdManager: " + ((AdEvent) event).type.toString());
@@ -204,7 +196,6 @@ public class YouboraAdManager extends AdnalyzerGeneric {
             plugin.endedHandler();
         }
         this.messageBus.remove(mEventListener, STATE_CHANGED);
-        this.messageBus.remove(mEventListener, ENDED);
         messageBus.remove(mEventListener,(Enum[]) AdEvent.Type.values());
         messageBus.remove(mEventListener,(Enum[]) AdError.Type.values());
 
