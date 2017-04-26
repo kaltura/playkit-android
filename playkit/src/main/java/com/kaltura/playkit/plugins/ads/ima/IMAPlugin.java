@@ -416,11 +416,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AdsManager loaded");
 
                 cancelAdManagerTimer();
-                sendCuePointsUpdateEvent();
                 // Ads were successfully loaded, so get the AdsManager instance. AdsManager has
                 // events for ad playback and errors.
                 adsManager = adsManagerLoadedEvent.getAdsManager();
-
+                sendCuePointsUpdateEvent();
                 //Attach event and error event listeners.
 
                 adsManager.addAdErrorListener(IMAPlugin.this);

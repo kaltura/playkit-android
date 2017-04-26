@@ -90,11 +90,6 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                 log.d("AdManager: " + ((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
                     case ENDED:
-                        if (!isFirstPlay) {
-                            if (plugin != null) {
-                                plugin.endedHandler();
-                            }
-                        }
                         break;
                     default:
                         break;

@@ -9,6 +9,7 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.managers.ViewManager;
@@ -40,7 +41,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     private String mediaUrl = "unknown";
     private Double lastReportedBitrate = -1.0;
     private Double lastReportedthroughput = super.getThroughput();
-
+    private AdCuePoints adCuePoints;
 
     public YouboraLibraryManager(String options) throws JSONException {
         super(options);
@@ -112,13 +113,17 @@ public class YouboraLibraryManager extends PluginGeneric {
                         break;
                     case ENDED:
                         if (!isFirstPlay) {
-                            endedHandler();
+                            if ((adCuePoints == null) || (adCuePoints != null && !adCuePoints.hasPostRoll())) {
+                                endedHandler();
+                            }
                         }
+                        adCuePoints = null;
                         break;
                     case ERROR:
                         if (!isFirstPlay) {
                             errorHandler(event.eventType().toString());
                         }
+                        adCuePoints = null;
                         break;
                     case PAUSE:
                         pauseHandler();
@@ -167,6 +172,17 @@ public class YouboraLibraryManager extends PluginGeneric {
                 break;
             case CONTENT_RESUME_REQUESTED:
                 ignoredAdHandler();
+                break;
+            case CUEPOINTS_CHANGED:
+                AdEvent.AdCuePointsUpdateEvent cuePointsList = (AdEvent.AdCuePointsUpdateEvent) event;
+                if (cuePointsList != null) {
+                    adCuePoints = cuePointsList.cuePoints;
+                }
+                break;
+            case ALL_ADS_COMPLETED:
+                if (adCuePoints != null && adCuePoints.hasPostRoll()) {
+                    endedHandler();
+                }
                 break;
             default:
                 break;
