@@ -35,6 +35,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener,
         MediaPlayer.OnSeekCompleteListener {
 
+
     private static final PKLog log = PKLog.get("MediaPlayerWrapper");
 
     private static final int ILLEGAL_STATEׁ_OPERATION = -38;
@@ -44,8 +45,8 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private MediaPlayerView mediaPlayerView;
     private PKMediaSourceConfig mediaSourceConfig;
     private String assetUri;
-
     private String licenseUri;
+
     private WidevineClassicDrm drmClient;
     private PlayerEvent.Type currentEvent;
     private PlayerState currentState = PlayerState.IDLE, previousState;
@@ -59,7 +60,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private boolean isPauseAfterPrepare = false;
     private boolean appInBackground;
 
-     MediaPlayerWrapper(Context context) {
+    public MediaPlayerWrapper(Context context) {
         this.context = context;
         player = new MediaPlayer();
         mediaPlayerView = new MediaPlayerView(context);
@@ -105,7 +106,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         //player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         //player.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
 
-        assetUri = mediaSourceConfig.getUrl().toString();
+        assetUri = mediaSourceConfig.mediaSource.getUrl();
         String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
         try {
             mediaPlayerView.getSurfaceHolder().addCallback(this);
@@ -116,7 +117,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         }
         if (drmClient.needToAcquireRights(assetAcquireUri)) {
             List<PKDrmParams> drmData = mediaSourceConfig.mediaSource.getDrmData();
-            if (drmData != null) {
+            if (drmData != null && !drmData.isEmpty()) {
                 licenseUri = drmData.get(0).getLicenseUri();
                 drmClient.acquireRights(assetAcquireUri, licenseUri);
             } else {
@@ -129,7 +130,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private void setPlayerListeners() {
         // Set OnCompletionListener to notify our callbacks when the video is completed.
         player.setOnCompletionListener(this);
-
         // Set OnErrorListener to notify our callbacks if the video errors.
         player.setOnErrorListener(this);
         player.setOnBufferingUpdateListener(this);
@@ -145,7 +145,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     private void handleContentCompleted() {
         pause();
-        seekTo(player.getDuration());       // TODO: why?
+        seekTo(player.getDuration());
         currentState = PlayerState.IDLE;
         changeState(PlayerState.IDLE);
         sendDistinctEvent(PlayerEvent.Type.ENDED);
@@ -170,7 +170,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         player.start();
         sendDistinctEvent(PlayerEvent.Type.PLAY);
 
-        // FIXME: this should only be sent after playback as started
+        // FIXME: this should only be sent after playback has started
         sendDistinctEvent(PlayerEvent.Type.PLAYING);
     }
 
@@ -529,5 +529,4 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     public List<PKMetadata> getMetadata() {
         return null;
     }
-
 }

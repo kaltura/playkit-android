@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import com.kaltura.playkit.player.MediaSupport;
 
 public class PKDrmParams implements Parcelable {
+    private static final PKLog log = PKLog.get("PKDrmParams");
 
     public enum Scheme {
 
@@ -58,7 +59,9 @@ public class PKDrmParams implements Parcelable {
     }
 
     public boolean isSchemeSupported() {
-        return scheme != null && scheme.isSupported();
+        boolean isSchemeSupported = (scheme != null && scheme.isSupported());
+        log.d("isSchemeSupported = " + isSchemeSupported);
+        return isSchemeSupported;
     }
     
     public String getLicenseUri() {
