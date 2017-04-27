@@ -50,8 +50,8 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private WidevineClassicDrm drmClient;
     private PlayerEvent.Type currentEvent;
     private PlayerState currentState = PlayerState.IDLE, previousState;
+    private long playerDuration = Consts.TIME_UNSET;
     private long playerPosition;
-    private long prevDuration = Consts.TIME_UNSET;
     private PlayerController.EventListener eventListener;
     private PlayerController.StateChangedListener stateChangedListener;
     private boolean shouldRestorePlayerToPreviousState = false;
@@ -93,6 +93,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         }
 
         this.mediaSourceConfig = mediaSourceConfig;
+
         if ((currentState == null || currentState == PlayerState.IDLE) && prepareState != PREPARING) {
             initializePlayer();
         }
@@ -139,13 +140,16 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     private void sendOnPreparedEvents() {
         sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
-        sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
+        sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+        sendDistinctEvent(PlayerEvent.Type.PLAYBACK_PARAMS_UPDATED);
+        sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
+
     }
 
     private void handleContentCompleted() {
         pause();
-        seekTo(player.getDuration());
+        seekTo(playerDuration);
         currentState = PlayerState.IDLE;
         changeState(PlayerState.IDLE);
         sendDistinctEvent(PlayerEvent.Type.ENDED);
@@ -220,18 +224,10 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public long getDuration() {
-        log.d("getDuration ");
         if (player == null || !PREPARED.equals(prepareState)) {
             return 0;
         }
-        long currentDuration;
-        currentDuration = player == null ? Consts.TIME_UNSET : player.getDuration();
-        if (prevDuration != currentDuration) {
-            sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
-        }
-        prevDuration = currentDuration;
-        return prevDuration;
-
+        return playerDuration;
     }
 
     @Override
@@ -277,7 +273,9 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         }
 
         log.d("startFrom " + position);
-        seekTo((int)position);
+        if (position > 0) {
+            seekTo((int) position);
+        }
     }
 
     @Override
@@ -426,6 +424,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         if (appInBackground) {
             return;
         }
+        playerDuration = player.getDuration();
         changeState(PlayerState.READY);
         if (isPlayAfterPrepare) {
             sendDistinctEvent(PlayerEvent.Type.PLAY);
@@ -447,6 +446,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         if (prepareState == NOT_PREPARED) {
             changeState(PlayerState.BUFFERING);
             prepareState = PREPARING;
+            playerDuration = Consts.TIME_UNSET;
             player.prepareAsync();
         }
     }
