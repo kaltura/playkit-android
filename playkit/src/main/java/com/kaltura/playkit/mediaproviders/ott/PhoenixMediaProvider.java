@@ -1,5 +1,6 @@
 package com.kaltura.playkit.mediaproviders.ott;
 
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringDef;
 import android.text.TextUtils;
@@ -89,7 +90,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         public String protocol;
 
         public MediaAsset(){
-            protocol = "https";
         }
 
         public boolean hasFormats() {
@@ -264,7 +264,13 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 contextOptions.setMediaFileIds(mediaAsset.mediaFileIds);
             }
 
-            contextOptions.setMediaProtocol(mediaAsset.protocol);
+            if (mediaAsset.protocol == null) {
+                contextOptions.setMediaProtocol(Uri.parse(baseUrl).getScheme());
+            } else {
+                if (!HttpProtocol.All.equals(mediaAsset.protocol)) {
+                    contextOptions.setMediaProtocol(mediaAsset.protocol);
+                }
+            }
 
             return AssetService.getPlaybackContext(baseUrl, ks, mediaAsset.assetId,
                     mediaAsset.assetType, contextOptions);
@@ -510,11 +516,12 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
     }
 
-    @StringDef({HttpProtocol.Http, HttpProtocol.Https})
+    @StringDef({HttpProtocol.Http, HttpProtocol.Https, HttpProtocol.All})
     @Retention(RetentionPolicy.SOURCE)
     public @interface HttpProtocol {
         public static final String Http = "http";
         public static final String Https = "https";
+        public static final String All = "all";
     }
 
 }
