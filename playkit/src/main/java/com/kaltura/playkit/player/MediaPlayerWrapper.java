@@ -60,7 +60,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private boolean isPauseAfterPrepare = false;
     private boolean appInBackground;
 
-    public MediaPlayerWrapper(Context context) {
+    MediaPlayerWrapper(Context context) {
         this.context = context;
         player = new MediaPlayer();
         mediaPlayerView = new MediaPlayerView(context);
@@ -107,11 +107,14 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         //player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         //player.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
 
-        assetUri = mediaSourceConfig.mediaSource.getUrl();
+        assetUri = mediaSourceConfig.getUrl().toString();
+
         String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
+        String playbackUri     = getWidevineAssetPlaybackUri(assetUri);
+        log.d("playback uri = " + playbackUri);
         try {
             mediaPlayerView.getSurfaceHolder().addCallback(this);
-            player.setDataSource(assetUri);
+            player.setDataSource(playbackUri);
             setPlayerListeners();
         } catch (IOException e) {
             log.e(e.toString());
