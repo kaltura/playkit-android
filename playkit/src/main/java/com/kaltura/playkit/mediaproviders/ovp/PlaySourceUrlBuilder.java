@@ -145,7 +145,7 @@ public class PlaySourceUrlBuilder {
         boolean hasUiConfId = !isEmpty(uiConfId);
         boolean hasFlavors = !isEmpty(flavorIds);
         if (hasFlavors) {
-            playUrl.append("/falvorIds/").append(flavorIds);
+            playUrl.append("/flavorIds/").append(flavorIds);
         } else if (hasUiConfId) {
             playUrl.append("/uiConfId/").append(uiConfId);
         }
