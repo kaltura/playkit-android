@@ -10,13 +10,17 @@ import java.io.FileDescriptor;
 import java.lang.reflect.Method;
 
 /**
- * Created by gilad.nadav on 27/04/2017.
+ * @hide
  */
 
 public class WidevineClassicCompat {
 
     private static final PKLog log = PKLog.get("WidevineClassicCompat");
 
+    /**
+     * See description of WidevineClassicDrm.fdToString() for details on this class.
+     * This implementation was separated from WidevineClassicDrm to prevent a VerifyError on older devices.
+     */
     @TargetApi(Build.VERSION_CODES.M)
     @Nullable
     static String fdToString23(FileDescriptor fd) {
