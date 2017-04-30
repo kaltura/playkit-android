@@ -264,12 +264,12 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 contextOptions.setMediaFileIds(mediaAsset.mediaFileIds);
             }
 
+            // protocol will be added only if no protocol was give or http/https was set
+            // for All no filter will be done via protocol and it will not be added to the request.
             if (mediaAsset.protocol == null) {
                 contextOptions.setMediaProtocol(Uri.parse(baseUrl).getScheme());
-            } else {
-                if (!HttpProtocol.All.equals(mediaAsset.protocol)) {
-                    contextOptions.setMediaProtocol(mediaAsset.protocol);
-                }
+            } else if (!HttpProtocol.All.equals(mediaAsset.protocol)) {
+                contextOptions.setMediaProtocol(mediaAsset.protocol);
             }
 
             return AssetService.getPlaybackContext(baseUrl, ks, mediaAsset.assetId,
