@@ -214,7 +214,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
         // Parameters for the request -
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
-        // String sessionId, String startTime,  String entryId,  boolean isLive, String referrer
+        // String startTime,  String entryId,  boolean isLive, String referrer
         RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(baseUrl, partnerId, isLive ? 1 : 2, eventIdx++, bufferTime,
                 lastReportedBitrate, sessionId, mediaConfig.getStartPosition(), entryId, isLive, PlayKitManager.CLIENT_TAG, "hls");
 
