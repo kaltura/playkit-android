@@ -121,7 +121,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         this.context = context;
         mediaDataSourceFactory = buildDataSourceFactory(true);
         exoPlayerView = new ExoPlayerView(context);
-        window = new Timeline.Window();
     }
 
     private void initializePlayer() {
@@ -327,7 +326,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         log.d("onTimelineChanged");
         sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
         sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
-        shouldResetPlayerPosition = timeline != null && !timeline.isEmpty()
+        shouldResetPlayerPosition = timeline != null && !timeline.isEmpty() && window != null
                 && !timeline.getWindow(timeline.getWindowCount() - 1, window).isDynamic;
     }
 
