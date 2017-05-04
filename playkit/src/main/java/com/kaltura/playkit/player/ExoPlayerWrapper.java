@@ -336,7 +336,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         if (currentException != null) {
             //if error have same message as the previous one, update the errorCounter.
             //this is need to avoid infinity retries on the same error.
-            if (currentException.getMessage().equals(error.getMessage())) {
+            if (currentException.getMessage() != null && currentException.getMessage().equals(error.getMessage())) {
                 sameErrorOccurrenceCounter++;
             } else {
                 sameErrorOccurrenceCounter = 0;
