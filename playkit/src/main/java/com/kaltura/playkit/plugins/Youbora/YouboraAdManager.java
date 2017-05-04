@@ -140,6 +140,9 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                     case AD_BREAK_IGNORED:
                         endedAdHandler();
                         break;
+                    case CONTENT_RESUME_REQUESTED:
+                        endedAdHandler();
+                        break;
                     case SKIPPED:
                         currentAdInfo = ((AdEvent.AdSkippedEvent) event).adInfo;
                         lastReportedAdPlayhead = currentAdInfo.getAdPlayHead() / 1000D;
