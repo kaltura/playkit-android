@@ -43,17 +43,22 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         BITRATE_CHANGE,
         ERROR
     }
-    private boolean isFirstPlay = true;
-    private boolean intervalOn = false;
-    private long mContinueTime;
-    public PKMediaConfig mediaConfig;
-    public JsonObject pluginConfig;
+
     private Context mContext;
     public Player player;
+    public MessageBus messageBus; // used also by TVPAI Analytics
+    public JsonObject pluginConfig;
+    public PKMediaConfig mediaConfig;
+
     public RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
+
+    private long mContinueTime;
     private long lastKnownPlayerPosition = 0;
-    public MessageBus messageBus; // used also by TVPAI Analytics
+
+    private boolean isFirstPlay = true;
+    private boolean intervalOn = false;
+    private boolean timerWasCancelled = false;
 
 
     public static final Factory factory = new Factory() {
@@ -104,6 +109,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     public void onDestroy() {
         log.d("onDestroy");
         timer.cancel();
+        timerWasCancelled = true;
     }
 
     @Override
@@ -155,7 +161,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         } else {
                             sendAnalyticsEvent(PhoenixActionType.PLAY);
                         }
-                        if (!intervalOn){
+                        if (!intervalOn || !timerWasCancelled){
                             startMediaHitInterval();
                             intervalOn = true;
                         }

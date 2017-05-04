@@ -28,14 +28,9 @@ public class MediaSupport {
         if (initialized) {
             return;
         }
-        new Thread() {
-            @Override
-            public void run() {
-                checkWidevineClassic(context);
-                widevineModular();
-                initialized = true;
-            }
-        }.start();
+        checkWidevineClassic(context);
+        widevineModular();
+        initialized = true;
     }
 
     private static void checkWidevineClassic(Context context) {

@@ -58,7 +58,8 @@ public class PKDrmParams implements Parcelable {
     }
 
     public boolean isSchemeSupported() {
-        return scheme != null && scheme.isSupported();
+        boolean isSchemeSupported = (scheme != null && scheme.isSupported());
+        return isSchemeSupported;
     }
     
     public String getLicenseUri() {

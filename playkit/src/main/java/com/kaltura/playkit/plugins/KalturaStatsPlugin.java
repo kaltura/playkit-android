@@ -407,8 +407,8 @@ public class KalturaStatsPlugin extends PKPlugin {
         long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration() / 1000;
 
         // Parameters for the request -
-        //        String baseUrl, int partnerId, int eventType, String clientVer, long duration,
-        //        String sessionId, long position, String uiConfId, String entryId, String widgetId,  boolean isSeek
+        //        String baseUrl, int partnerId, int eventType, long duration,
+        //        String entryId, long position, String uiConfId, String entryId, String widgetId,  boolean isSeek
         final RequestBuilder requestBuilder = StatsService.sendStatsEvent(baseUrl, partnerId, eventType.getValue(), PlayKitManager.CLIENT_TAG, duration,
                 sessionId, player.getCurrentPosition(), uiconfId, entryId, "_" + partnerId, hasSeeked);
 
