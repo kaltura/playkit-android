@@ -63,7 +63,7 @@ public class YouboraPlugin extends PKPlugin {
             pluginManager.startMonitoring(player);
         }
         if (adAnalytics && !isAdsMonitoring){
-            adsManager = new YouboraAdManager(pluginManager, pluginConfig, messageBus);
+            adsManager = new YouboraAdManager(pluginManager, messageBus);
             adsManager.startMonitoring(this.player);
             pluginManager.setAdnalyzer(adsManager);
             isAdsMonitoring = true;

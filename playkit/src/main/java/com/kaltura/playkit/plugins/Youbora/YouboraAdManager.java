@@ -1,6 +1,5 @@
 package com.kaltura.playkit.plugins.Youbora;
 
-import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -12,8 +11,6 @@ import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.npaw.youbora.adnalyzers.AdnalyzerGeneric;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.utils.YBLog;
-
-import java.util.Map;
 
 import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
 
@@ -30,7 +27,6 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     private double adBitrate = -1;
     private AdInfo currentAdInfo;
 
-    private JsonObject pluginConfig;
     private String lastReportedAdId;
     private String lastReportedAdTitle;
     private Double lastReportedAdPlayhead;
@@ -45,11 +41,9 @@ public class YouboraAdManager extends AdnalyzerGeneric {
 //                campaign: "Christmas"
 //    },
 
-    public YouboraAdManager(PluginGeneric plugin, JsonObject pluginConfig, MessageBus messageBus) {
+    public YouboraAdManager(PluginGeneric plugin, MessageBus messageBus) {
         super(plugin);
         this.messageBus = messageBus;
-        this.pluginConfig = pluginConfig;
-
 
         this.messageBus.listen(mEventListener, STATE_CHANGED);
         this.messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
@@ -94,14 +88,6 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                         lastReportedAdDuration = currentAdInfo.getAdDuration() / 1000D;
                         lastReportedAdId = currentAdInfo.getAdId();
                         lastReportedAdTitle = currentAdInfo.getAdTitle();
-
-                        JsonObject adsConfig = pluginConfig.getAsJsonObject("ads");
-                        JsonObject newAdsConfig = new JsonObject();
-                        adsConfig.addProperty("title", lastReportedAdTitle);
-                        newAdsConfig.add("ads", adsConfig);
-                        Map<String, Object> opt  = YouboraConfig.setYouboraAdsConfig(newAdsConfig);
-                        // Refresh options with updated media
-                        plugin.setOptions(opt);
                         lastReportedAdPlayhead = currentAdInfo.getAdPlayHead() / 1000D;
                         log.d("lastReportedAdDuration: " + lastReportedAdDuration);
                         log.d("lastReportedAdId: " + lastReportedAdId);
@@ -203,7 +189,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     public String getAdTitle() {
         log.d("getAdTitle ");
 
-        return currentAdInfo != null ? currentAdInfo.getAdTitle() : "No Info";
+        return lastReportedAdTitle != null ? lastReportedAdTitle : "No Info";
     }
 
     @Override
