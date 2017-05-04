@@ -274,7 +274,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //Map<Double, String> tagTimesMap = new HashMap<>();
         //tagTimesMap.put(2.0,"ADTAG");
 
-        IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
+        IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl).setAdPlayAfterResume(false);
         config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
 
     }

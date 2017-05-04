@@ -322,8 +322,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     adsManager.resume();
                     player.play();
                 } else {
-                    log.d("onApplicationResumed ad resumed");
-                    adsManager.resume();
+                    if (adConfig.isAdPlayAfterResume()) {
+                        log.d("onApplicationResumed ad resumed");
+                        adsManager.resume();
+                    }
                 }
             }
         }

@@ -30,6 +30,7 @@ public class IMAConfig {
     public static final String AD_ATTRIBUTION_UIELEMENT = "adAttribution";
     public static final String AD_COUNTDOWN_UIELEMENT   = "adCountDown";
     public static final String AD_LOAD_TIMEOUT          = "adLoadTimeOut";
+    public static final String AD_PLAY_AFTER_RESUME          = "adPlayAfterResume";
 
 
     private String language;
@@ -40,6 +41,7 @@ public class IMAConfig {
     private boolean adAttribution;
     private boolean adCountDown;
     private int  adLoadTimeOut;
+    private boolean adPlayAfterResume;
     private List<String> videoMimeTypes;
     //private Map<Double,String> tagsTimes; // <AdTime,URL_to_execute>
 
@@ -53,6 +55,7 @@ public class IMAConfig {
         this.adAttribution            = true;
         this.adCountDown              = true;
         this.adLoadTimeOut            = DEFAULT_AD_LOAD_TIMEOUT;
+        this.adPlayAfterResume        = true;
         this.videoMimeTypes           = new ArrayList<>();
         this.videoMimeTypes.add(PKMediaFormat.mp4.mimeType);
         this.adTagURL = null;         //=> must be set via setter
@@ -160,6 +163,15 @@ public class IMAConfig {
         return this;
     }
 
+    public boolean isAdPlayAfterResume() {
+        return adPlayAfterResume;
+    }
+
+    public IMAConfig setAdPlayAfterResume(boolean adPlayAfterResume) {
+        this.adPlayAfterResume = adPlayAfterResume;
+        return this;
+    }
+
     //    public Map<Double, String> getTagsTimes() {
 //        return tagsTimes;
 //    }
@@ -187,6 +199,7 @@ public class IMAConfig {
         jsonObject.addProperty(AD_ATTRIBUTION_UIELEMENT, adAttribution);
         jsonObject.addProperty(AD_COUNTDOWN_UIELEMENT, adCountDown);
         jsonObject.addProperty(AD_LOAD_TIMEOUT, adLoadTimeOut);
+        jsonObject.addProperty(AD_PLAY_AFTER_RESUME, adPlayAfterResume);
 
         Gson gson = new Gson();
         JsonArray jArray = new JsonArray();
