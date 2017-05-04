@@ -146,28 +146,6 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
                         skipAdHandler();
                         break;
-                    case FIRST_QUARTILE:
-                    case MIDPOINT:
-                    case THIRD_QUARTILE:
-                    case CLICKED:
-                    case TAPPED:
-                    case ICON_TAPPED:
-                    case AD_BREAK_READY:
-                    case AD_PROGRESS:
-                        break;
-                    case AD_BREAK_STARTED:
-                        break;
-                    case AD_BREAK_ENDED:
-                        break;
-                    case CUEPOINTS_CHANGED:
-                        break;
-                    case CONTENT_PAUSE_REQUESTED:
-                        break;
-                    case CONTENT_RESUME_REQUESTED:
-                        break;
-                    case ALL_ADS_COMPLETED:
-                        //stopMonitoring();
-                        break;
                 }
                 sendReportEvent(event);
             } else if (event instanceof AdError) {
