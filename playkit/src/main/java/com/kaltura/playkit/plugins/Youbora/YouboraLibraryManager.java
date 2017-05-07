@@ -12,6 +12,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.npaw.youbora.plugins.PluginGeneric;
+import com.npaw.youbora.youboralib.BuildConfig;
 import com.npaw.youbora.youboralib.managers.ViewManager;
 
 import org.json.JSONException;
@@ -60,7 +61,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     protected void init() {
         super.init();
         this.pluginName = PlayKitManager.CLIENT_TAG;
-        this.pluginVersion = "5.3.0-" + PlayKitManager.CLIENT_TAG;
+        this.pluginVersion = BuildConfig.VERSION_NAME + "-"+ PlayKitManager.CLIENT_TAG;
         ViewManager.setMonitoringInterval(MONITORING_INTERVAL);
     }
 

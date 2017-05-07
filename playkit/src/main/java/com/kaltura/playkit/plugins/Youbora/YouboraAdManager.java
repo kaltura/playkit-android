@@ -10,6 +10,7 @@ import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.npaw.youbora.adnalyzers.AdnalyzerGeneric;
 import com.npaw.youbora.plugins.PluginGeneric;
+import com.npaw.youbora.youboralib.BuildConfig;
 import com.npaw.youbora.youboralib.utils.YBLog;
 
 import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
@@ -43,6 +44,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
 
     public YouboraAdManager(PluginGeneric plugin, MessageBus messageBus) {
         super(plugin);
+        this.adnalyzerVersion = BuildConfig.VERSION_NAME + "-" + PlayKitManager.CLIENT_TAG;
         this.messageBus = messageBus;
 
         this.messageBus.listen(mEventListener, STATE_CHANGED);
