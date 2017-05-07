@@ -60,7 +60,7 @@ public class YouboraLibraryManager extends PluginGeneric {
 
     protected void init() {
         super.init();
-        this.pluginName = PlayKitManager.CLIENT_TAG;
+        this.pluginName = YouboraPlugin.factory.getName();
         this.pluginVersion = BuildConfig.VERSION_NAME + "-"+ PlayKitManager.CLIENT_TAG;
         ViewManager.setMonitoringInterval(MONITORING_INTERVAL);
     }
