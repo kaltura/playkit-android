@@ -116,8 +116,8 @@ public class YouboraLibraryManager extends PluginGeneric {
                     case ENDED:
                         if (!isFirstPlay && ((adCuePoints == null) || (adCuePoints != null && !adCuePoints.hasPostRoll()))) {
                             endedHandler();
+                            adCuePoints = null;
                         }
-                        adCuePoints = null;
                         break;
                     case ERROR:
                         if (!isFirstPlay) {
@@ -165,6 +165,8 @@ public class YouboraLibraryManager extends PluginGeneric {
     };
 
     private void onAdEvent(AdEvent event) {
+        log.d("Ad Event: " + ((AdEvent) event).type.toString());
+
         switch (event.type) {
             case STARTED:
                 ignoringAdHandler();
@@ -182,6 +184,8 @@ public class YouboraLibraryManager extends PluginGeneric {
             case ALL_ADS_COMPLETED:
                 if (adCuePoints != null && adCuePoints.hasPostRoll()) {
                     endedHandler();
+                    adCuePoints = null;
+                    adCuePoints = null;
                 }
                 break;
             default:
@@ -216,7 +220,9 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public Double getMediaDuration() {
-        return mediaConfig == null ? 0 : Long.valueOf(mediaConfig.getMediaEntry().getDuration()).doubleValue();
+        double lastReportedMediaDuration  =  (mediaConfig == null) ? 0 : Long.valueOf(mediaConfig.getMediaEntry().getDuration()).doubleValue();
+        log.d("lastReportedMediaDuration = " + lastReportedMediaDuration);
+        return lastReportedMediaDuration;
     }
 
     public String getRendition() {

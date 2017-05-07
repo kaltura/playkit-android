@@ -98,6 +98,7 @@ public class YouboraPlugin extends PKPlugin {
 
     @Override
     protected void onLoad(final Player player, Object config, final MessageBus messageBus, Context context) {
+        log.d("onLoad");
         this.player = player;
         this.pluginConfig = (JsonObject) config;
         this.messageBus = messageBus;
@@ -117,8 +118,6 @@ public class YouboraPlugin extends PKPlugin {
                 adAnalytics = pluginConfig.getAsJsonObject("youboraConfig").getAsJsonPrimitive("enableAdnalyzer").getAsBoolean();
             }
             messageBus.listen(eventListener, PlayerEvent.Type.DURATION_CHANGE);
-            setPluginOptions();
-            log.d("onLoad");
         }
 
     }
@@ -126,7 +125,9 @@ public class YouboraPlugin extends PKPlugin {
     PKEvent.Listener eventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
-            setPluginOptions();
+            Map<String, Object> opt  = YouboraConfig.setYouboraMediaDuration(pluginConfig, Long.valueOf(player.getDuration() / 1000).intValue());
+            // Set options
+            pluginManager.setOptions(opt);
         }
     };
 
