@@ -85,6 +85,7 @@ public class YouboraConfig {
         propertiesObject = properties;
 
         Map<String, Object> extraParams = new HashMap<>(10);
+        //TDDO remove
         extraParams.put("param1", PlayKitManager.CLIENT_TAG);
         youboraLocalConfig.put("extraParams", extraParams);
         extraParamsObject = extraParams;
