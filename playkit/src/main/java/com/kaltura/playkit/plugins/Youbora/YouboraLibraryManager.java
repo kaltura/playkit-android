@@ -13,7 +13,6 @@ import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.BuildConfig;
-import com.npaw.youbora.youboralib.managers.ViewManager;
 
 import org.json.JSONException;
 
@@ -29,7 +28,7 @@ public class YouboraLibraryManager extends PluginGeneric {
 
     private static final PKLog log = PKLog.get("YouboraLibraryManager");
 
-    private static final long MONITORING_INTERVAL = 200L;
+    //private static final long MONITORING_INTERVAL = 200L;
 
     private Player player;
     private MessageBus messageBus;
@@ -41,7 +40,7 @@ public class YouboraLibraryManager extends PluginGeneric {
 
     private String mediaUrl = "unknown";
     private Double lastReportedBitrate = -1.0;
-    private Double lastReportedthroughput = super.getThroughput();
+    private Double lastReportedThroughput;
     private AdCuePoints adCuePoints;
 
     public YouboraLibraryManager(String options) throws JSONException {
@@ -62,7 +61,7 @@ public class YouboraLibraryManager extends PluginGeneric {
         super.init();
         this.pluginName = YouboraPlugin.factory.getName();
         this.pluginVersion = BuildConfig.VERSION_NAME + "-"+ PlayKitManager.CLIENT_TAG;
-        ViewManager.setMonitoringInterval(MONITORING_INTERVAL);
+        //ViewManager.setMonitoringInterval(MONITORING_INTERVAL); // needed only if  bufferedHandler() is not used
     }
 
     private void onEvent(PlayerEvent.StateChanged event) {
@@ -92,13 +91,15 @@ public class YouboraLibraryManager extends PluginGeneric {
         sendReportEvent(event);
     }
 
+
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
 
             if (event instanceof PlayerEvent.PlaybackParamsUpdated) {
                 PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParamsUpdated) event).getPlaybackParamsInfo();
-                lastReportedBitrate = Long.valueOf(currentPlaybackParams.getVideoBitrate()).doubleValue();
+                lastReportedBitrate    = Long.valueOf(currentPlaybackParams.getVideoBitrate()).doubleValue();
+                lastReportedThroughput = Long.valueOf(currentPlaybackParams.getVideoThroughput()).doubleValue();
                 mediaUrl = currentPlaybackParams.getMediaUrl();
                 return;
             }
@@ -211,7 +212,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public Double getThroughput() {
-        return this.lastReportedthroughput;
+        return this.lastReportedThroughput;
     }
 
     public Double getMediaDuration() {

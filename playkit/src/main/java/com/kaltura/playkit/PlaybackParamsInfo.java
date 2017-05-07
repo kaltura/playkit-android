@@ -7,14 +7,17 @@ package com.kaltura.playkit;
 
 public class PlaybackParamsInfo {
 
+    private String mediaUrl;
     private long videoBitrate;
     private long audioBitrate;
-    private String mediaUrl;
+    private long videoThroughput;
 
-    public PlaybackParamsInfo(String mediaUrl, long videoBitrate, long audioBitrate) {
+
+    public PlaybackParamsInfo(String mediaUrl, long videoBitrate, long audioBitrate, long videoThroughput) {
+        this.mediaUrl = mediaUrl;
         this.videoBitrate = videoBitrate;
         this.audioBitrate = audioBitrate;
-        this.mediaUrl = mediaUrl;
+        this.videoThroughput = videoThroughput;
     }
 
     /**
@@ -38,5 +41,13 @@ public class PlaybackParamsInfo {
      */
     public long getAudioBitrate() {
         return audioBitrate;
+    }
+
+    /**
+     *
+     * @return - the current playing video throughput.
+     */
+    public long getVideoThroughput() {
+        return videoThroughput;
     }
 }
