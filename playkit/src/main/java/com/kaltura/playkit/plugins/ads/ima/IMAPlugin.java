@@ -319,7 +319,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             } else if (isAdDisplayed) {
                 double delta = adsManager.getAdProgress().getDuration() - adsManager.getAdProgress().getCurrentTime();
                 log.d("onApplicationResumed delta = " + delta);
-                if (delta <= 0) {
+                if (delta < 1) {
                     log.d("onApplicationResumed player play called");
                     adsManager.resume();
                     player.play();
