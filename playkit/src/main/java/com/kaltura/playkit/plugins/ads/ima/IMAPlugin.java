@@ -560,7 +560,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     @Override
     public long getCurrentPosition() {
         if (adsManager != null) {
-            return (long) adsManager.getAdProgress().getCurrentTime();
+            //log.d("getCurrentPosition: " + isAdRequested);
+            long adCurrentPos = (long) adsManager.getAdProgress().getCurrentTime();
+            messageBus.post(new AdEvent.AdPlayHeadEvent(adCurrentPos));
+            return adCurrentPos;
         } else {
             return  Consts.POSITION_UNSET;
         }

@@ -137,6 +137,10 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
                         skipAdHandler();
                         break;
+                    case PLAY_HEAD_CHANGED:
+                        double adPos = Long.valueOf(((AdEvent.AdPlayHeadEvent) event).adPlayHead).doubleValue();
+                        lastReportedAdPlayhead = adPos;
+                        break;
                 }
                 sendReportEvent(event);
             } else if (event instanceof AdError) {

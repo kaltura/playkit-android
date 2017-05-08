@@ -78,6 +78,16 @@ public class AdEvent implements PKEvent {
         }
     }
 
+    public static class AdPlayHeadEvent extends AdEvent {
+
+        public long adPlayHead;
+
+        public AdPlayHeadEvent(long adPlayHead) {
+            super(Type.PLAY_HEAD_CHANGED);
+            this.adPlayHead = adPlayHead;
+        }
+    }
+
     public enum Type {
         STARTED,
         PAUSED,
@@ -96,6 +106,7 @@ public class AdEvent implements PKEvent {
         AD_BREAK_ENDED,
         AD_BREAK_IGNORED,
         CUEPOINTS_CHANGED,
+        PLAY_HEAD_CHANGED,
         LOADED,
         CONTENT_PAUSE_REQUESTED,
         CONTENT_RESUME_REQUESTED,
