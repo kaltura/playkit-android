@@ -1,6 +1,5 @@
 package com.kaltura.playkit.drm;
 
-import android.annotation.TargetApi;
 import android.content.ContentValues;
 import android.content.Context;
 import android.drm.DrmErrorEvent;
@@ -12,14 +11,12 @@ import android.drm.DrmInfoStatus;
 import android.drm.DrmManagerClient;
 import android.drm.DrmStore;
 import android.os.Build;
-import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.PKLog;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Iterator;
 
 /**
@@ -28,7 +25,7 @@ import java.util.Iterator;
 
 public class WidevineClassicDrm {
 
-    private static final PKLog log = PKLog.get("WidevineClassiDrm");
+    private static final PKLog log = PKLog.get("WidevineClassicDrm");
 
 
     private final static String DEVICE_IS_PROVISIONED = "0";
@@ -317,24 +314,10 @@ public class WidevineClassicDrm {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return fd.toString();
         } else {
-            return fdToString23(fd);
+            return WidevineClassicCompat.fdToString23(fd);
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
-    @Nullable
-    private String fdToString23(FileDescriptor fd) {
-        try {
-            Method method = fd.getClass().getMethod("getInt$");
-            Object fdInt = method.invoke(fd);
-            if (fdInt instanceof Integer) {
-                return "FileDescriptor[" + fdInt + "]";
-            }
-        } catch (ReflectiveOperationException e) {
-            log.e("Error getting FD to string", e);
-        }
-        return null;
-    }
 
     public int acquireLocalAssetRights(String assetPath, String licenseServerUri) {
         DrmInfoRequest drmInfoRequest = createDrmInfoRequest(assetPath, licenseServerUri);
