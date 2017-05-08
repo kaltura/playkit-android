@@ -29,7 +29,7 @@ public class YouboraConfig {
     private static final Map<String, Object> propertiesObject;
     private static final Map<String, Object> extraParamsObject;
     private static final Map<String, Object> adsObject;
-    private static final Map<String, Object> networkObject;
+    //private static final Map<String, Object> networkObject;
 
     private static String[] youboraConfigFieldNames = new String[]{"accountCode","username"};
     private static String[] youboraBooleanConfigFieldNames = new String[]{"haltOnError","enableAdnalyzer"};
@@ -38,7 +38,7 @@ public class YouboraConfig {
     private static String[] mediaBooleanConfigFieldNames = new String[]{"isLive"};
 
     private static String[] adsConfigFieldNames = new String[]{"title","campaign"};
-    private static String[] adsBooleanConfigFieldNames = new String[]{"adsExpected"};
+    private static String[] adsBooleanConfigFieldNames = new String[]{};
 
     private static String[] propertiesConfigFieldNames = new String[]{"genre","type","transaction_type","year","cast","director","owner","parental","price","rating","audioType","audioChannels"
                                             ,"device","quality"};
@@ -49,22 +49,19 @@ public class YouboraConfig {
         youboraLocalConfig.put("enableAdnalyzer", true);
         youboraLocalConfig.put("parseHLS", false);
         youboraLocalConfig.put("parseCDNNodeHost", false);
-        youboraLocalConfig.put("hashTitle", true);
         youboraLocalConfig.put("httpSecure", false);
-        youboraLocalConfig.put("enableNiceBuffer", true);
-        youboraLocalConfig.put("enableNiceSeek", true);
+        //youboraLocalConfig.put("enableNiceBuffer", true);
+        //youboraLocalConfig.put("enableNiceSeek", true);
         youboraLocalConfig.put("accountCode", "kalturatest");
         youboraLocalConfig.put("transactionCode", "");
-        youboraLocalConfig.put("isBalanced", "0");
-        youboraLocalConfig.put("isResumed", "0");
         youboraLocalConfig.put("haltOnError", true);
         youboraConfigObject = youboraLocalConfig;
 
-        Map<String, Object> network = new HashMap<>(2);
-        network.put("ip", "");
-        network.put("isp", "");
-        youboraLocalConfig.put("network", network);
-        networkObject = network;
+        //Map<String, Object> network = new HashMap<>(2);
+        //network.put("ip", "");
+        //network.put("isp", "");
+        //youboraLocalConfig.put("network", network);
+        //networkObject = network;
 
         Map<String, Object> device = new HashMap<>(1);
         device.put("id", null);
@@ -77,7 +74,6 @@ public class YouboraConfig {
         mediaObject = media;
 
         Map<String, Object> ads = new HashMap<>(6);
-        ads.put("adsExpected", false);
         ads.put("resource", null);
         ads.put("position", null);
         ads.put("duration", null);
