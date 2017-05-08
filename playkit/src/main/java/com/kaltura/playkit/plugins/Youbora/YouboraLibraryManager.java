@@ -4,7 +4,6 @@ import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
-import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.Player;
@@ -13,6 +12,7 @@ import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.BuildConfig;
+import com.npaw.youbora.youboralib.utils.Utils;
 
 import org.json.JSONException;
 
@@ -38,9 +38,10 @@ public class YouboraLibraryManager extends PluginGeneric {
     private boolean isBuffering = false;
     private boolean allowSendingYouboraBufferEvents = false; //When false will prevent from sending bufferUnderrun event.
 
-    private String mediaUrl = "unknown";
+    private String lastReportedResource = "unknown";
     private Double lastReportedBitrate = -1.0;
     private Double lastReportedThroughput;
+    private String lastReportedRendition;
     private AdCuePoints adCuePoints;
 
     public YouboraLibraryManager(String options) throws JSONException {
@@ -100,7 +101,8 @@ public class YouboraLibraryManager extends PluginGeneric {
                 PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParamsUpdated) event).getPlaybackParamsInfo();
                 lastReportedBitrate    = Long.valueOf(currentPlaybackParams.getVideoBitrate()).doubleValue();
                 lastReportedThroughput = Long.valueOf(currentPlaybackParams.getVideoThroughput()).doubleValue();
-                mediaUrl = currentPlaybackParams.getMediaUrl();
+                lastReportedResource  = currentPlaybackParams.getMediaUrl();
+                lastReportedRendition = generateRendition(lastReportedBitrate, (int)currentPlaybackParams.getVideoWidth(), (int)currentPlaybackParams.getVideoHeight());
                 return;
             }
 
@@ -215,25 +217,17 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public Double getThroughput() {
+        log.d("getThroughput = " + lastReportedThroughput);
         return this.lastReportedThroughput;
     }
 
-    public Double getMediaDuration() {
-        double lastReportedMediaDuration  =  (mediaConfig == null) ? 0 : Long.valueOf(mediaConfig.getMediaEntry().getDuration()).doubleValue();
-        log.d("lastReportedMediaDuration = " + lastReportedMediaDuration);
-        return lastReportedMediaDuration;
-    }
-
     public String getRendition() {
-        return null;
+        log.d("getRendition = " + lastReportedRendition);
+        return lastReportedRendition;
     }
 
     public String getPlayerVersion() {
         return PlayKitManager.CLIENT_TAG;
-    }
-
-    public String getResource() {
-        return this.mediaUrl;
     }
 
     public Double getPlayhead() {
@@ -242,13 +236,40 @@ public class YouboraLibraryManager extends PluginGeneric {
         return currPos;
     }
 
-    public Boolean getIsLive() {
-        return mediaConfig != null && (mediaConfig.getMediaEntry().getMediaType() == PKMediaEntry.MediaEntryType.Live);
-    }
+//    public String getResource() {
+//        return this.mediaUrl;
+//    }
+
+//    public Double getMediaDuration() {
+//        double lastReportedMediaDuration  =  (mediaConfig == null) ? 0 : Long.valueOf(mediaConfig.getMediaEntry().getDuration()).doubleValue();
+//        log.d("lastReportedMediaDuration = " + lastReportedMediaDuration);
+//        return lastReportedMediaDuration;
+//    }
+
+//    public Boolean getIsLive() {
+//        return mediaConfig != null && (mediaConfig.getMediaEntry().getMediaType() == PKMediaEntry.MediaEntryType.Live);
+//    }
 
     private void sendReportEvent(PKEvent event) {
         String reportedEventName = event.eventType().name();
         messageBus.post(new YouboraEvent.YouboraReport(reportedEventName));
+    }
+
+    public String generateRendition(double bitrate,  int width, int height) {
+
+        if ((width <= 0 || height <= 0) && bitrate <= 0) {
+            return super.getRendition();
+        } else {
+            return Utils.buildRenditionString(width, height, bitrate);
+        }
+    }
+
+    public void resetValues() {
+        lastReportedResource = "unknown";
+        lastReportedBitrate = super.getBitrate();
+        lastReportedRendition = super.getRendition();
+        lastReportedThroughput = super.getThroughput();
+        isFirstPlay = false;
     }
 
 }

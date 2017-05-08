@@ -62,6 +62,8 @@ class TrackSelectionHelper {
 
     private long currentVideoBitrate = Consts.NO_VALUE;
     private long currentAudioBitrate = Consts.NO_VALUE;
+    private long currentVideoWidth   = Consts.NO_VALUE;
+    private long currentVideoHeight  = Consts.NO_VALUE;
 
     private boolean cea608CaptionsEnabled; //Flag that indicates if application initerested in receiving cea-608 text track format.
 
@@ -515,6 +517,14 @@ class TrackSelectionHelper {
         return currentAudioBitrate;
     }
 
+    long getCurrentVideoWidth() {
+        return currentVideoWidth;
+}
+
+    long getCurrentVideoHeight() {
+        return currentVideoHeight;
+    }
+
     void updateSelectedTracksBitrate(TrackSelectionArray trackSelections) {
         if (tracksInfoListener == null || trackSelections == null) {
             return;
@@ -548,6 +558,8 @@ class TrackSelectionHelper {
                 }
                 log.d("Selected" + auto + " video bitrate = " + trackSelection.getSelectedFormat().bitrate);
                 currentVideoBitrate = trackSelection.getSelectedFormat().bitrate;
+                currentVideoWidth = trackSelection.getSelectedFormat().width;
+                currentVideoHeight = trackSelection.getSelectedFormat().height;
             } else if ((sampleMimeType.contains(AUDIO) || containerMimeType.contains(AUDIO))) {
                 if (trackSelection instanceof AdaptiveTrackSelection) {
                     auto = " Auto";

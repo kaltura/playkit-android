@@ -275,6 +275,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void onLoadingChanged(boolean isLoading) {
         log.d("onLoadingChanged. isLoading => " + isLoading);
+        if (!isLoading) {
+            sendEvent(PlayerEvent.Type.PLAYBACK_PARAMS_UPDATED);
+        }
+
     }
 
     @Override
@@ -584,7 +588,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public PlaybackParamsInfo getPlaybackParamsInfo() {
-        return new PlaybackParamsInfo(lastPlayedSource.toString(), trackSelectionHelper.getCurrentVideoBitrate(), trackSelectionHelper.getCurrentAudioBitrate(), BANDWIDTH_METER.getBitrateEstimate());
+        return new PlaybackParamsInfo(lastPlayedSource.toString(), trackSelectionHelper.getCurrentVideoBitrate(), trackSelectionHelper.getCurrentAudioBitrate(), BANDWIDTH_METER.getBitrateEstimate(),
+                                      trackSelectionHelper.getCurrentVideoWidth(), trackSelectionHelper.getCurrentVideoHeight());
     }
 
     @Override

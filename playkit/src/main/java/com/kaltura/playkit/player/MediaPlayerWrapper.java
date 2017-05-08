@@ -348,7 +348,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public PlaybackParamsInfo getPlaybackParamsInfo() {
-        return new PlaybackParamsInfo(getWidevineAssetPlaybackUri(assetUri), -1, -1, -1);
+        return new PlaybackParamsInfo(getWidevineAssetPlaybackUri(assetUri), -1, -1, -1, player.getVideoWidth(), player.getVideoHeight());
     }
 
     @Override

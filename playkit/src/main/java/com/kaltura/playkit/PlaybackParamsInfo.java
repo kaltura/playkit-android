@@ -11,13 +11,17 @@ public class PlaybackParamsInfo {
     private long videoBitrate;
     private long audioBitrate;
     private long videoThroughput;
+    private long videoWidth;
+    private long videoHeight;
 
 
-    public PlaybackParamsInfo(String mediaUrl, long videoBitrate, long audioBitrate, long videoThroughput) {
+    public PlaybackParamsInfo(String mediaUrl, long videoBitrate, long audioBitrate, long videoThroughput, long videoWidth, long videoHeight) {
         this.mediaUrl = mediaUrl;
         this.videoBitrate = videoBitrate;
         this.audioBitrate = audioBitrate;
         this.videoThroughput = videoThroughput;
+        this.videoWidth = videoWidth;
+        this.videoHeight = videoHeight;
     }
 
     /**
@@ -49,5 +53,21 @@ public class PlaybackParamsInfo {
      */
     public long getVideoThroughput() {
         return videoThroughput;
+    }
+
+    /**
+     *
+     * @return - the current playing video width.
+     */
+    public long getVideoWidth() {
+        return videoWidth;
+    }
+
+    /**
+     *
+     * @return - the current playing video height.
+     */
+    public long getVideoHeight() {
+        return videoHeight;
     }
 }
