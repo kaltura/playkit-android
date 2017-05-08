@@ -238,10 +238,8 @@ public class YouboraLibraryManager extends PluginGeneric {
 
     public Double getPlayhead() {
         double currPos = Long.valueOf(player.getCurrentPosition()).doubleValue();
-        if (currPos <= 0) {
-            return currPos;
-        }
-        return (currPos / 1000);
+        log.d("getPlayhead currPos = " + currPos);
+        return currPos;
     }
 
     public Boolean getIsLive() {
