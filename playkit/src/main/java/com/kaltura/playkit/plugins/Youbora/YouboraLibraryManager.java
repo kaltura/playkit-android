@@ -185,7 +185,6 @@ public class YouboraLibraryManager extends PluginGeneric {
                 if (adCuePoints != null && adCuePoints.hasPostRoll()) {
                     endedHandler();
                     adCuePoints = null;
-                    adCuePoints = null;
                 }
                 break;
             default:
