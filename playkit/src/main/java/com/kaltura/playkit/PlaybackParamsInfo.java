@@ -70,4 +70,16 @@ public class PlaybackParamsInfo {
     public long getVideoHeight() {
         return videoHeight;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("mediaUrl =").append(mediaUrl).append(System.getProperty("line.separator"));
+        sb.append("videoBitrate =").append(videoBitrate).append(System.getProperty("line.separator"));
+        sb.append("audioBitrate =").append(audioBitrate).append(System.getProperty("line.separator"));
+        sb.append("videoThroughput =").append(videoThroughput).append(System.getProperty("line.separator"));
+        sb.append("videoWidth =").append(videoWidth).append(System.getProperty("line.separator"));
+        sb.append("videoHeight =").append(videoHeight).append(System.getProperty("line.separator"));
+        return sb.toString();
+    }
 }
