@@ -114,9 +114,9 @@ public class YouboraPlugin extends PKPlugin {
                 log.e("Youbora PluginConfig is missing the youboraConfig key in json object");
                 return;
             }
-            if (pluginConfig.getAsJsonObject("youboraConfig").has("enableAdnalyzer")  &&
-                    !pluginConfig.getAsJsonObject("youboraConfig").getAsJsonPrimitive("enableAdnalyzer").isJsonNull()) {
-                adAnalytics = pluginConfig.getAsJsonObject("youboraConfig").getAsJsonPrimitive("enableAdnalyzer").getAsBoolean();
+            if (pluginConfig.getAsJsonObject("youboraConfig").has("enableSmartAds")  &&
+                    !pluginConfig.getAsJsonObject("youboraConfig").getAsJsonPrimitive("enableSmartAds").isJsonNull()) {
+                adAnalytics = pluginConfig.getAsJsonObject("youboraConfig").getAsJsonPrimitive("enableSmartAds").getAsBoolean();
             }
             messageBus.listen(eventListener, PlayerEvent.Type.DURATION_CHANGE);
         }

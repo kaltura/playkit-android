@@ -32,7 +32,7 @@ public class YouboraConfig {
     //private static final Map<String, Object> networkObject;
 
     private static String[] youboraConfigFieldNames = new String[]{"accountCode","username"};
-    private static String[] youboraBooleanConfigFieldNames = new String[]{"haltOnError","enableAdnalyzer"};
+    private static String[] youboraBooleanConfigFieldNames = new String[]{"haltOnError","enableAnalytics"};
 
     private static String[] mediaConfigFieldNames = new String[]{"title","cdn"};
     private static String[] mediaBooleanConfigFieldNames = new String[]{"isLive"};
@@ -46,7 +46,7 @@ public class YouboraConfig {
 
     static {
         HashMap<String, Object> youboraLocalConfig = new HashMap<>(20);
-        youboraLocalConfig.put("enableAdnalyzer", true);
+        youboraLocalConfig.put("enableAnalytics", true);
         youboraLocalConfig.put("parseHLS", false);
         youboraLocalConfig.put("parseCDNNodeHost", false);
         youboraLocalConfig.put("httpSecure", false);
