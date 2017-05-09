@@ -88,7 +88,18 @@ public class AdEvent implements PKEvent {
         }
     }
 
+    public static class AdRequestedEvent extends AdEvent {
+
+        public String adTagUrl;
+
+        public AdRequestedEvent(String adTagUrl) {
+            super(Type.AD_REQUESTED);
+            this.adTagUrl = adTagUrl;
+        }
+    }
+
     public enum Type {
+        AD_REQUESTED,
         STARTED,
         PAUSED,
         RESUMED,

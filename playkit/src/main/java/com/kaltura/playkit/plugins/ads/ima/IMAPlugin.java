@@ -492,6 +492,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         });
 
         // Request the ad. After the ad is loaded, onAdsManagerLoaded() will be called.
+        messageBus.post(new AdEvent.AdRequestedEvent(adTagUrl));
         adsLoader.requestAds(request);
     }
 

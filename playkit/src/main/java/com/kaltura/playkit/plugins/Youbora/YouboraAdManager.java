@@ -28,7 +28,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     private double adBitrate = -1;
     private AdInfo currentAdInfo;
 
-    private String lastReportedAdId;
+    private String lastReportedAdResource;
     private String lastReportedAdTitle;
     private Double lastReportedAdPlayhead;
     private Double lastReportedAdDuration;
@@ -81,20 +81,17 @@ public class YouboraAdManager extends AdnalyzerGeneric {
             if (event instanceof AdEvent) {
                 log.d("AdManager: " + ((AdEvent) event).type.toString());
                 switch (((AdEvent) event).type) {
+                    case AD_REQUESTED:
+                        lastReportedAdResource = ((AdEvent.AdRequestedEvent) event).adTagUrl;
+                        log.d("lastReportedAdResource: " + lastReportedAdResource);
+                        break;
                     case LOADED:
                         if (isFirstPlay) {
                             isFirstPlay = false;
                             plugin.playHandler();
                         }
                         currentAdInfo = ((AdEvent.AdLoadedEvent) event).adInfo;
-                        lastReportedAdDuration = currentAdInfo.getAdDuration() / 1000D;
-                        lastReportedAdId = currentAdInfo.getAdId();
-                        lastReportedAdTitle = currentAdInfo.getAdTitle();
-                        lastReportedAdPlayhead = currentAdInfo.getAdPlayHead() / 1000D;
-                        log.d("lastReportedAdDuration: " + lastReportedAdDuration);
-                        log.d("lastReportedAdId: " + lastReportedAdId);
-                        log.d("lastReportedAdTitle: " + lastReportedAdTitle);
-                        log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
+                        populateAdValues();
 
                         playAdHandler();
                         break;
@@ -114,6 +111,13 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                         break;
                     case RESUMED:
                         currentAdInfo = ((AdEvent.AdResumedEvent) event).adInfo;
+                        if (isFirstPlay) {
+                            isFirstPlay = false;
+                            playAdHandler();
+                            joinAdHandler();
+                            populateAdValues();
+                        }
+
                         lastReportedAdPlayhead = currentAdInfo.getAdPlayHead() / 1000D;
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
 
@@ -249,7 +253,24 @@ public class YouboraAdManager extends AdnalyzerGeneric {
 
     @Override
     public String getAdResource() {
-        log.d("getAdResource = " + lastReportedAdId);
-        return lastReportedAdId;
+        log.d("getAdResource = " + lastReportedAdResource);
+        return lastReportedAdResource;
+    }
+
+    private void populateAdValues() {
+        lastReportedAdDuration = currentAdInfo.getAdDuration() / 1000D;
+        lastReportedAdTitle = currentAdInfo.getAdTitle();
+        lastReportedAdPlayhead = currentAdInfo.getAdPlayHead() / 1000D;
+        log.d("lastReportedAdDuration: " + lastReportedAdDuration);
+        log.d("lastReportedAdTitle: " + lastReportedAdTitle);
+        log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
+    }
+
+    public void resetAdValues() {
+        isFirstPlay = true;
+        currentAdInfo = null;
+        lastReportedAdDuration = super.getAdDuration();;
+        lastReportedAdTitle = super.getAdTitle();
+        lastReportedAdPlayhead = super.getAdPlayhead();
     }
 }
