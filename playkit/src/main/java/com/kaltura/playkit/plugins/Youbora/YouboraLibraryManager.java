@@ -11,6 +11,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
+import com.kaltura.playkit.utils.Consts;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.BuildConfig;
 import com.npaw.youbora.youboralib.utils.Utils;
@@ -121,6 +122,7 @@ public class YouboraLibraryManager extends PluginGeneric {
                             endedHandler();
                             adCuePoints = null;
                         }
+                        isFirstPlay = true;
                         break;
                     case ERROR:
                         if (!isFirstPlay) {
@@ -232,7 +234,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public Double getPlayhead() {
-        double currPos = Long.valueOf(player.getCurrentPosition()).doubleValue() / 1000;
+        double currPos = Long.valueOf(player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
         log.d("getPlayhead currPos = " + currPos);
         return (currPos >= 0) ? currPos : 0;
     }
@@ -242,7 +244,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public Double getMediaDuration() {
-        double lastReportedMediaDuration  =  (mediaConfig == null) ? 0 : Long.valueOf(mediaConfig.getMediaEntry().getDuration()).doubleValue() / 1000;
+        double lastReportedMediaDuration  =  (mediaConfig == null) ? 0 : Long.valueOf(mediaConfig.getMediaEntry().getDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
         log.d("lastReportedMediaDuration = " + lastReportedMediaDuration);
         return lastReportedMediaDuration;
     }
@@ -274,10 +276,18 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public void resetValues() {
+        lastReportedBitrate = super.getBitrate();
+        lastReportedRendition = super.getRendition();
+        lastReportedThroughput = super.getThroughput();
+        isFirstPlay = true;
+    }
+
+    public void resetAllValues() {
+        adCuePoints = null;
         lastReportedResource = "unknown";
         lastReportedBitrate = super.getBitrate();
         lastReportedRendition = super.getRendition();
         lastReportedThroughput = super.getThroughput();
-        isFirstPlay = false;
+        isFirstPlay = true;
     }
 }

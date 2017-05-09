@@ -8,6 +8,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdError;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
+import com.kaltura.playkit.utils.Consts;
 import com.npaw.youbora.adnalyzers.AdnalyzerGeneric;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.BuildConfig;
@@ -97,14 +98,14 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                         break;
                     case STARTED:
                         currentAdInfo = ((AdEvent.AdStartedEvent) event).adInfo;
-                        lastReportedAdPlayhead = currentAdInfo.getAdPlayHead() / 1000D;
+                        lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
 
                         joinAdHandler();
                         break;
                     case PAUSED:
                         currentAdInfo = ((AdEvent.AdPausedEvent) event).adInfo;
-                        lastReportedAdPlayhead = currentAdInfo.getAdPlayHead() / 1000D;
+                        lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
 
                         pauseAdHandler();
@@ -118,7 +119,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                             populateAdValues();
                         }
 
-                        lastReportedAdPlayhead = currentAdInfo.getAdPlayHead() / 1000D;
+                        lastReportedAdPlayhead =  Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
 
 
@@ -137,7 +138,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                         break;
                     case SKIPPED:
                         currentAdInfo = ((AdEvent.AdSkippedEvent) event).adInfo;
-                        lastReportedAdPlayhead = currentAdInfo.getAdPlayHead() / 1000D;
+                        lastReportedAdPlayhead =  Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
                         skipAdHandler();
                         break;
@@ -198,7 +199,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
 
     @Override
     public Double getAdDuration() {
-        Double adDuration = currentAdInfo != null ? (currentAdInfo.getAdDuration() / 1000D) : 0.0D;
+        Double adDuration = currentAdInfo != null ? (Long.valueOf(currentAdInfo.getAdDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue()) : 0.0D;
         log.d("getAdDuration getAdDuration " + adDuration);
         return adDuration;
     }
@@ -258,9 +259,9 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     }
 
     private void populateAdValues() {
-        lastReportedAdDuration = currentAdInfo.getAdDuration() / 1000D;
+        lastReportedAdDuration = Long.valueOf(currentAdInfo.getAdDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
         lastReportedAdTitle = currentAdInfo.getAdTitle();
-        lastReportedAdPlayhead = currentAdInfo.getAdPlayHead() / 1000D;
+        lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
         log.d("lastReportedAdDuration: " + lastReportedAdDuration);
         log.d("lastReportedAdTitle: " + lastReportedAdTitle);
         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
@@ -270,6 +271,16 @@ public class YouboraAdManager extends AdnalyzerGeneric {
         isFirstPlay = true;
         currentAdInfo = null;
         lastReportedAdDuration = super.getAdDuration();;
+        lastReportedAdTitle = super.getAdTitle();
+        lastReportedAdPlayhead = super.getAdPlayhead();
+    }
+
+    public void resetAllAdValues() {
+        isFirstPlay = true;
+        adBitrate = -1;
+        currentAdInfo = null;
+        lastReportedAdResource = super.getAdResource();
+        lastReportedAdDuration = super.getAdDuration();
         lastReportedAdTitle = super.getAdTitle();
         lastReportedAdPlayhead = super.getAdPlayhead();
     }

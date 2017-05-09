@@ -73,6 +73,10 @@ public class YouboraPlugin extends PKPlugin {
     @Override
     protected void onUpdateConfig(Object config) {
         log.d("youbora - onUpdateConfig");
+        pluginManager.resetAllValues();
+        if (adsManager != null) {
+            adsManager.resetAllAdValues();
+        }
         this.pluginConfig = (JsonObject) config;
         Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig, player);
         // Refresh options with updated media
@@ -83,9 +87,10 @@ public class YouboraPlugin extends PKPlugin {
     protected void onApplicationPaused() {
         log.d("YOUBORA onApplicationPaused");
         adsManager.endedAdHandler();
+        adsManager.resetAdValues();
         pluginManager.endedHandler();
         pluginManager.resetValues();
-        adsManager.resetAdValues();
+
     }
 
     @Override
