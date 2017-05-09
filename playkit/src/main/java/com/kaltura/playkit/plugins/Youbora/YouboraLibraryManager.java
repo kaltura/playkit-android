@@ -4,6 +4,7 @@ import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackParamsInfo;
 import com.kaltura.playkit.Player;
@@ -231,24 +232,32 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public Double getPlayhead() {
-        double currPos = Long.valueOf(player.getCurrentPosition()).doubleValue();
+        double currPos = Long.valueOf(player.getCurrentPosition()).doubleValue() / 1000;
         log.d("getPlayhead currPos = " + currPos);
-        return currPos;
+        return (currPos >= 0) ? currPos : 0;
     }
 
-//    public String getResource() {
-//        return this.mediaUrl;
-//    }
+    public String getResource() {
+        return lastReportedResource;
+    }
 
-//    public Double getMediaDuration() {
-//        double lastReportedMediaDuration  =  (mediaConfig == null) ? 0 : Long.valueOf(mediaConfig.getMediaEntry().getDuration()).doubleValue();
-//        log.d("lastReportedMediaDuration = " + lastReportedMediaDuration);
-//        return lastReportedMediaDuration;
-//    }
+    public Double getMediaDuration() {
+        double lastReportedMediaDuration  =  (mediaConfig == null) ? 0 : Long.valueOf(mediaConfig.getMediaEntry().getDuration()).doubleValue() / 1000;
+        log.d("lastReportedMediaDuration = " + lastReportedMediaDuration);
+        return lastReportedMediaDuration;
+    }
 
-//    public Boolean getIsLive() {
-//        return mediaConfig != null && (mediaConfig.getMediaEntry().getMediaType() == PKMediaEntry.MediaEntryType.Live);
-//    }
+    public String getTitle() {
+        if (mediaConfig == null || mediaConfig.getMediaEntry() == null) {
+            return "unknown";
+        } else {
+            return mediaConfig.getMediaEntry().getId();
+        }
+    }
+
+    public Boolean getIsLive() {
+        return mediaConfig != null && (mediaConfig.getMediaEntry().getMediaType() == PKMediaEntry.MediaEntryType.Live);
+    }
 
     private void sendReportEvent(PKEvent event) {
         String reportedEventName = event.eventType().name();
@@ -271,5 +280,4 @@ public class YouboraLibraryManager extends PluginGeneric {
         lastReportedThroughput = super.getThroughput();
         isFirstPlay = false;
     }
-
 }

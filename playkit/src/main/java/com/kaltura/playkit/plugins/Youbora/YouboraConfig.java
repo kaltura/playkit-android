@@ -65,10 +65,10 @@ public class YouboraConfig {
 
         Map<String, Object> device = new HashMap<>(1);
         device.put("id", null);
-        youboraLocalConfig.put("device", device);
+        //youboraLocalConfig.put("device", device);
 
         Map<String, Object> media = new HashMap<>(5);
-        media.put("isLive", false);
+        //media.put("isLive", false);
         media.put("cdn", null);
         youboraLocalConfig.put("media", media);
         mediaObject = media;
@@ -106,7 +106,7 @@ public class YouboraConfig {
         return youboraConfig;
     }
 
-    public static Map<String, Object> setYouboraMediaDuration(JsonObject pluginConfig, int newMediaDuration) {
+    public static Map<String, Object> setYouboraMediaDuration(JsonObject pluginConfig, double newMediaDuration) {
         mediaObject.put("duration", newMediaDuration);
         if (pluginConfig.has("media")){
             setYouboraConfigObject(mediaObject, pluginConfig.getAsJsonObject("media"), mediaConfigFieldNames, mediaBooleanConfigFieldNames);
@@ -132,7 +132,7 @@ public class YouboraConfig {
             log.d("Youbora playResource = " + playResource);
             mediaObject.put("resource", playResource);
             Long duration = mediaConfig.getMediaEntry().getDuration() / 1000;
-            log.d("Youbora update duration = " + duration.intValue());
+            log.d("Youbora update duration = " + duration.doubleValue());
 
             mediaObject.put("duration", duration.intValue()); //Duration should be sent in secs
         }

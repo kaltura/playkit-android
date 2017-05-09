@@ -187,14 +187,8 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     }
 
     @Override
-    public Double getMediaPlayhead() {
-        return this.plugin.getPlayhead() / 1000;
-    }
-
-    @Override
     public String getAdTitle() {
         log.d("getAdTitle ");
-
         return lastReportedAdTitle != null ? lastReportedAdTitle : "No Info";
     }
 
@@ -213,8 +207,11 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     }
 
     private void sendReportEvent(PKEvent event) {
+        if (event instanceof AdEvent && (event.eventType() == AdEvent.Type.PLAY_HEAD_CHANGED || event.eventType() == AdEvent.Type.AD_PROGRESS)) {
+            return;
+        }
         String reportedEventName = event.eventType().name();
-        if (event instanceof AdError ||event instanceof AdEvent) {
+        if (event instanceof AdError || event instanceof AdEvent) {
             messageBus.post(new YouboraEvent.YouboraReport(reportedEventName));
         }
     }
@@ -253,7 +250,6 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     @Override
     public String getAdResource() {
         log.d("getAdResource = " + lastReportedAdId);
-
         return lastReportedAdId;
     }
 }

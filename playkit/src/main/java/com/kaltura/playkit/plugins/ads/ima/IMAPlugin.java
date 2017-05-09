@@ -831,6 +831,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     private void initAdDisplayedCheckTimer() {
+        cancelAdDisplayedCheckTimer();
         adDisplayedCheckTimer = new Timer();
         TimerTask timerTask = new TimerTask() {
             @Override
