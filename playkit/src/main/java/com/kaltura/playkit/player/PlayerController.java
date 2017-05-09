@@ -160,6 +160,18 @@ public class PlayerController implements Player {
             public void showVideoSurface() {
                 setVideoSurfaceVisibility(true);
             }
+
+            @Override
+            public void hideVideoSubtitles() {
+                setVideoSubtitlesVisibility(false);
+
+            }
+
+            @Override
+            public void showVideoSubtitles() {
+                setVideoSubtitlesVisibility(true);
+
+            }
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         this.rootPlayerView.setLayoutParams(lp);
@@ -188,6 +200,28 @@ public class PlayerController implements Player {
         }
     }
 
+    private void setVideoSubtitlesVisibility(boolean isVisible) {
+        String visibilityFunction = "showVideoSubtitles";
+        if (!isVisible) {
+            visibilityFunction = "hideVideoSubtitles";
+        }
+
+        if (player == null) {
+            log.e("Error in " + visibilityFunction + " player is null");
+            return;
+        }
+
+        PlayerView playerView = player.getView();
+        if (playerView != null) {
+            if (isVisible) {
+                playerView.showVideoSubtitles();
+            } else {
+                playerView.hideVideoSubtitles();
+            }
+        } else {
+            log.e("Error in " + visibilityFunction + " playerView is null");
+        }
+    }
     @Override
     public Player.Settings getSettings() {
         return settings;
