@@ -10,6 +10,7 @@ import com.kaltura.playkit.OttEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.api.tvpapi.services.MediaMarkService;
+import com.kaltura.playkit.utils.Consts;
 
 /**
  * Created by zivilan on 08/12/2016.
@@ -53,7 +54,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
             return;
         }
         if (!"stop".equals(action)) {
-            lastKnownPlayerPosition = player.getCurrentPosition() / 1000;
+            lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
         RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObj, action,
                 mediaConfig.getMediaEntry().getId(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId, lastKnownPlayerPosition);
