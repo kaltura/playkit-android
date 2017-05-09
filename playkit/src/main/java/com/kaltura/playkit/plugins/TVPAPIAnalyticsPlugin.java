@@ -53,7 +53,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
             return;
         }
         if (!"stop".equals(action)) {
-            lastKnownPlayerPosition = player.getCurrentPosition();
+            lastKnownPlayerPosition = player.getCurrentPosition() / 1000;
         }
         RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObj, action,
                 mediaConfig.getMediaEntry().getId(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId, lastKnownPlayerPosition);
