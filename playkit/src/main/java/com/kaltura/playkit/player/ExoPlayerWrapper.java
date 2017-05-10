@@ -28,6 +28,7 @@ import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSource.Factory;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
@@ -56,11 +57,11 @@ import java.util.List;
 /**
  * Created by anton.afanasiev on 31/10/2016.
  */
-class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, MetadataRenderer.Output {
+class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, MetadataRenderer.Output, BandwidthMeter.EventListener {
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
 
-    private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
+    private DefaultBandwidthMeter bandwidthMeter;
 
     private EventLogger eventLogger;
     private EventListener eventListener;
@@ -94,6 +95,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private int sameErrorOccurrenceCounter = 0;
     private List<PKMetadata> metadataList = new ArrayList<>();
 
+    @Override
+    public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
+        sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+    }
+
     interface TracksInfoListener {
 
         void onTracksInfoReady(PKTracks PKTracks);
@@ -119,6 +125,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     ExoPlayerWrapper(Context context) {
         this.context = context;
+        bandwidthMeter = new DefaultBandwidthMeter(mainHandler,this);
         mediaDataSourceFactory = buildDataSourceFactory(true);
         exoPlayerView = new ExoPlayerView(context);
     }
@@ -148,7 +155,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private DefaultTrackSelector initializeTrackSelector() {
 
         TrackSelection.Factory videoTrackSelectionFactory =
-                new AdaptiveTrackSelection.Factory(BANDWIDTH_METER);
+                new AdaptiveTrackSelection.Factory(bandwidthMeter);
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, videoTrackSelectionFactory);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
@@ -203,24 +210,24 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     /**
      * Returns a new DataSource factory.
      *
-     * @param useBandwidthMeter Whether to set {@link #BANDWIDTH_METER} as a listener to the new
+     * @param useBandwidthMeter Whether to set {@link #bandwidthMeter} as a listener to the new
      *                          DataSource factory.
      * @return A new DataSource factory.
      */
     private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
-        return new DefaultDataSourceFactory(context, useBandwidthMeter ? BANDWIDTH_METER : null,
+        return new DefaultDataSourceFactory(context, useBandwidthMeter ? bandwidthMeter : null,
                 buildHttpDataSourceFactory(useBandwidthMeter));
     }
 
     /**
      * Returns a new HttpDataSource factory.
      *
-     * @param useBandwidthMeter Whether to set {@link #BANDWIDTH_METER} as a listener to the new
+     * @param useBandwidthMeter Whether to set {@link #bandwidthMeter} as a listener to the new
      *                          DataSource factory.
      * @return A new HttpDataSource factory.
      */
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
-        return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? BANDWIDTH_METER : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+        return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, false);
     }
 
@@ -275,10 +282,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void onLoadingChanged(boolean isLoading) {
         log.d("onLoadingChanged. isLoading => " + isLoading);
-        if (!isLoading) {
-            sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
-        }
-
     }
 
     @Override
@@ -590,11 +593,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public PlaybackInfo getPlaybackInfo() {
         PlaybackInfo paramsInfo = new PlaybackInfo(lastPlayedSource.toString(),
-                                                           trackSelectionHelper.getCurrentVideoBitrate(),
-                                                           trackSelectionHelper.getCurrentAudioBitrate(),
-                                                           BANDWIDTH_METER.getBitrateEstimate(),
-                                                           trackSelectionHelper.getCurrentVideoWidth(),
-                                                           trackSelectionHelper.getCurrentVideoHeight());
+                trackSelectionHelper.getCurrentVideoBitrate(),
+                trackSelectionHelper.getCurrentAudioBitrate(),
+                bandwidthMeter.getBitrateEstimate(),
+                trackSelectionHelper.getCurrentVideoWidth(),
+                trackSelectionHelper.getCurrentVideoHeight());
         return paramsInfo;
     }
 
