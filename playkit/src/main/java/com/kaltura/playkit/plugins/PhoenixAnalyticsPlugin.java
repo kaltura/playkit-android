@@ -59,6 +59,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private boolean isFirstPlay = true;
     private boolean intervalOn = false;
     private boolean timerWasCancelled = false;
+    private boolean isMediaFinished = false;
 
 
     public static final Factory factory = new Factory() {
@@ -85,6 +86,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         if (this.mediaConfig.getStartPosition() != -1){
             this.mContinueTime = this.mediaConfig.getStartPosition();
         }
+        isMediaFinished = false;
     }
 
     @Override
@@ -119,7 +121,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.pluginConfig = (JsonObject) config;
         this.mContext = context;
         this.messageBus = messageBus;
-        messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED);
+        messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED);
 
         log.d("onLoad");
     }
@@ -131,6 +133,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                 log.d("Player Event = " + ((PlayerEvent) event).type.name() + " , lastKnownPlayerPosition = " + lastKnownPlayerPosition);
                 switch (((PlayerEvent) event).type) {
                     case STOPPED:
+                        if(isMediaFinished) {
+                            return;
+                        }
                         sendAnalyticsEvent(PhoenixActionType.STOP);
                         timer.cancel();
                         timer = new java.util.Timer();
@@ -139,6 +144,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         timer.cancel();
                         timer = new java.util.Timer();
                         sendAnalyticsEvent(PhoenixActionType.FINISH);
+                        isMediaFinished = true;
                         break;
                     case ERROR:
                         timer.cancel();
@@ -166,6 +172,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             intervalOn = true;
                         }
                         break;
+                    case SEEKED:
+                    case REPLAY:
+                        //Receiving one of this events, mean that media position was reset.
+                        isMediaFinished = false;
+                        break;
                     default:
                         break;
                 }
@@ -183,9 +194,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             @Override
             public void run() {
                 sendAnalyticsEvent(PhoenixActionType.HIT);
-                lastKnownPlayerPosition = player.getCurrentPosition();
+                lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
                 if ((float) lastKnownPlayerPosition / player.getDuration() > MEDIA_ENDED_THRESHOLD){
                     sendAnalyticsEvent(PhoenixActionType.FINISH);
+                    isMediaFinished = true;
                 }
             }
         }, 0, mediaHitInterval); // Get media hit interval from plugin config
@@ -203,7 +215,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         String action = eventType.name().toLowerCase(); // used only for copmare
 
         if (!"stop".equals(action)) {
-            lastKnownPlayerPosition = player.getCurrentPosition();
+            lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
                 "media", mediaConfig.getMediaEntry().getId(), eventType.name(), lastKnownPlayerPosition, /*mediaConfig.getMediaEntry().getFileId()*/ fileId);
@@ -215,7 +227,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                     messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
                     messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString()));
                 }
-                log.d("onComplete send event: ");
+
+                log.d("onComplete send event: " + eventType);
             }
         });
         requestsExecutor.queue(requestBuilder.build());
