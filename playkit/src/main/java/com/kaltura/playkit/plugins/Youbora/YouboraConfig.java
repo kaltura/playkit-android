@@ -29,7 +29,6 @@ public class YouboraConfig {
     private static final Map<String, Object> propertiesObject;
     private static final Map<String, Object> extraParamsObject;
     private static final Map<String, Object> adsObject;
-    //private static final Map<String, Object> networkObject;
 
     private static String[] youboraConfigFieldNames = new String[]{"accountCode","username"};
     private static String[] youboraBooleanConfigFieldNames = new String[]{"haltOnError","enableAnalytics"};
