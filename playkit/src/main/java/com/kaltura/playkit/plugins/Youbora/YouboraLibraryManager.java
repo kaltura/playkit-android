@@ -178,7 +178,7 @@ public class YouboraLibraryManager extends PluginGeneric {
             String exceptionCause = "";
             if (playerErrorException.getCause() != null && playerErrorException.getCause().getClass() != null) {
                 exceptionClass = playerErrorException.getCause().getClass().getName();
-                errorMetadata = (playerErrorException.getCause().toString() != null) ? playerErrorException.getCause().toString() + "" : "NA";
+                errorMetadata = (playerErrorException.getCause().toString() != null) ? playerErrorException.getCause().toString() : "NA";
                 exceptionCause = playerErrorException.toString();
             }
             errorHandler(exceptionCause, exceptionClass, errorMetadata);
