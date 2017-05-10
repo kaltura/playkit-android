@@ -24,5 +24,7 @@ public abstract class PlayerView extends FrameLayout {
 
     public abstract void hideVideoSurface();
     public abstract void showVideoSurface();
+    public abstract void hideVideoSubtitles();
+    public abstract void showVideoSubtitles();
 
 }
