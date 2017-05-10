@@ -65,7 +65,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
                     messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
                     messageBus.post(new TVPapiAnalyticsEvent.TVPapiAnalyticsReport(eventType.toString()));
                 }
-                log.d("onComplete send event: ");
+                log.d("onComplete send event: " + eventType);
             }
         });
         requestsExecutor.queue(requestBuilder.build());
