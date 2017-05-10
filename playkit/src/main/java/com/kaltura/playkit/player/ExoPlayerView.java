@@ -24,8 +24,6 @@ import java.util.List;
  */
 
 public class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener, TextRenderer.Output{
-    private static final PKLog log = PKLog.get("ExoPlayerView");
-    private static final String TAG = ExoPlayerView.class.getSimpleName();
 
     private final View surfaceView;
     private final View posterView; // TODO should be changed to poster?
