@@ -104,8 +104,8 @@ public class PlayerController implements Player {
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());
                         break;
-                    case PLAYBACK_PARAMS_UPDATED:
-                        event = new PlayerEvent.PlaybackParamsUpdated(player.getPlaybackParamsInfo());
+                    case PLAYBACK_INFO_UPDATED:
+                        event = new PlayerEvent.PlaybackInfoUpdated(player.getPlaybackInfo());
                         break;
                     case ERROR:
                         event = player.getCurrentException();

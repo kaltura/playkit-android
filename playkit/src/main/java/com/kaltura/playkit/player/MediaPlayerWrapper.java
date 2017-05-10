@@ -11,7 +11,7 @@ import android.view.SurfaceHolder;
 
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PlaybackParamsInfo;
+import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.WidevineClassicDrm;
@@ -145,7 +145,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
         sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
-        sendDistinctEvent(PlayerEvent.Type.PLAYBACK_PARAMS_UPDATED);
+        sendDistinctEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
         sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
 
     }
@@ -347,8 +347,8 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public PlaybackParamsInfo getPlaybackParamsInfo() {
-        return new PlaybackParamsInfo(getWidevineAssetPlaybackUri(assetUri), -1, -1, -1, player.getVideoWidth(), player.getVideoHeight());
+    public PlaybackInfo getPlaybackInfo() {
+        return new PlaybackInfo(getWidevineAssetPlaybackUri(assetUri), -1, -1, -1, player.getVideoWidth(), player.getVideoHeight());
     }
 
     @Override

@@ -5,7 +5,7 @@ package com.kaltura.playkit;
  * Created by anton.afanasiev on 14/12/2016.
  */
 
-public class PlaybackParamsInfo {
+public class PlaybackInfo {
 
     private String mediaUrl;
     private long videoBitrate;
@@ -15,7 +15,7 @@ public class PlaybackParamsInfo {
     private long videoHeight;
 
 
-    public PlaybackParamsInfo(String mediaUrl, long videoBitrate, long audioBitrate, long videoThroughput, long videoWidth, long videoHeight) {
+    public PlaybackInfo(String mediaUrl, long videoBitrate, long audioBitrate, long videoThroughput, long videoWidth, long videoHeight) {
         this.mediaUrl = mediaUrl;
         this.videoBitrate = videoBitrate;
         this.audioBitrate = audioBitrate;

@@ -6,7 +6,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
-import com.kaltura.playkit.PlaybackParamsInfo;
+import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
@@ -96,12 +96,12 @@ public class YouboraLibraryManager extends PluginGeneric {
         @Override
         public void onEvent(PKEvent event) {
 
-            if (event instanceof PlayerEvent.PlaybackParamsUpdated) {
-                PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParamsUpdated) event).getPlaybackParamsInfo();
-                lastReportedBitrate    = Long.valueOf(currentPlaybackParams.getVideoBitrate()).doubleValue();
-                lastReportedThroughput = Long.valueOf(currentPlaybackParams.getVideoThroughput()).doubleValue();
-                lastReportedResource  = currentPlaybackParams.getMediaUrl();
-                lastReportedRendition = generateRendition(lastReportedBitrate, (int)currentPlaybackParams.getVideoWidth(), (int)currentPlaybackParams.getVideoHeight());
+            if (event instanceof PlayerEvent.PlaybackInfoUpdated) {
+                PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).getPlaybackInfo();
+                lastReportedBitrate    = Long.valueOf(currentPlaybackInfo.getVideoBitrate()).doubleValue();
+                lastReportedThroughput = Long.valueOf(currentPlaybackInfo.getVideoThroughput()).doubleValue();
+                lastReportedResource  = currentPlaybackInfo.getMediaUrl();
+                lastReportedRendition = generateRendition(lastReportedBitrate, (int)currentPlaybackInfo.getVideoWidth(), (int)currentPlaybackInfo.getVideoHeight());
                 return;
             }
 

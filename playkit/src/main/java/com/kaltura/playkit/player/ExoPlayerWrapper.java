@@ -38,7 +38,7 @@ import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaFormat;
-import com.kaltura.playkit.PlaybackParamsInfo;
+import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
@@ -112,7 +112,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
         @Override
         public void onTrackChanged() {
-            sendEvent(PlayerEvent.Type.PLAYBACK_PARAMS_UPDATED);
+            sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
         }
     };
 
@@ -276,7 +276,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     public void onLoadingChanged(boolean isLoading) {
         log.d("onLoadingChanged. isLoading => " + isLoading);
         if (!isLoading) {
-            sendEvent(PlayerEvent.Type.PLAYBACK_PARAMS_UPDATED);
+            sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
         }
 
     }
@@ -588,14 +588,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     }
 
     @Override
-    public PlaybackParamsInfo getPlaybackParamsInfo() {
-        PlaybackParamsInfo paramsInfo = new PlaybackParamsInfo(lastPlayedSource.toString(),
+    public PlaybackInfo getPlaybackInfo() {
+        PlaybackInfo paramsInfo = new PlaybackInfo(lastPlayedSource.toString(),
                                                            trackSelectionHelper.getCurrentVideoBitrate(),
                                                            trackSelectionHelper.getCurrentAudioBitrate(),
                                                            BANDWIDTH_METER.getBitrateEstimate(),
                                                            trackSelectionHelper.getCurrentVideoWidth(),
                                                            trackSelectionHelper.getCurrentVideoHeight());
-        //log.d("paramsInfo:" + paramsInfo.toString());
         return paramsInfo;
     }
 
