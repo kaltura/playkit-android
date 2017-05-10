@@ -184,7 +184,7 @@ public class YouboraLibraryManager extends PluginGeneric {
             errorHandler(exceptionCause, exceptionClass, errorMetadata);
         }
         else {
-            errorHandler(exceptionInfo.getException().toString(), event.eventType().toString());
+            errorHandler(errorMsg, event.eventType().toString());
         }
     }
 
