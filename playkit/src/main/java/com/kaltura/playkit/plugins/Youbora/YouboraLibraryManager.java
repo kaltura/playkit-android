@@ -169,6 +169,7 @@ public class YouboraLibraryManager extends PluginGeneric {
         PlayerEvent.ExceptionInfo exceptionInfo = (PlayerEvent.ExceptionInfo) event;
         if (exceptionInfo == null) {
             errorHandler(errorMsg, event.eventType().toString());
+            return;
         }
         Exception playerErrorException = exceptionInfo.getException();
         if (playerErrorException != null) {
