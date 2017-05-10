@@ -190,8 +190,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
 
     @Override
     public Double getAdDuration() {
-        Double adDuration = currentAdInfo != null ? (Long.valueOf(currentAdInfo.getAdDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue()) : 0.0D;
-        log.d("getAdDuration getAdDuration " + adDuration);
+        Double adDuration = currentAdInfo != null ? (Long.valueOf(currentAdInfo.getAdDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue()) : 0.0D;        
         return adDuration;
     }
 
