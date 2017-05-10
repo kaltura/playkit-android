@@ -1,6 +1,6 @@
 package com.kaltura.playkit.player;
 
-import com.kaltura.playkit.PlaybackParamsInfo;
+import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
@@ -160,7 +160,7 @@ interface PlayerEngine {
      * @return the playback params data object of the current media.
      *
      */
-    PlaybackParamsInfo getPlaybackParamsInfo();
+    PlaybackInfo getPlaybackInfo();
 
     /**
      * Return the ExceptionInfo object, which holds the last error that happened,
