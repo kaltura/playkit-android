@@ -280,12 +280,9 @@ public class YouboraLibraryManager extends PluginGeneric {
         isFirstPlay = true;
     }
 
-    public void resetAllValues() {
+    public void onUpdateConfig() {
+        resetValues();
         adCuePoints = null;
         lastReportedResource = "unknown";
-        lastReportedBitrate = super.getBitrate();
-        lastReportedRendition = super.getRendition();
-        lastReportedThroughput = super.getThroughput();
-        isFirstPlay = true;
     }
 }

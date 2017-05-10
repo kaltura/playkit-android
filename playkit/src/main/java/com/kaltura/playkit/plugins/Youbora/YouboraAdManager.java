@@ -265,13 +265,9 @@ public class YouboraAdManager extends AdnalyzerGeneric {
         lastReportedAdPlayhead = super.getAdPlayhead();
     }
 
-    public void resetAllAdValues() {
-        isFirstPlay = true;
+    public void onUpdateConfig() {
+        resetAdValues();
         adBitrate = -1;
-        currentAdInfo = null;
         lastReportedAdResource = super.getAdResource();
-        lastReportedAdDuration = super.getAdDuration();
-        lastReportedAdTitle = super.getAdTitle();
-        lastReportedAdPlayhead = super.getAdPlayhead();
     }
 }

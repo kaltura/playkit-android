@@ -73,9 +73,9 @@ public class YouboraPlugin extends PKPlugin {
     @Override
     protected void onUpdateConfig(Object config) {
         log.d("youbora - onUpdateConfig");
-        pluginManager.resetAllValues();
+        pluginManager.onUpdateConfig();
         if (adsManager != null) {
-            adsManager.resetAllAdValues();
+            adsManager.onUpdateConfig();
         }
         this.pluginConfig = (JsonObject) config;
         Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig, player);
@@ -139,12 +139,7 @@ public class YouboraPlugin extends PKPlugin {
             pluginManager.setOptions(opt);
         }
     };
-
-    //private void startMonitoring(Player player) {
-    //    log.d("start monitoring");
-    //
-    //}
-
+    
     private void setPluginOptions(){
         //update the isLive value
         if (pluginConfig != null && pluginConfig.has("media")) {
