@@ -45,7 +45,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
 
     public YouboraAdManager(PluginGeneric plugin, MessageBus messageBus) {
         super(plugin);
-        this.adnalyzerVersion = BuildConfig.VERSION_NAME + "-" + PlayKitManager.CLIENT_TAG;
+        this.adnalyzerVersion = BuildConfig.VERSION_NAME + "-" + getAdPlayerVersion();
         this.messageBus = messageBus;
 
         this.messageBus.listen(mEventListener, STATE_CHANGED);
@@ -208,7 +208,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     public String getAdPlayerVersion() {
         log.d("getAdPlayerVersion " + PlayKitManager.CLIENT_TAG);
 
-        return PlayKitManager.CLIENT_TAG;
+        return Consts.KALTURA + "-" + PlayKitManager.CLIENT_TAG;
     }
 
     private void sendReportEvent(PKEvent event) {

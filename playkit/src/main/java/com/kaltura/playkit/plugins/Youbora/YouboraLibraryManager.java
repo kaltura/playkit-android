@@ -63,7 +63,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     protected void init() {
         super.init();
         this.pluginName = YouboraPlugin.factory.getName();
-        this.pluginVersion = BuildConfig.VERSION_NAME + "-"+ PlayKitManager.CLIENT_TAG;
+        this.pluginVersion = BuildConfig.VERSION_NAME + "-"+ getPlayerVersion();
         //ViewManager.setMonitoringInterval(MONITORING_INTERVAL); // needed only if  bufferedHandler() is not used
     }
 
@@ -120,9 +120,9 @@ public class YouboraLibraryManager extends PluginGeneric {
                     case ENDED:
                         if (!isFirstPlay && ((adCuePoints == null) || (adCuePoints != null && !adCuePoints.hasPostRoll()))) {
                             endedHandler();
+                            isFirstPlay = true;
                             adCuePoints = null;
                         }
-                        isFirstPlay = true;
                         break;
                     case ERROR:
                         if (!isFirstPlay) {
@@ -189,6 +189,7 @@ public class YouboraLibraryManager extends PluginGeneric {
             case ALL_ADS_COMPLETED:
                 if (adCuePoints != null && adCuePoints.hasPostRoll()) {
                     endedHandler();
+                    isFirstPlay = true;
                     adCuePoints = null;
                 }
                 break;
@@ -230,7 +231,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public String getPlayerVersion() {
-        return PlayKitManager.CLIENT_TAG;
+        return Consts.KALTURA + "-" + PlayKitManager.CLIENT_TAG;
     }
 
     public Double getPlayhead() {
