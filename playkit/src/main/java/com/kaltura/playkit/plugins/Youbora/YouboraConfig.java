@@ -49,25 +49,16 @@ public class YouboraConfig {
         youboraLocalConfig.put("parseHLS", false);
         youboraLocalConfig.put("parseCDNNodeHost", false);
         youboraLocalConfig.put("httpSecure", false);
-        //youboraLocalConfig.put("enableNiceBuffer", true);
-        //youboraLocalConfig.put("enableNiceSeek", true);
         youboraLocalConfig.put("accountCode", "kalturatest");
         youboraLocalConfig.put("transactionCode", "");
         youboraLocalConfig.put("haltOnError", true);
+        
         youboraConfigObject = youboraLocalConfig;
-
-        //Map<String, Object> network = new HashMap<>(2);
-        //network.put("ip", "");
-        //network.put("isp", "");
-        //youboraLocalConfig.put("network", network);
-        //networkObject = network;
 
         Map<String, Object> device = new HashMap<>(1);
         device.put("id", null);
-        //youboraLocalConfig.put("device", device);
 
         Map<String, Object> media = new HashMap<>(5);
-        //media.put("isLive", false);
         media.put("cdn", null);
         youboraLocalConfig.put("media", media);
         mediaObject = media;
