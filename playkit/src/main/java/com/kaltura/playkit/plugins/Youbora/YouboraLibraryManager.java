@@ -30,8 +30,6 @@ public class YouboraLibraryManager extends PluginGeneric {
 
     private static final PKLog log = PKLog.get("YouboraLibraryManager");
 
-    //private static final long MONITORING_INTERVAL = 200L;
-
     private Player player;
     private MessageBus messageBus;
     private PKMediaConfig mediaConfig;
@@ -64,7 +62,6 @@ public class YouboraLibraryManager extends PluginGeneric {
         super.init();
         this.pluginName = YouboraPlugin.factory.getName();
         this.pluginVersion = BuildConfig.VERSION_NAME + "-"+ getPlayerVersion();
-        //ViewManager.setMonitoringInterval(MONITORING_INTERVAL); // needed only if  bufferedHandler() is not used
     }
 
     private void onEvent(PlayerEvent.StateChanged event) {
