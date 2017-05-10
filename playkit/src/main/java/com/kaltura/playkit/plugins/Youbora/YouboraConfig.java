@@ -1,14 +1,19 @@
 package com.kaltura.playkit.plugins.Youbora;
 
+import android.net.Uri;
+
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
-import com.kaltura.playkit.PlayKitManager;
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.player.SourceSelector;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
 
 /**
  * Created by zivilan on 17/11/2016.
@@ -24,7 +29,6 @@ public class YouboraConfig {
     private static final Map<String, Object> propertiesObject;
     private static final Map<String, Object> extraParamsObject;
     private static final Map<String, Object> adsObject;
-    private static final Map<String, Object> networkObject;
 
     private static String[] youboraConfigFieldNames = new String[]{"accountCode","username"};
     private static String[] youboraBooleanConfigFieldNames = new String[]{"haltOnError","enableAnalytics"};
@@ -33,46 +37,33 @@ public class YouboraConfig {
     private static String[] mediaBooleanConfigFieldNames = new String[]{"isLive"};
 
     private static String[] adsConfigFieldNames = new String[]{"title","campaign"};
-    private static String[] adsBooleanConfigFieldNames = new String[]{"adsExpected"};
+    private static String[] adsBooleanConfigFieldNames = new String[]{};
 
     private static String[] propertiesConfigFieldNames = new String[]{"genre","type","transaction_type","year","cast","director","owner","parental","price","rating","audioType","audioChannels"
                                             ,"device","quality"};
-    private static String[] extraConfigFieldNames = new String[]{"param2","param3","param4","param5","param6","param7","param8","param9","param10"};
+    private static String[] extraConfigFieldNames = new String[]{"param1","param2","param3","param4","param5","param6","param7","param8","param9","param10"};
 
     static {
         HashMap<String, Object> youboraLocalConfig = new HashMap<>(20);
         youboraLocalConfig.put("enableAnalytics", true);
         youboraLocalConfig.put("parseHLS", false);
         youboraLocalConfig.put("parseCDNNodeHost", false);
-        youboraLocalConfig.put("hashTitle", true);
         youboraLocalConfig.put("httpSecure", false);
-        youboraLocalConfig.put("enableNiceBuffer", true);
-        youboraLocalConfig.put("enableNiceSeek", true);
         youboraLocalConfig.put("accountCode", "kalturatest");
         youboraLocalConfig.put("transactionCode", "");
-        youboraLocalConfig.put("isBalanced", "0");
-        youboraLocalConfig.put("isResumed", "0");
         youboraLocalConfig.put("haltOnError", true);
+        
         youboraConfigObject = youboraLocalConfig;
-
-        Map<String, Object> network = new HashMap<>(2);
-        network.put("ip", "");
-        network.put("isp", "");
-        youboraLocalConfig.put("network", network);
-        networkObject = network;
 
         Map<String, Object> device = new HashMap<>(1);
         device.put("id", null);
-        youboraLocalConfig.put("device", device);
 
         Map<String, Object> media = new HashMap<>(5);
-        media.put("isLive", false);
         media.put("cdn", null);
         youboraLocalConfig.put("media", media);
         mediaObject = media;
 
         Map<String, Object> ads = new HashMap<>(6);
-        ads.put("adsExpected", false);
         ads.put("resource", null);
         ads.put("position", null);
         ads.put("duration", null);
@@ -85,7 +76,6 @@ public class YouboraConfig {
         propertiesObject = properties;
 
         Map<String, Object> extraParams = new HashMap<>(10);
-        extraParams.put("param1", PlayKitManager.CLIENT_TAG);
         youboraLocalConfig.put("extraParams", extraParams);
         extraParamsObject = extraParams;
 
@@ -101,11 +91,39 @@ public class YouboraConfig {
         return youboraConfig;
     }
 
+    public static Map<String, Object> setYouboraAdsConfig(JsonObject pluginConfig) {
+        setYouboraConfigObject(adsObject, pluginConfig.getAsJsonObject("ads"), adsConfigFieldNames, adsBooleanConfigFieldNames);
+        return youboraConfig;
+    }
+
+    public static Map<String, Object> setYouboraMediaDuration(JsonObject pluginConfig, double newMediaDuration) {
+        mediaObject.put("duration", newMediaDuration);
+        if (pluginConfig.has("media")){
+            setYouboraConfigObject(mediaObject, pluginConfig.getAsJsonObject("media"), mediaConfigFieldNames, mediaBooleanConfigFieldNames);
+        }
+        return youboraConfig;
+    }
     private static void setYouboraConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig, Player player){
+        log.d( "YouboraConfig setYouboraConfig");
+
         youboraConfig = defaultYouboraConfig;
         if (mediaConfig != null) {
-            mediaObject.put("resource", !mediaConfig.getMediaEntry().getSources().isEmpty()? mediaConfig.getMediaEntry().getSources().get(0).getUrl():"");
-            Long duration = player.getDuration() / 1000;
+            PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
+
+            String playResource = source.getUrl();
+            Uri url = Uri.parse(source.getUrl());
+            if (url.getPath().contains("/playManifest/")) {
+                Uri alt = url.buildUpon()
+                        .appendQueryParameter("clientTag", CLIENT_TAG)
+                        .appendQueryParameter("playSessionId", player.getSessionId().toString())
+                        .build();
+                playResource = alt.toString();
+            }
+            log.d("Youbora playResource = " + playResource);
+            mediaObject.put("resource", playResource);
+            Long duration = mediaConfig.getMediaEntry().getDuration() / 1000;
+            log.d("Youbora update duration = " + duration.doubleValue());
+
             mediaObject.put("duration", duration.intValue()); //Duration should be sent in secs
         }
         if (pluginConfig != null){

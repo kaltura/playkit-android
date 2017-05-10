@@ -15,7 +15,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PlayKitManager;
-import com.kaltura.playkit.PlaybackParamsInfo;
+import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.api.ovp.services.LiveStatsService;
@@ -133,9 +133,9 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                     case PAUSE:
                         stopLiveEvents();
                         break;
-                    case PLAYBACK_PARAMS_UPDATED:
-                        PlaybackParamsInfo currentPlaybackParams = ((PlayerEvent.PlaybackParamsUpdated) event).getPlaybackParamsInfo();
-                        lastReportedBitrate = currentPlaybackParams.getVideoBitrate();
+                    case PLAYBACK_INFO_UPDATED:
+                        PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).getPlaybackInfo();
+                        lastReportedBitrate = currentPlaybackInfo.getVideoBitrate();
                     default:
                         break;
                 }
