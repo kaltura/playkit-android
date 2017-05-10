@@ -34,15 +34,6 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     private Double lastReportedAdPlayhead;
     private Double lastReportedAdDuration;
 
-//
-//    ads: {
-//                title: "adTitleTest",
-//                duration: 10,
-//                resource: "http://yourhost.com/youradmedia.m3u8",
-//                position: 2,
-//                campaign: "Christmas"
-//    },
-
     public YouboraAdManager(PluginGeneric plugin, MessageBus messageBus) {
         super(plugin);
         this.adnalyzerVersion = BuildConfig.VERSION_NAME + "-" + getAdPlayerVersion();
