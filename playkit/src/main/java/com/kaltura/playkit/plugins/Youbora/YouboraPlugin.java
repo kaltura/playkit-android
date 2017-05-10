@@ -86,16 +86,22 @@ public class YouboraPlugin extends PKPlugin {
     @Override
     protected void onApplicationPaused() {
         log.d("YOUBORA onApplicationPaused");
-        adsManager.endedAdHandler();
-        adsManager.resetAdValues();
-        pluginManager.endedHandler();
-        pluginManager.resetValues();
+        if (adsManager != null) {
+            adsManager.endedAdHandler();
+            adsManager.resetAdValues();
+        }
+        if (pluginManager != null) {
+            pluginManager.endedHandler();
+            pluginManager.resetValues();
+        }
 
     }
 
     @Override
     protected void onApplicationResumed() {
-        pluginManager.playHandler();
+        if (pluginManager != null) {
+            pluginManager.playHandler();
+        }
     }
 
     @Override
