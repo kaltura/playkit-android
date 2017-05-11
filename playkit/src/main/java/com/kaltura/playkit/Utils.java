@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.google.gson.JsonObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,6 +86,13 @@ public class Utils {
             output.put(key, c.cast(input.getParcelable(key)));
         }
         return output;
+    }
+
+    public static boolean isJsonObjectValueValid(JsonObject jsonObject, String key) {
+        if (jsonObject.has(key) && !jsonObject.get(key).isJsonNull()) {
+            return true;
+        }
+        return false;
     }
 
 }

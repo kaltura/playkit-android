@@ -18,6 +18,7 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.api.ovp.services.LiveStatsService;
 import com.kaltura.playkit.utils.Consts;
 
@@ -32,8 +33,10 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("KalturaLiveStatsPlugin");
     private static final String TAG = "KalturaLiveStatsPlugin";
 
-    private final String BASE_URL = "https://livestats.kaltura.com/api_v3/index.php";
-
+    private final String DEFAULT_BASE_URL = "https://livestats.kaltura.com/api_v3/index.php";
+    private String baseUrl;
+    private int partnerId;
+    private String entryId;
     private boolean isBuffering = false;
 
     public enum KLiveStatsEvent {
@@ -100,6 +103,26 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
+        if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
+            baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
+        } else {
+            baseUrl = DEFAULT_BASE_URL;
+        }
+        if (Utils.isJsonObjectValueValid(pluginConfig, "partnerId")) {
+            partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
+        } else {
+            partnerId = 0;
+            log.e("Error KalturaStats partnetId is missing");
+        }
+        if (Utils.isJsonObjectValueValid(pluginConfig, "entryId")) {
+            entryId = pluginConfig.getAsJsonPrimitive("entryId").getAsString();
+        } else {
+            // in case of OVP entry id is anyway the ID needed it only for OTT
+            entryId = mediaConfig.getMediaEntry().getId();
+            if (entryId != null && !entryId.contains("_")) {
+                log.e("Error KalturaStats entryId was given as MEDIA_ID instead of entryId");
+            }
+        }
         eventIdx = 0;
         this.mediaConfig = mediaConfig;
     }
@@ -208,9 +231,6 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     private void sendLiveEvent(final long bufferTime) {
         String sessionId = (player.getSessionId() != null) ? player.getSessionId().toString() : "";
-        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : BASE_URL;
-        int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 0;
-        String entryId = pluginConfig.has("entryId") ? pluginConfig.getAsJsonPrimitive("entryId").getAsString() : mediaConfig.getMediaEntry().getId();
 
         // Parameters for the request -
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
