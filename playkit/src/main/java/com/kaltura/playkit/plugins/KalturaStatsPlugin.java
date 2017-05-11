@@ -243,8 +243,10 @@ public class KalturaStatsPlugin extends PKPlugin {
                     case CAN_PLAY:
                         sendWidgetLoaded();
                         sendMediaLoaded();
+                        break;
+                    case PLAYING:
                         if (isFirstPlay) {
-                            log.d("CAN_PLAY sending KStatsEvent.PLAY");
+                            log.d("FIRST PLAYBACK sending KStatsEvent.PLAY");
                             sendAnalyticsEvent(KStatsEvent.PLAY);
                             isFirstPlay = false;
                         }
