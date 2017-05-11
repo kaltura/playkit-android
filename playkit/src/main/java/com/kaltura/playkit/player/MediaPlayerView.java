@@ -67,6 +67,16 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
         surfaceView.setVisibility(VISIBLE);
     }
 
+    @Override
+    public void hideVideoSubtitles() {
+
+    }
+
+    @Override
+    public void showVideoSubtitles() {
+
+    }
+
     private View initPosterView() {
         View posterView = new View(getContext());
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);

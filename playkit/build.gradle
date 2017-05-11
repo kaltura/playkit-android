@@ -47,7 +47,7 @@ dependencies {
     compile 'com.android.support:mediarouter-v7:25.3.1'
 
     // Youbora Analytics
-    compile files('lib/YouboraLib-5.3.0.jar')
+    compile files('lib/YouboraLib-5.3.10.jar')
 
     // Tests
     testCompile 'junit:junit:4.12'
