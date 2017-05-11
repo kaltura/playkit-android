@@ -31,7 +31,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final String TAG = "PhoenixAnalytics";
     private static final double MEDIA_ENDED_THRESHOLD = 0.98;
 
-    public enum PhoenixActionType{
+    public enum PhoenixActionType {
         HIT,
         PLAY,
         STOP,
@@ -83,7 +83,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         isFirstPlay = true;
         this.mediaConfig = mediaConfig;
-        if (this.mediaConfig.getStartPosition() != -1){
+        if (this.mediaConfig.getStartPosition() != -1) {
             this.mContinueTime = this.mediaConfig.getStartPosition();
         }
         isMediaFinished = false;
@@ -133,7 +133,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                 log.d("Player Event = " + ((PlayerEvent) event).type.name() + " , lastKnownPlayerPosition = " + lastKnownPlayerPosition);
                 switch (((PlayerEvent) event).type) {
                     case STOPPED:
-                        if(isMediaFinished) {
+                        if (isMediaFinished) {
                             return;
                         }
                         sendAnalyticsEvent(PhoenixActionType.STOP);
@@ -155,19 +155,25 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         sendAnalyticsEvent(PhoenixActionType.LOAD);
                         break;
                     case PAUSE:
+                        if (isMediaFinished) {
+                            return;
+                        }
                         sendAnalyticsEvent(PhoenixActionType.PAUSE);
                         timer.cancel();
                         timer = new java.util.Timer();
                         intervalOn = false;
                         break;
                     case PLAY:
+                        if (isMediaFinished) {
+                            return;
+                        }
                         if (isFirstPlay) {
                             isFirstPlay = false;
                             sendAnalyticsEvent(PhoenixActionType.FIRST_PLAY);
                         } else {
                             sendAnalyticsEvent(PhoenixActionType.PLAY);
                         }
-                        if (!intervalOn || !timerWasCancelled){
+                        if (!intervalOn || !timerWasCancelled) {
                             startMediaHitInterval();
                             intervalOn = true;
                         }
@@ -187,15 +193,15 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     /**
      * Media Hit analytics event
      */
-    private void startMediaHitInterval(){
+    private void startMediaHitInterval() {
         log.d("timer interval");
-        int mediaHitInterval = pluginConfig.has("timerInterval")? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
+        int mediaHitInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 sendAnalyticsEvent(PhoenixActionType.HIT);
                 lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
-                if ((float) lastKnownPlayerPosition / player.getDuration() > MEDIA_ENDED_THRESHOLD){
+                if ((float) lastKnownPlayerPosition / player.getDuration() > MEDIA_ENDED_THRESHOLD) {
                     sendAnalyticsEvent(PhoenixActionType.FINISH);
                     isMediaFinished = true;
                 }
@@ -205,13 +211,14 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     /**
      * Send Bookmark/add event using Kaltura Phoenix Rest API
+     *
      * @param eventType - Enum stating the event type to send
      */
-    protected void sendAnalyticsEvent(final PhoenixActionType eventType){
-        String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"464302";
-        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://api-preprod.ott.kaltura.com/v4_1/api_v3/";
-        String ks = pluginConfig.has("ks")? pluginConfig.getAsJsonPrimitive("ks").getAsString():"djJ8MTk4fN86RC6KBjyHtmG9bIBounF1ewb1SMnFNtAvaxKIAfHUwW0rT4GAYQf8wwUKmmRAh7G0olZ7IyFS1FTpwskuqQPVQwrSiy_J21kLxIUl_V9J";
-        int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt():198;
+    protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
+        String fileId = pluginConfig.has("fileId") ? pluginConfig.getAsJsonPrimitive("fileId").getAsString() : "464302";
+        String baseUrl = pluginConfig.has("baseUrl") ? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString() : "http://api-preprod.ott.kaltura.com/v4_1/api_v3/";
+        String ks = pluginConfig.has("ks") ? pluginConfig.getAsJsonPrimitive("ks").getAsString() : "djJ8MTk4fN86RC6KBjyHtmG9bIBounF1ewb1SMnFNtAvaxKIAfHUwW0rT4GAYQf8wwUKmmRAh7G0olZ7IyFS1FTpwskuqQPVQwrSiy_J21kLxIUl_V9J";
+        int partnerId = pluginConfig.has("partnerId") ? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt() : 198;
         String action = eventType.name().toLowerCase(); // used only for copmare
 
         if (!"stop".equals(action)) {
@@ -223,7 +230,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
-                if (response.isSuccess() && response.getError() != null && response.getError().getCode().equals("4001")){
+                if (response.isSuccess() && response.getError() != null && response.getError().getCode().equals("4001")) {
                     messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
                     messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString()));
                 }
