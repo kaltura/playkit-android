@@ -12,8 +12,11 @@ public interface PKAdInfo {
     String   getAdContentType();
     int      getAdWidth();
     int      getAdHeight();
-    int      getAdPodCount();
-    int      getAdPodPosition();
+    int      getTotalAdsInPod();
+    int      getAdIndexInPod();
+    int      getPodCount();
+    int      getPodIndex();
+    boolean  isBumper();
     long     getAdPodTimeOffset();
     long     getAdDuration();
     long     getAdPlayHead();
