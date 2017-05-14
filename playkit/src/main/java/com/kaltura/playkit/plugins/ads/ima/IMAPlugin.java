@@ -160,6 +160,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         //----------------------------//
         adConfig = parseConfig(config);
         adUiContainer = player.getView();
+        imaSetup();
     }
 
     private static IMAConfig parseConfig(Object config) {
@@ -236,7 +237,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         this.mediaConfig = mediaConfig;
         isAdRequested = false;
         isAdDisplayed = false;
-        imaSetup();
         requestAdsFromIMA(adConfig.getAdTagURL());
     }
 
@@ -898,8 +898,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         int adWidth               = ad.getWidth();
         int totalAdsInPod         = ad.getAdPodInfo().getTotalAds();
         int adIndexInPod          = ad.getAdPodInfo().getAdPosition();   // index starts in 1
-        int podIndex              = ad.getAdPodInfo().getPodIndex() + 1; // index starts in 0
         int podCount              = (adsManager != null && adsManager.getAdCuePoints() != null) ? adsManager.getAdCuePoints().size() : 0;
+        int podIndex              = (ad.getAdPodInfo().getPodIndex() >=  0) ? ad.getAdPodInfo().getPodIndex() + 1 : podCount; // index starts in 0
         boolean isBumper          = ad.getAdPodInfo().isBumper();
         long adPodTimeOffset      = (long)(ad.getAdPodInfo().getTimeOffset() * Consts.MILLISECONDS_MULTIPLIER);
 

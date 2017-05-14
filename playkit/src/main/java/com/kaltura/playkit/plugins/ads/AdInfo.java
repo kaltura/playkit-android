@@ -43,9 +43,10 @@ public class AdInfo implements PKAdInfo {
         this.adHeight        = adHeight;
         this.adWidth         = adWidth;
         this.totalAdsInPod   = totalAdsInPod;
-        this.adIndexInPod = adIndexInPod;
-        this.podIndex = currentPodIndex;
-        this.podCount      = podCount;
+        this.adIndexInPod    = adIndexInPod;
+        this.podIndex        = currentPodIndex;
+        this.podCount        = podCount;
+        this.isBumper        = isBumper;
         this.adPodTimeOffset = adPodTimeOffset;
     }
 
@@ -161,6 +162,7 @@ public class AdInfo implements PKAdInfo {
         } else {
             adType = "Pre-Roll";
         }
-        return "AdType=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " contentType = " + adContnentType + " adCount = " + adIndexInPod + "/" + totalAdsInPod;
+        return "AdType=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " isBumper=" + isBumper + " contentType = " + adContnentType +
+                " adCount = " + adIndexInPod + "/" + totalAdsInPod +  " podCount = " + podIndex +  "/" + podCount;
     }
 }
