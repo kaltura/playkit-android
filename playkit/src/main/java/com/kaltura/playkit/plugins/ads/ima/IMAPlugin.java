@@ -153,7 +153,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     log.d("Received:PlayerEvent:" + event.eventType().name());
                     AdCuePoints adCuePoints = new AdCuePoints(getAdCuePoints());
                     if (event.eventType() == PlayerEvent.Type.ENDED) {
-                        if (!adCuePoints.hasPostRoll() || adInfo == null) {
+                        if (isAllAdsCompleted || !adCuePoints.hasPostRoll() || adInfo == null || (adInfo != null && adInfo.getAdIndexInPod() == adInfo.getTotalAdsInPod())) {
                             log.d("contentCompleted on ended");
                             contentCompleted();
                         } else {
