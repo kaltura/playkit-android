@@ -1,6 +1,9 @@
 package com.kaltura.playkit;
 
 import com.kaltura.playkit.player.PKTracks;
+import com.kaltura.playkit.player.metadata.PKMetadata;
+
+import java.util.List;
 
 /**
  * Created by Noam Tamim @ Kaltura on 24/10/2016.
@@ -8,7 +11,7 @@ import com.kaltura.playkit.player.PKTracks;
 
 
 public class PlayerEvent implements PKEvent {
-    
+
     public static class Generic extends PlayerEvent {
         public Generic(Type type) {
             super(type);
@@ -25,7 +28,7 @@ public class PlayerEvent implements PKEvent {
             this.oldState = oldState;
         }
     }
-    
+
     public static class DurationChanged extends PlayerEvent {
 
         public final long duration;
@@ -40,7 +43,7 @@ public class PlayerEvent implements PKEvent {
 
         private final PKTracks tracksInfo;
 
-        public TracksAvailable(PKTracks tracksInfo){
+        public TracksAvailable(PKTracks tracksInfo) {
             super(Type.TRACKS_AVAILABLE);
             this.tracksInfo = tracksInfo;
         }
@@ -64,16 +67,16 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
-    public static class PlaybackParamsUpdated extends PlayerEvent {
-        private PlaybackParamsInfo playbackParamsInfo;
+    public static class PlaybackInfoUpdated extends PlayerEvent {
+        private PlaybackInfo playbackInfo;
 
-        public PlaybackParamsUpdated(PlaybackParamsInfo playbackParamsInfo){
-            super(Type.PLAYBACK_PARAMS_UPDATED);
-            this.playbackParamsInfo = playbackParamsInfo;
+        public PlaybackInfoUpdated(PlaybackInfo playbackInfo) {
+            super(Type.PLAYBACK_INFO_UPDATED);
+            this.playbackInfo = playbackInfo;
         }
 
-        public PlaybackParamsInfo getPlaybackParamsInfo() {
-            return playbackParamsInfo;
+        public PlaybackInfo getPlaybackInfo() {
+            return playbackInfo;
         }
     }
 
@@ -97,6 +100,20 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class MetadataAvailable extends PlayerEvent {
+
+        private List<PKMetadata> metadataList;
+
+        public MetadataAvailable(List<PKMetadata> metadataList) {
+            super(Type.METADATA_AVAILABLE);
+            this.metadataList = metadataList;
+        }
+
+        public List<PKMetadata> getMetadataList() {
+            return metadataList;
+        }
+    }
+
     public final Type type;
 
     public PlayerEvent(Type type) {
@@ -117,8 +134,10 @@ public class PlayerEvent implements PKEvent {
         SEEKING,   //  Sent when a seek operation begins.
         TRACKS_AVAILABLE, // Sent when track info is available.
         REPLAY, //Sent when replay happened.
-        PLAYBACK_PARAMS_UPDATED, // Sent event that notify about changes in the playback parameters. When bitrate of the video or audio track changes or new media loaded. Holds the PlaybackParamsInfo.java object with relevant data.
-        VOLUME_CHANGED // Sent when volume is changed.
+        PLAYBACK_INFO_UPDATED, // Sent event that notify about changes in the playback parameters. When bitrate of the video or audio track changes or new media loaded. Holds the PlaybackInfo.java object with relevant data.
+        VOLUME_CHANGED, // Sent when volume is changed.
+        STOPPED, // sent when stop player api is called
+        METADATA_AVAILABLE, // Sent when there is metadata available for this entry.
     }
 
     @Override

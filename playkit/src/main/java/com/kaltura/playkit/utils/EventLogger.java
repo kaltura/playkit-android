@@ -8,7 +8,7 @@ import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
-import com.google.android.exoplayer2.drm.StreamingDrmSessionManager;
+import com.google.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataRenderer;
 import com.google.android.exoplayer2.source.AdaptiveMediaSourceEventListener;
@@ -21,11 +21,11 @@ import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import java.io.IOException;
 
 /**
- * Created by anton.afanasiev on 31/10/2016.
+ * @hide
  */
 
 public class EventLogger implements ExoPlayer.EventListener, AudioRendererEventListener, VideoRendererEventListener,  MetadataRenderer.Output,
-        AdaptiveMediaSourceEventListener, ExtractorMediaSource.EventListener, StreamingDrmSessionManager.EventListener {
+        AdaptiveMediaSourceEventListener, ExtractorMediaSource.EventListener, DefaultDrmSessionManager.EventListener {
 
 
 
@@ -96,6 +96,16 @@ public class EventLogger implements ExoPlayer.EventListener, AudioRendererEventL
 
     @Override
     public void onDrmSessionManagerError(Exception e) {
+
+    }
+
+    @Override
+    public void onDrmKeysRestored() {
+
+    }
+
+    @Override
+    public void onDrmKeysRemoved() {
 
     }
 

@@ -4,10 +4,13 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKMediaConfig;
+import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
+
+import java.util.UUID;
 
 /**
  * Created by zivilan on 11/12/2016.
@@ -19,17 +22,33 @@ public class MockPlayer implements Player {
     private long currentPosition = 0;
 
     @Override
-    public void prepare(@NonNull PlayerConfig.Media playerConfig) {
+    public Settings getSettings() {
+        return new Settings() {
+
+            @Override
+            public Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
+                return this;
+            }
+
+            @Override
+            public Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
+                return this;
+            }
+        };
+    }
+
+    @Override
+    public void prepare(@NonNull PKMediaConfig playerConfig) {
 
     }
 
     @Override
-    public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
+    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
 
     }
 
     @Override
-    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
+    public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
 
     }
 
@@ -51,6 +70,11 @@ public class MockPlayer implements Player {
     @Override
     public void destroy() {
 
+    }
+
+    @Override
+    public void stop() {
+       // stop player
     }
 
     @Override
@@ -120,6 +144,11 @@ public class MockPlayer implements Player {
 
     @Override
     public AdController getAdController() {
+        return null;
+    }
+
+    @Override
+    public UUID getSessionId() {
         return null;
     }
 

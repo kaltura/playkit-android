@@ -22,7 +22,7 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.LocalAssetsManager;
-import com.kaltura.playkit.LocalDrmStorage;
+import com.kaltura.playkit.LocalDataStore;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.player.MediaSupport;
 
@@ -40,12 +40,12 @@ class WidevineModularAdapter extends DrmAdapter {
     private static final PKLog log = PKLog.get("WidevineModularAdapter");
 
     private Context context;
-    private final LocalDrmStorage localDrmStorage;
+    private final LocalDataStore localDataStore;
 
 
-    WidevineModularAdapter(Context context, LocalDrmStorage localDrmStorage) {
+    WidevineModularAdapter(Context context, LocalDataStore localDataStore) {
         this.context = context;
-        this.localDrmStorage = localDrmStorage;
+        this.localDataStore = localDataStore;
     }
 
     @Override
@@ -106,7 +106,7 @@ class WidevineModularAdapter extends DrmAdapter {
         // Provide keyResponse
         try {
             byte[] offlineKeyId = session.provideKeyResponse(keyResponse);
-            localDrmStorage.save(encodeToString(initData), offlineKeyId);
+            localDataStore.save(encodeToString(initData), offlineKeyId);
         } catch (DeniedByServerException e) {
             throw new RegisterException("Request denied by server", e);
         }
@@ -135,12 +135,17 @@ class WidevineModularAdapter extends DrmAdapter {
     private boolean unregisterAsset(String localAssetPath, String assetId) throws RegisterException {
 
         SimpleDashParser dash = parseDash(localAssetPath, assetId);
+        if (!dash.hasContentProtection) {
+            // Not protected -- nothing to do.
+            return true;
+        }
+
         // obtain key with which we will load the saved keySetId.
         String key = encodeToString(dash.widevineInitData);
 
         byte[] keySetId;
         try {
-            keySetId = localDrmStorage.load(key);
+            keySetId = localDataStore.load(key);
         } catch (FileNotFoundException e) {
             throw new RegisterException("Can't unregister -- keySetId not found", e);
         }
@@ -155,7 +160,7 @@ class WidevineModularAdapter extends DrmAdapter {
 
         log.d("releaseRequest:" + encodeToString(releaseRequest.getData()));
 
-        localDrmStorage.remove(key);
+        localDataStore.remove(key);
 
         return true;
     }
@@ -281,7 +286,7 @@ class WidevineModularAdapter extends DrmAdapter {
 
     private MediaDrmSession openSessionWithKeys(FrameworkMediaDrm mediaDrm, String key) throws MediaDrmException, MediaCryptoException, FileNotFoundException {
 
-        byte[] keySetId = localDrmStorage.load(key);
+        byte[] keySetId = localDataStore.load(key);
 
         MediaDrmSession session = MediaDrmSession.open(mediaDrm);
         session.restoreKeys(keySetId);
@@ -297,11 +302,6 @@ class WidevineModularAdapter extends DrmAdapter {
             e.printStackTrace();
         }
         return null;
-    }
-
-    @Override
-    public DRMScheme getScheme() {
-        return DRMScheme.WidevineCENC;
     }
 
     private HttpDataSource.Factory buildDataSourceFactory() {

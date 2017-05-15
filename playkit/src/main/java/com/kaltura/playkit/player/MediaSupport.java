@@ -10,25 +10,30 @@ import com.kaltura.playkit.PKLog;
 
 import java.util.UUID;
 
+/**
+ * @hide
+ */
 public class MediaSupport {
 
     public static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
 
 
-    private static Boolean widevineClassic;
-    private static Boolean widevineModular;
+    private static boolean widevineClassic = false;
+    private static boolean widevineModular = false;
+    private static boolean initialized = false;
 
     private static final PKLog log = PKLog.get("MediaSupport");
-    
-    public static void initialize(@NonNull Context context) {
-        widevineClassic(context);
+
+    public static void initialize(@NonNull final Context context) {
+        if (initialized) {
+            return;
+        }
+        checkWidevineClassic(context);
         widevineModular();
+        initialized = true;
     }
 
-    public static boolean widevineClassic(Context context) {
-        if (widevineClassic != null) {
-            return widevineClassic;
-        }
+    private static void checkWidevineClassic(Context context) {
         DrmManagerClient drmManagerClient = new DrmManagerClient(context);
         try {
             widevineClassic = drmManagerClient.canHandle("", "video/wvm");
@@ -45,21 +50,28 @@ public class MediaSupport {
             //noinspection deprecation
             drmManagerClient.release();
         }
-        return widevineClassic;
+    }
+
+    public static boolean widevineClassic() {
+        if (initialized) {
+            return widevineClassic;
+        }
+
+        log.w("MediaSupport not initialized; assuming no Widevine Classic support");
+        return false;
     }
 
     public static boolean widevineModular() {
-        if (widevineModular != null) {
-            return widevineModular;
-        }
         // Encrypted dash is only supported in Android v4.3 and up -- needs MediaDrm class.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            // Make sure Widevine is supported.
-            if (MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID)) {
-                widevineModular = true;
-                return true;
-            }
+        // Make sure Widevine is supported
+        if (!initialized && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID)) {
+            widevineModular = true;
         }
-        return false;
+
+        return widevineModular;
+    }
+
+    public static boolean playReady() {
+        return false;   // Not yet.
     }
 }

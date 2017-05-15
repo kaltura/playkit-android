@@ -8,11 +8,11 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 
 import org.junit.Assert;
@@ -31,7 +31,6 @@ public class KalturaAnalyticsAndroidTest {
     private Player player;
     private Context context;
     private JsonObject pluginConfig;
-    private PlayerConfig.Media mediaConfig;
     private MessageBus messageBus;
     private KalturaAnalyticsPlugin plugin;
     private int duration = 3000;
@@ -53,7 +52,7 @@ public class KalturaAnalyticsAndroidTest {
         player.seekTo(seek);
 
         plugin = (KalturaAnalyticsPlugin) KalturaAnalyticsPlugin.factory.newInstance();
-        plugin.onLoad(player, mediaConfig, pluginConfig, messageBus, context);
+        plugin.onLoad(player, pluginConfig, messageBus, context);
     }
 
 
@@ -67,14 +66,13 @@ public class KalturaAnalyticsAndroidTest {
     }
 
     private void setMediaObject(){
-        PlayerConfig config = new PlayerConfig();
+        PKMediaConfig config = new PKMediaConfig();
         PKMediaSource mediaSource = new PKMediaSource().setUrl("http://cdnapi.kaltura.com/p/1774581/sp/177458100/playManifest/entryId/1_mphei4ku/format/applehttp/tags/mbr/protocol/http/f/a.m3u8");
         mediaSource.setId("516109");
         ArrayList<PKMediaSource> sourceList = new ArrayList<>();
         sourceList.add(mediaSource);
         PKMediaEntry mediaEntryProvider = new PKMediaEntry().setId(entryId).setDuration(duration).setSources(sourceList);
-        config.media.setMediaEntry(mediaEntryProvider);
-        mediaConfig = config.media;
+        config.setMediaEntry(mediaEntryProvider);
     }
 
     @Test

@@ -15,16 +15,15 @@ import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SubtitleView;
+import com.kaltura.playkit.PKLog;
 
 import java.util.List;
 
 /**
- * Created by anton.afanasiev on 13/11/2016.
+ * @hide
  */
 
 public class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener, TextRenderer.Output{
-
-    private static final String TAG = ExoPlayerView.class.getSimpleName();
 
     private final View surfaceView;
     private final View posterView; // TODO should be changed to poster?
@@ -146,11 +145,23 @@ public class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoLi
     @Override
     public void hideVideoSurface() {
         surfaceView.setVisibility(GONE);
+        subtitleLayout.setVisibility(GONE);
     }
 
     @Override
     public void showVideoSurface() {
         surfaceView.setVisibility(VISIBLE);
+        subtitleLayout.setVisibility(VISIBLE);
+    }
+
+    @Override
+    public void hideVideoSubtitles() {
+        subtitleLayout.setVisibility(GONE);
+    }
+
+    @Override
+    public void showVideoSubtitles() {
+        subtitleLayout.setVisibility(VISIBLE);
     }
 }
 

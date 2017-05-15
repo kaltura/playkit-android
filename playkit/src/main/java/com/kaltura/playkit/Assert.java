@@ -3,7 +3,7 @@ package com.kaltura.playkit;
 import android.text.TextUtils;
 
 /**
- * Created by Noam Tamim @ Kaltura on 07/11/2016.
+ * @hide
  */
 
 public class Assert {
