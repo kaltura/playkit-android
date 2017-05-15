@@ -3,7 +3,6 @@
 ext.playkitVersion = '0.3.1'
 
 
-
 android.libraryVariants.all { variant ->
     task("generate${variant.name.capitalize()}Javadoc", type: Javadoc) {
         title = null // doclava does not support title
