@@ -427,6 +427,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             return;
         }
 
+        if (currentEvent == PlayerEvent.Type.ENDED) {
+            return;
+        }
+
         sendDistinctEvent(PlayerEvent.Type.PAUSE);
         player.setPlayWhenReady(false);
     }
