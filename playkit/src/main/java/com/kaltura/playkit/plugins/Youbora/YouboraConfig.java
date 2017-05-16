@@ -126,10 +126,11 @@ public class YouboraConfig {
 
             mediaObject.put("duration", duration.intValue()); //Duration should be sent in secs
         }
-        if (pluginConfig != null){
-            if (pluginConfig.has("youboraConfig")){
-                setYouboraConfigObject(youboraConfigObject, pluginConfig.getAsJsonObject("youboraConfig"), youboraConfigFieldNames, youboraBooleanConfigFieldNames);
-            }
+        if (pluginConfig != null) {
+
+            //set these values on the root object
+            setYouboraConfigObject(youboraConfigObject, pluginConfig, youboraConfigFieldNames, youboraBooleanConfigFieldNames);
+
             if (pluginConfig.has("media")){
                 setYouboraConfigObject(mediaObject, pluginConfig.getAsJsonObject("media"), mediaConfigFieldNames, mediaBooleanConfigFieldNames);
             }
