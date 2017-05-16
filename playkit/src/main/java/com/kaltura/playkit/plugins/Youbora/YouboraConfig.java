@@ -30,8 +30,8 @@ public class YouboraConfig {
     private static final Map<String, Object> extraParamsObject;
     private static final Map<String, Object> adsObject;
 
-    private static String[] youboraConfigFieldNames = new String[]{"accountCode","username"};
-    private static String[] youboraBooleanConfigFieldNames = new String[]{"haltOnError","enableAnalytics"};
+    private static String[] youboraConfigFieldNames = new String[]{"accountCode","username", "transactionCode"};
+    private static String[] youboraBooleanConfigFieldNames = new String[]{"haltOnError", "enableAnalytics", "httpSecure", "parseCDNNodeHost"};
 
     private static String[] mediaConfigFieldNames = new String[]{"title","cdn"};
     private static String[] mediaBooleanConfigFieldNames = new String[]{"isLive"};
@@ -125,6 +125,7 @@ public class YouboraConfig {
             log.d("Youbora update duration = " + duration.doubleValue());
 
             mediaObject.put("duration", duration.intValue()); //Duration should be sent in secs
+            propertiesObject.put("sessionId", player.getSessionId().toString());
         }
         if (pluginConfig != null) {
 
@@ -151,7 +152,9 @@ public class YouboraConfig {
             String fieldName = fieldNames[i];
             if (jsonObject.has(fieldName)) {
                 log.d("setYouboraConfigObject: " + fieldNames[i]);
-                defaultJsonObject.put(fieldName, jsonObject.getAsJsonPrimitive(fieldName).getAsString());
+                if (jsonObject.has(fieldName) && !jsonObject.get(fieldName).isJsonNull()) {
+                    defaultJsonObject.put(fieldName, jsonObject.getAsJsonPrimitive(fieldName).getAsString());
+                }
             }
         }
         if (booleanFieldNames != null) {
@@ -159,7 +162,9 @@ public class YouboraConfig {
                 String fieldName = booleanFieldNames[i];
                 if (jsonObject.has(fieldName)) {
                     log.d( "setYouboraConfigObject: " + booleanFieldNames[i]);
-                    defaultJsonObject.put(fieldName, jsonObject.getAsJsonPrimitive(fieldName).getAsBoolean());
+                    if (jsonObject.has(fieldName) && !jsonObject.get(fieldName).isJsonNull()) {
+                        defaultJsonObject.put(fieldName, jsonObject.getAsJsonPrimitive(fieldName).getAsBoolean());
+                    }
                 }
             }
         }
