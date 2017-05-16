@@ -93,8 +93,13 @@ public class PlayerController implements Player {
                 // TODO: use specific event class
                 switch (eventType) {
                     case DURATION_CHANGE:
-                        event = new PlayerEvent.DurationChanged(getDuration());
-                        if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
+                        long newDuration = getDuration();
+                        if (newDuration == Consts.TIME_UNSET) {
+                            log.w("DURATION_CHANGE event received, but player duration is not set");
+                            return;
+                        }
+                        event = new PlayerEvent.DurationChanged(newDuration);
+                        if (newDuration != Consts.TIME_UNSET && isNewEntry) {
                             startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                         }
                         break;

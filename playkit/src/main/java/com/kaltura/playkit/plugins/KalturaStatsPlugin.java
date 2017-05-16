@@ -20,6 +20,7 @@ import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.api.ovp.services.StatsService;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
+import com.kaltura.playkit.plugins.ads.AdPositionType;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.TimerTask;
@@ -35,7 +36,28 @@ public class KalturaStatsPlugin extends PKPlugin {
     private int uiconfId;
     private String baseUrl;
     private int partnerId;
+    private int timerInterval;
     private String entryId;
+    private AdInfo adInfo;
+    private Player player;
+    private PKMediaConfig mediaConfig;
+    private JsonObject pluginConfig;
+    private MessageBus messageBus;
+    private RequestQueue requestsExecutor;
+    private java.util.Timer timer = new java.util.Timer();
+
+    private float seekPercent = 0;
+    private boolean playReached25 = false;
+    private boolean playReached50 = false;
+    private boolean playReached75 = false;
+    private boolean playReached100 = false;
+    private boolean isBuffering = false;
+    private boolean intervalOn = false;
+    private boolean hasSeeked = false;
+    private boolean isWidgetLoaded = false;
+    private boolean isMediaLoaded = false;
+    private boolean isFirstPlay = true;
+    private boolean durationValid = false;
 
 
     /*
@@ -63,30 +85,30 @@ public class KalturaStatsPlugin extends PKPlugin {
         PLAY_REACHED_50(5),
         PLAY_REACHED_75(6),
         PLAY_REACHED_100(7),
-        OPEN_EDIT(8),
-        OPEN_VIRAL(9),
-        OPEN_DOWNLOAD(10),
-        OPEN_REPORT(11),
+        //OPEN_EDIT(8),
+        //OPEN_VIRAL(9),
+        //OPEN_DOWNLOAD(10),
+        //OPEN_REPORT(11),
         BUFFER_START(12),
         BUFFER_END(13),
-        OPEN_FULL_SCREEN(14),
-        CLOSE_FULL_SCREEN(15),
+        //OPEN_FULL_SCREEN(14),
+        //CLOSE_FULL_SCREEN(15),
         REPLAY(16),
         SEEK(17),
-        OPEN_UPLOAD(18),
-        SAVE_PUBLISH(19),
-        CLOSE_EDITOR(20),
+        //OPEN_UPLOAD(18),
+        //SAVE_PUBLISH(19),
+        //CLOSE_EDITOR(20),
         PRE_BUMPER_PLAYED(21),
         POST_BUMPER_PLAYED(22),
-        BUMPER_CLICKED(23),
+        //BUMPER_CLICKED(23),
         PREROLL_STARTED(24),
         MIDROLL_STARTED(25),
         POSTROLL_STARTED(26),
-        OVERLAY_STARTED(27),
+        //OVERLAY_STARTED(27),
         PREROLL_CLICKED(28),
         MIDROLL_CLICKED(29),
         POSTROLL_CLICKED(30),
-        OVERLAY_CLICKED(31),
+        //OVERLAY_CLICKED(31),
         PREROLL_25(32),
         PREROLL_50(33),
         PREROLL_75(34),
@@ -109,27 +131,7 @@ public class KalturaStatsPlugin extends PKPlugin {
         }
     }
 
-    private Player player;
-    private PKMediaConfig mediaConfig;
-    private JsonObject pluginConfig;
-    private MessageBus messageBus;
-    private RequestQueue requestsExecutor;
-    private java.util.Timer timer = new java.util.Timer();
-    private AdInfo currentAdInfo;
-    private int adCounter = 1;
 
-    private float seekPercent = 0;
-    private boolean playReached25 = false;
-    private boolean playReached50 = false;
-    private boolean playReached75 = false;
-    private boolean playReached100 = false;
-    private boolean isBuffering = false;
-    private boolean intervalOn = false;
-    private boolean hasSeeked = false;
-    private boolean isWidgetLoaded = false;
-    private boolean isMediaLoaded = false;
-    private boolean isFirstPlay = true;
-    private boolean durationValid = false;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -179,6 +181,12 @@ public class KalturaStatsPlugin extends PKPlugin {
         } else {
             baseUrl = DEFAULT_BASE_URL;
         }
+        if (Utils.isJsonObjectValueValid(pluginConfig, "timerInterval")) {
+            timerInterval = pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int)Consts.MILLISECONDS_MULTIPLIER;
+        } else {
+            timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
+            log.e("Error KalturaStats timerInterval is missing");
+        }
         if (Utils.isJsonObjectValueValid(pluginConfig, "partnerId")) {
             partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
         } else {
@@ -206,22 +214,21 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     @Override
     protected void onApplicationPaused() {
-
+        timer.cancel();
+        timer = null;
     }
 
     @Override
     protected void onApplicationResumed() {
-
+        startTimerInterval();
     }
 
     private void onEvent(PlayerEvent.StateChanged event) {
         log.d(event.newState.toString());
         switch (event.newState) {
             case IDLE:
-                sendWidgetLoaded();
                 break;
             case LOADING:
-                sendWidgetLoaded();
                 if (isBuffering) {
                     isBuffering = false;
                     sendAnalyticsEvent(KStatsEvent.BUFFER_END);
@@ -237,10 +244,8 @@ public class KalturaStatsPlugin extends PKPlugin {
                     startTimerInterval();
                 }
                 sendWidgetLoaded();
-                sendMediaLoaded();
                 break;
             case BUFFERING:
-                sendWidgetLoaded();
                 isBuffering = true;
                 sendAnalyticsEvent(KStatsEvent.BUFFER_START);
                 break;
@@ -256,6 +261,8 @@ public class KalturaStatsPlugin extends PKPlugin {
             if (event instanceof PlayerEvent) {
                 log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
+                    case METADATA_AVAILABLE:
+                        sendMediaLoaded();
                     case STATE_CHANGED:
                         KalturaStatsPlugin.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
@@ -263,9 +270,6 @@ public class KalturaStatsPlugin extends PKPlugin {
                         sendAnalyticsEvent(KStatsEvent.ERROR);
                         break;
                     case PLAY:
-                        sendWidgetLoaded();
-                        sendMediaLoaded();
-
                         break;
                     case SEEKED:
                         hasSeeked = true;
@@ -273,14 +277,13 @@ public class KalturaStatsPlugin extends PKPlugin {
                         sendAnalyticsEvent(KStatsEvent.SEEK);
                         break;
                     case CAN_PLAY:
-                        sendWidgetLoaded();
-                        sendMediaLoaded();
                         break;
                     case PLAYING:
                         if (isFirstPlay) {
+                            sendWidgetLoaded();
+                            sendMediaLoaded();
                             log.d("FIRST PLAYBACK sending KStatsEvent.PLAY");
                             sendAnalyticsEvent(KStatsEvent.PLAY);
-                            isFirstPlay = false;
                         }
                         break;
                     case REPLAY:
@@ -306,62 +309,60 @@ public class KalturaStatsPlugin extends PKPlugin {
         log.d(event.type.toString());
         switch (event.type) {
             case STARTED:
-                currentAdInfo = ((AdEvent.AdStartedEvent) event).adInfo;
-                if (adCounter == 1){
-                    sendAnalyticsEvent(KStatsEvent.PREROLL_STARTED);
-                } else if (adCounter == 2){
-                    sendAnalyticsEvent(KStatsEvent.MIDROLL_STARTED);
-                } else if (adCounter == 3){
-                    sendAnalyticsEvent(KStatsEvent.POSTROLL_STARTED);
+                adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
+                if (adInfo != null) {
+                    if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
+                        sendAnalyticsEvent(KStatsEvent.PREROLL_STARTED);
+                    } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
+                        sendAnalyticsEvent(KStatsEvent.MIDROLL_STARTED);
+                    } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
+                        sendAnalyticsEvent(KStatsEvent.POSTROLL_STARTED);
+                    }
                 }
                 break;
-            case PAUSED:
-
-                break;
+            case PAUSED:;
             case RESUMED:
-
-                break;
             case COMPLETED:
-
                 break;
             case FIRST_QUARTILE:
-                if (adCounter == 1){
-                    sendAnalyticsEvent(KStatsEvent.PREROLL_25);
-                } else if (adCounter == 2){
-                    sendAnalyticsEvent(KStatsEvent.MIDROLL_25);
-                } else if (adCounter == 3){
-                    sendAnalyticsEvent(KStatsEvent.POSTROLL_25);
+                if (adInfo != null) {
+                    if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
+                        sendAnalyticsEvent(KStatsEvent.PREROLL_25);
+                    } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
+                        sendAnalyticsEvent(KStatsEvent.MIDROLL_25);
+                    } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
+                        sendAnalyticsEvent(KStatsEvent.POSTROLL_25);
+                    }
                 }
                 break;
             case MIDPOINT:
-                if (adCounter == 1){
-                    sendAnalyticsEvent(KStatsEvent.PREROLL_50);
-                } else if (adCounter == 2){
-                    sendAnalyticsEvent(KStatsEvent.MIDROLL_50);
-                } else if (adCounter == 3){
-                    sendAnalyticsEvent(KStatsEvent.POSTROLL_50);
+                if (adInfo != null) {
+                    if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
+                        sendAnalyticsEvent(KStatsEvent.PREROLL_50);
+                    } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
+                        sendAnalyticsEvent(KStatsEvent.MIDROLL_50);
+                    } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
+                        sendAnalyticsEvent(KStatsEvent.POSTROLL_50);
+                    }
                 }
                 break;
             case THIRD_QUARTILE:
-                if (adCounter == 1){
+                if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
                     sendAnalyticsEvent(KStatsEvent.PREROLL_75);
-                } else if (adCounter == 2){
+                } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
                     sendAnalyticsEvent(KStatsEvent.MIDROLL_75);
-                } else if (adCounter == 3){
+                } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
                     sendAnalyticsEvent(KStatsEvent.POSTROLL_75);
                 }
                 break;
             case CLICKED:
-                if (adCounter == 1){
+                if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
                     sendAnalyticsEvent(KStatsEvent.PREROLL_CLICKED);
-                } else if (adCounter == 2){
+                } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
                     sendAnalyticsEvent(KStatsEvent.MIDROLL_CLICKED);
-                } else if (adCounter == 3){
+                } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
                     sendAnalyticsEvent(KStatsEvent.POSTROLL_CLICKED);
                 }
-                break;
-            case ALL_ADS_COMPLETED:
-                adCounter++;
                 break;
             default:
                 break;
@@ -403,7 +404,6 @@ public class KalturaStatsPlugin extends PKPlugin {
      * Time interval handling play reached events
      */
     private void startTimerInterval() {
-        int timerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int)Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
         if (timer == null) {
             timer = new java.util.Timer();
         }
