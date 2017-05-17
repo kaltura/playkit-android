@@ -165,7 +165,9 @@ public class KalturaStatsPlugin extends PKPlugin {
     public void onDestroy() {
         log.d("onDestroy");
         intervalOn = false;
-        timer.cancel();
+        if (timer != null) {
+            timer.cancel();
+        }
     }
 
     @Override
@@ -214,8 +216,7 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     @Override
     protected void onApplicationPaused() {
-        timer.cancel();
-        timer = null;
+        cancelTimer();
     }
 
     @Override
@@ -224,7 +225,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     }
 
     private void onEvent(PlayerEvent.StateChanged event) {
-        log.d(event.newState.toString());
+        log.d("New PlayerState = " + event.newState.name());
         switch (event.newState) {
             case IDLE:
                 break;
@@ -255,10 +256,14 @@ public class KalturaStatsPlugin extends PKPlugin {
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
-            if (player.getDuration() < 0){
-                return;
+            if (event.eventType() != AdEvent.Type.PLAY_HEAD_CHANGED) {
+                log.d("New PKEvent = " + event.eventType().name());
             }
+
             if (event instanceof PlayerEvent) {
+                if (player.getDuration() < 0){
+                    return;
+                }
                 log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
                     case METADATA_AVAILABLE:
@@ -268,6 +273,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                         break;
                     case ERROR:
                         sendAnalyticsEvent(KStatsEvent.ERROR);
+                        cancelTimer();
                         break;
                     case PLAY:
                         break;
@@ -284,6 +290,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                             sendMediaLoaded();
                             log.d("FIRST PLAYBACK sending KStatsEvent.PLAY");
                             sendAnalyticsEvent(KStatsEvent.PLAY);
+                            isFirstPlay = false;
                         }
                         break;
                     case REPLAY:
@@ -295,6 +302,17 @@ public class KalturaStatsPlugin extends PKPlugin {
                             durationValid = true;
                         }
                         break;
+                    case ENDED:
+                        if (!playReached100) {
+                            log.d("PLAY_REACHED_100");
+                            sendAnalyticsEvent(KStatsEvent.PLAY_REACHED_100);
+                            playReached25 = true;
+                            playReached50 = true;
+                            playReached75 = true;
+                            playReached100 = true;
+                            cancelTimer();
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -304,9 +322,15 @@ public class KalturaStatsPlugin extends PKPlugin {
         }
     };
 
+    private void cancelTimer() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+    }
+
 
     public void onEvent(AdEvent event) {
-        log.d(event.type.toString());
         switch (event.type) {
             case STARTED:
                 adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
@@ -347,21 +371,25 @@ public class KalturaStatsPlugin extends PKPlugin {
                 }
                 break;
             case THIRD_QUARTILE:
-                if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
-                    sendAnalyticsEvent(KStatsEvent.PREROLL_75);
-                } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
-                    sendAnalyticsEvent(KStatsEvent.MIDROLL_75);
-                } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
-                    sendAnalyticsEvent(KStatsEvent.POSTROLL_75);
+                if (adInfo != null) {
+                    if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
+                        sendAnalyticsEvent(KStatsEvent.PREROLL_75);
+                    } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
+                        sendAnalyticsEvent(KStatsEvent.MIDROLL_75);
+                    } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
+                        sendAnalyticsEvent(KStatsEvent.POSTROLL_75);
+                    }
                 }
                 break;
             case CLICKED:
-                if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
-                    sendAnalyticsEvent(KStatsEvent.PREROLL_CLICKED);
-                } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
-                    sendAnalyticsEvent(KStatsEvent.MIDROLL_CLICKED);
-                } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
-                    sendAnalyticsEvent(KStatsEvent.POSTROLL_CLICKED);
+                if (adInfo != null) {
+                    if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
+                        sendAnalyticsEvent(KStatsEvent.PREROLL_CLICKED);
+                    } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
+                        sendAnalyticsEvent(KStatsEvent.MIDROLL_CLICKED);
+                    } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
+                        sendAnalyticsEvent(KStatsEvent.POSTROLL_CLICKED);
+                    }
                 }
                 break;
             default:
@@ -410,19 +438,23 @@ public class KalturaStatsPlugin extends PKPlugin {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                float progress = (float) player.getCurrentPosition() / player.getDuration();
-                if (progress >= 0.25 && !playReached25 && seekPercent <= 0.25) {
+                float progress = ((float) player.getCurrentPosition() / player.getDuration());
+                log.d("XXX PROGESS = " + progress + " seekPercent = " + seekPercent);
+                if (!playReached25 && progress >= 0.25 && seekPercent <= 0.25) {
                     playReached25 = true;
+                    log.d("PLAY_REACHED_25");
                     sendAnalyticsEvent(KStatsEvent.PLAY_REACHED_25);
-                } else if (progress >= 0.5 && !playReached50 && seekPercent < 0.5) {
+                } else if (!playReached50 && progress >= 0.5 && seekPercent <= 0.5) {
+                    playReached25 = true;
                     playReached50 = true;
+                    log.d("PLAY_REACHED_50");
                     sendAnalyticsEvent(KStatsEvent.PLAY_REACHED_50);
-                } else if (progress >= 0.75 && !playReached75 && seekPercent <= 0.75) {
+                } else if (!playReached75 && progress >= 0.75 && seekPercent <= 0.75) {
+                    playReached25 = true;
+                    playReached50 = true;
                     playReached75 = true;
+                    log.d("PLAY_REACHED_75");
                     sendAnalyticsEvent(KStatsEvent.PLAY_REACHED_75);
-                } else if (progress >= 0.98 && !playReached100 && seekPercent < 1) {
-                    playReached100 = true;
-                    sendAnalyticsEvent(KStatsEvent.PLAY_REACHED_100);
                 }
             }
         }, 0, timerInterval);
