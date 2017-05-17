@@ -136,7 +136,7 @@ public class KalturaStatsPlugin extends PKPlugin {
         log.d("onDestroy");
         intervalOn = false;
         if (timer != null) {
-            timer.cancel();
+            cancelTimer();
         }
     }
 
