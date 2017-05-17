@@ -424,16 +424,6 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
-        Assert.failState("Not implemented");
-    }
-
-    @Override
-    public void skip() {
-        Assert.failState("Not implemented");
-    }
-
-    @Override
     public void addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
         Assert.shouldNeverHappen();
     }

@@ -18,11 +18,6 @@ public abstract class PlayerDecorator extends PlayerDecoratorBase {
     }
 
     @Override
-    final public void skip() {
-        super.skip();
-    }
-
-    @Override
     final public void addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
         super.addEventListener(listener, events);
     }

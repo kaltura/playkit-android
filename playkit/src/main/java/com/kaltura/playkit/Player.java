@@ -15,7 +15,7 @@ import java.util.UUID;
 public interface Player {
 
     /**
-     * Interface used for setting optional Player settings. 
+     * Interface used for optional Player settings. 
      */
     interface Settings {
         /**
@@ -45,22 +45,16 @@ public interface Player {
 
     /**
      * Prepare the player for playback.
-     * @param playerConfig - media configurations to apply on the player.
+     * @param mediaConfig - media configurations to apply on the player.
      */
-    void prepare(@NonNull PKMediaConfig playerConfig);
+    void prepare(@NonNull PKMediaConfig mediaConfig);
 
     /**
-     * Prepare for playing the next entry. If config.shouldAutoPlay is true, the entry will automatically
-     * play when it's ready and the current entry is ended.
+     * Update plugin configuration. The meaning and semantics of pluginConfig are plugin-specific.
+     * @param pluginName
+     * @param pluginConfig
      */
-    void prepareNext(@NonNull PKMediaConfig mediaConfig);
-
     void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
-
-    /**
-     * Load the entry that was prepared with {@link #prepareNext(PKMediaConfig)}.
-     */
-    void skip();
 
     /**
      * Player lifecycle method. Should be used when the application went to onPause();

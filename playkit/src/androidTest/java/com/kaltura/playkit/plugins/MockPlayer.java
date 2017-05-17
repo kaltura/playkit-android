@@ -38,22 +38,12 @@ public class MockPlayer implements Player {
     }
 
     @Override
-    public void prepare(@NonNull PKMediaConfig playerConfig) {
-
-    }
-
-    @Override
-    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
+    public void prepare(@NonNull PKMediaConfig mediaConfig) {
 
     }
 
     @Override
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
-
-    }
-
-    @Override
-    public void skip() {
 
     }
 
