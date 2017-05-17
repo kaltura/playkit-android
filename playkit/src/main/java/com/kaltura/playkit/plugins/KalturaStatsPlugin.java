@@ -59,24 +59,6 @@ public class KalturaStatsPlugin extends PKPlugin {
     private boolean isFirstPlay = true;
     private boolean durationValid = false;
 
-
-    /*
-         * Kaltura event types that are presently not usable in the
-		 *  player at this point in time:
-		 *
-		 * OPEN_EDIT = 8;
-		 * OPEN_VIRAL = 9;
-		 * OPEN_DOWNLOAD = 10;
-		 * OPEN_REPORT = 11;
-		 * OPEN_UPLOAD = 18;
-		 * SAVE_PUBLISH = 19;
-		 * CLOSE_EDITOR = 20;
-		 *
-		 * PRE_BUMPER_PLAYED = 21;
-		 * POST_BUMPER_PLAYED = 22;
-		 * BUMPER_CLICKED = 23;
-		 */
-
     public enum KStatsEvent {
         WIDGET_LOADED(1),
         MEDIA_LOADED(2),
@@ -85,30 +67,18 @@ public class KalturaStatsPlugin extends PKPlugin {
         PLAY_REACHED_50(5),
         PLAY_REACHED_75(6),
         PLAY_REACHED_100(7),
-        //OPEN_EDIT(8),
-        //OPEN_VIRAL(9),
-        //OPEN_DOWNLOAD(10),
-        //OPEN_REPORT(11),
         BUFFER_START(12),
         BUFFER_END(13),
-        //OPEN_FULL_SCREEN(14),
-        //CLOSE_FULL_SCREEN(15),
         REPLAY(16),
         SEEK(17),
-        //OPEN_UPLOAD(18),
-        //SAVE_PUBLISH(19),
-        //CLOSE_EDITOR(20),
         PRE_BUMPER_PLAYED(21),
         POST_BUMPER_PLAYED(22),
-        //BUMPER_CLICKED(23),
         PREROLL_STARTED(24),
         MIDROLL_STARTED(25),
         POSTROLL_STARTED(26),
-        //OVERLAY_STARTED(27),
         PREROLL_CLICKED(28),
         MIDROLL_CLICKED(29),
         POSTROLL_CLICKED(30),
-        //OVERLAY_CLICKED(31),
         PREROLL_25(32),
         PREROLL_50(33),
         PREROLL_75(34),
