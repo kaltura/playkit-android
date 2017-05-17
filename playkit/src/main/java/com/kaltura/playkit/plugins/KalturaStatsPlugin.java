@@ -303,15 +303,11 @@ public class KalturaStatsPlugin extends PKPlugin {
                         }
                         break;
                     case ENDED:
-                        if (!playReached100) {
-                            log.d("PLAY_REACHED_100");
-                            sendAnalyticsEvent(KStatsEvent.PLAY_REACHED_100);
-                            playReached25 = true;
-                            playReached50 = true;
-                            playReached75 = true;
-                            playReached100 = true;
-                            cancelTimer();
-                        }
+                        sendPlayReached25();
+                        sendPlayReached50();
+                        sendPlayReached75();
+                        sendPlayReached100();
+                        cancelTimer();
                         break;
                     default:
                         break;
@@ -321,6 +317,38 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
         }
     };
+
+    private void sendPlayReached100() {
+        if (!playReached100) {
+            log.d("PLAY_REACHED_100");
+            sendAnalyticsEvent(KStatsEvent.PLAY_REACHED_100);
+            playReached100 = true;
+        }
+    }
+
+    private void sendPlayReached75() {
+        if (!playReached75) {
+            log.d("PLAY_REACHED_75");
+            sendAnalyticsEvent(KStatsEvent.PLAY_REACHED_75);
+            playReached75 = true;
+        }
+    }
+
+    private void sendPlayReached50() {
+        if (!playReached50) {
+            log.d("PLAY_REACHED_50");
+            sendAnalyticsEvent(KStatsEvent.PLAY_REACHED_50);
+            playReached50 = true;
+        }
+    }
+
+    private void sendPlayReached25() {
+        if (!playReached25) {
+            log.d("PLAY_REACHED_25");
+            sendAnalyticsEvent(KStatsEvent.PLAY_REACHED_25);
+            playReached25 = true;
+        }
+    }
 
     private void cancelTimer() {
         if (timer != null) {
@@ -439,27 +467,21 @@ public class KalturaStatsPlugin extends PKPlugin {
             @Override
             public void run() {
                 float progress = ((float) player.getCurrentPosition() / player.getDuration());
-                log.d("XXX PROGESS = " + progress + " seekPercent = " + seekPercent);
+                log.d("progress = " + progress + " seekPercent = " + seekPercent);
                 if (!playReached25 && progress >= 0.25 && seekPercent <= 0.25) {
-                    playReached25 = true;
-                    log.d("PLAY_REACHED_25");
-                    sendAnalyticsEvent(KStatsEvent.PLAY_REACHED_25);
+                    sendPlayReached25();
                 } else if (!playReached50 && progress >= 0.5 && seekPercent <= 0.5) {
-                    playReached25 = true;
-                    playReached50 = true;
-                    log.d("PLAY_REACHED_50");
-                    sendAnalyticsEvent(KStatsEvent.PLAY_REACHED_50);
+                    sendPlayReached25();
+                    sendPlayReached50();
                 } else if (!playReached75 && progress >= 0.75 && seekPercent <= 0.75) {
-                    playReached25 = true;
-                    playReached50 = true;
-                    playReached75 = true;
-                    log.d("PLAY_REACHED_75");
-                    sendAnalyticsEvent(KStatsEvent.PLAY_REACHED_75);
+                    sendPlayReached25();
+                    sendPlayReached50();
+                    sendPlayReached75();
                 }
             }
         }, 0, timerInterval);
     }
-
+    
     /**
      * Send stats event to Kaltura stats DB
      *
