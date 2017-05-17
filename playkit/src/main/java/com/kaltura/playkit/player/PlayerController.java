@@ -99,7 +99,7 @@ public class PlayerController implements Player {
                             return;
                         }
                         event = new PlayerEvent.DurationChanged(newDuration);
-                        if (newDuration != Consts.TIME_UNSET && isNewEntry) {
+                        if (isNewEntry) {
                             startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                         }
                         break;
