@@ -33,7 +33,6 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     private String lastReportedAdTitle;
     private Double lastReportedAdPlayhead;
     private Double lastReportedAdDuration;
-    private boolean learnMoreClicked = false;
 
     public YouboraAdManager(PluginGeneric plugin, MessageBus messageBus) {
         super(plugin);
@@ -114,11 +113,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                         lastReportedAdPlayhead =  Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
 
-                        if (learnMoreClicked == true) {
-                            learnMoreClicked = false;
-                        } else {
-                            resumeAdHandler();
-                        }
+                        resumeAdHandler();
                         break;
                     case COMPLETED:
                         lastReportedAdPlayhead = lastReportedAdDuration;
@@ -142,7 +137,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                         lastReportedAdPlayhead = adPos;
                         break;
                     case CLICKED:
-                        learnMoreClicked = true;
+                        log.d("learn more clicked");
                         break;
                     default:
                         break;
@@ -269,7 +264,6 @@ public class YouboraAdManager extends AdnalyzerGeneric {
     public void resetAdValues() {
         isFirstPlay = true;
         currentAdInfo = null;
-        learnMoreClicked = false;
         lastReportedAdDuration = super.getAdDuration();;
         lastReportedAdTitle = super.getAdTitle();
         lastReportedAdPlayhead = super.getAdPlayhead();
