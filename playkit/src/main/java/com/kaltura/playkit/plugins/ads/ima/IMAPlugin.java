@@ -108,6 +108,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private boolean isContentPrepared;
     private boolean isAllAdsCompleted;
     private boolean isContentEndedBeforeMidroll;
+    boolean isAdError;
     private com.google.ads.interactivemedia.v3.api.AdEvent.AdEventType lastEventReceived;
 
     public static final Factory factory = new Factory() {
@@ -357,6 +358,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     protected void resetIMA() {
         log.d("Start resetIMA");
+        isAdError = false;
         isAdRequested = false;
         isAdDisplayed = false;
         isAllAdsCompleted = false;
@@ -535,6 +537,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     public boolean isAdDisplayed() {
         //log.d("isAdDisplayed: " + mIsAdDisplayed);
         return isAdDisplayed;
+    }
+
+    @Override
+    public boolean isAdError() {
+        return isAdError;
     }
 
     @Override
@@ -942,6 +949,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     public void onAdError(AdErrorEvent adErrorEvent) {
 
         log.e("Ad Error: " + adErrorEvent.getError().getErrorCode().name() + " " + adErrorEvent.getError().getMessage());
+        isAdError = true;
         adPlaybackCancelled = true;
         isAdRequested = true;
         isAdDisplayed = false;
