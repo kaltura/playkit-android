@@ -91,6 +91,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
                     adsProvider.start();
                     return;
                 } else if (adsProvider.isAdDisplayed()) {
+                    log.d("PLAY IMA call adsProvider.resume()");
                     adsProvider.resume();
                     return;
                 }

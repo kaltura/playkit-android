@@ -293,13 +293,14 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 appInBackgroundDuringAdLoad = false;
                 adsManager.start();
             } else if (isAdDisplayed) {
-                if (adsManager.getAdProgress().getDuration() - adsManager.getAdProgress().getCurrentTime() < 1) {
+                double delta = adsManager.getAdProgress().getDuration() - adsManager.getAdProgress().getCurrentTime();
+                log.d("onApplicationResumed delta = " + delta);
+                if (delta < 1) {
                     log.d("onApplicationResumed player play called");
                     adsManager.resume();
                     player.play();
                 } else {
-                    log.d("onApplicationResumed ad resumed");
-                    adsManager.resume();
+                    log.d("onApplicationResumed ad displayed and in pause state");
                 }
             }
         }
@@ -320,6 +321,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
 
         if (lastEventReceived == com.google.ads.interactivemedia.v3.api.AdEvent.AdEventType.CONTENT_RESUME_REQUESTED && player != null) {
+            player.getView().showVideoSurface();
             player.play();
         }
     }
@@ -668,6 +670,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 if (!isContentPrepared) {
                     log.d("Content not prepared.. Preparing and calling play.");
                     if (pkAdProviderListener != null && !appIsInBackground) {
+                        player.getView().showVideoSurface();
                         preparePlayer(true);
                     }
                 } else if (player != null) {

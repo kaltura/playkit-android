@@ -31,7 +31,6 @@ public class IMAConfig {
     public static final String AD_COUNTDOWN_UIELEMENT   = "adCountDown";
     public static final String AD_LOAD_TIMEOUT          = "adLoadTimeOut";
 
-
     private String language;
     private String adTagURL;
     private AdTagType adTagType;
