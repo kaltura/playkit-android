@@ -149,9 +149,6 @@ public class YouboraLibraryManager extends PluginGeneric {
                     case SEEKING:
                         seekingHandler();
                         break;
-                    case TRACKS_AVAILABLE:
-                        log.d("onEvent: ");
-                        break;
                     default:
                         break;
                 }
@@ -186,7 +183,9 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     private void onAdEvent(AdEvent event) {
-        log.d("Ad Event: " + ((AdEvent) event).type.toString());
+        if (((AdEvent) event).type != AdEvent.Type.PLAY_HEAD_CHANGED){
+            log.d("Ad Event: " + ((AdEvent) event).type.name());
+        }
 
         switch (event.type) {
             case STARTED:
