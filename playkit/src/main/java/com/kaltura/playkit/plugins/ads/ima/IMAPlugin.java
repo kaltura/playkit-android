@@ -246,6 +246,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         this.mediaConfig = mediaConfig;
         isAdRequested = false;
         isAdDisplayed = false;
+        isAllAdsCompleted = false;
         isContentEndedBeforeMidroll = false;
         requestAdsFromIMA(adConfig.getAdTagURL());
     }
@@ -263,6 +264,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         adConfig = parseConfig(config);
         isAdRequested = false;
         isAdDisplayed = false;
+        isAllAdsCompleted = false;
     }
 
     @Override
@@ -296,11 +298,15 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             } else if (isAdDisplayed) {
                 if (adsManager.getAdProgress().getDuration() - adsManager.getAdProgress().getCurrentTime() < 1) {
                     log.d("onApplicationResumed player play called");
-                    adsManager.resume();
+                    if (adsManager != null && isAdDisplayed) {
+                        adsManager.resume();
+                    }
                     player.play();
                 } else {
                     log.d("onApplicationResumed ad resumed");
-                    adsManager.resume();
+                    if (adsManager != null && isAdDisplayed) {
+                        adsManager.resume();
+                    }
                 }
             }
         }
@@ -361,7 +367,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         isAdError = false;
         isAdRequested = false;
         isAdDisplayed = false;
-        isAllAdsCompleted = false;
+
         cancelAdDisplayedCheckTimer();
         cancelAdManagerTimer();
 
@@ -517,6 +523,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         log.d("AD Event pause isAdDisplayed = " + isAdDisplayed);
         if (adsManager != null && isAdDisplayed) {
             adsManager.pause();
+        } else if (player.isPlaying()) {
+            player.pause();
         }
     }
 
@@ -613,6 +621,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         switch (lastEventReceived) {
 
             case LOADED:
+                log.d("LOADED appIsInBackground = " + appIsInBackground);
+
                 // AdEventType.LOADED will be fired when ads are ready to be played.
                 // AdsManager.start() begins ad playback. This method is ignored for VMAP or
                 // ad rules playlists, as the SDK will automatically start executing the
