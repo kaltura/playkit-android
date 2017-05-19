@@ -47,11 +47,11 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     public long getDuration() {
         if (adsProvider.isAdDisplayed()) {
             long adDuration = adsProvider.getDuration();
-            log.d("getDuration: " + adDuration);
+            //log.d("getDuration: " + adDuration);
             return Consts.MILLISECONDS_MULTIPLIER * adDuration;
         } else {
             long contentDuration = super.getDuration();
-            log.d("content getDuration: " + contentDuration);
+            //log.d("content getDuration: " + contentDuration);
             return contentDuration;
         }
     }
@@ -59,14 +59,14 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public long getCurrentPosition() {
         boolean isAdDisplayed = adsProvider.isAdDisplayed();
-        log.d("getCurrentPosition isAdDisplayed = " + isAdDisplayed);
+        //log.d("getCurrentPosition isAdDisplayed = " + isAdDisplayed);
         if (isAdDisplayed) {
             long adPosition = adsProvider.getCurrentPosition();
-            log.d("getCurrentPosition = " + adPosition);
+            //log.d("getCurrentPosition = " + adPosition);
             return Consts.MILLISECONDS_MULTIPLIER * adPosition;
         } else {
             long contentCurrentPosition = super.getCurrentPosition();
-            log.d("contnent getCurrentPosition: " + contentCurrentPosition);
+            //log.d("contnent getCurrentPosition: " + contentCurrentPosition);
             return contentCurrentPosition;
         }
     }
@@ -84,7 +84,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public void play() {
         log.d("PLAY IMA decorator");
-        if (adsProvider != null) {
+        if (adsProvider != null && !adsProvider.isAdError()) {
             log.d("PLAY IMA decorator isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted = " + adsProvider.isAllAdsCompleted());
             if (!adsProvider.isAllAdsCompleted()) {
                 if (!adsProvider.isAdRequested()) {
@@ -105,7 +105,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public void pause() {
         log.d("PAUSE IMA decorator isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
-        if (adsProvider.isAdDisplayed()) {
+        if (adsProvider.isAdDisplayed() && !adsProvider.isAdError()) {
             adsProvider.pause();
         } else {
             log.d("IMA decorator Calling player pause");
@@ -124,7 +124,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
 
     @Override
     public void skipAd() {
-        if (adsProvider != null) {
+        if (adsProvider != null && !adsProvider.isAdError()) {
             adsProvider.skipAd();
         }
     }
@@ -133,7 +133,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     public long getAdCurrentPosition() {
         if (adsProvider != null) {
             long currPos = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
-            log.d("getAdCurrentPosition currPos = " + currPos);
+            //log.d("getAdCurrentPosition currPos = " + currPos);
             return currPos;
         }
         return  Consts.POSITION_UNSET;
@@ -143,7 +143,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     public long getAdDuration() {
         if (adsProvider != null) {
             long adDuration  = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
-            log.d("getAdDuration adDuration = " + adDuration);
+            //log.d("getAdDuration adDuration = " + adDuration);
             return adDuration;
         }
         return Consts.TIME_UNSET;
