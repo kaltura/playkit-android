@@ -18,6 +18,7 @@ public interface AdsProvider {
     boolean isAdPaused();
     boolean isAdRequested();
     boolean isAllAdsCompleted();
+    boolean isAdError();
     long getDuration();
     long getCurrentPosition();
     void setAdProviderListener(AdEnabledPlayerController adEnabledPlayerController);
