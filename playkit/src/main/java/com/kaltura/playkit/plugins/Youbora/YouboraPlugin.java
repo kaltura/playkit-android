@@ -10,6 +10,7 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.utils.Consts;
 import com.npaw.youbora.youboralib.data.Options;
 
 import java.util.Map;
@@ -55,7 +56,7 @@ public class YouboraPlugin extends PKPlugin {
         stopMonitoring();
         log.d("youbora - onUpdateMedia");
         this.mediaConfig = mediaConfig;
-        Map<String, Object> opt  = YouboraConfig.getConfig(pluginConfig, this.mediaConfig);
+        Map<String, Object> opt  = YouboraConfig.getConfig(pluginConfig, this.mediaConfig, player);
         // Refresh options with updated media
         pluginManager.setOptions(opt);
         if (!isMonitoring) {
@@ -78,7 +79,7 @@ public class YouboraPlugin extends PKPlugin {
             adsManager.onUpdateConfig();
         }
         this.pluginConfig = (JsonObject) config;
-        Map<String, Object> opt  = YouboraConfig.getConfig(pluginConfig, mediaConfig);
+        Map<String, Object> opt  = YouboraConfig.getConfig(pluginConfig, mediaConfig, player);
         // Refresh options with updated media
         pluginManager.setOptions(opt);
     }
@@ -155,7 +156,7 @@ public class YouboraPlugin extends PKPlugin {
                 return ;
             }
 
-            Map<String, Object> opt  = YouboraConfig.updateMediaConfig(pluginConfig, key, Long.valueOf(player.getDuration() / 1000).doubleValue());
+            Map<String, Object> opt  = YouboraConfig.updateMediaConfig(pluginConfig, key, Long.valueOf(player.getDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue());
             pluginManager.setOptions(opt);
         }
     };

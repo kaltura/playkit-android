@@ -3,6 +3,8 @@ package com.kaltura.playkit.plugins.Youbora;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
+import com.kaltura.playkit.Player;
+import com.kaltura.playkit.utils.Consts;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,7 +25,7 @@ public class YouboraConfig {
     private static final Map<String, Object> extraParamsObject;
     private static final Map<String, Object> adsObject;
 
-    private static String[] youboraConfigFieldNames = new String[]{"accountCode","username", "transactionCode"};
+    private static String[] youboraConfigFieldNames = new String[]{"accountCode", "username", "transactionCode"};
     private static String[] youboraBooleanConfigFieldNames = new String[]{"haltOnError", "enableAnalytics", "httpSecure", "parseCDNNodeHost"};
 
     private static String[] mediaConfigFieldNames = new String[]{"title", "cdn"};
@@ -78,9 +80,9 @@ public class YouboraConfig {
     private YouboraConfig() {
     }
 
-    public static Map<String, Object> getYouboraConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig, Player player) {
+    public static Map<String, Object> getConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig, Player player) {
         // load from json
-        setYouboraConfig(pluginConfig, mediaConfig, player);
+        setConfig(pluginConfig, mediaConfig, player);
 
         return youboraConfig;
     }
@@ -93,24 +95,25 @@ public class YouboraConfig {
         }
         return youboraConfig;
     }
-    private static void setYouboraConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig, Player player){
+
+    private static void setConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig, Player player) {
         log.d("setConfig");
 
         youboraConfig = defaultYouboraConfig;
         if (mediaConfig != null) {
 
-            Long duration = mediaConfig.getMediaEntry().getDuration() / 1000;
+            Long duration = mediaConfig.getMediaEntry().getDuration() / Consts.MILLISECONDS_MULTIPLIER;
             log.d("Youbora update duration = " + duration.doubleValue());
 
             mediaObject.put("duration", duration.intValue()); //Duration should be sent in secs
-            propertiesObject.put("sessionId", player.getSessionId().toString());
+            propertiesObject.put("sessionId", player.getSessionId());
         }
         if (pluginConfig != null) {
 
             //set these values on the root object
             setYouboraConfigObject(youboraConfigObject, pluginConfig, youboraConfigFieldNames, youboraBooleanConfigFieldNames);
 
-            if (pluginConfig.has("media")){
+            if (pluginConfig.has("media")) {
                 setYouboraConfigObject(mediaObject, pluginConfig.getAsJsonObject("media"), mediaConfigFieldNames, mediaBooleanConfigFieldNames);
             }
             if (pluginConfig.has("ads")) {
