@@ -21,6 +21,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.api.ovp.services.LiveStatsService;
 import com.kaltura.playkit.plugins.configs.KalturaStatsConfig;
+import com.kaltura.playkit.utils.Consts;
 
 import java.util.Date;
 import java.util.TimerTask;
@@ -41,7 +42,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private MessageBus messageBus;
     private RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
-    private int eventIdx = 0;
+    private int eventIdx = 1;
     private int currentBitrate = -1;
     private long bufferTime = 0;
     private long bufferStartTime = 0;
@@ -62,8 +63,6 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
             return value;
         }
     }
-
-
 
     public static final Factory factory = new Factory() {
         @Override
@@ -94,13 +93,13 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     @Override
     public void onDestroy() {
         stopLiveEvents();
-        eventIdx = 0;
+        eventIdx = 1;
         cancelTimer();
     }
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-        eventIdx = 0;
+        eventIdx = 1;
         this.mediaConfig = mediaConfig;
     }
 
@@ -153,13 +152,12 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         }
     };
 
-    public void onEvent(PlayerEvent.StateChanged event) {
+    synchronized public void  onEvent(PlayerEvent.StateChanged event) {
         switch (event.newState) {
             case READY:
-                startTimerInterval();
                 if (isBuffering) {
                     isBuffering = false;
-                    sendLiveEvent(calculateBuffer(false));
+                    calculateBuffer();
                 }
                 break;
             case BUFFERING:
@@ -171,21 +169,16 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         }
     }
 
-    private long calculateBuffer(boolean isBuffering) {
+    synchronized private long calculateBuffer() {
         long currTime = new Date().getTime();
         bufferTime = (currTime - bufferStartTime) / 1000;
         if (bufferTime > 10) {
             bufferTime = 10;
         }
-        if (isBuffering) {
-            bufferStartTime = new Date().getTime();
-        } else {
-            bufferStartTime = -1;
-        }
         return bufferTime;
     }
 
-    private void startTimerInterval() {
+    synchronized private void startTimerInterval() {
         if (timer == null) {
             timer = new java.util.Timer();
         }
@@ -194,10 +187,11 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
             public void run() {
                 sendLiveEvent(bufferTime);
             }
-        }, 0, pluginConfig.getTimerIntervalMillis());
+        }, 0, Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW); // server is making assumption that interval is 10 sec
     }
 
-    private void startLiveEvents() {
+    synchronized  private void startLiveEvents() {
+
         if (!isLive) {
             startTimerInterval();
             isLive = true;
@@ -205,22 +199,22 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                 sendLiveEvent(bufferTime);
                 isFirstPlay = false;
             }
-
         }
     }
 
     private void stopLiveEvents() {
         isLive = false;
+        cancelTimer();
     }
 
-    private void sendLiveEvent(final long bufferTime) {
+    synchronized private void sendLiveEvent(final long bufferTime) {
         String sessionId = (player.getSessionId() != null) ? player.getSessionId().toString() : "";
 
         // Parameters for the request -
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
         // String startTime,  String entryId,  boolean isLive, String referrer
         RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(pluginConfig.getBaseUrl(), pluginConfig.getPartnerId(), isLive ? 1 : 2, eventIdx++, bufferTime,
-                lastReportedBitrate, sessionId, mediaConfig.getStartPosition(), pluginConfig.getEntryId(), isLive, PlayKitManager.CLIENT_TAG, "hls");
+                lastReportedBitrate, sessionId, mediaConfig.getStartPosition(), pluginConfig.getEntryId(), isLive, PlayKitManager.CLIENT_TAG, "NA");
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
