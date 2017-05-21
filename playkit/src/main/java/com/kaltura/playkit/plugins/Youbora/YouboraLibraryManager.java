@@ -122,9 +122,7 @@ public class YouboraLibraryManager extends PluginGeneric {
                         }
                         break;
                     case ERROR:
-                        if (!isFirstPlay) {
-                            errorHandler(event.eventType().toString());
-                        }
+                        sendErrorHandler(event);
                         adCuePoints = null;
                         break;
                     case PAUSE:
@@ -151,9 +149,6 @@ public class YouboraLibraryManager extends PluginGeneric {
                     case SEEKING:
                         seekingHandler();
                         break;
-                    case TRACKS_AVAILABLE:
-                        log.d("onEvent: ");
-                        break;
                     default:
                         break;
                 }
@@ -166,8 +161,31 @@ public class YouboraLibraryManager extends PluginGeneric {
         }
     };
 
+    private void sendErrorHandler(PKEvent event) {
+        String errorMsg = "Player error occurred.";
+        PlayerEvent.ExceptionInfo exceptionInfo = (PlayerEvent.ExceptionInfo) event;
+        if (exceptionInfo == null || exceptionInfo.getException() == null) {
+            errorHandler(errorMsg, event.eventType().toString());
+            return;
+        }
+        Exception playerErrorException = exceptionInfo.getException();
+        if (playerErrorException != null) {
+            String errorMetadata = errorMsg;
+            String exceptionClass = "";
+            String exceptionCause = "";
+            if (playerErrorException.getCause() != null && playerErrorException.getCause().getClass() != null) {
+                exceptionClass = playerErrorException.getCause().getClass().getName();
+                errorMetadata = (playerErrorException.getCause().toString() != null) ? playerErrorException.getCause().toString() : "NA";
+                exceptionCause = playerErrorException.toString();
+            }
+            errorHandler(exceptionCause, exceptionClass, errorMetadata);
+        }
+    }
+
     private void onAdEvent(AdEvent event) {
-        log.d("Ad Event: " + ((AdEvent) event).type.toString());
+        if (((AdEvent) event).type != AdEvent.Type.PLAY_HEAD_CHANGED){
+            log.d("Ad Event: " + ((AdEvent) event).type.name());
+        }
 
         switch (event.type) {
             case STARTED:

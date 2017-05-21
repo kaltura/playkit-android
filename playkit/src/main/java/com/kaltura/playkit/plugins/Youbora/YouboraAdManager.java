@@ -113,7 +113,6 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                         lastReportedAdPlayhead =  Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
 
-
                         resumeAdHandler();
                         break;
                     case COMPLETED:
@@ -136,6 +135,11 @@ public class YouboraAdManager extends AdnalyzerGeneric {
                     case PLAY_HEAD_CHANGED:
                         double adPos = Long.valueOf(((AdEvent.AdPlayHeadEvent) event).adPlayHead).doubleValue();
                         lastReportedAdPlayhead = adPos;
+                        break;
+                    case CLICKED:
+                        log.d("learn more clicked");
+                        break;
+                    default:
                         break;
                 }
                 sendReportEvent(event);
@@ -190,7 +194,7 @@ public class YouboraAdManager extends AdnalyzerGeneric {
 
     @Override
     public Double getAdDuration() {
-        Double adDuration = currentAdInfo != null ? (Long.valueOf(currentAdInfo.getAdDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue()) : 0.0D;        
+        Double adDuration = currentAdInfo != null ? (Long.valueOf(currentAdInfo.getAdDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue()) : 0.0D;
         return adDuration;
     }
 

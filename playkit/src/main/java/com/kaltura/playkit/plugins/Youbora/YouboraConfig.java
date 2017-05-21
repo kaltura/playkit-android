@@ -23,8 +23,8 @@ public class YouboraConfig {
     private static final Map<String, Object> extraParamsObject;
     private static final Map<String, Object> adsObject;
 
-    private static String[] youboraConfigFieldNames = new String[]{"accountCode", "username"};
-    private static String[] youboraBooleanConfigFieldNames = new String[]{"haltOnError", "enableAnalytics"};
+    private static String[] youboraConfigFieldNames = new String[]{"accountCode","username", "transactionCode"};
+    private static String[] youboraBooleanConfigFieldNames = new String[]{"haltOnError", "enableAnalytics", "httpSecure", "parseCDNNodeHost"};
 
     private static String[] mediaConfigFieldNames = new String[]{"title", "cdn"};
     private static String[] mediaBooleanConfigFieldNames = new String[]{"isLive"};
@@ -78,9 +78,9 @@ public class YouboraConfig {
     private YouboraConfig() {
     }
 
-    public static Map<String, Object> getConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig) {
+    public static Map<String, Object> getYouboraConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig, Player player) {
         // load from json
-        setConfig(pluginConfig, mediaConfig);
+        setYouboraConfig(pluginConfig, mediaConfig, player);
 
         return youboraConfig;
     }
@@ -93,8 +93,7 @@ public class YouboraConfig {
         }
         return youboraConfig;
     }
-
-    private static void setConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig) {
+    private static void setYouboraConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig, Player player){
         log.d("setConfig");
 
         youboraConfig = defaultYouboraConfig;
@@ -104,12 +103,14 @@ public class YouboraConfig {
             log.d("Youbora update duration = " + duration.doubleValue());
 
             mediaObject.put("duration", duration.intValue()); //Duration should be sent in secs
+            propertiesObject.put("sessionId", player.getSessionId().toString());
         }
         if (pluginConfig != null) {
-            if (pluginConfig.has("youboraConfig")) {
-                setYouboraConfigObject(youboraConfigObject, pluginConfig.getAsJsonObject("youboraConfig"), youboraConfigFieldNames, youboraBooleanConfigFieldNames);
-            }
-            if (pluginConfig.has("media")) {
+
+            //set these values on the root object
+            setYouboraConfigObject(youboraConfigObject, pluginConfig, youboraConfigFieldNames, youboraBooleanConfigFieldNames);
+
+            if (pluginConfig.has("media")){
                 setYouboraConfigObject(mediaObject, pluginConfig.getAsJsonObject("media"), mediaConfigFieldNames, mediaBooleanConfigFieldNames);
             }
             if (pluginConfig.has("ads")) {
