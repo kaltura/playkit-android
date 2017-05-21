@@ -5,8 +5,6 @@ import android.net.Uri;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
 
-import java.util.UUID;
-
 import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
 
 /**
@@ -14,14 +12,14 @@ import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
  */
 public class KalturaPlaybackRequestAdapter implements PKRequestParams.Adapter {
     
-    private UUID playSessionId;
+    private String playSessionId;
     
     public static void setup(Player player) {
         KalturaPlaybackRequestAdapter decorator = new KalturaPlaybackRequestAdapter(player.getSessionId());
         player.getSettings().setContentRequestAdapter(decorator);
     }
 
-    private KalturaPlaybackRequestAdapter(UUID playSessionId) {
+    private KalturaPlaybackRequestAdapter(String playSessionId) {
         this.playSessionId = playSessionId;
     }
     
@@ -31,11 +29,16 @@ public class KalturaPlaybackRequestAdapter implements PKRequestParams.Adapter {
         if (url.getPath().contains("/playManifest/")) {
             Uri alt = url.buildUpon()
                     .appendQueryParameter("clientTag", CLIENT_TAG)
-                    .appendQueryParameter("playSessionId", playSessionId.toString())
+                    .appendQueryParameter("playSessionId", playSessionId)
                     .build();
             return new PKRequestParams(alt, requestParams.headers);
         }
 
         return requestParams;
+    }
+
+    @Override
+    public void updateSessionId(String sessionId) {
+        this.playSessionId = sessionId;
     }
 }

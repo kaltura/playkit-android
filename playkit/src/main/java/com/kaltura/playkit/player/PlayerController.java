@@ -42,7 +42,9 @@ public class PlayerController implements Player {
     private PKEvent.Listener eventListener;
     private PlayerView playerEngineView;
 
-    private UUID sessionId = UUID.randomUUID();
+    private String sessionId;
+    private UUID playerSessionId = UUID.randomUUID();
+
     private PKRequestParams.Adapter contentRequestAdapter;
 
     private boolean isNewEntry = true;
@@ -70,7 +72,7 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public UUID getSessionId() {
+    public String getSessionId() {
         return sessionId;
     }
 
@@ -121,7 +123,7 @@ public class PlayerController implements Player {
                         }
                         break;
                     case METADATA_AVAILABLE:
-                        if(player.getMetadata() == null || player.getMetadata().isEmpty()) {
+                        if (player.getMetadata() == null || player.getMetadata().isEmpty()) {
                             log.w("METADATA_AVAILABLE event received, but player engine have no metadata.");
                             return;
                         }
@@ -227,6 +229,7 @@ public class PlayerController implements Player {
             log.e("Error in " + visibilityFunction + " playerView is null");
         }
     }
+
     @Override
     public Player.Settings getSettings() {
         return settings;
@@ -235,7 +238,7 @@ public class PlayerController implements Player {
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
 
-        if(sourceConfig == null) {
+        if (sourceConfig == null) {
             //TODO send error to the application.
             log.e("Cant prepare player with media config. PKMediaConfig is null.");
             return;
@@ -257,6 +260,12 @@ public class PlayerController implements Player {
         log.d("setMedia");
         //This is a new entry.
         isNewEntry = true;
+
+        //generate the session id.
+        sessionId = generateSessionId();
+        if (contentRequestAdapter != null) {
+            contentRequestAdapter.updateSessionId(sessionId);
+        }
 
         //When mediaConfig is null, we can not build a valid sourceConfig object.
         //So assign it to null, and return. This will prevent from continue of the prepare() flow.
@@ -282,6 +291,14 @@ public class PlayerController implements Player {
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
     }
 
+    private String generateSessionId() {
+        UUID mediaSessionId = UUID.randomUUID();
+        String newSessionId = playerSessionId.toString();
+        newSessionId += ":";
+        newSessionId += mediaSessionId.toString();
+        return newSessionId;
+    }
+
     private void switchPlayers(PKMediaFormat mediaFormat, boolean removePlayerView) {
         if (removePlayerView) {
             removePlayerView();
@@ -291,8 +308,6 @@ public class PlayerController implements Player {
             player.destroy();
         }
         initializePlayer(mediaFormat);
-
-
     }
 
     private void initializePlayer(PKMediaFormat mediaFormat) {
