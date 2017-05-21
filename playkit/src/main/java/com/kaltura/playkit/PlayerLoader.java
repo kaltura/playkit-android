@@ -34,6 +34,7 @@ class PlayerLoader extends PlayerDecoratorBase {
     private MessageBus messageBus;
     
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
+    private PlayerController playerController;
 
     PlayerLoader(Context context) {
         this.context = context;
@@ -41,7 +42,8 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
     
     public void load(@NonNull PKPluginConfigs pluginsConfig) {
-        PlayerController playerController = new PlayerController(context);
+
+        playerController = new PlayerController(context);
 
         // By default, set Kaltura decorator.
         KalturaPlaybackRequestAdapter.setup(playerController);
@@ -115,7 +117,9 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     @Override
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
-        
+
+        playerController.setMedia(mediaConfig);
+
         super.prepare(mediaConfig);
         
         for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {

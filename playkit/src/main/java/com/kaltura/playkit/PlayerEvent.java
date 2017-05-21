@@ -114,6 +114,20 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class SourceSelected extends PlayerEvent {
+
+        private String sourceUrl;
+
+        public SourceSelected(String sourceUrl) {
+            super(Type.SOURCE_SELECTED);
+            this.sourceUrl = sourceUrl;
+        }
+
+        public String getSourceUrl() {
+            return sourceUrl;
+        }
+    }
+
     public final Type type;
 
     public PlayerEvent(Type type) {
@@ -138,6 +152,7 @@ public class PlayerEvent implements PKEvent {
         VOLUME_CHANGED, // Sent when volume is changed.
         STOPPED, // sent when stop player api is called
         METADATA_AVAILABLE, // Sent when there is metadata available for this entry.
+        SOURCE_SELECTED // Sent when the source was selected.
     }
 
     @Override

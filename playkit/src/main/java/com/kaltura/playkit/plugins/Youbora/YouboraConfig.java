@@ -1,19 +1,12 @@
 package com.kaltura.playkit.plugins.Youbora;
 
-import android.net.Uri;
-
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
-import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.Player;
-import com.kaltura.playkit.player.SourceSelector;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
 
 /**
  * Created by zivilan on 17/11/2016.
@@ -30,18 +23,18 @@ public class YouboraConfig {
     private static final Map<String, Object> extraParamsObject;
     private static final Map<String, Object> adsObject;
 
-    private static String[] youboraConfigFieldNames = new String[]{"accountCode","username"};
-    private static String[] youboraBooleanConfigFieldNames = new String[]{"haltOnError","enableAnalytics"};
+    private static String[] youboraConfigFieldNames = new String[]{"accountCode", "username"};
+    private static String[] youboraBooleanConfigFieldNames = new String[]{"haltOnError", "enableAnalytics"};
 
-    private static String[] mediaConfigFieldNames = new String[]{"title","cdn"};
+    private static String[] mediaConfigFieldNames = new String[]{"title", "cdn"};
     private static String[] mediaBooleanConfigFieldNames = new String[]{"isLive"};
 
-    private static String[] adsConfigFieldNames = new String[]{"title","campaign"};
+    private static String[] adsConfigFieldNames = new String[]{"title", "campaign"};
     private static String[] adsBooleanConfigFieldNames = new String[]{};
 
-    private static String[] propertiesConfigFieldNames = new String[]{"genre","type","transaction_type","year","cast","director","owner","parental","price","rating","audioType","audioChannels"
-                                            ,"device","quality"};
-    private static String[] extraConfigFieldNames = new String[]{"param1","param2","param3","param4","param5","param6","param7","param8","param9","param10"};
+    private static String[] propertiesConfigFieldNames = new String[]{"genre", "type", "transaction_type", "year", "cast", "director", "owner", "parental", "price", "rating", "audioType", "audioChannels"
+            , "device", "quality"};
+    private static String[] extraConfigFieldNames = new String[]{"param1", "param2", "param3", "param4", "param5", "param6", "param7", "param8", "param9", "param10"};
 
     static {
         HashMap<String, Object> youboraLocalConfig = new HashMap<>(20);
@@ -52,7 +45,7 @@ public class YouboraConfig {
         youboraLocalConfig.put("accountCode", "kalturatest");
         youboraLocalConfig.put("transactionCode", "");
         youboraLocalConfig.put("haltOnError", true);
-        
+
         youboraConfigObject = youboraLocalConfig;
 
         Map<String, Object> device = new HashMap<>(1);
@@ -82,82 +75,66 @@ public class YouboraConfig {
         defaultYouboraConfig = Collections.unmodifiableMap(youboraLocalConfig);
     }
 
-    private YouboraConfig() {}
+    private YouboraConfig() {
+    }
 
-    public static Map<String, Object> getYouboraConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig, Player player) {
+    public static Map<String, Object> getConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig) {
         // load from json
-        setYouboraConfig(pluginConfig, mediaConfig, player);
+        setConfig(pluginConfig, mediaConfig);
 
         return youboraConfig;
     }
 
-    public static Map<String, Object> setYouboraAdsConfig(JsonObject pluginConfig) {
-        setYouboraConfigObject(adsObject, pluginConfig.getAsJsonObject("ads"), adsConfigFieldNames, adsBooleanConfigFieldNames);
-        return youboraConfig;
-    }
+    public static Map<String, Object> updateMediaConfig(JsonObject pluginConfig, String key, Object value) {
 
-    public static Map<String, Object> setYouboraMediaDuration(JsonObject pluginConfig, double newMediaDuration) {
-        mediaObject.put("duration", newMediaDuration);
-        if (pluginConfig.has("media")){
+        mediaObject.put(key, value);
+        if (pluginConfig.has("media")) {
             setYouboraConfigObject(mediaObject, pluginConfig.getAsJsonObject("media"), mediaConfigFieldNames, mediaBooleanConfigFieldNames);
         }
         return youboraConfig;
     }
-    private static void setYouboraConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig, Player player){
-        log.d( "YouboraConfig setYouboraConfig");
+
+    private static void setConfig(JsonObject pluginConfig, PKMediaConfig mediaConfig) {
+        log.d("setConfig");
 
         youboraConfig = defaultYouboraConfig;
         if (mediaConfig != null) {
-            PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
-            String playResource = source.getUrl();
-            Uri url = Uri.parse(source.getUrl());
-            if (url.getPath().contains("/playManifest/")) {
-                Uri alt = url.buildUpon()
-                        .appendQueryParameter("clientTag", CLIENT_TAG)
-                        .appendQueryParameter("playSessionId", player.getSessionId().toString())
-                        .build();
-                playResource = alt.toString();
-            }
-            log.d("Youbora playResource = " + playResource);
-            mediaObject.put("resource", playResource);
             Long duration = mediaConfig.getMediaEntry().getDuration() / 1000;
             log.d("Youbora update duration = " + duration.doubleValue());
 
             mediaObject.put("duration", duration.intValue()); //Duration should be sent in secs
         }
-        if (pluginConfig != null){
-            if (pluginConfig.has("youboraConfig")){
+        if (pluginConfig != null) {
+            if (pluginConfig.has("youboraConfig")) {
                 setYouboraConfigObject(youboraConfigObject, pluginConfig.getAsJsonObject("youboraConfig"), youboraConfigFieldNames, youboraBooleanConfigFieldNames);
             }
-            if (pluginConfig.has("media")){
+            if (pluginConfig.has("media")) {
                 setYouboraConfigObject(mediaObject, pluginConfig.getAsJsonObject("media"), mediaConfigFieldNames, mediaBooleanConfigFieldNames);
             }
-            if (pluginConfig.has("ads")){
+            if (pluginConfig.has("ads")) {
                 setYouboraConfigObject(adsObject, pluginConfig.getAsJsonObject("ads"), adsConfigFieldNames, adsBooleanConfigFieldNames);
             }
-            if (pluginConfig.has("properties")){
+            if (pluginConfig.has("properties")) {
                 setYouboraConfigObject(propertiesObject, pluginConfig.getAsJsonObject("properties"), propertiesConfigFieldNames, null);
             }
-            if (pluginConfig.has("extraParams")){
+            if (pluginConfig.has("extraParams")) {
                 setYouboraConfigObject(extraParamsObject, pluginConfig.getAsJsonObject("extraParams"), extraConfigFieldNames, null);
             }
         }
     }
 
-    private static void setYouboraConfigObject(Map<String, Object> defaultJsonObject, JsonObject jsonObject, String[] fieldNames, String[] booleanFieldNames){
-        for (int i = 0; i < fieldNames.length; i++) {
-            String fieldName = fieldNames[i];
+    private static void setYouboraConfigObject(Map<String, Object> defaultJsonObject, JsonObject jsonObject, String[] fieldNames, String[] booleanFieldNames) {
+        for (String fieldName : fieldNames) {
             if (jsonObject.has(fieldName)) {
-                log.d("setYouboraConfigObject: " + fieldNames[i]);
+                log.d("setYouboraConfigObject: " + fieldName);
                 defaultJsonObject.put(fieldName, jsonObject.getAsJsonPrimitive(fieldName).getAsString());
             }
         }
         if (booleanFieldNames != null) {
-            for (int i = 0; i < booleanFieldNames.length; i++) {
-                String fieldName = booleanFieldNames[i];
+            for (String fieldName : booleanFieldNames) {
                 if (jsonObject.has(fieldName)) {
-                    log.d( "setYouboraConfigObject: " + booleanFieldNames[i]);
+                    log.d("setYouboraConfigObject: " + fieldName);
                     defaultJsonObject.put(fieldName, jsonObject.getAsJsonPrimitive(fieldName).getAsBoolean());
                 }
             }

@@ -55,7 +55,7 @@ public class YouboraPlugin extends PKPlugin {
         stopMonitoring();
         log.d("youbora - onUpdateMedia");
         this.mediaConfig = mediaConfig;
-        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, this.mediaConfig, player);
+        Map<String, Object> opt  = YouboraConfig.getConfig(pluginConfig, this.mediaConfig);
         // Refresh options with updated media
         pluginManager.setOptions(opt);
         if (!isMonitoring) {
@@ -78,7 +78,7 @@ public class YouboraPlugin extends PKPlugin {
             adsManager.onUpdateConfig();
         }
         this.pluginConfig = (JsonObject) config;
-        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig, player);
+        Map<String, Object> opt  = YouboraConfig.getConfig(pluginConfig, mediaConfig);
         // Refresh options with updated media
         pluginManager.setOptions(opt);
     }
@@ -132,7 +132,7 @@ public class YouboraPlugin extends PKPlugin {
                     !pluginConfig.getAsJsonObject("youboraConfig").getAsJsonPrimitive("enableSmartAds").isJsonNull()) {
                 adAnalytics = pluginConfig.getAsJsonObject("youboraConfig").getAsJsonPrimitive("enableSmartAds").getAsBoolean();
             }
-            messageBus.listen(eventListener, PlayerEvent.Type.DURATION_CHANGE);
+            messageBus.listen(eventListener, PlayerEvent.Type.DURATION_CHANGE, PlayerEvent.Type.SOURCE_SELECTED);
         }
 
     }
@@ -140,26 +140,29 @@ public class YouboraPlugin extends PKPlugin {
     PKEvent.Listener eventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
-            Map<String, Object> opt  = YouboraConfig.setYouboraMediaDuration(pluginConfig, Long.valueOf(player.getDuration() / 1000).doubleValue());
-            // Set options
+
+            PlayerEvent playerEvent = (PlayerEvent) event;
+            String key = "";
+
+            switch (playerEvent.type) {
+                case DURATION_CHANGE:
+
+                    key = "duration";
+                    break;
+
+                case SOURCE_SELECTED:
+                    key = "resource";
+                    break;
+            }
+
+            if(key.isEmpty()) {
+                return ;
+            }
+
+            Map<String, Object> opt  = YouboraConfig.updateMediaConfig(pluginConfig, key, Long.valueOf(player.getDuration() / 1000).doubleValue());
             pluginManager.setOptions(opt);
         }
     };
-    
-    private void setPluginOptions(){
-        //update the isLive value
-        if (pluginConfig != null && pluginConfig.has("media")) {
-            if (!((JsonObject) pluginConfig.get("media")).has("isLive")) {
-                boolean isLiveFlag = pluginManager.getIsLive();
-                log.d("isLiveFlag = " + pluginManager.getIsLive());
-                ((JsonObject) pluginConfig.get("media")).addProperty("isLive", isLiveFlag);
-            }
-        }
-
-        Map<String, Object> opt  = YouboraConfig.getYouboraConfig(pluginConfig, mediaConfig, player);
-        // Set options
-        pluginManager.setOptions(opt);
-    }
 
     private void stopMonitoring() {
         log.d("stop monitoring");
