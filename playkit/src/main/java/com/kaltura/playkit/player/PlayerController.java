@@ -254,7 +254,7 @@ public class PlayerController implements Player {
     }
 
     public void setMedia(PKMediaConfig mediaConfig) {
-
+        log.d("setMedia");
         //This is a new entry.
         isNewEntry = true;
 

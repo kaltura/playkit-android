@@ -140,23 +140,27 @@ public class YouboraPlugin extends PKPlugin {
 
             PlayerEvent playerEvent = (PlayerEvent) event;
             String key = "";
+            Object value = null;
 
             switch (playerEvent.type) {
                 case DURATION_CHANGE:
 
                     key = "duration";
+                    value = Long.valueOf(player.getDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
                     break;
 
                 case SOURCE_SELECTED:
                     key = "resource";
+                    PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) playerEvent;
+                    value = sourceSelected.getSourceUrl();
                     break;
             }
 
-            if(key.isEmpty()) {
+            if(key.isEmpty() ) {
                 return ;
             }
 
-            Map<String, Object> opt  = YouboraConfig.updateMediaConfig(pluginConfig, key, Long.valueOf(player.getDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue());
+            Map<String, Object> opt  = YouboraConfig.updateMediaConfig(pluginConfig, key, value);
             pluginManager.setOptions(opt);
         }
     };
