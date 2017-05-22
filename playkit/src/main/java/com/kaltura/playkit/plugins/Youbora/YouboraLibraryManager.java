@@ -27,9 +27,9 @@ import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
  */
 
 public class YouboraLibraryManager extends PluginGeneric {
-
-    public static final String KALTURA_ANDROID = "Kaltura-Android";
+    
     private static final PKLog log = PKLog.get("YouboraLibraryManager");
+    private static final String KALTURA_ANDROID = "Kaltura-Android";
 
     private Player player;
     private MessageBus messageBus;
