@@ -102,7 +102,7 @@ public class PlayerEvent implements PKEvent {
 
     public static class MetadataAvailable extends PlayerEvent {
 
-        private List<PKMetadata> metadataList;
+        public final List<PKMetadata> metadataList;
 
         public MetadataAvailable(List<PKMetadata> metadataList) {
             super(Type.METADATA_AVAILABLE);
@@ -116,15 +116,11 @@ public class PlayerEvent implements PKEvent {
 
     public static class SourceSelected extends PlayerEvent {
 
-        private String sourceUrl;
+        public final String sourceUrl;
 
         public SourceSelected(String sourceUrl) {
             super(Type.SOURCE_SELECTED);
             this.sourceUrl = sourceUrl;
-        }
-
-        public String getSourceUrl() {
-            return sourceUrl;
         }
     }
 
