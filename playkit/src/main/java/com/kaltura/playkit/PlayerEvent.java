@@ -108,10 +108,6 @@ public class PlayerEvent implements PKEvent {
             super(Type.METADATA_AVAILABLE);
             this.metadataList = metadataList;
         }
-
-        public List<PKMetadata> getMetadataList() {
-            return metadataList;
-        }
     }
 
     public static class SourceSelected extends PlayerEvent {
