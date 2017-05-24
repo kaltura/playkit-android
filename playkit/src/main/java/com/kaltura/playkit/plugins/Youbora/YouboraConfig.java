@@ -1,15 +1,19 @@
 package com.kaltura.playkit.plugins.Youbora;
 
+import android.net.Uri;
+
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.Utils;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.player.SourceSelector;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
 
 /**
  * Created by zivilan on 17/11/2016.
