@@ -596,13 +596,12 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public PlaybackInfo getPlaybackInfo() {
-        PlaybackInfo paramsInfo = new PlaybackInfo(lastPlayedSource.toString(),
+       return new PlaybackInfo(lastPlayedSource.toString(),
                 trackSelectionHelper.getCurrentVideoBitrate(),
                 trackSelectionHelper.getCurrentAudioBitrate(),
                 bandwidthMeter.getBitrateEstimate(),
                 trackSelectionHelper.getCurrentVideoWidth(),
                 trackSelectionHelper.getCurrentVideoHeight());
-        return paramsInfo;
     }
 
     @Override

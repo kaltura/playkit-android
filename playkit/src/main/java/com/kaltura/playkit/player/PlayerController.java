@@ -264,7 +264,7 @@ public class PlayerController implements Player {
         //generate the session id.
         sessionId = generateSessionId();
         if (contentRequestAdapter != null) {
-            contentRequestAdapter.updateSessionId(sessionId);
+            contentRequestAdapter.updateParams(this);
         }
 
         //When mediaConfig is null, we can not build a valid sourceConfig object.
