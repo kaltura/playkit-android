@@ -120,20 +120,6 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
-    public static class SourceSelected extends PlayerEvent {
-
-        private String sourceUrl;
-
-        public SourceSelected(String sourceUrl) {
-            super(Type.SOURCE_SELECTED);
-            this.sourceUrl = sourceUrl;
-        }
-
-        public String getSourceUrl() {
-            return sourceUrl;
-        }
-    }
-
     public final Type type;
 
     public PlayerEvent(Type type) {

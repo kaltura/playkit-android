@@ -28,6 +28,6 @@ public class PKRequestParams {
          */
         PKRequestParams adapt(PKRequestParams requestParams);
 
-        void updateSessionId(String sessionId);
+        void updateParams(Player player);
     }
 }
