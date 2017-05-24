@@ -15,7 +15,7 @@ import java.util.List;
  * Created by Noam Tamim @ Kaltura on 29/11/2016.
  */
 
-public class SourceSelector {
+class SourceSelector {
     
     private static final PKLog log = PKLog.get("SourceSelector");
     private final PKMediaEntry mediaEntry;
@@ -71,7 +71,7 @@ public class SourceSelector {
         return null;
     }
 
-    public static PKMediaSource selectSource(PKMediaEntry mediaEntry) {
+    static PKMediaSource selectSource(PKMediaEntry mediaEntry) {
         return new SourceSelector(mediaEntry).getPreferredSource();
     }
 

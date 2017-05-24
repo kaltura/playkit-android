@@ -96,6 +96,7 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.DurationChanged(getDuration());
                         if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
                             startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+                            isNewEntry = false;
                         }
                         break;
                     case TRACKS_AVAILABLE:
@@ -125,6 +126,10 @@ public class PlayerController implements Player {
                             return;
                         }
                         event = new PlayerEvent.MetadataAvailable(player.getMetadata());
+                        break;
+                    case SOURCE_SELECTED:
+                        String sourceUrl = sourceConfig.getUrl().toString();
+                        event = new PlayerEvent.SourceSelected(sourceUrl);
                         break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
@@ -230,24 +235,14 @@ public class PlayerController implements Player {
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
 
-        isNewEntry = isNewEntry(mediaConfig);
-        if (mediaConfig == null) {
-            log.e("No playable mediaConfig found, mediaConfig = null");
+        if(sourceConfig == null) {
+            //TODO send error to the application.
+            log.e("Cant prepare player with media config. PKMediaConfig is null.");
             return;
         }
 
-        this.mediaConfig = mediaConfig;
-
-        PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
-
-        if (source == null) {
-            log.e("No playable source found for entry");
-            return;
-        }
-
-
+        PKMediaSource source = sourceConfig.mediaSource;
         boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
-        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestAdapter, cea608CaptionsEnabled);
         if (player == null) {
             switchPlayers(source.getMediaFormat(), false);
         } else if (shouldSwitchBetweenPlayers) {
@@ -256,6 +251,35 @@ public class PlayerController implements Player {
 
         player.load(sourceConfig);
 
+    }
+
+    public void setMedia(PKMediaConfig mediaConfig) {
+        log.d("setMedia");
+        //This is a new entry.
+        isNewEntry = true;
+
+        //When mediaConfig is null, we can not build a valid sourceConfig object.
+        //So assign it to null, and return. This will prevent from continue of the prepare() flow.
+        if (mediaConfig == null) {
+            log.e("No playable mediaConfig found, mediaConfig = null");
+            sourceConfig = null;
+            return;
+        }
+
+        this.mediaConfig = mediaConfig;
+
+        PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
+
+        //If source was not able to select, assign sourceConfig to null and return.
+        //This will prevent from continue of the prepare() flow.
+        if (source == null) {
+            log.e("No playable source found for entry");
+            sourceConfig = null;
+            return;
+        }
+
+        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestAdapter, cea608CaptionsEnabled);
+        eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
     }
 
     private void switchPlayers(PKMediaFormat mediaFormat, boolean removePlayerView) {
@@ -479,19 +503,6 @@ public class PlayerController implements Player {
         }
 
         player.changeTrack(uniqueId);
-    }
-
-    private boolean isNewEntry(PKMediaConfig mediaConfig) {
-        if (this.mediaConfig == null) {
-            return true;
-        }
-
-        String oldEntryId = this.mediaConfig.getMediaEntry().getId();
-        if (oldEntryId == null) {
-            return true;
-        }
-        String newEntryId = mediaConfig.getMediaEntry().getId();
-        return !oldEntryId.equals(newEntryId);
     }
 
     private boolean shouldSwitchBetweenPlayers(PKMediaSource newSource) {
