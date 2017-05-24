@@ -230,7 +230,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     }
 
     private void sendLiveEvent(final long bufferTime) {
-        String sessionId = (player.getSessionId() != null) ? player.getSessionId().toString() : "";
+        String sessionId = (player.getSessionId() != null) ? player.getSessionId() : "";
 
         // Parameters for the request -
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,

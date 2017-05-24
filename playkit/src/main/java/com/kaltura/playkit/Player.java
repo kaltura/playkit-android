@@ -7,8 +7,6 @@ import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.utils.Consts;
 
-import java.util.UUID;
-
 /**
  * Created by Noam Tamim @ Kaltura on 18/09/2016.
  */
@@ -20,7 +18,7 @@ public interface Player {
     interface Settings {
         /**
          * Set the Player's contentRequestAdapter.
-         * @param contentRequestAdapter 
+         * @param contentRequestAdapter - request adapter.
          * @return Player Settings.
          */
         Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter);
@@ -166,9 +164,9 @@ public interface Player {
     AdController getAdController();
 
     /**
-     * Get the Player's SessionId. The SessionId is initialized when the player loads. 
-     * @return Player's SessionId, as a UUID object.
+     * Get the Player's SessionId. The SessionId is generated each time new media is set.
+     * @return Player's SessionId, as a String object.
      */
-    UUID getSessionId();
+    String getSessionId();
 }
 
