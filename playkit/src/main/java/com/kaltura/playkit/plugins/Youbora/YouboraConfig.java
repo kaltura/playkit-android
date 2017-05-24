@@ -1,14 +1,17 @@
 package com.kaltura.playkit.plugins.Youbora;
 
+
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
 
 /**
  * Created by zivilan on 17/11/2016.
@@ -130,14 +133,14 @@ public class YouboraConfig {
 
     private static void setYouboraConfigObject(Map<String, Object> defaultJsonObject, JsonObject jsonObject, String[] fieldNames, String[] booleanFieldNames) {
         for (String fieldName : fieldNames) {
-            if (jsonObject.has(fieldName)) {
+            if (Utils.isJsonObjectValueValid(jsonObject, fieldName)) {
                 log.d("setYouboraConfigObject: " + fieldName);
                 defaultJsonObject.put(fieldName, jsonObject.getAsJsonPrimitive(fieldName).getAsString());
             }
         }
         if (booleanFieldNames != null) {
             for (String fieldName : booleanFieldNames) {
-                if (jsonObject.has(fieldName)) {
+                if (Utils.isJsonObjectValueValid(jsonObject, fieldName)) {
                     log.d("setYouboraConfigObject: " + fieldName);
                     defaultJsonObject.put(fieldName, jsonObject.getAsJsonPrimitive(fieldName).getAsBoolean());
                 }

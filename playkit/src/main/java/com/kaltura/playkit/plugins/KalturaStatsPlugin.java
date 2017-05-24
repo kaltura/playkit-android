@@ -342,7 +342,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                     }
                 }
                 break;
-            case PAUSED:;
+            case PAUSED:
             case RESUMED:
             case COMPLETED:
                 break;
@@ -458,7 +458,7 @@ public class KalturaStatsPlugin extends PKPlugin {
      * @param eventType - Enum stating Kaltura state events
      */
     private void sendAnalyticsEvent(final KStatsEvent eventType) {
-        String sessionId = (player.getSessionId() != null) ? player.getSessionId().toString() : "";
+        String sessionId = (player.getSessionId() != null) ? player.getSessionId() : "";
 
         long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration() / Consts.MILLISECONDS_MULTIPLIER;
 
