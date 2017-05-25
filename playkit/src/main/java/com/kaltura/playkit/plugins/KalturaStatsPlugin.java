@@ -438,12 +438,12 @@ public class KalturaStatsPlugin extends PKPlugin {
             public void run() {
                 float progress = ((float) player.getCurrentPosition() / player.getDuration());
                 log.d("progress = " + progress + " seekPercent = " + seekPercent);
-                if (!playReached25 && progress >= 0.25 && seekPercent <= 0.25) {
+                if (!playReached25 && progress >= 0.25 && seekPercent < 0.5) {
                     sendPlayReached25();
-                } else if (!playReached50 && progress >= 0.5 && seekPercent <= 0.5) {
+                } else if (!playReached50 && progress >= 0.5 && seekPercent <  0.75) {
                     sendPlayReached25();
                     sendPlayReached50();
-                } else if (!playReached75 && progress >= 0.75 && seekPercent <= 0.75) {
+                } else if (!playReached75 && progress >= 0.75 && seekPercent < 1) {
                     sendPlayReached25();
                     sendPlayReached50();
                     sendPlayReached75();
