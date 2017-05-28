@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.kaltura.netkit.connect.executor.RequestQueue;
+import com.kaltura.netkit.connect.request.RequestConfiguration;
 import com.kaltura.netkit.connect.request.RequestElement;
 import com.kaltura.netkit.connect.response.BaseResult;
 import com.kaltura.netkit.connect.response.PrimitiveResult;
@@ -505,6 +506,11 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     class Executor implements RequestQueue {
 
         @Override
+        public void setDefaultConfiguration(RequestConfiguration config) {
+
+        }
+
+        @Override
         public String queue(RequestElement request) {
             new RequestHandler(request).run();
             return null;
@@ -529,6 +535,11 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
         @Override
         public boolean isEmpty() {
             return false;
+        }
+
+        @Override
+        public void enableLogs(boolean enable) {
+
         }
 
 
