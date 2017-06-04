@@ -360,6 +360,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             return mediaEntry.setId(entry.getId()).setSources(sources)
                     .setDuration(entry.getMsDuration()).setMetadata(metadata)
+                    .setName(entry.getName())
                     .setMediaType(MediaTypeConverter.toMediaEntryType(entry.getType()));
         }
 

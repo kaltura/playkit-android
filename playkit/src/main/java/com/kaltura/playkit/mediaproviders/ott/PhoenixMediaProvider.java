@@ -418,6 +418,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
             PKMediaEntry mediaEntry = new PKMediaEntry();
             mediaEntry.setId("" + assetId);
+            mediaEntry.setName("NA");
 
             // until the response will be delivered in the right order:
             playbackSourcesSort(sourcesFilter, playbackSources);
