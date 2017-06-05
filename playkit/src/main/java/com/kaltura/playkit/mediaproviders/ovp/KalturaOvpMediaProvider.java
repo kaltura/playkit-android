@@ -54,6 +54,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -423,6 +424,9 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         private static List<PKMediaSource> parseFromSources(String baseUrl, String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaPlaybackContext playbackContext) {
             ArrayList<PKMediaSource> sources = new ArrayList<>();
 
+
+            String sourceFlavorId = obtainMasterSourceFlavorId(playbackContext.getFlavorAssets());
+
             //-> create PKMediaSource-s according to sources list provided in "getContextData" response
             for (KalturaPlaybackSource playbackSource : playbackContext.getSources()) {
 
@@ -445,10 +449,13 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                         baseProtocol = OvpConfigs.DefaultHttpProtocol;
                     }
 
+                    //Remove master source flavorId from flavorIds.
+                    String flavorIds = filterFlavorIds(playbackSource.getFlavorIds(), sourceFlavorId);
+
                     PlaySourceUrlBuilder playUrlBuilder = new PlaySourceUrlBuilder()
                             .setBaseUrl(baseUrl)
                             .setEntryId(entry.getId())
-                            .setFlavorIds(playbackSource.getFlavorIds())
+                            .setFlavorIds(flavorIds)
                             .setFormat(playbackSource.getFormat())
                             .setKs(ks)
                             .setPartnerId(partnerId)
@@ -499,6 +506,55 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             return sources;
         }
 
+
+        private static String obtainMasterSourceFlavorId(ArrayList<KalturaFlavorAsset> flavorAssets) {
+
+            String masterSourceFlavorId = "";
+
+            for (int i = 0; i < flavorAssets.size(); i++) {
+                //Master source asset will always have a flavorParamId of 0.
+                if ("0".equals(flavorAssets.get(i).getFlavorParamsId())) {
+                    masterSourceFlavorId = flavorAssets.get(i).getId();
+                }
+            }
+
+            return masterSourceFlavorId;
+        }
+
+        /**
+         * Will remove the "Source" asset flavorId from the flavorIds string.
+         * @param flavorIds - flavorIds string.
+         * @param masterSourceFlavorId - the flavorId of the source to remove.
+         * @return - filtered flavorIds string.
+         */
+        private static String filterFlavorIds(String flavorIds, String masterSourceFlavorId) {
+
+            if(masterSourceFlavorId.isEmpty()) {
+                return flavorIds;
+            }
+
+            ArrayList<String> splitFlavorIds = new ArrayList(Arrays.asList(flavorIds.split(",")));
+
+            //Iterate over the list of flavorIds and remove the sourceFlavorId from it.
+            for (int i = 0; i < splitFlavorIds.size(); i++) {
+                if (masterSourceFlavorId.equals(splitFlavorIds.get(i))) {
+                    splitFlavorIds.remove(i);
+                }
+            }
+
+            String filteredFlavorIds = "";
+
+            //Assemble the flavorIds in correct format.
+            for (int i = 0; i < splitFlavorIds.size() - 1; i++) {
+                filteredFlavorIds += splitFlavorIds.get(i);
+                filteredFlavorIds += ",";
+            }
+
+            filteredFlavorIds += splitFlavorIds.get(splitFlavorIds.size() - 1);
+
+            return filteredFlavorIds;
+        }
+
         @NonNull
         static List<PKMediaSource> parseFromFlavors(String ks, String partnerId, String uiConfId, KalturaMediaEntry entry, KalturaEntryContextDataResult contextData) {
 
@@ -540,9 +596,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
 
     }
-
-
-
 
 
     public static class MediaTypeConverter {
