@@ -541,6 +541,7 @@ class TrackSelectionHelper {
     }
 
     void release() {
+        tracksInfoListener.updateLastSelectedTrackIndexes(lastSelectedTrackIds);
         tracksInfoListener = null;
         clearTracksLists();
     }
@@ -609,10 +610,6 @@ class TrackSelectionHelper {
 
     void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
-    }
-
-    String[] getLastSelectedTrackIds() {
-        return lastSelectedTrackIds;
     }
 }
 
