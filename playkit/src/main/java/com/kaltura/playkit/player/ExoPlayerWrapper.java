@@ -95,46 +95,19 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private int sameErrorOccurrenceCounter = 0;
     private List<PKMetadata> metadataList = new ArrayList<>();
 
-    private String[] mLastSelectedTrackIndexes = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+    private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
         sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
     }
 
-    interface TracksInfoListener {
-
-        void onTracksInfoReady(PKTracks PKTracks);
-
-        void onTrackChanged();
-
-        void updateLastSelectedTrackIndexes(String[] lastSelectedTrackIndexes);
-    }
-
-    private TracksInfoListener tracksInfoListener = new TracksInfoListener() {
-        @Override
-        public void onTracksInfoReady(PKTracks tracksReady) {
-            //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
-            tracks = tracksReady;
-            shouldRestorePlayerToPreviousState = false;
-            sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
-        }
-
-        @Override
-        public void onTrackChanged() {
-            sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
-        }
-
-        @Override
-        public void updateLastSelectedTrackIndexes(String[] lastSelectedTrackIndexes) {
-            mLastSelectedTrackIndexes = lastSelectedTrackIndexes;
-        }
-    };
+    private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
 
 
     ExoPlayerWrapper(Context context) {
         this.context = context;
-        bandwidthMeter = new DefaultBandwidthMeter(mainHandler,this);
+        bandwidthMeter = new DefaultBandwidthMeter(mainHandler, this);
         mediaDataSourceFactory = buildDataSourceFactory(true);
         exoPlayerView = new ExoPlayerView(context);
     }
@@ -166,7 +139,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         TrackSelection.Factory trackSelectionFactory =
                 new AdaptiveTrackSelection.Factory(bandwidthMeter);
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(trackSelectionFactory);
-        trackSelectionHelper = new TrackSelectionHelper(trackSelector, trackSelectionFactory, mLastSelectedTrackIndexes);
+        trackSelectionHelper = new TrackSelectionHelper(trackSelector, trackSelectionFactory, lastSelectedTrackIds);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
         return trackSelector;
@@ -643,6 +616,28 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     public List<PKMetadata> getMetadata() {
         return metadataList;
+    }
+
+    private TrackSelectionHelper.TracksInfoListener initTracksInfoListener() {
+        return new TrackSelectionHelper.TracksInfoListener() {
+            @Override
+            public void onTracksInfoReady(PKTracks tracksReady) {
+                //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
+                tracks = tracksReady;
+                shouldRestorePlayerToPreviousState = false;
+                sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+            }
+
+            @Override
+            public void onTrackChanged() {
+                sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+            }
+
+            @Override
+            public void onRelease(String[] selectedTrackIds) {
+                lastSelectedTrackIds = selectedTrackIds;
+            }
+        };
     }
 
 }

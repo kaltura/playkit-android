@@ -54,20 +54,30 @@ class TrackSelectionHelper {
     private final DefaultTrackSelector selector;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
     private final TrackSelection.Factory adaptiveTrackSelectionFactory;
-    private ExoPlayerWrapper.TracksInfoListener tracksInfoListener;
+    private TracksInfoListener tracksInfoListener;
 
     private List<VideoTrack> videoTracks = new ArrayList<>();
     private List<AudioTrack> audioTracks = new ArrayList<>();
     private List<TextTrack> textTracks = new ArrayList<>();
+
+    private String[] lastSelectedTrackIds;
 
     private long currentVideoBitrate = Consts.NO_VALUE;
     private long currentAudioBitrate = Consts.NO_VALUE;
     private long currentVideoWidth = Consts.NO_VALUE;
     private long currentVideoHeight = Consts.NO_VALUE;
 
-    private String[] lastSelectedTrackIds = {NONE, NONE, NONE};
 
     private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
+
+    interface TracksInfoListener {
+
+        void onTracksInfoReady(PKTracks PKTracks);
+
+        void onTrackChanged();
+
+        void onRelease(String[] selectedTracks);
+    }
 
 
     /**
@@ -530,7 +540,7 @@ class TrackSelectionHelper {
         }
     }
 
-    void setTracksInfoListener(ExoPlayerWrapper.TracksInfoListener tracksInfoListener) {
+    void setTracksInfoListener(TracksInfoListener tracksInfoListener) {
         this.tracksInfoListener = tracksInfoListener;
     }
 
@@ -541,7 +551,7 @@ class TrackSelectionHelper {
     }
 
     void release() {
-        tracksInfoListener.updateLastSelectedTrackIndexes(lastSelectedTrackIds);
+        tracksInfoListener.onRelease(lastSelectedTrackIds);
         tracksInfoListener = null;
         clearTracksLists();
     }
