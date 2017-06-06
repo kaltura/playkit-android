@@ -56,6 +56,7 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -514,7 +515,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             for (int i = 0; i < flavorAssets.size(); i++) {
                 //Master source asset will always have a flavorParamId of 0.
                 if ("0".equals(flavorAssets.get(i).getFlavorParamsId())) {
-                    masterSourceFlavorId = flavorAssets.get(i).getId();
+                    return flavorAssets.get(i).getId();
                 }
             }
 
@@ -534,25 +535,17 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             }
 
             ArrayList<String> splitFlavorIds = new ArrayList(Arrays.asList(flavorIds.split(",")));
+            Iterator<String> iterator = splitFlavorIds.iterator();
 
-            //Iterate over the list of flavorIds and remove the sourceFlavorId from it.
-            for (int i = 0; i < splitFlavorIds.size(); i++) {
-                if (masterSourceFlavorId.equals(splitFlavorIds.get(i))) {
-                    splitFlavorIds.remove(i);
+            while(iterator.hasNext()){
+                String flavorId = iterator.next();
+                if(masterSourceFlavorId.equals(flavorId)){
+                    iterator.remove();
                 }
             }
 
-            String filteredFlavorIds = "";
-
             //Assemble the flavorIds in correct format.
-            for (int i = 0; i < splitFlavorIds.size() - 1; i++) {
-                filteredFlavorIds += splitFlavorIds.get(i);
-                filteredFlavorIds += ",";
-            }
-
-            filteredFlavorIds += splitFlavorIds.get(splitFlavorIds.size() - 1);
-
-            return filteredFlavorIds;
+            return TextUtils.join(",", splitFlavorIds);
         }
 
         @NonNull
