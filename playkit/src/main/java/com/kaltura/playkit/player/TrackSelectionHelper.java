@@ -398,19 +398,33 @@ class TrackSelectionHelper {
                 case Consts.TRACK_TYPE_VIDEO:
 
                     VideoTrack videoTrack;
+                    int videoGroupIndex;
+                    int videoTrackIndex;
 
-                    for (int i = 1; i < videoTracks.size(); i++) {
+                    for (int i = 0; i < videoTracks.size(); i++) {
+
                         videoTrack = videoTracks.get(i);
-                        if (getIndexFromUniqueId(videoTrack.getUniqueId(), GROUP_INDEX) == groupIndex) {
+                        videoGroupIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), GROUP_INDEX);
+                        videoTrackIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX);
+
+                        if (videoGroupIndex == groupIndex && videoTrackIndex != TRACK_ADAPTIVE) {
                             adaptiveTrackIndexesList.add(getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX));
                         }
                     }
                     break;
                 case Consts.TRACK_TYPE_AUDIO:
+
                     AudioTrack audioTrack;
-                    for (int i = 1; i < audioTracks.size(); i++) {
+                    int audioGroupIndex;
+                    int audioTrackIndex;
+
+                    for (int i = 0; i < audioTracks.size(); i++) {
+
                         audioTrack = audioTracks.get(i);
-                        if (getIndexFromUniqueId(audioTrack.getUniqueId(), GROUP_INDEX) == groupIndex) {
+                        audioGroupIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), GROUP_INDEX);
+                        audioTrackIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX);
+
+                        if (audioGroupIndex == groupIndex && audioTrackIndex != TRACK_ADAPTIVE) {
                             adaptiveTrackIndexesList.add(getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX));
                         }
                     }
