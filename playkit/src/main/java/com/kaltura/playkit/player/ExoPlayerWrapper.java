@@ -95,7 +95,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private int sameErrorOccurrenceCounter = 0;
     private List<PKMetadata> metadataList = new ArrayList<>();
 
-    private String[] lastSelectedTrackIndexes = {TrackSelectionHelper.NONE_SUFFIX, TrackSelectionHelper.NONE_SUFFIX, TrackSelectionHelper.NONE_SUFFIX};
+    private String[] lastSelectedTrackIndexes = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {

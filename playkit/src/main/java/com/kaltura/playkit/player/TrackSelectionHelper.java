@@ -38,8 +38,8 @@ class TrackSelectionHelper {
     private static final int TRACK_INDEX = 2;
     private static final int TRACK_RENDERERS_AMOUNT = 3;
 
-    static final String NONE_SUFFIX = "none";
-    private static final String ADAPTIVE_SUFFIX = "adaptive";
+    static final String NONE = "none";
+    private static final String ADAPTIVE = "adaptive";
 
     private static final String VIDEO = "video";
     private static final String VIDEO_PREFIX = "Video:";
@@ -65,7 +65,7 @@ class TrackSelectionHelper {
     private long currentVideoWidth = Consts.NO_VALUE;
     private long currentVideoHeight = Consts.NO_VALUE;
 
-    private String[] lastSelectedTrackIds = {NONE_SUFFIX, NONE_SUFFIX, NONE_SUFFIX};
+    private String[] lastSelectedTrackIds = {NONE, NONE, NONE};
 
     private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
 
@@ -185,7 +185,7 @@ class TrackSelectionHelper {
             return;
         }
         String uniqueId = getUniqueId(Consts.TRACK_TYPE_TEXT, 0, TRACK_DISABLED);
-        textTracks.add(0, new TextTrack(uniqueId, NONE_SUFFIX, NONE_SUFFIX, -1));
+        textTracks.add(0, new TextTrack(uniqueId, NONE, NONE, -1));
     }
 
     /**
@@ -210,15 +210,16 @@ class TrackSelectionHelper {
     /**
      * Will restore last selected track, only if there was actual selection and it is
      * differed from the default selection.
-     * @param trackList - the list of tracks to manipulate.
+     *
+     * @param trackList           - the list of tracks to manipulate.
      * @param lastSelectedTrackId - last selected track unique id.
-     * @param defaultTrackIndex - the index of the default track.
+     * @param defaultTrackIndex   - the index of the default track.
      * @return - The index of the last selected track id.
      */
     private int restoreLastSelectedTrack(List<? extends BaseTrack> trackList, String lastSelectedTrackId, int defaultTrackIndex) {
         //If track was previously selected and selection is differed from the default selection apply it.
         String defaultUniqueId = trackList.get(defaultTrackIndex).getUniqueId();
-        if (!NONE_SUFFIX.equals(lastSelectedTrackId) && !lastSelectedTrackId.equals(defaultUniqueId)) {
+        if (!NONE.equals(lastSelectedTrackId) && !lastSelectedTrackId.equals(defaultUniqueId)) {
             changeTrack(lastSelectedTrackId);
             for (int i = 0; i < trackList.size(); i++) {
                 if (lastSelectedTrackId.equals(trackList.get(i).getUniqueId())) {
@@ -281,9 +282,9 @@ class TrackSelectionHelper {
         uniqueStringBuilder.append(groupIndex);
         uniqueStringBuilder.append(",");
         if (trackIndex == TRACK_ADAPTIVE) {
-            uniqueStringBuilder.append(ADAPTIVE_SUFFIX);
+            uniqueStringBuilder.append(ADAPTIVE);
         } else if (trackIndex == TRACK_DISABLED) {
-            uniqueStringBuilder.append(NONE_SUFFIX);
+            uniqueStringBuilder.append(NONE);
         } else {
             uniqueStringBuilder.append(trackIndex);
         }
@@ -346,10 +347,10 @@ class TrackSelectionHelper {
 
         for (int i = 0; i < strArray.length; i++) {
             switch (strArray[i]) {
-                case ADAPTIVE_SUFFIX:
+                case ADAPTIVE:
                     parsedUniqueId[i] = TRACK_ADAPTIVE;
                     break;
-                case NONE_SUFFIX:
+                case NONE:
                     parsedUniqueId[i] = TRACK_DISABLED;
                     break;
                 default:
@@ -468,7 +469,7 @@ class TrackSelectionHelper {
     private int getIndexFromUniqueId(String uniqueId, int groupIndex) {
         String uniqueIdWithoutPrefix = removePrefix(uniqueId);
         String[] strArray = uniqueIdWithoutPrefix.split(",");
-        if (strArray[groupIndex].equals(ADAPTIVE_SUFFIX)) {
+        if (strArray[groupIndex].equals(ADAPTIVE)) {
             return -1;
         }
 
@@ -539,7 +540,7 @@ class TrackSelectionHelper {
         textTracks.clear();
     }
 
-    public void release() {
+    void release() {
         tracksInfoListener = null;
         clearTracksLists();
     }
@@ -606,11 +607,11 @@ class TrackSelectionHelper {
         tracksInfoListener.onTrackChanged();
     }
 
-    public void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
+    void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
     }
 
-    public String[] getLastSelectedTrackIds() {
+    String[] getLastSelectedTrackIds() {
         return lastSelectedTrackIds;
     }
 }
