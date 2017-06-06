@@ -97,12 +97,12 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
+    private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
+
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
         sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
     }
-
-    private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
 
 
     ExoPlayerWrapper(Context context) {
