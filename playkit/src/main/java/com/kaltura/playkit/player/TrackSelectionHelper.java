@@ -38,7 +38,7 @@ class TrackSelectionHelper {
     private static final int TRACK_INDEX = 2;
     private static final int TRACK_RENDERERS_AMOUNT = 3;
 
-    private static final String NONE_SUFFIX = "none";
+    static final String NONE_SUFFIX = "none";
     private static final String ADAPTIVE_SUFFIX = "adaptive";
 
     private static final String VIDEO = "video";
@@ -62,10 +62,12 @@ class TrackSelectionHelper {
 
     private long currentVideoBitrate = Consts.NO_VALUE;
     private long currentAudioBitrate = Consts.NO_VALUE;
-    private long currentVideoWidth   = Consts.NO_VALUE;
-    private long currentVideoHeight  = Consts.NO_VALUE;
+    private long currentVideoWidth = Consts.NO_VALUE;
+    private long currentVideoHeight = Consts.NO_VALUE;
 
-    private boolean cea608CaptionsEnabled; //Flag that indicates if application initerested in receiving cea-608 text track format.
+    private String[] lastSelectedTrackIds = {NONE_SUFFIX, NONE_SUFFIX, NONE_SUFFIX};
+
+    private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
 
 
     /**
@@ -74,15 +76,18 @@ class TrackSelectionHelper {
      *                                      or null if the selection helper should not support adaptive video.
      */
     TrackSelectionHelper(DefaultTrackSelector selector,
-                         TrackSelection.Factory adaptiveTrackSelectionFactory) {
+                         TrackSelection.Factory adaptiveTrackSelectionFactory,
+                         String[] lastSelectedTrackIds) {
         this.selector = selector;
         this.adaptiveTrackSelectionFactory = adaptiveTrackSelectionFactory;
+        this.lastSelectedTrackIds = lastSelectedTrackIds;
     }
 
     /**
      * Prepare {@link PKTracks} object for application.
      * When the object is created, notify {@link ExoPlayerWrapper} about that,
      * and pass the {@link PKTracks} as parameter.
+     *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
     boolean prepareTracks() {
@@ -162,9 +167,9 @@ class TrackSelectionHelper {
         //add disable option to the text tracks.
         maybeAddDisabledTextTrack();
 
-        int defaultVideoTrackIndex = getDefaultTrackIndex(videoTracks);
-        int defaultAudioTrackIndex = getDefaultTrackIndex(audioTracks);
-        int defaultTextTrackIndex = getDefaultTrackIndex(textTracks);
+        int defaultVideoTrackIndex = getDefaultTrackIndex(videoTracks, lastSelectedTrackIds[Consts.TRACK_TYPE_VIDEO]);
+        int defaultAudioTrackIndex = getDefaultTrackIndex(audioTracks, lastSelectedTrackIds[Consts.TRACK_TYPE_AUDIO]);
+        int defaultTextTrackIndex = getDefaultTrackIndex(textTracks, lastSelectedTrackIds[Consts.TRACK_TYPE_TEXT]);
 
         return new PKTracks(videoTracks, audioTracks, textTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex);
     }
@@ -175,6 +180,7 @@ class TrackSelectionHelper {
      * Selecting this track, will disable the text renderer.
      */
     private void maybeAddDisabledTextTrack() {
+
         if (textTracks.isEmpty()) {
             return;
         }
@@ -184,16 +190,43 @@ class TrackSelectionHelper {
 
     /**
      * Find the default selected track, based on the media manifest.
+     *
      * @param trackList - the list of tracks to find the default track.
-     * @return - the index of the track that is selected by default. or 0 if no default selection is available.
+     * @return - the index of the track that is selected by default or lastSelected track(Depending on the use-case),
+     * or 0 if no default selection is available and no track was previously selected.
      */
-    private int getDefaultTrackIndex(List<? extends BaseTrack> trackList) {
+    private int getDefaultTrackIndex(List<? extends BaseTrack> trackList, String lastSelectedTrackId) {
+
         int defaultTrackIndex = 0;
         for (int i = 0; i < trackList.size(); i++) {
             if (trackList.get(i).getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
-                return i;
+                defaultTrackIndex = i;
             }
         }
+
+        return restoreLastSelectedTrack(trackList, lastSelectedTrackId, defaultTrackIndex);
+    }
+
+    /**
+     * Will restore last selected track, only if there was actual selection and it is
+     * differed from the default selection.
+     * @param trackList - the list of tracks to manipulate.
+     * @param lastSelectedTrackId - last selected track unique id.
+     * @param defaultTrackIndex - the index of the default track.
+     * @return - The index of the last selected track id.
+     */
+    private int restoreLastSelectedTrack(List<? extends BaseTrack> trackList, String lastSelectedTrackId, int defaultTrackIndex) {
+        //If track was previously selected and selection is differed from the default selection apply it.
+        String defaultUniqueId = trackList.get(defaultTrackIndex).getUniqueId();
+        if (!NONE_SUFFIX.equals(lastSelectedTrackId) && !lastSelectedTrackId.equals(defaultUniqueId)) {
+            changeTrack(lastSelectedTrackId);
+            for (int i = 0; i < trackList.size(); i++) {
+                if (lastSelectedTrackId.equals(trackList.get(i).getUniqueId())) {
+                    return i;
+                }
+            }
+        }
+
         return defaultTrackIndex;
     }
 
@@ -281,6 +314,8 @@ class TrackSelectionHelper {
         }
         int[] uniqueTrackId = parseUniqueId(uniqueId);
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
+
+        lastSelectedTrackIds[rendererIndex] = uniqueId;
 
         if (shouldDisableTextTrack(uniqueTrackId)) {
             //disable text track
@@ -519,7 +554,7 @@ class TrackSelectionHelper {
 
     long getCurrentVideoWidth() {
         return currentVideoWidth;
-}
+    }
 
     long getCurrentVideoHeight() {
         return currentVideoHeight;
@@ -573,6 +608,10 @@ class TrackSelectionHelper {
 
     public void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
+    }
+
+    public String[] getLastSelectedTrackIds() {
+        return lastSelectedTrackIds;
     }
 }
 

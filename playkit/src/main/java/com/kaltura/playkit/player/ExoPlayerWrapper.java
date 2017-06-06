@@ -95,6 +95,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private int sameErrorOccurrenceCounter = 0;
     private List<PKMetadata> metadataList = new ArrayList<>();
 
+    private String[] lastSelectedTrackIndexes = {TrackSelectionHelper.NONE_SUFFIX, TrackSelectionHelper.NONE_SUFFIX, TrackSelectionHelper.NONE_SUFFIX};
+
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
         sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
@@ -154,10 +156,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     private DefaultTrackSelector initializeTrackSelector() {
 
-        TrackSelection.Factory videoTrackSelectionFactory =
+        TrackSelection.Factory trackSelectionFactory =
                 new AdaptiveTrackSelection.Factory(bandwidthMeter);
-        DefaultTrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
-        trackSelectionHelper = new TrackSelectionHelper(trackSelector, videoTrackSelectionFactory);
+        DefaultTrackSelector trackSelector = new DefaultTrackSelector(trackSelectionFactory);
+        trackSelectionHelper = new TrackSelectionHelper(trackSelector, trackSelectionFactory, lastSelectedTrackIndexes);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
         return trackSelector;
@@ -406,7 +408,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         }
 
         //If player already set to play, return.
-        if(player.getPlayWhenReady()) {
+        if (player.getPlayWhenReady()) {
             return;
         }
 
@@ -423,7 +425,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         }
 
         //If player already set to pause, return.
-        if(!player.getPlayWhenReady()) {
+        if (!player.getPlayWhenReady()) {
             return;
         }
 
@@ -475,6 +477,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             this.eventLogger = null;
             player.release();
             player = null;
+            this.lastSelectedTrackIndexes = trackSelectionHelper.getLastSelectedTrackIds();
             trackSelectionHelper.release();
             trackSelectionHelper = null;
             eventLogger = null;
@@ -596,7 +599,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public PlaybackInfo getPlaybackInfo() {
-       return new PlaybackInfo(lastPlayedSource.toString(),
+        return new PlaybackInfo(lastPlayedSource.toString(),
                 trackSelectionHelper.getCurrentVideoBitrate(),
                 trackSelectionHelper.getCurrentAudioBitrate(),
                 bandwidthMeter.getBitrateEstimate(),
