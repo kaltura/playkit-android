@@ -418,7 +418,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
             PKMediaEntry mediaEntry = new PKMediaEntry();
             mediaEntry.setId("" + assetId);
-            mediaEntry.setName("NA");
+            mediaEntry.setName(null); // media title is not sent in ott requests only in ovp requests
 
             // until the response will be delivered in the right order:
             playbackSourcesSort(sourcesFilter, playbackSources);

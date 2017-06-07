@@ -26,6 +26,7 @@ public class KalturaMediaEntry {
     public String getName() {
         return name;
     }
+    
     public String getDataUrl() {
         return dataUrl;
     }
