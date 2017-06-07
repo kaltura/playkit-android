@@ -33,7 +33,8 @@ tasks.withType(Javadoc) {
 
 dependencies {
 
-    compile 'com.kaltura.netkit:netkit-core:1.0.3'
+    //compile 'com.kaltura.netkit:netkit-core:1.0.3'
+    compile 'com.kaltura.netkit-android:netkit-core:12ff050e6db996f353f7cf527143808c57feedb1'
 
     // Google Extras
     compile 'com.google.android.exoplayer:exoplayer:r2.3.1'
