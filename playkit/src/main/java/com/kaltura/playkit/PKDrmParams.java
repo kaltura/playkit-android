@@ -87,7 +87,7 @@ public class PKDrmParams implements Parcelable {
     protected PKDrmParams(Parcel in) {
         this.licenseUri = in.readString();
         int tmpScheme = in.readInt();
-        this.scheme = tmpScheme == -1 ? null : Scheme.values()[tmpScheme];
+        this.scheme = tmpScheme == -1 ? Scheme.Unknown : Scheme.values()[tmpScheme];
     }
 
     public static final Creator<PKDrmParams> CREATOR = new Creator<PKDrmParams>() {

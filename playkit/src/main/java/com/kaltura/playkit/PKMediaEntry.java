@@ -1,8 +1,10 @@
 package com.kaltura.playkit;
 
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,13 +88,21 @@ public class PKMediaEntry implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.id);
         dest.writeString(this.name);
-        dest.writeTypedList(this.sources);
+        if (sources != null) {
+            dest.writeTypedList(this.sources);
+        } else {
+            dest.writeTypedList(Collections.EMPTY_LIST);
+        }
         dest.writeLong(this.duration);
         dest.writeInt(this.mediaType == null ? -1 : this.mediaType.ordinal());
-        dest.writeInt(this.metadata.size());
-        for (Map.Entry<String, String> entry : this.metadata.entrySet()) {
-            dest.writeString(entry.getKey());
-            dest.writeString(entry.getValue());
+        if (this.metadata != null) {
+            dest.writeInt(this.metadata.size());
+            for (Map.Entry<String, String> entry : this.metadata.entrySet()) {
+                dest.writeString(entry.getKey());
+                dest.writeString(entry.getValue());
+            }
+        } else {
+            dest.writeBundle(new Bundle());
         }
     }
 
