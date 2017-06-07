@@ -95,37 +95,19 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private int sameErrorOccurrenceCounter = 0;
     private List<PKMetadata> metadataList = new ArrayList<>();
 
+    private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+
+    private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
+
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
         sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
     }
 
-    interface TracksInfoListener {
-
-        void onTracksInfoReady(PKTracks PKTracks);
-
-        void onTrackChanged();
-    }
-
-    private TracksInfoListener tracksInfoListener = new TracksInfoListener() {
-        @Override
-        public void onTracksInfoReady(PKTracks tracksReady) {
-            //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
-            tracks = tracksReady;
-            shouldRestorePlayerToPreviousState = false;
-            sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
-        }
-
-        @Override
-        public void onTrackChanged() {
-            sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
-        }
-    };
-
 
     ExoPlayerWrapper(Context context) {
         this.context = context;
-        bandwidthMeter = new DefaultBandwidthMeter(mainHandler,this);
+        bandwidthMeter = new DefaultBandwidthMeter(mainHandler, this);
         mediaDataSourceFactory = buildDataSourceFactory(true);
         exoPlayerView = new ExoPlayerView(context);
     }
@@ -154,10 +136,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     private DefaultTrackSelector initializeTrackSelector() {
 
-        TrackSelection.Factory videoTrackSelectionFactory =
+        TrackSelection.Factory trackSelectionFactory =
                 new AdaptiveTrackSelection.Factory(bandwidthMeter);
-        DefaultTrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
-        trackSelectionHelper = new TrackSelectionHelper(trackSelector, videoTrackSelectionFactory);
+        DefaultTrackSelector trackSelector = new DefaultTrackSelector(trackSelectionFactory);
+        trackSelectionHelper = new TrackSelectionHelper(trackSelector, trackSelectionFactory, lastSelectedTrackIds);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
         return trackSelector;
@@ -406,7 +388,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         }
 
         //If player already set to play, return.
-        if(player.getPlayWhenReady()) {
+        if (player.getPlayWhenReady()) {
             return;
         }
 
@@ -423,7 +405,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         }
 
         //If player already set to pause, return.
-        if(!player.getPlayWhenReady()) {
+        if (!player.getPlayWhenReady()) {
             return;
         }
 
@@ -596,7 +578,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public PlaybackInfo getPlaybackInfo() {
-       return new PlaybackInfo(lastPlayedSource.toString(),
+        return new PlaybackInfo(lastPlayedSource.toString(),
                 trackSelectionHelper.getCurrentVideoBitrate(),
                 trackSelectionHelper.getCurrentAudioBitrate(),
                 bandwidthMeter.getBitrateEstimate(),
@@ -634,6 +616,28 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     public List<PKMetadata> getMetadata() {
         return metadataList;
+    }
+
+    private TrackSelectionHelper.TracksInfoListener initTracksInfoListener() {
+        return new TrackSelectionHelper.TracksInfoListener() {
+            @Override
+            public void onTracksInfoReady(PKTracks tracksReady) {
+                //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
+                tracks = tracksReady;
+                shouldRestorePlayerToPreviousState = false;
+                sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+            }
+
+            @Override
+            public void onTrackChanged() {
+                sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+            }
+
+            @Override
+            public void onRelease(String[] selectedTrackIds) {
+                lastSelectedTrackIds = selectedTrackIds;
+            }
+        };
     }
 
 }
