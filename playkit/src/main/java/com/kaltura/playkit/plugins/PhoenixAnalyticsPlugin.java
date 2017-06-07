@@ -16,6 +16,7 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.api.phoenix.services.BookmarkService;
 import com.kaltura.playkit.utils.Consts;
 
@@ -30,8 +31,15 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
     private static final String TAG = "PhoenixAnalytics";
     private static final double MEDIA_ENDED_THRESHOLD = 0.98;
+    private static String DEFAULT_BASE_URL = "http://api-preprod.ott.kaltura.com/v4_1/api_v3/";
 
-    public enum PhoenixActionType{
+    private int mediaHitInterval;
+    private String fileId;
+    private String baseUrl;
+    private String ks;
+    private int partnerId;
+
+    public enum PhoenixActionType {
         HIT,
         PLAY,
         STOP,
@@ -59,6 +67,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private boolean isFirstPlay = true;
     private boolean intervalOn = false;
     private boolean timerWasCancelled = false;
+    private boolean isMediaFinished = false;
 
 
     public static final Factory factory = new Factory() {
@@ -80,11 +89,40 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
+        if (Utils.isJsonObjectValueValid(pluginConfig, "timerInterval")) {
+            mediaHitInterval = pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER;
+        } else {
+            mediaHitInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
+        }
+        if (Utils.isJsonObjectValueValid(pluginConfig, "fileId")) {
+            fileId = pluginConfig.getAsJsonPrimitive("fileId").getAsString();
+        } else {
+            log.e("Error PhoenixAnalytics fileId was not set");
+            fileId = "0";
+        }
+        if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
+            baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
+        } else {
+            baseUrl = DEFAULT_BASE_URL;
+        }
+        if (Utils.isJsonObjectValueValid(pluginConfig, "ks")) {
+            ks =  pluginConfig.getAsJsonPrimitive("ks").getAsString();
+        } else {
+            log.w("Warning PhoenixAnalytics KS was not given");
+            ks = "";
+        }
+        if (Utils.isJsonObjectValueValid(pluginConfig, "partnerId")) {
+            partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
+        } else {
+            partnerId = 0;
+        }
+
         isFirstPlay = true;
         this.mediaConfig = mediaConfig;
-        if (this.mediaConfig.getStartPosition() != -1){
+        if (this.mediaConfig.getStartPosition() != -1) {
             this.mContinueTime = this.mediaConfig.getStartPosition();
         }
+        isMediaFinished = false;
     }
 
     @Override
@@ -119,7 +157,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.pluginConfig = (JsonObject) config;
         this.mContext = context;
         this.messageBus = messageBus;
-        messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED);
+        messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED);
 
         log.d("onLoad");
     }
@@ -131,6 +169,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                 log.d("Player Event = " + ((PlayerEvent) event).type.name() + " , lastKnownPlayerPosition = " + lastKnownPlayerPosition);
                 switch (((PlayerEvent) event).type) {
                     case STOPPED:
+                        if (isMediaFinished) {
+                            return;
+                        }
                         sendAnalyticsEvent(PhoenixActionType.STOP);
                         timer.cancel();
                         timer = new java.util.Timer();
@@ -139,6 +180,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         timer.cancel();
                         timer = new java.util.Timer();
                         sendAnalyticsEvent(PhoenixActionType.FINISH);
+                        isMediaFinished = true;
                         break;
                     case ERROR:
                         timer.cancel();
@@ -149,22 +191,33 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         sendAnalyticsEvent(PhoenixActionType.LOAD);
                         break;
                     case PAUSE:
+                        if (isMediaFinished) {
+                            return;
+                        }
                         sendAnalyticsEvent(PhoenixActionType.PAUSE);
                         timer.cancel();
                         timer = new java.util.Timer();
                         intervalOn = false;
                         break;
                     case PLAY:
+                        if (isMediaFinished) {
+                            return;
+                        }
                         if (isFirstPlay) {
                             isFirstPlay = false;
                             sendAnalyticsEvent(PhoenixActionType.FIRST_PLAY);
                         } else {
                             sendAnalyticsEvent(PhoenixActionType.PLAY);
                         }
-                        if (!intervalOn || !timerWasCancelled){
+                        if (!intervalOn || !timerWasCancelled) {
                             startMediaHitInterval();
                             intervalOn = true;
                         }
+                        break;
+                    case SEEKED:
+                    case REPLAY:
+                        //Receiving one of this events, mean that media position was reset.
+                        isMediaFinished = false;
                         break;
                     default:
                         break;
@@ -176,16 +229,16 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     /**
      * Media Hit analytics event
      */
-    private void startMediaHitInterval(){
+    private void startMediaHitInterval() {
         log.d("timer interval");
-        int mediaHitInterval = pluginConfig.has("timerInterval")? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 sendAnalyticsEvent(PhoenixActionType.HIT);
-                lastKnownPlayerPosition = player.getCurrentPosition();
-                if ((float) lastKnownPlayerPosition / player.getDuration() > MEDIA_ENDED_THRESHOLD){
+                lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
+                if ((float) lastKnownPlayerPosition / player.getDuration() > MEDIA_ENDED_THRESHOLD) {
                     sendAnalyticsEvent(PhoenixActionType.FINISH);
+                    isMediaFinished = true;
                 }
             }
         }, 0, mediaHitInterval); // Get media hit interval from plugin config
@@ -193,17 +246,14 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     /**
      * Send Bookmark/add event using Kaltura Phoenix Rest API
+     *
      * @param eventType - Enum stating the event type to send
      */
-    protected void sendAnalyticsEvent(final PhoenixActionType eventType){
-        String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"464302";
-        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://api-preprod.ott.kaltura.com/v4_1/api_v3/";
-        String ks = pluginConfig.has("ks")? pluginConfig.getAsJsonPrimitive("ks").getAsString():"djJ8MTk4fN86RC6KBjyHtmG9bIBounF1ewb1SMnFNtAvaxKIAfHUwW0rT4GAYQf8wwUKmmRAh7G0olZ7IyFS1FTpwskuqQPVQwrSiy_J21kLxIUl_V9J";
-        int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt():198;
+    protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
         String action = eventType.name().toLowerCase(); // used only for copmare
 
         if (!"stop".equals(action)) {
-            lastKnownPlayerPosition = player.getCurrentPosition();
+            lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
                 "media", mediaConfig.getMediaEntry().getId(), eventType.name(), lastKnownPlayerPosition, /*mediaConfig.getMediaEntry().getFileId()*/ fileId);
@@ -211,11 +261,12 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
-                if (response.isSuccess() && response.getError() != null && response.getError().getCode().equals("4001")){
+                if (response.isSuccess() && response.getError() != null && response.getError().getCode().equals("4001")) {
                     messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
                     messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString()));
                 }
-                log.d("onComplete send event: ");
+
+                log.d("onComplete send event: " + eventType);
             }
         });
         requestsExecutor.queue(requestBuilder.build());

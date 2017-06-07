@@ -10,6 +10,7 @@ public class AdInfo implements PKAdInfo {
 
     private String  adDescription;
     private long    adDuration;
+    private long    adPlayHead;
 
     private String  adTitle;
     private boolean isAdSkippable;
@@ -18,16 +19,22 @@ public class AdInfo implements PKAdInfo {
     private String  adSystem;
     private int     adHeight;
     private int     adWidth;
-    private int     adPodCount;
-    private int     adPodPosition;
+    private int     totalAdsInPod;
+    private int     adIndexInPod;
+    private int     podIndex;
+    private int     podCount;
+    private boolean isBumper;
     private long    adPodTimeOffset;
 
-    public AdInfo(String adDescription, long adDuration, String adTitle, boolean isAdSkippable, String adContnentType,
+    public AdInfo(String adDescription, long adDuration, long adPlayHead, String adTitle,
+                  boolean isAdSkippable, String adContnentType,
                   String adId, String adSystem, int adHeight, int adWidth,
-                  int adPodCount, int adPodPosition, long adPodTimeOffset) {
+                  int totalAdsInPod, int adIndexInPod, int currentPodIndex, int podCount,
+                  boolean isBumper, long adPodTimeOffset) {
 
         this.adDescription = adDescription;
         this.adDuration    = adDuration;
+        this.adPlayHead    = adPlayHead;
         this.adTitle       = adTitle;
         this.isAdSkippable = isAdSkippable;
         this.adContnentType  = adContnentType;
@@ -35,8 +42,11 @@ public class AdInfo implements PKAdInfo {
         this.adSystem        = adSystem;
         this.adHeight        = adHeight;
         this.adWidth         = adWidth;
-        this.adPodCount      = adPodCount;
-        this.adPodPosition   = adPodPosition;
+        this.totalAdsInPod   = totalAdsInPod;
+        this.adIndexInPod    = adIndexInPod;
+        this.podIndex        = currentPodIndex;
+        this.podCount        = podCount;
+        this.isBumper        = isBumper;
         this.adPodTimeOffset = adPodTimeOffset;
     }
 
@@ -57,8 +67,28 @@ public class AdInfo implements PKAdInfo {
     }
 
     @Override
+    public int getTotalAdsInPod() {
+        return totalAdsInPod;
+    }
+
+    @Override
+    public int getAdIndexInPod() {
+        return adIndexInPod;
+    }
+
+    @Override
+    public int getPodIndex() {
+        return podIndex;
+    }
+
+    @Override
     public long getAdDuration() {
         return adDuration;
+    }
+
+    @Override
+    public long getAdPlayHead() {
+        return adPlayHead;
     }
 
     @Override
@@ -84,8 +114,8 @@ public class AdInfo implements PKAdInfo {
     }
 
     @Override
-    public int getAdPodCount() {
-        return adPodCount;
+    public int getPodCount() {
+        return podCount;
     }
 
     @Override
@@ -104,8 +134,8 @@ public class AdInfo implements PKAdInfo {
     }
 
     @Override
-    public int getAdPodPosition() {
-        return adPodPosition;
+    public boolean isBumper() {
+        return isBumper;
     }
 
     @Override
@@ -113,8 +143,13 @@ public class AdInfo implements PKAdInfo {
         return adPodTimeOffset;
     }
 
+    public void setAdPlayHead(long adPlayHead) {
+        this.adPlayHead = adPlayHead;
+    }
+
     public String getAdContnentType() {
         return adContnentType;
+
     }
 
     @Override
@@ -127,6 +162,7 @@ public class AdInfo implements PKAdInfo {
         } else {
             adType = "Pre-Roll";
         }
-        return "AdType=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " contentType=" + adContnentType + " podCount = " + adPodPosition + "/" + adPodCount;
+        return "AdType=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " isBumper=" + isBumper + " contentType = " + adContnentType +
+                " adCount = " + adIndexInPod + "/" + totalAdsInPod +  " podCount = " + podIndex +  "/" + podCount;
     }
 }
