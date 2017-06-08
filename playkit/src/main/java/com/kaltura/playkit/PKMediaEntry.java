@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class PKMediaEntry implements Parcelable {
+    
     private String id;
     private String name;
     private List<PKMediaSource> sources;
