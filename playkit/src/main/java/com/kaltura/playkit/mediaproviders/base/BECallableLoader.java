@@ -40,6 +40,7 @@ public abstract class BECallableLoader extends CallableLoader<Void> {
 
     @Override
     protected void cancel() {
+        super.cancel();
         if (loadReq != null) {
             synchronized (syncObject) {
                 Log.i(TAG, loadId + ": canceling request execution [" + loadReq + "]");
@@ -50,7 +51,6 @@ public abstract class BECallableLoader extends CallableLoader<Void> {
             Log.i(TAG, loadId+": cancel: request completed ");
         }
 
-        isCanceled = true;
         Log.i(TAG, loadId+": i am canceled ...notifyCompletion");
 
         notifyCompletion();
