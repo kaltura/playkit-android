@@ -381,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onResume();
 
         if (player != null) {
-            log.e("XXX isPLaying = " + player.isPlaying());
+            log.e("isPaying = " + player.isPlaying());
             player.onApplicationResumed();
             if (nowPlaying && AUTO_PLAY_ON_RESUME) {
                 player.play();
