@@ -23,6 +23,10 @@ public class KalturaMediaEntry {
         return type;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public String getDataUrl() {
         return dataUrl;
     }

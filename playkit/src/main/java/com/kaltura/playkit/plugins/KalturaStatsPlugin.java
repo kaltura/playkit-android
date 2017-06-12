@@ -317,7 +317,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                     }
                 }
                 break;
-            case PAUSED:;
+            case PAUSED:
             case RESUMED:
             case COMPLETED:
                 break;
@@ -413,12 +413,12 @@ public class KalturaStatsPlugin extends PKPlugin {
             public void run() {
                 float progress = ((float) player.getCurrentPosition() / player.getDuration());
                 log.d("progress = " + progress + " seekPercent = " + seekPercent);
-                if (!playReached25 && progress >= 0.25 && seekPercent <= 0.25) {
+                if (!playReached25 && progress >= 0.25 && seekPercent < 0.5) {
                     sendPlayReached25();
-                } else if (!playReached50 && progress >= 0.5 && seekPercent <= 0.5) {
+                } else if (!playReached50 && progress >= 0.5 && seekPercent <  0.75) {
                     sendPlayReached25();
                     sendPlayReached50();
-                } else if (!playReached75 && progress >= 0.75 && seekPercent <= 0.75) {
+                } else if (!playReached75 && progress >= 0.75 && seekPercent < 1) {
                     sendPlayReached25();
                     sendPlayReached50();
                     sendPlayReached75();
@@ -433,7 +433,7 @@ public class KalturaStatsPlugin extends PKPlugin {
      * @param eventType - Enum stating Kaltura state events
      */
     private void sendAnalyticsEvent(final KStatsEvent eventType) {
-        String sessionId = (player.getSessionId() != null) ? player.getSessionId().toString() : "";
+        String sessionId = (player.getSessionId() != null) ? player.getSessionId() : "";
 
         long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration() / Consts.MILLISECONDS_MULTIPLIER;
 

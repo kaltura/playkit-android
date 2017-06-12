@@ -38,8 +38,8 @@ class TrackSelectionHelper {
     private static final int TRACK_INDEX = 2;
     private static final int TRACK_RENDERERS_AMOUNT = 3;
 
-    private static final String NONE_SUFFIX = "none";
-    private static final String ADAPTIVE_SUFFIX = "adaptive";
+    static final String NONE = "none";
+    private static final String ADAPTIVE = "adaptive";
 
     private static final String VIDEO = "video";
     private static final String VIDEO_PREFIX = "Video:";
@@ -54,18 +54,30 @@ class TrackSelectionHelper {
     private final DefaultTrackSelector selector;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
     private final TrackSelection.Factory adaptiveTrackSelectionFactory;
-    private ExoPlayerWrapper.TracksInfoListener tracksInfoListener;
+    private TracksInfoListener tracksInfoListener;
 
     private List<VideoTrack> videoTracks = new ArrayList<>();
     private List<AudioTrack> audioTracks = new ArrayList<>();
     private List<TextTrack> textTracks = new ArrayList<>();
 
+    private String[] lastSelectedTrackIds;
+
     private long currentVideoBitrate = Consts.NO_VALUE;
     private long currentAudioBitrate = Consts.NO_VALUE;
-    private long currentVideoWidth   = Consts.NO_VALUE;
-    private long currentVideoHeight  = Consts.NO_VALUE;
+    private long currentVideoWidth = Consts.NO_VALUE;
+    private long currentVideoHeight = Consts.NO_VALUE;
 
-    private boolean cea608CaptionsEnabled; //Flag that indicates if application initerested in receiving cea-608 text track format.
+
+    private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
+
+    interface TracksInfoListener {
+
+        void onTracksInfoReady(PKTracks PKTracks);
+
+        void onTrackChanged();
+
+        void onRelease(String[] selectedTracks);
+    }
 
 
     /**
@@ -74,15 +86,18 @@ class TrackSelectionHelper {
      *                                      or null if the selection helper should not support adaptive video.
      */
     TrackSelectionHelper(DefaultTrackSelector selector,
-                         TrackSelection.Factory adaptiveTrackSelectionFactory) {
+                         TrackSelection.Factory adaptiveTrackSelectionFactory,
+                         String[] lastSelectedTrackIds) {
         this.selector = selector;
         this.adaptiveTrackSelectionFactory = adaptiveTrackSelectionFactory;
+        this.lastSelectedTrackIds = lastSelectedTrackIds;
     }
 
     /**
      * Prepare {@link PKTracks} object for application.
      * When the object is created, notify {@link ExoPlayerWrapper} about that,
      * and pass the {@link PKTracks} as parameter.
+     *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
     boolean prepareTracks() {
@@ -162,9 +177,9 @@ class TrackSelectionHelper {
         //add disable option to the text tracks.
         maybeAddDisabledTextTrack();
 
-        int defaultVideoTrackIndex = getDefaultTrackIndex(videoTracks);
-        int defaultAudioTrackIndex = getDefaultTrackIndex(audioTracks);
-        int defaultTextTrackIndex = getDefaultTrackIndex(textTracks);
+        int defaultVideoTrackIndex = getDefaultTrackIndex(videoTracks, lastSelectedTrackIds[Consts.TRACK_TYPE_VIDEO]);
+        int defaultAudioTrackIndex = getDefaultTrackIndex(audioTracks, lastSelectedTrackIds[Consts.TRACK_TYPE_AUDIO]);
+        int defaultTextTrackIndex = getDefaultTrackIndex(textTracks, lastSelectedTrackIds[Consts.TRACK_TYPE_TEXT]);
 
         return new PKTracks(videoTracks, audioTracks, textTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex);
     }
@@ -175,25 +190,60 @@ class TrackSelectionHelper {
      * Selecting this track, will disable the text renderer.
      */
     private void maybeAddDisabledTextTrack() {
+
         if (textTracks.isEmpty()) {
             return;
         }
         String uniqueId = getUniqueId(Consts.TRACK_TYPE_TEXT, 0, TRACK_DISABLED);
-        textTracks.add(0, new TextTrack(uniqueId, NONE_SUFFIX, NONE_SUFFIX, -1));
+        textTracks.add(0, new TextTrack(uniqueId, NONE, NONE, -1));
     }
 
     /**
      * Find the default selected track, based on the media manifest.
+     *
      * @param trackList - the list of tracks to find the default track.
-     * @return - the index of the track that is selected by default. or 0 if no default selection is available.
+     * @return - the index of the track that is selected by default or lastSelected track(Depending on the use-case),
+     * or 0 if no default selection is available and no track was previously selected.
      */
-    private int getDefaultTrackIndex(List<? extends BaseTrack> trackList) {
+    private int getDefaultTrackIndex(List<? extends BaseTrack> trackList, String lastSelectedTrackId) {
+
         int defaultTrackIndex = 0;
+
+        //If no tracks available the default track index will be 0.
+        if (trackList.isEmpty()) {
+            return defaultTrackIndex;
+        }
+
         for (int i = 0; i < trackList.size(); i++) {
             if (trackList.get(i).getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
-                return i;
+                defaultTrackIndex = i;
             }
         }
+
+        return restoreLastSelectedTrack(trackList, lastSelectedTrackId, defaultTrackIndex);
+    }
+
+    /**
+     * Will restore last selected track, only if there was actual selection and it is
+     * differed from the default selection.
+     *
+     * @param trackList           - the list of tracks to manipulate.
+     * @param lastSelectedTrackId - last selected track unique id.
+     * @param defaultTrackIndex   - the index of the default track.
+     * @return - The index of the last selected track id.
+     */
+    private int restoreLastSelectedTrack(List<? extends BaseTrack> trackList, String lastSelectedTrackId, int defaultTrackIndex) {
+        //If track was previously selected and selection is differed from the default selection apply it.
+        String defaultUniqueId = trackList.get(defaultTrackIndex).getUniqueId();
+        if (!NONE.equals(lastSelectedTrackId) && !lastSelectedTrackId.equals(defaultUniqueId)) {
+            changeTrack(lastSelectedTrackId);
+            for (int i = 0; i < trackList.size(); i++) {
+                if (lastSelectedTrackId.equals(trackList.get(i).getUniqueId())) {
+                    return i;
+                }
+            }
+        }
+
         return defaultTrackIndex;
     }
 
@@ -248,9 +298,9 @@ class TrackSelectionHelper {
         uniqueStringBuilder.append(groupIndex);
         uniqueStringBuilder.append(",");
         if (trackIndex == TRACK_ADAPTIVE) {
-            uniqueStringBuilder.append(ADAPTIVE_SUFFIX);
+            uniqueStringBuilder.append(ADAPTIVE);
         } else if (trackIndex == TRACK_DISABLED) {
-            uniqueStringBuilder.append(NONE_SUFFIX);
+            uniqueStringBuilder.append(NONE);
         } else {
             uniqueStringBuilder.append(trackIndex);
         }
@@ -282,6 +332,8 @@ class TrackSelectionHelper {
         int[] uniqueTrackId = parseUniqueId(uniqueId);
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
+        lastSelectedTrackIds[rendererIndex] = uniqueId;
+
         if (shouldDisableTextTrack(uniqueTrackId)) {
             //disable text track
             selector.setRendererDisabled(Consts.TRACK_TYPE_TEXT, true);
@@ -311,10 +363,10 @@ class TrackSelectionHelper {
 
         for (int i = 0; i < strArray.length; i++) {
             switch (strArray[i]) {
-                case ADAPTIVE_SUFFIX:
+                case ADAPTIVE:
                     parsedUniqueId[i] = TRACK_ADAPTIVE;
                     break;
-                case NONE_SUFFIX:
+                case NONE:
                     parsedUniqueId[i] = TRACK_DISABLED;
                     break;
                 default:
@@ -352,19 +404,33 @@ class TrackSelectionHelper {
                 case Consts.TRACK_TYPE_VIDEO:
 
                     VideoTrack videoTrack;
+                    int videoGroupIndex;
+                    int videoTrackIndex;
 
-                    for (int i = 1; i < videoTracks.size(); i++) {
+                    for (int i = 0; i < videoTracks.size(); i++) {
+
                         videoTrack = videoTracks.get(i);
-                        if (getIndexFromUniqueId(videoTrack.getUniqueId(), GROUP_INDEX) == groupIndex) {
+                        videoGroupIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), GROUP_INDEX);
+                        videoTrackIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX);
+
+                        if (videoGroupIndex == groupIndex && videoTrackIndex != TRACK_ADAPTIVE) {
                             adaptiveTrackIndexesList.add(getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX));
                         }
                     }
                     break;
                 case Consts.TRACK_TYPE_AUDIO:
+
                     AudioTrack audioTrack;
-                    for (int i = 1; i < audioTracks.size(); i++) {
+                    int audioGroupIndex;
+                    int audioTrackIndex;
+
+                    for (int i = 0; i < audioTracks.size(); i++) {
+
                         audioTrack = audioTracks.get(i);
-                        if (getIndexFromUniqueId(audioTrack.getUniqueId(), GROUP_INDEX) == groupIndex) {
+                        audioGroupIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), GROUP_INDEX);
+                        audioTrackIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX);
+
+                        if (audioGroupIndex == groupIndex && audioTrackIndex != TRACK_ADAPTIVE) {
                             adaptiveTrackIndexesList.add(getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX));
                         }
                     }
@@ -433,7 +499,7 @@ class TrackSelectionHelper {
     private int getIndexFromUniqueId(String uniqueId, int groupIndex) {
         String uniqueIdWithoutPrefix = removePrefix(uniqueId);
         String[] strArray = uniqueIdWithoutPrefix.split(",");
-        if (strArray[groupIndex].equals(ADAPTIVE_SUFFIX)) {
+        if (strArray[groupIndex].equals(ADAPTIVE)) {
             return -1;
         }
 
@@ -494,7 +560,7 @@ class TrackSelectionHelper {
         }
     }
 
-    void setTracksInfoListener(ExoPlayerWrapper.TracksInfoListener tracksInfoListener) {
+    void setTracksInfoListener(TracksInfoListener tracksInfoListener) {
         this.tracksInfoListener = tracksInfoListener;
     }
 
@@ -504,7 +570,8 @@ class TrackSelectionHelper {
         textTracks.clear();
     }
 
-    public void release() {
+    void release() {
+        tracksInfoListener.onRelease(lastSelectedTrackIds);
         tracksInfoListener = null;
         clearTracksLists();
     }
@@ -519,7 +586,7 @@ class TrackSelectionHelper {
 
     long getCurrentVideoWidth() {
         return currentVideoWidth;
-}
+    }
 
     long getCurrentVideoHeight() {
         return currentVideoHeight;
@@ -571,7 +638,7 @@ class TrackSelectionHelper {
         tracksInfoListener.onTrackChanged();
     }
 
-    public void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
+    void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
     }
 }

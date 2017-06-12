@@ -1,15 +1,17 @@
 package com.kaltura.playkit;
 
-import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PKMediaEntry implements Parcelable{
+public class PKMediaEntry implements Parcelable {
+    
     private String id;
+    private String name;
     private List<PKMediaSource> sources;
     private long duration; //in milliseconds
     private MediaEntryType mediaType;
@@ -17,16 +19,14 @@ public class PKMediaEntry implements Parcelable{
 
     public PKMediaEntry(){}
 
-    public PKMediaEntry(Parcel in) {
-        id = in.readString();
-        duration = in.readLong();
-        mediaType = Utils.byValue(MediaEntryType.class, in.readString());// MediaEntryType.valueOf(in.readString());
-        metadata = Utils.bundleToMap(in.readBundle(), String.class);// in.readBundle(String.class.getClassLoader());
-        sources = in.createTypedArrayList(PKMediaSource.CREATOR);
-    }
 
     public PKMediaEntry setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public PKMediaEntry setName(String name) {
+        this.name = name;
         return this;
     }
 
@@ -36,6 +36,10 @@ public class PKMediaEntry implements Parcelable{
     }
     public String getId() {
         return id;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public PKMediaEntry setSources(List<PKMediaSource> sources) {
@@ -69,6 +73,12 @@ public class PKMediaEntry implements Parcelable{
         return mediaType;
     }
 
+    public enum MediaEntryType {
+        Vod,
+        Live,
+        Unknown
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -76,25 +86,50 @@ public class PKMediaEntry implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(id);
-        dest.writeLong(duration);
-        dest.writeString(mediaType.name());
-        if(metadata != null) {
-            dest.writeBundle(Utils.mapToBundle(metadata));
-        } else {
-            dest.writeBundle(new Bundle());
-        }
-        if(sources != null){
-            dest.writeTypedList(sources);
+        dest.writeString(this.id);
+        dest.writeString(this.name);
+        if (sources != null) {
+            dest.writeTypedList(this.sources);
         } else {
             dest.writeTypedList(Collections.EMPTY_LIST);
+        }
+        dest.writeLong(this.duration);
+        dest.writeInt(this.mediaType == null ? -1 : this.mediaType.ordinal());
+        if (this.metadata != null) {
+            dest.writeInt(this.metadata.size());
+            for (Map.Entry<String, String> entry : this.metadata.entrySet()) {
+                dest.writeString(entry.getKey());
+                dest.writeString(entry.getValue());
+            }
+        } else {
+            dest.writeInt(-1);
+        }
+    }
+
+    protected PKMediaEntry(Parcel in) {
+        this.id = in.readString();
+        this.name = in.readString();
+        this.sources = in.createTypedArrayList(PKMediaSource.CREATOR);
+        this.duration = in.readLong();
+        int tmpMediaType = in.readInt();
+        this.mediaType = tmpMediaType == -1 ? null : MediaEntryType.values()[tmpMediaType];
+        int metadataSize = in.readInt();
+        if (metadataSize == -1) {
+            this.metadata = null;
+        } else {
+            this.metadata = new HashMap<String, String>(metadataSize);
+            for (int i = 0; i < metadataSize; i++) {
+                String key = in.readString();
+                String value = in.readString();
+                this.metadata.put(key, value);
+            }
         }
     }
 
     public static final Creator<PKMediaEntry> CREATOR = new Creator<PKMediaEntry>() {
         @Override
-        public PKMediaEntry createFromParcel(Parcel in) {
-            return new PKMediaEntry(in);
+        public PKMediaEntry createFromParcel(Parcel source) {
+            return new PKMediaEntry(source);
         }
 
         @Override
@@ -102,10 +137,4 @@ public class PKMediaEntry implements Parcelable{
             return new PKMediaEntry[size];
         }
     };
-
-    public enum MediaEntryType {
-        Vod,
-        Live,
-        Unknown
-    }
 }

@@ -275,7 +275,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     }
 
     private void sendAnalyticsEvent(final KAnalonyEvents eventType) {
-        String sessionId = (player.getSessionId() != null) ? player.getSessionId().toString() : "";
+        String sessionId = (player.getSessionId() != null) ? player.getSessionId() : "";
         String playbackType = isDvr ? "dvr" : "live";
         int flavourId = -1;
 

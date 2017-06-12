@@ -27,5 +27,7 @@ public class PKRequestParams {
          * @return The input object, or an adapted one.
          */
         PKRequestParams adapt(PKRequestParams requestParams);
+
+        void updateParams(Player player);
     }
 }
