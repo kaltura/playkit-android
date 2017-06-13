@@ -408,6 +408,11 @@ public class KalturaStatsPlugin extends PKPlugin {
         if (timer == null) {
             timer = new java.util.Timer();
         }
+        int timerInterval = pluginConfig.getTimerIntervalMillis();
+        if (timerInterval <= 0) {
+            timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
+        }
+
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -424,7 +429,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                     sendPlayReached75();
                 }
             }
-        }, 0, pluginConfig.getTimerIntervalMillis());
+        }, 0, timerInterval);
     }
     
     /**
