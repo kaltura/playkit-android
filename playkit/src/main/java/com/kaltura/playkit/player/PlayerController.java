@@ -354,7 +354,7 @@ public class PlayerController implements Player {
 
     private void startPlaybackFrom(long startPosition) {
         if (player == null) {
-            log.e("Attempt to invoke 'startPlaybackFrom()' on null instance of the player engine");
+            log.w("Attempt to invoke 'startPlaybackFrom()' on null instance of the player engine");
             return;
         }
 
@@ -393,7 +393,7 @@ public class PlayerController implements Player {
     public void seekTo(long position) {
         log.d("seek to " + position);
         if (player == null) {
-            log.e("Attempt to invoke 'seekTo()' on null instance of the player engine");
+            log.w("Attempt to invoke 'seekTo()' on null instance of the player engine");
             return;
         }
         player.seekTo(position);
@@ -409,7 +409,7 @@ public class PlayerController implements Player {
         log.d("play");
 
         if (player == null) {
-            log.e("Attempt to invoke 'play()' on null instance of the player engine");
+            log.w("Attempt to invoke 'play()' on null instance of the player engine");
             return;
         }
         addPlayerView();
@@ -419,7 +419,7 @@ public class PlayerController implements Player {
     public void pause() {
         log.d("pause");
         if (player == null) {
-            log.e("Attempt to invoke 'pause()' on null instance of the player engine");
+            log.w("Attempt to invoke 'pause()' on null instance of the player engine");
             return;
         }
         player.pause();
@@ -429,7 +429,7 @@ public class PlayerController implements Player {
     public void replay() {
         log.d("replay");
         if (player == null) {
-            log.e("Attempt to invoke 'replay()' on null instance of the player engine");
+            log.w("Attempt to invoke 'replay()' on null instance of the player engine");
             return;
         }
         player.replay();
@@ -438,7 +438,7 @@ public class PlayerController implements Player {
     @Override
     public void setVolume(float volume) {
         if (player == null) {
-            log.e("Attempt to invoke 'setVolume()' on null instance of the player engine");
+            log.w("Attempt to invoke 'setVolume()' on null instance of the player engine");
             return;
         }
         player.setVolume(volume);
@@ -491,7 +491,7 @@ public class PlayerController implements Player {
     public void onApplicationPaused() {
         log.d("onApplicationPaused");
         if (player == null) {
-            log.e("Attempt to invoke 'release()' on null instance of the player engine");
+            log.w("Attempt to invoke 'release()' on null instance of the player engine");
             return;
         }
 
@@ -513,7 +513,7 @@ public class PlayerController implements Player {
     @Override
     public void changeTrack(String uniqueId) {
         if (player == null) {
-            log.e("Attempt to invoke 'changeTrack()' on null instance of the player engine");
+            log.w("Attempt to invoke 'changeTrack()' on null instance of the player engine");
             return;
         }
 

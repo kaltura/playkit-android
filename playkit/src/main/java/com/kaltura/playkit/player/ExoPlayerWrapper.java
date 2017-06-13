@@ -428,7 +428,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void seekTo(long position) {
         if (player == null) {
-            log.e("Attempt to invoke 'seekTo()' on null instance of the exoplayer");
+            log.w("Attempt to invoke 'seekTo()' on null instance of the exoplayer");
             return;
         }
         isSeeking = true;
@@ -496,7 +496,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void changeTrack(String uniqueId) {
         if (trackSelectionHelper == null) {
-            log.e("Attempt to invoke 'changeTrack()' on null instance of the TracksSelectionHelper");
+            log.w("Attempt to invoke 'changeTrack()' on null instance of the TracksSelectionHelper");
             return;
         }
         trackSelectionHelper.changeTrack(uniqueId);
@@ -509,7 +509,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void startFrom(long position) {
         if (player == null) {
-            log.e("Attempt to invoke 'startFrom()' on null instance of the exoplayer");
+            log.w("Attempt to invoke 'startFrom()' on null instance of the exoplayer");
             return;
         }
 
@@ -532,7 +532,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void replay() {
         if (player == null) {
-            log.e("Attempt to invoke 'replay()' on null instance of the exoplayer");
+            log.w("Attempt to invoke 'replay()' on null instance of the exoplayer");
             return;
         }
         isSeeking = false;
@@ -544,7 +544,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void setVolume(float volume) {
         if (player == null) {
-            log.e("Attempt to invoke 'setVolume()' on null instance of the exoplayer");
+            log.w("Attempt to invoke 'setVolume()' on null instance of the exoplayer");
             return;
         }
 
@@ -603,7 +603,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     void savePlayerPosition() {
         if (player == null) {
-            log.e("Attempt to invoke 'savePlayerPosition()' on null instance of the exoplayer");
+            log.w("Attempt to invoke 'savePlayerPosition()' on null instance of the exoplayer");
             return;
         }
         currentException = null;
