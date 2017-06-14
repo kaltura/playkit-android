@@ -352,7 +352,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public PlayerEvent.ExceptionInfo getCurrentException() {
+    public PlayerEvent.ExceptionInfo getCurrentError() {
         return null;
     }
 

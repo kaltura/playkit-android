@@ -19,6 +19,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.api.phoenix.services.BookmarkService;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.errors.PKError;
 
 import java.util.TimerTask;
 
@@ -97,8 +98,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         if (Utils.isJsonObjectValueValid(pluginConfig, "fileId")) {
             fileId = pluginConfig.getAsJsonPrimitive("fileId").getAsString();
         } else {
-            log.e("Error PhoenixAnalytics fileId was not set");
             fileId = "0";
+            String errorMessage = TAG + " fileId was not set";
+            sendError(PKError.AnalyticsPluginError.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
         }
         if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
             baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
@@ -148,6 +150,12 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         log.d("onDestroy");
         timer.cancel();
         timerWasCancelled = true;
+    }
+
+    private void sendError(int errorCode, String errorMessage, Throwable cause) {
+        log.e(errorMessage);
+        PKError error = new PKError(errorCode, errorMessage, cause);
+        messageBus.post(new PlayerEvent.ExceptionInfo(error));
     }
 
     @Override

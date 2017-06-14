@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 
-import com.google.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -19,6 +18,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.errors.PKError;
 
 import java.util.UUID;
 
@@ -31,8 +31,6 @@ import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 public class PlayerController implements Player {
 
     private static final PKLog log = PKLog.get("PlayerController");
-    private static final int ALLOWED_ERROR_RETRIES = 3;
-
 
     private PlayerEngine player;
     private Context context;
@@ -111,9 +109,9 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.PlaybackInfoUpdated(player.getPlaybackInfo());
                         break;
                     case ERROR:
-                        event = player.getCurrentException();
+                        event = player.getCurrentError();
                         PlayerEvent.ExceptionInfo exceptionInfo = (PlayerEvent.ExceptionInfo) event;
-                        if (exceptionInfo == null || exceptionInfo.getException() == null) {
+                        if (exceptionInfo == null || exceptionInfo.error.cause == null) {
                             return;
                         }
 
@@ -191,7 +189,7 @@ public class PlayerController implements Player {
         }
 
         if (player == null) {
-            log.e("Error in " + visibilityFunction + " player is null");
+            log.w("Error in " + visibilityFunction + " player is null");
             return;
         }
 
@@ -203,7 +201,7 @@ public class PlayerController implements Player {
                 playerView.hideVideoSurface();
             }
         } else {
-            log.e("Error in " + visibilityFunction + " playerView is null");
+            log.w("Error in " + visibilityFunction + " playerView is null");
         }
     }
 
@@ -214,7 +212,7 @@ public class PlayerController implements Player {
         }
 
         if (player == null) {
-            log.e("Error in " + visibilityFunction + " player is null");
+            log.w("Error in " + visibilityFunction + " player is null");
             return;
         }
 
@@ -226,7 +224,7 @@ public class PlayerController implements Player {
                 playerView.hideVideoSubtitles();
             }
         } else {
-            log.e("Error in " + visibilityFunction + " playerView is null");
+            log.w("Error in " + visibilityFunction + " playerView is null");
         }
     }
 
@@ -239,8 +237,8 @@ public class PlayerController implements Player {
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
 
         if (sourceConfig == null) {
-            //TODO send error to the application.
-            log.e("Cant prepare player with media config. PKMediaConfig is null.");
+            String errorMessage = "Cant prepare player with media config. PKMediaConfig is null.";
+            sendErrorMessage(PKError.PlayerError.SOURCE_ERROR, errorMessage, new IllegalArgumentException());
             return;
         }
 
@@ -270,7 +268,8 @@ public class PlayerController implements Player {
         //When mediaConfig is null, we can not build a valid sourceConfig object.
         //So assign it to null, and return. This will prevent from continue of the prepare() flow.
         if (mediaConfig == null) {
-            log.e("No playable mediaConfig found, mediaConfig = null");
+            String errorMessage = "No playable mediaConfig found, mediaConfig = null";
+            sendErrorMessage(PKError.PlayerError.SOURCE_ERROR, errorMessage, new IllegalArgumentException());
             sourceConfig = null;
             return;
         }
@@ -282,7 +281,8 @@ public class PlayerController implements Player {
         //If source was not able to select, assign sourceConfig to null and return.
         //This will prevent from continue of the prepare() flow.
         if (source == null) {
-            log.e("No playable source found for entry");
+            String errorMessage = "No playable source found for entry";
+            sendErrorMessage(PKError.PlayerError.SOURCE_ERROR, errorMessage, new IllegalArgumentException());
             sourceConfig = null;
             return;
         }
@@ -541,25 +541,23 @@ public class PlayerController implements Player {
     }
 
     private boolean maybeHandleExceptionLocally(PlayerEvent.ExceptionInfo exceptionInfo) {
-        if (exceptionInfo.getErrorCounter() > ALLOWED_ERROR_RETRIES) {
-            log.w("Amount of the retries that happened on the same error are exceed the allowed amount of retries. Allowed amount of retries " + ALLOWED_ERROR_RETRIES + " actual amount " + exceptionInfo.getErrorCounter());
-            return false;
-        }
-
-        if (exceptionInfo.getException() instanceof ExoPlaybackException) {
-            ExoPlaybackException exoPlaybackException = (ExoPlaybackException) exceptionInfo.getException();
-            if (exoPlaybackException.type == ExoPlaybackException.TYPE_RENDERER) {
-
-                if (exoPlaybackException.getRendererException() instanceof MediaCodec.CryptoException) {
-                    ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
-                    long currentPosition = player.getCurrentPosition();
-                    exoPlayerWrapper.savePlayerPosition();
-                    exoPlayerWrapper.load(sourceConfig);
-                    exoPlayerWrapper.startFrom(currentPosition);
-                    return true;
-                }
+        PKError error = exceptionInfo.error;
+        if (error.errorCode == PKError.PlayerError.RENDERER_ERROR) {
+            if (error.cause instanceof MediaCodec.CryptoException) {
+                ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
+                long currentPosition = player.getCurrentPosition();
+                exoPlayerWrapper.savePlayerPosition();
+                exoPlayerWrapper.load(sourceConfig);
+                exoPlayerWrapper.startFrom(currentPosition);
+                return true;
             }
         }
         return false;
+    }
+
+    private void sendErrorMessage(int errorCode, String errorMessage, Throwable cause) {
+        log.e(errorMessage);
+        PKError pkError = new PKError(errorCode, errorMessage, cause);
+        eventListener.onEvent(new PlayerEvent.ExceptionInfo(pkError));
     }
 }

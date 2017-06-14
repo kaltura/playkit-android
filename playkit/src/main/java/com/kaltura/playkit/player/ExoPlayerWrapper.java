@@ -49,6 +49,7 @@ import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.EventLogger;
+import com.kaltura.playkit.utils.errors.PKError;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +82,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     private Factory mediaDataSourceFactory;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
-    private Exception currentException = null;
+    private PKError currentError = null;
 
     private boolean isSeeking = false;
     private boolean shouldRestorePlayerToPreviousState = false;
@@ -92,7 +93,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private Timeline.Window window;
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
-    private int sameErrorOccurrenceCounter = 0;
     private List<PKMetadata> metadataList = new ArrayList<>();
 
     private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
@@ -148,7 +148,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private void preparePlayer(PKMediaSourceConfig sourceConfig) {
         //reset metadata on prepare.
         metadataList.clear();
-        sameErrorOccurrenceCounter = 0;
         drmSessionManager.setMediaSource(sourceConfig.mediaSource);
 
         shouldGetTracksInfo = true;
@@ -322,17 +321,30 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
-        if (currentException != null) {
-            //if error have same message as the previous one, update the errorCounter.
-            //this is need to avoid infinity retries on the same error.
-            if (currentException.getMessage() != null && currentException.getMessage().equals(error.getMessage())) {
-                sameErrorOccurrenceCounter++;
-            } else {
-                sameErrorOccurrenceCounter = 0;
-            }
+
+        int errorCode;
+        Throwable cause;
+        String errorMessage;
+
+        switch (error.type) {
+            case ExoPlaybackException.TYPE_SOURCE:
+                errorCode = PKError.PlayerError.SOURCE_ERROR;
+                cause = error.getSourceException();
+                errorMessage = error.getMessage();
+                break;
+            case ExoPlaybackException.TYPE_RENDERER:
+                errorCode = PKError.PlayerError.RENDERER_ERROR;
+                cause = error.getRendererException();
+                errorMessage = error.getMessage();
+                break;
+            default:
+                errorCode = PKError.PlayerError.UNEXPECTED;
+                cause = error.getUnexpectedException();
+                errorMessage = error.getMessage();
+                break;
         }
 
-        currentException = error;
+        currentError = new PKError(errorCode, errorMessage, cause);
         sendDistinctEvent(PlayerEvent.Type.ERROR);
     }
 
@@ -587,8 +599,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     }
 
     @Override
-    public PlayerEvent.ExceptionInfo getCurrentException() {
-        return new PlayerEvent.ExceptionInfo(currentException, sameErrorOccurrenceCounter);
+    public PlayerEvent.ExceptionInfo getCurrentError() {
+        return new PlayerEvent.ExceptionInfo(currentError);
     }
 
     @Override
@@ -606,7 +618,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             log.w("Attempt to invoke 'savePlayerPosition()' on null instance of the exoplayer");
             return;
         }
-        currentException = null;
+        currentError = null;
         playerWindow = player.getCurrentWindowIndex();
         Timeline timeline = player.getCurrentTimeline();
         if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
@@ -636,6 +648,12 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             @Override
             public void onRelease(String[] selectedTrackIds) {
                 lastSelectedTrackIds = selectedTrackIds;
+            }
+
+            @Override
+            public void onError(PKError error) {
+                currentError = error;
+                sendEvent(PlayerEvent.Type.ERROR);
             }
         };
     }

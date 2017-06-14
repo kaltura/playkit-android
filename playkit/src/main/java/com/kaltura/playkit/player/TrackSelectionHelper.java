@@ -14,6 +14,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.errors.PKError;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +78,8 @@ class TrackSelectionHelper {
         void onTrackChanged();
 
         void onRelease(String[] selectedTracks);
+
+        void onError(PKError error);
     }
 
 
@@ -315,13 +318,8 @@ class TrackSelectionHelper {
      */
 
     void changeTrack(String uniqueId) throws IllegalArgumentException {
-        if (uniqueId == null) {
-            throw new IllegalArgumentException("uniqueId is null");
-        }
-        if (!isUniqueIdValid(uniqueId)) {
-            throw new IllegalArgumentException("The uniqueId is not valid");
-        }
 
+        validateUniqueId(uniqueId);
 
         log.i("change track to uniqueID -> " + uniqueId);
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
@@ -535,15 +533,20 @@ class TrackSelectionHelper {
                 && trackGroupArray.get(groupIndex).length > 1;
     }
 
-    private boolean isUniqueIdValid(String uniqueId) {
+    private void validateUniqueId(String uniqueId) {
+
+        if (uniqueId == null) {
+            sendError("uniqueId is null", new IllegalArgumentException());
+            return;
+        }
+
         if (uniqueId.contains(VIDEO_PREFIX)
                 || uniqueId.contains(AUDIO_PREFIX)
                 || uniqueId.contains(TEXT_PREFIX)
                 && uniqueId.contains(",")) {
-            return true;
+        } else {
+            sendError("Unique id is not valid => " + uniqueId, new IllegalArgumentException());
         }
-        log.e("Unique id is not valid => " + uniqueId);
-        return false;
     }
 
     /**
@@ -574,6 +577,11 @@ class TrackSelectionHelper {
         tracksInfoListener.onRelease(lastSelectedTrackIds);
         tracksInfoListener = null;
         clearTracksLists();
+    }
+
+    private void sendError(String errorMessage, Throwable cause) {
+        log.e(errorMessage);
+        tracksInfoListener.onError(new PKError(PKError.PlayerError.TRACKS_ERROR, errorMessage, cause));
     }
 
     long getCurrentVideoBitrate() {

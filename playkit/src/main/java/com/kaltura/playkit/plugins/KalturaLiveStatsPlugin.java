@@ -21,6 +21,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.api.ovp.services.LiveStatsService;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.errors.PKError;
 
 import java.util.Date;
 import java.util.TimerTask;
@@ -112,19 +113,33 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
             partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
         } else {
             partnerId = 0;
-            log.e("Error KalturaStats partnetId is missing");
+            String errorMessage = TAG + " partnerId is missing";
+            sendError(PKError.AnalyticsPluginError.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
         }
         if (Utils.isJsonObjectValueValid(pluginConfig, "entryId")) {
             entryId = pluginConfig.getAsJsonPrimitive("entryId").getAsString();
         } else {
-            // in case of OVP entry id is anyway the ID needed it only for OTT
+
             entryId = mediaConfig.getMediaEntry().getId();
-            if (entryId != null && !entryId.contains("_")) {
-                log.e("Error KalturaStats entryId was given as MEDIA_ID instead of entryId");
+            if (entryId == null) {
+                String errorMessage = TAG + " entryId is null";
+                sendError(PKError.AnalyticsPluginError.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
+            }
+            // in case of OVP entry id is anyway the ID needed it only for OTT
+            else if (entryId != null && !entryId.contains("_")) {
+                String errorMessage = TAG + " entryId was given as MEDIA_ID instead of entryId";
+                sendError(PKError.AnalyticsPluginError.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
             }
         }
+
         eventIdx = 0;
         this.mediaConfig = mediaConfig;
+    }
+
+   private void sendError(int errorCode, String errorMessage, Throwable cause) {
+        log.e(errorMessage);
+        PKError error = new PKError(errorCode, errorMessage, cause);
+        messageBus.post(new PlayerEvent.ExceptionInfo(error));
     }
 
     @Override
@@ -199,7 +214,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     }
 
     private void startTimerInterval() {
-        int timerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int)Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
+        int timerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
 
         if (timer == null) {
             timer = new java.util.Timer();
@@ -232,9 +247,6 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private void sendLiveEvent(final long bufferTime) {
         String sessionId = (player.getSessionId() != null) ? player.getSessionId() : "";
 
-        // Parameters for the request -
-        // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
-        // String startTime,  String entryId,  boolean isLive, String referrer
         RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(baseUrl, partnerId, isLive ? 1 : 2, eventIdx++, bufferTime,
                 lastReportedBitrate, sessionId, mediaConfig.getStartPosition(), entryId, isLive, PlayKitManager.CLIENT_TAG, "hls");
 

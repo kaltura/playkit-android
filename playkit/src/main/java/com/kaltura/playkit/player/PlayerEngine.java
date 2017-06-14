@@ -168,7 +168,7 @@ interface PlayerEngine {
      * This counter will help us to avoid the infinite loop, in case when we retry the playback, when handle the exception.
      * @return - the last {@link PlayerEvent.ExceptionInfo} that happened.
      */
-    PlayerEvent.ExceptionInfo getCurrentException();
+    PlayerEvent.ExceptionInfo getCurrentError();
 
 
     /**

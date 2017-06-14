@@ -22,6 +22,7 @@ import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdPositionType;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.errors.PKError;
 
 import java.util.TimerTask;
 
@@ -101,8 +102,6 @@ public class KalturaStatsPlugin extends PKPlugin {
         }
     }
 
-
-
     public static final Factory factory = new Factory() {
         @Override
         public String getName() {
@@ -145,33 +144,41 @@ public class KalturaStatsPlugin extends PKPlugin {
         if (Utils.isJsonObjectValueValid(pluginConfig, "uiconfId")) {
             uiconfId = pluginConfig.getAsJsonPrimitive("uiconfId").getAsInt();
         } else {
-            log.e("KalturaStats uiconfId is missing");
             uiconfId = 0;
+            String errorMessage = TAG + " uiconfId is missing";
+            sendError(PKError.AnalyticsPluginError.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
         }
         if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
             baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
         } else {
             baseUrl = DEFAULT_BASE_URL;
         }
+
         if (Utils.isJsonObjectValueValid(pluginConfig, "timerInterval")) {
-            timerInterval = pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int)Consts.MILLISECONDS_MULTIPLIER;
+            timerInterval = pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER;
         } else {
+            log.w(TAG + " timerInterval is missing. Use default.");
             timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
-            log.e("Error KalturaStats timerInterval is missing");
         }
         if (Utils.isJsonObjectValueValid(pluginConfig, "partnerId")) {
             partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
         } else {
             partnerId = 0;
-            log.e("Error KalturaStats partnetId is missing");
+            String errorMessage = TAG + " partnerId is missing";
+            sendError(PKError.AnalyticsPluginError.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
         }
         if (Utils.isJsonObjectValueValid(pluginConfig, "entryId")) {
             entryId = pluginConfig.getAsJsonPrimitive("entryId").getAsString();
         } else {
-            // in case of OVP entry id is anyway the ID needed it only for OTT
             entryId = mediaConfig.getMediaEntry().getId();
-            if (entryId != null && !entryId.contains("_")) {
-                log.e("Error KalturaStats entryId was given as MEDIA_ID instead of entryId");
+            if (entryId == null) {
+                String errorMessage = TAG + " entryId is missing";
+                sendError(PKError.AnalyticsPluginError.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
+            }
+            // in case of OVP entry id is anyway the ID needed it only for OTT
+            else if (entryId != null && !entryId.contains("_")) {
+                String errorMessage = TAG + " entryId was given as MEDIA_ID instead of entryId";
+                sendError(PKError.AnalyticsPluginError.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
             }
         }
 
@@ -231,7 +238,7 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
 
             if (event instanceof PlayerEvent) {
-                if (player.getDuration() < 0){
+                if (player.getDuration() < 0) {
                     return;
                 }
                 log.d(((PlayerEvent) event).type.toString());
@@ -282,7 +289,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                     default:
                         break;
                 }
-            } else if (event instanceof AdEvent){
+            } else if (event instanceof AdEvent) {
                 KalturaStatsPlugin.this.onEvent((AdEvent) event);
             }
         }
@@ -440,7 +447,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                 log.d("progress = " + progress + " seekPercent = " + seekPercent);
                 if (!playReached25 && progress >= 0.25 && seekPercent < 0.5) {
                     sendPlayReached25();
-                } else if (!playReached50 && progress >= 0.5 && seekPercent <  0.75) {
+                } else if (!playReached50 && progress >= 0.5 && seekPercent < 0.75) {
                     sendPlayReached25();
                     sendPlayReached50();
                 } else if (!playReached75 && progress >= 0.75 && seekPercent < 1) {
@@ -451,7 +458,7 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
         }, 0, timerInterval);
     }
-    
+
     /**
      * Send stats event to Kaltura stats DB
      *
@@ -462,9 +469,6 @@ public class KalturaStatsPlugin extends PKPlugin {
 
         long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration() / Consts.MILLISECONDS_MULTIPLIER;
 
-        // Parameters for the request -
-        //        String baseUrl, int partnerId, int eventType, long duration,
-        //        String entryId, long position, String uiConfId, String entryId, String widgetId,  boolean isSeek
         final RequestBuilder requestBuilder = StatsService.sendStatsEvent(baseUrl, partnerId, eventType.getValue(), PlayKitManager.CLIENT_TAG, duration,
                 sessionId, player.getCurrentPosition(), uiconfId, entryId, "_" + partnerId, hasSeeked);
 
@@ -476,5 +480,11 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
         });
         requestsExecutor.queue(requestBuilder.build());
+    }
+
+    private void sendError(int errorCode, String errorMessage, Throwable cause) {
+        log.e(errorMessage);
+        PKError error = new PKError(errorCode, errorMessage, cause);
+        messageBus.post(new PlayerEvent.ExceptionInfo(error));
     }
 }

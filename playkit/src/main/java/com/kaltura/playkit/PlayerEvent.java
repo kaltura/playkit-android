@@ -2,6 +2,7 @@ package com.kaltura.playkit;
 
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.metadata.PKMetadata;
+import com.kaltura.playkit.utils.errors.PKError;
 
 import java.util.List;
 
@@ -82,21 +83,11 @@ public class PlayerEvent implements PKEvent {
 
     public static class ExceptionInfo extends PlayerEvent {
 
-        private Exception exception;
-        private int errorCounter;
+        public final PKError error;
 
-        public ExceptionInfo(Exception exception, int errorCounter) {
+        public ExceptionInfo(PKError error) {
             super(Type.ERROR);
-            this.exception = exception;
-            this.errorCounter = errorCounter;
-        }
-
-        public Exception getException() {
-            return exception;
-        }
-
-        public int getErrorCounter() {
-            return errorCounter;
+            this.error = error;
         }
     }
 
