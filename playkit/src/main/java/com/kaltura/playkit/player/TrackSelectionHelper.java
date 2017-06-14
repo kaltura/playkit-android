@@ -208,6 +208,12 @@ class TrackSelectionHelper {
     private int getDefaultTrackIndex(List<? extends BaseTrack> trackList, String lastSelectedTrackId) {
 
         int defaultTrackIndex = 0;
+
+        //If no tracks available the default track index will be 0.
+        if (trackList.isEmpty()) {
+            return defaultTrackIndex;
+        }
+
         for (int i = 0; i < trackList.size(); i++) {
             if (trackList.get(i).getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
                 defaultTrackIndex = i;
