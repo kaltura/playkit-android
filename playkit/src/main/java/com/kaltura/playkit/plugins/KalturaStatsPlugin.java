@@ -213,6 +213,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                 switch (((PlayerEvent) event).type) {
                     case METADATA_AVAILABLE:
                         sendMediaLoaded();
+                        break;
                     case STATE_CHANGED:
                         KalturaStatsPlugin.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
