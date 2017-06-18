@@ -183,4 +183,10 @@ interface PlayerEngine {
      */
     List<PKMetadata> getMetadata();
 
+    /**
+     * Will return if stream is live or not.
+     * @return - list of {@link boolean}
+     */
+    boolean isLiveStream();
+
 }

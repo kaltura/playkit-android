@@ -3,6 +3,7 @@ package com.kaltura.playkit.plugins;
 import android.content.Context;
 import android.util.Log;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
@@ -18,12 +19,18 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.api.ovp.services.LiveStatsService;
+import com.kaltura.playkit.plugins.configs.KalturaLiveStatsConfig;
+import com.kaltura.playkit.plugins.configs.KalturaStatsConfig;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Date;
 import java.util.TimerTask;
+
+import static com.kaltura.playkit.plugins.KalturaLiveStatsPlugin.KLiveStatsEvent.DVR;
+import static com.kaltura.playkit.plugins.KalturaLiveStatsPlugin.KLiveStatsEvent.LIVE;
+
 
 /**
  * Created by zivilan on 02/11/2016.
@@ -33,11 +40,19 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("KalturaLiveStatsPlugin");
     private static final String TAG = "KalturaLiveStatsPlugin";
 
-    private final String DEFAULT_BASE_URL = "https://livestats.kaltura.com/api_v3/index.php";
-    private String baseUrl;
-    private int partnerId;
-    private String entryId;
     private boolean isBuffering = false;
+    private long lastReportedBitrate = -1;
+    private Player player;
+    private PKMediaConfig mediaConfig;
+    private KalturaLiveStatsConfig pluginConfig;
+    private MessageBus messageBus;
+    private RequestQueue requestsExecutor;
+    private java.util.Timer timer = new java.util.Timer();
+    private int eventIdx = 1;
+    private long bufferTime = 0;
+    private long bufferStartTime = 0;
+    private KLiveStatsEvent liveStatsEvent = LIVE;
+    private boolean isFirstPlay = true;
 
     public enum KLiveStatsEvent {
         LIVE(1),
@@ -53,20 +68,6 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
             return value;
         }
     }
-
-    private long lastReportedBitrate = -1;
-    private Player player;
-    private PKMediaConfig mediaConfig;
-    private JsonObject pluginConfig;
-    private MessageBus messageBus;
-    private RequestQueue requestsExecutor;
-    private java.util.Timer timer = new java.util.Timer();
-    private int eventIdx = 0;
-    private int currentBitrate = -1;
-    private long bufferTime = 0;
-    private long bufferStartTime = 0;
-    private boolean isLive = false;
-    private boolean isFirstPlay = true;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -87,59 +88,51 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     @Override
     protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
-        messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY);
+        messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY, PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
-        this.pluginConfig = (JsonObject) config;
+        this.pluginConfig = parseConfig(config);
+        liveStatsEvent = pluginConfig.getIsDVR() ? DVR: LIVE;
         this.messageBus = messageBus;
     }
 
     @Override
     public void onDestroy() {
         stopLiveEvents();
-        eventIdx = 0;
-        timer.cancel();
+        eventIdx = 1;
+        cancelTimer();
     }
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-        if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
-            baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
-        } else {
-            baseUrl = DEFAULT_BASE_URL;
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "partnerId")) {
-            partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
-        } else {
-            partnerId = 0;
-            log.e("Error KalturaStats partnetId is missing");
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "entryId")) {
-            entryId = pluginConfig.getAsJsonPrimitive("entryId").getAsString();
-        } else {
-            // in case of OVP entry id is anyway the ID needed it only for OTT
-            entryId = mediaConfig.getMediaEntry().getId();
-            if (entryId != null && !entryId.contains("_")) {
-                log.e("Error KalturaStats entryId was given as MEDIA_ID instead of entryId");
-            }
-        }
-        eventIdx = 0;
+        eventIdx = 1;
         this.mediaConfig = mediaConfig;
     }
 
     @Override
     protected void onUpdateConfig(Object config) {
-        this.pluginConfig = (JsonObject) config;
+        this.pluginConfig = parseConfig(config);
+        liveStatsEvent = pluginConfig.getIsDVR() ? DVR: LIVE;
+    }
+
+    private static KalturaLiveStatsConfig parseConfig(Object config) {
+        if (config instanceof KalturaStatsConfig) {
+            return ((KalturaLiveStatsConfig) config);
+
+        } else if (config instanceof JsonObject) {
+            return new Gson().fromJson(((JsonObject) config), KalturaLiveStatsConfig.class);
+        }
+        return null;
     }
 
     @Override
     protected void onApplicationPaused() {
-
+        cancelTimer();
     }
 
     @Override
     protected void onApplicationResumed() {
-
+        startTimerInterval();
     }
 
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
@@ -148,7 +141,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
             if (event instanceof PlayerEvent) {
                 switch (((PlayerEvent) event).type) {
                     case STATE_CHANGED:
-                        KalturaLiveStatsPlugin.this.onEvent((PlayerEvent.StateChanged) event);
+                        onStateChanged(((PlayerEvent.StateChanged) event).newState);
                         break;
                     case PLAY:
                         startLiveEvents();
@@ -166,13 +159,12 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         }
     };
 
-    public void onEvent(PlayerEvent.StateChanged event) {
-        switch (event.newState) {
+    private void onStateChanged(PlayerState newState) {
+        switch (newState) {
             case READY:
-                startTimerInterval();
                 if (isBuffering) {
                     isBuffering = false;
-                    sendLiveEvent(calculateBuffer(false));
+                    calculateBuffer();
                 }
                 break;
             case BUFFERING:
@@ -184,23 +176,16 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         }
     }
 
-    private long calculateBuffer(boolean isBuffering) {
+    private long calculateBuffer() {
         long currTime = new Date().getTime();
         bufferTime = (currTime - bufferStartTime) / 1000;
         if (bufferTime > 10) {
             bufferTime = 10;
         }
-        if (isBuffering) {
-            bufferStartTime = new Date().getTime();
-        } else {
-            bufferStartTime = -1;
-        }
         return bufferTime;
     }
 
     private void startTimerInterval() {
-        int timerInterval = pluginConfig.has("timerInterval") ? pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int)Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
-
         if (timer == null) {
             timer = new java.util.Timer();
         }
@@ -209,42 +194,42 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
             public void run() {
                 sendLiveEvent(bufferTime);
             }
-        }, 0, timerInterval);
+        }, 0, Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW); // server is making assumption that interval is 10 sec
     }
 
-
     private void startLiveEvents() {
-        if (!isLive) {
-            startTimerInterval();
-            isLive = true;
-            if (isFirstPlay) {
-                sendLiveEvent(bufferTime);
-                isFirstPlay = false;
-            }
-
-        }
+        startTimerInterval();
     }
 
     private void stopLiveEvents() {
-        isLive = false;
+        cancelTimer();
     }
 
     private void sendLiveEvent(final long bufferTime) {
-        String sessionId = (player.getSessionId() != null) ? player.getSessionId() : "";
+        String sessionId = (player.getSessionId() != null) ? player.getSessionId().toString() : "";
 
         // Parameters for the request -
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
         // String startTime,  String entryId,  boolean isLive, String referrer
-        RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(baseUrl, partnerId, isLive ? 1 : 2, eventIdx++, bufferTime,
-                lastReportedBitrate, sessionId, mediaConfig.getStartPosition(), entryId, isLive, PlayKitManager.CLIENT_TAG, "hls");
+
+        RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(pluginConfig.getBaseUrl(), pluginConfig.getPartnerId(), liveStatsEvent.value, eventIdx++, bufferTime,
+                lastReportedBitrate, sessionId, mediaConfig.getStartPosition(), pluginConfig.getEntryId(), player.isLiveStream(), PlayKitManager.CLIENT_TAG, "NA");
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
-                Log.d(TAG, "onComplete: " + isLive);
+                Log.d(TAG, "onComplete: liveStatsEvent = " + liveStatsEvent.name());
                 messageBus.post(new KalturaLiveStatsEvent.KalturaLiveStatsReport(bufferTime));
             }
         });
         requestsExecutor.queue(requestBuilder.build());
     }
+
+    private void cancelTimer() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+    }
 }
+
