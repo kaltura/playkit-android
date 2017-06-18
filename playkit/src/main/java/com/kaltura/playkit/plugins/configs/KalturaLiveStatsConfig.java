@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
  * Created by gilad.nadav on 18/05/2017.
  */
 
-public class KalturaStatsLiveConfig {
+public class KalturaLiveStatsConfig {
 
 
     public static final String PARTNER_ID = "partnerId";
@@ -19,36 +19,36 @@ public class KalturaStatsLiveConfig {
     private String baseUrl;
     private boolean isDVR;
 
-    public KalturaStatsLiveConfig( int partnerId, String entryId, boolean isDVR) {
+    public KalturaLiveStatsConfig(int partnerId, String entryId, boolean isDVR) {
         this.baseUrl = "https://stats.kaltura.com/api_v3/index.php";
         this.partnerId = partnerId;
         this.entryId = entryId;
         this.isDVR = isDVR;
     }
 
-    public KalturaStatsLiveConfig(int partnerId, String entryId, String baseUrl, boolean isDVR) {
+    public KalturaLiveStatsConfig(int partnerId, String entryId, String baseUrl, boolean isDVR) {
         this.baseUrl = baseUrl;
         this.partnerId = partnerId;
         this.entryId = entryId;
         this.isDVR = isDVR;
     }
 
-    public KalturaStatsLiveConfig setPartnerId(int partnerId) {
+    public KalturaLiveStatsConfig setPartnerId(int partnerId) {
         this.partnerId = partnerId;
         return this;
     }
 
-    public KalturaStatsLiveConfig setIsDVR(boolean isDVR) {
+    public KalturaLiveStatsConfig setIsDVR(boolean isDVR) {
         this.isDVR = isDVR;
         return this;
     }
 
-    public KalturaStatsLiveConfig setEntryId(String entryId) {
+    public KalturaLiveStatsConfig setEntryId(String entryId) {
         this.entryId = entryId;
         return this;
     }
 
-    public KalturaStatsLiveConfig setBaseUrl(String baseUrl) {
+    public KalturaLiveStatsConfig setBaseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
         return this;
     }

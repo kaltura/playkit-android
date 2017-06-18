@@ -444,6 +444,12 @@ public class PlayerController implements Player {
         player.setVolume(volume);
     }
 
+
+    @Override
+    public boolean isLiveStream() {
+        return player != null && player.isLiveStream();
+    }
+
     @Override
     public boolean isPlaying() {
         return player != null && player.isPlaying();

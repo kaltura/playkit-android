@@ -137,4 +137,9 @@ public class PlayerDecoratorBase implements Player {
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         player.updatePluginConfig(pluginName, pluginConfig);
     }
+
+    @Override
+    public boolean isLiveStream() {
+        return player.isLiveStream();
+    }
 }

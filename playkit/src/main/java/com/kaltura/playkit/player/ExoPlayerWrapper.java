@@ -618,6 +618,14 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         return metadataList;
     }
 
+    @Override
+    public boolean isLiveStream() {
+        if (player == null) {
+            return false;
+        }
+        return player.isCurrentWindowDynamic();
+    }
+
     private TrackSelectionHelper.TracksInfoListener initTracksInfoListener() {
         return new TrackSelectionHelper.TracksInfoListener() {
             @Override

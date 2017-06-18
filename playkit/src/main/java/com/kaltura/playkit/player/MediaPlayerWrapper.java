@@ -532,4 +532,9 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     public List<PKMetadata> getMetadata() {
         return null;
     }
+
+    @Override
+    public boolean isLiveStream() {
+        return false;
+    }
 }

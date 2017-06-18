@@ -168,5 +168,11 @@ public interface Player {
      * @return Player's SessionId, as a String object.
      */
     String getSessionId();
+
+    /**
+     * Will return if stream is live or not.
+     * @return - list of {@link boolean}
+     */
+    boolean isLiveStream();
 }
 

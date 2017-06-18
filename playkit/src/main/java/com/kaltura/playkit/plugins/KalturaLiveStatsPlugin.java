@@ -21,14 +21,14 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.api.ovp.services.LiveStatsService;
+import com.kaltura.playkit.plugins.configs.KalturaLiveStatsConfig;
 import com.kaltura.playkit.plugins.configs.KalturaStatsConfig;
-import com.kaltura.playkit.plugins.configs.KalturaStatsLiveConfig;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Date;
 import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.kaltura.playkit.plugins.KalturaLiveStatsPlugin.KLiveStatsEvent.DVR;
 import static com.kaltura.playkit.plugins.KalturaLiveStatsPlugin.KLiveStatsEvent.LIVE;
 
 
@@ -44,11 +44,11 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private long lastReportedBitrate = -1;
     private Player player;
     private PKMediaConfig mediaConfig;
-    private KalturaStatsLiveConfig pluginConfig;
+    private KalturaLiveStatsConfig pluginConfig;
     private MessageBus messageBus;
     private RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
-    private AtomicInteger eventIdx = new AtomicInteger(0);
+    private int eventIdx = 1;
     private long bufferTime = 0;
     private long bufferStartTime = 0;
     private KLiveStatsEvent liveStatsEvent = LIVE;
@@ -92,35 +92,35 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
         this.pluginConfig = parseConfig(config);
-        liveStatsEvent = pluginConfig.getIsDVR() ? KLiveStatsEvent.DVR: KLiveStatsEvent.LIVE;
+        liveStatsEvent = pluginConfig.getIsDVR() ? DVR: LIVE;
         this.messageBus = messageBus;
     }
 
     @Override
     public void onDestroy() {
         stopLiveEvents();
-        eventIdx = new AtomicInteger(0);
+        eventIdx = 1;
         cancelTimer();
     }
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-        eventIdx = new AtomicInteger(0);
+        eventIdx = 1;
         this.mediaConfig = mediaConfig;
     }
 
     @Override
     protected void onUpdateConfig(Object config) {
         this.pluginConfig = parseConfig(config);
-        liveStatsEvent = pluginConfig.getIsDVR() ? KLiveStatsEvent.DVR: KLiveStatsEvent.LIVE;
+        liveStatsEvent = pluginConfig.getIsDVR() ? DVR: LIVE;
     }
 
-    private static KalturaStatsLiveConfig parseConfig(Object config) {
+    private static KalturaLiveStatsConfig parseConfig(Object config) {
         if (config instanceof KalturaStatsConfig) {
-            return ((KalturaStatsLiveConfig) config);
+            return ((KalturaLiveStatsConfig) config);
 
         } else if (config instanceof JsonObject) {
-            return new Gson().fromJson(((JsonObject) config), KalturaStatsLiveConfig.class);
+            return new Gson().fromJson(((JsonObject) config), KalturaLiveStatsConfig.class);
         }
         return null;
     }
@@ -205,15 +205,15 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         cancelTimer();
     }
 
-    synchronized private void sendLiveEvent(final long bufferTime) {
+    private void sendLiveEvent(final long bufferTime) {
         String sessionId = (player.getSessionId() != null) ? player.getSessionId().toString() : "";
 
         // Parameters for the request -
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
         // String startTime,  String entryId,  boolean isLive, String referrer
 
-        RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(pluginConfig.getBaseUrl(), pluginConfig.getPartnerId(), liveStatsEvent.value, eventIdx.incrementAndGet(), bufferTime,
-                lastReportedBitrate, sessionId, mediaConfig.getStartPosition(), pluginConfig.getEntryId(), true, PlayKitManager.CLIENT_TAG, "NA");
+        RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(pluginConfig.getBaseUrl(), pluginConfig.getPartnerId(), liveStatsEvent.value, eventIdx++, bufferTime,
+                lastReportedBitrate, sessionId, mediaConfig.getStartPosition(), pluginConfig.getEntryId(), player.isLiveStream(), PlayKitManager.CLIENT_TAG, "NA");
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
