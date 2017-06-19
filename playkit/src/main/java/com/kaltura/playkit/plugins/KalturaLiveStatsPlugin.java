@@ -2,7 +2,6 @@ package com.kaltura.playkit.plugins;
 
 import android.content.Context;
 import android.util.Base64;
-import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -37,9 +36,6 @@ import static com.kaltura.playkit.plugins.KalturaLiveStatsPlugin.KLiveStatsEvent
 
 public class KalturaLiveStatsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("KalturaLiveStatsPlugin");
-    private static final String TAG = "KalturaLiveStatsPlugin";
-
-    private static final int FIFTEEN_MIN = 15 * 60 * 1000;
     private static final int FIFTEEN_SEC = 15 * 1000;
 
     private Context context;
@@ -106,7 +102,6 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     public void onDestroy() {
         stopLiveEvents();
         eventIdx = 1;
-        timer.cancel();
     }
 
     @Override
@@ -122,12 +117,12 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     @Override
     protected void onApplicationPaused() {
-
+        cancelTimer();
     }
 
     @Override
     protected void onApplicationResumed() {
-
+        startTimerInterval();
     }
 
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
@@ -177,7 +172,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     public void onEvent(PlayerEvent.StateChanged event) {
         switch (event.newState) {
             case READY:
-                startTimerInterval();
+                //startTimerInterval();
                 if (isBuffering) {
                     isBuffering = false;
                     sendLiveEvent(calculateBuffer(false));
@@ -207,6 +202,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     }
 
     private void startTimerInterval() {
+        log.d("startTimerInterval");
         if (timer == null) {
             timer = new java.util.Timer();
         }
@@ -233,6 +229,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     private void stopLiveEvents() {
         isLive = false;
+        cancelTimer();
     }
 
     private void sendLiveEvent(final long bufferTime) {
@@ -263,7 +260,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
-                Log.d(TAG, "onComplete: " + isLive);
+                log.d("onComplete: " + isLive);
                 messageBus.post(new KalturaLiveStatsEvent.KalturaLiveStatsReport(bufferTime));
             }
         });
@@ -278,5 +275,13 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
             return new Gson().fromJson(((JsonObject) config), KalturaLiveStatsConfig.class);
         }
         return null;
+    }
+
+    private void cancelTimer() {
+        log.d("cancelTimer");
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
     }
 }

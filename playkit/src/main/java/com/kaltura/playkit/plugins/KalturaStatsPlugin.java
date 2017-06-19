@@ -35,7 +35,6 @@ import static android.util.Base64.NO_WRAP;
 
 public class KalturaStatsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("KalturaStatsPlugin");
-    private static final String TAG = "KalturaStatsPlugin";
 
     private Context context;
     private AdInfo adInfo;
