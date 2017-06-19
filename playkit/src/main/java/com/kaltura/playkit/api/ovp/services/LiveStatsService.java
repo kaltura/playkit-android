@@ -17,15 +17,18 @@ public class LiveStatsService {
     private static final PKLog log = PKLog.get("LiveStatsService");
 
     public static RequestBuilder sendLiveStatsEvent(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, long bitrate,
-                                                    String sessionId, long startTime, String entryId, boolean isLive, String clientVer, String deliveryType) {
+                                                    String sessionId, long startTime, String entryId, boolean isLive, String clientVer, String deliveryType,
+                                                    int playbackContext, String applicationName, String userId) {
         return new RequestBuilder()
                 .method("GET")
-                .url(getOvpUrl(baseUrl, partnerId, eventType, eventIndex, bufferTime, bitrate, sessionId, startTime, entryId, isLive, clientVer, deliveryType))
+                .url(getOvpUrl(baseUrl, partnerId, eventType, eventIndex, bufferTime, bitrate, sessionId, startTime, entryId, isLive, clientVer, deliveryType,
+                        playbackContext, applicationName, userId))
                 .tag("stats-send");
     }
 
     private static String getOvpUrl(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, long bitrate,
-                                    String sessionId, long startTime, String entryId, boolean isLive, String clientVer, String deliveryType) {
+                                    String sessionId, long startTime, String entryId, boolean isLive, String clientVer, String deliveryType,
+                                    int playbackContext, String applicationName, String userId) {
         Uri.Builder builder = new Uri.Builder();
         builder.path(baseUrl)
                 .appendQueryParameter("service", "liveStats")
@@ -34,6 +37,9 @@ public class LiveStatsService {
                 .appendQueryParameter("format", "1")
                 .appendQueryParameter("ignoreNull", "1")
                 .appendQueryParameter("action", "collect")
+                .appendQueryParameter("PlaybackContext", Integer.toString(playbackContext))
+                .appendQueryParameter("applicationName", applicationName)
+                .appendQueryParameter("userId", userId)
                 .appendQueryParameter("clientTag", "kwidget:v" + clientVer)
                 .appendQueryParameter("event:eventType", Integer.toString(eventType))
                 .appendQueryParameter("event:partnerId", Integer.toString(partnerId))

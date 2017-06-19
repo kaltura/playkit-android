@@ -18,15 +18,18 @@ public class StatsService {
     private static final PKLog log = PKLog.get("StatsService");
 
     public static RequestBuilder sendStatsEvent(String baseUrl, int partnerId, int eventType, String clientVer, long duration,
-                                                String sessionId, long position, int uiConfId, String entryId, String widgetId, boolean isSeek) {
+                                                String sessionId, long position, int uiConfId, String entryId, String widgetId, boolean isSeek,
+                                                int playbackContext, String applicationName, String userId) {
         return new RequestBuilder()
                 .method("GET")
-                .url(getOvpUrl(baseUrl, partnerId, eventType, clientVer, duration, sessionId, position, uiConfId, entryId, widgetId, isSeek))
+                .url(getOvpUrl(baseUrl, partnerId, eventType, clientVer, duration, sessionId, position, uiConfId, entryId, widgetId, isSeek,
+                        playbackContext, applicationName, userId))
                 .tag("stats-send");
     }
 
     private static String getOvpUrl(String baseUrl, int partnerId, int eventType, String clientVer, long duration,
-                                    String sessionId, long position, int uiConfId, String entryId, String widgetId, boolean isSeek) {
+                                    String sessionId, long position, int uiConfId, String entryId, String widgetId, boolean isSeek, int playbackContext,
+                                    String applicationName, String userId) {
         Uri.Builder builder = new Uri.Builder();
         builder.path(baseUrl)
                 .appendQueryParameter("service", "stats")
@@ -35,6 +38,9 @@ public class StatsService {
                 .appendQueryParameter("clientTag", "kwidget:v" + clientVer)
                 .appendQueryParameter("format", "1")
                 .appendQueryParameter("ignoreNull", "1")
+                .appendQueryParameter("PlaybackContext", Integer.toString(playbackContext))
+                .appendQueryParameter("applicationName", applicationName)
+                .appendQueryParameter("userId", userId)
                 .appendQueryParameter("action", "collect")
                 .appendQueryParameter("event:eventType", Integer.toString(eventType))
                 .appendQueryParameter("event:clientVer", clientVer)
@@ -49,6 +55,7 @@ public class StatsService {
                 .appendQueryParameter("event:seek", Boolean.toString(isSeek))
                 .appendQueryParameter("event:entryId", entryId)
                 .appendQueryParameter("event:widgetId", widgetId);
+
 
         try {
             URL url =  new URL(URLDecoder.decode(builder.build().toString(), "UTF-8"));
