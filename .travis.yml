@@ -7,10 +7,17 @@ android:
   - platform-tools
   - extra-android-m2repository
   - extra-google-m2repository
+  - build-tools-25.0.2
+  - android-25
 cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
+    - $HOME/.m2
+    - $HOME/.gradle
+    - $HOME/.android
+    - ${TRAVIS_BUILD_DIR}/gradle/caches/
+    - ${TRAVIS_BUILD_DIR}/gradle/wrapper/dists/
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 before_script:
