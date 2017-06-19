@@ -18,17 +18,16 @@ public class LiveStatsService {
 
     public static RequestBuilder sendLiveStatsEvent(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, long bitrate,
                                                     String sessionId, long startTime, String entryId, boolean isLive, String clientVer, String deliveryType,
-                                                    int playbackContext, String applicationName, String userId) {
+                                                    int contextId, String applicationName, String userId) {
         return new RequestBuilder()
                 .method("GET")
-                .url(getOvpUrl(baseUrl, partnerId, eventType, eventIndex, bufferTime, bitrate, sessionId, startTime, entryId, isLive, clientVer, deliveryType,
-                        playbackContext, applicationName, userId))
+                .url(getOvpUrl(baseUrl, partnerId, eventType, eventIndex, bufferTime, bitrate, sessionId, startTime, entryId, isLive, clientVer, deliveryType, contextId, applicationName, userId))
                 .tag("stats-send");
     }
 
     private static String getOvpUrl(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, long bitrate,
                                     String sessionId, long startTime, String entryId, boolean isLive, String clientVer, String deliveryType,
-                                    int playbackContext, String applicationName, String userId) {
+                                    int contextId, String applicationName, String userId) {
         Uri.Builder builder = new Uri.Builder();
         builder.path(baseUrl)
                 .appendQueryParameter("service", "liveStats")
@@ -37,9 +36,6 @@ public class LiveStatsService {
                 .appendQueryParameter("format", "1")
                 .appendQueryParameter("ignoreNull", "1")
                 .appendQueryParameter("action", "collect")
-                .appendQueryParameter("PlaybackContext", Integer.toString(playbackContext))
-                .appendQueryParameter("applicationName", applicationName)
-                .appendQueryParameter("userId", userId)
                 .appendQueryParameter("clientTag", "kwidget:v" + clientVer)
                 .appendQueryParameter("event:eventType", Integer.toString(eventType))
                 .appendQueryParameter("event:partnerId", Integer.toString(partnerId))
@@ -51,6 +47,16 @@ public class LiveStatsService {
                 .appendQueryParameter("event:startTime", Long.toString(startTime))
                 .appendQueryParameter("event:entryId", entryId)
                 .appendQueryParameter("event:deliveryType", deliveryType);
+
+//        if (contextId > 0) {
+//            builder.appendQueryParameter("event:contextId", Integer.toString(contextId));
+//        }
+//        if (applicationName != null && !applicationName.isEmpty()) {
+//            builder.appendQueryParameter("event:applicationId", applicationName);
+//        }
+//        if (userId != null && !userId.isEmpty()) {
+//            builder.appendQueryParameter("event:userId", userId);
+//        }
 
         try {
             URL url = new URL(URLDecoder.decode(builder.build().toString(), "UTF-8"));

@@ -450,16 +450,18 @@ public class KalturaStatsPlugin extends PKPlugin {
 
         // Parameters for the request -
         //        String baseUrl, int partnerId, int eventType, long duration,
-        //        String entryId, long position, String uiConfId, String entryId, String widgetId,  boolean isSeek
+        //        String entryId, long position, String uiConfId, String entryId, String widgetId,  boolean isSeek,
+        //        int playback context, String applicationId, String userId
         final RequestBuilder requestBuilder = StatsService.sendStatsEvent(pluginConfig.getBaseUrl(), pluginConfig.getPartnerId(), eventType.getValue(), PlayKitManager.CLIENT_TAG, duration,
                 sessionId, player.getCurrentPosition(), pluginConfig.getUiconfId(), pluginConfig.getEntryId(), "_" + pluginConfig.getPartnerId(), hasSeeked,
-                999, Base64.encodeToString(context.getPackageName().getBytes(), NO_WRAP),pluginConfig.getUserId());
+                pluginConfig.getContextId(), Base64.encodeToString(context.getPackageName().getBytes(), NO_WRAP),pluginConfig.getUserId());
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
                 log.d("onComplete send event: " + eventType.toString());
                 messageBus.post(new KalturaStatsEvent.KalturaStatsReport(eventType.toString()));
+                hasSeeked = false;
             }
         });
         requestsExecutor.queue(requestBuilder.build());

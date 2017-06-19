@@ -39,6 +39,9 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("KalturaLiveStatsPlugin");
     private static final String TAG = "KalturaLiveStatsPlugin";
 
+    private static final int FIFTEEN_MIN = 15 * 60 * 1000;
+    private static final int FIFTEEN_SEC = 15 * 1000;
+
     private Context context;
     private boolean isBuffering = false;
     private long lastReportedBitrate = -1;
@@ -53,7 +56,9 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private long bufferStartTime = 0;
     private boolean isLive = false;
     private KLiveStatsEvent liveStatsEvent = LIVE;
+    private boolean isLiveStream;
     private boolean isFirstPlay = true;
+    private String playbackProtocol ;
 
     public enum KLiveStatsEvent {
         LIVE(1),
@@ -89,7 +94,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     @Override
     protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
-        messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY, PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+        messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY, PlayerEvent.Type.PLAYBACK_INFO_UPDATED, PlayerEvent.Type.SOURCE_SELECTED);
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
         this.pluginConfig = parseConfig(config);
@@ -142,6 +147,26 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                     case PLAYBACK_INFO_UPDATED:
                         PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).getPlaybackInfo();
                         lastReportedBitrate = currentPlaybackInfo.getVideoBitrate();
+                        isLiveStream = currentPlaybackInfo.getIsLiveStream();
+                        break;
+                    case SOURCE_SELECTED:
+                        PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;
+                        switch (sourceSelected.sourceExtention) {
+                            case "m3u8":
+                                playbackProtocol = "hls";
+                                break;
+                            case "mpd":
+                                playbackProtocol = "mpegdash";
+                                break;
+                            case "mp4":
+                                playbackProtocol = "http";
+                                break;
+                            default:
+                                playbackProtocol = "NA";
+                                break;
+
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -216,9 +241,24 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         // Parameters for the request -
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
         // String startTime,  String entryId,  boolean isLive, String referrer
-        RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(pluginConfig.getBaseUrl(), pluginConfig.getPartnerId(), isLive ? 1 : 2, eventIdx++, bufferTime,
-                lastReportedBitrate, sessionId, mediaConfig.getStartPosition(), pluginConfig.getEntryId(), isLive, PlayKitManager.CLIENT_TAG, "hls",
-                999, Base64.encodeToString(context.getPackageName().getBytes(), NO_WRAP), pluginConfig.getUserId());
+        long distanceFromLive = 0;
+        if (player != null) {
+            distanceFromLive = player.getDuration() - player.getCurrentPosition();
+        }
+
+        RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(pluginConfig.getBaseUrl(),
+                pluginConfig.getPartnerId(),
+                (distanceFromLive <= FIFTEEN_SEC) ? KLiveStatsEvent.LIVE.value : KLiveStatsEvent.DVR.value,
+                eventIdx++, bufferTime,
+                lastReportedBitrate,
+                sessionId, mediaConfig.getStartPosition(),
+                pluginConfig.getEntryId(),
+                isLive,
+                PlayKitManager.CLIENT_TAG,
+                (playbackProtocol != null) ? playbackProtocol : "NA",
+                pluginConfig.getContextId(),
+                Base64.encodeToString(context.getPackageName().getBytes(), NO_WRAP),
+                pluginConfig.getUserId());
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
