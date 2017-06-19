@@ -48,15 +48,18 @@ public class LiveStatsService {
                 .appendQueryParameter("event:entryId", entryId)
                 .appendQueryParameter("event:deliveryType", deliveryType);
 
-//        if (contextId > 0) {
+        if (contextId > 0) {
+            log.d("contextId = " + contextId);
 //            builder.appendQueryParameter("event:contextId", Integer.toString(contextId));
-//        }
-//        if (applicationName != null && !applicationName.isEmpty()) {
+        }
+        if (applicationName != null && !applicationName.isEmpty()) {
+            log.d("applicationName = " + applicationName);
 //            builder.appendQueryParameter("event:applicationId", applicationName);
-//        }
-//        if (userId != null && !userId.isEmpty()) {
+        }
+        if (userId != null && !userId.isEmpty()) {
+            log.d("userId = " + userId);
 //            builder.appendQueryParameter("event:userId", userId);
-//        }
+        }
 
         try {
             URL url = new URL(URLDecoder.decode(builder.build().toString(), "UTF-8"));

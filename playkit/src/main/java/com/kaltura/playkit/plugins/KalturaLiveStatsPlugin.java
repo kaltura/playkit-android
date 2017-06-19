@@ -28,7 +28,6 @@ import java.util.Date;
 import java.util.TimerTask;
 
 import static android.util.Base64.NO_WRAP;
-import static com.kaltura.playkit.plugins.KalturaLiveStatsPlugin.KLiveStatsEvent.LIVE;
 
 /**
  * Created by zivilan on 02/11/2016.
@@ -51,8 +50,6 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private long bufferTime = 0;
     private long bufferStartTime = 0;
     private boolean isLive = false;
-    private KLiveStatsEvent liveStatsEvent = LIVE;
-    private boolean isLiveStream;
     private boolean isFirstPlay = true;
     private String playbackProtocol ;
 
@@ -142,7 +139,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                     case PLAYBACK_INFO_UPDATED:
                         PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).getPlaybackInfo();
                         lastReportedBitrate = currentPlaybackInfo.getVideoBitrate();
-                        isLiveStream = currentPlaybackInfo.getIsLiveStream();
+                        log.d("lastReportedBitrate = " + lastReportedBitrate + ", isLiveStream = " + currentPlaybackInfo.getIsLiveStream());
                         break;
                     case SOURCE_SELECTED:
                         PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;
