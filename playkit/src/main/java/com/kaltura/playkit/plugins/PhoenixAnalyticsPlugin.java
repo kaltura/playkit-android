@@ -29,7 +29,6 @@ import java.util.TimerTask;
 
 public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
-    private static final String TAG = "PhoenixAnalytics";
     private static final double MEDIA_ENDED_THRESHOLD = 0.98;
     private static String DEFAULT_BASE_URL = "http://api-preprod.ott.kaltura.com/v4_1/api_v3/";
 
@@ -94,12 +93,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         } else {
             mediaHitInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
         }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "fileId")) {
-            fileId = pluginConfig.getAsJsonPrimitive("fileId").getAsString();
-        } else {
-            log.e("Error PhoenixAnalytics fileId was not set");
-            fileId = "0";
-        }
         if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
             baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
         } else {
@@ -157,7 +150,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.pluginConfig = (JsonObject) config;
         this.mContext = context;
         this.messageBus = messageBus;
-        messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED);
+        messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED);
 
         log.d("onLoad");
     }
@@ -189,6 +182,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         break;
                     case LOADED_METADATA:
                         sendAnalyticsEvent(PhoenixActionType.LOAD);
+                        break;
+                    case SOURCE_SELECTED:
+                        PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;
+                        fileId = sourceSelected.source.getId();
                         break;
                     case PAUSE:
                         if (isMediaFinished) {
@@ -256,7 +253,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
-                "media", mediaConfig.getMediaEntry().getId(), eventType.name(), lastKnownPlayerPosition, /*mediaConfig.getMediaEntry().getFileId()*/ fileId);
+                "media", mediaConfig.getMediaEntry().getId(), eventType.name(), lastKnownPlayerPosition, fileId);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
@@ -272,4 +269,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         requestsExecutor.queue(requestBuilder.build());
     }
 
+    public String getFileId() {
+        return fileId;
+    }
+
+    public String getBaseUrl() {
+        return baseUrl;
+    }
 }

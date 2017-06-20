@@ -18,7 +18,7 @@ import com.kaltura.playkit.utils.Consts;
 
 public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     private static final PKLog log = PKLog.get("TVPAPIAnalyticsPlugin");
-    private static final String TAG = "TVPAPIAnalytics";
+
     private JsonObject testInitObj = new JsonObject();
     private long lastKnownPlayerPosition = 0;
 
@@ -44,8 +44,6 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
      */
     @Override
     protected void sendAnalyticsEvent(final PhoenixActionType eventType){
-        String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"000000";
-        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://tvpapi-preprod.ott.kaltura.com/v3_9/gateways/jsonpostgw.aspx?";
         JsonObject initObj = pluginConfig.has("initObj")? pluginConfig.getAsJsonObject("initObj") : testInitObj;
         String action = eventType.name().toLowerCase();
         String method = action.equals("hit")? "MediaHit": "MediaMark";
@@ -56,8 +54,8 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         if (!"stop".equals(action)) {
             lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
-        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObj, action,
-                mediaConfig.getMediaEntry().getId(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId, lastKnownPlayerPosition);
+        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(getBaseUrl() + "m=" + method, initObj, action,
+                mediaConfig.getMediaEntry().getId(), getFileId(), lastKnownPlayerPosition);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
