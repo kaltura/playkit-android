@@ -215,7 +215,6 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                 sendLiveEvent(bufferTime);
                 isFirstPlay = false;
             }
-
         }
     }
 
