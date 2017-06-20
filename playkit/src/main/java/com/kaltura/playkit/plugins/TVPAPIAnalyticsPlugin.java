@@ -18,7 +18,7 @@ import com.kaltura.playkit.utils.Consts;
 
 public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     private static final PKLog log = PKLog.get("TVPAPIAnalyticsPlugin");
-
+    private static String DEFAULT_BASE_URL = "http://tvpapi-preprod.ott.kaltura.com/v4_4/gateways/jsonpostgw.aspx?";
     private JsonObject testInitObj = new JsonObject();
     private long lastKnownPlayerPosition = 0;
 
@@ -68,5 +68,10 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
             }
         });
         requestsExecutor.queue(requestBuilder.build());
+    }
+
+    @Override
+    public String getDefaultBaseURL() {
+        return DEFAULT_BASE_URL;
     }
 }

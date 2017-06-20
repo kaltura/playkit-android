@@ -30,13 +30,17 @@ import java.util.TimerTask;
 public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
     private static final double MEDIA_ENDED_THRESHOLD = 0.98;
-    private static String DEFAULT_BASE_URL = "http://api-preprod.ott.kaltura.com/v4_1/api_v3/";
+    private static String DEFAULT_BASE_URL = "http://api-preprod.ott.kaltura.com/v4_4/api_v3/";
 
     private int mediaHitInterval;
     private String fileId;
     private String baseUrl;
     private String ks;
     private int partnerId;
+
+    public String getDefaultBaseURL() {
+        return DEFAULT_BASE_URL;
+    }
 
     public enum PhoenixActionType {
         HIT,
@@ -270,10 +274,14 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     public String getFileId() {
-        return fileId;
+        return (fileId != null) ? fileId : "000000";
     }
 
     public String getBaseUrl() {
-        return baseUrl;
+        if (baseUrl != null) {
+            return baseUrl;
+        } else {
+            return getDefaultBaseURL();
+        }
     }
 }
