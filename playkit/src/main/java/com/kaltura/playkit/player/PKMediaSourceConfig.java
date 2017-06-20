@@ -27,7 +27,7 @@ class PKMediaSourceConfig {
             return adapter.adapt(new PKRequestParams(uri, null)).url;
         }
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
