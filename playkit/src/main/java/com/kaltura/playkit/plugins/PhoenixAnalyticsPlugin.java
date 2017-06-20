@@ -100,7 +100,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         } else {
             fileId = "0";
             String errorMessage = TAG + " fileId was not set";
-            sendError(PKError.AnalyticsPluginError.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
+            sendError(PKError.PKErrorType.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
         }
         if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
             baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
@@ -150,12 +150,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         log.d("onDestroy");
         timer.cancel();
         timerWasCancelled = true;
-    }
-
-    private void sendError(int errorCode, String errorMessage, Throwable cause) {
-        log.e(errorMessage);
-        PKError error = new PKError(errorCode, errorMessage, cause);
-        messageBus.post(new PlayerEvent.ExceptionInfo(error));
     }
 
     @Override
@@ -278,6 +272,12 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             }
         });
         requestsExecutor.queue(requestBuilder.build());
+    }
+
+    private void sendError(PKError.PKErrorType errorType, String errorMessage, Throwable cause) {
+        log.e(errorMessage);
+        PKError error = new PKError(errorType, errorMessage, cause);
+        messageBus.post(new PlayerEvent.ExceptionInfo(error));
     }
 
 }

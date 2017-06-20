@@ -114,7 +114,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         } else {
             partnerId = 0;
             String errorMessage = TAG + " partnerId is missing";
-            sendError(PKError.AnalyticsPluginError.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
+            sendError(PKError.PKErrorType.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
         }
         if (Utils.isJsonObjectValueValid(pluginConfig, "entryId")) {
             entryId = pluginConfig.getAsJsonPrimitive("entryId").getAsString();
@@ -123,23 +123,17 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
             entryId = mediaConfig.getMediaEntry().getId();
             if (entryId == null) {
                 String errorMessage = TAG + " entryId is null";
-                sendError(PKError.AnalyticsPluginError.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
+                sendError(PKError.PKErrorType.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
             }
             // in case of OVP entry id is anyway the ID needed it only for OTT
-            else if (entryId != null && !entryId.contains("_")) {
+            else if (!entryId.contains("_")) {
                 String errorMessage = TAG + " entryId was given as MEDIA_ID instead of entryId";
-                sendError(PKError.AnalyticsPluginError.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
+                sendError(PKError.PKErrorType.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
             }
         }
 
         eventIdx = 0;
         this.mediaConfig = mediaConfig;
-    }
-
-   private void sendError(int errorCode, String errorMessage, Throwable cause) {
-        log.e(errorMessage);
-        PKError error = new PKError(errorCode, errorMessage, cause);
-        messageBus.post(new PlayerEvent.ExceptionInfo(error));
     }
 
     @Override
@@ -258,5 +252,11 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
             }
         });
         requestsExecutor.queue(requestBuilder.build());
+    }
+
+    private void sendError(PKError.PKErrorType errorType, String errorMessage, Throwable cause) {
+        log.e(errorMessage);
+        PKError error = new PKError(errorType, errorMessage, cause);
+        messageBus.post(new PlayerEvent.ExceptionInfo(error));
     }
 }

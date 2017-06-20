@@ -322,29 +322,29 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
 
-        int errorCode;
+        PKError.PKErrorType errorType;
         Throwable cause;
         String errorMessage;
 
         switch (error.type) {
             case ExoPlaybackException.TYPE_SOURCE:
-                errorCode = PKError.PlayerError.SOURCE_ERROR;
+                errorType = PKError.PKErrorType.SOURCE_ERROR;
                 cause = error.getSourceException();
                 errorMessage = error.getMessage();
                 break;
             case ExoPlaybackException.TYPE_RENDERER:
-                errorCode = PKError.PlayerError.RENDERER_ERROR;
+                errorType = PKError.PKErrorType.RENDERER_ERROR;
                 cause = error.getRendererException();
                 errorMessage = error.getMessage();
                 break;
             default:
-                errorCode = PKError.PlayerError.UNEXPECTED;
+                errorType = PKError.PKErrorType.UNEXPECTED;
                 cause = error.getUnexpectedException();
                 errorMessage = error.getMessage();
                 break;
         }
 
-        currentError = new PKError(errorCode, errorMessage, cause);
+        currentError = new PKError(errorType, errorMessage, cause);
         sendDistinctEvent(PlayerEvent.Type.ERROR);
     }
 
@@ -574,10 +574,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public boolean isPlaying() {
-        if (player == null) {
-            return false;
-        }
-        return player.getPlayWhenReady() && currentState == PlayerState.READY;
+        return player != null && player.getPlayWhenReady() && currentState == PlayerState.READY;
     }
 
     @Override

@@ -120,12 +120,6 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         timer.cancel();
     }
 
-    private void sendError(int errorCode, String errorMessage, Throwable cause) {
-        log.e(errorMessage);
-        PKError error = new PKError(errorCode, errorMessage, cause);
-        messageBus.post(new PlayerEvent.ExceptionInfo(error));
-    }
-
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         if (Utils.isJsonObjectValueValid(pluginConfig, "uiconfId")) {
@@ -143,7 +137,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         } else {
             partnerId = 0;
             String errorMessage = TAG + " partnerId was not set";
-            sendError(PKError.AnalyticsPluginError.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
+            sendError(PKError.PKErrorType.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
         }
 
         isFirstPlay = true;
@@ -298,6 +292,12 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         });
         requestsExecutor.queue(requestBuilder.build());
         messageBus.post(new LogEvent(TAG + " " + eventType.toString(), requestBuilder.build().getUrl()));
+    }
+
+    private void sendError(PKError.PKErrorType errorType, String errorMessage, Throwable cause) {
+        log.e(errorMessage);
+        PKError error = new PKError(errorType, errorMessage, cause);
+        messageBus.post(new PlayerEvent.ExceptionInfo(error));
     }
 
 }

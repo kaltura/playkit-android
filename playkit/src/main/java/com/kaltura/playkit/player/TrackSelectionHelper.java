@@ -540,11 +540,10 @@ class TrackSelectionHelper {
             return;
         }
 
-        if (uniqueId.contains(VIDEO_PREFIX)
-                || uniqueId.contains(AUDIO_PREFIX)
-                || uniqueId.contains(TEXT_PREFIX)
-                && uniqueId.contains(",")) {
-        } else {
+        if (!uniqueId.contains(VIDEO_PREFIX)
+                || !uniqueId.contains(AUDIO_PREFIX)
+                || !uniqueId.contains(TEXT_PREFIX)
+                && !uniqueId.contains(",")) {
             sendError("Unique id is not valid => " + uniqueId, new IllegalArgumentException());
         }
     }
@@ -581,7 +580,7 @@ class TrackSelectionHelper {
 
     private void sendError(String errorMessage, Throwable cause) {
         log.e(errorMessage);
-        tracksInfoListener.onError(new PKError(PKError.PlayerError.TRACKS_ERROR, errorMessage, cause));
+        tracksInfoListener.onError(new PKError(PKError.PKErrorType.TRACKS_ERROR, errorMessage, cause));
     }
 
     long getCurrentVideoBitrate() {

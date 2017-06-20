@@ -26,8 +26,8 @@ import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
  * @hide
  */
 
-public class YouboraLibraryManager extends PluginGeneric {
-    
+class YouboraLibraryManager extends PluginGeneric {
+
     private static final PKLog log = PKLog.get("YouboraLibraryManager");
     private static final String KALTURA_ANDROID = "Kaltura-Android";
 
@@ -45,11 +45,11 @@ public class YouboraLibraryManager extends PluginGeneric {
     private String lastReportedRendition;
     private AdCuePoints adCuePoints;
 
-    public YouboraLibraryManager(String options) throws JSONException {
+    YouboraLibraryManager(String options) throws JSONException {
         super(options);
     }
 
-    public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus, PKMediaConfig mediaConfig, Player player) {
+    YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus, PKMediaConfig mediaConfig, Player player) {
         super(options);
         this.player = player;
         this.messageBus = messageBus;
@@ -62,7 +62,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     protected void init() {
         super.init();
         this.pluginName = KALTURA_ANDROID;
-        this.pluginVersion = BuildConfig.VERSION_NAME + "-"+ getPlayerVersion();
+        this.pluginVersion = BuildConfig.VERSION_NAME + "-" + getPlayerVersion();
     }
 
     private void onEvent(PlayerEvent.StateChanged event) {
@@ -99,10 +99,10 @@ public class YouboraLibraryManager extends PluginGeneric {
 
             if (event instanceof PlayerEvent.PlaybackInfoUpdated) {
                 PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).getPlaybackInfo();
-                lastReportedBitrate    = Long.valueOf(currentPlaybackInfo.getVideoBitrate()).doubleValue();
+                lastReportedBitrate = Long.valueOf(currentPlaybackInfo.getVideoBitrate()).doubleValue();
                 lastReportedThroughput = Long.valueOf(currentPlaybackInfo.getVideoThroughput()).doubleValue();
-                lastReportedResource  = currentPlaybackInfo.getMediaUrl();
-                lastReportedRendition = generateRendition(lastReportedBitrate, (int)currentPlaybackInfo.getVideoWidth(), (int)currentPlaybackInfo.getVideoHeight());
+                lastReportedResource = currentPlaybackInfo.getMediaUrl();
+                lastReportedRendition = generateRendition(lastReportedBitrate, (int) currentPlaybackInfo.getVideoWidth(), (int) currentPlaybackInfo.getVideoHeight());
                 return;
             }
 
@@ -116,7 +116,7 @@ public class YouboraLibraryManager extends PluginGeneric {
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
                     case ENDED:
-                        if (!isFirstPlay && ((adCuePoints == null) || (adCuePoints != null && !adCuePoints.hasPostRoll()))) {
+                        if (!isFirstPlay && ((adCuePoints == null) || !adCuePoints.hasPostRoll())) {
                             endedHandler();
                             isFirstPlay = true;
                             adCuePoints = null;
@@ -184,8 +184,8 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     private void onAdEvent(AdEvent event) {
-        if (((AdEvent) event).type != AdEvent.Type.PLAY_HEAD_CHANGED){
-            log.d("Ad Event: " + ((AdEvent) event).type.name());
+        if (event.type != AdEvent.Type.PLAY_HEAD_CHANGED) {
+            log.d("Ad Event: " + event.type.name());
         }
 
         switch (event.type) {
@@ -261,7 +261,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public Double getMediaDuration() {
-        double lastReportedMediaDuration  =  (mediaConfig == null) ? 0 : Long.valueOf(mediaConfig.getMediaEntry().getDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
+        double lastReportedMediaDuration = (mediaConfig == null) ? 0 : Long.valueOf(mediaConfig.getMediaEntry().getDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
         log.d("lastReportedMediaDuration = " + lastReportedMediaDuration);
         return lastReportedMediaDuration;
     }
@@ -283,7 +283,7 @@ public class YouboraLibraryManager extends PluginGeneric {
         messageBus.post(new YouboraEvent.YouboraReport(reportedEventName));
     }
 
-    public String generateRendition(double bitrate,  int width, int height) {
+    public String generateRendition(double bitrate, int width, int height) {
 
         if ((width <= 0 || height <= 0) && bitrate <= 0) {
             return super.getRendition();

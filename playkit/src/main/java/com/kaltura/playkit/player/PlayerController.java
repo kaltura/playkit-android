@@ -238,7 +238,7 @@ public class PlayerController implements Player {
 
         if (sourceConfig == null) {
             String errorMessage = "Cant prepare player with media config. PKMediaConfig is null.";
-            sendErrorMessage(PKError.PlayerError.SOURCE_ERROR, errorMessage, new IllegalArgumentException());
+            sendErrorMessage(PKError.PKErrorType.SOURCE_ERROR, errorMessage, new IllegalArgumentException());
             return;
         }
 
@@ -269,7 +269,7 @@ public class PlayerController implements Player {
         //So assign it to null, and return. This will prevent from continue of the prepare() flow.
         if (mediaConfig == null) {
             String errorMessage = "No playable mediaConfig found, mediaConfig = null";
-            sendErrorMessage(PKError.PlayerError.SOURCE_ERROR, errorMessage, new IllegalArgumentException());
+            sendErrorMessage(PKError.PKErrorType.SOURCE_ERROR, errorMessage, new IllegalArgumentException());
             sourceConfig = null;
             return;
         }
@@ -282,7 +282,7 @@ public class PlayerController implements Player {
         //This will prevent from continue of the prepare() flow.
         if (source == null) {
             String errorMessage = "No playable source found for entry";
-            sendErrorMessage(PKError.PlayerError.SOURCE_ERROR, errorMessage, new IllegalArgumentException());
+            sendErrorMessage(PKError.PKErrorType.SOURCE_ERROR, errorMessage, new IllegalArgumentException());
             sourceConfig = null;
             return;
         }
@@ -527,11 +527,8 @@ public class PlayerController implements Player {
             return true;
         }
 
-        if (currentMediaFormat == PKMediaFormat.wvm && player instanceof ExoPlayerWrapper) {
-            return true;
-        }
+        return currentMediaFormat == PKMediaFormat.wvm && player instanceof ExoPlayerWrapper;
 
-        return false;
     }
 
     private void removePlayerView() {
@@ -542,7 +539,7 @@ public class PlayerController implements Player {
 
     private boolean maybeHandleExceptionLocally(PlayerEvent.ExceptionInfo exceptionInfo) {
         PKError error = exceptionInfo.error;
-        if (error.errorCode == PKError.PlayerError.RENDERER_ERROR) {
+        if (error.errorType == PKError.PKErrorType.RENDERER_ERROR) {
             if (error.cause instanceof MediaCodec.CryptoException) {
                 ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
                 long currentPosition = player.getCurrentPosition();
@@ -555,9 +552,9 @@ public class PlayerController implements Player {
         return false;
     }
 
-    private void sendErrorMessage(int errorCode, String errorMessage, Throwable cause) {
+    private void sendErrorMessage(PKError.PKErrorType errorType, String errorMessage, Throwable cause) {
         log.e(errorMessage);
-        PKError pkError = new PKError(errorCode, errorMessage, cause);
+        PKError pkError = new PKError(errorType, errorMessage, cause);
         eventListener.onEvent(new PlayerEvent.ExceptionInfo(pkError));
     }
 }

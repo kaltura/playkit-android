@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 
 import com.google.ads.interactivemedia.v3.api.Ad;
 import com.google.ads.interactivemedia.v3.api.AdDisplayContainer;
+import com.google.ads.interactivemedia.v3.api.AdError;
 import com.google.ads.interactivemedia.v3.api.AdErrorEvent;
 import com.google.ads.interactivemedia.v3.api.AdPodInfo;
 import com.google.ads.interactivemedia.v3.api.AdsLoader;
@@ -35,11 +36,11 @@ import com.kaltura.playkit.ads.AdTagType;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.ads.PKAdProviderListener;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
-import com.kaltura.playkit.plugins.ads.AdError;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.errors.PKError;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,7 +57,7 @@ import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_PROGRESS;
  * Created by gilad.nadav on 17/11/2016.
  */
 
-public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.interactivemedia.v3.api.AdEvent.AdEventListener, AdErrorEvent.AdErrorListener  {
+public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.interactivemedia.v3.api.AdEvent.AdEventListener, AdErrorEvent.AdErrorListener {
 
     private static final PKLog log = PKLog.get("IMAPlugin");
 
@@ -67,12 +68,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private IMAConfig adConfig;
     private PKAdProviderListener pkAdProviderListener;
     private PKMediaConfig mediaConfig;
-
-
-    //////////////////////
-
-
-    /////////////////////
 
     // The container for the ad's UI.
     private ViewGroup adUiContainer;
@@ -139,13 +134,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     @Override
     protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
         this.player = player;
-        if (player == null) {
-            log.e("Error, player instance is null.");
-            return;
-        }
-
-        this.isAllAdsCompleted = false;
         this.context = context;
+        this.isAllAdsCompleted = false;
+
         if (this.messageBus == null) {
             this.messageBus = messageBus;
             this.messageBus.listen(new PKEvent.Listener() {
@@ -154,7 +145,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     log.d("Received:PlayerEvent:" + event.eventType().name());
                     AdCuePoints adCuePoints = new AdCuePoints(getAdCuePoints());
                     if (event.eventType() == PlayerEvent.Type.ENDED) {
-                        if (isAllAdsCompleted || !adCuePoints.hasPostRoll() || adInfo == null || (adInfo != null && adInfo.getAdIndexInPod() == adInfo.getTotalAdsInPod())) {
+                        if (isAllAdsCompleted || !adCuePoints.hasPostRoll() || adInfo == null || (adInfo.getAdIndexInPod() == adInfo.getTotalAdsInPod())) {
                             log.d("contentCompleted on ended");
                             contentCompleted();
                         } else {
@@ -166,7 +157,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             }, PlayerEvent.Type.ENDED);
         }
 
-        //----------------------------//
         adConfig = parseConfig(config);
         adUiContainer = player.getView();
         imaSetup();
@@ -206,7 +196,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 CompanionAdSlot companionAdSlot = sdkFactory.createCompanionAdSlot();
                 companionAdSlot.setContainer(adCompanionViewGroup);
                 companionAdSlot.setSize(728, 90);
-                ArrayList<CompanionAdSlot> companionAdSlots = new ArrayList<CompanionAdSlot>();
+                ArrayList<CompanionAdSlot> companionAdSlots = new ArrayList<>();
                 companionAdSlots.add(companionAdSlot);
                 adDisplayContainer.setCompanionSlots(companionAdSlots);
             }
@@ -322,7 +312,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 start();
                 return;
             }
-        } else if (!isContentPrepared){
+        } else if (!isContentPrepared) {
             log.d("IMA onResume prepare Player");
             preparePlayer(false);
         }
@@ -433,9 +423,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     private void sendCuePointsUpdateEvent() {
         adTagCuePoints = new AdCuePoints(getAdCuePoints());
-        if (adTagCuePoints != null) {
-            messageBus.post(new AdEvent.AdCuePointsUpdateEvent(adTagCuePoints));
-        }
+        messageBus.post(new AdEvent.AdCuePointsUpdateEvent(adTagCuePoints));
     }
 
     @Override
@@ -450,7 +438,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             } else {
                 adsManager.init(renderingSettings);
             }
-        } else{
+        } else {
             isInitWaiting = true;
         }
     }
@@ -471,11 +459,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 long currentPosition = player.getCurrentPosition();
                 long duration = player.getDuration();
 
-                if (isAdDisplayed || currentPosition < 0 || duration <= 0 ) {
+                if (isAdDisplayed || currentPosition < 0 || duration <= 0) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
-                VideoProgressUpdate videoProgress = new VideoProgressUpdate(currentPosition, duration);
-                return videoProgress;
+                return new VideoProgressUpdate(currentPosition, duration);
             }
         });
         adManagerTimer = new CountDownTimer(getAdsConfig().getAdLoadTimeOut() * Consts.MILLISECONDS_MULTIPLIER, IMAConfig.DEFAULT_AD_LOAD_COUNT_DOWN_TICK) {
@@ -556,7 +543,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     @Override
     public boolean isAdPaused() {
         log.d("isAdPaused: " + isAdIsPaused);
-        return  isAdIsPaused;
+        return isAdIsPaused;
     }
 
     @Override
@@ -574,21 +561,20 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     public long getDuration() {
         if (adsManager != null) {
             return (long) adsManager.getAdProgress().getDuration();
-        } else {
-            return  Consts.TIME_UNSET;
         }
+
+        return Consts.TIME_UNSET;
     }
 
     @Override
     public long getCurrentPosition() {
         if (adsManager != null) {
-            //log.d("getCurrentPosition: " + isAdRequested);
             long adCurrentPos = (long) adsManager.getAdProgress().getCurrentTime();
             messageBus.post(new AdEvent.AdPlayHeadEvent(adCurrentPos));
             return adCurrentPos;
-        } else {
-            return  Consts.POSITION_UNSET;
         }
+
+        return Consts.POSITION_UNSET;
     }
 
     @Override
@@ -645,7 +631,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                         adsManager.discardAdBreak();
                     } else {
                         messageBus.post(new AdEvent.AdLoadedEvent(adInfo));
-                        if(AdTagType.VMAP != adConfig.getAdTagType()){
+                        if (AdTagType.VMAP != adConfig.getAdTagType()) {
                             adsManager.start();
                         }
                     }
@@ -740,7 +726,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             case PAUSED:
                 log.d("AD PAUSED");
                 isAdIsPaused = true;
-                adInfo.setAdPlayHead((long)(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER));
+                adInfo.setAdPlayHead(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER);
                 messageBus.post(new AdEvent.AdPausedEvent(adInfo));
                 break;
             case RESUMED:
@@ -749,7 +735,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     player.getView().hideVideoSurface();
                 }
                 isAdIsPaused = false;
-                adInfo.setAdPlayHead((long)(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER));
+                adInfo.setAdPlayHead(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER);
                 messageBus.post(new AdEvent.AdResumedEvent(adInfo));
                 break;
             case COMPLETED:
@@ -767,7 +753,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdEvent(AdEvent.Type.THIRD_QUARTILE));
                 break;
             case SKIPPED:
-                adInfo.setAdPlayHead((long)(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER));
+                adInfo.setAdPlayHead(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER);
                 messageBus.post(new AdEvent.AdSkippedEvent(adInfo));
                 cancelAdDisplayedCheckTimer();
                 preparePlayer(true);
@@ -798,10 +784,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             case AD_BREAK_STARTED:
                 messageBus.post(new AdEvent(AD_BREAK_STARTED));
                 break;
-            case  AD_BREAK_ENDED:
+            case AD_BREAK_ENDED:
                 messageBus.post(new AdEvent(AD_BREAK_ENDED));
                 break;
-            case  CUEPOINTS_CHANGED:
+            case CUEPOINTS_CHANGED:
                 sendCuePointsUpdate();
                 break;
             case LOG:
@@ -816,7 +802,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     //incase one ad in the pod fails to play we want next one to be played
                     AdPodInfo adPodInfo = adInfo.getAdPodInfo();
                     log.d("adPodInfo.getAdPosition() = " + adPodInfo.getAdPosition() + " adPodInfo.getTotalAds() = " + adPodInfo.getTotalAds());
-                    if (adPodInfo != null && adPodInfo.getTotalAds() > 1 && adPodInfo.getAdPosition() < adPodInfo.getTotalAds()) {
+                    if (adPodInfo.getTotalAds() > 1 && adPodInfo.getAdPosition() < adPodInfo.getTotalAds()) {
                         log.d("LOG Error but continue to next ad in pod");
                         return;
                     } else {
@@ -831,11 +817,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     if (adEvent.getAdData().containsKey("errorMessage")) {
                         error = adEvent.getAdData().get("errorMessage");
                     }
-                    log.e("Ad Error " + error);
                 }
 
-
-                messageBus.post(new AdError(AdError.Type.QUIET_LOG_ERROR, error));
+                sendError(PKError.PKErrorType.QUIET_LOG_ERROR, error, null);
                 break;
             default:
                 break;
@@ -848,7 +832,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             log.d("IMA prepare player");
             isContentPrepared = true;
             pkAdProviderListener.onAdLoadingFinished();
-            if(doPlay) {
+            if (doPlay) {
                 messageBus.listen(new PKEvent.Listener() {
                     @Override
                     public void onEvent(PKEvent event) {
@@ -920,26 +904,25 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     private AdInfo createAdInfo(Ad ad) {
-        String adDescription      = ad.getDescription();
-        long adDuration           = (long)(ad.getDuration() * Consts.MILLISECONDS_MULTIPLIER);
-        long adPlayHead           = (long)(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER);
-        String adTitle            = ad.getTitle();
-        boolean isAdSkippable     = ad.isSkippable();
-        String contentType        = ad.getContentType();
-        String adId               = ad.getAdId();
-        String adSystem           = ad.getAdSystem();
-        int adHeight              = ad.getHeight();
-        int adWidth               = ad.getWidth();
-        int totalAdsInPod         = ad.getAdPodInfo().getTotalAds();
-        int adIndexInPod          = ad.getAdPodInfo().getAdPosition();   // index starts in 1
-        int podCount              = (adsManager != null && adsManager.getAdCuePoints() != null) ? adsManager.getAdCuePoints().size() : 0;
-        int podIndex              = (ad.getAdPodInfo().getPodIndex() >=  0) ? ad.getAdPodInfo().getPodIndex() + 1 : podCount; // index starts in 0
-        boolean isBumper          = ad.getAdPodInfo().isBumper();
-        long adPodTimeOffset      = (long)(ad.getAdPodInfo().getTimeOffset() * Consts.MILLISECONDS_MULTIPLIER);
+        String adDescription = ad.getDescription();
+        long adDuration = (long) (ad.getDuration() * Consts.MILLISECONDS_MULTIPLIER);
+        long adPlayHead = getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER;
+        String adTitle = ad.getTitle();
+        boolean isAdSkippable = ad.isSkippable();
+        String contentType = ad.getContentType();
+        String adId = ad.getAdId();
+        String adSystem = ad.getAdSystem();
+        int adHeight = ad.getHeight();
+        int adWidth = ad.getWidth();
+        int totalAdsInPod = ad.getAdPodInfo().getTotalAds();
+        int adIndexInPod = ad.getAdPodInfo().getAdPosition();   // index starts in 1
+        int podCount = (adsManager != null && adsManager.getAdCuePoints() != null) ? adsManager.getAdCuePoints().size() : 0;
+        int podIndex = (ad.getAdPodInfo().getPodIndex() >= 0) ? ad.getAdPodInfo().getPodIndex() + 1 : podCount; // index starts in 0
+        boolean isBumper = ad.getAdPodInfo().isBumper();
+        long adPodTimeOffset = (long) (ad.getAdPodInfo().getTimeOffset() * Consts.MILLISECONDS_MULTIPLIER);
 
 
-
-        AdInfo adInfo =  new AdInfo(adDescription, adDuration, adPlayHead,
+        AdInfo adInfo = new AdInfo(adDescription, adDuration, adPlayHead,
                 adTitle, isAdSkippable,
                 contentType, adId,
                 adSystem, adHeight,
@@ -949,7 +932,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 podIndex,
                 podCount,
                 isBumper,
-                (adPodTimeOffset < 0 ) ? -1 : adPodTimeOffset) ;
+                (adPodTimeOffset < 0) ? -1 : adPodTimeOffset);
 
         log.v("AdInfo: " + adInfo.toString());
         return adInfo;
@@ -959,76 +942,91 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     @Override
     public void onAdError(AdErrorEvent adErrorEvent) {
 
-        log.e("Ad Error: " + adErrorEvent.getError().getErrorCode().name() + " " + adErrorEvent.getError().getMessage());
+        resetFlagsOnError();
+
+        AdError cause = adErrorEvent.getError();
+        String errorMessage = cause == null ? "No error message" : cause.getMessage();
+        PKError.PKErrorType errorType = PKError.PKErrorType.UNKNOWN_ERROR;
+
+        if (cause != null) {
+
+            switch (cause.getErrorCode()) {
+                case INTERNAL_ERROR:
+                    errorType = PKError.PKErrorType.INTERNAL_ERROR;
+                    break;
+                case VAST_MALFORMED_RESPONSE:
+                    errorType = PKError.PKErrorType.VAST_MALFORMED_RESPONSE;
+                    break;
+                case UNKNOWN_AD_RESPONSE:
+                    errorType = PKError.PKErrorType.UNKNOWN_AD_RESPONSE;
+                    break;
+                case VAST_LOAD_TIMEOUT:
+                    errorType = PKError.PKErrorType.VAST_LOAD_TIMEOUT;
+                    break;
+                case VAST_TOO_MANY_REDIRECTS:
+                    errorType = PKError.PKErrorType.VAST_TOO_MANY_REDIRECTS;
+                    break;
+                case VIDEO_PLAY_ERROR:
+                    errorType = PKError.PKErrorType.VIDEO_PLAY_ERROR;
+                    break;
+                case VAST_MEDIA_LOAD_TIMEOUT:
+                    errorType = PKError.PKErrorType.VAST_MEDIA_LOAD_TIMEOUT;
+                    break;
+                case VAST_LINEAR_ASSET_MISMATCH:
+                    errorType = PKError.PKErrorType.VAST_LINEAR_ASSET_MISMATCH;
+                    break;
+                case OVERLAY_AD_PLAYING_FAILED:
+                    errorType = PKError.PKErrorType.OVERLAY_AD_PLAYING_FAILED;
+                    break;
+                case OVERLAY_AD_LOADING_FAILED:
+                    errorType = PKError.PKErrorType.OVERLAY_AD_LOADING_FAILED;
+                    break;
+                case VAST_NONLINEAR_ASSET_MISMATCH:
+                    errorType = PKError.PKErrorType.VAST_NONLINEAR_ASSET_MISMATCH;
+                    break;
+                case COMPANION_AD_LOADING_FAILED:
+                    errorType = PKError.PKErrorType.COMPANION_AD_LOADING_FAILED;
+                    break;
+                case UNKNOWN_ERROR:
+                    errorType = PKError.PKErrorType.UNKNOWN_ERROR;
+                    break;
+                case VAST_EMPTY_RESPONSE:
+                    errorType = PKError.PKErrorType.VAST_EMPTY_RESPONSE;
+                    break;
+                case FAILED_TO_REQUEST_ADS:
+                    errorType = PKError.PKErrorType.FAILED_TO_REQUEST_ADS;
+                    break;
+                case VAST_ASSET_NOT_FOUND:
+                    errorType = PKError.PKErrorType.VAST_ASSET_NOT_FOUND;
+                    break;
+                case ADS_REQUEST_NETWORK_ERROR:
+                    errorType = PKError.PKErrorType.ADS_REQUEST_NETWORK_ERROR;
+                    break;
+                case INVALID_ARGUMENTS:
+                    errorType = PKError.PKErrorType.INVALID_ARGUMENTS;
+                    break;
+                case PLAYLIST_NO_CONTENT_TRACKING:
+                    errorType = PKError.PKErrorType.PLAYLIST_NO_CONTENT_TRACKING;
+                    break;
+            }
+        }
+
+        sendError(errorType, errorMessage, cause);
+        preparePlayer(true);
+    }
+
+    private void resetFlagsOnError() {
         isAdError = true;
         adPlaybackCancelled = true;
         isAdRequested = true;
         isAdDisplayed = false;
         cancelAdDisplayedCheckTimer();
         cancelAdManagerTimer();
-        String errorMessage = adErrorEvent.getError().getMessage();
-        switch (adErrorEvent.getError().getErrorCode()) {
-            case INTERNAL_ERROR:
-                messageBus.post(new AdError(AdError.Type.INTERNAL_ERROR, errorMessage));
-                break;
-            case VAST_MALFORMED_RESPONSE:
-                messageBus.post(new AdError(AdError.Type.VAST_MALFORMED_RESPONSE, errorMessage));
-                break;
-            case UNKNOWN_AD_RESPONSE:
-                messageBus.post(new AdError(AdError.Type.UNKNOWN_AD_RESPONSE, errorMessage));
-                break;
-            case VAST_LOAD_TIMEOUT:
-                messageBus.post(new AdError(AdError.Type.VAST_LOAD_TIMEOUT, errorMessage));
-                break;
-            case VAST_TOO_MANY_REDIRECTS:
-                messageBus.post(new AdError(AdError.Type.VAST_TOO_MANY_REDIRECTS, errorMessage));
-                break;
-            case VIDEO_PLAY_ERROR:
-                messageBus.post(new AdError(AdError.Type.VIDEO_PLAY_ERROR, errorMessage));
-                break;
-            case VAST_MEDIA_LOAD_TIMEOUT:
-                messageBus.post(new AdError(AdError.Type.VAST_MEDIA_LOAD_TIMEOUT, errorMessage));
-                break;
-            case VAST_LINEAR_ASSET_MISMATCH:
-                messageBus.post(new AdError(AdError.Type.VAST_LINEAR_ASSET_MISMATCH, errorMessage));
-                break;
-            case OVERLAY_AD_PLAYING_FAILED:
-                messageBus.post(new AdError(AdError.Type.OVERLAY_AD_PLAYING_FAILED, errorMessage));
-                break;
-            case OVERLAY_AD_LOADING_FAILED:
-                messageBus.post(new AdError(AdError.Type.OVERLAY_AD_LOADING_FAILED, errorMessage));
-                break;
-            case VAST_NONLINEAR_ASSET_MISMATCH:
-                messageBus.post(new AdError(AdError.Type.VAST_NONLINEAR_ASSET_MISMATCH, errorMessage));
-                break;
-            case COMPANION_AD_LOADING_FAILED:
-                messageBus.post(new AdError(AdError.Type.COMPANION_AD_LOADING_FAILED, errorMessage));
-                break;
-            case UNKNOWN_ERROR:
-                messageBus.post(new AdError(AdError.Type.UNKNOWN_ERROR, errorMessage));
-                break;
-            case VAST_EMPTY_RESPONSE:
-                messageBus.post(new AdError(AdError.Type.VAST_EMPTY_RESPONSE, errorMessage));
-                break;
-            case FAILED_TO_REQUEST_ADS:
-                messageBus.post(new AdError(AdError.Type.FAILED_TO_REQUEST_ADS, errorMessage));
-                break;
-            case VAST_ASSET_NOT_FOUND:
-                messageBus.post(new AdError(AdError.Type.VAST_ASSET_NOT_FOUND, errorMessage));
-                break;
-            case ADS_REQUEST_NETWORK_ERROR:
-                messageBus.post(new AdError(AdError.Type.ADS_REQUEST_NETWORK_ERROR, errorMessage));
-                break;
-            case INVALID_ARGUMENTS:
-                messageBus.post(new AdError(AdError.Type.INVALID_ARGUMENTS, errorMessage));
-                break;
-            case PLAYLIST_NO_CONTENT_TRACKING:
-                messageBus.post(new AdError(AdError.Type.PLAYLIST_NO_CONTENT_TRACKING, errorMessage));
-                break;
-            default:
-                messageBus.post(new AdError(AdError.Type.UNKNOWN_ERROR, errorMessage));
-        }
+    }
 
-        preparePlayer(true);
+    private void sendError(PKError.PKErrorType errorType, String message, Throwable cause) {
+        log.e("Ad Error: " + errorType.name() + " with message " + message);
+        PKError error = new PKError(errorType, message, cause);
+        messageBus.post(new PlayerEvent.ExceptionInfo(error));
     }
 }
