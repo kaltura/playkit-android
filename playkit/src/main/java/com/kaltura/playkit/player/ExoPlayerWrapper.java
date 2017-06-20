@@ -107,8 +107,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-        
+
     }
+
 
     ExoPlayerWrapper(Context context) {
         this.context = context;
