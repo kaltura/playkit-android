@@ -1,7 +1,6 @@
 package com.kaltura.playkit.plugins;
 
 import android.content.Context;
-import android.util.Base64;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -26,8 +25,6 @@ import com.kaltura.playkit.plugins.configs.KalturaStatsConfig;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.TimerTask;
-
-import static android.util.Base64.NO_WRAP;
 
 /**
  * Created by zivilan on 02/11/2016.
@@ -453,14 +450,16 @@ public class KalturaStatsPlugin extends PKPlugin {
         //        int playback context, String applicationId, String userId
         final RequestBuilder requestBuilder = StatsService.sendStatsEvent(pluginConfig.getBaseUrl(), pluginConfig.getPartnerId(), eventType.getValue(), PlayKitManager.CLIENT_TAG, duration,
                 sessionId, player.getCurrentPosition(), pluginConfig.getUiconfId(), pluginConfig.getEntryId(), "_" + pluginConfig.getPartnerId(), hasSeeked,
-                pluginConfig.getContextId(), Base64.encodeToString(context.getPackageName().getBytes(), NO_WRAP),pluginConfig.getUserId());
+                pluginConfig.getContextId(), context.getPackageName(),pluginConfig.getUserId());
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
                 log.d("onComplete send event: " + eventType.toString());
                 messageBus.post(new KalturaStatsEvent.KalturaStatsReport(eventType.toString()));
-                hasSeeked = false;
+                if (hasSeeked) {
+                    hasSeeked = false;
+                }
             }
         });
         requestsExecutor.queue(requestBuilder.build());

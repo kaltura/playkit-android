@@ -1,7 +1,6 @@
 package com.kaltura.playkit.plugins;
 
 import android.content.Context;
-import android.util.Base64;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -27,15 +26,13 @@ import com.kaltura.playkit.utils.Consts;
 import java.util.Date;
 import java.util.TimerTask;
 
-import static android.util.Base64.NO_WRAP;
-
 /**
  * Created by zivilan on 02/11/2016.
  */
 
 public class KalturaLiveStatsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("KalturaLiveStatsPlugin");
-    private static final int FIFTEEN_SEC = 15 * 1000;
+    private static final int DISTANCE_FROM_LIVE_THRESHOLD = 15 * 1000; //15 sec
 
     private Context context;
     private boolean isBuffering = false;
@@ -143,7 +140,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                         break;
                     case SOURCE_SELECTED:
                         PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;
-                        switch (sourceSelected.sourceExtention) {
+                        switch (sourceSelected.sourceConfig.getSourceExtention()) {
                             case "m3u8":
                                 playbackProtocol = "hls";
                                 break;
@@ -169,7 +166,6 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     public void onEvent(PlayerEvent.StateChanged event) {
         switch (event.newState) {
             case READY:
-                //startTimerInterval();
                 if (isBuffering) {
                     isBuffering = false;
                     sendLiveEvent(calculateBuffer(false));
@@ -211,7 +207,6 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         }, Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW, Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW);
     }
 
-
     private void startLiveEvents() {
         if (!isLive) {
             startTimerInterval();
@@ -234,7 +229,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
         // Parameters for the request -
         // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
-        // String startTime,  String entryId,  boolean isLive, String referrer
+        // String startTime,  String entryId,  boolean isLive, String referrer, String playbackProtocol
         long distanceFromLive = 0;
         if (player != null) {
             distanceFromLive = player.getDuration() - player.getCurrentPosition();
@@ -242,17 +237,14 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
         RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(pluginConfig.getBaseUrl(),
                 pluginConfig.getPartnerId(),
-                (distanceFromLive <= FIFTEEN_SEC) ? KLiveStatsEvent.LIVE.value : KLiveStatsEvent.DVR.value,
+                (distanceFromLive <= DISTANCE_FROM_LIVE_THRESHOLD) ? KLiveStatsEvent.LIVE.value : KLiveStatsEvent.DVR.value,
                 eventIdx++, bufferTime,
                 lastReportedBitrate,
                 sessionId, mediaConfig.getStartPosition(),
                 pluginConfig.getEntryId(),
                 isLive,
                 PlayKitManager.CLIENT_TAG,
-                (playbackProtocol != null) ? playbackProtocol : "NA",
-                pluginConfig.getContextId(),
-                Base64.encodeToString(context.getPackageName().getBytes(), NO_WRAP),
-                pluginConfig.getUserId());
+                (playbackProtocol != null) ? playbackProtocol : "NA");
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override

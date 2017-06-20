@@ -17,17 +17,15 @@ public class LiveStatsService {
     private static final PKLog log = PKLog.get("LiveStatsService");
 
     public static RequestBuilder sendLiveStatsEvent(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, long bitrate,
-                                                    String sessionId, long startTime, String entryId, boolean isLive, String clientVer, String deliveryType,
-                                                    int contextId, String applicationName, String userId) {
+                                                    String sessionId, long startTime, String entryId, boolean isLive, String clientVer, String deliveryType) {
         return new RequestBuilder()
                 .method("GET")
-                .url(getOvpUrl(baseUrl, partnerId, eventType, eventIndex, bufferTime, bitrate, sessionId, startTime, entryId, isLive, clientVer, deliveryType, contextId, applicationName, userId))
+                .url(getOvpUrl(baseUrl, partnerId, eventType, eventIndex, bufferTime, bitrate, sessionId, startTime, entryId, isLive, clientVer, deliveryType))
                 .tag("stats-send");
     }
 
     private static String getOvpUrl(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, long bitrate,
-                                    String sessionId, long startTime, String entryId, boolean isLive, String clientVer, String deliveryType,
-                                    int contextId, String applicationName, String userId) {
+                                    String sessionId, long startTime, String entryId, boolean isLive, String clientVer, String deliveryType) {
         Uri.Builder builder = new Uri.Builder();
         builder.path(baseUrl)
                 .appendQueryParameter("service", "liveStats")
@@ -47,19 +45,6 @@ public class LiveStatsService {
                 .appendQueryParameter("event:startTime", Long.toString(startTime))
                 .appendQueryParameter("event:entryId", entryId)
                 .appendQueryParameter("event:deliveryType", deliveryType);
-
-        if (contextId > 0) {
-            log.d("contextId = " + contextId);
-//            builder.appendQueryParameter("event:contextId", Integer.toString(contextId));
-        }
-        if (applicationName != null && !applicationName.isEmpty()) {
-            log.d("applicationName = " + applicationName);
-//            builder.appendQueryParameter("event:applicationId", applicationName);
-        }
-        if (userId != null && !userId.isEmpty()) {
-            log.d("userId = " + userId);
-//            builder.appendQueryParameter("event:userId", userId);
-        }
 
         try {
             URL url = new URL(URLDecoder.decode(builder.build().toString(), "UTF-8"));

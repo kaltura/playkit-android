@@ -131,7 +131,7 @@ public class PlayerController implements Player {
                         break;
                     case SOURCE_SELECTED:
                         String sourceUrl = sourceConfig.getUrl().toString();
-                        event = new PlayerEvent.SourceSelected(sourceUrl, sourceConfig.mediaSource.getMediaFormat().pathExt);
+                        event = new PlayerEvent.SourceSelected(sourceConfig);
                         break;
                     default:
                         event = new PlayerEvent.Generic(eventType);

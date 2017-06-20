@@ -152,7 +152,7 @@ public class YouboraPlugin extends PKPlugin {
                 case SOURCE_SELECTED:
                     key = "resource";
                     PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) playerEvent;
-                    value = sourceSelected.sourceUrl;
+                    value = sourceSelected.sourceConfig.getUrl().toString();
                     break;
             }
 

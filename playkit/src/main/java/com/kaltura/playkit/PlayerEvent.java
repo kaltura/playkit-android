@@ -1,5 +1,6 @@
 package com.kaltura.playkit;
 
+import com.kaltura.playkit.player.PKMediaSourceConfig;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 
@@ -112,13 +113,11 @@ public class PlayerEvent implements PKEvent {
 
     public static class SourceSelected extends PlayerEvent {
 
-        public final String sourceUrl;
-        public final String sourceExtention;
+        public final PKMediaSourceConfig sourceConfig;
 
-        public SourceSelected(String sourceUrl, String sourceExtention) {
+        public SourceSelected(PKMediaSourceConfig sourceConfig) {
             super(Type.SOURCE_SELECTED);
-            this.sourceUrl = sourceUrl;
-            this.sourceExtention = sourceExtention;
+            this.sourceConfig = sourceConfig;
         }
     }
 
