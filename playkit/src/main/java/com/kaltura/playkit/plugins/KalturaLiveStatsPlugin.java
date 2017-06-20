@@ -140,20 +140,16 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                         break;
                     case SOURCE_SELECTED:
                         PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;
-                        switch (sourceSelected.sourceConfig.getSourceExtention()) {
-                            case "m3u8":
+                        switch (sourceSelected.source.getMediaFormat()) {
+                            case hls:
                                 playbackProtocol = "hls";
                                 break;
-                            case "mpd":
+                            case dash:
                                 playbackProtocol = "mpegdash";
-                                break;
-                            case "mp4":
-                                playbackProtocol = "http";
                                 break;
                             default:
                                 playbackProtocol = "NA";
                                 break;
-
                         }
                         break;
                     default:

@@ -8,7 +8,7 @@ import com.kaltura.playkit.PKRequestParams;
 /**
  * Created by Noam Tamim @ Kaltura on 29/03/2017.
  */
-public class PKMediaSourceConfig {
+class PKMediaSourceConfig {
     PKMediaSource mediaSource;
     PKRequestParams.Adapter adapter;
     boolean cea608CaptionsEnabled;
@@ -19,7 +19,7 @@ public class PKMediaSourceConfig {
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
     }
 
-    public Uri getUrl() {
+    Uri getUrl() {
         Uri uri = Uri.parse(mediaSource.getUrl());
         if (adapter == null) {
             return uri;
@@ -27,11 +27,7 @@ public class PKMediaSourceConfig {
             return adapter.adapt(new PKRequestParams(uri, null)).url;
         }
     }
-
-    public String getSourceExtention() {
-        return mediaSource.getMediaFormat().pathExt;
-    }
-
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
