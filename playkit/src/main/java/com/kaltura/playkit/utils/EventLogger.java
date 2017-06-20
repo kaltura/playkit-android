@@ -5,6 +5,7 @@ import android.view.Surface;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
@@ -27,7 +28,10 @@ import java.io.IOException;
 public class EventLogger implements ExoPlayer.EventListener, AudioRendererEventListener, VideoRendererEventListener,  MetadataRenderer.Output,
         AdaptiveMediaSourceEventListener, ExtractorMediaSource.EventListener, DefaultDrmSessionManager.EventListener {
 
+    @Override
+    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
 
+    }
 
     @Override
     public void onLoadingChanged(boolean isLoading) {
