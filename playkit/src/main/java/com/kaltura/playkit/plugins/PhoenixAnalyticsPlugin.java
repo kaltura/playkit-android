@@ -30,17 +30,12 @@ import java.util.TimerTask;
 public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
     private static final double MEDIA_ENDED_THRESHOLD = 0.98;
-    private static String DEFAULT_BASE_URL = "http://api-preprod.ott.kaltura.com/v4_4/api_v3/";
 
     private int mediaHitInterval;
     private String fileId;
     private String baseUrl;
     private String ks;
     private int partnerId;
-
-    public String getDefaultBaseURL() {
-        return DEFAULT_BASE_URL;
-    }
 
     public enum PhoenixActionType {
         HIT,
@@ -100,7 +95,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
             baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
         } else {
-            baseUrl = DEFAULT_BASE_URL;
+            baseUrl = "";
         }
         if (Utils.isJsonObjectValueValid(pluginConfig, "ks")) {
             ks =  pluginConfig.getAsJsonPrimitive("ks").getAsString();
@@ -251,6 +246,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * @param eventType - Enum stating the event type to send
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
+        if ("".equals(getBaseUrl())) {
+            log.e("Error base URL is empty skip sendAnalyticsEvent");
+            return;
+        }
+
         String action = eventType.name().toLowerCase(); // used only for copmare
 
         if (!"stop".equals(action)) {
@@ -281,7 +281,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         if (baseUrl != null) {
             return baseUrl;
         } else {
-            return getDefaultBaseURL();
+            return "";
         }
     }
 }
