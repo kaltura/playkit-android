@@ -15,7 +15,7 @@ import java.util.Map;
 
 
 class LoadedPlugin {
-    public LoadedPlugin(PKPlugin plugin, PlayerDecorator decorator) {
+    LoadedPlugin(PKPlugin plugin, PlayerDecorator decorator) {
         this.plugin = plugin;
         this.decorator = decorator;
     }
@@ -118,7 +118,11 @@ class PlayerLoader extends PlayerDecoratorBase {
     @Override
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
 
-        playerController.setMedia(mediaConfig);
+        //If mediaConfig is not valid, playback is impossible, so return.
+        //setMedia() is responsible to notify application with exact error that happened.
+        if(!playerController.setMedia(mediaConfig)){
+            return;
+        }
 
         super.prepare(mediaConfig);
         

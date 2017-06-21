@@ -40,7 +40,9 @@ import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.errors.PKAdErrorType;
 import com.kaltura.playkit.utils.errors.PKError;
+import com.kaltura.playkit.utils.errors.PKErrorType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -379,7 +381,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     ////////Ads Plugin
-
     @Override
     public IMAConfig getAdsConfig() {
         return adConfig;
@@ -819,7 +820,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     }
                 }
 
-                sendError(PKError.PKErrorType.QUIET_LOG_ERROR, error, null);
+                sendError(PKAdErrorType.QUIET_LOG_ERROR, error, null);
                 break;
             default:
                 break;
@@ -946,67 +947,67 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
         AdError cause = adErrorEvent.getError();
         String errorMessage = cause == null ? "No error message" : cause.getMessage();
-        PKError.PKErrorType errorType = PKError.PKErrorType.UNKNOWN_ERROR;
+        PKErrorType errorType = PKAdErrorType.UNKNOWN_ERROR;
 
         if (cause != null) {
 
             switch (cause.getErrorCode()) {
                 case INTERNAL_ERROR:
-                    errorType = PKError.PKErrorType.INTERNAL_ERROR;
+                    errorType = PKAdErrorType.INTERNAL_ERROR;
                     break;
                 case VAST_MALFORMED_RESPONSE:
-                    errorType = PKError.PKErrorType.VAST_MALFORMED_RESPONSE;
+                    errorType = PKAdErrorType.VAST_MALFORMED_RESPONSE;
                     break;
                 case UNKNOWN_AD_RESPONSE:
-                    errorType = PKError.PKErrorType.UNKNOWN_AD_RESPONSE;
+                    errorType = PKAdErrorType.UNKNOWN_AD_RESPONSE;
                     break;
                 case VAST_LOAD_TIMEOUT:
-                    errorType = PKError.PKErrorType.VAST_LOAD_TIMEOUT;
+                    errorType = PKAdErrorType.VAST_LOAD_TIMEOUT;
                     break;
                 case VAST_TOO_MANY_REDIRECTS:
-                    errorType = PKError.PKErrorType.VAST_TOO_MANY_REDIRECTS;
+                    errorType = PKAdErrorType.VAST_TOO_MANY_REDIRECTS;
                     break;
                 case VIDEO_PLAY_ERROR:
-                    errorType = PKError.PKErrorType.VIDEO_PLAY_ERROR;
+                    errorType = PKAdErrorType.VIDEO_PLAY_ERROR;
                     break;
                 case VAST_MEDIA_LOAD_TIMEOUT:
-                    errorType = PKError.PKErrorType.VAST_MEDIA_LOAD_TIMEOUT;
+                    errorType = PKAdErrorType.VAST_MEDIA_LOAD_TIMEOUT;
                     break;
                 case VAST_LINEAR_ASSET_MISMATCH:
-                    errorType = PKError.PKErrorType.VAST_LINEAR_ASSET_MISMATCH;
+                    errorType = PKAdErrorType.VAST_LINEAR_ASSET_MISMATCH;
                     break;
                 case OVERLAY_AD_PLAYING_FAILED:
-                    errorType = PKError.PKErrorType.OVERLAY_AD_PLAYING_FAILED;
+                    errorType = PKAdErrorType.OVERLAY_AD_PLAYING_FAILED;
                     break;
                 case OVERLAY_AD_LOADING_FAILED:
-                    errorType = PKError.PKErrorType.OVERLAY_AD_LOADING_FAILED;
+                    errorType = PKAdErrorType.OVERLAY_AD_LOADING_FAILED;
                     break;
                 case VAST_NONLINEAR_ASSET_MISMATCH:
-                    errorType = PKError.PKErrorType.VAST_NONLINEAR_ASSET_MISMATCH;
+                    errorType = PKAdErrorType.VAST_NONLINEAR_ASSET_MISMATCH;
                     break;
                 case COMPANION_AD_LOADING_FAILED:
-                    errorType = PKError.PKErrorType.COMPANION_AD_LOADING_FAILED;
+                    errorType = PKAdErrorType.COMPANION_AD_LOADING_FAILED;
                     break;
                 case UNKNOWN_ERROR:
-                    errorType = PKError.PKErrorType.UNKNOWN_ERROR;
+                    errorType = PKAdErrorType.UNKNOWN_ERROR;
                     break;
                 case VAST_EMPTY_RESPONSE:
-                    errorType = PKError.PKErrorType.VAST_EMPTY_RESPONSE;
+                    errorType = PKAdErrorType.VAST_EMPTY_RESPONSE;
                     break;
                 case FAILED_TO_REQUEST_ADS:
-                    errorType = PKError.PKErrorType.FAILED_TO_REQUEST_ADS;
+                    errorType = PKAdErrorType.FAILED_TO_REQUEST_ADS;
                     break;
                 case VAST_ASSET_NOT_FOUND:
-                    errorType = PKError.PKErrorType.VAST_ASSET_NOT_FOUND;
+                    errorType = PKAdErrorType.VAST_ASSET_NOT_FOUND;
                     break;
                 case ADS_REQUEST_NETWORK_ERROR:
-                    errorType = PKError.PKErrorType.ADS_REQUEST_NETWORK_ERROR;
+                    errorType = PKAdErrorType.ADS_REQUEST_NETWORK_ERROR;
                     break;
                 case INVALID_ARGUMENTS:
-                    errorType = PKError.PKErrorType.INVALID_ARGUMENTS;
+                    errorType = PKAdErrorType.INVALID_ARGUMENTS;
                     break;
                 case PLAYLIST_NO_CONTENT_TRACKING:
-                    errorType = PKError.PKErrorType.PLAYLIST_NO_CONTENT_TRACKING;
+                    errorType = PKAdErrorType.PLAYLIST_NO_CONTENT_TRACKING;
                     break;
             }
         }
@@ -1024,9 +1025,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         cancelAdManagerTimer();
     }
 
-    private void sendError(PKError.PKErrorType errorType, String message, Throwable cause) {
-        log.e("Ad Error: " + errorType.name() + " with message " + message);
-        PKError error = new PKError(errorType, message, cause);
-        messageBus.post(new PlayerEvent.ExceptionInfo(error));
+    private void sendError(PKErrorType errorType, String message, Throwable cause) {
+        log.e("Ad Error: " + errorType.eventType().name() + " with message " + message);
+        messageBus.post(new PKError(errorType, message, cause));
     }
 }

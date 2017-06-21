@@ -50,6 +50,8 @@ import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.EventLogger;
 import com.kaltura.playkit.utils.errors.PKError;
+import com.kaltura.playkit.utils.errors.PKErrorType;
+import com.kaltura.playkit.utils.errors.PKPlayerErrorType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -322,30 +324,31 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
 
-        PKError.PKErrorType errorType;
+        PKErrorType errorType;
         Throwable cause;
         String errorMessage;
 
         switch (error.type) {
             case ExoPlaybackException.TYPE_SOURCE:
-                errorType = PKError.PKErrorType.SOURCE_ERROR;
+                errorType = PKPlayerErrorType.SOURCE_ERROR;
                 cause = error.getSourceException();
                 errorMessage = error.getMessage();
                 break;
             case ExoPlaybackException.TYPE_RENDERER:
-                errorType = PKError.PKErrorType.RENDERER_ERROR;
+                errorType = PKPlayerErrorType.RENDERER_ERROR;
                 cause = error.getRendererException();
                 errorMessage = error.getMessage();
                 break;
             default:
-                errorType = PKError.PKErrorType.UNEXPECTED;
+                errorType = PKPlayerErrorType.UNEXPECTED;
                 cause = error.getUnexpectedException();
                 errorMessage = error.getMessage();
                 break;
         }
 
+        log.e("Player error " + errorMessage);
         currentError = new PKError(errorType, errorMessage, cause);
-        sendDistinctEvent(PlayerEvent.Type.ERROR);
+        eventListener.onEvent(PlayerEvent.Type.ERROR);
     }
 
     @Override
@@ -596,8 +599,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     }
 
     @Override
-    public PlayerEvent.ExceptionInfo getCurrentError() {
-        return new PlayerEvent.ExceptionInfo(currentError);
+    public PKError getCurrentError() {
+        return currentError;
     }
 
     @Override

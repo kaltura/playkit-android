@@ -434,7 +434,7 @@ public class LocalAssetsManager {
 
         @Override
         public void save(String key, byte[] value) {
-            String encodedValue = Base64.encodeToString(value, Base64.NO_WRAP);
+            String encodedValue = Utils.encodeToString(value);
             log.i("save to storage with key " + key + " and value " + encodedValue);
             sharedPreferences.edit()
                     .putString(key, encodedValue)

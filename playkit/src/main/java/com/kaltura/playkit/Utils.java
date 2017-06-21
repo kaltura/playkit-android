@@ -3,6 +3,7 @@ package com.kaltura.playkit;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.util.Base64;
 import android.util.Log;
 
 import com.google.gson.JsonObject;
@@ -81,7 +82,7 @@ public class Utils {
     }
 
     public static <T extends Serializable> Map<String, T> bundleToMap(Bundle input, Class<T> c) {
-        Map<String, T> output = new HashMap<String, T>();
+        Map<String, T> output = new HashMap<>();
         for (String key : input.keySet()) {
             output.put(key, c.cast(input.getParcelable(key)));
         }
@@ -89,10 +90,11 @@ public class Utils {
     }
 
     public static boolean isJsonObjectValueValid(JsonObject jsonObject, String key) {
-        if (jsonObject.has(key) && !jsonObject.get(key).isJsonNull()) {
-            return true;
-        }
-        return false;
+        return jsonObject.has(key) && !jsonObject.get(key).isJsonNull();
+    }
+
+    public static String encodeToString(byte[] data) {
+        return Base64.encodeToString(data, Base64.NO_WRAP);
     }
 
 }

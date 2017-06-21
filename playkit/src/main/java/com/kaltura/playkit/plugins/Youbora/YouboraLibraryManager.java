@@ -12,6 +12,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.errors.PKError;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.BuildConfig;
 import com.npaw.youbora.youboralib.utils.Utils;
@@ -97,7 +98,7 @@ class YouboraLibraryManager extends PluginGeneric {
         @Override
         public void onEvent(PKEvent event) {
 
-            if (event instanceof PlayerEvent.PlaybackInfoUpdated) {
+            if (event.eventType() == PlayerEvent.Type.PLAYBACK_INFO_UPDATED) {
                 PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).getPlaybackInfo();
                 lastReportedBitrate = Long.valueOf(currentPlaybackInfo.getVideoBitrate()).doubleValue();
                 lastReportedThroughput = Long.valueOf(currentPlaybackInfo.getVideoThroughput()).doubleValue();
@@ -163,24 +164,24 @@ class YouboraLibraryManager extends PluginGeneric {
     };
 
     private void sendErrorHandler(PKEvent event) {
+
         String errorMsg = "Player error occurred.";
-        PlayerEvent.ExceptionInfo exceptionInfo = (PlayerEvent.ExceptionInfo) event;
-        if (exceptionInfo == null || exceptionInfo.error.cause == null) {
+        PKError error = (PKError) event;
+        if (error.cause == null) {
             errorHandler(errorMsg, event.eventType().toString());
             return;
         }
-        Exception playerErrorException = (Exception) exceptionInfo.error.cause;
-        if (playerErrorException != null) {
-            String errorMetadata = errorMsg;
-            String exceptionClass = "";
-            String exceptionCause = "";
-            if (playerErrorException.getCause() != null && playerErrorException.getCause().getClass() != null) {
-                exceptionClass = playerErrorException.getCause().getClass().getName();
-                errorMetadata = (playerErrorException.getCause().toString() != null) ? playerErrorException.getCause().toString() : "NA";
-                exceptionCause = playerErrorException.toString();
-            }
-            errorHandler(exceptionCause, exceptionClass, errorMetadata);
+
+        Exception playerErrorException = (Exception) error.cause;
+        String errorMetadata = errorMsg;
+        String exceptionClass = "";
+        String exceptionCause = "";
+        if (playerErrorException.getCause() != null && playerErrorException.getCause().getClass() != null) {
+            exceptionClass = playerErrorException.getCause().getClass().getName();
+            errorMetadata = (playerErrorException.getCause().toString() != null) ? playerErrorException.getCause().toString() : "NA";
+            exceptionCause = playerErrorException.toString();
         }
+        errorHandler(exceptionCause, exceptionClass, errorMetadata);
     }
 
     private void onAdEvent(AdEvent event) {
@@ -198,9 +199,7 @@ class YouboraLibraryManager extends PluginGeneric {
                 break;
             case CUEPOINTS_CHANGED:
                 AdEvent.AdCuePointsUpdateEvent cuePointsList = (AdEvent.AdCuePointsUpdateEvent) event;
-                if (cuePointsList != null) {
-                    adCuePoints = cuePointsList.cuePoints;
-                }
+                adCuePoints = cuePointsList.cuePoints;
                 break;
             case ALL_ADS_COMPLETED:
                 if (adCuePoints != null && adCuePoints.hasPostRoll()) {

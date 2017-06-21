@@ -20,7 +20,9 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.api.ovp.services.AnalyticsService;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.errors.PKAnalyticsErrorType;
 import com.kaltura.playkit.utils.errors.PKError;
+import com.kaltura.playkit.utils.errors.PKErrorType;
 
 import java.util.TimerTask;
 
@@ -136,8 +138,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
             partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
         } else {
             partnerId = 0;
-            String errorMessage = TAG + " partnerId was not set";
-            sendError(PKError.PKErrorType.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
+            sendError(PKAnalyticsErrorType.INVALID_INIT_OBJECT, TAG + " partnerId was not set");
         }
 
         isFirstPlay = true;
@@ -294,10 +295,9 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         messageBus.post(new LogEvent(TAG + " " + eventType.toString(), requestBuilder.build().getUrl()));
     }
 
-    private void sendError(PKError.PKErrorType errorType, String errorMessage, Throwable cause) {
+    private void sendError(PKErrorType errorType, String errorMessage) {
         log.e(errorMessage);
-        PKError error = new PKError(errorType, errorMessage, cause);
-        messageBus.post(new PlayerEvent.ExceptionInfo(error));
+        messageBus.post(new PKError(errorType, errorMessage, null));
     }
 
 }

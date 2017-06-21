@@ -19,7 +19,9 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.api.phoenix.services.BookmarkService;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.errors.PKAnalyticsErrorType;
 import com.kaltura.playkit.utils.errors.PKError;
+import com.kaltura.playkit.utils.errors.PKErrorType;
 
 import java.util.TimerTask;
 
@@ -99,8 +101,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             fileId = pluginConfig.getAsJsonPrimitive("fileId").getAsString();
         } else {
             fileId = "0";
-            String errorMessage = TAG + " fileId was not set";
-            sendError(PKError.PKErrorType.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
+            sendError(PKAnalyticsErrorType.INVALID_INIT_OBJECT, TAG + " fileId was not set");
         }
         if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
             baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
@@ -274,10 +275,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         requestsExecutor.queue(requestBuilder.build());
     }
 
-    private void sendError(PKError.PKErrorType errorType, String errorMessage, Throwable cause) {
+    private void sendError(PKErrorType errorType, String errorMessage) {
         log.e(errorMessage);
-        PKError error = new PKError(errorType, errorMessage, cause);
-        messageBus.post(new PlayerEvent.ExceptionInfo(error));
+        messageBus.post(new PKError(errorType, errorMessage, null));
     }
 
 }

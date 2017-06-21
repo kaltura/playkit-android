@@ -17,6 +17,7 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.WidevineClassicDrm;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.errors.PKError;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -352,7 +353,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public PlayerEvent.ExceptionInfo getCurrentError() {
+    public PKError getCurrentError() {
         return null;
     }
 

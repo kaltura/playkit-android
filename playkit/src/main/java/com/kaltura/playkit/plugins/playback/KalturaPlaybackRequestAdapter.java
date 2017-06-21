@@ -2,12 +2,11 @@ package com.kaltura.playkit.plugins.playback;
 
 import android.content.Context;
 import android.net.Uri;
-import android.util.Base64;
 
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.Utils;
 
-import static android.util.Base64.NO_WRAP;
 import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
 
 /**
@@ -35,7 +34,7 @@ public class KalturaPlaybackRequestAdapter implements PKRequestParams.Adapter {
         if (url.getPath().contains("/playManifest/")) {
             Uri alt = url.buildUpon()
                     .appendQueryParameter("clientTag", CLIENT_TAG)
-                    .appendQueryParameter("referrer", Base64.encodeToString(packageName.getBytes(), NO_WRAP))
+                    .appendQueryParameter("referrer", Utils.encodeToString(packageName.getBytes()))
                     .appendQueryParameter("playSessionId", playSessionId)
                     .build();
             return new PKRequestParams(alt, requestParams.headers);

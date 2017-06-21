@@ -19,6 +19,8 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.errors.PKError;
+import com.kaltura.playkit.utils.errors.PKErrorType;
+import com.kaltura.playkit.utils.errors.PKPlayerErrorType;
 
 import java.util.UUID;
 
@@ -88,7 +90,7 @@ public class PlayerController implements Player {
         public void onEvent(PlayerEvent.Type eventType) {
             if (eventListener != null) {
 
-                PlayerEvent event;
+                PKEvent event;
 
                 // TODO: use specific event class
                 switch (eventType) {
@@ -109,16 +111,12 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.PlaybackInfoUpdated(player.getPlaybackInfo());
                         break;
                     case ERROR:
-                        event = player.getCurrentError();
-                        PlayerEvent.ExceptionInfo exceptionInfo = (PlayerEvent.ExceptionInfo) event;
-                        if (exceptionInfo == null || exceptionInfo.error.cause == null) {
+                       event = player.getCurrentError();
+                        //If error should be handled locally, do not send it to messageBus.
+                        if (maybeHandleExceptionLocally((PKError) event)) {
                             return;
                         }
 
-                        //if exception should be handled locally, do not send it to message bus.
-                        if (maybeHandleExceptionLocally(exceptionInfo)) {
-                            return;
-                        }
                         break;
                     case METADATA_AVAILABLE:
                         if (player.getMetadata() == null || player.getMetadata().isEmpty()) {
@@ -237,8 +235,7 @@ public class PlayerController implements Player {
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
 
         if (sourceConfig == null) {
-            String errorMessage = "Cant prepare player with media config. PKMediaConfig is null.";
-            sendErrorMessage(PKError.PKErrorType.SOURCE_ERROR, errorMessage, new IllegalArgumentException());
+            sendErrorMessage(PKPlayerErrorType.SOURCE_ERROR, "Cant prepare player with media config. PKMediaConfig is null.");
             return;
         }
 
@@ -254,41 +251,38 @@ public class PlayerController implements Player {
 
     }
 
-    public void setMedia(PKMediaConfig mediaConfig) {
+    /**
+     * Responsible for preparing source configurations before loading it to actual player.
+     * @param mediaConfig - the mediaConfig that holds necessary initial data.
+     * @return - true if managed to create valid sourceConfiguration object,
+     * otherwise will return false and notify user with the error that happened.
+     */
+    public boolean setMedia(PKMediaConfig mediaConfig) {
         log.d("setMedia");
-        //This is a new entry.
+
         isNewEntry = true;
 
-        //generate the session id.
         sessionId = generateSessionId();
         if (contentRequestAdapter != null) {
             contentRequestAdapter.updateParams(this);
         }
 
-        //When mediaConfig is null, we can not build a valid sourceConfig object.
-        //So assign it to null, and return. This will prevent from continue of the prepare() flow.
         if (mediaConfig == null) {
-            String errorMessage = "No playable mediaConfig found, mediaConfig = null";
-            sendErrorMessage(PKError.PKErrorType.SOURCE_ERROR, errorMessage, new IllegalArgumentException());
-            sourceConfig = null;
-            return;
+            sendErrorMessage(PKPlayerErrorType.SOURCE_ERROR, "No mediaConfig found, mediaConfig = null");
+            return false;
         }
 
         this.mediaConfig = mediaConfig;
-
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
-        //If source was not able to select, assign sourceConfig to null and return.
-        //This will prevent from continue of the prepare() flow.
         if (source == null) {
-            String errorMessage = "No playable source found for entry";
-            sendErrorMessage(PKError.PKErrorType.SOURCE_ERROR, errorMessage, new IllegalArgumentException());
-            sourceConfig = null;
-            return;
+            sendErrorMessage(PKPlayerErrorType.SOURCE_ERROR, "No playable source found for entry");
+            return false;
         }
 
         this.sourceConfig = new PKMediaSourceConfig(source, contentRequestAdapter, cea608CaptionsEnabled);
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
+        return true;
     }
 
     private String generateSessionId() {
@@ -505,8 +499,8 @@ public class PlayerController implements Player {
         if (player != null) {
             player.restore();
         }
-        prepare(mediaConfig);
         togglePlayerListeners(true);
+        prepare(mediaConfig);
 
     }
 
@@ -537,9 +531,8 @@ public class PlayerController implements Player {
         playerEngineView = null;
     }
 
-    private boolean maybeHandleExceptionLocally(PlayerEvent.ExceptionInfo exceptionInfo) {
-        PKError error = exceptionInfo.error;
-        if (error.errorType == PKError.PKErrorType.RENDERER_ERROR) {
+    private boolean maybeHandleExceptionLocally(PKError error) {
+        if (error.errorType == PKPlayerErrorType.RENDERER_ERROR) {
             if (error.cause instanceof MediaCodec.CryptoException) {
                 ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
                 long currentPosition = player.getCurrentPosition();
@@ -552,9 +545,8 @@ public class PlayerController implements Player {
         return false;
     }
 
-    private void sendErrorMessage(PKError.PKErrorType errorType, String errorMessage, Throwable cause) {
+    private void sendErrorMessage(PKErrorType errorType, String errorMessage) {
         log.e(errorMessage);
-        PKError pkError = new PKError(errorType, errorMessage, cause);
-        eventListener.onEvent(new PlayerEvent.ExceptionInfo(pkError));
+        eventListener.onEvent(new PKError(errorType, errorMessage, null));
     }
 }

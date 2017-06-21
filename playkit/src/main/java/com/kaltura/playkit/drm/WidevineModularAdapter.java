@@ -11,7 +11,6 @@ import android.media.MediaDrmException;
 import android.media.NotProvisionedException;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.util.Base64;
 
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.google.android.exoplayer2.drm.ExoMediaDrm;
@@ -24,6 +23,7 @@ import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.LocalDataStore;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.player.MediaSupport;
 
 import java.io.FileNotFoundException;
@@ -89,16 +89,16 @@ class WidevineModularAdapter extends DrmAdapter {
 
         // Get keyRequest
         FrameworkMediaDrm.KeyRequest keyRequest = session.getOfflineKeyRequest(initData, mimeType);
-        log.d("registerAsset: init data (b64): " + encodeToString(initData));
+        log.d("registerAsset: init data (b64): " + Utils.encodeToString(initData));
 
         byte[] data = keyRequest.getData();
-        log.d("registerAsset: request data (b64): " + encodeToString(data));
+        log.d("registerAsset: request data (b64): " + Utils.encodeToString(data));
 
         // Send request to server
         byte[] keyResponse;
         try {
             keyResponse = executeKeyRequest(licenseUri, keyRequest);
-            log.d("registerAsset: response data (b64): " + encodeToString(keyResponse));
+            log.d("registerAsset: response data (b64): " + Utils.encodeToString(keyResponse));
         } catch (IOException e) {
             throw new RegisterException("Can't send key request for registration", e);
         }
@@ -106,7 +106,7 @@ class WidevineModularAdapter extends DrmAdapter {
         // Provide keyResponse
         try {
             byte[] offlineKeyId = session.provideKeyResponse(keyResponse);
-            localDataStore.save(encodeToString(initData), offlineKeyId);
+            localDataStore.save(Utils.encodeToString(initData), offlineKeyId);
         } catch (DeniedByServerException e) {
             throw new RegisterException("Request denied by server", e);
         }
@@ -141,7 +141,7 @@ class WidevineModularAdapter extends DrmAdapter {
         }
 
         // obtain key with which we will load the saved keySetId.
-        String key = encodeToString(dash.widevineInitData);
+        String key = Utils.encodeToString(dash.widevineInitData);
 
         byte[] keySetId;
         try {
@@ -158,7 +158,7 @@ class WidevineModularAdapter extends DrmAdapter {
             throw new WidevineNotSupportedException(e);
         }
 
-        log.d("releaseRequest:" + encodeToString(releaseRequest.getData()));
+        log.d("releaseRequest:" + Utils.encodeToString(releaseRequest.getData()));
 
         localDataStore.remove(key);
 
@@ -227,7 +227,7 @@ class WidevineModularAdapter extends DrmAdapter {
 
         MediaDrmSession session;
         try {
-            String key = encodeToString(dash.widevineInitData);
+            String key = Utils.encodeToString(dash.widevineInitData);
             session = openSessionWithKeys(mediaDrm, key);
         } catch (MediaDrmException | FileNotFoundException | MediaCryptoException e) {
             throw new RegisterException("Can't open session with keys", e);
@@ -265,7 +265,7 @@ class WidevineModularAdapter extends DrmAdapter {
      * @param localPath - file from which to parse the dash manifest.
      * @param assetId   - the asset id.
      * @return - {@link SimpleDashParser} which contains the manifest data we need.
-     * @throws RegisterException
+     * @throws RegisterException - {@link RegisterException}
      */
     private SimpleDashParser parseDash(String localPath, String assetId) throws RegisterException {
         SimpleDashParser dashParser;
@@ -322,10 +322,6 @@ class WidevineModularAdapter extends DrmAdapter {
 
         return sdkName + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE
                 + ") " + "ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
-    }
-
-    private String encodeToString(byte[] data) {
-        return Base64.encodeToString(data, Base64.NO_WRAP);
     }
 
     private class RegisterException extends Exception {

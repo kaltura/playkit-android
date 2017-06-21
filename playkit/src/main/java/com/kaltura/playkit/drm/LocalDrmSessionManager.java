@@ -6,7 +6,6 @@ import android.media.NotProvisionedException;
 import android.os.Build;
 import android.os.Looper;
 import android.support.annotation.RequiresApi;
-import android.util.Base64;
 
 import com.google.android.exoplayer2.drm.DrmInitData;
 import com.google.android.exoplayer2.drm.DrmSession;
@@ -19,6 +18,7 @@ import com.google.android.exoplayer2.util.Util;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.LocalDataStore;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.player.MediaSupport;
 
 import java.io.FileNotFoundException;
@@ -123,12 +123,12 @@ public class LocalDrmSessionManager<T extends ExoMediaCrypto> implements DrmSess
      * Open drm session with keySetId that was previously saved in {@link LocalDataStore}
      * @param initData - the init data with which we will obtain the proper keySetId.
      * @return - the {@link MediaDrmSession}.
-     * @throws MediaDrmException
-     * @throws MediaCryptoException
-     * @throws FileNotFoundException
+     * @throws MediaDrmException - {@link MediaDrmException}
+     * @throws MediaCryptoException - {@link MediaCryptoException}
+     * @throws FileNotFoundException - {@link FileNotFoundException}
      */
     private MediaDrmSession openSessionWithKeys(byte[] initData) throws MediaDrmException, MediaCryptoException, FileNotFoundException {
-        String key = Base64.encodeToString(initData, Base64.NO_WRAP);
+        String key = Utils.encodeToString(initData);
         byte[] keySetId = drmStorage.load(key);
 
         MediaDrmSession session = MediaDrmSession.open(mediaDrm);

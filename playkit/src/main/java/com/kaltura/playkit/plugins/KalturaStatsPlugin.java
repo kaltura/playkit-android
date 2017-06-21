@@ -22,7 +22,9 @@ import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdPositionType;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.errors.PKAnalyticsErrorType;
 import com.kaltura.playkit.utils.errors.PKError;
+import com.kaltura.playkit.utils.errors.PKErrorType;
 
 import java.util.TimerTask;
 
@@ -145,8 +147,7 @@ public class KalturaStatsPlugin extends PKPlugin {
             uiconfId = pluginConfig.getAsJsonPrimitive("uiconfId").getAsInt();
         } else {
             uiconfId = 0;
-            String errorMessage = TAG + " uiconfId is missing";
-            sendError(PKError.PKErrorType.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
+            sendError(PKAnalyticsErrorType.INVALID_INIT_OBJECT, TAG + " uiconfId is missing");
         }
         if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
             baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
@@ -164,21 +165,18 @@ public class KalturaStatsPlugin extends PKPlugin {
             partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
         } else {
             partnerId = 0;
-            String errorMessage = TAG + " partnerId is missing";
-            sendError(PKError.PKErrorType.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
+            sendError(PKAnalyticsErrorType.INVALID_INIT_OBJECT, TAG + " partnerId is missing");
         }
         if (Utils.isJsonObjectValueValid(pluginConfig, "entryId")) {
             entryId = pluginConfig.getAsJsonPrimitive("entryId").getAsString();
         } else {
             entryId = mediaConfig.getMediaEntry().getId();
             if (entryId == null) {
-                String errorMessage = TAG + " entryId is missing";
-                sendError(PKError.PKErrorType.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
+                sendError(PKAnalyticsErrorType.INVALID_INIT_OBJECT, TAG + " entryId is missing");
             }
             // in case of OVP entry id is anyway the ID needed it only for OTT
             else if (!entryId.contains("_")) {
-                String errorMessage = TAG + " entryId was given as MEDIA_ID instead of entryId";
-                sendError(PKError.PKErrorType.INVALID_INIT_OBJECT, errorMessage, new IllegalArgumentException(errorMessage));
+                sendError(PKAnalyticsErrorType.INVALID_INIT_OBJECT, TAG + " entryId was given as MEDIA_ID instead of entryId");
             }
         }
 
@@ -241,10 +239,12 @@ public class KalturaStatsPlugin extends PKPlugin {
                 if (player.getDuration() < 0) {
                     return;
                 }
+
                 log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
                     case METADATA_AVAILABLE:
                         sendMediaLoaded();
+                        break;
                     case STATE_CHANGED:
                         KalturaStatsPlugin.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
@@ -291,6 +291,9 @@ public class KalturaStatsPlugin extends PKPlugin {
                 }
             } else if (event instanceof AdEvent) {
                 KalturaStatsPlugin.this.onEvent((AdEvent) event);
+            } else if(event instanceof PKError) {
+                sendAnalyticsEvent(KStatsEvent.ERROR);
+                cancelTimer();
             }
         }
     };
@@ -482,9 +485,8 @@ public class KalturaStatsPlugin extends PKPlugin {
         requestsExecutor.queue(requestBuilder.build());
     }
 
-    private void sendError(PKError.PKErrorType errorType, String errorMessage, Throwable cause) {
+    private void sendError(PKErrorType errorType, String errorMessage) {
         log.e(errorMessage);
-        PKError error = new PKError(errorType, errorMessage, cause);
-        messageBus.post(new PlayerEvent.ExceptionInfo(error));
+        messageBus.post(new PKError(errorType, errorMessage, null));
     }
 }

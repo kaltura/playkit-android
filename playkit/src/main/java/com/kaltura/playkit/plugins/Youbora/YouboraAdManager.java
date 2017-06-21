@@ -8,6 +8,8 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.errors.PKAdErrorEvent;
+import com.kaltura.playkit.utils.errors.PKAdErrorType;
 import com.kaltura.playkit.utils.errors.PKError;
 import com.npaw.youbora.adnalyzers.AdnalyzerGeneric;
 import com.npaw.youbora.plugins.PluginGeneric;
@@ -41,7 +43,7 @@ class YouboraAdManager extends AdnalyzerGeneric {
 
         this.messageBus.listen(mEventListener, STATE_CHANGED);
         this.messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
-        this.messageBus.listen(mEventListener, PlayerEvent.Type.ERROR);
+        this.messageBus.listen(mEventListener, PKAdErrorEvent.Type.ERROR);
 
     }
 
@@ -61,104 +63,103 @@ class YouboraAdManager extends AdnalyzerGeneric {
             default:
                 break;
         }
-        sendReportEvent(event);
+
+        messageBus.post(new YouboraEvent.YouboraReport(event.eventType().name()));
     }
 
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
 
-            if (event instanceof PlayerEvent) {
-                if (((PlayerEvent) event).type == PlayerEvent.Type.ERROR) {
-                    PlayerEvent.ExceptionInfo exceptionInfo = (PlayerEvent.ExceptionInfo) event;
-                    PKError error = exceptionInfo.error;
-                    if (error.errorType.group == PKError.IMA_ERROR) {
-                        switch (error.errorType) {
-                            case QUIET_LOG_ERROR:
-                                log.d("QUIET_LOG_ERROR avoiding error");
-                                break;
-                            default:
-                                YBLog.debug("onAdError " + error.errorType.name());
-                                endedAdHandler();
+            log.d("on event " + event.eventType());
+
+            if (event.eventType() == PKAdErrorEvent.Type.ERROR) {
+                PKError pkError = (PKError) event;
+                handleAdError(pkError);
+                return;
+            }
+
+            if (event instanceof AdEvent) {
+                log.d("AdManager: " + ((AdEvent) event).type.toString());
+                switch (((AdEvent) event).type) {
+                    case AD_REQUESTED:
+                        lastReportedAdResource = ((AdEvent.AdRequestedEvent) event).adTagUrl;
+                        log.d("lastReportedAdResource: " + lastReportedAdResource);
+                        break;
+                    case LOADED:
+                        if (isFirstPlay) {
+                            isFirstPlay = false;
+                            plugin.playHandler();
                         }
-                    }
-                    sendReportEvent(event);
-                    return;
-                }
+                        currentAdInfo = ((AdEvent.AdLoadedEvent) event).adInfo;
+                        populateAdValues();
 
-                if (event instanceof AdEvent) {
-                    log.d("AdManager: " + ((AdEvent) event).type.toString());
-                    switch (((AdEvent) event).type) {
-                        case AD_REQUESTED:
-                            lastReportedAdResource = ((AdEvent.AdRequestedEvent) event).adTagUrl;
-                            log.d("lastReportedAdResource: " + lastReportedAdResource);
-                            break;
-                        case LOADED:
-                            if (isFirstPlay) {
-                                isFirstPlay = false;
-                                plugin.playHandler();
-                            }
-                            currentAdInfo = ((AdEvent.AdLoadedEvent) event).adInfo;
-                            populateAdValues();
+                        playAdHandler();
+                        break;
+                    case STARTED:
+                        currentAdInfo = ((AdEvent.AdStartedEvent) event).adInfo;
+                        lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
+                        log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
 
+                        joinAdHandler();
+                        break;
+                    case PAUSED:
+                        currentAdInfo = ((AdEvent.AdPausedEvent) event).adInfo;
+                        lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
+                        log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
+
+                        pauseAdHandler();
+                        break;
+                    case RESUMED:
+                        currentAdInfo = ((AdEvent.AdResumedEvent) event).adInfo;
+                        if (isFirstPlay) {
+                            isFirstPlay = false;
                             playAdHandler();
-                            break;
-                        case STARTED:
-                            currentAdInfo = ((AdEvent.AdStartedEvent) event).adInfo;
-                            lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
-                            log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
-
                             joinAdHandler();
-                            break;
-                        case PAUSED:
-                            currentAdInfo = ((AdEvent.AdPausedEvent) event).adInfo;
-                            lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
-                            log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
+                            populateAdValues();
+                        }
 
-                            pauseAdHandler();
-                            break;
-                        case RESUMED:
-                            currentAdInfo = ((AdEvent.AdResumedEvent) event).adInfo;
-                            if (isFirstPlay) {
-                                isFirstPlay = false;
-                                playAdHandler();
-                                joinAdHandler();
-                                populateAdValues();
-                            }
+                        lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
+                        log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
 
-                            lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
-                            log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
-
-                            resumeAdHandler();
-                            break;
-                        case COMPLETED:
-                            lastReportedAdPlayhead = lastReportedAdDuration;
-                            log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
-                            endedAdHandler();
-                            break;
-                        case AD_BREAK_IGNORED:
-                            endedAdHandler();
-                            break;
-                        case CONTENT_RESUME_REQUESTED:
-                            endedAdHandler();
-                            break;
-                        case SKIPPED:
-                            currentAdInfo = ((AdEvent.AdSkippedEvent) event).adInfo;
-                            lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
-                            log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
-                            skipAdHandler();
-                            break;
-                        case PLAY_HEAD_CHANGED:
-                            lastReportedAdPlayhead = Long.valueOf(((AdEvent.AdPlayHeadEvent) event).adPlayHead).doubleValue();
-                            break;
-                        case CLICKED:
-                            log.d("learn more clicked");
-                            break;
-                        default:
-                            break;
-                    }
-                    sendReportEvent(event);
+                        resumeAdHandler();
+                        break;
+                    case COMPLETED:
+                        lastReportedAdPlayhead = lastReportedAdDuration;
+                        log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
+                        endedAdHandler();
+                        break;
+                    case AD_BREAK_IGNORED:
+                        endedAdHandler();
+                        break;
+                    case CONTENT_RESUME_REQUESTED:
+                        endedAdHandler();
+                        break;
+                    case SKIPPED:
+                        currentAdInfo = ((AdEvent.AdSkippedEvent) event).adInfo;
+                        lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
+                        log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
+                        skipAdHandler();
+                        break;
+                    case CLICKED:
+                        log.d("learn more clicked");
+                        //We are not sending this event to youbora,
+                        //so prevent it from dispatching through YouboraEvent.YouboraReport.
+                        return;
+                    case PLAY_HEAD_CHANGED:
+                        lastReportedAdPlayhead = Long.valueOf(((AdEvent.AdPlayHeadEvent) event).adPlayHead).doubleValue();
+                        //We are not sending this event to youbora,
+                        //so prevent it from dispatching through YouboraEvent.YouboraReport.
+                        return;
+                    case AD_PROGRESS:
+                        //We are not sending this event to youbora,
+                        //so prevent it from dispatching through YouboraEvent.YouboraReport.
+                        return;
+                    default:
+                        break;
                 }
+
+                messageBus.post(new YouboraEvent.YouboraReport(event.eventType().name()));
             }
         }
     };
@@ -207,22 +208,6 @@ class YouboraAdManager extends AdnalyzerGeneric {
         log.d("getAdPlayerVersion " + PlayKitManager.CLIENT_TAG);
 
         return Consts.KALTURA + "-" + PlayKitManager.CLIENT_TAG;
-    }
-
-    private void sendReportEvent(PKEvent event) {
-        if (event instanceof AdEvent && (event.eventType() == AdEvent.Type.PLAY_HEAD_CHANGED || event.eventType() == AdEvent.Type.AD_PROGRESS)) {
-            return;
-        }
-
-        if (event instanceof AdEvent) {
-            messageBus.post(new YouboraEvent.YouboraReport(event.eventType().name()));
-            return;
-        }
-
-        if (event.eventType() == PlayerEvent.Type.ERROR) {
-            PlayerEvent.ExceptionInfo exceptionInfo = (PlayerEvent.ExceptionInfo) event;
-            messageBus.post(new YouboraEvent.YouboraReport(exceptionInfo.error.errorType.name()));
-        }
     }
 
     @Override
@@ -283,5 +268,20 @@ class YouboraAdManager extends AdnalyzerGeneric {
         resetAdValues();
         adBitrate = -1;
         lastReportedAdResource = super.getAdResource();
+    }
+
+    private void handleAdError(PKError error) {
+
+        PKAdErrorType adErrorType = (PKAdErrorType) error.errorType;
+        switch (adErrorType) {
+            case QUIET_LOG_ERROR:
+                log.d("QUIET_LOG_ERROR. Avoid sending to Youbora.");
+                return;
+            default:
+                YBLog.debug("onAdError " + adErrorType.name());
+                endedAdHandler();
+        }
+
+        messageBus.post(new YouboraEvent.YouboraReport(adErrorType.name()));
     }
 }
