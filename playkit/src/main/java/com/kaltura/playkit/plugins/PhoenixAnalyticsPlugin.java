@@ -256,8 +256,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         if (!"stop".equals(action)) {
             lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
-        RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
-                "media", mediaConfig.getMediaEntry().getId(), eventType.name(), lastKnownPlayerPosition, fileId);
+        RequestBuilder requestBuilder = BookmarkService.actionAdd(getBaseUrl(), partnerId, ks,
+                "media", mediaConfig.getMediaEntry().getId(), eventType.name(), lastKnownPlayerPosition, getFileId());
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
