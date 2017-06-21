@@ -43,8 +43,10 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
      */
     @Override
     protected void sendAnalyticsEvent(final PhoenixActionType eventType){
-        if ("".equals(getBaseUrl())) {
-            log.e("Error base URL is empty skip sendAnalyticsEvent");
+        String baseUrl = getBaseUrl();
+        String fileId = getFileId();
+        if (baseUrl == null || fileId == null) {
+            log.e("Error, missing values - skipping sendAnalyticsEvent");
             return;
         }
 
@@ -58,8 +60,8 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         if (!"stop".equals(action)) {
             lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
-        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(getBaseUrl() + "m=" + method, initObj, action,
-                mediaConfig.getMediaEntry().getId(), getFileId(), lastKnownPlayerPosition);
+        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObj, action,
+                mediaConfig.getMediaEntry().getId(), fileId, lastKnownPlayerPosition);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override

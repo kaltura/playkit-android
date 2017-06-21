@@ -94,8 +94,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
         if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
             baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
-        } else {
-            baseUrl = "";
         }
         if (Utils.isJsonObjectValueValid(pluginConfig, "ks")) {
             ks =  pluginConfig.getAsJsonPrimitive("ks").getAsString();
@@ -246,8 +244,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * @param eventType - Enum stating the event type to send
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
-        if ("".equals(getBaseUrl())) {
-            log.e("Error base URL is empty skip sendAnalyticsEvent");
+        if (baseUrl == null || fileId == null) {
+            log.e("Error, missing values - skipping sendAnalyticsEvent");
             return;
         }
 
@@ -256,8 +254,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         if (!"stop".equals(action)) {
             lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
-        RequestBuilder requestBuilder = BookmarkService.actionAdd(getBaseUrl(), partnerId, ks,
-                "media", mediaConfig.getMediaEntry().getId(), eventType.name(), lastKnownPlayerPosition, getFileId());
+        RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
+                "media", mediaConfig.getMediaEntry().getId(), eventType.name(), lastKnownPlayerPosition, fileId);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
@@ -274,14 +272,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     public String getFileId() {
-        return (fileId != null) ? fileId : "000000";
+        return fileId;
     }
 
     public String getBaseUrl() {
-        if (baseUrl != null) {
-            return baseUrl;
-        } else {
-            return "";
-        }
+        return baseUrl;
     }
 }
