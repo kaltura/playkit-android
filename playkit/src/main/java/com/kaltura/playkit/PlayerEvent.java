@@ -92,11 +92,11 @@ public class PlayerEvent implements PKEvent {
 
     public static class SourceSelected extends PlayerEvent {
 
-        public final String sourceUrl;
+        public final PKMediaSource source;
 
-        public SourceSelected(String sourceUrl) {
+        public SourceSelected(PKMediaSource source) {
             super(Type.SOURCE_SELECTED);
-            this.sourceUrl = sourceUrl;
+            this.source = source;
         }
     }
 

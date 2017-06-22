@@ -595,7 +595,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
                 trackSelectionHelper.getCurrentAudioBitrate(),
                 bandwidthMeter.getBitrateEstimate(),
                 trackSelectionHelper.getCurrentVideoWidth(),
-                trackSelectionHelper.getCurrentVideoHeight());
+                trackSelectionHelper.getCurrentVideoHeight(),
+                player.isCurrentWindowDynamic());
     }
 
     @Override

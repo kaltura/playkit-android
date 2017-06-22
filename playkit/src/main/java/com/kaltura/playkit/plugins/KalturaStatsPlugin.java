@@ -2,6 +2,7 @@ package com.kaltura.playkit.plugins;
 
 import android.content.Context;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
@@ -16,15 +17,12 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.api.ovp.services.StatsService;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdPositionType;
+import com.kaltura.playkit.plugins.configs.KalturaStatsConfig;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.utils.errors.PKAnalyticsErrorType;
-import com.kaltura.playkit.utils.errors.PKError;
-import com.kaltura.playkit.utils.errors.PKErrorType;
 
 import java.util.TimerTask;
 
@@ -34,17 +32,12 @@ import java.util.TimerTask;
 
 public class KalturaStatsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("KalturaStatsPlugin");
-    private static final String TAG = "KalturaStatsPlugin";
-    private final String DEFAULT_BASE_URL = "https://stats.kaltura.com/api_v3/index.php";
-    private int uiconfId;
-    private String baseUrl;
-    private int partnerId;
-    private int timerInterval;
-    private String entryId;
+
+    private Context context;
     private AdInfo adInfo;
     private Player player;
     private PKMediaConfig mediaConfig;
-    private JsonObject pluginConfig;
+    private KalturaStatsConfig pluginConfig;
     private MessageBus messageBus;
     private RequestQueue requestsExecutor;
     private java.util.Timer timer = new java.util.Timer();
@@ -127,8 +120,9 @@ public class KalturaStatsPlugin extends PKPlugin {
         messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
-        this.pluginConfig = (JsonObject) config;
+        this.pluginConfig = parseConfig(config);
         this.messageBus = messageBus;
+        this.context = context;
         log.d("onLoad finished");
     }
 
@@ -143,50 +137,23 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-        if (Utils.isJsonObjectValueValid(pluginConfig, "uiconfId")) {
-            uiconfId = pluginConfig.getAsJsonPrimitive("uiconfId").getAsInt();
-        } else {
-            uiconfId = 0;
-            sendError(PKAnalyticsErrorType.INVALID_INIT_OBJECT, TAG + " uiconfId is missing");
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
-            baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
-        } else {
-            baseUrl = DEFAULT_BASE_URL;
-        }
-
-        if (Utils.isJsonObjectValueValid(pluginConfig, "timerInterval")) {
-            timerInterval = pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER;
-        } else {
-            log.w(TAG + " timerInterval is missing. Use default.");
-            timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "partnerId")) {
-            partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
-        } else {
-            partnerId = 0;
-            sendError(PKAnalyticsErrorType.INVALID_INIT_OBJECT, TAG + " partnerId is missing");
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "entryId")) {
-            entryId = pluginConfig.getAsJsonPrimitive("entryId").getAsString();
-        } else {
-            entryId = mediaConfig.getMediaEntry().getId();
-            if (entryId == null) {
-                sendError(PKAnalyticsErrorType.INVALID_INIT_OBJECT, TAG + " entryId is missing");
-            }
-            // in case of OVP entry id is anyway the ID needed it only for OTT
-            else if (!entryId.contains("_")) {
-                sendError(PKAnalyticsErrorType.INVALID_INIT_OBJECT, TAG + " entryId was given as MEDIA_ID instead of entryId");
-            }
-        }
-
         this.mediaConfig = mediaConfig;
         resetPlayerFlags();
     }
 
     @Override
     protected void onUpdateConfig(Object config) {
-        this.pluginConfig = (JsonObject) config;
+        this.pluginConfig = parseConfig(config);
+    }
+
+    private static KalturaStatsConfig parseConfig(Object config) {
+        if (config instanceof KalturaStatsConfig) {
+            return ((KalturaStatsConfig) config);
+
+        } else if (config instanceof JsonObject) {
+            return new Gson().fromJson(((JsonObject) config), KalturaStatsConfig.class);
+        }
+        return null;
     }
 
     @Override
@@ -443,6 +410,12 @@ public class KalturaStatsPlugin extends PKPlugin {
         if (timer == null) {
             timer = new java.util.Timer();
         }
+
+        int timerInterval = pluginConfig.getTimerIntervalMillis();
+        if (timerInterval <= 0) {
+            timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
+        }
+
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -472,21 +445,20 @@ public class KalturaStatsPlugin extends PKPlugin {
 
         long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration() / Consts.MILLISECONDS_MULTIPLIER;
 
-        final RequestBuilder requestBuilder = StatsService.sendStatsEvent(baseUrl, partnerId, eventType.getValue(), PlayKitManager.CLIENT_TAG, duration,
-                sessionId, player.getCurrentPosition(), uiconfId, entryId, "_" + partnerId, hasSeeked);
+        final RequestBuilder requestBuilder = StatsService.sendStatsEvent(pluginConfig.getBaseUrl(), pluginConfig.getPartnerId(), eventType.getValue(), PlayKitManager.CLIENT_TAG, duration,
+                sessionId, player.getCurrentPosition(), pluginConfig.getUiconfId(), pluginConfig.getEntryId(), "_" + pluginConfig.getPartnerId(), hasSeeked,
+                pluginConfig.getContextId(), context.getPackageName(),pluginConfig.getUserId());
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
                 log.d("onComplete send event: " + eventType.toString());
                 messageBus.post(new KalturaStatsEvent.KalturaStatsReport(eventType.toString()));
+                if (hasSeeked) {
+                    hasSeeked = false;
+                }
             }
         });
         requestsExecutor.queue(requestBuilder.build());
-    }
-
-    private void sendError(PKErrorType errorType, String errorMessage) {
-        log.e(errorMessage);
-        messageBus.post(new PKError(errorType, errorMessage, null));
     }
 }
