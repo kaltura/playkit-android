@@ -20,7 +20,6 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.api.ovp.services.LiveStatsService;
 import com.kaltura.playkit.plugins.configs.KalturaLiveStatsConfig;
-import com.kaltura.playkit.plugins.configs.KalturaStatsConfig;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Date;
@@ -84,15 +83,13 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     @Override
     protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
-        this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
-        this.pluginConfig = (JsonObject) config;
+        this.context = context;
         this.messageBus = messageBus;
         this.pluginConfig = parseConfig(config);
-        this.context = context;
+        this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY, PlayerEvent.Type.PLAYBACK_INFO_UPDATED, PlayerEvent.Type.SOURCE_SELECTED);
     }
-
 
     @Override
     public void onDestroy() {
@@ -248,13 +245,12 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                 messageBus.post(new KalturaLiveStatsEvent.KalturaLiveStatsReport(bufferTime));
             }
         });
+
         requestsExecutor.queue(requestBuilder.build());
     }
 
-}
-
     private static KalturaLiveStatsConfig parseConfig(Object config) {
-        if (config instanceof KalturaStatsConfig) {
+        if (config instanceof KalturaLiveStatsConfig) {
             return ((KalturaLiveStatsConfig) config);
 
         } else if (config instanceof JsonObject) {
@@ -270,3 +266,4 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
             timer = null;
         }
     }
+}
