@@ -15,7 +15,7 @@ public class TVPAPIAnalyticsConfig {
 
     private String baseUrl;
     private int timerInterval;
-    TVPAPIInitObject initObj;
+    private TVPAPIInitObject initObj;
 
     public TVPAPIAnalyticsConfig(String baseUrl, int timerInterval, TVPAPIInitObject initObj) {
         this.baseUrl = baseUrl;

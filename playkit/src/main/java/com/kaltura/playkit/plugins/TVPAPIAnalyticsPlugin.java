@@ -27,7 +27,6 @@ import java.util.Timer;
 public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     private static final PKLog log = PKLog.get("TVPAPIAnalyticsPlugin");
     private long lastKnownPlayerPosition = 0;
-    private TVPAPIAnalyticsConfig pluginConfig;
     private String baseUrl;
     private JsonObject initObj;
 
@@ -64,7 +63,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     }
 
     private void setPluginMemebers(Object config) {
-        this.pluginConfig = parseConfig(config);
+        TVPAPIAnalyticsConfig pluginConfig = parseConfig(config);
         this.baseUrl = pluginConfig.getBaseUrl();
         this.initObj = pluginConfig.getInitObj().toJsonObject();
         setMediaHitInterval((pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH);

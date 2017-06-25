@@ -41,11 +41,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private Context mContext;
     private Player player;
     private MessageBus messageBus; // used also by TVPAPI Analytics
-    private PhoenixAnalyticsConfig pluginConfig;
     private PKMediaConfig mediaConfig;
 
     private RequestQueue requestsExecutor;
-    private java.util.Timer timer;
+    private Timer timer;
 
     private long mContinueTime;
     private long lastKnownPlayerPosition = 0;
@@ -103,7 +102,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     private void setConfigMemebers(Object config) {
-        this.pluginConfig = parseConfig(config);
+        PhoenixAnalyticsConfig pluginConfig = parseConfig(config);
         this.baseUrl = pluginConfig.getBaseUrl();
         this.partnerId = pluginConfig.getPartnerId();
         this.ks = pluginConfig.getKS();
@@ -138,7 +137,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onApplicationResumed() {
-        timer = new java.util.Timer();
+        timer = new Timer();
         log.d("onApplicationResumed");
 
     }
@@ -162,17 +161,17 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         }
                         sendAnalyticsEvent(PhoenixActionType.STOP);
                         cancelTimer();
-                        timer = new java.util.Timer();
+                        timer = new Timer();
                         break;
                     case ENDED:
                         cancelTimer();
-                        timer = new java.util.Timer();
+                        timer = new Timer();
                         sendAnalyticsEvent(PhoenixActionType.FINISH);
                         isMediaFinished = true;
                         break;
                     case ERROR:
                         cancelTimer();
-                        timer = new java.util.Timer();
+                        timer = new Timer();
                         sendAnalyticsEvent(PhoenixActionType.ERROR);
                         break;
                     case LOADED_METADATA:
@@ -188,7 +187,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         }
                         sendAnalyticsEvent(PhoenixActionType.PAUSE);
                         cancelTimer();
-                        timer = new java.util.Timer();
+                        timer = new Timer();
                         intervalOn = false;
                         break;
                     case PLAY:
