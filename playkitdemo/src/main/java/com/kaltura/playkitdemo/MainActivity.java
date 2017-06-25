@@ -41,11 +41,17 @@ import com.kaltura.playkit.player.BaseTrack;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
 import com.kaltura.playkit.player.VideoTrack;
+import com.kaltura.playkit.plugins.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.SamplePlugin;
+import com.kaltura.playkit.plugins.TVPAPIAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
 import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
+import com.kaltura.playkit.plugins.configs.PhoenixAnalyticsConfig;
+import com.kaltura.playkit.plugins.configs.TVPAPIAnalyticsConfig;
+import com.kaltura.playkit.plugins.configs.TVPAPIInitObject;
+import com.kaltura.playkit.plugins.configs.TVPAPILocale;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
@@ -80,9 +86,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         PlayKitManager.registerPlugins(this, SamplePlugin.factory);
         PlayKitManager.registerPlugins(this, IMAPlugin.factory);
-        //PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);
-        
-        
+        //PlayKitManager.registerPlugins(this, TVPAPIAnalyticsPlugin.factory);
+        //PlayKitManager.registerPlugins(this, PhoenixAnalyticsPlugin.factory);
     }
 
     @Override
@@ -256,11 +261,26 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         jsonObject.addProperty("delay", 1200);
         config.setPluginConfig("Sample", jsonObject);
         addIMAPluginConfig(config);
+        //addPhoenixAnalyticsPluginConfig(config);
+        //addTVPAPIAnalyticsPluginConfig(config);
         //config.setPluginConfig("IMASimplePlugin", jsonObject);
         //config.setPluginConfig("KalturaStatistics", jsonObject);
         //config.setPluginConfig("PhoenixAnalytics", jsonObject);
         //config.setPluginConfig("Youbora", jsonObject);
 
+    }
+
+    private void addPhoenixAnalyticsPluginConfig(PKPluginConfigs config) {
+        String ks = "djJ8MTk4fHFftqeAPxdlLVzZBk0Et03Vb8on1wLsKp7cbOwzNwfOvpgmOGnEI_KZDhRWTS-76jEY7pDONjKTvbWyIJb5RsP4NL4Ng5xuw6L__BeMfLGAktkVliaGNZq9SXF5n2cMYX-sqsXLSmWXF9XN89io7-k=";
+        PhoenixAnalyticsConfig phoenixAnalyticsConfig = new PhoenixAnalyticsConfig(198, "http://api-preprod.ott.kaltura.com/v4_2/api_v3/", ks, 30);
+        config.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(),phoenixAnalyticsConfig);
+    }
+
+    private void addTVPAPIAnalyticsPluginConfig(PKPluginConfigs config) {
+        TVPAPILocale locale = new TVPAPILocale("","","", "");
+        TVPAPIInitObject tvpapiInitObject = new TVPAPIInitObject(716158, "tvpapi_198", 354531, "e8aa934c-eae4-314f-b6a0-f55e96498786", "11111", "Cellular", locale);
+        TVPAPIAnalyticsConfig tvpapiAnalyticsConfig = new TVPAPIAnalyticsConfig("http://tvpapi-preprod.ott.kaltura.com/v4_2/gateways/jsonpostgw.aspx?", 30, tvpapiInitObject);
+        config.setPluginConfig(TVPAPIAnalyticsPlugin.factory.getName(),tvpapiAnalyticsConfig);
     }
 
     private void addIMAPluginConfig(PKPluginConfigs config) {

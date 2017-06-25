@@ -2,6 +2,7 @@ package com.kaltura.playkit.plugins;
 
 import android.content.Context;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
@@ -16,10 +17,11 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.api.phoenix.services.BookmarkService;
+import com.kaltura.playkit.plugins.configs.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.Timer;
 import java.util.TimerTask;
 
 
@@ -36,6 +38,22 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private String baseUrl;
     private String ks;
     private int partnerId;
+    private Context mContext;
+    private Player player;
+    private MessageBus messageBus; // used also by TVPAPI Analytics
+    private PhoenixAnalyticsConfig pluginConfig;
+    private PKMediaConfig mediaConfig;
+
+    private RequestQueue requestsExecutor;
+    private java.util.Timer timer;
+
+    private long mContinueTime;
+    private long lastKnownPlayerPosition = 0;
+
+    private boolean isFirstPlay = true;
+    private boolean intervalOn = false;
+    private boolean timerWasCancelled = false;
+    private boolean isMediaFinished = false;
 
     public enum PhoenixActionType {
         HIT,
@@ -49,24 +67,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         BITRATE_CHANGE,
         ERROR
     }
-
-    private Context mContext;
-    public Player player;
-    public MessageBus messageBus; // used also by TVPAI Analytics
-    public JsonObject pluginConfig;
-    public PKMediaConfig mediaConfig;
-
-    public RequestQueue requestsExecutor;
-    private java.util.Timer timer = new java.util.Timer();
-
-    private long mContinueTime;
-    private long lastKnownPlayerPosition = 0;
-
-    private boolean isFirstPlay = true;
-    private boolean intervalOn = false;
-    private boolean timerWasCancelled = false;
-    private boolean isMediaFinished = false;
-
 
     public static final Factory factory = new Factory() {
         @Override
@@ -86,27 +86,28 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     };
 
     @Override
-    protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-        if (Utils.isJsonObjectValueValid(pluginConfig, "timerInterval")) {
-            mediaHitInterval = pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER;
-        } else {
-            mediaHitInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
-            baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "ks")) {
-            ks =  pluginConfig.getAsJsonPrimitive("ks").getAsString();
-        } else {
-            log.w("Warning PhoenixAnalytics KS was not given");
-            ks = "";
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "partnerId")) {
-            partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
-        } else {
-            partnerId = 0;
-        }
+    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
+        log.d("onLoad");
 
+        this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
+        this.player = player;
+        this.mContext = context;
+        this.messageBus = messageBus;
+        this.pluginConfig = parseConfig(config);
+        this.timer = new java.util.Timer();
+        this.baseUrl = pluginConfig.getBaseUrl();
+        this.partnerId = pluginConfig.getPartnerId();
+        this.ks = pluginConfig.getKS();
+        this.mediaHitInterval = (pluginConfig.getTimerIntervalSec() > 0) ? pluginConfig.getTimerIntervalSec() : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH ;
+        if (baseUrl != null && !baseUrl.isEmpty() && partnerId > 0) {
+            messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED);
+        } else {
+            log.e("Error, base url/partnet - incorrect");
+        }
+    }
+
+    @Override
+    protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         isFirstPlay = true;
         this.mediaConfig = mediaConfig;
         if (this.mediaConfig.getStartPosition() != -1) {
@@ -117,12 +118,21 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateConfig(Object config) {
-        this.pluginConfig = (JsonObject) config;
+        this.pluginConfig = parseConfig(config);
+        this.baseUrl = pluginConfig.getBaseUrl();
+        this.partnerId = pluginConfig.getPartnerId();
+        this.ks = pluginConfig.getKS();
+        this.mediaHitInterval = (pluginConfig.getTimerIntervalSec() > 0) ? pluginConfig.getTimerIntervalSec() : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            messageBus.remove(mEventListener,(Enum[]) PlayerEvent.Type.values());
+            cancelTimer();
+        }
     }
 
     @Override
     protected void onApplicationPaused() {
         log.d("onApplicationPaused");
+        cancelTimer();
 
     }
 
@@ -136,20 +146,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     public void onDestroy() {
         log.d("onDestroy");
-        timer.cancel();
+        cancelTimer();
         timerWasCancelled = true;
-    }
-
-    @Override
-    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
-        this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
-        this.player = player;
-        this.pluginConfig = (JsonObject) config;
-        this.mContext = context;
-        this.messageBus = messageBus;
-        messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED);
-
-        log.d("onLoad");
     }
 
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
@@ -163,17 +161,17 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             return;
                         }
                         sendAnalyticsEvent(PhoenixActionType.STOP);
-                        timer.cancel();
+                        cancelTimer();
                         timer = new java.util.Timer();
                         break;
                     case ENDED:
-                        timer.cancel();
+                        cancelTimer();
                         timer = new java.util.Timer();
                         sendAnalyticsEvent(PhoenixActionType.FINISH);
                         isMediaFinished = true;
                         break;
                     case ERROR:
-                        timer.cancel();
+                        cancelTimer();
                         timer = new java.util.Timer();
                         sendAnalyticsEvent(PhoenixActionType.ERROR);
                         break;
@@ -189,7 +187,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             return;
                         }
                         sendAnalyticsEvent(PhoenixActionType.PAUSE);
-                        timer.cancel();
+                        cancelTimer();
                         timer = new java.util.Timer();
                         intervalOn = false;
                         break;
@@ -220,6 +218,13 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
     };
 
+    public void cancelTimer() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+    }
+
     /**
      * Media Hit analytics event
      */
@@ -235,7 +240,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                     isMediaFinished = true;
                 }
             }
-        }, 0, mediaHitInterval); // Get media hit interval from plugin config
+        }, 0, mediaHitInterval * 1000); // Get media hit interval from plugin config
     }
 
     /**
@@ -244,10 +249,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * @param eventType - Enum stating the event type to send
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
-        if (baseUrl == null || fileId == null) {
-            log.e("Error, missing values - skipping sendAnalyticsEvent");
-            return;
-        }
 
         String action = eventType.name().toLowerCase(); // used only for copmare
 
@@ -275,7 +276,79 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         return fileId;
     }
 
+    public PKEvent.Listener getEventListener() {
+        return mEventListener;
+    }
+
     public String getBaseUrl() {
         return baseUrl;
+    }
+
+    public Context getContext() {
+        return mContext;
+    }
+
+    public void setContext(Context mContext) {
+        this.mContext = mContext;
+    }
+
+    public Player getPlayer() {
+        return player;
+    }
+
+
+    public void setPlayer(Player player) {
+        this.player = player;
+    }
+
+    public MessageBus getMessageBus() {
+        return messageBus;
+    }
+
+    public void setMessageBus(MessageBus messageBus) {
+        this.messageBus = messageBus;
+    }
+
+
+    public RequestQueue getRequestsExecutor() {
+        return requestsExecutor;
+    }
+
+    public void setRequestsExecutor(RequestQueue requestsExecutor) {
+        this.requestsExecutor = requestsExecutor;
+    }
+
+    public Timer getTimer() {
+        return timer;
+    }
+
+    public void setTimer(Timer timer) {
+        this.timer = timer;
+    }
+
+    public PKMediaConfig getMediaConfig() {
+        return mediaConfig;
+    }
+
+    public void setMediaConfig(PKMediaConfig mediaConfig) {
+        this.mediaConfig = mediaConfig;
+    }
+
+    public int getMediaHitInterval() {
+        return mediaHitInterval;
+    }
+
+    public void setMediaHitInterval(int mediaHitInterval) {
+        this.mediaHitInterval = mediaHitInterval;
+    }
+
+    private static PhoenixAnalyticsConfig parseConfig(Object config) {
+        if (config instanceof PhoenixAnalyticsConfig) {
+            return ((PhoenixAnalyticsConfig) config);
+
+        } else if (config instanceof JsonObject) {
+            return new Gson().fromJson(((JsonObject) config), PhoenixAnalyticsConfig.class);
+        }
+        return null;
     }
 }
