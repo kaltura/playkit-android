@@ -44,7 +44,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
 
         @Override
         public void warmUp(Context context) {
-            
+
         }
     };
 
@@ -72,11 +72,9 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         this.baseUrl = pluginConfig.getBaseUrl();
         setMediaHitInterval((pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH);
         this.initObj = pluginConfig.getInitObj().toJsonObject();
-        if (baseUrl == null || baseUrl.isEmpty()) {
-            if (baseUrl == null || baseUrl.isEmpty()) {
-                cancelTimer();
-                getMessageBus().remove(getEventListener(),(Enum[]) PlayerEvent.Type.values());
-            }
+        if (baseUrl == null || baseUrl.isEmpty() || initObj == null) {
+            cancelTimer();
+            getMessageBus().remove(getEventListener(),(Enum[]) PlayerEvent.Type.values());
         }
     }
 

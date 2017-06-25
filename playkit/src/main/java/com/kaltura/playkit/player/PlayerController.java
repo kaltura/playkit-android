@@ -130,7 +130,6 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.MetadataAvailable(player.getMetadata());
                         break;
                     case SOURCE_SELECTED:
-                        String sourceUrl = sourceConfig.getUrl().toString();
                         event = new PlayerEvent.SourceSelected(sourceConfig.mediaSource);
                         break;
                     default:

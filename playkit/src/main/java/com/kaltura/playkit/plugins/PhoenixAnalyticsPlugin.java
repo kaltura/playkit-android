@@ -94,7 +94,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.mContext = context;
         this.messageBus = messageBus;
         this.pluginConfig = parseConfig(config);
-        this.timer = new java.util.Timer();
+        this.timer = new Timer();
         this.baseUrl = pluginConfig.getBaseUrl();
         this.partnerId = pluginConfig.getPartnerId();
         this.ks = pluginConfig.getKS();
@@ -123,9 +123,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.partnerId = pluginConfig.getPartnerId();
         this.ks = pluginConfig.getKS();
         this.mediaHitInterval = (pluginConfig.getTimerIntervalSec() > 0) ? pluginConfig.getTimerIntervalSec() : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
-        if (baseUrl == null || baseUrl.isEmpty()) {
-            messageBus.remove(mEventListener,(Enum[]) PlayerEvent.Type.values());
+        if (baseUrl == null || baseUrl.isEmpty() ||  partnerId >= 0) {
             cancelTimer();
+            messageBus.remove(mEventListener,(Enum[]) PlayerEvent.Type.values());
         }
     }
 
@@ -240,7 +240,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                     isMediaFinished = true;
                 }
             }
-        }, 0, mediaHitInterval * 1000); // Get media hit interval from plugin config
+        }, 0, mediaHitInterval * (int) Consts.MILLISECONDS_MULTIPLIER); // Get media hit interval from plugin config
     }
 
     /**
