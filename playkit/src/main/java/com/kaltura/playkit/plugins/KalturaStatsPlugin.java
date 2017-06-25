@@ -131,7 +131,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     }
 
     private void setTimerInterval() {
-        timerInterval = pluginConfig.getTimerIntervalSec() * (int) Consts.MILLISECONDS_MULTIPLIER;
+        timerInterval = pluginConfig.getTimerInterval() * (int) Consts.MILLISECONDS_MULTIPLIER;
         if (timerInterval <= 0) {
             timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
         }
