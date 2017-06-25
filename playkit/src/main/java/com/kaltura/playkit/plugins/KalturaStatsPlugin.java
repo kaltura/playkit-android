@@ -119,6 +119,7 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     @Override
     protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
+        log.d("onLoad");
         messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
         messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
