@@ -54,5 +54,9 @@ public class Consts {
 
     public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW = 10000;
 
+    public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW_SEC = 10;
+
     public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH = 30000;
+
+    public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC = 30;
 }

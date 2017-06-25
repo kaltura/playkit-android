@@ -27,7 +27,7 @@ public class KalturaStatsConfig {
     private int timerInterval;
 
     public KalturaStatsConfig(int uiconfId, int partnerId, String entryId, String userId, int contextId) {
-        this.timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW / 1000;
+        this.timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW_SEC;
         this.baseUrl = "https://stats.kaltura.com/api_v3/index.php";
         this.partnerId = partnerId;
         this.uiconfId = uiconfId;
