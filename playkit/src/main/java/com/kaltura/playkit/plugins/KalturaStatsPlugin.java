@@ -40,6 +40,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     private KalturaStatsConfig pluginConfig;
     private MessageBus messageBus;
     private RequestQueue requestsExecutor;
+    private int timerInterval;
     private java.util.Timer timer = new java.util.Timer();
 
     private float seekPercent = 0;
@@ -123,9 +124,17 @@ public class KalturaStatsPlugin extends PKPlugin {
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
         this.pluginConfig = parseConfig(config);
+        setTimerInterval();
         this.messageBus = messageBus;
         this.context = context;
         log.d("onLoad finished");
+    }
+
+    private void setTimerInterval() {
+        timerInterval = pluginConfig.getTimerIntervalSec() * (int) Consts.MILLISECONDS_MULTIPLIER;
+        if (timerInterval <= 0) {
+            timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
+        }
     }
 
     @Override
@@ -148,6 +157,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     @Override
     protected void onUpdateConfig(Object config) {
         this.pluginConfig = parseConfig(config);
+        setTimerInterval();
     }
 
     private static KalturaStatsConfig parseConfig(Object config) {
@@ -409,10 +419,6 @@ public class KalturaStatsPlugin extends PKPlugin {
     private void startTimerInterval() {
         if (timer == null) {
             timer = new java.util.Timer();
-        }
-        int timerInterval = pluginConfig.getTimerIntervalMillis();
-        if (timerInterval <= 0) {
-            timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
         }
 
         timer.scheduleAtFixedRate(new TimerTask() {

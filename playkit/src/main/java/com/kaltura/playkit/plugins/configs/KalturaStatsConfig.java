@@ -16,7 +16,7 @@ public class KalturaStatsConfig {
     public static final String BASE_URL   = "baseUrl";
     public static final String USER_ID    = "userId";
     public static final String CONTEXT_ID = "contextId";
-    public static final String TIMER_INTERVAL_MILLIS = "timerIntervalMillis";
+    public static final String TIMER_INTERVAL_MILLIS = "timerIntervalSec";
 
     private int partnerId;
     private int uiconfId;
@@ -24,10 +24,10 @@ public class KalturaStatsConfig {
     private String baseUrl;
     private String userId;
     private int contextId;
-    private int timerIntervalMillis;
+    private int timerIntervalSec;
 
     public KalturaStatsConfig(int uiconfId, int partnerId, String entryId, String userId, int contextId) {
-        this.timerIntervalMillis = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
+        this.timerIntervalSec = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
         this.baseUrl = "https://stats.kaltura.com/api_v3/index.php";
         this.partnerId = partnerId;
         this.uiconfId = uiconfId;
@@ -36,8 +36,8 @@ public class KalturaStatsConfig {
         this.contextId = contextId;
     }
 
-    public KalturaStatsConfig(int uiconfId, int partnerId, String entryId, String baseUrl, String userId, int contextId, int timerIntervalMillis) {
-        this.timerIntervalMillis = timerIntervalMillis;
+    public KalturaStatsConfig(int uiconfId, int partnerId, String entryId, String baseUrl, String userId, int contextId, int timerIntervalSec) {
+        this.timerIntervalSec = timerIntervalSec;
         this.baseUrl = baseUrl;
         this.partnerId = partnerId;
         this.uiconfId = uiconfId;
@@ -76,8 +76,8 @@ public class KalturaStatsConfig {
         return this;
     }
 
-    public KalturaStatsConfig setTimerIntervalMillis(int timerIntervalMillis) {
-        this.timerIntervalMillis = timerIntervalMillis;
+    public KalturaStatsConfig setTimerIntervalSec(int timerIntervalSec) {
+        this.timerIntervalSec = timerIntervalSec;
         return this;
     }
 
@@ -97,8 +97,8 @@ public class KalturaStatsConfig {
         return baseUrl;
     }
 
-    public int getTimerIntervalMillis() {
-        return timerIntervalMillis;
+    public int getTimerIntervalSec() {
+        return timerIntervalSec;
     }
 
     public String getUserId() {
@@ -117,7 +117,7 @@ public class KalturaStatsConfig {
         jsonObject.addProperty(BASE_URL, baseUrl);
         jsonObject.addProperty(USER_ID, userId);
         jsonObject.addProperty(CONTEXT_ID, contextId);
-        jsonObject.addProperty(TIMER_INTERVAL_MILLIS, timerIntervalMillis);
+        jsonObject.addProperty(TIMER_INTERVAL_MILLIS, timerIntervalSec);
 
         return jsonObject;
     }
