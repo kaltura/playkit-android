@@ -16,7 +16,7 @@ public class KalturaStatsConfig {
     public static final String BASE_URL   = "baseUrl";
     public static final String USER_ID    = "userId";
     public static final String CONTEXT_ID = "contextId";
-    public static final String TIMER_INTERVAL_MILLIS = "timerIntervalSec";
+    public static final String TIMER_INTERVAL = "timerInterval";
 
     private int partnerId;
     private int uiconfId;
@@ -117,7 +117,7 @@ public class KalturaStatsConfig {
         jsonObject.addProperty(BASE_URL, baseUrl);
         jsonObject.addProperty(USER_ID, userId);
         jsonObject.addProperty(CONTEXT_ID, contextId);
-        jsonObject.addProperty(TIMER_INTERVAL_MILLIS, timerIntervalSec);
+        jsonObject.addProperty(TIMER_INTERVAL, timerIntervalSec);
 
         return jsonObject;
     }
