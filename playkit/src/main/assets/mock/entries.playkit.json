@@ -1,4 +1,21 @@
 {
+  "hvec": {
+    "duration": 102000,
+    "id": "0_hbhe2o9x",
+    "name": "hvec",
+    "sources": [
+      {
+        "id": "0_hbhe2o9x",
+        "url": "http://lbd.kaltura.com:8002/edash/p/513551/sp/51355100/serveFlavor/entryId/0_an7ivwoy/v/12/pv/1/flavorId/0_,zoi71jgy,hyndetvu,/forceproxy/true/name/a.mp4.urlset/manifest.mpd",
+        "mimeType": "application/dash+xml",
+        "drmData":[ {
+          "scheme": "WidevineCENC",
+          "licenseUri": "https://udrm.kaltura.com/cenc/widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVlAiLCJ1c2VyX3Rva2VuIjoiTmpJeE1HVmpaakZqTW1Vek1UTmlaamRrTnpKaVpUQTROR0ZtTldKbFlqazVORGcxTTJNME0zdzFNVE0xTlRFN05URXpOVFV4T3pFMU9ETTNOVEk1TmpNN01Ec3hORGszTXpVeU9UWXpMakl3TmpFN1lXUnRhVzQ3YzNacFpYYzZLanM3IiwiYWNjb3VudF9pZCI6IjUxMzU1MSIsImNvbnRlbnRfaWQiOiIwX2FuN2l2d295IiwiZmlsZXMiOiIwX3J4cHpsZGFsLDBfOHNuNWl2N2ksMF94Zjh4YndjYiwwX29mMzh6cm54LDBfMnc2Y2J6dXEsMF93ZHkxdmtiOCJ9&signature=btw9aVL6uanTmktQyaM951V%2F9w4%3D"
+        }
+        ]
+      }
+    ]
+  },
   "drm1": {
     "id": "0_pl5lbfo0",
     "sources": [
