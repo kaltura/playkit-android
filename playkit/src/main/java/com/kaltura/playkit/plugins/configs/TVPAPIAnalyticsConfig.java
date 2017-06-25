@@ -9,9 +9,9 @@ import com.google.gson.JsonObject;
  */
 
 public class TVPAPIAnalyticsConfig {
-    public static final String BASE_URL    = "baseUrl";
-    public static final String TIMER_INTERVAL_SEC = "timerInterval";
-    public static final String INIT_OBJ    = "initObj";
+    public static final String BASE_URL       = "baseUrl";
+    public static final String TIMER_INTERVAL = "timerInterval";
+    public static final String INIT_OBJ       = "initObj";
 
     private String baseUrl;
     private int timerInterval;
@@ -54,7 +54,7 @@ public class TVPAPIAnalyticsConfig {
     public JsonObject toJsonObject() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(BASE_URL, baseUrl);
-        jsonObject.addProperty(TIMER_INTERVAL_SEC, timerInterval);
+        jsonObject.addProperty(TIMER_INTERVAL, timerInterval);
 
         JsonElement element = new Gson().toJsonTree(initObj.toJsonObject());
         JsonObject object = element.getAsJsonObject();

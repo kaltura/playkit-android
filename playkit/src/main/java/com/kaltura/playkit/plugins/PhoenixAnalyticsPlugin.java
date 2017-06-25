@@ -93,17 +93,21 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.player = player;
         this.mContext = context;
         this.messageBus = messageBus;
-        this.pluginConfig = parseConfig(config);
         this.timer = new Timer();
-        this.baseUrl = pluginConfig.getBaseUrl();
-        this.partnerId = pluginConfig.getPartnerId();
-        this.ks = pluginConfig.getKS();
-        this.mediaHitInterval = (pluginConfig.getTimerIntervalSec() > 0) ? pluginConfig.getTimerIntervalSec() : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH ;
+        setConfigMemebers(config);
         if (baseUrl != null && !baseUrl.isEmpty() && partnerId > 0) {
             messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED);
         } else {
             log.e("Error, base url/partnet - incorrect");
         }
+    }
+
+    private void setConfigMemebers(Object config) {
+        this.pluginConfig = parseConfig(config);
+        this.baseUrl = pluginConfig.getBaseUrl();
+        this.partnerId = pluginConfig.getPartnerId();
+        this.ks = pluginConfig.getKS();
+        this.mediaHitInterval = (pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
     }
 
     @Override
@@ -118,11 +122,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateConfig(Object config) {
-        this.pluginConfig = parseConfig(config);
-        this.baseUrl = pluginConfig.getBaseUrl();
-        this.partnerId = pluginConfig.getPartnerId();
-        this.ks = pluginConfig.getKS();
-        this.mediaHitInterval = (pluginConfig.getTimerIntervalSec() > 0) ? pluginConfig.getTimerIntervalSec() : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
+        setConfigMemebers(config);
         if (baseUrl == null || baseUrl.isEmpty() ||  partnerId >= 0) {
             cancelTimer();
             messageBus.remove(mEventListener,(Enum[]) PlayerEvent.Type.values());
@@ -240,7 +240,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                     isMediaFinished = true;
                 }
             }
-        }, 0, mediaHitInterval * (int) Consts.MILLISECONDS_MULTIPLIER); // Get media hit interval from plugin config
+        }, 0, mediaHitInterval); // Get media hit interval from plugin config
     }
 
     /**

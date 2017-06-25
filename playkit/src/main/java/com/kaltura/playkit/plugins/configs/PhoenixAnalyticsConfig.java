@@ -9,19 +9,19 @@ import com.google.gson.JsonObject;
 public class PhoenixAnalyticsConfig {
     public static final String PARTNER_ID = "partnerId";
     public static final String BASE_URL   = "baseUrl";
-    public static final String KS    = "ks";
-    public static final String TIMER_INTERVAL_SEC = "timerIntervalSec";
+    public static final String KS         = "ks";
+    public static final String TIMER_INTERVAL = "timerInterval";
 
     private int partnerId;
     private String baseUrl;
     private String ks;
-    private int timerIntervalSec;
+    private int timerInterval;
 
-    public PhoenixAnalyticsConfig(int partnerId, String baseUrl, String ks, int timerIntervalSec) {
+    public PhoenixAnalyticsConfig(int partnerId, String baseUrl, String ks, int timerInterval) {
         this.partnerId = partnerId;
         this.baseUrl = baseUrl;
         this.ks = ks;
-        this.timerIntervalSec = timerIntervalSec;
+        this.timerInterval = timerInterval;
     }
 
 
@@ -42,8 +42,8 @@ public class PhoenixAnalyticsConfig {
         return this;
     }
 
-    public PhoenixAnalyticsConfig setTimerIntervalSec(int timerIntervalSec) {
-        this.timerIntervalSec = timerIntervalSec;
+    public PhoenixAnalyticsConfig setTimerInterval(int timerInterval) {
+        this.timerInterval = timerInterval;
         return this;
     }
 
@@ -60,8 +60,8 @@ public class PhoenixAnalyticsConfig {
         return baseUrl;
     }
 
-    public int getTimerIntervalSec() {
-        return timerIntervalSec;
+    public int getTimerInterval() {
+        return timerInterval;
     }
 
     public JsonObject toJSONObject() {
@@ -69,7 +69,7 @@ public class PhoenixAnalyticsConfig {
         jsonObject.addProperty(PARTNER_ID, partnerId);
         jsonObject.addProperty(BASE_URL, baseUrl);
         jsonObject.addProperty(KS, ks);
-        jsonObject.addProperty(TIMER_INTERVAL_SEC, timerIntervalSec);
+        jsonObject.addProperty(TIMER_INTERVAL, timerInterval);
 
         return jsonObject;
     }

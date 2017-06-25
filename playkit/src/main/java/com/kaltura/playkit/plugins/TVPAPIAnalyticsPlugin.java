@@ -51,14 +51,11 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     @Override
     protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
         log.d("onLoad");
-        this.pluginConfig = parseConfig(config);
-        this.baseUrl = pluginConfig.getBaseUrl();
-        this.initObj = pluginConfig.getInitObj().toJsonObject();
+        setPluginMemebers(config);
         setPlayer(player);
         setContext(context);
         setTimer(new Timer());
         setRequestsExecutor(APIOkRequestsExecutor.getSingleton());
-        setMediaHitInterval((pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH);
         if (baseUrl != null && !baseUrl.isEmpty() &&  initObj != null) {
             messageBus.listen(getEventListener(), PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED);
         } else {
@@ -66,12 +63,16 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         }
     }
 
-    @Override
-    protected void onUpdateConfig(Object config) {
+    private void setPluginMemebers(Object config) {
         this.pluginConfig = parseConfig(config);
         this.baseUrl = pluginConfig.getBaseUrl();
-        setMediaHitInterval((pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH);
         this.initObj = pluginConfig.getInitObj().toJsonObject();
+        setMediaHitInterval((pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH);
+    }
+
+    @Override
+    protected void onUpdateConfig(Object config) {
+        setPluginMemebers(config);
         if (baseUrl == null || baseUrl.isEmpty() || initObj == null) {
             cancelTimer();
             getMessageBus().remove(getEventListener(),(Enum[]) PlayerEvent.Type.values());
