@@ -11,7 +11,7 @@ public enum PKPlayerErrorType implements PKErrorType {
     SOURCE_ERROR(7000),
     RENDERER_ERROR(7001),
     UNEXPECTED(7002),
-    TRACKS_ERROR(7003);
+    SOURCE_SELECTION_FAILED(7003);
 
     public final int errorCode;
 

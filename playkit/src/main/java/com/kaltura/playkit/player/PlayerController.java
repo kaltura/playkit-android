@@ -111,7 +111,7 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.PlaybackInfoUpdated(player.getPlaybackInfo());
                         break;
                     case ERROR:
-                       event = player.getCurrentError();
+                        event = player.getCurrentError();
                         //If error should be handled locally, do not send it to messageBus.
                         if (maybeHandleExceptionLocally((PKError) event)) {
                             return;
@@ -233,11 +233,6 @@ public class PlayerController implements Player {
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
 
-        if (sourceConfig == null) {
-            sendErrorMessage(PKPlayerErrorType.SOURCE_ERROR, "Cant prepare player with media config. PKMediaConfig is null.");
-            return;
-        }
-
         PKMediaSource source = sourceConfig.mediaSource;
         boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
         if (player == null) {
@@ -252,6 +247,7 @@ public class PlayerController implements Player {
 
     /**
      * Responsible for preparing source configurations before loading it to actual player.
+     *
      * @param mediaConfig - the mediaConfig that holds necessary initial data.
      * @return - true if managed to create valid sourceConfiguration object,
      * otherwise will return false and notify user with the error that happened.
@@ -266,16 +262,11 @@ public class PlayerController implements Player {
             contentRequestAdapter.updateParams(this);
         }
 
-        if (mediaConfig == null) {
-            sendErrorMessage(PKPlayerErrorType.SOURCE_ERROR, "No mediaConfig found, mediaConfig = null");
-            return false;
-        }
-
         this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
         if (source == null) {
-            sendErrorMessage(PKPlayerErrorType.SOURCE_ERROR, "No playable source found for entry");
+            sendErrorMessage(PKPlayerErrorType.SOURCE_SELECTION_FAILED, "No playable source found for entry");
             return false;
         }
 
@@ -516,11 +507,8 @@ public class PlayerController implements Player {
     private boolean shouldSwitchBetweenPlayers(PKMediaSource newSource) {
 
         PKMediaFormat currentMediaFormat = newSource.getMediaFormat();
-        if (currentMediaFormat != PKMediaFormat.wvm && player instanceof MediaPlayerWrapper) {
-            return true;
-        }
-
-        return currentMediaFormat == PKMediaFormat.wvm && player instanceof ExoPlayerWrapper;
+        return currentMediaFormat != PKMediaFormat.wvm && player instanceof MediaPlayerWrapper ||
+                currentMediaFormat == PKMediaFormat.wvm && player instanceof ExoPlayerWrapper;
 
     }
 

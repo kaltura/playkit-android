@@ -326,23 +326,20 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
         PKErrorType errorType;
         Throwable cause;
-        String errorMessage;
+        String errorMessage = error.getMessage();
 
         switch (error.type) {
             case ExoPlaybackException.TYPE_SOURCE:
                 errorType = PKPlayerErrorType.SOURCE_ERROR;
                 cause = error.getSourceException();
-                errorMessage = error.getMessage();
                 break;
             case ExoPlaybackException.TYPE_RENDERER:
                 errorType = PKPlayerErrorType.RENDERER_ERROR;
                 cause = error.getRendererException();
-                errorMessage = error.getMessage();
                 break;
             default:
                 errorType = PKPlayerErrorType.UNEXPECTED;
                 cause = error.getUnexpectedException();
-                errorMessage = error.getMessage();
                 break;
         }
 

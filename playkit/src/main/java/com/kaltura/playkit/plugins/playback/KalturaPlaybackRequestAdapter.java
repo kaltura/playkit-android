@@ -34,7 +34,7 @@ public class KalturaPlaybackRequestAdapter implements PKRequestParams.Adapter {
         if (url.getPath().contains("/playManifest/")) {
             Uri alt = url.buildUpon()
                     .appendQueryParameter("clientTag", CLIENT_TAG)
-                    .appendQueryParameter("referrer", Utils.encodeToString(packageName.getBytes()))
+                    .appendQueryParameter("referrer", Utils.encodeBase64(packageName.getBytes()))
                     .appendQueryParameter("playSessionId", playSessionId)
                     .build();
             return new PKRequestParams(alt, requestParams.headers);

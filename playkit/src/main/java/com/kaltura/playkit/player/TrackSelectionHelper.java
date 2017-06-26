@@ -15,7 +15,6 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.errors.PKError;
-import com.kaltura.playkit.utils.errors.PKPlayerErrorType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -318,7 +317,7 @@ class TrackSelectionHelper {
      * @param uniqueId - unique identifier of the track to apply.
      */
 
-    void changeTrack(String uniqueId) throws IllegalArgumentException {
+    void changeTrack(String uniqueId) {
 
         validateUniqueId(uniqueId);
 
@@ -534,18 +533,17 @@ class TrackSelectionHelper {
                 && trackGroupArray.get(groupIndex).length > 1;
     }
 
-    private void validateUniqueId(String uniqueId) {
+    private void validateUniqueId(String uniqueId) throws IllegalArgumentException{
 
         if (uniqueId == null) {
-            sendError("uniqueId is null");
-            return;
+            throw new IllegalArgumentException("uniqueId is null");
         }
 
         if (!uniqueId.contains(VIDEO_PREFIX)
                 || !uniqueId.contains(AUDIO_PREFIX)
                 || !uniqueId.contains(TEXT_PREFIX)
                 && !uniqueId.contains(",")) {
-            sendError("Unique id is not valid => " + uniqueId);
+            throw new IllegalArgumentException("uniqueId is null");
         }
     }
 
@@ -577,11 +575,6 @@ class TrackSelectionHelper {
         tracksInfoListener.onRelease(lastSelectedTrackIds);
         tracksInfoListener = null;
         clearTracksLists();
-    }
-
-    private void sendError(String errorMessage) {
-        log.e(errorMessage);
-        tracksInfoListener.onError(new PKError(PKPlayerErrorType.TRACKS_ERROR, errorMessage, null));
     }
 
     long getCurrentVideoBitrate() {

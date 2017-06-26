@@ -128,7 +128,7 @@ public class LocalDrmSessionManager<T extends ExoMediaCrypto> implements DrmSess
      * @throws FileNotFoundException - {@link FileNotFoundException}
      */
     private MediaDrmSession openSessionWithKeys(byte[] initData) throws MediaDrmException, MediaCryptoException, FileNotFoundException {
-        String key = Utils.encodeToString(initData);
+        String key = Utils.encodeBase64(initData);
         byte[] keySetId = drmStorage.load(key);
 
         MediaDrmSession session = MediaDrmSession.open(mediaDrm);

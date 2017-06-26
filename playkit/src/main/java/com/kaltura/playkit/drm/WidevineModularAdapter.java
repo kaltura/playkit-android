@@ -89,16 +89,16 @@ class WidevineModularAdapter extends DrmAdapter {
 
         // Get keyRequest
         FrameworkMediaDrm.KeyRequest keyRequest = session.getOfflineKeyRequest(initData, mimeType);
-        log.d("registerAsset: init data (b64): " + Utils.encodeToString(initData));
+        log.d("registerAsset: init data (b64): " + Utils.encodeBase64(initData));
 
         byte[] data = keyRequest.getData();
-        log.d("registerAsset: request data (b64): " + Utils.encodeToString(data));
+        log.d("registerAsset: request data (b64): " + Utils.encodeBase64(data));
 
         // Send request to server
         byte[] keyResponse;
         try {
             keyResponse = executeKeyRequest(licenseUri, keyRequest);
-            log.d("registerAsset: response data (b64): " + Utils.encodeToString(keyResponse));
+            log.d("registerAsset: response data (b64): " + Utils.encodeBase64(keyResponse));
         } catch (IOException e) {
             throw new RegisterException("Can't send key request for registration", e);
         }
@@ -106,7 +106,7 @@ class WidevineModularAdapter extends DrmAdapter {
         // Provide keyResponse
         try {
             byte[] offlineKeyId = session.provideKeyResponse(keyResponse);
-            localDataStore.save(Utils.encodeToString(initData), offlineKeyId);
+            localDataStore.save(Utils.encodeBase64(initData), offlineKeyId);
         } catch (DeniedByServerException e) {
             throw new RegisterException("Request denied by server", e);
         }
@@ -141,7 +141,7 @@ class WidevineModularAdapter extends DrmAdapter {
         }
 
         // obtain key with which we will load the saved keySetId.
-        String key = Utils.encodeToString(dash.widevineInitData);
+        String key = Utils.encodeBase64(dash.widevineInitData);
 
         byte[] keySetId;
         try {
@@ -158,7 +158,7 @@ class WidevineModularAdapter extends DrmAdapter {
             throw new WidevineNotSupportedException(e);
         }
 
-        log.d("releaseRequest:" + Utils.encodeToString(releaseRequest.getData()));
+        log.d("releaseRequest:" + Utils.encodeBase64(releaseRequest.getData()));
 
         localDataStore.remove(key);
 
@@ -227,7 +227,7 @@ class WidevineModularAdapter extends DrmAdapter {
 
         MediaDrmSession session;
         try {
-            String key = Utils.encodeToString(dash.widevineInitData);
+            String key = Utils.encodeBase64(dash.widevineInitData);
             session = openSessionWithKeys(mediaDrm, key);
         } catch (MediaDrmException | FileNotFoundException | MediaCryptoException e) {
             throw new RegisterException("Can't open session with keys", e);
