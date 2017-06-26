@@ -2,7 +2,6 @@ package com.kaltura.playkit.plugins;
 
 import android.content.Context;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.request.RequestBuilder;
@@ -63,8 +62,8 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         if (pluginConfig != null) {
             this.baseUrl = pluginConfig.getBaseUrl();
             this.initObject = pluginConfig.getInitObject();
-            int timerIntervalSec = pluginConfig.getTimerInterval();
             long timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
+            int timerIntervalSec = pluginConfig.getTimerInterval();
             if (timerIntervalSec > 0) {
                 timerInterval = timerIntervalSec * Consts.MILLISECONDS_MULTIPLIER;
             }
@@ -119,7 +118,11 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
             return ((TVPAPIAnalyticsConfig) config);
 
         } else if (config instanceof JsonObject) {
-            return new Gson().fromJson(((JsonObject) config), TVPAPIAnalyticsConfig.class);
+            JsonObject jsonConfig = ((JsonObject) config).getAsJsonObject("params");
+            String baseUrl = jsonConfig.get("baseUrl").getAsString();
+            int timerInterval = jsonConfig.get("timerInterval").getAsInt();
+            JsonObject initObj = jsonConfig.getAsJsonObject("initObj");
+            return new TVPAPIAnalyticsConfig(baseUrl, timerInterval, initObj);
         }
         return null;
     }
