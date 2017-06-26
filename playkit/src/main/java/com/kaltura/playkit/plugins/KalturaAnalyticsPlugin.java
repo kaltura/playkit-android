@@ -138,7 +138,6 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
             partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
         } else {
             partnerId = 0;
-            sendError(PKAnalyticsErrorType.INVALID_INIT_OBJECT, TAG + " partnerId was not set");
         }
 
         isFirstPlay = true;
@@ -294,11 +293,5 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         requestsExecutor.queue(requestBuilder.build());
         messageBus.post(new LogEvent(TAG + " " + eventType.toString(), requestBuilder.build().getUrl()));
     }
-
-    private void sendError(PKErrorType errorType, String errorMessage) {
-        log.e(errorMessage);
-        messageBus.post(new PKError(errorType, errorMessage, null));
-    }
-
 }
 

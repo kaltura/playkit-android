@@ -50,7 +50,6 @@ import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.EventLogger;
 import com.kaltura.playkit.utils.errors.PKError;
-import com.kaltura.playkit.utils.errors.PKErrorType;
 import com.kaltura.playkit.utils.errors.PKPlayerErrorType;
 
 import java.util.ArrayList;
@@ -324,7 +323,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
 
-        PKErrorType errorType;
+        Enum errorType;
         Throwable cause;
         String errorMessage = error.getMessage();
 
@@ -343,7 +342,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
                 break;
         }
 
-        log.e("Player error " + errorMessage);
+        log.e("Player error " + errorType.name());
         currentError = new PKError(errorType, errorMessage, cause);
         eventListener.onEvent(PlayerEvent.Type.ERROR);
     }

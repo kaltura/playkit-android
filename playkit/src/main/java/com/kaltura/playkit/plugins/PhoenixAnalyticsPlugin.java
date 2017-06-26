@@ -101,7 +101,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             fileId = pluginConfig.getAsJsonPrimitive("fileId").getAsString();
         } else {
             fileId = "0";
-            sendError(PKAnalyticsErrorType.INVALID_INIT_OBJECT, TAG + " fileId was not set");
         }
         if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
             baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
@@ -274,10 +273,4 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         });
         requestsExecutor.queue(requestBuilder.build());
     }
-
-    private void sendError(PKErrorType errorType, String errorMessage) {
-        log.e(errorMessage);
-        messageBus.post(new PKError(errorType, errorMessage, null));
-    }
-
 }

@@ -19,7 +19,6 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.errors.PKError;
-import com.kaltura.playkit.utils.errors.PKErrorType;
 import com.kaltura.playkit.utils.errors.PKPlayerErrorType;
 
 import java.util.UUID;
@@ -111,9 +110,9 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.PlaybackInfoUpdated(player.getPlaybackInfo());
                         break;
                     case ERROR:
-                        event = player.getCurrentError();
+                        event = new PlayerEvent.Error(player.getCurrentError());
                         //If error should be handled locally, do not send it to messageBus.
-                        if (maybeHandleExceptionLocally((PKError) event)) {
+                        if (maybeHandleExceptionLocally(player.getCurrentError())) {
                             return;
                         }
 
@@ -532,8 +531,9 @@ public class PlayerController implements Player {
         return false;
     }
 
-    private void sendErrorMessage(PKErrorType errorType, String errorMessage) {
+    private void sendErrorMessage(Enum errorType, String errorMessage) {
         log.e(errorMessage);
-        eventListener.onEvent(new PKError(errorType, errorMessage, null));
+        PlayerEvent errorEvent = new PlayerEvent.Error(new PKError(errorType, errorMessage, null));
+        eventListener.onEvent(errorEvent);
     }
 }

@@ -1,12 +1,10 @@
 package com.kaltura.playkit.utils.errors;
 
-import com.kaltura.playkit.PlayerEvent;
-
 /**
  * Created by anton.afanasiev on 20/06/2017.
  */
 
-public enum PKPlayerErrorType implements PKErrorType {
+public enum PKPlayerErrorType {
 
     SOURCE_ERROR(7000),
     RENDERER_ERROR(7001),
@@ -19,8 +17,4 @@ public enum PKPlayerErrorType implements PKErrorType {
         this.errorCode = errorCode;
     }
 
-    @Override
-    public Enum eventType() {
-        return PlayerEvent.Type.ERROR;
-    }
 }

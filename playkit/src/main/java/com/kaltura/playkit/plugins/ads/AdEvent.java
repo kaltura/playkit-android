@@ -1,6 +1,7 @@
 package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.utils.errors.PKError;
 
 /**
  * Created by gilad.nadav on 22/11/2016.
@@ -14,13 +15,9 @@ public class AdEvent implements PKEvent {
         this.type = type;
     }
 
-    public AdEvent(Type type, String message) {
-        this.type = type;
-    }
-
     public static class AdLoadedEvent extends AdEvent {
 
-        public AdInfo adInfo;
+        public final AdInfo adInfo;
 
         public AdLoadedEvent(AdInfo adInfo) {
             super(Type.LOADED);
@@ -30,7 +27,7 @@ public class AdEvent implements PKEvent {
 
     public static class AdStartedEvent extends AdEvent {
 
-        public AdInfo adInfo;
+        public final AdInfo adInfo;
 
         public AdStartedEvent(AdInfo adInfo) {
             super(Type.STARTED);
@@ -40,7 +37,7 @@ public class AdEvent implements PKEvent {
 
     public static class AdPausedEvent extends AdEvent {
 
-        public AdInfo adInfo;
+        public final AdInfo adInfo;
 
         public AdPausedEvent(AdInfo adInfo) {
             super(Type.PAUSED);
@@ -50,7 +47,7 @@ public class AdEvent implements PKEvent {
 
     public static class AdResumedEvent extends AdEvent {
 
-        public AdInfo adInfo;
+        public final AdInfo adInfo;
 
         public AdResumedEvent(AdInfo adInfo) {
             super(Type.RESUMED);
@@ -60,7 +57,7 @@ public class AdEvent implements PKEvent {
 
     public static class AdSkippedEvent extends AdEvent {
 
-        public AdInfo adInfo;
+        public final AdInfo adInfo;
 
         public AdSkippedEvent(AdInfo adInfo) {
             super(Type.SKIPPED);
@@ -70,7 +67,7 @@ public class AdEvent implements PKEvent {
 
     public static class AdCuePointsUpdateEvent extends AdEvent {
 
-        public AdCuePoints cuePoints;
+        public final AdCuePoints cuePoints;
 
         public AdCuePointsUpdateEvent(AdCuePoints cuePoints) {
             super(Type.CUEPOINTS_CHANGED);
@@ -80,7 +77,7 @@ public class AdEvent implements PKEvent {
 
     public static class AdPlayHeadEvent extends AdEvent {
 
-        public long adPlayHead;
+        public final long adPlayHead;
 
         public AdPlayHeadEvent(long adPlayHead) {
             super(Type.PLAY_HEAD_CHANGED);
@@ -90,11 +87,21 @@ public class AdEvent implements PKEvent {
 
     public static class AdRequestedEvent extends AdEvent {
 
-        public String adTagUrl;
+        public final String adTagUrl;
 
         public AdRequestedEvent(String adTagUrl) {
             super(Type.AD_REQUESTED);
             this.adTagUrl = adTagUrl;
+        }
+    }
+
+    public static class Error extends AdEvent {
+
+        public final PKError error;
+
+        public Error(PKError error) {
+            super(Type.ERROR);
+            this.error = error;
         }
     }
 
@@ -123,7 +130,8 @@ public class AdEvent implements PKEvent {
         CONTENT_PAUSE_REQUESTED,
         CONTENT_RESUME_REQUESTED,
         ALL_ADS_COMPLETED,
-        AD_LOAD_TIMEOUT_TIMER_STARTED
+        AD_LOAD_TIMEOUT_TIMER_STARTED,
+        ERROR
     }
 
 

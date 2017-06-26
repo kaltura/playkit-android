@@ -2,6 +2,7 @@ package com.kaltura.playkit;
 
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.metadata.PKMetadata;
+import com.kaltura.playkit.utils.errors.PKError;
 
 import java.util.List;
 
@@ -97,6 +98,16 @@ public class PlayerEvent implements PKEvent {
         public SourceSelected(PKMediaSource source) {
             super(Type.SOURCE_SELECTED);
             this.source = source;
+        }
+    }
+
+    public static class Error extends PlayerEvent {
+
+        public final PKError error;
+
+        public Error(PKError error) {
+            super(Type.ERROR);
+            this.error = error;
         }
     }
 

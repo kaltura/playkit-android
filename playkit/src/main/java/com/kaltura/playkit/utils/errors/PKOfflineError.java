@@ -4,7 +4,7 @@ package com.kaltura.playkit.utils.errors;
  * Created by anton.afanasiev on 20/06/2017.
  */
 
-public enum PKOfflineError implements PKErrorType {
+public enum PKOfflineError {
 
     NO_NETWORK_CONNECTION(2300),
     NO_SOURCE_FOUND(2301),
@@ -15,10 +15,5 @@ public enum PKOfflineError implements PKErrorType {
 
     PKOfflineError(int errorCode) {
         this.errorCode = errorCode;
-    }
-
-    @Override
-    public Enum eventType() {
-        return PKOfflineErrorEvent.Type.ERROR;
     }
 }

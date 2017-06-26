@@ -15,7 +15,6 @@ import com.google.ads.interactivemedia.v3.api.AdsManager;
 import com.google.ads.interactivemedia.v3.api.AdsManagerLoadedEvent;
 import com.google.ads.interactivemedia.v3.api.AdsRenderingSettings;
 import com.google.ads.interactivemedia.v3.api.AdsRequest;
-import com.google.ads.interactivemedia.v3.api.CompanionAdSlot;
 import com.google.ads.interactivemedia.v3.api.ImaSdkFactory;
 import com.google.ads.interactivemedia.v3.api.ImaSdkSettings;
 import com.google.ads.interactivemedia.v3.api.UiElement;
@@ -42,7 +41,6 @@ import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.errors.PKAdErrorType;
 import com.kaltura.playkit.utils.errors.PKError;
-import com.kaltura.playkit.utils.errors.PKErrorType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -190,18 +188,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
             adDisplayContainer = sdkFactory.createAdDisplayContainer();
             adDisplayContainer.setAdContainer(adUiContainer);
-
-            // Set up spots for companions.
-
-            ViewGroup adCompanionViewGroup = null;
-            if (adCompanionViewGroup != null) {
-                CompanionAdSlot companionAdSlot = sdkFactory.createCompanionAdSlot();
-                companionAdSlot.setContainer(adCompanionViewGroup);
-                companionAdSlot.setSize(728, 90);
-                ArrayList<CompanionAdSlot> companionAdSlots = new ArrayList<>();
-                companionAdSlots.add(companionAdSlot);
-                adDisplayContainer.setCompanionSlots(companionAdSlots);
-            }
 
             renderingSettings = sdkFactory.createAdsRenderingSettings();
             if (mediaConfig != null && mediaConfig.getStartPosition() > 0) {
@@ -947,7 +933,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
         AdError cause = adErrorEvent.getError();
         String errorMessage = cause == null ? "No error message" : cause.getMessage();
-        PKErrorType errorType = PKAdErrorType.UNKNOWN_ERROR;
+        Enum errorType = PKAdErrorType.UNKNOWN_ERROR;
 
         if (cause != null) {
 
@@ -1025,8 +1011,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         cancelAdManagerTimer();
     }
 
-    private void sendError(PKErrorType errorType, String message, Throwable cause) {
-        log.e("Ad Error: " + errorType.eventType().name() + " with message " + message);
-        messageBus.post(new PKError(errorType, message, cause));
+    private void sendError(Enum errorType, String message, Throwable cause) {
+        log.e("Ad Error: " + errorType.name() + " with message " + message);
+        AdEvent errorEvent = new AdEvent.Error(new PKError(errorType, message, cause));
+        messageBus.post(errorEvent);
     }
 }

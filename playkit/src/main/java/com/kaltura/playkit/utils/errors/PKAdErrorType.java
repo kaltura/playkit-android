@@ -5,8 +5,7 @@ package com.kaltura.playkit.utils.errors;
  * Created by anton.afanasiev on 20/06/2017.
  */
 
-public enum PKAdErrorType implements PKErrorType {
-
+public enum PKAdErrorType {
 
     INTERNAL_ERROR(2000),
     VAST_MALFORMED_RESPONSE(2001),
@@ -35,8 +34,4 @@ public enum PKAdErrorType implements PKErrorType {
         this.errorCode = errorCode;
     }
 
-    @Override
-    public Enum eventType() {
-        return PKAdErrorEvent.Type.ERROR;
-    }
 }

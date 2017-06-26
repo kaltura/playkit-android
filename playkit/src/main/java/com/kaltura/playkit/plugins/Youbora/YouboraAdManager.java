@@ -8,7 +8,6 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.utils.errors.PKAdErrorEvent;
 import com.kaltura.playkit.utils.errors.PKAdErrorType;
 import com.kaltura.playkit.utils.errors.PKError;
 import com.npaw.youbora.adnalyzers.AdnalyzerGeneric;
@@ -43,8 +42,6 @@ class YouboraAdManager extends AdnalyzerGeneric {
 
         this.messageBus.listen(mEventListener, STATE_CHANGED);
         this.messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
-        this.messageBus.listen(mEventListener, PKAdErrorEvent.Type.ERROR);
-
     }
 
     private void onEvent(PlayerEvent.StateChanged event) {
@@ -72,12 +69,6 @@ class YouboraAdManager extends AdnalyzerGeneric {
         public void onEvent(PKEvent event) {
 
             log.d("on event " + event.eventType());
-
-            if (event.eventType() == PKAdErrorEvent.Type.ERROR) {
-                PKError pkError = (PKError) event;
-                handleAdError(pkError);
-                return;
-            }
 
             if (event instanceof AdEvent) {
                 log.d("AdManager: " + ((AdEvent) event).type.toString());
@@ -140,6 +131,10 @@ class YouboraAdManager extends AdnalyzerGeneric {
                         lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
                         skipAdHandler();
+                        break;
+                    case ERROR:
+                        AdEvent.Error errorEvent = (AdEvent.Error) event;
+                        handleAdError(errorEvent.error);
                         break;
                     case CLICKED:
                         log.d("learn more clicked");

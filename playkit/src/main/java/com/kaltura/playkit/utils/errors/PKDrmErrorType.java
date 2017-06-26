@@ -4,7 +4,7 @@ package com.kaltura.playkit.utils.errors;
  * Created by anton.afanasiev on 20/06/2017.
  */
 
-public enum PKDrmErrorType implements PKErrorType {
+public enum PKDrmErrorType {
 
     DRM_RIGHTS_NOT_INSTALLED(2400),
     DRM_RIGHTS_RENEWAL_NOT_ALLOWED(2401),
@@ -24,8 +24,4 @@ public enum PKDrmErrorType implements PKErrorType {
         this.errorCode = errorCode;
     }
 
-    @Override
-    public Enum eventType() {
-        return PKDrmErrorEvent.Type.ERROR;
-    }
 }
