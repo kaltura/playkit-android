@@ -25,10 +25,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-/**
- * Created by zivilan on 02/11/2016.
- */
-
 public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
     private static final double MEDIA_ENDED_THRESHOLD = 0.98;
@@ -38,7 +34,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private String baseUrl;
     private String ks;
     private int partnerId;
-    private Context mContext;
+    private Context context;
     private Player player;
     private MessageBus messageBus; // used also by TVPAPI Analytics
     private PKMediaConfig mediaConfig;
@@ -46,7 +42,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private RequestQueue requestsExecutor;
     private Timer timer;
 
-    private long mContinueTime;
+    private long continueTime;
     private long lastKnownPlayerPosition = 0;
 
     private boolean isFirstPlay = true;
@@ -54,7 +50,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private boolean timerWasCancelled = false;
     private boolean isMediaFinished = false;
 
-    public enum PhoenixActionType {
+    enum PhoenixActionType {
         HIT,
         PLAY,
         STOP,
@@ -90,10 +86,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
-        this.mContext = context;
+        this.context = context;
         this.messageBus = messageBus;
         this.timer = new Timer();
-        setConfigMemebers(config);
+        setConfigMembers(config);
         if (baseUrl != null && !baseUrl.isEmpty() && partnerId > 0) {
             messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED);
         } else {
@@ -101,7 +97,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
     }
 
-    private void setConfigMemebers(Object config) {
+    private void setConfigMembers(Object config) {
         PhoenixAnalyticsConfig pluginConfig = parseConfig(config);
         this.baseUrl = pluginConfig.getBaseUrl();
         this.partnerId = pluginConfig.getPartnerId();
@@ -114,14 +110,14 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         isFirstPlay = true;
         this.mediaConfig = mediaConfig;
         if (this.mediaConfig.getStartPosition() != -1) {
-            this.mContinueTime = this.mediaConfig.getStartPosition();
+            this.continueTime = this.mediaConfig.getStartPosition();
         }
         isMediaFinished = false;
     }
 
     @Override
     protected void onUpdateConfig(Object config) {
-        setConfigMemebers(config);
+        setConfigMembers(config);
         if (baseUrl == null || baseUrl.isEmpty() ||  partnerId >= 0) {
             cancelTimer();
             messageBus.remove(mEventListener,(Enum[]) PlayerEvent.Type.values());
@@ -217,7 +213,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
     };
 
-    public void cancelTimer() {
+    void cancelTimer() {
         if (timer != null) {
             timer.cancel();
             timer = null;
@@ -271,11 +267,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         requestsExecutor.queue(requestBuilder.build());
     }
 
-    public String getFileId() {
+    String getFileId() {
         return fileId;
     }
 
-    public PKEvent.Listener getEventListener() {
+    PKEvent.Listener getEventListener() {
         return mEventListener;
     }
 
@@ -284,11 +280,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     public Context getContext() {
-        return mContext;
+        return context;
     }
 
     public void setContext(Context mContext) {
-        this.mContext = mContext;
+        this.context = mContext;
     }
 
     public Player getPlayer() {
@@ -309,35 +305,35 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
 
-    public RequestQueue getRequestsExecutor() {
+    RequestQueue getRequestsExecutor() {
         return requestsExecutor;
     }
 
-    public void setRequestsExecutor(RequestQueue requestsExecutor) {
+    void setRequestsExecutor(RequestQueue requestsExecutor) {
         this.requestsExecutor = requestsExecutor;
     }
 
-    public Timer getTimer() {
+    Timer getTimer() {
         return timer;
     }
 
-    public void setTimer(Timer timer) {
+    void setTimer(Timer timer) {
         this.timer = timer;
     }
 
-    public PKMediaConfig getMediaConfig() {
+    PKMediaConfig getMediaConfig() {
         return mediaConfig;
     }
 
-    public void setMediaConfig(PKMediaConfig mediaConfig) {
+    void setMediaConfig(PKMediaConfig mediaConfig) {
         this.mediaConfig = mediaConfig;
     }
 
-    public int getMediaHitInterval() {
+    int getMediaHitInterval() {
         return mediaHitInterval;
     }
 
-    public void setMediaHitInterval(int mediaHitInterval) {
+    void setMediaHitInterval(int mediaHitInterval) {
         this.mediaHitInterval = mediaHitInterval;
     }
 

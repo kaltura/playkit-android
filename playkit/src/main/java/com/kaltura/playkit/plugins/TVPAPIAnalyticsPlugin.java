@@ -65,7 +65,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
             this.initObject = pluginConfig.getInitObject();
             int timerIntervalSec = pluginConfig.getTimerInterval();
             long timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
-            if (timerIntervalSec <= 0) {
+            if (timerIntervalSec > 0) {
                 timerInterval = timerIntervalSec * Consts.MILLISECONDS_MULTIPLIER;
             }
             setMediaHitInterval((int) timerInterval);
