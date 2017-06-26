@@ -2,7 +2,6 @@ package com.kaltura.playkit.plugins;
 
 import android.content.Context;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
@@ -342,7 +341,13 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             return ((PhoenixAnalyticsConfig) config);
 
         } else if (config instanceof JsonObject) {
-            return new Gson().fromJson(((JsonObject) config), PhoenixAnalyticsConfig.class);
+            JsonObject params = (JsonObject) config;
+            String baseUrl = params.get("baseUrl").getAsString();
+            int partnerId = params.get("partnerId").getAsInt();
+            int timerInterval = params.get("timerInterval").getAsInt();
+            String ks = params.get("ks").getAsString();
+            
+            return new PhoenixAnalyticsConfig(partnerId, baseUrl, ks, timerInterval);
         }
         return null;
     }

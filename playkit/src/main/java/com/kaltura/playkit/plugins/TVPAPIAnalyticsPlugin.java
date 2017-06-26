@@ -118,7 +118,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
             return ((TVPAPIAnalyticsConfig) config);
 
         } else if (config instanceof JsonObject) {
-            JsonObject jsonConfig = ((JsonObject) config).getAsJsonObject("params");
+            JsonObject jsonConfig = (JsonObject) config;
             String baseUrl = jsonConfig.get("baseUrl").getAsString();
             int timerInterval = jsonConfig.get("timerInterval").getAsInt();
             JsonObject initObj = jsonConfig.getAsJsonObject("initObj");
