@@ -97,7 +97,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         if (baseUrl != null && !baseUrl.isEmpty() && partnerId > 0) {
             messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED);
         } else {
-            log.e("Error, base url/partnet - incorrect");
+            log.e("Error, base url/partner - incorrect");
         }
     }
 
