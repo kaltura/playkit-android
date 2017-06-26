@@ -14,24 +14,24 @@ public class TVPAPILocale {
 
 
     // "Locale":
-    private String LoacaleUserState;
+    private String LocaleUserState;
     private String LocaleCountry;
     private String LocaleDevice;
     private String LocaleLanguage;
 
-    public TVPAPILocale(String loacaleUserState, String localeCountry, String localeDevice, String localeLanguage) {
-        LoacaleUserState = loacaleUserState;
+    public TVPAPILocale(String loacalUserState, String localeCountry, String localeDevice, String localeLanguage) {
+        LocaleUserState = loacalUserState;
         LocaleCountry = localeCountry;
         LocaleDevice = localeDevice;
         LocaleLanguage = localeLanguage;
     }
 
-    public String getLoacaleUserState() {
-        return LoacaleUserState;
+    public String getLocaleUserState() {
+        return LocaleUserState;
     }
 
-    public void setLoacaleUserState(String loacaleUserState) {
-        LoacaleUserState = loacaleUserState;
+    public void setLoacaleUserState(String localeUserState) {
+        LocaleUserState = localeUserState;
     }
 
     public String getLocaleCountry() {
@@ -60,7 +60,7 @@ public class TVPAPILocale {
 
     public JsonObject toJsonObject() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty(LOACALE_USER_STATE, LoacaleUserState);
+        jsonObject.addProperty(LOACALE_USER_STATE, LocaleUserState);
         jsonObject.addProperty(LOACALE_COUNTRY, LocaleCountry);
         jsonObject.addProperty(LOACALE_DEVICE, LocaleDevice);
         jsonObject.addProperty(LOACALE_LANGUAGE, LocaleLanguage);
