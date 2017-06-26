@@ -23,7 +23,6 @@ import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdPositionType;
 import com.kaltura.playkit.plugins.configs.KalturaStatsConfig;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.utils.errors.PKError;
 
 import java.util.TimerTask;
 
@@ -270,9 +269,6 @@ public class KalturaStatsPlugin extends PKPlugin {
                 }
             } else if (event instanceof AdEvent) {
                 KalturaStatsPlugin.this.onEvent((AdEvent) event);
-            } else if(event instanceof PKError) {
-                sendAnalyticsEvent(KStatsEvent.ERROR);
-                cancelTimer();
             }
         }
     };
@@ -379,6 +375,10 @@ public class KalturaStatsPlugin extends PKPlugin {
                     }
                 }
                 break;
+            case ERROR:
+                sendAnalyticsEvent(KStatsEvent.ERROR);
+                cancelTimer();
+                break;
             default:
                 break;
         }
@@ -454,7 +454,7 @@ public class KalturaStatsPlugin extends PKPlugin {
 
         final RequestBuilder requestBuilder = StatsService.sendStatsEvent(pluginConfig.getBaseUrl(), pluginConfig.getPartnerId(), eventType.getValue(), PlayKitManager.CLIENT_TAG, duration,
                 sessionId, player.getCurrentPosition(), pluginConfig.getUiconfId(), pluginConfig.getEntryId(), "_" + pluginConfig.getPartnerId(), hasSeeked,
-                pluginConfig.getContextId(), context.getPackageName(),pluginConfig.getUserId());
+                pluginConfig.getContextId(), context.getPackageName(), pluginConfig.getUserId());
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
