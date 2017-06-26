@@ -1,7 +1,5 @@
 package com.kaltura.playkit.plugins.configs;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 /**
@@ -15,16 +13,16 @@ public class TVPAPIAnalyticsConfig {
 
     private String baseUrl;
     private int timerInterval;
-    private TVPAPIInitObject initObj;
+    private JsonObject initObject;
 
-    public TVPAPIAnalyticsConfig(String baseUrl, int timerInterval, TVPAPIInitObject initObj) {
+    public TVPAPIAnalyticsConfig(String baseUrl, int timerInterval, JsonObject initObject) {
         this.baseUrl = baseUrl;
         this.timerInterval = timerInterval;
-        this.initObj = initObj;
+        this.initObject = initObject;
     }
 
-    public TVPAPIAnalyticsConfig setInitObj(TVPAPIInitObject initObj) {
-        this.initObj = initObj;
+    public TVPAPIAnalyticsConfig setInitObject(JsonObject initObject) {
+        this.initObject = initObject;
         return this;
     }
 
@@ -39,8 +37,8 @@ public class TVPAPIAnalyticsConfig {
         return this;
     }
 
-    public TVPAPIInitObject getInitObj() {
-        return initObj;
+    public JsonObject getInitObject() {
+        return initObject;
     }
 
     public String getBaseUrl() {
@@ -49,16 +47,5 @@ public class TVPAPIAnalyticsConfig {
 
     public int getTimerInterval() {
         return timerInterval;
-    }
-
-    public JsonObject toJsonObject() {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty(BASE_URL, baseUrl);
-        jsonObject.addProperty(TIMER_INTERVAL, timerInterval);
-
-        JsonElement element = new Gson().toJsonTree(initObj.toJsonObject());
-        JsonObject object = element.getAsJsonObject();
-        jsonObject.add(INIT_OBJ, object);
-        return jsonObject;
     }
 }

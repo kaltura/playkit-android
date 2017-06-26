@@ -20,15 +20,11 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.util.Timer;
 
-/**
- * Created by zivilan on 08/12/2016.
- */
-
 public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     private static final PKLog log = PKLog.get("TVPAPIAnalyticsPlugin");
     private long lastKnownPlayerPosition = 0;
     private String baseUrl;
-    private JsonObject initObj;
+    private JsonObject initObject;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -50,29 +46,36 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     @Override
     protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
         log.d("onLoad");
-        setPluginMemebers(config);
+        setPluginMembers(config);
         setPlayer(player);
         setContext(context);
         setTimer(new Timer());
         setRequestsExecutor(APIOkRequestsExecutor.getSingleton());
-        if (baseUrl != null && !baseUrl.isEmpty() &&  initObj != null) {
+        if (baseUrl != null && !baseUrl.isEmpty() &&  initObject != null) {
             messageBus.listen(getEventListener(), PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED);
         } else {
             log.e("Error, base url/initObj - incorrect");
         }
     }
 
-    private void setPluginMemebers(Object config) {
+    private void setPluginMembers(Object config) {
         TVPAPIAnalyticsConfig pluginConfig = parseConfig(config);
-        this.baseUrl = pluginConfig.getBaseUrl();
-        this.initObj = pluginConfig.getInitObj().toJsonObject();
-        setMediaHitInterval((pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH);
+        if (pluginConfig != null) {
+            this.baseUrl = pluginConfig.getBaseUrl();
+            this.initObject = pluginConfig.getInitObject();
+            int timerIntervalSec = pluginConfig.getTimerInterval();
+            long timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
+            if (timerIntervalSec <= 0) {
+                timerInterval = timerIntervalSec * Consts.MILLISECONDS_MULTIPLIER;
+            }
+            setMediaHitInterval((int) timerInterval);
+        }
     }
 
     @Override
     protected void onUpdateConfig(Object config) {
-        setPluginMemebers(config);
-        if (baseUrl == null || baseUrl.isEmpty() || initObj == null) {
+        setPluginMembers(config);
+        if (baseUrl == null || baseUrl.isEmpty() || initObject == null) {
             cancelTimer();
             getMessageBus().remove(getEventListener(),(Enum[]) PlayerEvent.Type.values());
         }
@@ -88,14 +91,14 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         String action = eventType.name().toLowerCase();
         String method = action.equals("hit")? "MediaHit": "MediaMark";
 
-        if (initObj == null) {
+        if (initObject == null) {
             return;
         }
 
         if (!"stop".equals(action)) {
             lastKnownPlayerPosition = getPlayer().getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
-        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObj, action,
+        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObject, action,
                 getMediaConfig().getMediaEntry().getId(), fileId, lastKnownPlayerPosition);
 
         requestBuilder.completion(new OnRequestCompletion() {
