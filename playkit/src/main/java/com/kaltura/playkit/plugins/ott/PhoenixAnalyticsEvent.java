@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.Youbora;
+package com.kaltura.playkit.plugins.ott;
 
 import com.kaltura.playkit.PKEvent;
 
@@ -6,17 +6,17 @@ import com.kaltura.playkit.PKEvent;
  * Created by anton.afanasiev on 27/03/2017.
  */
 
-public class YouboraEvent implements PKEvent {
+public class PhoenixAnalyticsEvent implements PKEvent {
 
     public enum Type {
         REPORT_SENT
     }
 
-    public static class YouboraReport extends YouboraEvent{
+    public static class PhoenixAnalyticsReport extends PhoenixAnalyticsEvent {
 
         private String reportedEventName;
 
-        public YouboraReport(String reportedEventName) {
+        public PhoenixAnalyticsReport(String reportedEventName) {
             this.reportedEventName = reportedEventName;
         }
 

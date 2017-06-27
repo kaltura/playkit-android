@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins;
+package com.kaltura.playkit.plugins.ott;
 
 import android.content.Context;
 
@@ -8,21 +8,17 @@ import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.playkit.MessageBus;
-import com.kaltura.playkit.OttEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.api.tvpapi.services.MediaMarkService;
-import com.kaltura.playkit.plugins.configs.TVPAPIAnalyticsConfig;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Timer;
 
 public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     private static final PKLog log = PKLog.get("TVPAPIAnalyticsPlugin");
-    private long lastKnownPlayerPosition = 0;
-    private String baseUrl;
     private JsonObject initObject;
 
     public static final Factory factory = new Factory() {
@@ -46,10 +42,10 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
         log.d("onLoad");
         setPluginMembers(config);
-        setPlayer(player);
-        setContext(context);
-        setTimer(new Timer());
-        setRequestsExecutor(APIOkRequestsExecutor.getSingleton());
+        this.player = player;
+        this.context = context;
+        this.timer = new Timer();
+        this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         if (baseUrl != null && !baseUrl.isEmpty() &&  initObject != null) {
             messageBus.listen(getEventListener(), PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED);
         } else {
@@ -67,7 +63,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
             if (timerIntervalSec > 0) {
                 timerInterval = timerIntervalSec * Consts.MILLISECONDS_MULTIPLIER;
             }
-            setMediaHitInterval((int) timerInterval);
+            this.mediaHitInterval = (int) timerInterval;
         }
     }
 
@@ -76,7 +72,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         setPluginMembers(config);
         if (baseUrl == null || baseUrl.isEmpty() || initObject == null) {
             cancelTimer();
-            getMessageBus().remove(getEventListener(),(Enum[]) PlayerEvent.Type.values());
+            messageBus.remove(getEventListener(),(Enum[]) PlayerEvent.Type.values());
         }
     }
 
@@ -86,31 +82,30 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
      */
     @Override
     protected void sendAnalyticsEvent(final PhoenixActionType eventType){
-        String fileId = getFileId();
+        String method = eventType == PhoenixActionType.HIT ? "MediaHit": "MediaMark";
         String action = eventType.name().toLowerCase();
-        String method = action.equals("hit")? "MediaHit": "MediaMark";
 
         if (initObject == null) {
             return;
         }
 
-        if (!"stop".equals(action)) {
-            lastKnownPlayerPosition = getPlayer().getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
+        if (eventType != PhoenixActionType.STOP) {
+            lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
-        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObject, action,
-                getMediaConfig().getMediaEntry().getId(), fileId, lastKnownPlayerPosition);
+        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEvent(baseUrl + "m=" + method, initObject, action,
+                mediaConfig.getMediaEntry().getId(), this.fileId, lastKnownPlayerPosition);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
                 if (response.isSuccess() && response.getResponse().toLowerCase().contains("concurrent")){
-                    getMessageBus().post(new OttEvent(OttEvent.OttEventType.Concurrency));
-                    getMessageBus().post(new TVPapiAnalyticsEvent.TVPapiAnalyticsReport(eventType.toString()));
+                    messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
+                    messageBus.post(new TVPAPIAnalyticsEvent.TVPAPIAnalyticsReport(eventType.toString()));
                 }
                 log.d("onComplete send event: " + eventType);
             }
         });
-        getRequestsExecutor().queue(requestBuilder.build());
+        requestsExecutor.queue(requestBuilder.build());
     }
 
     private static TVPAPIAnalyticsConfig parseConfig(Object config) {

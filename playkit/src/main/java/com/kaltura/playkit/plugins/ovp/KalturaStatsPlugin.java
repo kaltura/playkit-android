@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins;
+package com.kaltura.playkit.plugins.ovp;
 
 import android.content.Context;
 
@@ -21,7 +21,6 @@ import com.kaltura.playkit.api.ovp.services.StatsService;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdPositionType;
-import com.kaltura.playkit.plugins.configs.KalturaStatsConfig;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.TimerTask;

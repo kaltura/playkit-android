@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins;
+package com.kaltura.playkit.plugins.ovp;
 
 import com.kaltura.playkit.PKEvent;
 
