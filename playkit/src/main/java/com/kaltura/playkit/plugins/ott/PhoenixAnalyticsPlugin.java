@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins;
+package com.kaltura.playkit.plugins.ott;
 
 import android.content.Context;
 
@@ -17,7 +17,6 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.api.phoenix.services.BookmarkService;
-import com.kaltura.playkit.plugins.configs.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Timer;
@@ -28,21 +27,21 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
     private static final double MEDIA_ENDED_THRESHOLD = 0.98;
 
-    private int mediaHitInterval;
-    private String fileId;
-    private String baseUrl;
+    // Fields shared with TVPAPIAnalyticsPlugin
+    int mediaHitInterval;
+    String fileId;
+    String baseUrl;
+    Context context;
+    Player player;
+    MessageBus messageBus; // used also by TVPAPI Analytics
+    PKMediaConfig mediaConfig;
+    RequestQueue requestsExecutor;
+    Timer timer;
+    long lastKnownPlayerPosition = 0;
+
+    // Private fields
     private String ks;
     private int partnerId;
-    private Context context;
-    private Player player;
-    private MessageBus messageBus; // used also by TVPAPI Analytics
-    private PKMediaConfig mediaConfig;
-
-    private RequestQueue requestsExecutor;
-    private Timer timer;
-
-    private long lastKnownPlayerPosition = 0;
-
     private boolean isFirstPlay = true;
     private boolean intervalOn = false;
     private boolean timerWasCancelled = false;
@@ -239,10 +238,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * @param eventType - Enum stating the event type to send
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
-
-        String action = eventType.name().toLowerCase(); // used only for copmare
-
-        if (!"stop".equals(action)) {
+        
+        if (eventType != PhoenixActionType.STOP) {
             lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
@@ -262,75 +259,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         requestsExecutor.queue(requestBuilder.build());
     }
 
-    String getFileId() {
-        return fileId;
-    }
-
     PKEvent.Listener getEventListener() {
         return mEventListener;
     }
 
-    public String getBaseUrl() {
-        return baseUrl;
-    }
-
-    public Context getContext() {
-        return context;
-    }
-
-    public void setContext(Context mContext) {
-        this.context = mContext;
-    }
-
-    public Player getPlayer() {
-        return player;
-    }
-
-
-    public void setPlayer(Player player) {
-        this.player = player;
-    }
-
-    public MessageBus getMessageBus() {
-        return messageBus;
-    }
-
-    public void setMessageBus(MessageBus messageBus) {
-        this.messageBus = messageBus;
-    }
-
-
-    RequestQueue getRequestsExecutor() {
-        return requestsExecutor;
-    }
-
-    void setRequestsExecutor(RequestQueue requestsExecutor) {
-        this.requestsExecutor = requestsExecutor;
-    }
-
-    Timer getTimer() {
-        return timer;
-    }
-
-    void setTimer(Timer timer) {
-        this.timer = timer;
-    }
-
-    PKMediaConfig getMediaConfig() {
-        return mediaConfig;
-    }
-
-    void setMediaConfig(PKMediaConfig mediaConfig) {
-        this.mediaConfig = mediaConfig;
-    }
-
-    int getMediaHitInterval() {
-        return mediaHitInterval;
-    }
-
-    void setMediaHitInterval(int mediaHitInterval) {
-        this.mediaHitInterval = mediaHitInterval;
-    }
 
     private static PhoenixAnalyticsConfig parseConfig(Object config) {
         if (config instanceof PhoenixAnalyticsConfig) {

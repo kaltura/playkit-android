@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.configs;
+package com.kaltura.playkit.plugins.ott;
 
 import com.google.gson.JsonObject;
 
