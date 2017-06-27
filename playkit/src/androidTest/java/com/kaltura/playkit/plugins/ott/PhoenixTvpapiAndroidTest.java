@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins;
+package com.kaltura.playkit.plugins.ott;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -13,6 +13,7 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.plugins.MockPlayer;
 
 import org.junit.Assert;
 import org.junit.Before;

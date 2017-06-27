@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins;
+package com.kaltura.playkit.plugins.ovp;
 
 import android.content.Context;
 
@@ -19,7 +19,6 @@ import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.api.ovp.services.LiveStatsService;
-import com.kaltura.playkit.plugins.configs.KalturaLiveStatsConfig;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Date;
@@ -83,19 +82,18 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     @Override
     protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
-        this.player = player;
-        this.context = context;
-        this.messageBus = messageBus;
-        this.pluginConfig = parseConfig(config);
-        this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY, PlayerEvent.Type.PLAYBACK_INFO_UPDATED, PlayerEvent.Type.SOURCE_SELECTED);
+        this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
+        this.player = player;
+        this.pluginConfig = parseConfig(config);
+        this.messageBus = messageBus;
+        this.context = context;
     }
 
     @Override
     public void onDestroy() {
         stopLiveEvents();
         eventIdx = 1;
-        cancelTimer();
     }
 
     @Override
@@ -222,6 +220,9 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private void sendLiveEvent(final long bufferTime) {
         String sessionId = (player.getSessionId() != null) ? player.getSessionId() : "";
 
+        // Parameters for the request -
+        // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
+        // String startTime,  String entryId,  boolean isLive, String referrer, String playbackProtocol
         long distanceFromLive = 0;
         if (player != null) {
             distanceFromLive = player.getDuration() - player.getCurrentPosition();
