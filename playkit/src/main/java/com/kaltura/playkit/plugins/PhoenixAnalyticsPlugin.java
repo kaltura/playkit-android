@@ -16,30 +16,39 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.api.phoenix.services.BookmarkService;
+import com.kaltura.playkit.plugins.configs.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.Timer;
 import java.util.TimerTask;
 
 
-/**
- * Created by zivilan on 02/11/2016.
- */
-
 public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
-    private static final String TAG = "PhoenixAnalytics";
     private static final double MEDIA_ENDED_THRESHOLD = 0.98;
-    private static String DEFAULT_BASE_URL = "http://api-preprod.ott.kaltura.com/v4_1/api_v3/";
 
     private int mediaHitInterval;
     private String fileId;
     private String baseUrl;
     private String ks;
     private int partnerId;
+    private Context context;
+    private Player player;
+    private MessageBus messageBus; // used also by TVPAPI Analytics
+    private PKMediaConfig mediaConfig;
 
-    public enum PhoenixActionType {
+    private RequestQueue requestsExecutor;
+    private Timer timer;
+
+    private long lastKnownPlayerPosition = 0;
+
+    private boolean isFirstPlay = true;
+    private boolean intervalOn = false;
+    private boolean timerWasCancelled = false;
+    private boolean isMediaFinished = false;
+
+    enum PhoenixActionType {
         HIT,
         PLAY,
         STOP,
@@ -51,24 +60,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         BITRATE_CHANGE,
         ERROR
     }
-
-    private Context mContext;
-    public Player player;
-    public MessageBus messageBus; // used also by TVPAI Analytics
-    public JsonObject pluginConfig;
-    public PKMediaConfig mediaConfig;
-
-    public RequestQueue requestsExecutor;
-    private java.util.Timer timer = new java.util.Timer();
-
-    private long mContinueTime;
-    private long lastKnownPlayerPosition = 0;
-
-    private boolean isFirstPlay = true;
-    private boolean intervalOn = false;
-    private boolean timerWasCancelled = false;
-    private boolean isMediaFinished = false;
-
 
     public static final Factory factory = new Factory() {
         @Override
@@ -88,57 +79,56 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     };
 
     @Override
-    protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-        if (Utils.isJsonObjectValueValid(pluginConfig, "timerInterval")) {
-            mediaHitInterval = pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int) Consts.MILLISECONDS_MULTIPLIER;
-        } else {
-            mediaHitInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "fileId")) {
-            fileId = pluginConfig.getAsJsonPrimitive("fileId").getAsString();
-        } else {
-            log.e("Error PhoenixAnalytics fileId was not set");
-            fileId = "0";
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
-            baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
-        } else {
-            baseUrl = DEFAULT_BASE_URL;
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "ks")) {
-            ks =  pluginConfig.getAsJsonPrimitive("ks").getAsString();
-        } else {
-            log.w("Warning PhoenixAnalytics KS was not given");
-            ks = "";
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "partnerId")) {
-            partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
-        } else {
-            partnerId = 0;
-        }
+    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
+        log.d("onLoad");
 
-        isFirstPlay = true;
-        this.mediaConfig = mediaConfig;
-        if (this.mediaConfig.getStartPosition() != -1) {
-            this.mContinueTime = this.mediaConfig.getStartPosition();
+        this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
+        this.player = player;
+        this.context = context;
+        this.messageBus = messageBus;
+        this.timer = new Timer();
+        setConfigMembers(config);
+        if (baseUrl != null && !baseUrl.isEmpty() && partnerId > 0) {
+            messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED);
+        } else {
+            log.e("Error, base url/partner - incorrect");
         }
+    }
+
+    private void setConfigMembers(Object config) {
+        PhoenixAnalyticsConfig pluginConfig = parseConfig(config);
+        this.baseUrl = pluginConfig.getBaseUrl();
+        this.partnerId = pluginConfig.getPartnerId();
+        this.ks = pluginConfig.getKS();
+        this.mediaHitInterval = (pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
+    }
+
+    @Override
+    protected void onUpdateMedia(PKMediaConfig mediaConfig) {
+        this.mediaConfig = mediaConfig;
+        isFirstPlay = true;
         isMediaFinished = false;
     }
 
     @Override
     protected void onUpdateConfig(Object config) {
-        this.pluginConfig = (JsonObject) config;
+        setConfigMembers(config);
+        if (baseUrl == null || baseUrl.isEmpty() ||  partnerId >= 0) {
+            cancelTimer();
+            messageBus.remove(mEventListener,(Enum[]) PlayerEvent.Type.values());
+        }
     }
 
     @Override
     protected void onApplicationPaused() {
         log.d("onApplicationPaused");
+        cancelTimer();
 
     }
 
     @Override
     protected void onApplicationResumed() {
-        timer = new java.util.Timer();
+        timer = new Timer();
         log.d("onApplicationResumed");
 
     }
@@ -146,20 +136,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     public void onDestroy() {
         log.d("onDestroy");
-        timer.cancel();
+        cancelTimer();
         timerWasCancelled = true;
-    }
-
-    @Override
-    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
-        this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
-        this.player = player;
-        this.pluginConfig = (JsonObject) config;
-        this.mContext = context;
-        this.messageBus = messageBus;
-        messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED);
-
-        log.d("onLoad");
     }
 
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
@@ -173,30 +151,34 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             return;
                         }
                         sendAnalyticsEvent(PhoenixActionType.STOP);
-                        timer.cancel();
-                        timer = new java.util.Timer();
+                        cancelTimer();
+                        timer = new Timer();
                         break;
                     case ENDED:
-                        timer.cancel();
-                        timer = new java.util.Timer();
+                        cancelTimer();
+                        timer = new Timer();
                         sendAnalyticsEvent(PhoenixActionType.FINISH);
                         isMediaFinished = true;
                         break;
                     case ERROR:
-                        timer.cancel();
-                        timer = new java.util.Timer();
+                        cancelTimer();
+                        timer = new Timer();
                         sendAnalyticsEvent(PhoenixActionType.ERROR);
                         break;
                     case LOADED_METADATA:
                         sendAnalyticsEvent(PhoenixActionType.LOAD);
+                        break;
+                    case SOURCE_SELECTED:
+                        PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;
+                        fileId = sourceSelected.source.getId();
                         break;
                     case PAUSE:
                         if (isMediaFinished) {
                             return;
                         }
                         sendAnalyticsEvent(PhoenixActionType.PAUSE);
-                        timer.cancel();
-                        timer = new java.util.Timer();
+                        cancelTimer();
+                        timer = new Timer();
                         intervalOn = false;
                         break;
                     case PLAY:
@@ -226,6 +208,13 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
     };
 
+    void cancelTimer() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+    }
+
     /**
      * Media Hit analytics event
      */
@@ -250,13 +239,14 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * @param eventType - Enum stating the event type to send
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
+
         String action = eventType.name().toLowerCase(); // used only for copmare
 
         if (!"stop".equals(action)) {
             lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
-                "media", mediaConfig.getMediaEntry().getId(), eventType.name(), lastKnownPlayerPosition, /*mediaConfig.getMediaEntry().getFileId()*/ fileId);
+                "media", mediaConfig.getMediaEntry().getId(), eventType.name(), lastKnownPlayerPosition, fileId);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
@@ -272,4 +262,89 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         requestsExecutor.queue(requestBuilder.build());
     }
 
+    String getFileId() {
+        return fileId;
+    }
+
+    PKEvent.Listener getEventListener() {
+        return mEventListener;
+    }
+
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    public Context getContext() {
+        return context;
+    }
+
+    public void setContext(Context mContext) {
+        this.context = mContext;
+    }
+
+    public Player getPlayer() {
+        return player;
+    }
+
+
+    public void setPlayer(Player player) {
+        this.player = player;
+    }
+
+    public MessageBus getMessageBus() {
+        return messageBus;
+    }
+
+    public void setMessageBus(MessageBus messageBus) {
+        this.messageBus = messageBus;
+    }
+
+
+    RequestQueue getRequestsExecutor() {
+        return requestsExecutor;
+    }
+
+    void setRequestsExecutor(RequestQueue requestsExecutor) {
+        this.requestsExecutor = requestsExecutor;
+    }
+
+    Timer getTimer() {
+        return timer;
+    }
+
+    void setTimer(Timer timer) {
+        this.timer = timer;
+    }
+
+    PKMediaConfig getMediaConfig() {
+        return mediaConfig;
+    }
+
+    void setMediaConfig(PKMediaConfig mediaConfig) {
+        this.mediaConfig = mediaConfig;
+    }
+
+    int getMediaHitInterval() {
+        return mediaHitInterval;
+    }
+
+    void setMediaHitInterval(int mediaHitInterval) {
+        this.mediaHitInterval = mediaHitInterval;
+    }
+
+    private static PhoenixAnalyticsConfig parseConfig(Object config) {
+        if (config instanceof PhoenixAnalyticsConfig) {
+            return ((PhoenixAnalyticsConfig) config);
+
+        } else if (config instanceof JsonObject) {
+            JsonObject params = (JsonObject) config;
+            String baseUrl = params.get("baseUrl").getAsString();
+            int partnerId = params.get("partnerId").getAsInt();
+            int timerInterval = params.get("timerInterval").getAsInt();
+            String ks = params.get("ks").getAsString();
+            
+            return new PhoenixAnalyticsConfig(partnerId, baseUrl, ks, timerInterval);
+        }
+        return null;
+    }
 }

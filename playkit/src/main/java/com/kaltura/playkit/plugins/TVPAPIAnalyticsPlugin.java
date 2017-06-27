@@ -3,24 +3,27 @@ package com.kaltura.playkit.plugins;
 import android.content.Context;
 
 import com.google.gson.JsonObject;
+import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
+import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.OttEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
+import com.kaltura.playkit.Player;
+import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.api.tvpapi.services.MediaMarkService;
+import com.kaltura.playkit.plugins.configs.TVPAPIAnalyticsConfig;
 import com.kaltura.playkit.utils.Consts;
 
-/**
- * Created by zivilan on 08/12/2016.
- */
+import java.util.Timer;
 
 public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     private static final PKLog log = PKLog.get("TVPAPIAnalyticsPlugin");
-    private static final String TAG = "TVPAPIAnalytics";
-    private JsonObject testInitObj = new JsonObject();
     private long lastKnownPlayerPosition = 0;
+    private String baseUrl;
+    private JsonObject initObject;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -35,40 +38,92 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
 
         @Override
         public void warmUp(Context context) {
-            
+
         }
     };
+
+    @Override
+    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
+        log.d("onLoad");
+        setPluginMembers(config);
+        setPlayer(player);
+        setContext(context);
+        setTimer(new Timer());
+        setRequestsExecutor(APIOkRequestsExecutor.getSingleton());
+        if (baseUrl != null && !baseUrl.isEmpty() &&  initObject != null) {
+            messageBus.listen(getEventListener(), PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED);
+        } else {
+            log.e("Error, base url/initObj - incorrect");
+        }
+    }
+
+    private void setPluginMembers(Object config) {
+        TVPAPIAnalyticsConfig pluginConfig = parseConfig(config);
+        if (pluginConfig != null) {
+            this.baseUrl = pluginConfig.getBaseUrl();
+            this.initObject = pluginConfig.getInitObject();
+            long timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
+            int timerIntervalSec = pluginConfig.getTimerInterval();
+            if (timerIntervalSec > 0) {
+                timerInterval = timerIntervalSec * Consts.MILLISECONDS_MULTIPLIER;
+            }
+            setMediaHitInterval((int) timerInterval);
+        }
+    }
+
+    @Override
+    protected void onUpdateConfig(Object config) {
+        setPluginMembers(config);
+        if (baseUrl == null || baseUrl.isEmpty() || initObject == null) {
+            cancelTimer();
+            getMessageBus().remove(getEventListener(),(Enum[]) PlayerEvent.Type.values());
+        }
+    }
+
     /**
      * Send Bookmark/add event using Kaltura Phoenix Rest API
      * @param eventType - Enum stating the event type to send
      */
     @Override
     protected void sendAnalyticsEvent(final PhoenixActionType eventType){
-        String fileId = pluginConfig.has("fileId")? pluginConfig.getAsJsonPrimitive("fileId").getAsString():"000000";
-        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString():"http://tvpapi-preprod.ott.kaltura.com/v3_9/gateways/jsonpostgw.aspx?";
-        JsonObject initObj = pluginConfig.has("initObj")? pluginConfig.getAsJsonObject("initObj") : testInitObj;
+        String fileId = getFileId();
         String action = eventType.name().toLowerCase();
         String method = action.equals("hit")? "MediaHit": "MediaMark";
 
-        if (initObj == null) {
+        if (initObject == null) {
             return;
         }
+
         if (!"stop".equals(action)) {
-            lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
+            lastKnownPlayerPosition = getPlayer().getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
-        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObj, action,
-                mediaConfig.getMediaEntry().getId(), /*mediaConfig.getMediaEntry().getFileId()*/ fileId, lastKnownPlayerPosition);
+        RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEVent(baseUrl + "m=" + method, initObject, action,
+                getMediaConfig().getMediaEntry().getId(), fileId, lastKnownPlayerPosition);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
                 if (response.isSuccess() && response.getResponse().toLowerCase().contains("concurrent")){
-                    messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
-                    messageBus.post(new TVPapiAnalyticsEvent.TVPapiAnalyticsReport(eventType.toString()));
+                    getMessageBus().post(new OttEvent(OttEvent.OttEventType.Concurrency));
+                    getMessageBus().post(new TVPapiAnalyticsEvent.TVPapiAnalyticsReport(eventType.toString()));
                 }
                 log.d("onComplete send event: " + eventType);
             }
         });
-        requestsExecutor.queue(requestBuilder.build());
+        getRequestsExecutor().queue(requestBuilder.build());
+    }
+
+    private static TVPAPIAnalyticsConfig parseConfig(Object config) {
+        if (config instanceof TVPAPIAnalyticsConfig) {
+            return ((TVPAPIAnalyticsConfig) config);
+
+        } else if (config instanceof JsonObject) {
+            JsonObject jsonConfig = (JsonObject) config;
+            String baseUrl = jsonConfig.get("baseUrl").getAsString();
+            int timerInterval = jsonConfig.get("timerInterval").getAsInt();
+            JsonObject initObj = jsonConfig.getAsJsonObject("initObj");
+            return new TVPAPIAnalyticsConfig(baseUrl, timerInterval, initObj);
+        }
+        return null;
     }
 }

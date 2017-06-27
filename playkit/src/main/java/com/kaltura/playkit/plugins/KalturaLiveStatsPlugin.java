@@ -20,7 +20,6 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.api.ovp.services.LiveStatsService;
 import com.kaltura.playkit.plugins.configs.KalturaLiveStatsConfig;
-import com.kaltura.playkit.plugins.configs.KalturaStatsConfig;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Date;
@@ -252,7 +251,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     }
 
     private static KalturaLiveStatsConfig parseConfig(Object config) {
-        if (config instanceof KalturaStatsConfig) {
+        if (config instanceof KalturaLiveStatsConfig) {
             return ((KalturaLiveStatsConfig) config);
 
         } else if (config instanceof JsonObject) {
