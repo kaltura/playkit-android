@@ -17,7 +17,7 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.WidevineClassicDrm;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.utils.errors.PKError;
+import com.kaltura.playkit.PKError;
 
 import java.io.IOException;
 import java.util.ArrayList;

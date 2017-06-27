@@ -1,7 +1,7 @@
 package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.PKEvent;
-import com.kaltura.playkit.utils.errors.PKError;
+import com.kaltura.playkit.PKError;
 
 /**
  * Created by gilad.nadav on 22/11/2016.

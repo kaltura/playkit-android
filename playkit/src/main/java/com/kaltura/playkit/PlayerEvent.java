@@ -2,7 +2,6 @@ package com.kaltura.playkit;
 
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.metadata.PKMetadata;
-import com.kaltura.playkit.utils.errors.PKError;
 
 import java.util.List;
 
@@ -52,7 +51,7 @@ public class PlayerEvent implements PKEvent {
 
     public static class VolumeChanged extends PlayerEvent {
 
-        public float volume;
+        public final float volume;
 
         public VolumeChanged(float volume) {
             super(Type.VOLUME_CHANGED);

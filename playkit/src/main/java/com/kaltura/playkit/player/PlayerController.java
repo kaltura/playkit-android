@@ -18,8 +18,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.utils.errors.PKError;
-import com.kaltura.playkit.utils.errors.PKPlayerErrorType;
+import com.kaltura.playkit.PKError;
 
 import java.util.UUID;
 

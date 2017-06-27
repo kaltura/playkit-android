@@ -1,4 +1,4 @@
-package com.kaltura.playkit.utils.errors;
+package com.kaltura.playkit.player;
 
 /**
  * Created by anton.afanasiev on 20/06/2017.

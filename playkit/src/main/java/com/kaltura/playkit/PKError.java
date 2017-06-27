@@ -1,4 +1,4 @@
-package com.kaltura.playkit.utils.errors;
+package com.kaltura.playkit;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;

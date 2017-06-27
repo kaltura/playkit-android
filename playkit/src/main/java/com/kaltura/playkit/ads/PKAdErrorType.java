@@ -1,4 +1,4 @@
-package com.kaltura.playkit.utils.errors;
+package com.kaltura.playkit.ads;
 
 
 /**

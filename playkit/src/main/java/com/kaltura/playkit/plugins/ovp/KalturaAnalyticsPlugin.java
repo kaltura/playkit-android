@@ -20,9 +20,6 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.api.ovp.services.AnalyticsService;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.utils.errors.PKAnalyticsErrorType;
-import com.kaltura.playkit.utils.errors.PKError;
-import com.kaltura.playkit.utils.errors.PKErrorType;
 
 import java.util.TimerTask;
 
