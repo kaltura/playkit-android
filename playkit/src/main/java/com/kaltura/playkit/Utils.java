@@ -93,7 +93,7 @@ public class Utils {
         return jsonObject.has(key) && !jsonObject.get(key).isJsonNull();
     }
 
-    public static String encodeBase64(byte[] data) {
+    public static String toBase64(byte[] data) {
         return Base64.encodeToString(data, Base64.NO_WRAP);
     }
 

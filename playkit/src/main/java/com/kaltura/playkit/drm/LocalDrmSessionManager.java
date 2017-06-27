@@ -18,11 +18,12 @@ import com.google.android.exoplayer2.util.Util;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.LocalDataStore;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.player.MediaSupport;
 
 import java.io.FileNotFoundException;
 import java.util.Map;
+
+import static com.kaltura.playkit.Utils.toBase64;
 
 /**
  * @hide
@@ -128,7 +129,7 @@ public class LocalDrmSessionManager<T extends ExoMediaCrypto> implements DrmSess
      * @throws FileNotFoundException - {@link FileNotFoundException}
      */
     private MediaDrmSession openSessionWithKeys(byte[] initData) throws MediaDrmException, MediaCryptoException, FileNotFoundException {
-        String key = Utils.encodeBase64(initData);
+        String key = toBase64(initData);
         byte[] keySetId = drmStorage.load(key);
 
         MediaDrmSession session = MediaDrmSession.open(mediaDrm);
