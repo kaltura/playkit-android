@@ -539,12 +539,14 @@ class TrackSelectionHelper {
             throw new IllegalArgumentException("uniqueId is null");
         }
 
-        if (!uniqueId.contains(VIDEO_PREFIX)
-                || !uniqueId.contains(AUDIO_PREFIX)
-                || !uniqueId.contains(TEXT_PREFIX)
-                && !uniqueId.contains(",")) {
-            throw new IllegalArgumentException("uniqueId is null");
+        if (uniqueId.contains(VIDEO_PREFIX)
+                || uniqueId.contains(AUDIO_PREFIX)
+                || uniqueId.contains(TEXT_PREFIX)
+                && uniqueId.contains(",")) {
+            return;
         }
+
+        throw new IllegalArgumentException("invalid structure of uniqueId " + uniqueId);
     }
 
     /**
