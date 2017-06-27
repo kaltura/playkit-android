@@ -99,7 +99,7 @@ class YouboraLibraryManager extends PluginGeneric {
         public void onEvent(PKEvent event) {
 
             if (event.eventType() == PlayerEvent.Type.PLAYBACK_INFO_UPDATED) {
-                PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).getPlaybackInfo();
+                PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).playbackInfo;
                 lastReportedBitrate = Long.valueOf(currentPlaybackInfo.getVideoBitrate()).doubleValue();
                 lastReportedThroughput = Long.valueOf(currentPlaybackInfo.getVideoThroughput()).doubleValue();
                 lastReportedResource = currentPlaybackInfo.getMediaUrl();
