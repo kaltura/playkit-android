@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.Youbora;
+package com.kaltura.playkit.plugins.youbora;
 
 import android.content.Context;
 
