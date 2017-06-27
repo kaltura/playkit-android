@@ -82,7 +82,6 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
      */
     @Override
     protected void sendAnalyticsEvent(final PhoenixActionType eventType){
-        String fileId = this.fileId;
         String method = eventType == PhoenixActionType.HIT ? "MediaHit": "MediaMark";
         String action = eventType.name().toLowerCase();
 
@@ -94,7 +93,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
             lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
         RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEvent(baseUrl + "m=" + method, initObject, action,
-                mediaConfig.getMediaEntry().getId(), fileId, lastKnownPlayerPosition);
+                mediaConfig.getMediaEntry().getId(), this.fileId, lastKnownPlayerPosition);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
