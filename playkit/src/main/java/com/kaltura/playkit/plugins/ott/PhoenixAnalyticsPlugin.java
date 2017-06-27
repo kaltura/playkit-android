@@ -9,7 +9,6 @@ import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.playkit.MessageBus;
-import com.kaltura.playkit.OttEvent;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
