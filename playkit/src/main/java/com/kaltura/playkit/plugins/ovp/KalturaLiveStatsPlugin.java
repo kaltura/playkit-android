@@ -29,24 +29,27 @@ import java.util.TimerTask;
  */
 
 public class KalturaLiveStatsPlugin extends PKPlugin {
+
     private static final PKLog log = PKLog.get("KalturaLiveStatsPlugin");
     private static final int DISTANCE_FROM_LIVE_THRESHOLD = 15 * 1000; //15 sec
 
-    private Context context;
-    private boolean isBuffering = false;
-    private long lastReportedBitrate = -1;
     private Player player;
-    private PKMediaConfig mediaConfig;
-    private KalturaLiveStatsConfig pluginConfig;
     private MessageBus messageBus;
+    private PKMediaConfig mediaConfig;
     private RequestQueue requestsExecutor;
+    private KalturaLiveStatsConfig pluginConfig;
     private java.util.Timer timer = new java.util.Timer();
-    private int eventIdx = 1;
+
+    private int eventIndex = 1;
     private long bufferTime = 0;
     private long bufferStartTime = 0;
-    private boolean isLive = false;
-    private boolean isFirstPlay = true;
+    private long lastReportedBitrate = -1;
+
     private String playbackProtocol;
+
+    private boolean isLive = false;
+    private boolean isBuffering = false;
+    private boolean isFirstPlay = true;
 
     public enum KLiveStatsEvent {
         LIVE(1),
@@ -82,23 +85,22 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     @Override
     protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
-        messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY, PlayerEvent.Type.PLAYBACK_INFO_UPDATED, PlayerEvent.Type.SOURCE_SELECTED);
-        this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
-        this.pluginConfig = parseConfig(config);
         this.messageBus = messageBus;
-        this.context = context;
+        this.pluginConfig = parseConfig(config);
+        this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
+        this.messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY, PlayerEvent.Type.PLAYBACK_INFO_UPDATED, PlayerEvent.Type.SOURCE_SELECTED);
     }
 
     @Override
     public void onDestroy() {
         stopLiveEvents();
-        eventIdx = 1;
+        eventIndex = 1;
     }
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-        eventIdx = 1;
+        eventIndex = 1;
         this.mediaConfig = mediaConfig;
     }
 
@@ -132,7 +134,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                         stopLiveEvents();
                         break;
                     case PLAYBACK_INFO_UPDATED:
-                        PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).getPlaybackInfo();
+                        PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).playbackInfo;
                         lastReportedBitrate = currentPlaybackInfo.getVideoBitrate();
                         log.d("lastReportedBitrate = " + lastReportedBitrate + ", isLiveStream = " + currentPlaybackInfo.getIsLiveStream());
                         break;
@@ -220,9 +222,6 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private void sendLiveEvent(final long bufferTime) {
         String sessionId = (player.getSessionId() != null) ? player.getSessionId() : "";
 
-        // Parameters for the request -
-        // String baseUrl, int partnerId, int eventType, int eventIndex, int bufferTime, int bitrate,
-        // String startTime,  String entryId,  boolean isLive, String referrer, String playbackProtocol
         long distanceFromLive = 0;
         if (player != null) {
             distanceFromLive = player.getDuration() - player.getCurrentPosition();
@@ -231,7 +230,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         RequestBuilder requestBuilder = LiveStatsService.sendLiveStatsEvent(pluginConfig.getBaseUrl(),
                 pluginConfig.getPartnerId(),
                 (distanceFromLive <= DISTANCE_FROM_LIVE_THRESHOLD) ? KLiveStatsEvent.LIVE.value : KLiveStatsEvent.DVR.value,
-                eventIdx++, bufferTime,
+                eventIndex++, bufferTime,
                 lastReportedBitrate,
                 sessionId, mediaConfig.getStartPosition(),
                 pluginConfig.getEntryId(),
