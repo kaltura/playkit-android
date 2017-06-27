@@ -42,42 +42,31 @@ public class PlayerEvent implements PKEvent {
 
     public static class TracksAvailable extends PlayerEvent {
 
-        private final PKTracks tracksInfo;
+        public final PKTracks tracksInfo;
 
         public TracksAvailable(PKTracks tracksInfo) {
             super(Type.TRACKS_AVAILABLE);
             this.tracksInfo = tracksInfo;
         }
-
-        public PKTracks getPKTracks() {
-            return tracksInfo;
-        }
     }
 
     public static class VolumeChanged extends PlayerEvent {
 
-        private float volume;
+        public float volume;
 
         public VolumeChanged(float volume) {
             super(Type.VOLUME_CHANGED);
             this.volume = volume;
         }
-
-        public float getVolume() {
-            return volume;
-        }
     }
 
     public static class PlaybackInfoUpdated extends PlayerEvent {
-        private PlaybackInfo playbackInfo;
+
+        public final PlaybackInfo playbackInfo;
 
         public PlaybackInfoUpdated(PlaybackInfo playbackInfo) {
             super(Type.PLAYBACK_INFO_UPDATED);
             this.playbackInfo = playbackInfo;
-        }
-
-        public PlaybackInfo getPlaybackInfo() {
-            return playbackInfo;
         }
     }
 
