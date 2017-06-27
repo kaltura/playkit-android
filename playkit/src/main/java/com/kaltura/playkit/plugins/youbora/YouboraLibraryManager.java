@@ -12,6 +12,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.PKError;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.BuildConfig;
 import com.npaw.youbora.youboralib.utils.Utils;
@@ -26,8 +27,8 @@ import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
  * @hide
  */
 
-public class YouboraLibraryManager extends PluginGeneric {
-    
+class YouboraLibraryManager extends PluginGeneric {
+
     private static final PKLog log = PKLog.get("YouboraLibraryManager");
     private static final String KALTURA_ANDROID = "Kaltura-Android";
 
@@ -45,11 +46,11 @@ public class YouboraLibraryManager extends PluginGeneric {
     private String lastReportedRendition;
     private AdCuePoints adCuePoints;
 
-    public YouboraLibraryManager(String options) throws JSONException {
+    YouboraLibraryManager(String options) throws JSONException {
         super(options);
     }
 
-    public YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus, PKMediaConfig mediaConfig, Player player) {
+    YouboraLibraryManager(Map<String, Object> options, MessageBus messageBus, PKMediaConfig mediaConfig, Player player) {
         super(options);
         this.player = player;
         this.messageBus = messageBus;
@@ -62,7 +63,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     protected void init() {
         super.init();
         this.pluginName = KALTURA_ANDROID;
-        this.pluginVersion = BuildConfig.VERSION_NAME + "-"+ getPlayerVersion();
+        this.pluginVersion = BuildConfig.VERSION_NAME + "-" + getPlayerVersion();
     }
 
     private void onEvent(PlayerEvent.StateChanged event) {
@@ -97,12 +98,12 @@ public class YouboraLibraryManager extends PluginGeneric {
         @Override
         public void onEvent(PKEvent event) {
 
-            if (event instanceof PlayerEvent.PlaybackInfoUpdated) {
-                PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).getPlaybackInfo();
-                lastReportedBitrate    = Long.valueOf(currentPlaybackInfo.getVideoBitrate()).doubleValue();
+            if (event.eventType() == PlayerEvent.Type.PLAYBACK_INFO_UPDATED) {
+                PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).playbackInfo;
+                lastReportedBitrate = Long.valueOf(currentPlaybackInfo.getVideoBitrate()).doubleValue();
                 lastReportedThroughput = Long.valueOf(currentPlaybackInfo.getVideoThroughput()).doubleValue();
-                lastReportedResource  = currentPlaybackInfo.getMediaUrl();
-                lastReportedRendition = generateRendition(lastReportedBitrate, (int)currentPlaybackInfo.getVideoWidth(), (int)currentPlaybackInfo.getVideoHeight());
+                lastReportedResource = currentPlaybackInfo.getMediaUrl();
+                lastReportedRendition = generateRendition(lastReportedBitrate, (int) currentPlaybackInfo.getVideoWidth(), (int) currentPlaybackInfo.getVideoHeight());
                 return;
             }
 
@@ -116,7 +117,7 @@ public class YouboraLibraryManager extends PluginGeneric {
                         YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
                     case ENDED:
-                        if (!isFirstPlay && ((adCuePoints == null) || (adCuePoints != null && !adCuePoints.hasPostRoll()))) {
+                        if (!isFirstPlay && ((adCuePoints == null) || !adCuePoints.hasPostRoll())) {
                             endedHandler();
                             isFirstPlay = true;
                             adCuePoints = null;
@@ -163,29 +164,29 @@ public class YouboraLibraryManager extends PluginGeneric {
     };
 
     private void sendErrorHandler(PKEvent event) {
+
         String errorMsg = "Player error occurred.";
-        PlayerEvent.ExceptionInfo exceptionInfo = (PlayerEvent.ExceptionInfo) event;
-        if (exceptionInfo == null || exceptionInfo.getException() == null) {
+        PKError error = (PKError) event;
+        if (error.cause == null) {
             errorHandler(errorMsg, event.eventType().toString());
             return;
         }
-        Exception playerErrorException = exceptionInfo.getException();
-        if (playerErrorException != null) {
-            String errorMetadata = errorMsg;
-            String exceptionClass = "";
-            String exceptionCause = "";
-            if (playerErrorException.getCause() != null && playerErrorException.getCause().getClass() != null) {
-                exceptionClass = playerErrorException.getCause().getClass().getName();
-                errorMetadata = (playerErrorException.getCause().toString() != null) ? playerErrorException.getCause().toString() : "NA";
-                exceptionCause = playerErrorException.toString();
-            }
-            errorHandler(exceptionCause, exceptionClass, errorMetadata);
+
+        Exception playerErrorException = (Exception) error.cause;
+        String errorMetadata = errorMsg;
+        String exceptionClass = "";
+        String exceptionCause = "";
+        if (playerErrorException.getCause() != null && playerErrorException.getCause().getClass() != null) {
+            exceptionClass = playerErrorException.getCause().getClass().getName();
+            errorMetadata = (playerErrorException.getCause().toString() != null) ? playerErrorException.getCause().toString() : "NA";
+            exceptionCause = playerErrorException.toString();
         }
+        errorHandler(exceptionCause, exceptionClass, errorMetadata);
     }
 
     private void onAdEvent(AdEvent event) {
-        if (((AdEvent) event).type != AdEvent.Type.PLAY_HEAD_CHANGED){
-            log.d("Ad Event: " + ((AdEvent) event).type.name());
+        if (event.type != AdEvent.Type.PLAY_HEAD_CHANGED) {
+            log.d("Ad Event: " + event.type.name());
         }
 
         switch (event.type) {
@@ -198,9 +199,7 @@ public class YouboraLibraryManager extends PluginGeneric {
                 break;
             case CUEPOINTS_CHANGED:
                 AdEvent.AdCuePointsUpdateEvent cuePointsList = (AdEvent.AdCuePointsUpdateEvent) event;
-                if (cuePointsList != null) {
-                    adCuePoints = cuePointsList.cuePoints;
-                }
+                adCuePoints = cuePointsList.cuePoints;
                 break;
             case ALL_ADS_COMPLETED:
                 if (adCuePoints != null && adCuePoints.hasPostRoll()) {
@@ -261,7 +260,7 @@ public class YouboraLibraryManager extends PluginGeneric {
     }
 
     public Double getMediaDuration() {
-        double lastReportedMediaDuration  =  (mediaConfig == null) ? 0 : Long.valueOf(mediaConfig.getMediaEntry().getDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
+        double lastReportedMediaDuration = (mediaConfig == null) ? 0 : Long.valueOf(mediaConfig.getMediaEntry().getDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
         log.d("lastReportedMediaDuration = " + lastReportedMediaDuration);
         return lastReportedMediaDuration;
     }
@@ -283,7 +282,7 @@ public class YouboraLibraryManager extends PluginGeneric {
         messageBus.post(new YouboraEvent.YouboraReport(reportedEventName));
     }
 
-    public String generateRendition(double bitrate,  int width, int height) {
+    public String generateRendition(double bitrate, int width, int height) {
 
         if ((width <= 0 || height <= 0) && bitrate <= 0) {
             return super.getRendition();

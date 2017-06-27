@@ -28,23 +28,23 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     // Fields shared with TVPAPIAnalyticsPlugin
     int mediaHitInterval;
-    String fileId;
-    String baseUrl;
-    Context context;
+    Timer timer;
     Player player;
-    MessageBus messageBus; // used also by TVPAPI Analytics
+    Context context;
+    MessageBus messageBus;
     PKMediaConfig mediaConfig;
     RequestQueue requestsExecutor;
-    Timer timer;
+
+    String fileId;
+    String baseUrl;
     long lastKnownPlayerPosition = 0;
 
-    // Private fields
     private String ks;
     private int partnerId;
-    private boolean isFirstPlay = true;
     private boolean intervalOn = false;
-    private boolean timerWasCancelled = false;
+    private boolean isFirstPlay = true;
     private boolean isMediaFinished = false;
+    private boolean timerWasCancelled = false;
 
     enum PhoenixActionType {
         HIT,
@@ -111,9 +111,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onUpdateConfig(Object config) {
         setConfigMembers(config);
-        if (baseUrl == null || baseUrl.isEmpty() ||  partnerId >= 0) {
+        if (baseUrl == null || baseUrl.isEmpty() || partnerId >= 0) {
             cancelTimer();
-            messageBus.remove(mEventListener,(Enum[]) PlayerEvent.Type.values());
+            messageBus.remove(mEventListener, (Enum[]) PlayerEvent.Type.values());
         }
     }
 
@@ -121,14 +121,12 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     protected void onApplicationPaused() {
         log.d("onApplicationPaused");
         cancelTimer();
-
     }
 
     @Override
     protected void onApplicationResumed() {
-        timer = new Timer();
         log.d("onApplicationResumed");
-
+        timer = new Timer();
     }
 
     @Override
@@ -149,18 +147,15 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             return;
                         }
                         sendAnalyticsEvent(PhoenixActionType.STOP);
-                        cancelTimer();
-                        timer = new Timer();
+                        resetTimer();
                         break;
                     case ENDED:
-                        cancelTimer();
-                        timer = new Timer();
+                        resetTimer();
                         sendAnalyticsEvent(PhoenixActionType.FINISH);
                         isMediaFinished = true;
                         break;
                     case ERROR:
-                        cancelTimer();
-                        timer = new Timer();
+                        resetTimer();
                         sendAnalyticsEvent(PhoenixActionType.ERROR);
                         break;
                     case LOADED_METADATA:
@@ -175,8 +170,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             return;
                         }
                         sendAnalyticsEvent(PhoenixActionType.PAUSE);
-                        cancelTimer();
-                        timer = new Timer();
+                        resetTimer();
                         intervalOn = false;
                         break;
                     case PLAY:
@@ -213,6 +207,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
     }
 
+    private void resetTimer() {
+        cancelTimer();
+        timer = new Timer();
+    }
+
     /**
      * Media Hit analytics event
      */
@@ -237,7 +236,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * @param eventType - Enum stating the event type to send
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
-        
+
         if (eventType != PhoenixActionType.STOP) {
             lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
@@ -273,7 +272,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             int partnerId = params.get("partnerId").getAsInt();
             int timerInterval = params.get("timerInterval").getAsInt();
             String ks = params.get("ks").getAsString();
-            
+
             return new PhoenixAnalyticsConfig(partnerId, baseUrl, ks, timerInterval);
         }
         return null;

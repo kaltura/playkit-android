@@ -14,15 +14,12 @@ public class KalturaLiveStatsEvent implements PKEvent {
 
     public static class KalturaLiveStatsReport extends KalturaLiveStatsEvent {
 
-        private long bufferTime;
+        public final long bufferTime;
 
         public KalturaLiveStatsReport(long bufferTime) {
             this.bufferTime = bufferTime;
         }
 
-        public long getBufferTime() {
-            return bufferTime;
-        }
     }
 
 

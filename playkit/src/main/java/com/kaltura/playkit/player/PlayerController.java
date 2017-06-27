@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 
-import com.google.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -19,6 +18,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.PKError;
 
 import java.util.UUID;
 
@@ -31,8 +31,6 @@ import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 public class PlayerController implements Player {
 
     private static final PKLog log = PKLog.get("PlayerController");
-    private static final int ALLOWED_ERROR_RETRIES = 3;
-
 
     private PlayerEngine player;
     private Context context;
@@ -90,7 +88,7 @@ public class PlayerController implements Player {
         public void onEvent(PlayerEvent.Type eventType) {
             if (eventListener != null) {
 
-                PlayerEvent event;
+                PKEvent event;
 
                 // TODO: use specific event class
                 switch (eventType) {
@@ -111,16 +109,12 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.PlaybackInfoUpdated(player.getPlaybackInfo());
                         break;
                     case ERROR:
-                        event = player.getCurrentException();
-                        PlayerEvent.ExceptionInfo exceptionInfo = (PlayerEvent.ExceptionInfo) event;
-                        if (exceptionInfo == null || exceptionInfo.getException() == null) {
+                        event = new PlayerEvent.Error(player.getCurrentError());
+                        //If error should be handled locally, do not send it to messageBus.
+                        if (maybeHandleExceptionLocally(player.getCurrentError())) {
                             return;
                         }
 
-                        //if exception should be handled locally, do not send it to message bus.
-                        if (maybeHandleExceptionLocally(exceptionInfo)) {
-                            return;
-                        }
                         break;
                     case METADATA_AVAILABLE:
                         if (player.getMetadata() == null || player.getMetadata().isEmpty()) {
@@ -190,7 +184,7 @@ public class PlayerController implements Player {
         }
 
         if (player == null) {
-            log.e("Error in " + visibilityFunction + " player is null");
+            log.w("Error in " + visibilityFunction + " player is null");
             return;
         }
 
@@ -202,7 +196,7 @@ public class PlayerController implements Player {
                 playerView.hideVideoSurface();
             }
         } else {
-            log.e("Error in " + visibilityFunction + " playerView is null");
+            log.w("Error in " + visibilityFunction + " playerView is null");
         }
     }
 
@@ -213,7 +207,7 @@ public class PlayerController implements Player {
         }
 
         if (player == null) {
-            log.e("Error in " + visibilityFunction + " player is null");
+            log.w("Error in " + visibilityFunction + " player is null");
             return;
         }
 
@@ -225,7 +219,7 @@ public class PlayerController implements Player {
                 playerView.hideVideoSubtitles();
             }
         } else {
-            log.e("Error in " + visibilityFunction + " playerView is null");
+            log.w("Error in " + visibilityFunction + " playerView is null");
         }
     }
 
@@ -236,12 +230,6 @@ public class PlayerController implements Player {
 
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
-
-        if (sourceConfig == null) {
-            //TODO send error to the application.
-            log.e("Cant prepare player with media config. PKMediaConfig is null.");
-            return;
-        }
 
         PKMediaSource source = sourceConfig.mediaSource;
         boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
@@ -255,39 +243,34 @@ public class PlayerController implements Player {
 
     }
 
-    public void setMedia(PKMediaConfig mediaConfig) {
+    /**
+     * Responsible for preparing source configurations before loading it to actual player.
+     *
+     * @param mediaConfig - the mediaConfig that holds necessary initial data.
+     * @return - true if managed to create valid sourceConfiguration object,
+     * otherwise will return false and notify user with the error that happened.
+     */
+    public boolean setMedia(PKMediaConfig mediaConfig) {
         log.d("setMedia");
-        //This is a new entry.
+
         isNewEntry = true;
 
-        //generate the session id.
         sessionId = generateSessionId();
         if (contentRequestAdapter != null) {
             contentRequestAdapter.updateParams(this);
         }
 
-        //When mediaConfig is null, we can not build a valid sourceConfig object.
-        //So assign it to null, and return. This will prevent from continue of the prepare() flow.
-        if (mediaConfig == null) {
-            log.e("No playable mediaConfig found, mediaConfig = null");
-            sourceConfig = null;
-            return;
-        }
-
         this.mediaConfig = mediaConfig;
-
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
-        //If source was not able to select, assign sourceConfig to null and return.
-        //This will prevent from continue of the prepare() flow.
         if (source == null) {
-            log.e("No playable source found for entry");
-            sourceConfig = null;
-            return;
+            sendErrorMessage(PKPlayerErrorType.SOURCE_SELECTION_FAILED, "No playable source found for entry");
+            return false;
         }
 
         this.sourceConfig = new PKMediaSourceConfig(source, contentRequestAdapter, cea608CaptionsEnabled);
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
+        return true;
     }
 
     private String generateSessionId() {
@@ -353,7 +336,7 @@ public class PlayerController implements Player {
 
     private void startPlaybackFrom(long startPosition) {
         if (player == null) {
-            log.e("Attempt to invoke 'startPlaybackFrom()' on null instance of the player engine");
+            log.w("Attempt to invoke 'startPlaybackFrom()' on null instance of the player engine");
             return;
         }
 
@@ -392,7 +375,7 @@ public class PlayerController implements Player {
     public void seekTo(long position) {
         log.d("seek to " + position);
         if (player == null) {
-            log.e("Attempt to invoke 'seekTo()' on null instance of the player engine");
+            log.w("Attempt to invoke 'seekTo()' on null instance of the player engine");
             return;
         }
         player.seekTo(position);
@@ -408,7 +391,7 @@ public class PlayerController implements Player {
         log.d("play");
 
         if (player == null) {
-            log.e("Attempt to invoke 'play()' on null instance of the player engine");
+            log.w("Attempt to invoke 'play()' on null instance of the player engine");
             return;
         }
         addPlayerView();
@@ -418,7 +401,7 @@ public class PlayerController implements Player {
     public void pause() {
         log.d("pause");
         if (player == null) {
-            log.e("Attempt to invoke 'pause()' on null instance of the player engine");
+            log.w("Attempt to invoke 'pause()' on null instance of the player engine");
             return;
         }
         player.pause();
@@ -428,7 +411,7 @@ public class PlayerController implements Player {
     public void replay() {
         log.d("replay");
         if (player == null) {
-            log.e("Attempt to invoke 'replay()' on null instance of the player engine");
+            log.w("Attempt to invoke 'replay()' on null instance of the player engine");
             return;
         }
         player.replay();
@@ -437,7 +420,7 @@ public class PlayerController implements Player {
     @Override
     public void setVolume(float volume) {
         if (player == null) {
-            log.e("Attempt to invoke 'setVolume()' on null instance of the player engine");
+            log.w("Attempt to invoke 'setVolume()' on null instance of the player engine");
             return;
         }
         player.setVolume(volume);
@@ -490,7 +473,7 @@ public class PlayerController implements Player {
     public void onApplicationPaused() {
         log.d("onApplicationPaused");
         if (player == null) {
-            log.e("Attempt to invoke 'release()' on null instance of the player engine");
+            log.w("Attempt to invoke 'release()' on null instance of the player engine");
             return;
         }
 
@@ -504,15 +487,15 @@ public class PlayerController implements Player {
         if (player != null) {
             player.restore();
         }
-        prepare(mediaConfig);
         togglePlayerListeners(true);
+        prepare(mediaConfig);
 
     }
 
     @Override
     public void changeTrack(String uniqueId) {
         if (player == null) {
-            log.e("Attempt to invoke 'changeTrack()' on null instance of the player engine");
+            log.w("Attempt to invoke 'changeTrack()' on null instance of the player engine");
             return;
         }
 
@@ -522,15 +505,9 @@ public class PlayerController implements Player {
     private boolean shouldSwitchBetweenPlayers(PKMediaSource newSource) {
 
         PKMediaFormat currentMediaFormat = newSource.getMediaFormat();
-        if (currentMediaFormat != PKMediaFormat.wvm && player instanceof MediaPlayerWrapper) {
-            return true;
-        }
+        return currentMediaFormat != PKMediaFormat.wvm && player instanceof MediaPlayerWrapper ||
+                currentMediaFormat == PKMediaFormat.wvm && player instanceof ExoPlayerWrapper;
 
-        if (currentMediaFormat == PKMediaFormat.wvm && player instanceof ExoPlayerWrapper) {
-            return true;
-        }
-
-        return false;
     }
 
     private void removePlayerView() {
@@ -539,26 +516,23 @@ public class PlayerController implements Player {
         playerEngineView = null;
     }
 
-    private boolean maybeHandleExceptionLocally(PlayerEvent.ExceptionInfo exceptionInfo) {
-        if (exceptionInfo.getErrorCounter() > ALLOWED_ERROR_RETRIES) {
-            log.w("Amount of the retries that happened on the same error are exceed the allowed amount of retries. Allowed amount of retries " + ALLOWED_ERROR_RETRIES + " actual amount " + exceptionInfo.getErrorCounter());
-            return false;
-        }
-
-        if (exceptionInfo.getException() instanceof ExoPlaybackException) {
-            ExoPlaybackException exoPlaybackException = (ExoPlaybackException) exceptionInfo.getException();
-            if (exoPlaybackException.type == ExoPlaybackException.TYPE_RENDERER) {
-
-                if (exoPlaybackException.getRendererException() instanceof MediaCodec.CryptoException) {
-                    ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
-                    long currentPosition = player.getCurrentPosition();
-                    exoPlayerWrapper.savePlayerPosition();
-                    exoPlayerWrapper.load(sourceConfig);
-                    exoPlayerWrapper.startFrom(currentPosition);
-                    return true;
-                }
+    private boolean maybeHandleExceptionLocally(PKError error) {
+        if (error.errorType == PKPlayerErrorType.RENDERER_ERROR) {
+            if (error.cause instanceof MediaCodec.CryptoException) {
+                ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
+                long currentPosition = player.getCurrentPosition();
+                exoPlayerWrapper.savePlayerPosition();
+                exoPlayerWrapper.load(sourceConfig);
+                exoPlayerWrapper.startFrom(currentPosition);
+                return true;
             }
         }
         return false;
+    }
+
+    private void sendErrorMessage(Enum errorType, String errorMessage) {
+        log.e(errorMessage);
+        PlayerEvent errorEvent = new PlayerEvent.Error(new PKError(errorType, errorMessage, null));
+        eventListener.onEvent(errorEvent);
     }
 }

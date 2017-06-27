@@ -97,8 +97,6 @@ public class KalturaStatsPlugin extends PKPlugin {
         }
     }
 
-
-
     public static final Factory factory = new Factory() {
         @Override
         public String getName() {
@@ -148,8 +146,6 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-
-
         this.mediaConfig = mediaConfig;
         resetPlayerFlags();
     }
@@ -217,9 +213,10 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
 
             if (event instanceof PlayerEvent) {
-                if (player.getDuration() < 0){
+                if (player.getDuration() < 0) {
                     return;
                 }
+
                 log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
                     case METADATA_AVAILABLE:
@@ -269,7 +266,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                     default:
                         break;
                 }
-            } else if (event instanceof AdEvent){
+            } else if (event instanceof AdEvent) {
                 KalturaStatsPlugin.this.onEvent((AdEvent) event);
             }
         }
@@ -377,6 +374,10 @@ public class KalturaStatsPlugin extends PKPlugin {
                     }
                 }
                 break;
+            case ERROR:
+                sendAnalyticsEvent(KStatsEvent.ERROR);
+                cancelTimer();
+                break;
             default:
                 break;
         }
@@ -428,7 +429,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                 log.d("progress = " + progress + " seekPercent = " + seekPercent);
                 if (!playReached25 && progress >= 0.25 && seekPercent < 0.5) {
                     sendPlayReached25();
-                } else if (!playReached50 && progress >= 0.5 && seekPercent <  0.75) {
+                } else if (!playReached50 && progress >= 0.5 && seekPercent < 0.75) {
                     sendPlayReached25();
                     sendPlayReached50();
                 } else if (!playReached75 && progress >= 0.75 && seekPercent < 1) {
@@ -450,13 +451,9 @@ public class KalturaStatsPlugin extends PKPlugin {
 
         long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration() / Consts.MILLISECONDS_MULTIPLIER;
 
-        // Parameters for the request -
-        //        String baseUrl, int partnerId, int eventType, long duration,
-        //        String entryId, long position, String uiConfId, String entryId, String widgetId,  boolean isSeek,
-        //        int playback context, String applicationId, String userId
         final RequestBuilder requestBuilder = StatsService.sendStatsEvent(pluginConfig.getBaseUrl(), pluginConfig.getPartnerId(), eventType.getValue(), PlayKitManager.CLIENT_TAG, duration,
                 sessionId, player.getCurrentPosition(), pluginConfig.getUiconfId(), pluginConfig.getEntryId(), "_" + pluginConfig.getPartnerId(), hasSeeked,
-                pluginConfig.getContextId(), context.getPackageName(),pluginConfig.getUserId());
+                pluginConfig.getContextId(), context.getPackageName(), pluginConfig.getUserId());
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
