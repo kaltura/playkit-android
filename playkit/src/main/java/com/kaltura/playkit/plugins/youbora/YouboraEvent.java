@@ -14,14 +14,10 @@ public class YouboraEvent implements PKEvent {
 
     public static class YouboraReport extends YouboraEvent{
 
-        private String reportedEventName;
+        public final String reportedEventName;
 
         public YouboraReport(String reportedEventName) {
             this.reportedEventName = reportedEventName;
-        }
-
-        public String getReportedEventName() {
-            return reportedEventName;
         }
     }
 

@@ -14,14 +14,10 @@ public class PhoenixAnalyticsEvent implements PKEvent {
 
     public static class PhoenixAnalyticsReport extends PhoenixAnalyticsEvent {
 
-        private String reportedEventName;
+        public final String reportedEventName;
 
         public PhoenixAnalyticsReport(String reportedEventName) {
             this.reportedEventName = reportedEventName;
-        }
-
-        public String getReportedEventName() {
-            return reportedEventName;
         }
     }
 

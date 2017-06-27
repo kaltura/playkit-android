@@ -14,14 +14,10 @@ public class TVPAPIAnalyticsEvent implements PKEvent {
 
     public static class TVPAPIAnalyticsReport extends TVPAPIAnalyticsEvent {
 
-        private String reportedEventName;
+        public final String reportedEventName;
 
         public TVPAPIAnalyticsReport(String reportedEventName) {
             this.reportedEventName = reportedEventName;
-        }
-
-        public String getReportedEventName() {
-            return reportedEventName;
         }
     }
 
