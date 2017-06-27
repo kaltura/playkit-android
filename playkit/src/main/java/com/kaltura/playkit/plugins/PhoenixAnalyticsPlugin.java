@@ -41,7 +41,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private RequestQueue requestsExecutor;
     private Timer timer;
 
-    private long continueTime;
     private long lastKnownPlayerPosition = 0;
 
     private boolean isFirstPlay = true;
@@ -106,11 +105,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-        isFirstPlay = true;
         this.mediaConfig = mediaConfig;
-        if (this.mediaConfig.getStartPosition() != -1) {
-            this.continueTime = this.mediaConfig.getStartPosition();
-        }
+        isFirstPlay = true;
         isMediaFinished = false;
     }
 
