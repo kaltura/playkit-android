@@ -2,6 +2,9 @@ package com.kaltura.playkit;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.drm.DrmInfo;
 import android.drm.DrmInfoRequest;
 import android.drm.DrmManagerClient;
@@ -22,44 +25,121 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
  * Created by Noam Tamim @ Kaltura on 25/04/2017.
  */
-public class PKDeviceInfo {
-    private static final String TAG = "PKDeviceInfo";
+public class PKDeviceCapabilities {
+    private static final PKLog log = PKLog.get("PKDeviceCapabilities");
+    
     private static final UUID WIDEVINE_UUID = new UUID(0xEDEF8BA979D64ACEL, 0xA3C827DCD51D21EDL);
+    private static final String SHARED_PREFS_NAME = "PKDeviceCapabilities";
+    private static final String PREFS_ENTRY_FINGERPRINT = "Build.FINGERPRINT";
+    private static final String DEVICE_CAPABILITIES_URL = "https://cdnapisec.kaltura.com/api_v3/index.php?service=stats&action=reportDeviceCapabilities";
+    
+    private static boolean reportSent = false;
+    
     private final Context context;
     private final JSONObject root = new JSONObject();
 
-    public static JsonObject getInfo(Context ctx) {
-        PKDeviceInfo collector = new PKDeviceInfo(ctx);
+    public static JsonObject getReport(Context ctx) {
+        PKDeviceCapabilities collector = new PKDeviceCapabilities(ctx);
         JSONObject collect = collector.collect();
         return new JsonParser().parse(collect.toString()).getAsJsonObject();
     }
 
-    private PKDeviceInfo(Context context) {
+    private PKDeviceCapabilities(Context context) {
         this.context = context;
+    }
+
+    static void maybeSendReport(final Context context) {
+        if (reportSent) {
+            return;
+        }
+
+        final SharedPreferences sharedPrefs = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
+        String fingerprint = sharedPrefs.getString(PREFS_ENTRY_FINGERPRINT, null);
+        
+        // If we already sent capabilities for this Android build, don't send again.
+        if (Build.FINGERPRINT.equals(fingerprint)) {
+            reportSent = true;
+            return;
+        }
+
+        new Thread() {
+            @Override
+            public void run() {
+                sendReport(context, sharedPrefs);
+            }
+        }.start();
+    }
+
+    private static void sendReport(Context context, SharedPreferences sharedPrefs) {
+
+        JsonObject report = getReport(context);
+        
+        JsonObject data = new JsonObject();
+        data.add("data", report);
+
+        String dataString = data.toString();
+        try {
+            Map<String, String> headers = new HashMap<>(1);
+            headers.put("Content-Type", "application/json");
+            
+            byte[] bytes = Utils.executePost(DEVICE_CAPABILITIES_URL, dataString.getBytes(), headers);
+            log.d("Sent report, response was: " + new String(bytes));
+        } catch (IOException e) {
+            log.e("Failed to report device capabilities", e);
+            return;
+        }
+
+        // If we got here, save the fingerprint so we don't send again until the OS updates.
+        sharedPrefs.edit().putString(PREFS_ENTRY_FINGERPRINT, Build.FINGERPRINT).apply();
+        reportSent = true;
     }
 
     private JSONObject collect() {
         try {
             JSONObject root = this.root;
+            root.put("host", hostInfo());
             root.put("system", systemInfo());
             root.put("drm", drmInfo());
             root.put("display", displayInfo());
             root.put("media", mediaCodecInfo());
-            root.put("root", rootInfo());
 
         } catch (JSONException e) {
-            Log.e(TAG, "Error");
+            
+            log.e("Error", e);
         }
         
         return root;
+    }
+
+    private JSONObject hostInfo() throws JSONException {
+        JSONObject result = new JSONObject();
+        String packageName = context.getPackageName();
+        try {
+            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(packageName, 0);
+            
+            result
+                    .put("packageName", packageName)
+                    .put("versionCode", packageInfo.versionCode)
+                    .put("versionName", packageInfo.versionName)
+                    .put("firstInstallTime", packageInfo.firstInstallTime)
+                    .put("lastUpdateTime", packageInfo.lastUpdateTime);
+            
+        } catch (PackageManager.NameNotFoundException e) {
+            log.e("Failed to get package info", e);
+            result.put("error", "Failed to get package info");
+        }
+
+        return result;
     }
 
     private JSONObject displayInfo() throws JSONException {
@@ -119,7 +199,6 @@ public class PKDeviceInfo {
 
     private JSONObject mediaCodecInfo(MediaCodecInfo mediaCodec) throws JSONException {
         return new JSONObject()
-//                .put("isEncoder", mediaCodec.isEncoder())
                 .put("supportedTypes", jsonArray(mediaCodec.getSupportedTypes()));
     }
 
@@ -138,12 +217,9 @@ public class PKDeviceInfo {
             }
         }
 
-        ArrayList<MediaCodecInfo> encoders = new ArrayList<>();
         ArrayList<MediaCodecInfo> decoders = new ArrayList<>();
         for (MediaCodecInfo mediaCodec : mediaCodecs) {
-            if (mediaCodec.isEncoder()) {
-                encoders.add(mediaCodec);
-            } else {
+            if (!mediaCodec.isEncoder()) {
                 decoders.add(mediaCodec);
             }
         }
@@ -192,7 +268,7 @@ public class PKDeviceInfo {
 
                     mediaDrmEvents.put(new JSONObject().put("event", event).put("extra", extra).put("data", encodedData));
                 } catch (JSONException e) {
-                    Log.e(TAG, "JSONError", e);
+                    log.e("JSONError", e);
                 }
             }
         });
@@ -206,25 +282,8 @@ public class PKDeviceInfo {
         }
 
 
-        JSONObject provision = new JSONObject();
-        try {
-            MediaDrm.ProvisionRequest provisionRequest = mediaDrm.getProvisionRequest();
-            byte[] data = provisionRequest.getData();
-            String encodedData = Base64.encodeToString(data, Base64.NO_WRAP);
-
-            provision
-                    .put("url", provisionRequest.getDefaultUrl())
-                    .put("data", encodedData);
-        } catch (RuntimeException e) {
-            String message = e.toString();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && e instanceof MediaDrm.MediaDrmStateException) {
-                message += "; " + ((MediaDrm.MediaDrmStateException) e).getDiagnosticInfo();
-            }
-            provision.put("Exception(getProvisionRequest)", message);
-        }
-
         String[] stringProps = {MediaDrm.PROPERTY_VENDOR, MediaDrm.PROPERTY_VERSION, MediaDrm.PROPERTY_DESCRIPTION, MediaDrm.PROPERTY_ALGORITHMS, "securityLevel", "systemId", "privacyMode", "sessionSharing", "usageReportingSupport", "appId", "origin", "hdcpLevel", "maxHdcpLevel", "maxNumberOfSessions", "numberOfOpenSessions"};
-        String[] byteArrayProps = {MediaDrm.PROPERTY_DEVICE_UNIQUE_ID, "provisioningUniqueId", "serviceCertificate"};
+        String[] byteArrayProps = {"serviceCertificate"};
 
         JSONObject props = new JSONObject();
 
@@ -250,8 +309,6 @@ public class PKDeviceInfo {
         JSONObject response = new JSONObject();
         response.put("properties", props);
         response.put("events", mediaDrmEvents);
-        response.put("provisionRequest", provision);
-
 
         return response;
     }
@@ -272,22 +329,5 @@ public class PKDeviceInfo {
                 .put("TAGS", Build.TAGS)
                 .put("FINGERPRINT", Build.FINGERPRINT)
                 .put("ARCH", arch);
-    }
-
-    private JSONObject rootInfo() throws JSONException {
-
-        JSONObject info = new JSONObject();
-
-        String[] paths = { "/system/app/Superuser.apk", "/sbin/su", "/system/bin/su", "/system/xbin/su", "/data/local/xbin/su", "/data/local/bin/su", "/system/sd/xbin/su",
-                "/system/bin/failsafe/su", "/data/local/su" };
-        JSONArray files = new JSONArray();
-        for (String path : paths) {
-            if (new File(path).exists()) {
-                files.put(path);
-            }
-        }
-        info.put("existingFiles", files);
-
-        return info;
     }
 }
