@@ -16,6 +16,9 @@ public class PlayKitManager {
     public static final String VERSION_STRING = BuildConfig.VERSION_NAME;
     public static final String CLIENT_TAG = "playkit/android-" + VERSION_STRING;
 
+    private static boolean shouldSendDeviceCapabilitiesReport = true;
+    
+
     static {
         PKLog.i("PlayKitManager", "PlayKit " + VERSION_STRING);
     }
@@ -42,9 +45,18 @@ public class PlayKitManager {
         
         MediaSupport.initialize(context);
         
+        if (shouldSendDeviceCapabilitiesReport) {
+            PKDeviceCapabilities.maybeSendReport(context);
+        }
+        
         PlayerLoader playerLoader = new PlayerLoader(context);
         playerLoader.load(pluginConfigs != null ? pluginConfigs : new PKPluginConfigs());
         return playerLoader;
+    }
+    
+
+    public static void disableDeviceCapabilitiesReport() {
+        shouldSendDeviceCapabilitiesReport = false;
     }
 }
 
