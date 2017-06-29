@@ -1,5 +1,6 @@
 package com.kaltura.playkit.mediaproviders.ott;
 
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringDef;
 import android.text.TextUtils;
@@ -89,7 +90,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         public String protocol;
 
         public MediaAsset(){
-            protocol = "https";
         }
 
         public boolean hasFormats() {
@@ -158,6 +158,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
      * OPTIONAL
      *
      * @param protocol - the desired protocol (http/https) for the playback sources
+     * The default is null, which makes the provider filter by server protocol.
      * @return
      */
     public PhoenixMediaProvider setProtocol(@NonNull @HttpProtocol String protocol) {
@@ -264,7 +265,13 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 contextOptions.setMediaFileIds(mediaAsset.mediaFileIds);
             }
 
-            contextOptions.setMediaProtocol(mediaAsset.protocol);
+            // protocol will be added only if no protocol was give or http/https was set
+            // for All no filter will be done via protocol and it will not be added to the request.
+            if (mediaAsset.protocol == null) {
+                contextOptions.setMediaProtocol(Uri.parse(baseUrl).getScheme());
+            } else if (!HttpProtocol.All.equals(mediaAsset.protocol)) {
+                contextOptions.setMediaProtocol(mediaAsset.protocol);
+            }
 
             return AssetService.getPlaybackContext(baseUrl, ks, mediaAsset.assetId,
                     mediaAsset.assetType, contextOptions);
@@ -411,6 +418,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
             PKMediaEntry mediaEntry = new PKMediaEntry();
             mediaEntry.setId("" + assetId);
+            mediaEntry.setName(null);
 
             // until the response will be delivered in the right order:
             playbackSourcesSort(sourcesFilter, playbackSources);
@@ -510,11 +518,11 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
     }
 
-    @StringDef({HttpProtocol.Http, HttpProtocol.Https})
+    @StringDef({HttpProtocol.Http, HttpProtocol.Https, HttpProtocol.All})
     @Retention(RetentionPolicy.SOURCE)
     public @interface HttpProtocol {
-        public static final String Http = "http";
-        public static final String Https = "https";
+        public static final String Http = "http";       // only http sources
+        public static final String Https = "https";     // only https sources
+        public static final String All = "all";         // do not filter by protocol
     }
-
 }

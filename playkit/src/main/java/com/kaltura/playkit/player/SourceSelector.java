@@ -66,8 +66,6 @@ class SourceSelector {
             }
             return source;
         }
-
-        log.e("No playable sources found!");
         return null;
     }
 

@@ -28,6 +28,7 @@ import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSource.Factory;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
@@ -38,7 +39,7 @@ import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaFormat;
-import com.kaltura.playkit.PlaybackParamsInfo;
+import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
@@ -48,6 +49,7 @@ import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.EventLogger;
+import com.kaltura.playkit.PKError;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,11 +58,11 @@ import java.util.List;
 /**
  * Created by anton.afanasiev on 31/10/2016.
  */
-class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, MetadataRenderer.Output {
+class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, MetadataRenderer.Output, BandwidthMeter.EventListener {
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
 
-    private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
+    private DefaultBandwidthMeter bandwidthMeter;
 
     private EventLogger eventLogger;
     private EventListener eventListener;
@@ -80,7 +82,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     private Factory mediaDataSourceFactory;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
-    private Exception currentException = null;
+    private PKError currentError = null;
 
     private boolean isSeeking = false;
     private boolean shouldRestorePlayerToPreviousState = false;
@@ -91,37 +93,23 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private Timeline.Window window;
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
-    private int sameErrorOccurrenceCounter = 0;
     private List<PKMetadata> metadataList = new ArrayList<>();
 
-    interface TracksInfoListener {
+    private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
-        void onTracksInfoReady(PKTracks PKTracks);
+    private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
 
-        void onTrackChanged();
+    @Override
+    public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
+        sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
     }
-
-    private TracksInfoListener tracksInfoListener = new TracksInfoListener() {
-        @Override
-        public void onTracksInfoReady(PKTracks tracksReady) {
-            //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
-            tracks = tracksReady;
-            shouldRestorePlayerToPreviousState = false;
-            sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
-        }
-
-        @Override
-        public void onTrackChanged() {
-            sendEvent(PlayerEvent.Type.PLAYBACK_PARAMS_UPDATED);
-        }
-    };
 
 
     ExoPlayerWrapper(Context context) {
         this.context = context;
+        bandwidthMeter = new DefaultBandwidthMeter(mainHandler, this);
         mediaDataSourceFactory = buildDataSourceFactory(true);
         exoPlayerView = new ExoPlayerView(context);
-        window = new Timeline.Window();
     }
 
     private void initializePlayer() {
@@ -148,10 +136,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     private DefaultTrackSelector initializeTrackSelector() {
 
-        TrackSelection.Factory videoTrackSelectionFactory =
-                new AdaptiveTrackSelection.Factory(BANDWIDTH_METER);
-        DefaultTrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
-        trackSelectionHelper = new TrackSelectionHelper(trackSelector, videoTrackSelectionFactory);
+        TrackSelection.Factory trackSelectionFactory =
+                new AdaptiveTrackSelection.Factory(bandwidthMeter);
+        DefaultTrackSelector trackSelector = new DefaultTrackSelector(trackSelectionFactory);
+        trackSelectionHelper = new TrackSelectionHelper(trackSelector, trackSelectionFactory, lastSelectedTrackIds);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
         return trackSelector;
@@ -160,7 +148,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private void preparePlayer(PKMediaSourceConfig sourceConfig) {
         //reset metadata on prepare.
         metadataList.clear();
-        sameErrorOccurrenceCounter = 0;
         drmSessionManager.setMediaSource(sourceConfig.mediaSource);
 
         shouldGetTracksInfo = true;
@@ -204,24 +191,24 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     /**
      * Returns a new DataSource factory.
      *
-     * @param useBandwidthMeter Whether to set {@link #BANDWIDTH_METER} as a listener to the new
+     * @param useBandwidthMeter Whether to set {@link #bandwidthMeter} as a listener to the new
      *                          DataSource factory.
      * @return A new DataSource factory.
      */
     private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
-        return new DefaultDataSourceFactory(context, useBandwidthMeter ? BANDWIDTH_METER : null,
+        return new DefaultDataSourceFactory(context, useBandwidthMeter ? bandwidthMeter : null,
                 buildHttpDataSourceFactory(useBandwidthMeter));
     }
 
     /**
      * Returns a new HttpDataSource factory.
      *
-     * @param useBandwidthMeter Whether to set {@link #BANDWIDTH_METER} as a listener to the new
+     * @param useBandwidthMeter Whether to set {@link #bandwidthMeter} as a listener to the new
      *                          DataSource factory.
      * @return A new HttpDataSource factory.
      */
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
-        return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? BANDWIDTH_METER : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+        return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, false);
     }
 
@@ -327,25 +314,36 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         log.d("onTimelineChanged");
         sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
         sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
-        shouldResetPlayerPosition = timeline != null && !timeline.isEmpty()
+        shouldResetPlayerPosition = timeline != null && !timeline.isEmpty() && window != null
                 && !timeline.getWindow(timeline.getWindowCount() - 1, window).isDynamic;
     }
 
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
-        if (currentException != null) {
-            //if error have same message as the previous one, update the errorCounter.
-            //this is need to avoid infinity retries on the same error.
-            if (currentException.getMessage().equals(error.getMessage())) {
-                sameErrorOccurrenceCounter++;
-            } else {
-                sameErrorOccurrenceCounter = 0;
-            }
+
+        Enum errorType;
+        Throwable cause;
+        String errorMessage = error.getMessage();
+
+        switch (error.type) {
+            case ExoPlaybackException.TYPE_SOURCE:
+                errorType = PKPlayerErrorType.SOURCE_ERROR;
+                cause = error.getSourceException();
+                break;
+            case ExoPlaybackException.TYPE_RENDERER:
+                errorType = PKPlayerErrorType.RENDERER_ERROR;
+                cause = error.getRendererException();
+                break;
+            default:
+                errorType = PKPlayerErrorType.UNEXPECTED;
+                cause = error.getUnexpectedException();
+                break;
         }
 
-        currentException = error;
-        sendDistinctEvent(PlayerEvent.Type.ERROR);
+        log.e("Player error " + errorType.name());
+        currentError = new PKError(errorType, errorMessage, cause);
+        eventListener.onEvent(PlayerEvent.Type.ERROR);
     }
 
     @Override
@@ -400,7 +398,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         }
 
         //If player already set to play, return.
-        if(player.getPlayWhenReady()) {
+        if (player.getPlayWhenReady()) {
             return;
         }
 
@@ -417,7 +415,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         }
 
         //If player already set to pause, return.
-        if(!player.getPlayWhenReady()) {
+        if (!player.getPlayWhenReady()) {
+            return;
+        }
+
+        if (currentEvent == PlayerEvent.Type.ENDED) {
             return;
         }
 
@@ -436,7 +438,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void seekTo(long position) {
         if (player == null) {
-            log.e("Attempt to invoke 'seekTo()' on null instance of the exoplayer");
+            log.w("Attempt to invoke 'seekTo()' on null instance of the exoplayer");
             return;
         }
         isSeeking = true;
@@ -504,7 +506,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void changeTrack(String uniqueId) {
         if (trackSelectionHelper == null) {
-            log.e("Attempt to invoke 'changeTrack()' on null instance of the TracksSelectionHelper");
+            log.w("Attempt to invoke 'changeTrack()' on null instance of the TracksSelectionHelper");
             return;
         }
         trackSelectionHelper.changeTrack(uniqueId);
@@ -517,7 +519,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void startFrom(long position) {
         if (player == null) {
-            log.e("Attempt to invoke 'startFrom()' on null instance of the exoplayer");
+            log.w("Attempt to invoke 'startFrom()' on null instance of the exoplayer");
             return;
         }
 
@@ -540,18 +542,19 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void replay() {
         if (player == null) {
-            log.e("Attempt to invoke 'replay()' on null instance of the exoplayer");
+            log.w("Attempt to invoke 'replay()' on null instance of the exoplayer");
             return;
         }
         isSeeking = false;
         player.seekTo(0);
+        player.setPlayWhenReady(true);
         sendDistinctEvent(PlayerEvent.Type.REPLAY);
     }
 
     @Override
     public void setVolume(float volume) {
         if (player == null) {
-            log.e("Attempt to invoke 'setVolume()' on null instance of the exoplayer");
+            log.w("Attempt to invoke 'setVolume()' on null instance of the exoplayer");
             return;
         }
 
@@ -569,10 +572,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public boolean isPlaying() {
-        if (player == null) {
-            return false;
-        }
-        return player.getPlayWhenReady() && currentState == PlayerState.READY;
+        return player != null && player.getPlayWhenReady() && currentState == PlayerState.READY;
     }
 
     @Override
@@ -584,13 +584,19 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     }
 
     @Override
-    public PlaybackParamsInfo getPlaybackParamsInfo() {
-        return new PlaybackParamsInfo(lastPlayedSource.toString(), trackSelectionHelper.getCurrentVideoBitrate(), trackSelectionHelper.getCurrentAudioBitrate());
+    public PlaybackInfo getPlaybackInfo() {
+        return new PlaybackInfo(lastPlayedSource.toString(),
+                trackSelectionHelper.getCurrentVideoBitrate(),
+                trackSelectionHelper.getCurrentAudioBitrate(),
+                bandwidthMeter.getBitrateEstimate(),
+                trackSelectionHelper.getCurrentVideoWidth(),
+                trackSelectionHelper.getCurrentVideoHeight(),
+                player.isCurrentWindowDynamic());
     }
 
     @Override
-    public PlayerEvent.ExceptionInfo getCurrentException() {
-        return new PlayerEvent.ExceptionInfo(currentException, sameErrorOccurrenceCounter);
+    public PKError getCurrentError() {
+        return currentError;
     }
 
     @Override
@@ -605,10 +611,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     void savePlayerPosition() {
         if (player == null) {
-            log.e("Attempt to invoke 'savePlayerPosition()' on null instance of the exoplayer");
+            log.w("Attempt to invoke 'savePlayerPosition()' on null instance of the exoplayer");
             return;
         }
-        currentException = null;
+        currentError = null;
         playerWindow = player.getCurrentWindowIndex();
         Timeline timeline = player.getCurrentTimeline();
         if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
@@ -618,6 +624,34 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     public List<PKMetadata> getMetadata() {
         return metadataList;
+    }
+
+    private TrackSelectionHelper.TracksInfoListener initTracksInfoListener() {
+        return new TrackSelectionHelper.TracksInfoListener() {
+            @Override
+            public void onTracksInfoReady(PKTracks tracksReady) {
+                //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
+                tracks = tracksReady;
+                shouldRestorePlayerToPreviousState = false;
+                sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+            }
+
+            @Override
+            public void onTrackChanged() {
+                sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+            }
+
+            @Override
+            public void onRelease(String[] selectedTrackIds) {
+                lastSelectedTrackIds = selectedTrackIds;
+            }
+
+            @Override
+            public void onError(PKError error) {
+                currentError = error;
+                sendEvent(PlayerEvent.Type.ERROR);
+            }
+        };
     }
 
 }

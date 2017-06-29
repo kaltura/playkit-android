@@ -15,7 +15,7 @@ import java.util.Map;
 
 
 class LoadedPlugin {
-    public LoadedPlugin(PKPlugin plugin, PlayerDecorator decorator) {
+    LoadedPlugin(PKPlugin plugin, PlayerDecorator decorator) {
         this.plugin = plugin;
         this.decorator = decorator;
     }
@@ -34,6 +34,7 @@ class PlayerLoader extends PlayerDecoratorBase {
     private MessageBus messageBus;
     
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
+    private PlayerController playerController;
 
     PlayerLoader(Context context) {
         this.context = context;
@@ -41,10 +42,11 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
     
     public void load(@NonNull PKPluginConfigs pluginsConfig) {
-        PlayerController playerController = new PlayerController(context);
+
+        playerController = new PlayerController(context);
 
         // By default, set Kaltura decorator.
-        KalturaPlaybackRequestAdapter.setup(playerController);
+        KalturaPlaybackRequestAdapter.setup(context, playerController);
         
         playerController.setEventListener(new PKEvent.Listener() {
             @Override
@@ -115,7 +117,13 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     @Override
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
-        
+
+        //If mediaConfig is not valid, playback is impossible, so return.
+        //setMedia() is responsible to notify application with exact error that happened.
+        if(!playerController.setMedia(mediaConfig)){
+            return;
+        }
+
         super.prepare(mediaConfig);
         
         for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {

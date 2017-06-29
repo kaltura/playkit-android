@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins;
+package com.kaltura.playkit.plugins.ovp;
 
 import com.kaltura.playkit.PKEvent;
 
@@ -14,14 +14,10 @@ public class KalturaStatsEvent implements PKEvent{
 
     public static class KalturaStatsReport extends KalturaStatsEvent {
 
-        private String reportedEventName;
+        public final String reportedEventName;
 
         public KalturaStatsReport(String reportedEventName) {
             this.reportedEventName = reportedEventName;
-        }
-
-        public String getReportedEventName() {
-            return reportedEventName;
         }
     }
 

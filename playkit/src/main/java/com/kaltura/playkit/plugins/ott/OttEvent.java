@@ -1,4 +1,6 @@
-package com.kaltura.playkit;
+package com.kaltura.playkit.plugins.ott;
+
+import com.kaltura.playkit.PKEvent;
 
 /**
  * Created by zivilan on 15/12/2016.

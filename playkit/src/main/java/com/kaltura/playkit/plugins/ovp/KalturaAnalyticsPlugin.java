@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins;
+package com.kaltura.playkit.plugins.ovp;
 
 import android.content.Context;
 
@@ -17,6 +17,7 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.api.ovp.services.AnalyticsService;
 import com.kaltura.playkit.utils.Consts;
 
@@ -29,8 +30,11 @@ import java.util.TimerTask;
 public class KalturaAnalyticsPlugin extends PKPlugin{
     private static final PKLog log = PKLog.get("KalturaAnalyticsPlugin");
     private static final String TAG = "KalturaAnalyticsPlugin";
-    private final String BASE_URL = "https://analytics.kaltura.com/api_v3/index.php";
+    private final String DEFAULT_BASE_URL = "https://analytics.kaltura.com/api_v3/index.php";
 
+    private int uiconfId;
+    private String baseUrl;
+    private int partnerId;
 
 
     public enum KAnalonyEvents {
@@ -95,7 +99,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
 
         @Override
         public void warmUp(Context context) {
-            
+
         }
     };
 
@@ -117,6 +121,22 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
+        if (Utils.isJsonObjectValueValid(pluginConfig, "uiconfId")) {
+            uiconfId = Integer.valueOf(pluginConfig.get("uiconfId").toString());
+        } else {
+            uiconfId = 0;
+        }
+        if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
+            baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
+        } else {
+            baseUrl = DEFAULT_BASE_URL;
+        }
+        if (Utils.isJsonObjectValueValid(pluginConfig, "partnerId")) {
+            partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
+        } else {
+            partnerId = 0;
+        }
+
         isFirstPlay = true;
         this.mediaConfig = mediaConfig;
         resetPlayerFlags();
@@ -254,16 +274,10 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     }
 
     private void sendAnalyticsEvent(final KAnalonyEvents eventType) {
-        String sessionId = pluginConfig.has("sessionId")? pluginConfig.get("sessionId").toString(): "";
-        int uiconfId = pluginConfig.has("uiconfId")? Integer.valueOf(pluginConfig.get("uiconfId").toString()): 0;
-        String baseUrl = pluginConfig.has("baseUrl")? pluginConfig.getAsJsonPrimitive("baseUrl").getAsString(): BASE_URL;
-        int partnerId = pluginConfig.has("partnerId")? pluginConfig.getAsJsonPrimitive("partnerId").getAsInt(): 0;
-        String playbackType = isDvr? "dvr":"live";
+        String sessionId = (player.getSessionId() != null) ? player.getSessionId() : "";
+        String playbackType = isDvr ? "dvr" : "live";
         int flavourId = -1;
 
-        // Parameters for the request -
-//        String baseUrl, int partnerId, int eventType, String clientVer, String playbackType, String sessionId, long position
-//        ,int uiConfId, String entryId, int eventIdx, int flavourId, String referrer, int bufferTime, int actualBitrate
         RequestBuilder requestBuilder = AnalyticsService.sendAnalyticsEvent(baseUrl, partnerId, eventType.getValue(), PlayKitManager.CLIENT_TAG, playbackType,
                 sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), eventIdx++, flavourId, bufferTime, currentBitrate, "hls");
 
@@ -276,6 +290,5 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         requestsExecutor.queue(requestBuilder.build());
         messageBus.post(new LogEvent(TAG + " " + eventType.toString(), requestBuilder.build().getUrl()));
     }
-
 }
 

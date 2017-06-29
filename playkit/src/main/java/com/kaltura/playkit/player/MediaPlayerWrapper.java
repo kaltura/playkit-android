@@ -11,12 +11,13 @@ import android.view.SurfaceHolder;
 
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PlaybackParamsInfo;
+import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.WidevineClassicDrm;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.PKError;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener,
         MediaPlayer.OnSeekCompleteListener {
 
+
     private static final PKLog log = PKLog.get("MediaPlayerWrapper");
 
     private static final int ILLEGAL_STATEׁ_OPERATION = -38;
@@ -44,13 +46,13 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private MediaPlayerView mediaPlayerView;
     private PKMediaSourceConfig mediaSourceConfig;
     private String assetUri;
-
     private String licenseUri;
+
     private WidevineClassicDrm drmClient;
     private PlayerEvent.Type currentEvent;
     private PlayerState currentState = PlayerState.IDLE, previousState;
+    private long playerDuration = Consts.TIME_UNSET;
     private long playerPosition;
-    private long prevDuration = Consts.TIME_UNSET;
     private PlayerController.EventListener eventListener;
     private PlayerController.StateChangedListener stateChangedListener;
     private boolean shouldRestorePlayerToPreviousState = false;
@@ -59,7 +61,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private boolean isPauseAfterPrepare = false;
     private boolean appInBackground;
 
-     MediaPlayerWrapper(Context context) {
+    MediaPlayerWrapper(Context context) {
         this.context = context;
         player = new MediaPlayer();
         mediaPlayerView = new MediaPlayerView(context);
@@ -92,6 +94,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         }
 
         this.mediaSourceConfig = mediaSourceConfig;
+
         if ((currentState == null || currentState == PlayerState.IDLE) && prepareState != PREPARING) {
             initializePlayer();
         }
@@ -106,17 +109,20 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         //player.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
 
         assetUri = mediaSourceConfig.getUrl().toString();
+
         String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
+        String playbackUri     = getWidevineAssetPlaybackUri(assetUri);
+        log.d("playback uri = " + playbackUri);
         try {
             mediaPlayerView.getSurfaceHolder().addCallback(this);
-            player.setDataSource(assetUri);
+            player.setDataSource(playbackUri);
             setPlayerListeners();
         } catch (IOException e) {
             log.e(e.toString());
         }
         if (drmClient.needToAcquireRights(assetAcquireUri)) {
             List<PKDrmParams> drmData = mediaSourceConfig.mediaSource.getDrmData();
-            if (drmData != null) {
+            if (drmData != null && !drmData.isEmpty()) {
                 licenseUri = drmData.get(0).getLicenseUri();
                 drmClient.acquireRights(assetAcquireUri, licenseUri);
             } else {
@@ -129,7 +135,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private void setPlayerListeners() {
         // Set OnCompletionListener to notify our callbacks when the video is completed.
         player.setOnCompletionListener(this);
-
         // Set OnErrorListener to notify our callbacks if the video errors.
         player.setOnErrorListener(this);
         player.setOnBufferingUpdateListener(this);
@@ -139,13 +144,16 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     private void sendOnPreparedEvents() {
         sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
-        sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
+        sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+        sendDistinctEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+        sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
+
     }
 
     private void handleContentCompleted() {
         pause();
-        seekTo(player.getDuration());       // TODO: why?
+        seekTo(playerDuration);
         currentState = PlayerState.IDLE;
         changeState(PlayerState.IDLE);
         sendDistinctEvent(PlayerEvent.Type.ENDED);
@@ -170,7 +178,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         player.start();
         sendDistinctEvent(PlayerEvent.Type.PLAY);
 
-        // FIXME: this should only be sent after playback as started
+        // FIXME: this should only be sent after playback has started
         sendDistinctEvent(PlayerEvent.Type.PLAYING);
     }
 
@@ -200,7 +208,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         log.d("replay ");
 
         if (player == null) {
-            log.e("Attempt to invoke 'replay()' on null instance of the exoplayer");
+            log.w("Attempt to invoke 'replay()' on null instance of the mediaplayer");
             return;
         }
         seekTo(0);
@@ -220,18 +228,10 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public long getDuration() {
-        log.d("getDuration ");
         if (player == null || !PREPARED.equals(prepareState)) {
             return 0;
         }
-        long currentDuration;
-        currentDuration = player == null ? Consts.TIME_UNSET : player.getDuration();
-        if (prevDuration != currentDuration) {
-            sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
-        }
-        prevDuration = currentDuration;
-        return prevDuration;
-
+        return playerDuration;
     }
 
     @Override
@@ -277,7 +277,9 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         }
 
         log.d("startFrom " + position);
-        seekTo((int)position);
+        if (position > 0) {
+            seekTo((int) position);
+        }
     }
 
     @Override
@@ -346,12 +348,12 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public PlaybackParamsInfo getPlaybackParamsInfo() {
-        return null;
+    public PlaybackInfo getPlaybackInfo() {
+        return new PlaybackInfo(getWidevineAssetPlaybackUri(assetUri), -1, -1, -1, player.getVideoWidth(), player.getVideoHeight(), false);
     }
 
     @Override
-    public PlayerEvent.ExceptionInfo getCurrentException() {
+    public PKError getCurrentError() {
         return null;
     }
 
@@ -426,6 +428,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         if (appInBackground) {
             return;
         }
+        playerDuration = player.getDuration();
         changeState(PlayerState.READY);
         if (isPlayAfterPrepare) {
             sendDistinctEvent(PlayerEvent.Type.PLAY);
@@ -447,6 +450,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         if (prepareState == NOT_PREPARED) {
             changeState(PlayerState.BUFFERING);
             prepareState = PREPARING;
+            playerDuration = Consts.TIME_UNSET;
             player.prepareAsync();
         }
     }
@@ -463,7 +467,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     private void savePlayerPosition() {
         if (player == null) {
-            log.e("Attempt to invoke 'savePlayerPosition()' on null instance");
+            log.w("Attempt to invoke 'savePlayerPosition()' on null instance of mediaplayer");
             return;
         }
         playerPosition = player.getCurrentPosition();
@@ -502,9 +506,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             return true;
         }
         sendDistinctEvent(PlayerEvent.Type.ERROR);
-//                if(what == MediaPlayer.MEDIA_ERROR_SERVER_DIED || what == MediaPlayer.MEDIA_ERROR_UNKNOWN || what == MediaPlayer.MEDIA_ERROR_IO) {
-//
-//                }
         return true;
     }
 
@@ -529,5 +530,4 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     public List<PKMetadata> getMetadata() {
         return null;
     }
-
 }

@@ -6,6 +6,7 @@ package com.kaltura.playkit.utils;
 
 public class Consts {
 
+    public static final String KALTURA = "Kaltura";
     /**
      * Special constant representing an unset or unknown time or duration. Suitable for use in any
      * time base.
@@ -53,5 +54,9 @@ public class Consts {
 
     public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW = 10000;
 
+    public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW_SEC = 10;
+
     public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH = 30000;
+
+    public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC = 30;
 }

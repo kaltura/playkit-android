@@ -1,41 +1,50 @@
 package com.kaltura.playkit.plugins.playback;
 
+import android.content.Context;
 import android.net.Uri;
 
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
 
-import java.util.UUID;
-
 import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
+import static com.kaltura.playkit.Utils.toBase64;
 
 /**
  * Created by Noam Tamim @ Kaltura on 28/03/2017.
  */
 public class KalturaPlaybackRequestAdapter implements PKRequestParams.Adapter {
+
+    private final String packageName;
+    private String playSessionId;
     
-    private UUID playSessionId;
-    
-    public static void setup(Player player) {
-        KalturaPlaybackRequestAdapter decorator = new KalturaPlaybackRequestAdapter(player.getSessionId());
+    public static void setup(Context context, Player player) {
+        KalturaPlaybackRequestAdapter decorator = new KalturaPlaybackRequestAdapter(context.getPackageName(), player.getSessionId());
         player.getSettings().setContentRequestAdapter(decorator);
     }
 
-    private KalturaPlaybackRequestAdapter(UUID playSessionId) {
+    private KalturaPlaybackRequestAdapter(String packageName, String playSessionId) {
+        this.packageName = packageName;
         this.playSessionId = playSessionId;
     }
     
     @Override
     public PKRequestParams adapt(PKRequestParams requestParams) {
         Uri url = requestParams.url;
+
         if (url.getPath().contains("/playManifest/")) {
             Uri alt = url.buildUpon()
                     .appendQueryParameter("clientTag", CLIENT_TAG)
-                    .appendQueryParameter("playSessionId", playSessionId.toString())
+                    .appendQueryParameter("referrer", toBase64(packageName.getBytes()))
+                    .appendQueryParameter("playSessionId", playSessionId)
                     .build();
             return new PKRequestParams(alt, requestParams.headers);
         }
 
         return requestParams;
+    }
+
+    @Override
+    public void updateParams(Player player) {
+        this.playSessionId = player.getSessionId();
     }
 }

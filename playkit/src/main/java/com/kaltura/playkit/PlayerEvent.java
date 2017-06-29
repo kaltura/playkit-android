@@ -41,76 +41,61 @@ public class PlayerEvent implements PKEvent {
 
     public static class TracksAvailable extends PlayerEvent {
 
-        private final PKTracks tracksInfo;
+        public final PKTracks tracksInfo;
 
         public TracksAvailable(PKTracks tracksInfo) {
             super(Type.TRACKS_AVAILABLE);
             this.tracksInfo = tracksInfo;
         }
-
-        public PKTracks getPKTracks() {
-            return tracksInfo;
-        }
     }
 
     public static class VolumeChanged extends PlayerEvent {
 
-        private float volume;
+        public final float volume;
 
         public VolumeChanged(float volume) {
             super(Type.VOLUME_CHANGED);
             this.volume = volume;
         }
-
-        public float getVolume() {
-            return volume;
-        }
     }
 
-    public static class PlaybackParamsUpdated extends PlayerEvent {
-        private PlaybackParamsInfo playbackParamsInfo;
+    public static class PlaybackInfoUpdated extends PlayerEvent {
 
-        public PlaybackParamsUpdated(PlaybackParamsInfo playbackParamsInfo) {
-            super(Type.PLAYBACK_PARAMS_UPDATED);
-            this.playbackParamsInfo = playbackParamsInfo;
-        }
+        public final PlaybackInfo playbackInfo;
 
-        public PlaybackParamsInfo getPlaybackParamsInfo() {
-            return playbackParamsInfo;
-        }
-    }
-
-    public static class ExceptionInfo extends PlayerEvent {
-
-        private Exception exception;
-        private int errorCounter;
-
-        public ExceptionInfo(Exception exception, int errorCounter) {
-            super(Type.ERROR);
-            this.exception = exception;
-            this.errorCounter = errorCounter;
-        }
-
-        public Exception getException() {
-            return exception;
-        }
-
-        public int getErrorCounter() {
-            return errorCounter;
+        public PlaybackInfoUpdated(PlaybackInfo playbackInfo) {
+            super(Type.PLAYBACK_INFO_UPDATED);
+            this.playbackInfo = playbackInfo;
         }
     }
 
     public static class MetadataAvailable extends PlayerEvent {
 
-        private List<PKMetadata> metadataList;
+        public final List<PKMetadata> metadataList;
 
         public MetadataAvailable(List<PKMetadata> metadataList) {
             super(Type.METADATA_AVAILABLE);
             this.metadataList = metadataList;
         }
+    }
 
-        public List<PKMetadata> getMetadataList() {
-            return metadataList;
+    public static class SourceSelected extends PlayerEvent {
+
+        public final PKMediaSource source;
+
+        public SourceSelected(PKMediaSource source) {
+            super(Type.SOURCE_SELECTED);
+            this.source = source;
+        }
+    }
+
+    public static class Error extends PlayerEvent {
+
+        public final PKError error;
+
+        public Error(PKError error) {
+            super(Type.ERROR);
+            this.error = error;
         }
     }
 
@@ -134,10 +119,11 @@ public class PlayerEvent implements PKEvent {
         SEEKING,   //  Sent when a seek operation begins.
         TRACKS_AVAILABLE, // Sent when track info is available.
         REPLAY, //Sent when replay happened.
-        PLAYBACK_PARAMS_UPDATED, // Sent event that notify about changes in the playback parameters. When bitrate of the video or audio track changes or new media loaded. Holds the PlaybackParamsInfo.java object with relevant data.
+        PLAYBACK_INFO_UPDATED, // Sent event that notify about changes in the playback parameters. When bitrate of the video or audio track changes or new media loaded. Holds the PlaybackInfo.java object with relevant data.
         VOLUME_CHANGED, // Sent when volume is changed.
         STOPPED, // sent when stop player api is called
         METADATA_AVAILABLE, // Sent when there is metadata available for this entry.
+        SOURCE_SELECTED // Sent when the source was selected.
     }
 
     @Override

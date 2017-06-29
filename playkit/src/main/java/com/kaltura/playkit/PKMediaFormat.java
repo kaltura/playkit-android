@@ -11,8 +11,7 @@ public enum PKMediaFormat {
     wvm("video/wvm", "wvm"),
     mp4("video/mp4", "mp4"),
     mp3("audio/mpeg", "mp3"),
-    unknown(null, null),
-    ;
+    unknown(null, null);
 
     public final String mimeType;
     public final String pathExt;

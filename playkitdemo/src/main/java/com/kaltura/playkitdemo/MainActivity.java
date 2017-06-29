@@ -81,9 +81,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         PlayKitManager.registerPlugins(this, SamplePlugin.factory);
         PlayKitManager.registerPlugins(this, IMAPlugin.factory);
-        //PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);
-        
-        
+        //PlayKitManager.registerPlugins(this, TVPAPIAnalyticsPlugin.factory);
+        //PlayKitManager.registerPlugins(this, PhoenixAnalyticsPlugin.factory);
     }
 
     @Override
@@ -260,12 +259,27 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         jsonObject.addProperty("delay", 1200);
         config.setPluginConfig("Sample", jsonObject);
         addIMAPluginConfig(config);
+        //addPhoenixAnalyticsPluginConfig(config);
+        //addTVPAPIAnalyticsPluginConfig(config);
         //config.setPluginConfig("IMASimplePlugin", jsonObject);
         //config.setPluginConfig("KalturaStatistics", jsonObject);
         //config.setPluginConfig("PhoenixAnalytics", jsonObject);
         //config.setPluginConfig("Youbora", jsonObject);
 
     }
+
+//    private void addPhoenixAnalyticsPluginConfig(PKPluginConfigs config) {
+//        String ks = "djJ8MTk4fHFftqeAPxdlLVzZBk0Et03Vb8on1wLsKp7cbOwzNwfOvpgmOGnEI_KZDhRWTS-76jEY7pDONjKTvbWyIJb5RsP4NL4Ng5xuw6L__BeMfLGAktkVliaGNZq9SXF5n2cMYX-sqsXLSmWXF9XN89io7-k=";
+//        PhoenixAnalyticsConfig phoenixAnalyticsConfig = new PhoenixAnalyticsConfig(198, "http://api-preprod.ott.kaltura.com/v4_2/api_v3/", ks, 30);
+//        config.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(),phoenixAnalyticsConfig);
+//    }
+//
+//    private void addTVPAPIAnalyticsPluginConfig(PKPluginConfigs config) {
+//        TVPAPILocale locale = new TVPAPILocale("","","", "");
+//        TVPAPIInitObject tvpapiInitObject = new TVPAPIInitObject(716158, "tvpapi_198", 354531, "e8aa934c-eae4-314f-b6a0-f55e96498786", "11111", "Cellular", locale);
+//        TVPAPIAnalyticsConfig tvpapiAnalyticsConfig = new TVPAPIAnalyticsConfig("http://tvpapi-preprod.ott.kaltura.com/v4_2/gateways/jsonpostgw.aspx?", 30, tvpapiInitObject);
+//        config.setPluginConfig(TVPAPIAnalyticsPlugin.factory.getName(),tvpapiAnalyticsConfig);
+//    }
 
     private void addIMAPluginConfig(PKPluginConfigs config) {
         String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";

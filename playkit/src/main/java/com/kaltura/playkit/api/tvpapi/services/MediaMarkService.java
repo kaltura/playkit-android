@@ -8,7 +8,7 @@ import com.kaltura.netkit.connect.request.RequestBuilder;
  */
 
 public class MediaMarkService {
-    public static RequestBuilder sendTVPAPIEVent(String baseUrl, JsonObject initObj, String action, String assetId, String fileId, long position) {
+    public static RequestBuilder sendTVPAPIEvent(String baseUrl, JsonObject initObj, String action, String assetId, String fileId, long position) {
         return new RequestBuilder()
                 .method("POST")
                 .url(baseUrl)
