@@ -449,7 +449,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     PKMediaSource pkMediaSource = new PKMediaSource()
                             .setId(playbackSource.getId() + "")
                             .setUrl(playbackSource.getUrl())
-                            .setMediaFormat(mediaFormat);
+                            .setMediaFormat(mediaFormat)
+                            .addMetadata(KalturaPlaybackSource.SourceMetadata.AdsPolicy, playbackSource.getAdsPolicy());
 
                     List<KalturaDrmPlaybackPluginData> drmData = playbackSource.getDrmData();
                     if (drmData != null) {
