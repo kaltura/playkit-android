@@ -144,4 +144,8 @@ public class PKMediaSource implements Parcelable {
 
         return this;
     }
+
+    public String getMetadata(String key) {
+        return metadata != null ? metadata.get(key) : null;
+    }
 }
