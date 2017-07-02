@@ -85,7 +85,7 @@ public class PKDeviceCapabilities {
         JsonObject report = getReport(context);
         
         JsonObject data = new JsonObject();
-        data.add("data", report);
+        data.addProperty("data", report.toString());
 
         String dataString = data.toString();
         try {
