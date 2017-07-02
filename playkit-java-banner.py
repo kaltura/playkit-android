@@ -28,7 +28,7 @@ def has_banner(d):
 	return False
 
 banner = BANNER % THIS_YEAR
-for root, dirs, files in os.walk('.'):
+for root, dirs, files in os.walk('playkit/src/main/java/com/kaltura/playkit'):
 	for name in files:
 		fileExt = os.path.splitext(name)[1]
 		if fileExt != '.java':
