@@ -15,6 +15,7 @@ import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
+import com.kaltura.playkit.BEResponseListener;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -74,6 +75,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     private MediaAsset mediaAsset;
 
+    private BEResponseListener responseListener;
 
     private class MediaAsset {
 
@@ -193,6 +195,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return this;
     }
 
+    public PhoenixMediaProvider setResponseListener(BEResponseListener responseListener) {
+        this.responseListener = responseListener;
+        return this;
+    }
 
     /**
      * OPTIONAL
@@ -343,6 +349,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 return;
             }
 
+            if(responseListener != null){
+                responseListener.onResponse(response != null && response.isSuccess() ? response.getResponse() : null);
+            }
+
             if (response != null && response.isSuccess()) {
                 KalturaMediaAsset asset = null;
 
@@ -449,8 +459,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     PKMediaSource pkMediaSource = new PKMediaSource()
                             .setId(playbackSource.getId() + "")
                             .setUrl(playbackSource.getUrl())
-                            .setMediaFormat(mediaFormat)
-                            .addMetadata(KalturaPlaybackSource.SourceMetadata.AdsPolicy, playbackSource.getAdsPolicy());
+                            .setMediaFormat(mediaFormat);
 
                     List<KalturaDrmPlaybackPluginData> drmData = playbackSource.getDrmData();
                     if (drmData != null) {
@@ -526,4 +535,5 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         public static final String Https = "https";     // only https sources
         public static final String All = "all";         // do not filter by protocol
     }
+
 }

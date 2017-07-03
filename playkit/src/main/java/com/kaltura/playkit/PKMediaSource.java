@@ -4,16 +4,13 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class PKMediaSource implements Parcelable {
     private String id;
     private String url;
     private PKMediaFormat mediaFormat;
     private List<PKDrmParams> drmData;
-    private Map<String, String> metadata;
 
     public PKMediaSource(){}
 
@@ -22,17 +19,6 @@ public class PKMediaSource implements Parcelable {
         url = in.readString();
         mediaFormat = Utils.byValue(PKMediaFormat.class, in.readString());
         drmData = in.createTypedArrayList(PKDrmParams.CREATOR);
-        int metadataSize = in.readInt();
-        if (metadataSize == -1) {
-            this.metadata = null;
-        } else {
-            this.metadata = new HashMap<>(metadataSize);
-            for (int i = 0; i < metadataSize; i++) {
-                String key = in.readString();
-                String value = in.readString();
-                this.metadata.put(key, value);
-            }
-        }
     }
 
     public String getId() {
@@ -94,15 +80,6 @@ public class PKMediaSource implements Parcelable {
         } else {
             dest.writeTypedList(Collections.EMPTY_LIST);
         }
-        if (this.metadata != null) {
-            dest.writeInt(this.metadata.size());
-            for (Map.Entry<String, String> entry : this.metadata.entrySet()) {
-                dest.writeString(entry.getKey());
-                dest.writeString(entry.getValue());
-            }
-        } else {
-            dest.writeInt(-1);
-        }
     }
 
     public static final Creator<PKMediaSource> CREATOR = new Creator<PKMediaSource>() {
@@ -134,18 +111,5 @@ public class PKMediaSource implements Parcelable {
         int result = id.hashCode();
         result = 31 * result + url.hashCode();
         return result;
-    }
-
-    public PKMediaSource addMetadata(String key, String value) {
-        if(metadata == null){
-            metadata = new HashMap<>();
-        }
-        metadata.put(key, value);
-
-        return this;
-    }
-
-    public String getMetadata(String key) {
-        return metadata != null ? metadata.get(key) : null;
     }
 }
