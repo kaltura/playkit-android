@@ -1,6 +1,9 @@
 package com.kaltura.playkit;
 
 
+import com.kaltura.netkit.connect.response.ResponseElement;
+
 public interface BEResponseListener {
-    void onResponse(String response);
+
+    void onResponse(ResponseElement response);
 }

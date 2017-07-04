@@ -350,7 +350,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             }
 
             if(responseListener != null){
-                responseListener.onResponse(response != null && response.isSuccess() ? response.getResponse() : null);
+                responseListener.onResponse(response);
             }
 
             if (response != null && response.isSuccess()) {
