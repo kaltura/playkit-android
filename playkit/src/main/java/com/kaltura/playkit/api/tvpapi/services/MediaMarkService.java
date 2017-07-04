@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.api.tvpapi.services;
 
 import com.google.gson.JsonObject;
@@ -8,7 +20,7 @@ import com.kaltura.netkit.connect.request.RequestBuilder;
  */
 
 public class MediaMarkService {
-    public static RequestBuilder sendTVPAPIEVent(String baseUrl, JsonObject initObj, String action, String assetId, String fileId, long position) {
+    public static RequestBuilder sendTVPAPIEvent(String baseUrl, JsonObject initObj, String action, String assetId, String fileId, long position) {
         return new RequestBuilder()
                 .method("POST")
                 .url(baseUrl)

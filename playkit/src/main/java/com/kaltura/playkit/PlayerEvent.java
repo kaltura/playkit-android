@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit;
 
 import com.kaltura.playkit.player.PKTracks;
@@ -41,62 +53,31 @@ public class PlayerEvent implements PKEvent {
 
     public static class TracksAvailable extends PlayerEvent {
 
-        private final PKTracks tracksInfo;
+        public final PKTracks tracksInfo;
 
         public TracksAvailable(PKTracks tracksInfo) {
             super(Type.TRACKS_AVAILABLE);
             this.tracksInfo = tracksInfo;
         }
-
-        public PKTracks getPKTracks() {
-            return tracksInfo;
-        }
     }
 
     public static class VolumeChanged extends PlayerEvent {
 
-        private float volume;
+        public final float volume;
 
         public VolumeChanged(float volume) {
             super(Type.VOLUME_CHANGED);
             this.volume = volume;
         }
-
-        public float getVolume() {
-            return volume;
-        }
     }
 
     public static class PlaybackInfoUpdated extends PlayerEvent {
-        private PlaybackInfo playbackInfo;
+
+        public final PlaybackInfo playbackInfo;
 
         public PlaybackInfoUpdated(PlaybackInfo playbackInfo) {
             super(Type.PLAYBACK_INFO_UPDATED);
             this.playbackInfo = playbackInfo;
-        }
-
-        public PlaybackInfo getPlaybackInfo() {
-            return playbackInfo;
-        }
-    }
-
-    public static class ExceptionInfo extends PlayerEvent {
-
-        private Exception exception;
-        private int errorCounter;
-
-        public ExceptionInfo(Exception exception, int errorCounter) {
-            super(Type.ERROR);
-            this.exception = exception;
-            this.errorCounter = errorCounter;
-        }
-
-        public Exception getException() {
-            return exception;
-        }
-
-        public int getErrorCounter() {
-            return errorCounter;
         }
     }
 
@@ -112,11 +93,21 @@ public class PlayerEvent implements PKEvent {
 
     public static class SourceSelected extends PlayerEvent {
 
-        public final String sourceUrl;
+        public final PKMediaSource source;
 
-        public SourceSelected(String sourceUrl) {
+        public SourceSelected(PKMediaSource source) {
             super(Type.SOURCE_SELECTED);
-            this.sourceUrl = sourceUrl;
+            this.source = source;
+        }
+    }
+
+    public static class Error extends PlayerEvent {
+
+        public final PKError error;
+
+        public Error(PKError error) {
+            super(Type.ERROR);
+            this.error = error;
         }
     }
 

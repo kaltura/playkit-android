@@ -1,7 +1,20 @@
-package com.kaltura.playkit.plugins;
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
+package com.kaltura.playkit.plugins.ovp;
 
 import android.content.Context;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
@@ -16,7 +29,6 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.api.ovp.services.StatsService;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
@@ -31,19 +43,15 @@ import java.util.TimerTask;
 
 public class KalturaStatsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("KalturaStatsPlugin");
-    private static final String TAG = "KalturaStatsPlugin";
-    private final String DEFAULT_BASE_URL = "https://stats.kaltura.com/api_v3/index.php";
-    private int uiconfId;
-    private String baseUrl;
-    private int partnerId;
-    private int timerInterval;
-    private String entryId;
+
+    private Context context;
     private AdInfo adInfo;
     private Player player;
     private PKMediaConfig mediaConfig;
-    private JsonObject pluginConfig;
+    private KalturaStatsConfig pluginConfig;
     private MessageBus messageBus;
     private RequestQueue requestsExecutor;
+    private int timerInterval;
     private java.util.Timer timer = new java.util.Timer();
 
     private float seekPercent = 0;
@@ -101,8 +109,6 @@ public class KalturaStatsPlugin extends PKPlugin {
         }
     }
 
-
-
     public static final Factory factory = new Factory() {
         @Override
         public String getName() {
@@ -122,13 +128,23 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     @Override
     protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
+        log.d("onLoad");
         messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
         messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
-        this.pluginConfig = (JsonObject) config;
+        this.pluginConfig = parseConfig(config);
+        setTimerInterval();
         this.messageBus = messageBus;
+        this.context = context;
         log.d("onLoad finished");
+    }
+
+    private void setTimerInterval() {
+        timerInterval = pluginConfig.getTimerInterval() * (int) Consts.MILLISECONDS_MULTIPLIER;
+        if (timerInterval <= 0) {
+            timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
+        }
     }
 
     @Override
@@ -142,46 +158,24 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-        if (Utils.isJsonObjectValueValid(pluginConfig, "uiconfId")) {
-            uiconfId = pluginConfig.getAsJsonPrimitive("uiconfId").getAsInt();
-        } else {
-            log.e("KalturaStats uiconfId is missing");
-            uiconfId = 0;
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
-            baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
-        } else {
-            baseUrl = DEFAULT_BASE_URL;
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "timerInterval")) {
-            timerInterval = pluginConfig.getAsJsonPrimitive("timerInterval").getAsInt() * (int)Consts.MILLISECONDS_MULTIPLIER;
-        } else {
-            timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW;
-            log.e("Error KalturaStats timerInterval is missing");
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "partnerId")) {
-            partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
-        } else {
-            partnerId = 0;
-            log.e("Error KalturaStats partnetId is missing");
-        }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "entryId")) {
-            entryId = pluginConfig.getAsJsonPrimitive("entryId").getAsString();
-        } else {
-            // in case of OVP entry id is anyway the ID needed it only for OTT
-            entryId = mediaConfig.getMediaEntry().getId();
-            if (entryId != null && !entryId.contains("_")) {
-                log.e("Error KalturaStats entryId was given as MEDIA_ID instead of entryId");
-            }
-        }
-
         this.mediaConfig = mediaConfig;
         resetPlayerFlags();
     }
 
     @Override
     protected void onUpdateConfig(Object config) {
-        this.pluginConfig = (JsonObject) config;
+        this.pluginConfig = parseConfig(config);
+        setTimerInterval();
+    }
+
+    private static KalturaStatsConfig parseConfig(Object config) {
+        if (config instanceof KalturaStatsConfig) {
+            return ((KalturaStatsConfig) config);
+
+        } else if (config instanceof JsonObject) {
+            return new Gson().fromJson(((JsonObject) config), KalturaStatsConfig.class);
+        }
+        return null;
     }
 
     @Override
@@ -231,13 +225,15 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
 
             if (event instanceof PlayerEvent) {
-                if (player.getDuration() < 0){
+                if (player.getDuration() < 0) {
                     return;
                 }
+
                 log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
                     case METADATA_AVAILABLE:
                         sendMediaLoaded();
+                        break;
                     case STATE_CHANGED:
                         KalturaStatsPlugin.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
@@ -282,7 +278,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                     default:
                         break;
                 }
-            } else if (event instanceof AdEvent){
+            } else if (event instanceof AdEvent) {
                 KalturaStatsPlugin.this.onEvent((AdEvent) event);
             }
         }
@@ -390,6 +386,10 @@ public class KalturaStatsPlugin extends PKPlugin {
                     }
                 }
                 break;
+            case ERROR:
+                sendAnalyticsEvent(KStatsEvent.ERROR);
+                cancelTimer();
+                break;
             default:
                 break;
         }
@@ -433,6 +433,7 @@ public class KalturaStatsPlugin extends PKPlugin {
         if (timer == null) {
             timer = new java.util.Timer();
         }
+
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -440,7 +441,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                 log.d("progress = " + progress + " seekPercent = " + seekPercent);
                 if (!playReached25 && progress >= 0.25 && seekPercent < 0.5) {
                     sendPlayReached25();
-                } else if (!playReached50 && progress >= 0.5 && seekPercent <  0.75) {
+                } else if (!playReached50 && progress >= 0.5 && seekPercent < 0.75) {
                     sendPlayReached25();
                     sendPlayReached50();
                 } else if (!playReached75 && progress >= 0.75 && seekPercent < 1) {
@@ -451,7 +452,7 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
         }, 0, timerInterval);
     }
-    
+
     /**
      * Send stats event to Kaltura stats DB
      *
@@ -462,17 +463,18 @@ public class KalturaStatsPlugin extends PKPlugin {
 
         long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration() / Consts.MILLISECONDS_MULTIPLIER;
 
-        // Parameters for the request -
-        //        String baseUrl, int partnerId, int eventType, long duration,
-        //        String entryId, long position, String uiConfId, String entryId, String widgetId,  boolean isSeek
-        final RequestBuilder requestBuilder = StatsService.sendStatsEvent(baseUrl, partnerId, eventType.getValue(), PlayKitManager.CLIENT_TAG, duration,
-                sessionId, player.getCurrentPosition(), uiconfId, entryId, "_" + partnerId, hasSeeked);
+        final RequestBuilder requestBuilder = StatsService.sendStatsEvent(pluginConfig.getBaseUrl(), pluginConfig.getPartnerId(), eventType.getValue(), PlayKitManager.CLIENT_TAG, duration,
+                sessionId, player.getCurrentPosition(), pluginConfig.getUiconfId(), pluginConfig.getEntryId(), "_" + pluginConfig.getPartnerId(), hasSeeked,
+                pluginConfig.getContextId(), context.getPackageName(), pluginConfig.getUserId());
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
                 log.d("onComplete send event: " + eventType.toString());
                 messageBus.post(new KalturaStatsEvent.KalturaStatsReport(eventType.toString()));
+                if (hasSeeked) {
+                    hasSeeked = false;
+                }
             }
         });
         requestsExecutor.queue(requestBuilder.build());

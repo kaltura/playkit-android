@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.drm;
 
 import android.media.MediaCryptoException;
@@ -6,7 +18,6 @@ import android.media.NotProvisionedException;
 import android.os.Build;
 import android.os.Looper;
 import android.support.annotation.RequiresApi;
-import android.util.Base64;
 
 import com.google.android.exoplayer2.drm.DrmInitData;
 import com.google.android.exoplayer2.drm.DrmSession;
@@ -23,6 +34,8 @@ import com.kaltura.playkit.player.MediaSupport;
 
 import java.io.FileNotFoundException;
 import java.util.Map;
+
+import static com.kaltura.playkit.Utils.toBase64;
 
 /**
  * @hide
@@ -123,12 +136,12 @@ public class LocalDrmSessionManager<T extends ExoMediaCrypto> implements DrmSess
      * Open drm session with keySetId that was previously saved in {@link LocalDataStore}
      * @param initData - the init data with which we will obtain the proper keySetId.
      * @return - the {@link MediaDrmSession}.
-     * @throws MediaDrmException
-     * @throws MediaCryptoException
-     * @throws FileNotFoundException
+     * @throws MediaDrmException - {@link MediaDrmException}
+     * @throws MediaCryptoException - {@link MediaCryptoException}
+     * @throws FileNotFoundException - {@link FileNotFoundException}
      */
     private MediaDrmSession openSessionWithKeys(byte[] initData) throws MediaDrmException, MediaCryptoException, FileNotFoundException {
-        String key = Base64.encodeToString(initData, Base64.NO_WRAP);
+        String key = toBase64(initData);
         byte[] keySetId = drmStorage.load(key);
 
         MediaDrmSession session = MediaDrmSession.open(mediaDrm);

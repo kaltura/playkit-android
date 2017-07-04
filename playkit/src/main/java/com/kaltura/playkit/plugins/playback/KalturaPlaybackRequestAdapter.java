@@ -1,14 +1,25 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.plugins.playback;
 
 import android.content.Context;
 import android.net.Uri;
-import android.util.Base64;
 
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
 
-import static android.util.Base64.NO_WRAP;
 import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
+import static com.kaltura.playkit.Utils.toBase64;
 
 /**
  * Created by Noam Tamim @ Kaltura on 28/03/2017.
@@ -35,7 +46,7 @@ public class KalturaPlaybackRequestAdapter implements PKRequestParams.Adapter {
         if (url.getPath().contains("/playManifest/")) {
             Uri alt = url.buildUpon()
                     .appendQueryParameter("clientTag", CLIENT_TAG)
-                    .appendQueryParameter("referrer", Base64.encodeToString(packageName.getBytes(), NO_WRAP))
+                    .appendQueryParameter("referrer", toBase64(packageName.getBytes()))
                     .appendQueryParameter("playSessionId", playSessionId)
                     .build();
             return new PKRequestParams(alt, requestParams.headers);

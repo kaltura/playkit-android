@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit;
 
 import android.content.Context;
@@ -15,7 +27,7 @@ import java.util.Map;
 
 
 class LoadedPlugin {
-    public LoadedPlugin(PKPlugin plugin, PlayerDecorator decorator) {
+    LoadedPlugin(PKPlugin plugin, PlayerDecorator decorator) {
         this.plugin = plugin;
         this.decorator = decorator;
     }
@@ -118,7 +130,11 @@ class PlayerLoader extends PlayerDecoratorBase {
     @Override
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
 
-        playerController.setMedia(mediaConfig);
+        //If mediaConfig is not valid, playback is impossible, so return.
+        //setMedia() is responsible to notify application with exact error that happened.
+        if(!playerController.setMedia(mediaConfig)){
+            return;
+        }
 
         super.prepare(mediaConfig);
         

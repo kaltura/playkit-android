@@ -1,16 +1,35 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.util.Base64;
 import android.util.Log;
 
 import com.google.gson.JsonObject;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -81,7 +100,7 @@ public class Utils {
     }
 
     public static <T extends Serializable> Map<String, T> bundleToMap(Bundle input, Class<T> c) {
-        Map<String, T> output = new HashMap<String, T>();
+        Map<String, T> output = new HashMap<>();
         for (String key : input.keySet()) {
             output.put(key, c.cast(input.getParcelable(key)));
         }
@@ -89,10 +108,52 @@ public class Utils {
     }
 
     public static boolean isJsonObjectValueValid(JsonObject jsonObject, String key) {
-        if (jsonObject.has(key) && !jsonObject.get(key).isJsonNull()) {
-            return true;
-        }
-        return false;
+        return jsonObject.has(key) && !jsonObject.get(key).isJsonNull();
     }
 
+    public static String toBase64(byte[] data) {
+        return Base64.encodeToString(data, Base64.NO_WRAP);
+    }
+
+    public static byte[] executePost(String url, byte[] data, Map<String, String> requestProperties)
+            throws MalformedURLException, IOException {
+        HttpURLConnection urlConnection = null;
+        try {
+            urlConnection = (HttpURLConnection) new URL(url).openConnection();
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setDoOutput(data != null);
+            urlConnection.setDoInput(true);
+            if (requestProperties != null) {
+                for (Map.Entry<String, String> requestProperty : requestProperties.entrySet()) {
+                    urlConnection.setRequestProperty(requestProperty.getKey(), requestProperty.getValue());
+                }
+            }
+            if (data != null) {
+                OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
+                out.write(data);
+                out.close();
+            }
+            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+            return convertInputStreamToByteArray(in);
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+        }
+    }
+
+    private static byte[] convertInputStreamToByteArray(InputStream inputStream) throws IOException {
+        byte[] bytes;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        byte data[] = new byte[1024];
+        int count;
+        while ((count = inputStream.read(data)) != -1) {
+            bos.write(data, 0, count);
+        }
+        bos.flush();
+        bos.close();
+        inputStream.close();
+        bytes = bos.toByteArray();
+        return bytes;
+    }
 }

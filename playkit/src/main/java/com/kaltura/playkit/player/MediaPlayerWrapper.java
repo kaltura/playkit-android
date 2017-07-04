@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 
 
 package com.kaltura.playkit.player;
@@ -17,6 +29,7 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.WidevineClassicDrm;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.PKError;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -207,7 +220,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         log.d("replay ");
 
         if (player == null) {
-            log.e("Attempt to invoke 'replay()' on null instance of the exoplayer");
+            log.w("Attempt to invoke 'replay()' on null instance of the mediaplayer");
             return;
         }
         seekTo(0);
@@ -348,11 +361,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public PlaybackInfo getPlaybackInfo() {
-        return new PlaybackInfo(getWidevineAssetPlaybackUri(assetUri), -1, -1, -1, player.getVideoWidth(), player.getVideoHeight());
+        return new PlaybackInfo(getWidevineAssetPlaybackUri(assetUri), -1, -1, -1, player.getVideoWidth(), player.getVideoHeight(), false);
     }
 
     @Override
-    public PlayerEvent.ExceptionInfo getCurrentException() {
+    public PKError getCurrentError() {
         return null;
     }
 
@@ -466,7 +479,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     private void savePlayerPosition() {
         if (player == null) {
-            log.e("Attempt to invoke 'savePlayerPosition()' on null instance");
+            log.w("Attempt to invoke 'savePlayerPosition()' on null instance of mediaplayer");
             return;
         }
         playerPosition = player.getCurrentPosition();
@@ -505,9 +518,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             return true;
         }
         sendDistinctEvent(PlayerEvent.Type.ERROR);
-//                if(what == MediaPlayer.MEDIA_ERROR_SERVER_DIED || what == MediaPlayer.MEDIA_ERROR_UNKNOWN || what == MediaPlayer.MEDIA_ERROR_IO) {
-//
-//                }
         return true;
     }
 

@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.player;
 
 import android.content.Context;
@@ -6,8 +18,11 @@ import android.media.MediaDrm;
 import android.os.Build;
 import android.support.annotation.NonNull;
 
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -31,6 +46,27 @@ public class MediaSupport {
         checkWidevineClassic(context);
         widevineModular();
         initialized = true;
+    }
+    
+    public static Set<PKDrmParams.Scheme> supportedDrmSchemes(Context context) {
+        
+        initialize(context);
+        
+        HashSet<PKDrmParams.Scheme> schemes = new HashSet<>();
+
+        if (widevineModular()) {
+            schemes.add(PKDrmParams.Scheme.WidevineCENC);
+        }
+
+        if (widevineClassic()) {
+            schemes.add(PKDrmParams.Scheme.WidevineClassic);
+        }
+        
+        if (playReady()) {
+            schemes.add(PKDrmParams.Scheme.PlayReadyCENC);
+        }
+        
+        return schemes;
     }
 
     private static void checkWidevineClassic(Context context) {
@@ -72,6 +108,6 @@ public class MediaSupport {
     }
 
     public static boolean playReady() {
-        return false;   // Not yet.
+        return Boolean.parseBoolean("false");   // Not yet.
     }
 }

@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.drm;
 
 import android.annotation.TargetApi;
@@ -11,7 +23,6 @@ import android.media.MediaDrmException;
 import android.media.NotProvisionedException;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.util.Base64;
 
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.google.android.exoplayer2.drm.ExoMediaDrm;
@@ -29,6 +40,8 @@ import com.kaltura.playkit.player.MediaSupport;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
+
+import static com.kaltura.playkit.Utils.toBase64;
 
 /**
  * Created by anton.afanasiev on 13/12/2016.
@@ -89,16 +102,16 @@ class WidevineModularAdapter extends DrmAdapter {
 
         // Get keyRequest
         FrameworkMediaDrm.KeyRequest keyRequest = session.getOfflineKeyRequest(initData, mimeType);
-        log.d("registerAsset: init data (b64): " + encodeToString(initData));
+        log.d("registerAsset: init data (b64): " + toBase64(initData));
 
         byte[] data = keyRequest.getData();
-        log.d("registerAsset: request data (b64): " + encodeToString(data));
+        log.d("registerAsset: request data (b64): " + toBase64(data));
 
         // Send request to server
         byte[] keyResponse;
         try {
             keyResponse = executeKeyRequest(licenseUri, keyRequest);
-            log.d("registerAsset: response data (b64): " + encodeToString(keyResponse));
+            log.d("registerAsset: response data (b64): " + toBase64(keyResponse));
         } catch (IOException e) {
             throw new RegisterException("Can't send key request for registration", e);
         }
@@ -106,7 +119,7 @@ class WidevineModularAdapter extends DrmAdapter {
         // Provide keyResponse
         try {
             byte[] offlineKeyId = session.provideKeyResponse(keyResponse);
-            localDataStore.save(encodeToString(initData), offlineKeyId);
+            localDataStore.save(toBase64(initData), offlineKeyId);
         } catch (DeniedByServerException e) {
             throw new RegisterException("Request denied by server", e);
         }
@@ -141,7 +154,7 @@ class WidevineModularAdapter extends DrmAdapter {
         }
 
         // obtain key with which we will load the saved keySetId.
-        String key = encodeToString(dash.widevineInitData);
+        String key = toBase64(dash.widevineInitData);
 
         byte[] keySetId;
         try {
@@ -158,7 +171,7 @@ class WidevineModularAdapter extends DrmAdapter {
             throw new WidevineNotSupportedException(e);
         }
 
-        log.d("releaseRequest:" + encodeToString(releaseRequest.getData()));
+        log.d("releaseRequest:" + toBase64(releaseRequest.getData()));
 
         localDataStore.remove(key);
 
@@ -227,7 +240,7 @@ class WidevineModularAdapter extends DrmAdapter {
 
         MediaDrmSession session;
         try {
-            String key = encodeToString(dash.widevineInitData);
+            String key = toBase64(dash.widevineInitData);
             session = openSessionWithKeys(mediaDrm, key);
         } catch (MediaDrmException | FileNotFoundException | MediaCryptoException e) {
             throw new RegisterException("Can't open session with keys", e);
@@ -265,7 +278,7 @@ class WidevineModularAdapter extends DrmAdapter {
      * @param localPath - file from which to parse the dash manifest.
      * @param assetId   - the asset id.
      * @return - {@link SimpleDashParser} which contains the manifest data we need.
-     * @throws RegisterException
+     * @throws RegisterException - {@link RegisterException}
      */
     private SimpleDashParser parseDash(String localPath, String assetId) throws RegisterException {
         SimpleDashParser dashParser;
@@ -322,10 +335,6 @@ class WidevineModularAdapter extends DrmAdapter {
 
         return sdkName + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE
                 + ") " + "ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
-    }
-
-    private String encodeToString(byte[] data) {
-        return Base64.encodeToString(data, Base64.NO_WRAP);
     }
 
     private class RegisterException extends Exception {

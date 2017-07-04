@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit;
 
 import android.content.Context;
@@ -434,7 +446,7 @@ public class LocalAssetsManager {
 
         @Override
         public void save(String key, byte[] value) {
-            String encodedValue = Base64.encodeToString(value, Base64.NO_WRAP);
+            String encodedValue = Utils.toBase64(value);
             log.i("save to storage with key " + key + " and value " + encodedValue);
             sharedPreferences.edit()
                     .putString(key, encodedValue)

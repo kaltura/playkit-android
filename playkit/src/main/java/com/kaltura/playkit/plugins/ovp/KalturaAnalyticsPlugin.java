@@ -1,4 +1,16 @@
-package com.kaltura.playkit.plugins;
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
+package com.kaltura.playkit.plugins.ovp;
 
 import android.content.Context;
 
@@ -134,7 +146,6 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         if (Utils.isJsonObjectValueValid(pluginConfig, "partnerId")) {
             partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
         } else {
-            log.e("Error KalturaAnalytics partnerId was not set");
             partnerId = 0;
         }
 
@@ -279,9 +290,6 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         String playbackType = isDvr ? "dvr" : "live";
         int flavourId = -1;
 
-        // Parameters for the request -
-//        String baseUrl, int partnerId, int eventType, String clientVer, String playbackType, String sessionId, long position
-//        ,int uiConfId, String entryId, int eventIdx, int flavourId, String referrer, int bufferTime, int actualBitrate
         RequestBuilder requestBuilder = AnalyticsService.sendAnalyticsEvent(baseUrl, partnerId, eventType.getValue(), PlayKitManager.CLIENT_TAG, playbackType,
                 sessionId, player.getCurrentPosition(), uiconfId, mediaConfig.getMediaEntry().getId(), eventIdx++, flavourId, bufferTime, currentBitrate, "hls");
 
@@ -294,6 +302,5 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
         requestsExecutor.queue(requestBuilder.build());
         messageBus.post(new LogEvent(TAG + " " + eventType.toString(), requestBuilder.build().getUrl()));
     }
-
 }
 
