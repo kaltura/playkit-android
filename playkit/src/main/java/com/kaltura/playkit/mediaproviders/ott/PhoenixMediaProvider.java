@@ -27,6 +27,7 @@ import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
+import com.kaltura.playkit.BEResponseListener;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -86,6 +87,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     private MediaAsset mediaAsset;
 
+    private BEResponseListener responseListener;
 
     private class MediaAsset {
 
@@ -205,6 +207,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return this;
     }
 
+    public PhoenixMediaProvider setResponseListener(BEResponseListener responseListener) {
+        this.responseListener = responseListener;
+        return this;
+    }
 
     /**
      * OPTIONAL
@@ -353,6 +359,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             if (isCanceled()) {
                 PKLog.v(TAG, loadId + ": i am canceled, exit response parsing ");
                 return;
+            }
+
+            if(responseListener != null){
+                responseListener.onResponse(response);
             }
 
             if (response != null && response.isSuccess()) {
@@ -537,4 +547,5 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         public static final String Https = "https";     // only https sources
         public static final String All = "all";         // do not filter by protocol
     }
+
 }
