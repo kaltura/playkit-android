@@ -106,6 +106,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
     private List<PKMetadata> metadataList = new ArrayList<>();
+    private boolean useTextureView = false;
+
 
     private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
@@ -393,7 +395,18 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             initializePlayer();
         }
 
+        maybeChangePlayerRenderView(mediaSourceConfig.useTextureView);
+
         preparePlayer(mediaSourceConfig);
+    }
+
+    private void maybeChangePlayerRenderView(boolean useTextureView) {
+        if (this.useTextureView == useTextureView) {
+            return;
+        }
+
+        this.useTextureView = useTextureView;
+        exoPlayerView.swapVideoSurface(useTextureView);
     }
 
     @Override
