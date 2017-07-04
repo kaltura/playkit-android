@@ -20,7 +20,6 @@ import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.OnCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.MediaEntryProvider;
-import com.kaltura.playkit.PKDeviceInfo;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -91,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         setContentView(R.layout.activity_main);
 
 
-        log.d(PKDeviceInfo.getInfo(this).toString());
+        //log.d(PKDeviceInfo.getInfo(this).toString());
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
             Toast.makeText(this, "Please tap ALLOW", Toast.LENGTH_LONG).show();
@@ -386,7 +385,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onEvent(PKEvent event) {
                 //When the track data available, this event occurs. It brings the info object with it.
                 PlayerEvent.TracksAvailable tracksAvailable = (PlayerEvent.TracksAvailable) event;
-                populateSpinnersWithTrackInfo(tracksAvailable.getPKTracks());
+                populateSpinnersWithTrackInfo(tracksAvailable.tracksInfo);
 
             }
         }, PlayerEvent.Type.TRACKS_AVAILABLE);
