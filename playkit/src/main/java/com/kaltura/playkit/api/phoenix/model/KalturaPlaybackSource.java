@@ -36,4 +36,5 @@ public class KalturaPlaybackSource extends BasePlaybackSource {
     public String getType() {
         return type;
     }
+
 }
