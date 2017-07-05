@@ -29,7 +29,7 @@ import com.kaltura.playkit.PKMediaEntry;
  * Created by tehilarozin on 06/12/2016.
  */
 
-public abstract class BECallableLoader extends CallableLoader {
+public abstract class BECallableLoader extends CallableLoader<Void> {
 
     protected String loadReq;
     protected RequestQueue requestQueue;
@@ -52,6 +52,7 @@ public abstract class BECallableLoader extends CallableLoader {
 
     @Override
     protected void cancel() {
+        super.cancel();
         if (loadReq != null) {
             synchronized (syncObject) {
                 Log.i(TAG, loadId + ": canceling request execution [" + loadReq + "]");
@@ -62,14 +63,13 @@ public abstract class BECallableLoader extends CallableLoader {
             Log.i(TAG, loadId+": cancel: request completed ");
         }
 
-        isCanceled = true;
         Log.i(TAG, loadId+": i am canceled ...notifyCompletion");
 
         notifyCompletion();
     }
 
     @Override
-    protected void load() throws InterruptedException {
+    protected Void load() throws InterruptedException {
 
         Log.v(TAG, loadId + ": load: start on get ks ");
         waitForCompletion = true;
@@ -112,6 +112,8 @@ public abstract class BECallableLoader extends CallableLoader {
             waitCompletion();
         }
         PKLog.d(TAG, loadId+": load: wait for completion released");
+
+        return null;
     }
 
 }

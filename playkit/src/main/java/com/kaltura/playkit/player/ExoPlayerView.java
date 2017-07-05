@@ -27,7 +27,6 @@ import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SubtitleView;
-import com.kaltura.playkit.PKLog;
 
 import java.util.List;
 
@@ -35,45 +34,92 @@ import java.util.List;
  * @hide
  */
 
-public class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener, TextRenderer.Output{
+class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener, TextRenderer.Output {
 
-    private final View surfaceView;
+    private View videoSurface;
     private final View posterView; // TODO should be changed to poster?
     private final SubtitleView subtitleLayout;
     private final AspectRatioFrameLayout layout;
 
     private SimpleExoPlayer player;
 
-    public ExoPlayerView(Context context) {
+    ExoPlayerView(Context context) {
         this(context, null);
     }
 
-    public ExoPlayerView(Context context, AttributeSet attrs) {
+    ExoPlayerView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public ExoPlayerView(Context context, AttributeSet attrs, int defStyleAttr) {
+    ExoPlayerView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
         layout = initFrameLayout();
         posterView = initPosterView();
         subtitleLayout = initSubtitleLayout();
 
-        surfaceView = initSurfaceView();
-
         addView(layout);
-        layout.addView(surfaceView, 0);
+
+        //by default create with SurfaceView.
+        swapVideoSurface(false);
+
         layout.addView(posterView);
         layout.addView(subtitleLayout);
     }
 
-    private View initSurfaceView() {
-        View surfaceView = new SurfaceView(getContext());
+    /**
+     * Swap the video surface view that player should render.
+     * @param useTextureView - if should use {@link TextureView}
+     */
+    void swapVideoSurface(boolean useTextureView) {
+
+        if (useTextureView) {
+            videoSurface = new TextureView(getContext());
+        } else {
+            videoSurface = new SurfaceView(getContext());
+        }
+
+        //Set view size to match the parent.
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
-        surfaceView.setLayoutParams(params);
-        return surfaceView;
+        videoSurface.setLayoutParams(params);
+
+        //Check if videoSurface exist in view hierarchy
+        View firstChild = layout.getChildAt(0);
+        if (firstChild instanceof TextureView || firstChild instanceof SurfaceView) {
+            //Remove it if so.
+            layout.removeView(firstChild);
+        }
+
+        //Add newly created videoSurface.
+        layout.addView(videoSurface, 0);
+
+        //Apply videoSurface to the player(if exist).
+        if (player != null) {
+            applyVideoSurface();
+        }
+    }
+
+    /**
+     * Will set videoSurface to player, and reset all the related listeners.
+     */
+    private void applyVideoSurface() {
+        //Remove existed videoSurface from player.
+        player.setVideoSurface(null);
+
+        //Decide which type of videoSurface should be set.
+        if (videoSurface instanceof TextureView) {
+            player.setVideoTextureView((TextureView) videoSurface);
+        } else {
+            player.setVideoSurfaceView((SurfaceView) videoSurface);
+        }
+        //Clear listeners
+        player.setVideoListener(null);
+        player.setTextOutput(null);
+        //Set listeners
+        player.setVideoListener(this);
+        player.setTextOutput(this);
     }
 
     private SubtitleView initSubtitleLayout() {
@@ -102,38 +148,27 @@ public class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoLi
     }
 
     /**
-     * Returns the player currently set on this view, or null if no player is set.
-     */
-    public SimpleExoPlayer getPlayer() {
-        return player;
-    }
-
-    /**
      * Set the {@link SimpleExoPlayer} to use. The {@link SimpleExoPlayer#setTextOutput} and
      * {@link SimpleExoPlayer#setVideoListener} method of the player will be called and previous
      * assignments are overridden.
      *
      * @param player The {@link SimpleExoPlayer} to use.
      */
-    public void setPlayer(SimpleExoPlayer player) {
+    void setPlayer(SimpleExoPlayer player) {
         if (this.player == player) {
             return;
         }
+
         if (this.player != null) {
             this.player.setTextOutput(null);
             this.player.setVideoListener(null);
             this.player.setVideoSurface(null);
         }
+
         this.player = player;
 
         if (player != null) {
-            if (surfaceView instanceof TextureView) {
-                player.setVideoTextureView((TextureView) surfaceView);
-            } else if (surfaceView instanceof SurfaceView) {
-                player.setVideoSurfaceView((SurfaceView) surfaceView);
-            }
-            player.setVideoListener(this);
-            player.setTextOutput(this);
+            applyVideoSurface();
         } else {
             posterView.setVisibility(VISIBLE);
         }
@@ -156,13 +191,13 @@ public class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoLi
 
     @Override
     public void hideVideoSurface() {
-        surfaceView.setVisibility(GONE);
+        videoSurface.setVisibility(GONE);
         subtitleLayout.setVisibility(GONE);
     }
 
     @Override
     public void showVideoSurface() {
-        surfaceView.setVisibility(VISIBLE);
+        videoSurface.setVisibility(VISIBLE);
         subtitleLayout.setVisibility(VISIBLE);
     }
 

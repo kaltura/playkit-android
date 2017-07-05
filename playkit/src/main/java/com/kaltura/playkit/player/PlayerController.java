@@ -58,6 +58,7 @@ public class PlayerController implements Player {
     private PKRequestParams.Adapter contentRequestAdapter;
 
     private boolean isNewEntry = true;
+    private boolean useTextureView = false;
     private boolean cea608CaptionsEnabled = false;
 
     private Settings settings = new Settings();
@@ -73,6 +74,12 @@ public class PlayerController implements Player {
         @Override
         public Player.Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
             PlayerController.this.cea608CaptionsEnabled = cea608CaptionsEnabled;
+            return this;
+        }
+
+        @Override
+        public Player.Settings useTextureView(boolean useTextureView) {
+            PlayerController.this.useTextureView = useTextureView;
             return this;
         }
     }
@@ -280,7 +287,7 @@ public class PlayerController implements Player {
             return false;
         }
 
-        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestAdapter, cea608CaptionsEnabled);
+        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestAdapter, cea608CaptionsEnabled, useTextureView);
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
         return true;
     }

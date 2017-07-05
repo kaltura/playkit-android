@@ -24,10 +24,12 @@ class PKMediaSourceConfig {
     PKMediaSource mediaSource;
     PKRequestParams.Adapter adapter;
     boolean cea608CaptionsEnabled;
+    boolean useTextureView;
 
-    PKMediaSourceConfig(PKMediaSource mediaSource, PKRequestParams.Adapter adapter, boolean cea608CaptionsEnabled) {
+    PKMediaSourceConfig(PKMediaSource mediaSource, PKRequestParams.Adapter adapter, boolean cea608CaptionsEnabled, boolean useTextureView) {
         this.mediaSource = mediaSource;
         this.adapter = adapter;
+        this.useTextureView = useTextureView;
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
     }
 
