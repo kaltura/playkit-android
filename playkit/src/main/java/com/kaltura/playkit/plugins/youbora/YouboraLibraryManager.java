@@ -177,8 +177,9 @@ class YouboraLibraryManager extends PluginGeneric {
 
     private void sendErrorHandler(PKEvent event) {
 
+        PlayerEvent.Error errorEvent = (PlayerEvent.Error) event;
         String errorMsg = "Player error occurred.";
-        PKError error = (PKError) event;
+        PKError error = errorEvent.error;
         if (error.cause == null) {
             errorHandler(errorMsg, event.eventType().toString());
             return;
