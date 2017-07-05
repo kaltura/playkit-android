@@ -28,6 +28,8 @@ def has_banner(d):
 	return False
 
 banner = BANNER % THIS_YEAR
+modified_files = 0
+
 for root, dirs, files in os.walk('playkit/src/main/java/com/kaltura/playkit'):
 	for name in files:
 		fileExt = os.path.splitext(name)[1]
@@ -43,4 +45,8 @@ for root, dirs, files in os.walk('playkit/src/main/java/com/kaltura/playkit'):
 		d = banner + '\n' + d
 		
 		file(fullPath, 'wb').write(d)
+		
+		modified_files += 1
 
+# exit with 0 (OK) if there was at least one change.
+exit(0 if modified_files > 0 else 1)
