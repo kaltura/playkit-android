@@ -32,6 +32,11 @@ public class MockPlayer implements Player {
             public Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
                 return this;
             }
+
+            @Override
+            public Settings useTextureView(boolean useTextureView) {
+                return this;
+            }
         };
     }
 
