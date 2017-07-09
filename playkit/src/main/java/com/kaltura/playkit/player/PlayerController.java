@@ -320,8 +320,6 @@ public class PlayerController implements Player {
         } else {
             player = new MediaPlayerWrapper(context);
             togglePlayerListeners(true);
-        }
-        if (mediaFormat == wvm) {
             addPlayerView();
         }
     }
