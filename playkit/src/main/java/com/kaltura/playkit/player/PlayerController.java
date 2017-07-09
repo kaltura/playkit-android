@@ -128,6 +128,11 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.PlaybackInfoUpdated(player.getPlaybackInfo());
                         break;
                     case ERROR:
+                        if (player.getCurrentError() == null) {
+                            log.e("can not send error event");
+                            return;
+                        }
+
                         event = new PlayerEvent.Error(player.getCurrentError());
                         //If error should be handled locally, do not send it to messageBus.
                         if (maybeHandleExceptionLocally(player.getCurrentError())) {
