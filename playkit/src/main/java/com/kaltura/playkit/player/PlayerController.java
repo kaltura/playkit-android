@@ -129,6 +129,7 @@ public class PlayerController implements Player {
                         break;
                     case ERROR:
                         if (player.getCurrentError() == null) {
+                            log.e("can not send error event");
                             return;
                         }
 
