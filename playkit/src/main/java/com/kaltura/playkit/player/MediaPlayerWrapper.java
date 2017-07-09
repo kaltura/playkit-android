@@ -117,6 +117,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             return;
         }
         currentState = PlayerState.IDLE;
+        changeState(PlayerState.IDLE);
         //player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         //player.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
 
@@ -442,13 +443,12 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         }
         playerDuration = player.getDuration();
         changeState(PlayerState.READY);
+        sendOnPreparedEvents();
         if (isPlayAfterPrepare) {
             sendDistinctEvent(PlayerEvent.Type.PLAY);
-            sendOnPreparedEvents();
             play();
             isPlayAfterPrepare = false;
         } else if (isPauseAfterPrepare){
-            sendOnPreparedEvents();
             pause();
             isPauseAfterPrepare = false;
         }

@@ -49,6 +49,12 @@ public class KalturaPlaybackRequestAdapter implements PKRequestParams.Adapter {
                     .appendQueryParameter("referrer", toBase64(packageName.getBytes()))
                     .appendQueryParameter("playSessionId", playSessionId)
                     .build();
+
+            String lastPathSegment = requestParams.url.getLastPathSegment();
+            if (lastPathSegment.endsWith(".wvm")) {
+                // in old android device it will not play wvc if url is not ended in wvm
+                alt = alt.buildUpon().appendQueryParameter("name", lastPathSegment).build();
+            }
             return new PKRequestParams(alt, requestParams.headers);
         }
 
