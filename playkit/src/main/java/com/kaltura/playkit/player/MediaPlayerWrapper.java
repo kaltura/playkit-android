@@ -72,6 +72,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private boolean isPlayAfterPrepare = false;
     private boolean isPauseAfterPrepare = false;
     private boolean appInBackground;
+    private boolean isFirstPlayback = true;
 
     MediaPlayerWrapper(Context context) {
         this.context = context;
@@ -120,7 +121,9 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         changeState(PlayerState.IDLE);
         //player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         //player.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
-
+        if (assetUri != null) {
+            isFirstPlayback = false;
+        }
         assetUri = mediaSourceConfig.getUrl().toString();
 
         String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
@@ -141,6 +144,15 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             } else {
                 log.e("Rights acq required but no DRM Params");
                 sendDistinctEvent(PlayerEvent.Type.ERROR);
+                return;
+            }
+        }
+        if (!isFirstPlayback) {
+            if (prepareState == NOT_PREPARED) {
+                changeState(PlayerState.BUFFERING);
+                prepareState = PREPARING;
+                playerDuration = Consts.TIME_UNSET;
+                player.prepareAsync();
             }
         }
     }
