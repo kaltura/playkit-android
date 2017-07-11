@@ -469,6 +469,10 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         log.d("surfaceCreated state = " + currentState);
+        if (player == null) {
+            return;
+        }
+
         player.setDisplay(surfaceHolder);
 
         if (prepareState == NOT_PREPARED) {
@@ -535,6 +539,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public void onSeekComplete(MediaPlayer mediaPlayer) {
+        log.d("onSeekComplete");
         if (getCurrentPosition() < getDuration()) {
             sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
             changeState(PlayerState.READY);
