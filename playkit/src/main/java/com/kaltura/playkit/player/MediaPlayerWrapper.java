@@ -72,6 +72,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private boolean isPlayAfterPrepare = false;
     private boolean isPauseAfterPrepare = false;
     private boolean appInBackground;
+    private boolean isFirstPlayback = true;
 
     MediaPlayerWrapper(Context context) {
         this.context = context;
@@ -117,9 +118,12 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             return;
         }
         currentState = PlayerState.IDLE;
+        changeState(PlayerState.IDLE);
         //player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         //player.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
-
+        if (assetUri != null) {
+            isFirstPlayback = false;
+        }
         assetUri = mediaSourceConfig.getUrl().toString();
 
         String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
@@ -140,6 +144,15 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             } else {
                 log.e("Rights acq required but no DRM Params");
                 sendDistinctEvent(PlayerEvent.Type.ERROR);
+                return;
+            }
+        }
+        if (!isFirstPlayback) {
+            if (prepareState == NOT_PREPARED) {
+                changeState(PlayerState.BUFFERING);
+                prepareState = PREPARING;
+                playerDuration = Consts.TIME_UNSET;
+                player.prepareAsync();
             }
         }
     }
@@ -442,13 +455,12 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         }
         playerDuration = player.getDuration();
         changeState(PlayerState.READY);
+        sendOnPreparedEvents();
         if (isPlayAfterPrepare) {
             sendDistinctEvent(PlayerEvent.Type.PLAY);
-            sendOnPreparedEvents();
             play();
             isPlayAfterPrepare = false;
         } else if (isPauseAfterPrepare){
-            sendOnPreparedEvents();
             pause();
             isPauseAfterPrepare = false;
         }
@@ -457,6 +469,10 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         log.d("surfaceCreated state = " + currentState);
+        if (player == null) {
+            return;
+        }
+
         player.setDisplay(surfaceHolder);
 
         if (prepareState == NOT_PREPARED) {
@@ -523,6 +539,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public void onSeekComplete(MediaPlayer mediaPlayer) {
+        log.d("onSeekComplete");
         if (getCurrentPosition() < getDuration()) {
             sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
             changeState(PlayerState.READY);

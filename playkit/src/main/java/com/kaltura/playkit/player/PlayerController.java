@@ -34,6 +34,7 @@ import com.kaltura.playkit.PKError;
 
 import java.util.UUID;
 
+import static com.kaltura.playkit.PKMediaFormat.wvm;
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 
 /**
@@ -318,12 +319,13 @@ public class PlayerController implements Player {
 
     private void initializePlayer(PKMediaFormat mediaFormat) {
         //Decide which player wrapper should be initialized.
-        if (mediaFormat != PKMediaFormat.wvm) {
+        if (mediaFormat != wvm) {
             player = new ExoPlayerWrapper(context);
             togglePlayerListeners(true);
         } else {
             player = new MediaPlayerWrapper(context);
             togglePlayerListeners(true);
+            addPlayerView();
         }
     }
 
@@ -529,8 +531,8 @@ public class PlayerController implements Player {
     private boolean shouldSwitchBetweenPlayers(PKMediaSource newSource) {
 
         PKMediaFormat currentMediaFormat = newSource.getMediaFormat();
-        return currentMediaFormat != PKMediaFormat.wvm && player instanceof MediaPlayerWrapper ||
-                currentMediaFormat == PKMediaFormat.wvm && player instanceof ExoPlayerWrapper;
+        return currentMediaFormat != wvm && player instanceof MediaPlayerWrapper ||
+                currentMediaFormat == wvm && player instanceof ExoPlayerWrapper;
 
     }
 
