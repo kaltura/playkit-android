@@ -45,8 +45,7 @@ import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARI
  */
 
 class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaPlayer.OnPreparedListener,
-        MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener,
-        MediaPlayer.OnSeekCompleteListener {
+        MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener {
 
 
     private static final PKLog log = PKLog.get("MediaPlayerWrapper");
@@ -163,7 +162,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         // Set OnErrorListener to notify our callbacks if the video errors.
         player.setOnErrorListener(this);
         player.setOnBufferingUpdateListener(this);
-        player.setOnSeekCompleteListener(this);
         player.setOnPreparedListener(this);
     }
 
@@ -450,6 +448,19 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     public void onPrepared(MediaPlayer mp) {
         prepareState = PREPARED;
         log.d("onPrepared " + prepareState + " isPlayAfterPrepare = " + isPlayAfterPrepare + " appInBackground = " + appInBackground);
+        mp.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+            @Override
+            public void onSeekComplete(MediaPlayer mp) {
+                log.d("onSeekComplete");
+                if (getCurrentPosition() < getDuration()) {
+                    sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
+                    changeState(PlayerState.READY);
+                    if (mp.isPlaying()) {
+                        sendDistinctEvent(PlayerEvent.Type.PLAYING);
+                    }
+                }
+            }
+        });
         if (appInBackground) {
             return;
         }
@@ -535,18 +546,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         }
         sendDistinctEvent(PlayerEvent.Type.ERROR);
         return true;
-    }
-
-    @Override
-    public void onSeekComplete(MediaPlayer mediaPlayer) {
-        log.d("onSeekComplete");
-        if (getCurrentPosition() < getDuration()) {
-            sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
-            changeState(PlayerState.READY);
-            if (mediaPlayer.isPlaying()) {
-                sendDistinctEvent(PlayerEvent.Type.PLAYING);
-            }
-        }
     }
 
     enum PrepareState {
