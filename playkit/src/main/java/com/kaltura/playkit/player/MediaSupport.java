@@ -47,11 +47,11 @@ public class MediaSupport {
         widevineModular();
         initialized = true;
     }
-    
+
     public static Set<PKDrmParams.Scheme> supportedDrmSchemes(Context context) {
-        
+
         initialize(context);
-        
+
         HashSet<PKDrmParams.Scheme> schemes = new HashSet<>();
 
         if (widevineModular()) {
@@ -61,11 +61,11 @@ public class MediaSupport {
         if (widevineClassic()) {
             schemes.add(PKDrmParams.Scheme.WidevineClassic);
         }
-        
+
         if (playReady()) {
             schemes.add(PKDrmParams.Scheme.PlayReadyCENC);
         }
-        
+
         return schemes;
     }
 
@@ -101,9 +101,24 @@ public class MediaSupport {
         // Encrypted dash is only supported in Android v4.3 and up -- needs MediaDrm class.
         // Make sure Widevine is supported
         if (!initialized && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID)) {
-            widevineModular = true;
-        }
 
+            MediaDrm mediaDrm = null;
+            byte[] session = null;
+            try {
+                mediaDrm = new MediaDrm(WIDEVINE_UUID);
+                session = mediaDrm.openSession();
+                widevineModular = true;
+            } catch (Exception e) {
+                widevineModular = false;
+            } finally {
+                if (session != null) {
+                    mediaDrm.closeSession(session);
+                }
+                if (mediaDrm != null) {
+                    mediaDrm.release();
+                }
+            }
+        }
         return widevineModular;
     }
 
