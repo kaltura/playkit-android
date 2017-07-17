@@ -13,6 +13,7 @@
 package com.kaltura.playkit.plugins.youbora;
 
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
@@ -24,7 +25,6 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.PKError;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.BuildConfig;
 import com.npaw.youbora.youboralib.utils.Utils;
@@ -292,7 +292,7 @@ class YouboraLibraryManager extends PluginGeneric {
 
     private void sendReportEvent(PKEvent event) {
         String reportedEventName = event.eventType().name();
-        messageBus.post(new YouboraEvent.YouboraReport(reportedEventName));
+        messageBus.post(new com.kaltura.playkit.plugins.youbora.YouboraEvent.YouboraReport(reportedEventName));
     }
 
     public String generateRendition(double bitrate, int width, int height) {

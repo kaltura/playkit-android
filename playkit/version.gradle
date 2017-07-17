@@ -1,6 +1,6 @@
 
 // PlayKit Library Version
-ext.playkitVersion = 'dev'
+ext.playkitVersion = '3.0.2'
 
 
 android.libraryVariants.all { variant ->
@@ -22,7 +22,6 @@ android.libraryVariants.all { variant ->
         options.docletpath(new File(project.rootDir, "tools/doclava.jar"))
     }
 }
-
 
 
 
