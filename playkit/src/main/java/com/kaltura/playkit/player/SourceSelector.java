@@ -1,14 +1,26 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.player;
 
 import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.LocalAssetsManager;
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,37 +56,28 @@ class SourceSelector {
             return localMediaSource;
         }
 
-        // Default preference: DASH, HLS, WVM, MP4
+        // Default preference: DASH, HLS, WVM, MP4, MP3
 
-        List<PKMediaFormat> pref = new ArrayList<>(10);
-
-        // Dash is always available.
-        pref.add(PKMediaFormat.dash_clear);
-        
-        // Dash+Widevine is only available from Android 4.3 
-        if (MediaSupport.widevineModular()) {
-            pref.add(PKMediaFormat.dash_drm);
-        }
-        
-        // HLS clear is always available
-        pref.add(PKMediaFormat.hls_clear);
-        
-        // Widevine Classic is OPTIONAL from Android 6. 
-        if (MediaSupport.widevineClassic(null)) {
-            pref.add(PKMediaFormat.wvm_widevine);
-        }
-        
-        // MP4 is always available, but gives inferior performance.
-        pref.add(PKMediaFormat.mp4_clear);
+        PKMediaFormat[] pref = {PKMediaFormat.dash, PKMediaFormat.hls, PKMediaFormat.wvm, PKMediaFormat.mp4, PKMediaFormat.mp3};
         
         for (PKMediaFormat format : pref) {
             PKMediaSource source = sourceByFormat(format);
-            if (source != null) {
-                return source;
+            if (source == null) {
+                continue;
             }
-        }
 
-        log.e("No playable sources found!");
+            List<PKDrmParams> drmParams = source.getDrmData();
+            if (drmParams != null && !drmParams.isEmpty()) {
+                for (PKDrmParams params : drmParams) {
+                    if (params.isSchemeSupported()) {
+                        return source;
+                    }
+                }
+                // This source doesn't have supported params
+                continue;
+            }
+            return source;
+        }
         return null;
     }
 

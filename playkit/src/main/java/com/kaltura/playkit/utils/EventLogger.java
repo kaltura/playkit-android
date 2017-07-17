@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.utils;
 
 import android.view.Surface;
@@ -8,7 +20,7 @@ import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
-import com.google.android.exoplayer2.drm.StreamingDrmSessionManager;
+import com.google.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataRenderer;
 import com.google.android.exoplayer2.source.AdaptiveMediaSourceEventListener;
@@ -21,11 +33,11 @@ import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import java.io.IOException;
 
 /**
- * Created by anton.afanasiev on 31/10/2016.
+ * @hide
  */
 
 public class EventLogger implements ExoPlayer.EventListener, AudioRendererEventListener, VideoRendererEventListener,  MetadataRenderer.Output,
-        AdaptiveMediaSourceEventListener, ExtractorMediaSource.EventListener, StreamingDrmSessionManager.EventListener {
+        AdaptiveMediaSourceEventListener, ExtractorMediaSource.EventListener, DefaultDrmSessionManager.EventListener {
 
 
 
@@ -96,6 +108,16 @@ public class EventLogger implements ExoPlayer.EventListener, AudioRendererEventL
 
     @Override
     public void onDrmSessionManagerError(Exception e) {
+
+    }
+
+    @Override
+    public void onDrmKeysRestored() {
+
+    }
+
+    @Override
+    public void onDrmKeysRemoved() {
 
     }
 

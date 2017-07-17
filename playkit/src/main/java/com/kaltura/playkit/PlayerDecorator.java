@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit;
 
 import android.support.annotation.NonNull;
@@ -47,8 +59,8 @@ public abstract class PlayerDecorator extends PlayerDecoratorBase {
     }
 
     @Override
-    final public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
-        super.updatePluginConfig(pluginName, key, value);
+    final public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
+        super.updatePluginConfig(pluginName, pluginConfig);
     }
 
     final void setPlayer(Player player) {

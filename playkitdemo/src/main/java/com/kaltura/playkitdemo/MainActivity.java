@@ -1,6 +1,10 @@
 package com.kaltura.playkitdemo;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -11,27 +15,27 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
+import com.kaltura.netkit.connect.response.PrimitiveResult;
+import com.kaltura.netkit.connect.response.ResultElement;
+import com.kaltura.netkit.utils.OnCompletion;
+import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.MediaEntryProvider;
-import com.kaltura.playkit.OnCompletion;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.backend.PrimitiveResult;
-import com.kaltura.playkit.backend.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.backend.mock.MockMediaProvider;
-import com.kaltura.playkit.backend.ovp.KalturaOvpMediaProvider;
-import com.kaltura.playkit.backend.ovp.OvpSessionProvider;
-import com.kaltura.playkit.backend.ovp.SimpleOvpSessionProvider;
-import com.kaltura.playkit.backend.phoenix.APIDefines;
-import com.kaltura.playkit.backend.phoenix.OttSessionProvider;
-import com.kaltura.playkit.backend.phoenix.PhoenixMediaProvider;
-import com.kaltura.playkit.connect.ResultElement;
+import com.kaltura.playkit.api.ovp.SimpleOvpSessionProvider;
+import com.kaltura.playkit.api.phoenix.APIDefines;
+import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.mediaproviders.mock.MockMediaProvider;
+import com.kaltura.playkit.mediaproviders.ott.PhoenixMediaProvider;
+import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.player.AudioTrack;
 import com.kaltura.playkit.player.BaseTrack;
 import com.kaltura.playkit.player.PKTracks;
@@ -49,7 +53,12 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.kaltura.playkitdemo.MockParams.Format;
-import static com.kaltura.playkitdemo.MockParams.MediaId;
+import static com.kaltura.playkitdemo.MockParams.Format2;
+import static com.kaltura.playkitdemo.MockParams.Format_HD_Dash;
+import static com.kaltura.playkitdemo.MockParams.Format_SD_Dash;
+import static com.kaltura.playkitdemo.MockParams.OvpUserKS;
+import static com.kaltura.playkitdemo.MockParams.PnxKS;
+import static com.kaltura.playkitdemo.MockParams.SingMediaId;
 
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
@@ -71,9 +80,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         PlayKitManager.registerPlugins(this, SamplePlugin.factory);
         PlayKitManager.registerPlugins(this, IMAPlugin.factory);
-        //PlayKitManager.registerPlugins(KalturaStatsPlugin.factory, PhoenixAnalyticsPlugin.factory);
-        
-        
+        //PlayKitManager.registerPlugins(this, TVPAPIAnalyticsPlugin.factory);
+        //PlayKitManager.registerPlugins(this, PhoenixAnalyticsPlugin.factory);
     }
 
     @Override
@@ -81,13 +89,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+            Toast.makeText(this, "Please tap ALLOW", Toast.LENGTH_LONG).show();
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    1);
+        }
+
         log.i("PlayKitManager: " + PlayKitManager.CLIENT_TAG);
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setVisibility(View.INVISIBLE);
         registerPlugins();
 
-        OnMediaLoadCompletion completion = new OnMediaLoadCompletion() {
+        OnMediaLoadCompletion playLoadedEntry = new OnMediaLoadCompletion() {
             @Override
             public void onComplete(final ResultElement<PKMediaEntry> response) {
                 runOnUiThread(new Runnable() {
@@ -105,10 +120,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         };
 
-        startMockMediaLoading(completion);
-//        startOvpMediaLoading(completion);
-//        startOttMediaLoading(completion);
-//        startSimpleOvpMediaLoading(completion);
+        startMockMediaLoading(playLoadedEntry);
+//      startOvpMediaLoading(playLoadedEntry);
+//      startOttMediaLoading(playLoadedEntry);
+//      startSimpleOvpMediaLoading(playLoadedEntry);
+//      LocalAssets.start(this, playLoadedEntry);
 
     }
 
@@ -133,8 +149,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void startSimpleOvpMediaLoading(OnMediaLoadCompletion completion) {
         new KalturaOvpMediaProvider()
-                .setSessionProvider(new SimpleOvpSessionProvider("https://cdnapisec.kaltura.com", 1851571, null))
-                .setEntryId("0_pl5lbfo0")
+                .setSessionProvider(new SimpleOvpSessionProvider("https://cdnapisec.kaltura.com", 2222401, null))
+                .setEntryId("1_f93tepsn")
                 .load(completion);
     }
 
@@ -146,58 +162,72 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
     
     private void startOttMediaLoading(final OnMediaLoadCompletion completion) {
-        final OttSessionProvider ottSessionProvider = new OttSessionProvider(MockParams.PhoenixBaseUrl, MockParams.OttPartnerId);
-        /* start anonymous session:
-        ottSessionProvider.startAnonymousSession(MockParams.OttPartnerId, null, new OnCompletion<PrimitiveResult>() {
-        OR
-        start user session:    */
-        MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getUser(MockParams.UserType.Ott);
-        ottSessionProvider.startSession(user.username, user.password, null, new OnCompletion<PrimitiveResult>() {
+        SessionProvider ksSessionProvider = new SessionProvider() {
             @Override
-            public void onComplete(PrimitiveResult response) {
-                if(response.error == null) {
-                    mediaProvider = new PhoenixMediaProvider().setSessionProvider(ottSessionProvider).setAssetId(MediaId).setReferenceType(APIDefines.AssetReferenceType.Media).setFormats(Format);
+            public String baseUrl() {
+                return MockParams.PhoenixBaseUrl;
+            }
 
-                    mediaProvider.load(completion);
+            @Override
+            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
+                if (completion != null) {
+                    completion.onComplete(new PrimitiveResult(PnxKS));
                 }
             }
-        });
+
+            @Override
+            public int partnerId() {
+                return MockParams.OttPartnerId;
+            }
+        };
+
+        mediaProvider = new PhoenixMediaProvider()
+                .setSessionProvider(ksSessionProvider)
+                .setAssetId(SingMediaId) //bunny no horses id = "485380"
+                .setAssetType(APIDefines.KalturaAssetType.Media)
+                .setFormats(Format_SD_Dash, Format_HD_Dash, Format, Format2);
+
+        mediaProvider.load(completion);
     }
 
     private void startOvpMediaLoading(final OnMediaLoadCompletion completion) {
-        final OvpSessionProvider ovpSessionProvider = new OvpSessionProvider(MockParams.OvpBaseUrl);
-        //ovpSessionProvider.startAnonymousSession(MockParams.OvpPartnerId, new OnCompletion<PrimitiveResult>() {
-        //MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getDrmUser(MockParams.UserType.Ovp);
-        MockParams.UserFactory.UserLogin user = MockParams.UserFactory.getUser(MockParams.UserType.Ovp);
-        if(user != null) {
-            ovpSessionProvider.startAnonymousSession(/*user.username, user.password,*/ user.partnerId, new OnCompletion<PrimitiveResult>() {
-                @Override
-                public void onComplete(PrimitiveResult response) {
-                    if (response.error == null) {
-                        mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ovpSessionProvider).setEntryId(MockParams.DRMEntryIdAnm);
-                        mediaProvider.load(completion);
-                    }
+        SessionProvider ksSessionProvider = new SessionProvider() {
+            @Override
+            public String baseUrl() {
+                return MockParams.OvpBaseUrl;
+            }
+
+            @Override
+            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
+                if (completion != null) {
+                    completion.onComplete(new PrimitiveResult(OvpUserKS));
                 }
-            });
-        }
+            }
+
+            @Override
+            public int partnerId() {
+                return MockParams.OvpPartnerId;
+            }
+        };
+
+        mediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ksSessionProvider).setEntryId(MockParams.DRMEntryIdAnm);
+        mediaProvider.load(completion);
     }
 
     private void onMediaLoaded(PKMediaEntry mediaEntry) {
-
-        PlayerConfig config = new PlayerConfig();
-
-        config.media.setMediaEntry(mediaEntry).setStartPosition(0);
-        LinearLayout layout = null;
+        
+        PKMediaConfig mediaConfig = new PKMediaConfig().setMediaEntry(mediaEntry).setStartPosition(0);
+        PKPluginConfigs pluginConfig = new PKPluginConfigs();
         if (player == null) {
 
-            configurePlugins(config.plugins);
+            configurePlugins(pluginConfig);
 
-            player = PlayKitManager.loadPlayer(config, this);
+            player = PlayKitManager.loadPlayer(this, pluginConfig);
 
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
 
-            layout = (LinearLayout) findViewById(R.id.player_root);
+            LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
             layout.addView(player.getView());
 
             controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
@@ -205,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             initSpinners();
         }
 
-        player.prepare(config.media);
+        player.prepare(mediaConfig);
 
         player.play();
     }
@@ -220,11 +250,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         videoSpinner.setOnItemSelectedListener(this);
     }
 
-    private void configurePlugins(PlayerConfig.Plugins config) {
+    private void configurePlugins(PKPluginConfigs config) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("delay", 1200);
         config.setPluginConfig("Sample", jsonObject);
         addIMAPluginConfig(config);
+        //addPhoenixAnalyticsPluginConfig(config);
+        //addTVPAPIAnalyticsPluginConfig(config);
         //config.setPluginConfig("IMASimplePlugin", jsonObject);
         //config.setPluginConfig("KalturaStatistics", jsonObject);
         //config.setPluginConfig("PhoenixAnalytics", jsonObject);
@@ -232,8 +264,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
-    private void addIMAPluginConfig(PlayerConfig.Plugins config) {
-        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
+//    private void addPhoenixAnalyticsPluginConfig(PKPluginConfigs config) {
+//        String ks = "djJ8MTk4fHFftqeAPxdlLVzZBk0Et03Vb8on1wLsKp7cbOwzNwfOvpgmOGnEI_KZDhRWTS-76jEY7pDONjKTvbWyIJb5RsP4NL4Ng5xuw6L__BeMfLGAktkVliaGNZq9SXF5n2cMYX-sqsXLSmWXF9XN89io7-k=";
+//        PhoenixAnalyticsConfig phoenixAnalyticsConfig = new PhoenixAnalyticsConfig(198, "http://api-preprod.ott.kaltura.com/v4_2/api_v3/", ks, 30);
+//        config.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(),phoenixAnalyticsConfig);
+//    }
+//
+//    private void addTVPAPIAnalyticsPluginConfig(PKPluginConfigs config) {
+//        TVPAPILocale locale = new TVPAPILocale("","","", "");
+//        TVPAPIInitObject tvpapiInitObject = new TVPAPIInitObject(716158, "tvpapi_198", 354531, "e8aa934c-eae4-314f-b6a0-f55e96498786", "11111", "Cellular", locale);
+//        TVPAPIAnalyticsConfig tvpapiAnalyticsConfig = new TVPAPIAnalyticsConfig("http://tvpapi-preprod.ott.kaltura.com/v4_2/gateways/jsonpostgw.aspx?", 30, tvpapiInitObject);
+//        config.setPluginConfig(TVPAPIAnalyticsPlugin.factory.getName(),tvpapiAnalyticsConfig);
+//    }
+
+    private void addIMAPluginConfig(PKPluginConfigs config) {
+        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";
+                //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
         List<String> videoMimeTypes = new ArrayList<>();
@@ -295,7 +341,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onEvent(PKEvent event) {
                 log.d("Ad Event AD_ALL_ADS_COMPLETED");
                 appProgressBar.setVisibility(View.INVISIBLE);
-                player.play();
             }
         }, AdEvent.Type.ALL_ADS_COMPLETED);
         player.addEventListener(new PKEvent.Listener() {
@@ -316,7 +361,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onEvent(PKEvent event) {
                 nowPlaying = true;
-                player.play();
             }
         }, AdEvent.Type.SKIPPED);
 
@@ -338,7 +382,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onEvent(PKEvent event) {
                 //When the track data available, this event occurs. It brings the info object with it.
                 PlayerEvent.TracksAvailable tracksAvailable = (PlayerEvent.TracksAvailable) event;
-                populateSpinnersWithTrackInfo(tracksAvailable.getPKTracks());
+                populateSpinnersWithTrackInfo(tracksAvailable.tracksInfo);
 
             }
         }, PlayerEvent.Type.TRACKS_AVAILABLE);

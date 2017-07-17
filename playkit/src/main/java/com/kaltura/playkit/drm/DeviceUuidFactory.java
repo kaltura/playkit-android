@@ -1,5 +1,18 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.drm;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.provider.Settings;
@@ -9,7 +22,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
 /**
- * Created by anton.afanasiev on 13/12/2016.
+ * @hide
  */
 
 // From http://stackoverflow.com/a/5628136/38557
@@ -31,7 +44,7 @@ public class DeviceUuidFactory {
                         // prefs file
                         uuid = UUID.fromString(id);
                     } else {
-                        final String androidId = Settings.Secure.getString(
+                        @SuppressLint("HardwareIds") final String androidId = Settings.Secure.getString(
                                 context.getContentResolver(), Settings.Secure.ANDROID_ID);
                         // Use the Android ID unless it's broken, in which case
                         // fallback on deviceId,
@@ -42,7 +55,7 @@ public class DeviceUuidFactory {
                                 uuid = UUID.nameUUIDFromBytes(androidId
                                         .getBytes("utf8"));
                             } else {
-                                final String deviceId = (
+                                @SuppressLint("HardwareIds") final String deviceId = (
                                         (TelephonyManager) context
                                                 .getSystemService(Context.TELEPHONY_SERVICE))
                                         .getDeviceId();
@@ -57,7 +70,7 @@ public class DeviceUuidFactory {
                         // Write the value out to the prefs file
                         prefs.edit()
                                 .putString(PREFS_DEVICE_ID, uuid.toString())
-                                .commit();
+                                .apply();
                     }
                 }
             }
