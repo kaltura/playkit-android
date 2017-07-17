@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit;
 
 import android.support.annotation.NonNull;
@@ -7,9 +19,14 @@ import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
 
 public class PlayerDecoratorBase implements Player {
-    
+
     @Override
-    public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
+    public Settings getSettings() {
+        return player.getSettings();
+    }
+
+    @Override
+    public void prepare(@NonNull PKMediaConfig mediaConfig) {
         player.prepare(mediaConfig);
     }
 
@@ -31,6 +48,11 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public AdController getAdController() {
         return player.getAdController();
+    }
+
+    @Override
+    public final String getSessionId() {
+        return player.getSessionId();
     }
 
     @Override
@@ -59,7 +81,7 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
+    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
         player.prepareNext(mediaConfig);
     }
 
@@ -71,6 +93,11 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public void destroy() {
         player.destroy();
+    }
+
+    @Override
+    public void stop() {
+        player.stop();
     }
 
     @Override
@@ -119,7 +146,7 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
-        player.updatePluginConfig(pluginName, key, value);
+    public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
+        player.updatePluginConfig(pluginName, pluginConfig);
     }
 }

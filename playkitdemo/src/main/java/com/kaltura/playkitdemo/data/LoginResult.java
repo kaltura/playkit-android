@@ -1,12 +1,12 @@
 package com.kaltura.playkitdemo.data;
 
-import com.kaltura.playkit.backend.BaseResult;
+import com.kaltura.netkit.connect.response.BaseResult;
 
 /**
- * Created by tehilarozin on 16/11/2016.
+ * @hide
  */
 
-public class LoginResult extends BaseResult{
+public class LoginResult extends BaseResult {
 
     Result result;
 

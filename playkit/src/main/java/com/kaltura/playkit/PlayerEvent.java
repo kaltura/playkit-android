@@ -1,6 +1,21 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit;
 
 import com.kaltura.playkit.player.PKTracks;
+import com.kaltura.playkit.player.metadata.PKMetadata;
+
+import java.util.List;
 
 /**
  * Created by Noam Tamim @ Kaltura on 24/10/2016.
@@ -8,7 +23,7 @@ import com.kaltura.playkit.player.PKTracks;
 
 
 public class PlayerEvent implements PKEvent {
-    
+
     public static class Generic extends PlayerEvent {
         public Generic(Type type) {
             super(type);
@@ -25,7 +40,7 @@ public class PlayerEvent implements PKEvent {
             this.oldState = oldState;
         }
     }
-    
+
     public static class DurationChanged extends PlayerEvent {
 
         public final long duration;
@@ -38,62 +53,61 @@ public class PlayerEvent implements PKEvent {
 
     public static class TracksAvailable extends PlayerEvent {
 
-        private final PKTracks tracksInfo;
+        public final PKTracks tracksInfo;
 
-        public TracksAvailable(PKTracks tracksInfo){
+        public TracksAvailable(PKTracks tracksInfo) {
             super(Type.TRACKS_AVAILABLE);
             this.tracksInfo = tracksInfo;
-        }
-
-        public PKTracks getPKTracks() {
-            return tracksInfo;
         }
     }
 
     public static class VolumeChanged extends PlayerEvent {
 
-        private float volume;
+        public final float volume;
 
         public VolumeChanged(float volume) {
             super(Type.VOLUME_CHANGED);
             this.volume = volume;
         }
+    }
 
-        public float getVolume() {
-            return volume;
+    public static class PlaybackInfoUpdated extends PlayerEvent {
+
+        public final PlaybackInfo playbackInfo;
+
+        public PlaybackInfoUpdated(PlaybackInfo playbackInfo) {
+            super(Type.PLAYBACK_INFO_UPDATED);
+            this.playbackInfo = playbackInfo;
         }
     }
 
-    public static class PlaybackParamsUpdated extends PlayerEvent {
-        private PlaybackParamsInfo playbackParamsInfo;
+    public static class MetadataAvailable extends PlayerEvent {
 
-        public PlaybackParamsUpdated(PlaybackParamsInfo playbackParamsInfo){
-            super(Type.PLAYBACK_PARAMS_UPDATED);
-            this.playbackParamsInfo = playbackParamsInfo;
-        }
+        public final List<PKMetadata> metadataList;
 
-        public PlaybackParamsInfo getPlaybackParamsInfo() {
-            return playbackParamsInfo;
+        public MetadataAvailable(List<PKMetadata> metadataList) {
+            super(Type.METADATA_AVAILABLE);
+            this.metadataList = metadataList;
         }
     }
 
-    public static class ExceptionInfo extends PlayerEvent {
+    public static class SourceSelected extends PlayerEvent {
 
-        private Exception exception;
-        private int errorCounter;
+        public final PKMediaSource source;
 
-        public ExceptionInfo(Exception exception, int errorCounter) {
+        public SourceSelected(PKMediaSource source) {
+            super(Type.SOURCE_SELECTED);
+            this.source = source;
+        }
+    }
+
+    public static class Error extends PlayerEvent {
+
+        public final PKError error;
+
+        public Error(PKError error) {
             super(Type.ERROR);
-            this.exception = exception;
-            this.errorCounter = errorCounter;
-        }
-
-        public Exception getException() {
-            return exception;
-        }
-
-        public int getErrorCounter() {
-            return errorCounter;
+            this.error = error;
         }
     }
 
@@ -117,8 +131,11 @@ public class PlayerEvent implements PKEvent {
         SEEKING,   //  Sent when a seek operation begins.
         TRACKS_AVAILABLE, // Sent when track info is available.
         REPLAY, //Sent when replay happened.
-        PLAYBACK_PARAMS_UPDATED, // Sent event that notify about changes in the playback parameters. When bitrate of the video or audio track changes or new media loaded. Holds the PlaybackParamsInfo.java object with relevant data.
-        VOLUME_CHANGED // Sent when volume is changed.
+        PLAYBACK_INFO_UPDATED, // Sent event that notify about changes in the playback parameters. When bitrate of the video or audio track changes or new media loaded. Holds the PlaybackInfo.java object with relevant data.
+        VOLUME_CHANGED, // Sent when volume is changed.
+        STOPPED, // sent when stop player api is called
+        METADATA_AVAILABLE, // Sent when there is metadata available for this entry.
+        SOURCE_SELECTED // Sent when the source was selected.
     }
 
     @Override

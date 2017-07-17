@@ -1,11 +1,11 @@
 package com.kaltura.playkitdemo;
 
-import com.kaltura.playkit.OnCompletion;
-import com.kaltura.playkit.backend.SessionProvider;
-import com.kaltura.playkit.backend.PrimitiveResult;
+import com.kaltura.netkit.connect.response.PrimitiveResult;
+import com.kaltura.netkit.utils.OnCompletion;
+import com.kaltura.netkit.utils.SessionProvider;
 
 /**
- * Created by tehilarozin on 16/11/2016.
+ * @hide
  */
 
 public class DemoSessionProvider implements SessionProvider {

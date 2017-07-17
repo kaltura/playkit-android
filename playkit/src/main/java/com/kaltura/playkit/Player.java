@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit;
 
 import android.support.annotation.NonNull;
@@ -12,23 +24,62 @@ import com.kaltura.playkit.utils.Consts;
  */
 public interface Player {
 
+    /**
+     * Interface used for setting optional Player settings. 
+     */
+    interface Settings {
+        /**
+         * Set the Player's contentRequestAdapter.
+         * @param contentRequestAdapter - request adapter.
+         * @return - Player Settings.
+         */
+        Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter);
+
+        /**
+         * Enable/disable cea-608 text tracks.
+         * By default they are disabled.
+         * Note! Once set, this value will be applied to all mediaSources for that instance of Player.
+         * In order to disable/enable it again, you should update that value once again.
+         * Otherwise it will stay in the previous state.
+         * @param cea608CaptionsEnabled - should cea-608 track should be enabled.
+         * @return - Player Settings.
+         */
+        Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled);
+
+        /**
+         * Decide if player should use {@link android.view.TextureView} as primary surface
+         * to render the video content. If set to false, will use the {@link android.view.SurfaceView} instead.
+         * Note!!! Use this carefully, because {@link android.view.TextureView} is more expensive and not DRM
+         * protected. But it allows dynamic animations/scaling e.t.c on the player. By default it will be always set
+         * to false.
+         * @param useTextureView - true if should use {@link android.view.TextureView}.
+         * @return - Player Settings.
+         */
+        Settings useTextureView(boolean useTextureView);
+    }
+
+    /**
+     * Get the Player's {@link Settings} object, for setting some optional properties. 
+     * @return Player Settings.
+     */
+    Settings getSettings();
 
     /**
      * Prepare the player for playback.
      * @param playerConfig - media configurations to apply on the player.
      */
-    void prepare(@NonNull PlayerConfig.Media playerConfig);
+    void prepare(@NonNull PKMediaConfig playerConfig);
 
     /**
      * Prepare for playing the next entry. If config.shouldAutoPlay is true, the entry will automatically
      * play when it's ready and the current entry is ended.
      */
-    void prepareNext(@NonNull PlayerConfig.Media mediaConfig);
+    void prepareNext(@NonNull PKMediaConfig mediaConfig);
 
-    void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value);
+    void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
 
     /**
-     * Load the entry that was prepared with {@link #prepareNext(PlayerConfig.Media)}.
+     * Load the entry that was prepared with {@link #prepareNext(PKMediaConfig)}.
      */
     void skip();
 
@@ -46,6 +97,12 @@ public interface Player {
      * Should be called when you want to destroy the player.
      */
     void destroy();
+
+    /**
+     * stop player and back to initial playback state.
+     */
+    void stop();
+
     /**
      * Start playback of the media.
      */
@@ -128,5 +185,11 @@ public interface Player {
     void seekTo(long position);
 
     AdController getAdController();
+
+    /**
+     * Get the Player's SessionId. The SessionId is generated each time new media is set.
+     * @return Player's SessionId, as a String object.
+     */
+    String getSessionId();
 }
 

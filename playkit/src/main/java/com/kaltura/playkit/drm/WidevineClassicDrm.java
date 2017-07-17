@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.drm;
 
 import android.content.ContentValues;
@@ -20,24 +32,24 @@ import java.io.IOException;
 import java.util.Iterator;
 
 /**
- * Created by anton.afanasiev on 13/12/2016.
+ * @hide
  */
 
 public class WidevineClassicDrm {
 
-    private static final PKLog log = PKLog.get("WidevineClassiDrm");
+    private static final PKLog log = PKLog.get("WidevineClassicDrm");
 
 
     private final static String DEVICE_IS_PROVISIONED = "0";
     private final static String DEVICE_IS_NOT_PROVISIONED = "1";
     private final static String DEVICE_IS_PROVISIONED_SD_ONLY = "2";
 
-    public static final String WV_DRM_SERVER_KEY = "WVDRMServerKey";
-    public static final String WV_ASSET_URI_KEY = "WVAssetURIKey";
-    public static final String WV_DEVICE_ID_KEY = "WVDeviceIDKey";
-    public static final String WV_PORTAL_KEY = "WVPortalKey";
-    public static final String WV_DRM_INFO_REQUEST_STATUS_KEY = "WVDrmInfoRequestStatusKey";
-    public static final String WV_DRM_INFO_REQUEST_VERSION_KEY = "WVDrmInfoRequestVersionKey";
+    private static final String WV_DRM_SERVER_KEY = "WVDRMServerKey";
+    private static final String WV_ASSET_URI_KEY = "WVAssetURIKey";
+    private static final String WV_DEVICE_ID_KEY = "WVDeviceIDKey";
+    private static final String WV_PORTAL_KEY = "WVPortalKey";
+    private static final String WV_DRM_INFO_REQUEST_STATUS_KEY = "WVDrmInfoRequestStatusKey";
+    //private static final String WV_DRM_INFO_REQUEST_VERSION_KEY = "WVDrmInfoRequestVersionKey";
 
     private String mWVDrmInfoRequestStatusKey = DEVICE_IS_PROVISIONED;
     public static String WIDEVINE_MIME_TYPE = "video/wvm";
@@ -52,6 +64,7 @@ public class WidevineClassicDrm {
 
     private EventListener mEventListener;
 
+    @SuppressWarnings("WeakerAccess")
     public static class RightsInfo {
 
         public enum Status {
@@ -107,24 +120,6 @@ public class WidevineClassicDrm {
         void onEvent(DrmEvent event);
     }
 
-    public static boolean isSupported(Context context) {
-        DrmManagerClient drmManagerClient = new DrmManagerClient(context);
-        boolean canHandle = false;
-        // adding try catch due some android devices have different canHandle method implementation regarding the arguments validation inside it
-        try {
-            canHandle = drmManagerClient.canHandle("", WIDEVINE_MIME_TYPE);
-        } catch (IllegalArgumentException ex) {
-            log.e("drmManagerClient.canHandle failed");
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                log.i("Assuming WV Classic is supported although canHandle has failed");
-                canHandle = true;
-            }
-        } finally {
-            drmManagerClient.release();
-        }
-        return canHandle;
-    }
-
     public WidevineClassicDrm(Context context) {
 
         mDrmManager = new DrmManagerClient(context) {
@@ -132,8 +127,10 @@ public class WidevineClassicDrm {
             protected void finalize() throws Throwable {
                 // Release on finalize. Doesn't matter when, just prevent Android's CloseGuard errors.
                 try {
+                    //noinspection deprecation
                     release();
                 } finally {
+                    //noinspection ThrowFromFinallyBlock
                     super.finalize();
                 }
             }
@@ -318,6 +315,21 @@ public class WidevineClassicDrm {
 
         return rights;
     }
+    
+    // On Android M and up, Widevine Classic is not officially supported.
+    // On some devices it still works, but a small change in FileDescriptor class
+    // has broke the offline ability: the specialized implementation of toString()
+    // was removed. fdToString() uses reflection to implement it by accessing a hidden
+    // method (FileDescriptor.getInt$).
+    private String fdToString(FileDescriptor fd) {
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return fd.toString();
+        } else {
+            return WidevineClassicCompat.fdToString23(fd);
+        }
+    }
+
 
     public int acquireLocalAssetRights(String assetPath, String licenseServerUri) {
         DrmInfoRequest drmInfoRequest = createDrmInfoRequest(assetPath, licenseServerUri);
@@ -330,7 +342,7 @@ public class WidevineClassicDrm {
             fis = new FileInputStream(assetPath);
             FileDescriptor fd = fis.getFD();
             if (fd != null && fd.valid()) {
-                drmInfoRequest.put("FileDescriptorKey", fd.toString());
+                drmInfoRequest.put("FileDescriptorKey", fdToString(fd));
                 drmInfo = mDrmManager.acquireDrmInfo(drmInfoRequest);
                 if (drmInfo == null) {
                     throw new IOException("DrmManagerClient couldn't prepare request for asset " + assetPath);
