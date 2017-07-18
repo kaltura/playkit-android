@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    >
+
+    <!--<LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
+
+        <Button
+            android:id="@+id/show"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="show"
+            />
+
+        <Button
+            android:id="@+id/reset"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="reset"
+            />
+
+        <android.support.v4.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            >
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="dummy_text"
+                />
+        </android.support.v4.widget.NestedScrollView>
+    </LinearLayout>-->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        />
+
+    <com.kaltura.playkitdemo.PlaybackControlsView
+        android:id="@+id/playerControls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        />
+
+    <RelativeLayout
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/media_height"
+        >
+
+    </RelativeLayout>
+
+    <ImageView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/media"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/media_height"
+        android:src="@mipmap/ic_launcher"
+        app:shrinkRate="@integer/media_shrink_rate"
+        app:start_state="state_shrink"
+        app:layout_behavior="com.kaltura.playkitdemo.animation.ScaleDragBehavior"
+        app:ylb_marginBottom="@dimen/margin_bottom"
+        app:ylb_marginRight="@dimen/margin_right"
+        >
+
+    </ImageView>
+
+    <ScrollView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/description_height"
+        android:id="@+id/scroll"
+        android:background="@android:color/holo_blue_dark"
+        app:layout_behavior="com.kaltura.playkitdemo.animation.FollowBehavior"
+        app:mediaHeight="@dimen/media_height"
+        app:shrinkRate="@integer/media_shrink_rate"
+        app:ylb_marginBottom="@dimen/margin_bottom"
+        app:ylb_marginRight="@dimen/margin_right"
+        >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+
+           <!-- <Button
+                android:id="@+id/wipe"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="wipe"
+                />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:text="dummy_text"
+                android:textColor="@android:color/white"
+                />-->
+        </LinearLayout>
+    </ScrollView>
+</android.support.design.widget.CoordinatorLayout>

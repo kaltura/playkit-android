@@ -1,0 +1,39 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <declare-styleable name="GoogleMapLikeBehaviorParam">
+        <attr format="dimension" name="anchorPoint"/>
+        <attr format="dimension" name="peekHeight"/>
+        <attr format="boolean" name="draggable"/>
+        <attr format="boolean" name="skipAnchorPoint"/>
+        <attr format="boolean" name="hideable"/>
+    </declare-styleable>
+
+    <declare-styleable name="ScrollInBehaviorParam">
+        <attr format="string" name="toolbarTitle"/>
+    </declare-styleable>
+
+    <declare-styleable name="YoutubeLikeBehaviorParam">
+        <attr name="start_state">
+            <enum name="state_expanded" value="3"/>
+            <enum name="state_shrink" value="4"/>
+            <enum name="state_hidden" value="7"/>
+        </attr>
+        <attr format="dimension" name="mediaHeight"/>
+        <attr format="float" name="shrinkRate"/>
+        <attr format="dimension" name="ylb_marginBottom"/>
+        <attr format="dimension" name="ylb_marginRight"/>
+    </declare-styleable>
+
+    <declare-styleable name="FabBehaviorParam">
+        <attr format="boolean" name="isScrollOut"/>
+    </declare-styleable>
+
+</resources>
