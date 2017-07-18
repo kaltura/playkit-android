@@ -822,9 +822,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     } else {
                         adsManager.discardAdBreak();
                     }
+                } else {
+                    adsManager.discardAdBreak();
                 }
 
-                String error = "None Fatal Error";
+                String error = "Unknown Error";
                 if (adEvent.getAdData() != null) {
                     if (adEvent.getAdData().containsKey("errorMessage")) {
                         error = adEvent.getAdData().get("errorMessage");
