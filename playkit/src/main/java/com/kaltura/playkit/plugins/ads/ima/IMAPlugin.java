@@ -822,8 +822,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     } else {
                         adsManager.discardAdBreak();
                     }
-                } else {
-                    adsManager.discardAdBreak();
                 }
 
                 String error = "Unknown Error";
