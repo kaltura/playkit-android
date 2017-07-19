@@ -22,6 +22,7 @@ import android.net.Uri;
 import android.view.SurfaceHolder;
 
 import com.kaltura.playkit.PKDrmParams;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
@@ -29,7 +30,6 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.WidevineClassicDrm;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.PKError;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,6 +72,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private boolean isPauseAfterPrepare = false;
     private boolean appInBackground;
     private boolean isFirstPlayback = true;
+    private long currentBufferPercentage;
 
     MediaPlayerWrapper(Context context) {
         this.context = context;
@@ -209,7 +210,8 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public void pause() {
-        log.d("pause ");
+        log.d("pause");
+
         if (!PREPARED.equals(prepareState)) {
             isPauseAfterPrepare = true;
             if (isPlayAfterPrepare) {
@@ -259,7 +261,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public long getBufferedPosition() {
-        return 0;
+        return new Double(Math.floor(playerDuration * (currentBufferPercentage / Consts.PERCENT_FACTOR))).longValue();
     }
 
     @Override
@@ -515,7 +517,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
-
+        currentBufferPercentage = percent;
     }
 
     @Override
