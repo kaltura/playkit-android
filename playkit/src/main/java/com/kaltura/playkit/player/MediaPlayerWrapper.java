@@ -261,7 +261,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public long getBufferedPosition() {
-        return new Double(Math.floor(playerDuration * (currentBufferPercentage / Consts.PRECENT_FACTOR))).longValue();
+        return new Double(Math.floor(playerDuration * (currentBufferPercentage / Consts.PERCENT_FACTOR))).longValue();
     }
 
     @Override

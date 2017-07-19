@@ -62,7 +62,7 @@ public class Consts {
      */
     public static final int DEFAULT_TRACK_SELECTION_FLAG = 5;
 
-    public static final double PRECENT_FACTOR = 100.0;
+    public static final double PERCENT_FACTOR = 100.0;
 
     public static final long MILLISECONDS_MULTIPLIER = 1000L;
 
