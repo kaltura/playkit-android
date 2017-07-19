@@ -30,6 +30,7 @@ public class KalturaMediaEntry {
     private String dataUrl;
     private String flavorParamsIds;
     private int msDuration;
+    private String tags;
 
     public KalturaEntryType getType() {
         return type;
@@ -63,4 +64,11 @@ public class KalturaMediaEntry {
         return msDuration;
     }
 
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
 }

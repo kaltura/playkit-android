@@ -8,6 +8,7 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.ads.AdController;
+import com.kaltura.playkit.player.PlayerController;
 import com.kaltura.playkit.player.PlayerView;
 
 /**
@@ -152,6 +153,11 @@ public class MockPlayer implements Player {
 
     @Override
     public String getSessionId() {
+        return null;
+    }
+
+    @Override
+    public PlayerController.VRController getVRController() {
         return null;
     }
 

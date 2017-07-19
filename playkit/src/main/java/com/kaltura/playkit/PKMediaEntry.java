@@ -28,6 +28,7 @@ public class PKMediaEntry implements Parcelable {
     private long duration; //in milliseconds
     private MediaEntryType mediaType;
     private Map<String,String> metadata;
+    private VRSettings vrSettings;
 
     public PKMediaEntry(){}
 
@@ -85,6 +86,22 @@ public class PKMediaEntry implements Parcelable {
         return mediaType;
     }
 
+    public PKMediaEntry setVrSettings(VRSettings vrSettings) {
+        this.vrSettings = vrSettings;
+        return this;
+    }
+
+    public VRSettings getVrSettings() {
+        if(vrSettings == null) {
+            return new VRSettings(false);
+        }
+        return vrSettings;
+    }
+
+    public boolean is360Supported() {
+        return getVrSettings().is360Supported();
+    }
+
     public enum MediaEntryType {
         Vod,
         Live,
@@ -129,7 +146,7 @@ public class PKMediaEntry implements Parcelable {
         if (metadataSize == -1) {
             this.metadata = null;
         } else {
-            this.metadata = new HashMap<String, String>(metadataSize);
+            this.metadata = new HashMap<>(metadataSize);
             for (int i = 0; i < metadataSize; i++) {
                 String key = in.readString();
                 String value = in.readString();

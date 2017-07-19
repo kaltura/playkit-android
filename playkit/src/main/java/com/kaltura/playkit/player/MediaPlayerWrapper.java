@@ -56,7 +56,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private Context context;
     private MediaPlayer player;
     private MediaPlayerView mediaPlayerView;
-    private PKMediaSourceConfig mediaSourceConfig;
+    private SourceConfig sourceConfig;
     private String assetUri;
     private String licenseUri;
 
@@ -65,8 +65,8 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private PlayerState currentState = PlayerState.IDLE, previousState;
     private long playerDuration = Consts.TIME_UNSET;
     private long playerPosition;
-    private PlayerController.EventListener eventListener;
-    private PlayerController.StateChangedListener stateChangedListener;
+    private EventListener eventListener;
+    private StateChangedListener stateChangedListener;
     private boolean shouldRestorePlayerToPreviousState = false;
     private PrepareState prepareState = NOT_PREPARED;
     private boolean isPlayAfterPrepare = false;
@@ -96,16 +96,16 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public void load(PKMediaSourceConfig mediaSourceConfig) {
+    public void load(SourceConfig sourceConfig) {
         log.d("load");
 
-        if (currentState != null && this.mediaSourceConfig != null && !this.mediaSourceConfig.equals(mediaSourceConfig) && prepareState != PREPARING) {
+        if (currentState != null && this.sourceConfig != null && !this.sourceConfig.equals(sourceConfig) && prepareState != PREPARING) {
             player.reset();
             currentState = PlayerState.IDLE;
             prepareState = PrepareState.NOT_PREPARED;
         }
 
-        this.mediaSourceConfig = mediaSourceConfig;
+        this.sourceConfig = sourceConfig;
 
         if ((currentState == null || currentState == PlayerState.IDLE) && prepareState != PREPARING) {
             initializePlayer();
@@ -120,7 +120,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         //player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         //player.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
 
-        assetUri = mediaSourceConfig.getUrl().toString();
+        assetUri = sourceConfig.getUrl().toString();
 
         String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
         String playbackUri     = getWidevineAssetPlaybackUri(assetUri);
@@ -133,7 +133,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             log.e(e.toString());
         }
         if (drmClient.needToAcquireRights(assetAcquireUri)) {
-            List<PKDrmParams> drmData = mediaSourceConfig.mediaSource.getDrmData();
+            List<PKDrmParams> drmData = sourceConfig.getSource().getDrmData();
             if (drmData != null && !drmData.isEmpty()) {
                 licenseUri = drmData.get(0).getLicenseUri();
                 drmClient.acquireRights(assetAcquireUri, licenseUri);
@@ -305,12 +305,12 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public void setEventListener(PlayerController.EventListener eventTrigger) {
+    public void setEventListener(EventListener eventTrigger) {
         this.eventListener = eventTrigger;
     }
 
     @Override
-    public void setStateChangedListener(PlayerController.StateChangedListener stateChangedTrigger) {
+    public void setStateChangedListener(StateChangedListener stateChangedTrigger) {
         this.stateChangedListener = stateChangedTrigger;
     }
 
