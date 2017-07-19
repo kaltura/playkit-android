@@ -809,7 +809,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     }
                 }
 
-                String error = "None Fatal Error";
+                String error = "Non-fatal Error";
                 if (adEvent.getAdData() != null) {
                     if (adEvent.getAdData().containsKey("errorMessage")) {
                         error = adEvent.getAdData().get("errorMessage");
