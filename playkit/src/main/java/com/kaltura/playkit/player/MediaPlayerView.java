@@ -62,9 +62,11 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
         surfaceView.setLayoutParams(params);
         posterView = initPosterView();
         addView(surfaceView, params);
-        addView(posterView);
+        //addView(posterView);
         holder = surfaceView.getHolder();
         holder.addCallback(this);
+        holder.setFixedSize(176, 144);
+
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         return surfaceView;
     }
@@ -93,7 +95,7 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
         View posterView = new View(getContext());
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         posterView.setLayoutParams(params);
-        posterView.setBackgroundColor(Color.BLACK);
+        //posterView.setBackgroundColor(Color.BLACK);
 
         return posterView;
     }
