@@ -21,7 +21,8 @@ public enum PKPlayerErrorType {
     SOURCE_ERROR(7000),
     RENDERER_ERROR(7001),
     UNEXPECTED(7002),
-    SOURCE_SELECTION_FAILED(7003);
+    SOURCE_SELECTION_FAILED(7003),
+    FAILED_TO_INITIALIZE_PLAYER(7004);
 
     public final int errorCode;
 

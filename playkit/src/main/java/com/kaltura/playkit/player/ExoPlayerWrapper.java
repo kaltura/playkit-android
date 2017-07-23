@@ -55,8 +55,6 @@ import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
-import com.kaltura.playkit.player.PlayerController.EventListener;
-import com.kaltura.playkit.player.PlayerController.StateChangedListener;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
@@ -159,22 +157,22 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         return trackSelector;
     }
 
-    private void preparePlayer(PKMediaSourceConfig sourceConfig) {
+    private void preparePlayer(SourceConfig sourceConfig) {
         //reset metadata on prepare.
         metadataList.clear();
-        drmSessionManager.setMediaSource(sourceConfig.mediaSource);
+        drmSessionManager.setMediaSource(sourceConfig.getSource());
 
         shouldGetTracksInfo = true;
         this.lastPlayedSource = sourceConfig.getUrl();
-        trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.cea608CaptionsEnabled);
+        trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.isCea608CaptionsEnabled());
 
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
     }
 
-    private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig) {
-        PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
+    private MediaSource buildExoMediaSource(SourceConfig sourceConfig) {
+        PKMediaFormat format = sourceConfig.getSource().getMediaFormat();
         if (format == null) {
             // TODO: error?
             return null;
@@ -389,15 +387,15 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     }
 
     @Override
-    public void load(PKMediaSourceConfig mediaSourceConfig) {
+    public void load(SourceConfig sourceConfig) {
         log.d("load");
         if (player == null) {
             initializePlayer();
         }
 
-        maybeChangePlayerRenderView(mediaSourceConfig.useTextureView);
+        maybeChangePlayerRenderView(sourceConfig.useTextureView());
 
-        preparePlayer(mediaSourceConfig);
+        preparePlayer(sourceConfig);
     }
 
     private void maybeChangePlayerRenderView(boolean useTextureView) {

@@ -19,6 +19,7 @@ import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 
 import com.kaltura.playkit.Assert;
+import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
@@ -28,13 +29,11 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.PKError;
 
 import java.util.UUID;
 
-import static com.kaltura.playkit.PKMediaFormat.wvm;
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 
 /**
@@ -45,24 +44,26 @@ public class PlayerController implements Player {
 
     private static final PKLog log = PKLog.get("PlayerController");
 
-    private PlayerEngine player;
     private Context context;
+    private PlayerEngine player;
+
     private PlayerView rootPlayerView;
+    private PlayerView playerEngineView;
+
     private PKMediaConfig mediaConfig;
     private PKMediaSourceConfig sourceConfig;
-    private PKEvent.Listener eventListener;
-    private PlayerView playerEngineView;
+    private PKRequestParams.Adapter contentRequestAdapter;
+    private PlayerEngineType currentPlayerEngineType = PlayerEngineType.UNKNOWN;
 
     private String sessionId;
     private UUID playerSessionId = UUID.randomUUID();
 
-    private PKRequestParams.Adapter contentRequestAdapter;
+    private PKEvent.Listener eventListener;
 
+    private Settings settings = new Settings();
     private boolean isNewEntry = true;
     private boolean useTextureView = false;
     private boolean cea608CaptionsEnabled = false;
-
-    private Settings settings = new Settings();
 
     private class Settings implements Player.Settings {
 
@@ -94,15 +95,23 @@ public class PlayerController implements Player {
         return sessionId;
     }
 
-    interface EventListener {
-        void onEvent(PlayerEvent.Type event);
+    @Override
+    public PKController getController(Class<? extends PKController> type) {
+
+        if (type == VRController.class && currentPlayerEngineType == PlayerEngineType.VR_PLAYER) {
+            return new VRController() {
+                @Override
+                public void enableVRMode(boolean shouldEnable) {
+                    log.e("enableVRMode");
+                }
+            };
+        }
+
+        return null;
+
     }
 
-    interface StateChangedListener {
-        void onStateChanged(PlayerState oldState, PlayerState newState);
-    }
-
-    private EventListener eventTrigger = new EventListener() {
+    private PlayerEngine.EventListener eventTrigger = new PlayerEngine.EventListener() {
 
         @Override
         public void onEvent(PlayerEvent.Type eventType) {
@@ -149,7 +158,7 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.MetadataAvailable(player.getMetadata());
                         break;
                     case SOURCE_SELECTED:
-                        event = new PlayerEvent.SourceSelected(sourceConfig.mediaSource);
+                        event = new PlayerEvent.SourceSelected(sourceConfig.getSource());
                         break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
@@ -160,7 +169,7 @@ public class PlayerController implements Player {
         }
     };
 
-    private StateChangedListener stateChangedTrigger = new StateChangedListener() {
+    private PlayerEngine.StateChangedListener stateChangedTrigger = new PlayerEngine.StateChangedListener() {
         @Override
         public void onStateChanged(PlayerState oldState, PlayerState newState) {
             if (eventListener != null) {
@@ -256,12 +265,12 @@ public class PlayerController implements Player {
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
 
-        PKMediaSource source = sourceConfig.mediaSource;
-        boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
-        if (player == null) {
-            switchPlayers(source.getMediaFormat(), false);
-        } else if (shouldSwitchBetweenPlayers) {
-            switchPlayers(source.getMediaFormat(), true);
+        PKMediaFormat mediaFormat = sourceConfig.getSource().getMediaFormat();
+        boolean is360supported = mediaConfig.getMediaEntry().is360Supported();
+
+        PlayerEngineType desiredPlayerEngineType = PlayerEngineFactory.getDesiredPlayerType(mediaFormat, is360supported);
+        if (currentPlayerEngineType != desiredPlayerEngineType) {
+            switchPlayers(desiredPlayerEngineType);
         }
 
         player.load(sourceConfig);
@@ -306,26 +315,21 @@ public class PlayerController implements Player {
         return newSessionId;
     }
 
-    private void switchPlayers(PKMediaFormat mediaFormat, boolean removePlayerView) {
-        if (removePlayerView) {
-            removePlayerView();
-        }
+    private void switchPlayers(PlayerEngineType desiredPlayerType) {
 
-        if (player != null) {
+        if (currentPlayerEngineType != PlayerEngineType.UNKNOWN) {
+            removePlayerView();
             player.destroy();
         }
-        initializePlayer(mediaFormat);
-    }
 
-    private void initializePlayer(PKMediaFormat mediaFormat) {
-        //Decide which player wrapper should be initialized.
-        if (mediaFormat != wvm) {
-            player = new ExoPlayerWrapper(context);
+        try {
+            player = PlayerEngineFactory.getPlayerEngine(context, desiredPlayerType);
+            currentPlayerEngineType = desiredPlayerType;
             togglePlayerListeners(true);
-        } else {
-            player = new MediaPlayerWrapper(context);
-            togglePlayerListeners(true);
-            addPlayerView();
+        } catch (PlayerEngineFactory.PlayerInitializationException exception) {
+            PKError error = new PKError(PKPlayerErrorType.FAILED_TO_INITIALIZE_PLAYER,
+                    exception.getMessage(), exception);
+            eventListener.onEvent(new PlayerEvent.Error(error));
         }
     }
 
@@ -526,14 +530,6 @@ public class PlayerController implements Player {
         }
 
         player.changeTrack(uniqueId);
-    }
-
-    private boolean shouldSwitchBetweenPlayers(PKMediaSource newSource) {
-
-        PKMediaFormat currentMediaFormat = newSource.getMediaFormat();
-        return currentMediaFormat != wvm && player instanceof MediaPlayerWrapper ||
-                currentMediaFormat == wvm && player instanceof ExoPlayerWrapper;
-
     }
 
     private void removePlayerView() {
