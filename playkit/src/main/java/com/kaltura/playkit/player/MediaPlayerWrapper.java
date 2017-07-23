@@ -584,8 +584,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             applicationName = "?";
         }
 
-        String sdkName = PlayKitManager.CLIENT_TAG;;
-
-        return sdkName + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE + " MediaPlayer)";
+        return PlayKitManager.CLIENT_TAG + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE + " MediaPlayer)";
     }
 }

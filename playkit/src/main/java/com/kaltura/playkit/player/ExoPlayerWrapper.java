@@ -236,9 +236,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             applicationName = "?";
         }
 
-        String sdkName = PlayKitManager.CLIENT_TAG;;
-
-        return sdkName + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE
+        return PlayKitManager.CLIENT_TAG + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE
                 + ") " + "ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
     }
 
