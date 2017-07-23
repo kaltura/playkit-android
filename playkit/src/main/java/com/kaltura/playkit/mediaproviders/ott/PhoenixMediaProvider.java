@@ -337,7 +337,12 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
 
-            waitCompletion();
+            if(!isCanceled()) {
+                PKLog.v(TAG, loadId + " set waitCompletion");
+                waitCompletion();
+            } else {
+                PKLog.v(TAG, loadId + " was canceled.");
+            }
             PKLog.v(TAG, loadId + ": requestRemote wait released");
         }
 
