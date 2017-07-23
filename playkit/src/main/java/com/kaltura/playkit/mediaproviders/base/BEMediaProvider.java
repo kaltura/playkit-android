@@ -41,7 +41,6 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
     protected final Object syncObject = new Object();
 
     protected String tag = "BEMediaProvider";
-    private Callable<Void> currentLoaderTask;
 
     private static class MyFuture {
 
@@ -98,10 +97,12 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
         //!- in case load action is in progress and new load is activated, prev request will be canceled
         if (currentLoad != null) {
             cancel();
-            currentLoad.onMediaLoadCompletion.onComplete(Accessories.<PKMediaEntry>buildResult(null, new ErrorElement("Canceled", 333)));
+            if(currentLoad.onMediaLoadCompletion != null) {
+                currentLoad.onMediaLoadCompletion.onComplete(Accessories.<PKMediaEntry>buildResult(null, new ErrorElement("Canceled", 333)));
+            }
         }
         synchronized (syncObject) {
-            currentLoad = new MyFuture(loadExecutor.submit(currentLoaderTask), completion);
+            currentLoad = new MyFuture(loadExecutor.submit(factorNewLoader(completion)), completion);
             PKLog.v(tag, "new loader started " + currentLoad.toString());
         }
     }
