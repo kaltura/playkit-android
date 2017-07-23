@@ -10,15 +10,15 @@ import com.kaltura.playkit.PKMediaFormat;
 
 class PlayerEngineFactory {
 
-    static PlayerEngineType getDesiredPlayerType(PKMediaFormat mediaFormat, boolean is360Supported) {
+    static PlayerEngineType selectPlayerType(PKMediaFormat mediaFormat, boolean is360Supported) {
         if (is360Supported) {
             return PlayerEngineType.VR_PLAYER;
         }
 
-        if (mediaFormat != PKMediaFormat.wvm) {
-            return PlayerEngineType.EXOPLAYER;
-        } else {
+        if (mediaFormat == PKMediaFormat.wvm) {
             return PlayerEngineType.MEDIA_PLAYER;
+        } else {
+            return PlayerEngineType.EXOPLAYER;
         }
     }
 

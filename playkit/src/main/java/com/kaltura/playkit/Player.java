@@ -76,18 +76,7 @@ public interface Player {
      */
     void prepare(@NonNull PKMediaConfig playerConfig);
 
-    /**
-     * Prepare for playing the next entry. If config.shouldAutoPlay is true, the entry will automatically
-     * play when it's ready and the current entry is ended.
-     */
-    void prepareNext(@NonNull PKMediaConfig mediaConfig);
-
     void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
-
-    /**
-     * Load the entry that was prepared with {@link #prepareNext(PKMediaConfig)}.
-     */
-    void skip();
 
     /**
      * Player lifecycle method. Should be used when the application went to onPause();

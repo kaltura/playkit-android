@@ -20,7 +20,7 @@ import com.kaltura.playkit.PKRequestParams;
 /**
  * Created by Noam Tamim @ Kaltura on 29/03/2017.
  */
-class PKMediaSourceConfig implements SourceConfig {
+class PKMediaSourceConfig implements PlayerEngine.SourceConfig {
     private PKMediaSource mediaSource;
     private PKRequestParams.Adapter adapter;
     private boolean cea608CaptionsEnabled;

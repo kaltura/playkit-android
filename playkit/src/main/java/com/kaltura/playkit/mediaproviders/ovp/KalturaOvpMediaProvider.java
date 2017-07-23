@@ -31,7 +31,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.VRSettings;
+import com.kaltura.playkit.VRParams;
 import com.kaltura.playkit.api.base.model.BasePlaybackContext;
 import com.kaltura.playkit.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.api.ovp.KalturaOvpErrorHelper;
@@ -364,14 +364,15 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             }
 
             Map<String, String> metadata = parseMetadata(metadataList);
-            boolean is360Enabled = checkIf360Enabled(entry.getTags());
 
+            if(checkIf360Enabled(entry.getTags())) {
+                mediaEntry.setVrParams(new VRParams());
+            }
 
             return mediaEntry.setId(entry.getId()).setSources(sources)
                     .setDuration(entry.getMsDuration()).setMetadata(metadata)
                     .setName(entry.getName())
-                    .setMediaType(MediaTypeConverter.toMediaEntryType(entry.getType()))
-                    .setVrSettings(new VRSettings(is360Enabled));
+                    .setMediaType(MediaTypeConverter.toMediaEntryType(entry.getType()));
         }
 
         private static boolean checkIf360Enabled(String tags) {
@@ -379,8 +380,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 return false;
             }
 
-            Pattern pattern = Pattern.compile("360");
-            return pattern.matcher(tags).find();
+            return Pattern.compile("//b360//b").matcher(tags).find();
         }
 
         private static Map<String, String> parseMetadata(KalturaMetadataListResponse metadataList) {

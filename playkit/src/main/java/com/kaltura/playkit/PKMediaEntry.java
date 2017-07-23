@@ -28,7 +28,7 @@ public class PKMediaEntry implements Parcelable {
     private long duration; //in milliseconds
     private MediaEntryType mediaType;
     private Map<String,String> metadata;
-    private VRSettings vrSettings;
+    private VRParams vrParams;
 
     public PKMediaEntry(){}
 
@@ -86,20 +86,13 @@ public class PKMediaEntry implements Parcelable {
         return mediaType;
     }
 
-    public PKMediaEntry setVrSettings(VRSettings vrSettings) {
-        this.vrSettings = vrSettings;
+    public PKMediaEntry setVrParams(VRParams vrParams) {
+        this.vrParams = vrParams;
         return this;
     }
 
-    public VRSettings getVrSettings() {
-        if(vrSettings == null) {
-            return new VRSettings(false);
-        }
-        return vrSettings;
-    }
-
-    public boolean is360Supported() {
-        return getVrSettings().is360Supported();
+    public VRParams getVrParams() {
+        return vrParams;
     }
 
     public enum MediaEntryType {

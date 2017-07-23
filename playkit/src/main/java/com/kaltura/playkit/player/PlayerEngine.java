@@ -12,6 +12,9 @@
 
 package com.kaltura.playkit.player;
 
+import android.net.Uri;
+
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
@@ -184,7 +187,6 @@ public interface PlayerEngine {
      */
     PKError getCurrentError();
 
-
     /**
      * Stop player executing the {@link PlayerEngine} implementation.
      * stop the player and seek to start position.
@@ -204,5 +206,17 @@ public interface PlayerEngine {
     interface StateChangedListener {
         void onStateChanged(PlayerState oldState, PlayerState newState);
     }
+
+    interface SourceConfig {
+
+        PKMediaSource getSource();
+
+        boolean isCea608CaptionsEnabled();
+
+        boolean useTextureView();
+
+        Uri getUrl();
+    }
+
 
 }

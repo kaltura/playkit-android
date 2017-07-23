@@ -150,11 +150,11 @@ public class PlayerController implements Player {
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
 
         PKMediaFormat mediaFormat = sourceConfig.getSource().getMediaFormat();
-        boolean is360supported = mediaConfig.getMediaEntry().is360Supported();
+        boolean is360supported = mediaConfig.getMediaEntry().getVrParams() != null;
 
-        PlayerEngineType desiredPlayerEngineType = PlayerEngineFactory.getDesiredPlayerType(mediaFormat, is360supported);
-        if (currentPlayerEngineType != desiredPlayerEngineType) {
-            switchPlayers(desiredPlayerEngineType);
+        PlayerEngineType incomingPlayerEngineType = PlayerEngineFactory.selectPlayerType(mediaFormat, is360supported);
+        if (currentPlayerEngineType != incomingPlayerEngineType) {
+            switchPlayers(incomingPlayerEngineType);
         }
 
         player.load(sourceConfig);
@@ -199,7 +199,7 @@ public class PlayerController implements Player {
         return newSessionId;
     }
 
-    private void switchPlayers(PlayerEngineType desiredPlayerType) {
+    private void switchPlayers(PlayerEngineType incomingPlayerEngineType) {
 
         if (currentPlayerEngineType != PlayerEngineType.UNKNOWN) {
             removePlayerView();
@@ -207,8 +207,8 @@ public class PlayerController implements Player {
         }
 
         try {
-            player = PlayerEngineFactory.getPlayerEngine(context, desiredPlayerType);
-            currentPlayerEngineType = desiredPlayerType;
+            player = PlayerEngineFactory.getPlayerEngine(context, incomingPlayerEngineType);
+            currentPlayerEngineType = incomingPlayerEngineType;
             togglePlayerListeners(true);
         } catch (PlayerEngineFactory.PlayerInitializationException exception) {
             PKError error = new PKError(PKPlayerErrorType.FAILED_TO_INITIALIZE_PLAYER,
@@ -350,16 +350,6 @@ public class PlayerController implements Player {
             player.setEventListener(null);
             player.setStateChangedListener(null);
         }
-    }
-
-    @Override
-    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
-        Assert.failState("Not implemented");
-    }
-
-    @Override
-    public void skip() {
-        Assert.failState("Not implemented");
     }
 
     @Override

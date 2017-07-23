@@ -45,8 +45,7 @@ import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARI
  */
 
 class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaPlayer.OnPreparedListener,
-        MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener,
-        MediaPlayer.OnSeekCompleteListener {
+        MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener {
 
 
     private static final PKLog log = PKLog.get("MediaPlayerWrapper");
@@ -126,7 +125,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         if (assetUri != null) {
             isFirstPlayback = false;
         }
-        assetUri = mediaSourceConfig.getUrl().toString();
+        assetUri = sourceConfig.getUrl().toString();
 
         String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
         String playbackUri     = getWidevineAssetPlaybackUri(assetUri);
@@ -165,7 +164,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         // Set OnErrorListener to notify our callbacks if the video errors.
         player.setOnErrorListener(this);
         player.setOnBufferingUpdateListener(this);
-        player.setOnSeekCompleteListener(this);
         player.setOnPreparedListener(this);
     }
 
@@ -321,12 +319,12 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public void setEventListener(PlayerController.EventListener eventTrigger) {
+    public void setEventListener(EventListener eventTrigger) {
         this.eventListener = eventTrigger;
     }
 
     @Override
-    public void setStateChangedListener(PlayerController.StateChangedListener stateChangedTrigger) {
+    public void setStateChangedListener(StateChangedListener stateChangedTrigger) {
         this.stateChangedListener = stateChangedTrigger;
     }
 

@@ -82,11 +82,6 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
-        player.prepareNext(mediaConfig);
-    }
-
-    @Override
     public long getBufferedPosition() {
         return player.getBufferedPosition();
     }
@@ -104,11 +99,6 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public PlayerView getView() {
         return player.getView();
-    }
-
-    @Override
-    public void skip() {
-        player.skip();
     }
 
     @Override
