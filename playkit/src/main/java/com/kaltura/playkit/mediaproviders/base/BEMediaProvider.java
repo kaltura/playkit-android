@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.mediaproviders.base;
 
+import android.support.annotation.NonNull;
+
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.utils.Accessories;
@@ -35,10 +37,34 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
     private ExecutorService loadExecutor;
     protected RequestQueue requestsExecutor;
     protected SessionProvider sessionProvider;
-    private Future<Void> currentLoad;
+    private MyFuture currentLoad;
     protected final Object syncObject = new Object();
 
     protected String tag = "BEMediaProvider";
+    private Callable<Void> currentLoaderTask;
+
+    private static class MyFuture {
+
+        OnMediaLoadCompletion onMediaLoadCompletion;
+        Future<Void> submittedTask;
+
+        public MyFuture(@NonNull Future<Void> task, OnMediaLoadCompletion completion) {
+            this.submittedTask = task;
+            this.onMediaLoadCompletion = completion;
+        }
+
+        public boolean isDone() {
+            return submittedTask.isDone();
+        }
+
+        public boolean isCancelled() {
+            return submittedTask.isCancelled();
+        }
+
+        public void cancel(boolean allowInterruption) {
+            submittedTask.cancel(allowInterruption);
+        }
+    }
 
     protected BEMediaProvider(String tag){
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
@@ -70,9 +96,12 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
         }
 
         //!- in case load action is in progress and new load is activated, prev request will be canceled
-        cancel();
+        if (currentLoad != null) {
+            cancel();
+            currentLoad.onMediaLoadCompletion.onComplete(Accessories.<PKMediaEntry>buildResult(null, new ErrorElement("Canceled", 333)));
+        }
         synchronized (syncObject) {
-            currentLoad = loadExecutor.submit(factorNewLoader(completion));
+            currentLoad = new MyFuture(loadExecutor.submit(currentLoaderTask), completion);
             PKLog.v(tag, "new loader started " + currentLoad.toString());
         }
     }
