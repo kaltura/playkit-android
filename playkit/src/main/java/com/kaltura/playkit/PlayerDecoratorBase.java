@@ -47,18 +47,13 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public AdController getAdController() {
-        return player.getAdController();
-    }
-
-    @Override
     public final String getSessionId() {
         return player.getSessionId();
     }
 
     @Override
-    public PlayerController.VRController getVRController() {
-        return player.getVRController();
+    public PKController getController(Class<? extends PKController> type) {
+        return player.getController(type);
     }
 
     @Override

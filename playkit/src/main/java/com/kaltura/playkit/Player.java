@@ -197,8 +197,6 @@ public interface Player {
      */
     void seekTo(long position);
 
-    AdController getAdController();
-
     /**
      * Get the Player's SessionId. The SessionId is generated each time new media is set.
      *
@@ -206,7 +204,13 @@ public interface Player {
      */
     String getSessionId();
 
-    PlayerController.VRController getVRController();
+    /**
+     * Generic getters for playkit controllers.
+     * @param type - type of the controller you want to obtain.
+     * @return - the {@link PKController} instance if specified controller type exist,
+     * otherwise return null.
+     */
+    PKController getController(@Nullable Class<? extends PKController> type);
 
 }
 

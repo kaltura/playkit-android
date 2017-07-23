@@ -19,6 +19,7 @@ import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 
 import com.kaltura.playkit.Assert;
+import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
@@ -28,7 +29,6 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.PKError;
 
@@ -65,17 +65,6 @@ public class PlayerController implements Player {
     private boolean useTextureView = false;
     private boolean cea608CaptionsEnabled = false;
 
-    public interface VRController {
-        void enableCardboard();
-    }
-
-    private VRController vrController = new VRController() {
-        @Override
-        public void enableCardboard() {
-            log.e("enableCardboard");
-        }
-    };
-
     private class Settings implements Player.Settings {
 
         @Override
@@ -107,10 +96,20 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public VRController getVRController() {
-        return vrController;
-    }
+    public PKController getController(Class<? extends PKController> type) {
 
+        if (type == VRController.class && currentPlayerEngineType == PlayerEngineType.VR_PLAYER) {
+            return new VRController() {
+                @Override
+                public void enableVRMode(boolean shouldEnable) {
+                    log.e("enableVRMode");
+                }
+            };
+        }
+
+        return null;
+
+    }
 
     private PlayerEngine.EventListener eventTrigger = new PlayerEngine.EventListener() {
 
@@ -120,7 +119,6 @@ public class PlayerController implements Player {
 
                 PKEvent event;
 
-                // TODO: use specific event class
                 switch (eventType) {
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
@@ -411,12 +409,6 @@ public class PlayerController implements Player {
             return;
         }
         player.seekTo(position);
-    }
-
-    @Override
-    public AdController getAdController() {
-        log.d("PlayerController getAdController");
-        return null;
     }
 
     public void play() {
