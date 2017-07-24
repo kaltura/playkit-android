@@ -13,6 +13,7 @@
 package com.kaltura.playkit.ads;
 
 import android.support.annotation.NonNull;
+import android.view.View;
 
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKLog;
@@ -105,7 +106,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
             }
         }
         log.d("IMA decorator Calling player play");
-        getView().showVideoSurface();
+        getView().setVideoSurfaceVisibility(View.VISIBLE);
         super.play();
 
     }

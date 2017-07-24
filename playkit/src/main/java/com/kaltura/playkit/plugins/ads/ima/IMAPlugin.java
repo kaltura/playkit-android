@@ -15,6 +15,7 @@ package com.kaltura.playkit.plugins.ads.ima;
 import android.content.Context;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.ads.interactivemedia.v3.api.Ad;
@@ -274,7 +275,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         log.d("onApplicationResumed adManagerInitDuringBackground = " + adManagerInitDuringBackground + " isAdDisplayed = " + isAdDisplayed);
         appIsInBackground = false;
         if (adsManager != null && adManagerInitDuringBackground) {
-            player.getView().hideVideoSurface();
+            player.getView().setVideoSurfaceVisibility(View.GONE);
             adsManager.init(renderingSettings);
             sendCuePointsUpdate();
             isInitWaiting = false;
@@ -283,7 +284,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
         if (adsManager != null) {
             if (appInBackgroundDuringAdLoad) {
-                player.getView().hideVideoSurface();
+                player.getView().setVideoSurfaceVisibility(View.GONE);
                 appInBackgroundDuringAdLoad = false;
                 adsManager.start();
             } else if (isAdDisplayed) {
@@ -622,7 +623,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     log.d("getTotalAds() = " + adInfo.getTotalAdsInPod());
 
                     if (adInfo.getAdIndexInPod() == 1) {
-                        player.getView().hideVideoSubtitles();
+                        player.getView().setVideoSubtitlesVisibility(View.GONE);
                     }
 
                     if (adPlaybackCancelled) {
@@ -674,7 +675,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                         preparePlayer(true);
                     }
                 } else if (player != null) {
-                    player.getView().showVideoSurface();
+                    player.getView().setVideoSurfaceVisibility(View.VISIBLE);
                     long duration = player.getDuration();
                     if (duration < 0 || player.getCurrentPosition() <= duration) {
                         log.d("Content prepared.. Play called.");
@@ -688,7 +689,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 isAllAdsCompleted = true;
                 isAdDisplayed = false;
                 messageBus.post(new AdEvent(AdEvent.Type.ALL_ADS_COMPLETED));
-                player.getView().showVideoSurface();
+                player.getView().setVideoSurfaceVisibility(View.VISIBLE);
                 if (adsManager != null) {
                     log.d("AD_ALL_ADS_COMPLETED resetIMA");
                     resetIMA();
@@ -699,7 +700,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 log.d("AD STARTED");
                 isAdDisplayed = true;
                 isAdIsPaused = false;
-                player.getView().hideVideoSurface();
+                player.getView().setVideoSurfaceVisibility(View.GONE);
                 if (adsManager != null && appIsInBackground) {
                     log.d("AD STARTED and pause");
                     adsManager.pause();
@@ -731,7 +732,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             case RESUMED:
                 log.d("AD RESUMED");
                 if (player != null && player.getView() != null) {
-                    player.getView().hideVideoSurface();
+                    player.getView().setVideoSurfaceVisibility(View.GONE);
                 }
                 isAdIsPaused = false;
                 adInfo.setAdPlayHead(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER);
@@ -834,7 +835,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     @Override
                     public void onEvent(PKEvent event) {
                         if (player != null && player.getView() != null) {
-                            player.getView().showVideoSurface();
+                            player.getView().setVideoSurfaceVisibility(View.VISIBLE);
                             player.play();
                         }
 

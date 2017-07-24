@@ -69,6 +69,7 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
 
     /**
      * Swap the video surface view that player should render.
+     *
      * @param useTextureView - if should use {@link TextureView}
      */
     void swapVideoSurface(boolean useTextureView) {
@@ -190,25 +191,15 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
     }
 
     @Override
-    public void hideVideoSurface() {
-        videoSurface.setVisibility(GONE);
-        subtitleLayout.setVisibility(GONE);
+    public void setVideoSurfaceVisibility(int visibilityState) {
+        videoSurface.setVisibility(visibilityState);
+        subtitleLayout.setVisibility(visibilityState);
     }
 
     @Override
-    public void showVideoSurface() {
-        videoSurface.setVisibility(VISIBLE);
-        subtitleLayout.setVisibility(VISIBLE);
+    public void setVideoSubtitlesVisibility(int visibilityState) {
+        subtitleLayout.setVisibility(visibilityState);
     }
 
-    @Override
-    public void hideVideoSubtitles() {
-        subtitleLayout.setVisibility(GONE);
-    }
-
-    @Override
-    public void showVideoSubtitles() {
-        subtitleLayout.setVisibility(VISIBLE);
-    }
 }
 

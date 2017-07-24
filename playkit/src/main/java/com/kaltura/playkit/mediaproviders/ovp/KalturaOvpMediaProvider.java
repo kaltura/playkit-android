@@ -380,7 +380,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 return false;
             }
 
-            return Pattern.compile("//b360//b").matcher(tags).find();
+            return Pattern.compile("\\b360\\b").matcher(tags).find();
         }
 
         private static Map<String, String> parseMetadata(KalturaMetadataListResponse metadataList) {

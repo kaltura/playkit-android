@@ -77,74 +77,37 @@ public class PlayerController implements Player {
     private void initializeRootPlayerView() {
         this.rootPlayerView = new PlayerView(context) {
             @Override
-            public void hideVideoSurface() {
-                setVideoSurfaceVisibility(false);
+            public void setVideoSurfaceVisibility(int visibilityState) {
+                if (player == null) {
+                    log.w("Failed to change PlayerView state. Player is null");
+                    return;
+                }
+
+                if(playerEngineView != null) {
+                    playerEngineView.setVideoSurfaceVisibility(visibilityState);
+                }else {
+                    log.w("Failed to change PlayerView state. PlayerView is null");
+                }
             }
 
             @Override
-            public void showVideoSurface() {
-                setVideoSurfaceVisibility(true);
-            }
+            public void setVideoSubtitlesVisibility(int visibilityState) {
+                if (player == null) {
+                    log.w("Failed to change SubtitlesView state. Player is null");
+                    return;
+                }
 
-            @Override
-            public void hideVideoSubtitles() {
-                setVideoSubtitlesVisibility(false);
-            }
+                if(playerEngineView != null) {
+                    playerEngineView.setVideoSubtitlesVisibility(visibilityState);
+                } else {
+                    log.w("Failed to change SubtitlesView state. PlayerView is null");
+                }
 
-            @Override
-            public void showVideoSubtitles() {
-                setVideoSubtitlesVisibility(true);
             }
         };
 
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         this.rootPlayerView.setLayoutParams(lp);
-    }
-
-    private void setVideoSurfaceVisibility(boolean isVisible) {
-        String visibilityFunction = "showVideoSurface";
-        if (!isVisible) {
-            visibilityFunction = "hideVideoSurface";
-        }
-
-        if (player == null) {
-            log.w("Error in " + visibilityFunction + " player is null");
-            return;
-        }
-
-        PlayerView playerView = player.getView();
-        if (playerView != null) {
-            if (isVisible) {
-                playerView.showVideoSurface();
-            } else {
-                playerView.hideVideoSurface();
-            }
-        } else {
-            log.w("Error in " + visibilityFunction + " playerView is null");
-        }
-    }
-
-    private void setVideoSubtitlesVisibility(boolean isVisible) {
-        String visibilityFunction = "showVideoSubtitles";
-        if (!isVisible) {
-            visibilityFunction = "hideVideoSubtitles";
-        }
-
-        if (player == null) {
-            log.w("Error in " + visibilityFunction + " player is null");
-            return;
-        }
-
-        PlayerView playerView = player.getView();
-        if (playerView != null) {
-            if (isVisible) {
-                playerView.showVideoSubtitles();
-            } else {
-                playerView.hideVideoSubtitles();
-            }
-        } else {
-            log.w("Error in " + visibilityFunction + " playerView is null");
-        }
     }
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
@@ -217,84 +180,6 @@ public class PlayerController implements Player {
         }
     }
 
-    private void addPlayerView() {
-        if (playerEngineView != null) {
-            return;
-        }
-
-        playerEngineView = player.getView();
-        rootPlayerView.addView(playerEngineView);
-    }
-
-    @Override
-    public void destroy() {
-        log.d("destroy");
-        if (player != null) {
-            if (playerEngineView != null) {
-                rootPlayerView.removeView(playerEngineView);
-            }
-            player.destroy();
-            togglePlayerListeners(false);
-        }
-        player = null;
-        mediaConfig = null;
-        eventListener = null;
-    }
-
-    @Override
-    public void stop() {
-        if (player != null) {
-            player.stop();
-        }
-    }
-
-    private void startPlaybackFrom(long startPosition) {
-        if (player == null) {
-            log.w("Attempt to invoke 'startPlaybackFrom()' on null instance of the player engine");
-            return;
-        }
-
-        if (startPosition <= getDuration()) {
-            player.startFrom(startPosition);
-        } else {
-            log.w("The start position is grater then duration of the video! Start position " + startPosition + ", duration " + mediaConfig.getMediaEntry().getDuration());
-        }
-    }
-
-    public PlayerView getView() {
-        return rootPlayerView;
-    }
-
-    public long getDuration() {
-        if (player == null) {
-            return Consts.TIME_UNSET;
-        }
-        return player.getDuration();
-    }
-
-    public long getCurrentPosition() {
-        if (player == null) {
-            return Consts.POSITION_UNSET;
-        }
-        return player.getCurrentPosition();
-    }
-
-    public long getBufferedPosition() {
-        if (player == null) {
-            return Consts.POSITION_UNSET;
-        }
-        return player.getBufferedPosition();
-    }
-
-    public void seekTo(long position) {
-        log.d("seek to " + position);
-        if (player == null) {
-            log.w("Attempt to invoke 'seekTo()' on null instance of the player engine");
-            return;
-        }
-        player.seekTo(position);
-    }
-
     public void play() {
         log.d("play");
 
@@ -326,6 +211,22 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void stop() {
+        if (player != null) {
+            player.stop();
+        }
+    }
+
+    public void seekTo(long position) {
+        log.d("seek to " + position);
+        if (player == null) {
+            log.w("Attempt to invoke 'seekTo()' on null instance of the player engine");
+            return;
+        }
+        player.seekTo(position);
+    }
+
+    @Override
     public void setVolume(float volume) {
         if (player == null) {
             log.w("Attempt to invoke 'setVolume()' on null instance of the player engine");
@@ -335,36 +236,59 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void changeTrack(String uniqueId) {
+        if (player == null) {
+            log.w("Attempt to invoke 'changeTrack()' on null instance of the player engine");
+            return;
+        }
+
+        player.changeTrack(uniqueId);
+    }
+
+    @Override
     public boolean isPlaying() {
         return player != null && player.isPlaying();
     }
 
-    private void togglePlayerListeners(boolean enable) {
+    public long getDuration() {
         if (player == null) {
-            return;
+            return Consts.TIME_UNSET;
         }
-        if (enable) {
-            player.setEventListener(eventTrigger);
-            player.setStateChangedListener(stateChangedTrigger);
-        } else {
-            player.setEventListener(null);
-            player.setStateChangedListener(null);
+        return player.getDuration();
+    }
+
+    public long getCurrentPosition() {
+        if (player == null) {
+            return Consts.POSITION_UNSET;
         }
+        return player.getCurrentPosition();
+    }
+
+    public long getBufferedPosition() {
+        if (player == null) {
+            return Consts.POSITION_UNSET;
+        }
+        return player.getBufferedPosition();
+    }
+
+    public PlayerView getView() {
+        return rootPlayerView;
     }
 
     @Override
-    public void addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
-        Assert.shouldNeverHappen();
-    }
-
-    @Override
-    public void addStateChangeListener(@NonNull PKEvent.Listener listener) {
-        Assert.shouldNeverHappen();
-    }
-
-    @Override
-    public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
-        Assert.shouldNeverHappen();
+    public void destroy() {
+        log.d("destroy");
+        if (player != null) {
+            if (playerEngineView != null) {
+                rootPlayerView.removeView(playerEngineView);
+            }
+            player.destroy();
+            togglePlayerListeners(false);
+        }
+        player = null;
+        mediaConfig = null;
+        eventListener = null;
+        currentPlayerEngineType = PlayerEngineType.UNKNOWN;
     }
 
     @Override
@@ -391,26 +315,6 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void changeTrack(String uniqueId) {
-        if (player == null) {
-            log.w("Attempt to invoke 'changeTrack()' on null instance of the player engine");
-            return;
-        }
-
-        player.changeTrack(uniqueId);
-    }
-
-    @Override
-    public Player.Settings getSettings() {
-        return settings;
-    }
-
-    @Override
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    @Override
     public PKController getController(Class<? extends PKController> type) {
 
         if (type == VRController.class && currentPlayerEngineType == PlayerEngineType.VR_PLAYER) {
@@ -423,7 +327,53 @@ public class PlayerController implements Player {
         }
 
         return null;
+    }
 
+    @Override
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    @Override
+    public Player.Settings getSettings() {
+        return settings;
+    }
+
+    @Override
+    public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
+        Assert.shouldNeverHappen();
+    }
+
+    @Override
+    public void addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
+        Assert.shouldNeverHappen();
+    }
+
+    @Override
+    public void addStateChangeListener(@NonNull PKEvent.Listener listener) {
+        Assert.shouldNeverHappen();
+    }
+
+    private void togglePlayerListeners(boolean enable) {
+        if (player == null) {
+            return;
+        }
+        if (enable) {
+            player.setEventListener(eventTrigger);
+            player.setStateChangedListener(stateChangedTrigger);
+        } else {
+            player.setEventListener(null);
+            player.setStateChangedListener(null);
+        }
+    }
+
+    private void addPlayerView() {
+        if (playerEngineView != null) {
+            return;
+        }
+
+        playerEngineView = player.getView();
+        rootPlayerView.addView(playerEngineView);
     }
 
     private void removePlayerView() {
@@ -434,6 +384,19 @@ public class PlayerController implements Player {
 
     public void setEventListener(PKEvent.Listener eventListener) {
         this.eventListener = eventListener;
+    }
+
+    private void startPlaybackFrom(long startPosition) {
+        if (player == null) {
+            log.w("Attempt to invoke 'startPlaybackFrom()' on null instance of the player engine");
+            return;
+        }
+
+        if (startPosition <= getDuration()) {
+            player.startFrom(startPosition);
+        } else {
+            log.w("The start position is grater then duration of the video! Start position " + startPosition + ", duration " + mediaConfig.getMediaEntry().getDuration());
+        }
     }
 
     private boolean maybeHandleExceptionLocally(PKError error) {
