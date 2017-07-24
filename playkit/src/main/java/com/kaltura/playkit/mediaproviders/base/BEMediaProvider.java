@@ -37,19 +37,19 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
     private ExecutorService loadExecutor;
     protected RequestQueue requestsExecutor;
     protected SessionProvider sessionProvider;
-    private MyFuture currentLoad;
+    private LoaderFuture currentLoad;
     protected final Object syncObject = new Object();
 
     protected String tag = "BEMediaProvider";
 
-    private static class MyFuture {
+    private static class LoaderFuture {
 
-        OnMediaLoadCompletion onMediaLoadCompletion;
+        OnMediaLoadCompletion loadCompletion;
         Future<Void> submittedTask;
 
-        public MyFuture(@NonNull Future<Void> task, OnMediaLoadCompletion completion) {
+        public LoaderFuture(@NonNull Future<Void> task, OnMediaLoadCompletion completion) {
             this.submittedTask = task;
-            this.onMediaLoadCompletion = completion;
+            this.loadCompletion = completion;
         }
 
         public boolean isDone() {
@@ -60,8 +60,12 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
             return submittedTask.isCancelled();
         }
 
-        public void cancel(boolean allowInterruption) {
-            submittedTask.cancel(allowInterruption);
+        public boolean cancel(boolean allowInterruption) {
+            if (submittedTask != null && !submittedTask.isDone() && !submittedTask.isCancelled()) {
+                submittedTask.cancel(allowInterruption);
+                return true;
+            }
+            return false;
         }
     }
 
@@ -96,13 +100,14 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
 
         //!- in case load action is in progress and new load is activated, prev request will be canceled
         if (currentLoad != null) {
-            cancel();
-            if(currentLoad.onMediaLoadCompletion != null) {
-                currentLoad.onMediaLoadCompletion.onComplete(Accessories.<PKMediaEntry>buildResult(null, new ErrorElement("Canceled", 333)));
+            if(currentLoad.cancel(true)) {
+                if (currentLoad.loadCompletion != null) {
+                    currentLoad.loadCompletion.onComplete(Accessories.<PKMediaEntry>buildResult(null, ErrorElement.CanceledRequest));
+                }
             }
         }
         synchronized (syncObject) {
-            currentLoad = new MyFuture(loadExecutor.submit(factorNewLoader(completion)), completion);
+            currentLoad = new LoaderFuture(loadExecutor.submit(factorNewLoader(completion)), completion);
             PKLog.v(tag, "new loader started " + currentLoad.toString());
         }
     }
