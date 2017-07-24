@@ -34,6 +34,7 @@ import java.util.concurrent.Future;
 
 public abstract class BEMediaProvider implements MediaEntryProvider {
 
+    public static final int MaxThreads = 3;
     private ExecutorService loadExecutor;
     protected RequestQueue requestsExecutor;
     protected SessionProvider sessionProvider;
@@ -72,7 +73,7 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
     protected BEMediaProvider(String tag){
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.requestsExecutor.enableLogs(false);
-        loadExecutor = Executors.newFixedThreadPool(3);//TODO - once multi load execution will be supported will be changed to newFixedThreadExecutor or alike
+        loadExecutor = Executors.newFixedThreadPool(MaxThreads);//TODO - once multi load execution will be supported will be changed to newFixedThreadExecutor or alike
         this.tag = tag;
     }
 
@@ -99,11 +100,9 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
         }
 
         //!- in case load action is in progress and new load is activated, prev request will be canceled
-        if (currentLoad != null) {
-            if(currentLoad.cancel(true)) {
-                if (currentLoad.loadCompletion != null) {
-                    currentLoad.loadCompletion.onComplete(Accessories.<PKMediaEntry>buildResult(null, ErrorElement.CanceledRequest));
-                }
+        if (currentLoad != null && currentLoad.cancel(true)) {
+            if (currentLoad.loadCompletion != null) {
+                currentLoad.loadCompletion.onComplete(Accessories.<PKMediaEntry>buildResult(null, ErrorElement.CanceledRequest));
             }
         }
         synchronized (syncObject) {
