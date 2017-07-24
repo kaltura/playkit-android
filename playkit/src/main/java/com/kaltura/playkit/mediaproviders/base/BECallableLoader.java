@@ -107,10 +107,11 @@ public abstract class BECallableLoader extends CallableLoader<Void> {
             }
         });
 
-        if(waitForCompletion && !isCanceled()) { // prevent lock thread on already completed load //TODO: replace latch locks
-            PKLog.v(TAG, loadId+": load: setting outer completion wait lock");
+        if (waitForCompletion && !isCanceled()) { // prevent lock thread on already completed load
+            PKLog.v(TAG, loadId + ": load: setting outer completion wait lock");
             waitCompletion();
         }
+
         PKLog.d(TAG, loadId+": load: wait for completion released");
 
         return null;

@@ -47,16 +47,16 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
         OnMediaLoadCompletion loadCompletion;
         Future<Void> submittedTask;
 
-        public LoaderFuture(@NonNull Future<Void> task, OnMediaLoadCompletion completion) {
+        LoaderFuture(@NonNull Future<Void> task, OnMediaLoadCompletion completion) {
             this.submittedTask = task;
             this.loadCompletion = completion;
         }
 
-        public boolean isDone() {
+        boolean isDone() {
             return submittedTask.isDone();
         }
 
-        public boolean isCancelled() {
+        boolean isCancelled() {
             return submittedTask.isCancelled();
         }
 
@@ -72,7 +72,7 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
     protected BEMediaProvider(String tag){
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.requestsExecutor.enableLogs(false);
-        loadExecutor = Executors.newFixedThreadPool(2);//TODO - once multi load execution will be supported will be changed to newFixedThreadExecutor or alike
+        loadExecutor = Executors.newFixedThreadPool(3);//TODO - once multi load execution will be supported will be changed to newFixedThreadExecutor or alike
         this.tag = tag;
     }
 
