@@ -224,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             configurePlugins(pluginConfig);
 
             player = PlayKitManager.loadPlayer(this, pluginConfig);
-            KalturaPlaybackRequestAdapter.install(player, "myApp"); // in case app developer wants to give customized refferer instead the default refferer in the playmanifest
+            KalturaPlaybackRequestAdapter.install(player, "myApp"); // in case app developer wants to give customized referrer instead the default referrer in the playmanifest
                     
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
