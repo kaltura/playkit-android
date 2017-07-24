@@ -30,16 +30,13 @@ class PlayerEngineFactory {
             case VR_PLAYER:
                 //Load DefaultVRPlayerFactory.java from playkitvr library.
                 Class<?> clazz;
+                VRPlayerFactory vrPlayerFactory;
                 try {
                     clazz = Class.forName("com.kaltura.playkitvr.DefaultVRPlayerFactory");
+                    vrPlayerFactory = (VRPlayerFactory) clazz.newInstance();
                 } catch (ClassNotFoundException e) {
                     throw new PlayerInitializationException("Could not find com.kaltura.playkitvr.DefaultVRPlayerFactory class." +
                             " Please check if com.kaltura.playkitvr library exist in project structure", e);
-                }
-
-                VRPlayerFactory vrPlayerFactory;
-                try {
-                    vrPlayerFactory = (VRPlayerFactory) clazz.newInstance();
                 } catch (InstantiationException e) {
                     throw new PlayerInitializationException("Failed to create new instance of VRPlayerFactory", e);
                 } catch (IllegalAccessException e) {
