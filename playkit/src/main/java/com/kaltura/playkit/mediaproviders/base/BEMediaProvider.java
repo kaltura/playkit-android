@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.mediaproviders.base;
 
+import android.support.annotation.NonNull;
+
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.utils.Accessories;
@@ -32,18 +34,46 @@ import java.util.concurrent.Future;
 
 public abstract class BEMediaProvider implements MediaEntryProvider {
 
+    public static final int MaxThreads = 3;
     private ExecutorService loadExecutor;
     protected RequestQueue requestsExecutor;
     protected SessionProvider sessionProvider;
-    private Future<Void> currentLoad;
+    private LoaderFuture currentLoad;
     protected final Object syncObject = new Object();
 
     protected String tag = "BEMediaProvider";
 
+    private static class LoaderFuture {
+
+        OnMediaLoadCompletion loadCompletion;
+        Future<Void> submittedTask;
+
+        LoaderFuture(@NonNull Future<Void> task, OnMediaLoadCompletion completion) {
+            this.submittedTask = task;
+            this.loadCompletion = completion;
+        }
+
+        boolean isDone() {
+            return submittedTask.isDone();
+        }
+
+        boolean isCancelled() {
+            return submittedTask.isCancelled();
+        }
+
+        public boolean cancel(boolean allowInterruption) {
+            if (submittedTask != null && !submittedTask.isDone() && !submittedTask.isCancelled()) {
+                submittedTask.cancel(allowInterruption);
+                return true;
+            }
+            return false;
+        }
+    }
+
     protected BEMediaProvider(String tag){
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.requestsExecutor.enableLogs(false);
-        loadExecutor = Executors.newFixedThreadPool(2);//TODO - once multi load execution will be supported will be changed to newFixedThreadExecutor or alike
+        loadExecutor = Executors.newFixedThreadPool(MaxThreads);//TODO - once multi load execution will be supported will be changed to newFixedThreadExecutor or alike
         this.tag = tag;
     }
 
@@ -70,9 +100,13 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
         }
 
         //!- in case load action is in progress and new load is activated, prev request will be canceled
-        cancel();
+        if (currentLoad != null && currentLoad.cancel(true)) {
+            if (currentLoad.loadCompletion != null) {
+                currentLoad.loadCompletion.onComplete(Accessories.<PKMediaEntry>buildResult(null, ErrorElement.CanceledRequest));
+            }
+        }
         synchronized (syncObject) {
-            currentLoad = loadExecutor.submit(factorNewLoader(completion));
+            currentLoad = new LoaderFuture(loadExecutor.submit(factorNewLoader(completion)), completion);
             PKLog.v(tag, "new loader started " + currentLoad.toString());
         }
     }
