@@ -46,6 +46,7 @@ import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
 import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
+import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
@@ -223,7 +224,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             configurePlugins(pluginConfig);
 
             player = PlayKitManager.loadPlayer(this, pluginConfig);
-
+            KalturaPlaybackRequestAdapter.install(player, "myApp");
+                    
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
 
