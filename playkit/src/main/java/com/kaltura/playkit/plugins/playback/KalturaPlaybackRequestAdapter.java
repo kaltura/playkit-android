@@ -12,7 +12,6 @@
 
 package com.kaltura.playkit.plugins.playback;
 
-import android.content.Context;
 import android.net.Uri;
 
 import com.kaltura.playkit.PKRequestParams;
@@ -26,17 +25,17 @@ import static com.kaltura.playkit.Utils.toBase64;
  */
 public class KalturaPlaybackRequestAdapter implements PKRequestParams.Adapter {
 
-    private final String packageName;
+    private final String applicationName;
     private String playSessionId;
     
-    public static void setup(Context context, Player player) {
-        KalturaPlaybackRequestAdapter decorator = new KalturaPlaybackRequestAdapter(context.getPackageName(), player.getSessionId());
+    public static void install(Player player, String applicationName) {
+        KalturaPlaybackRequestAdapter decorator = new KalturaPlaybackRequestAdapter(applicationName, player);
         player.getSettings().setContentRequestAdapter(decorator);
     }
 
-    private KalturaPlaybackRequestAdapter(String packageName, String playSessionId) {
-        this.packageName = packageName;
-        this.playSessionId = playSessionId;
+    private KalturaPlaybackRequestAdapter(String applicationName, Player player) {
+        this.applicationName = applicationName;
+        updateParams(player);
     }
     
     @Override
@@ -46,7 +45,7 @@ public class KalturaPlaybackRequestAdapter implements PKRequestParams.Adapter {
         if (url.getPath().contains("/playManifest/")) {
             Uri alt = url.buildUpon()
                     .appendQueryParameter("clientTag", CLIENT_TAG)
-                    .appendQueryParameter("referrer", toBase64(packageName.getBytes()))
+                    .appendQueryParameter("referrer", toBase64(applicationName.getBytes()))
                     .appendQueryParameter("playSessionId", playSessionId)
                     .build();
 
