@@ -3,11 +3,13 @@ package com.kaltura.playkit.plugins;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.ads.AdController;
+import com.kaltura.playkit.player.PlayerController;
 import com.kaltura.playkit.player.PlayerView;
 
 /**
@@ -46,17 +48,7 @@ public class MockPlayer implements Player {
     }
 
     @Override
-    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
-
-    }
-
-    @Override
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
-
-    }
-
-    @Override
-    public void skip() {
 
     }
 
@@ -146,12 +138,12 @@ public class MockPlayer implements Player {
     }
 
     @Override
-    public AdController getAdController() {
+    public String getSessionId() {
         return null;
     }
 
     @Override
-    public String getSessionId() {
+    public PKController getController(@Nullable Class<? extends PKController> type) {
         return null;
     }
 

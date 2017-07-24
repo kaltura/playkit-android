@@ -31,6 +31,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.VRParams;
 import com.kaltura.playkit.api.base.model.BasePlaybackContext;
 import com.kaltura.playkit.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.api.ovp.KalturaOvpErrorHelper;
@@ -69,6 +70,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -360,20 +362,25 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             } else {
                 sources = new ArrayList<>();
             }
-            /*
-            in case we need default sources creation:
-            else {
-                PKLog.e(TAG, "failed to receive sources to play");
-                //throw new InvalidParameterException("Could not create sources for media entry");
-                sources = parseFromFlavors(ks, partnerId, uiConfId, entry, playbackContext);
-            }*/
 
             Map<String, String> metadata = parseMetadata(metadataList);
+
+            if(checkIf360Enabled(entry.getTags())) {
+                mediaEntry.setVrParams(new VRParams());
+            }
 
             return mediaEntry.setId(entry.getId()).setSources(sources)
                     .setDuration(entry.getMsDuration()).setMetadata(metadata)
                     .setName(entry.getName())
                     .setMediaType(MediaTypeConverter.toMediaEntryType(entry.getType()));
+        }
+
+        private static boolean checkIf360Enabled(String tags) {
+            if(tags.isEmpty()) {
+                return false;
+            }
+
+            return Pattern.compile("\\b360\\b").matcher(tags).find();
         }
 
         private static Map<String, String> parseMetadata(KalturaMetadataListResponse metadataList) {

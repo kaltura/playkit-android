@@ -20,11 +20,11 @@ import com.kaltura.playkit.PKRequestParams;
 /**
  * Created by Noam Tamim @ Kaltura on 29/03/2017.
  */
-class PKMediaSourceConfig {
-    PKMediaSource mediaSource;
-    PKRequestParams.Adapter adapter;
-    boolean cea608CaptionsEnabled;
-    boolean useTextureView;
+class PKMediaSourceConfig implements PlayerEngine.SourceConfig {
+    private PKMediaSource mediaSource;
+    private PKRequestParams.Adapter adapter;
+    private boolean cea608CaptionsEnabled;
+    private boolean useTextureView;
 
     PKMediaSourceConfig(PKMediaSource mediaSource, PKRequestParams.Adapter adapter, boolean cea608CaptionsEnabled, boolean useTextureView) {
         this.mediaSource = mediaSource;
@@ -33,7 +33,23 @@ class PKMediaSourceConfig {
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
     }
 
-    Uri getUrl() {
+    @Override
+    public PKMediaSource getSource() {
+        return this.mediaSource;
+    }
+
+    @Override
+    public boolean isCea608CaptionsEnabled() {
+        return this.cea608CaptionsEnabled;
+    }
+
+    @Override
+    public boolean useTextureView() {
+        return this.useTextureView;
+    }
+
+    @Override
+    public Uri getUrl() {
         Uri uri = Uri.parse(mediaSource.getUrl());
         if (adapter == null) {
             return uri;
@@ -61,4 +77,5 @@ class PKMediaSourceConfig {
         result = 31 * result + (adapter != null ? adapter.hashCode() : 0);
         return result;
     }
+
 }

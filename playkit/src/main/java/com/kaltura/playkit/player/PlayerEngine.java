@@ -12,7 +12,12 @@
 
 package com.kaltura.playkit.player;
 
+import android.net.Uri;
+
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlaybackInfo;
+import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.PKError;
@@ -27,14 +32,14 @@ import java.util.List;
  * Created by anton.afanasiev on 01/11/2016.
  */
 
-interface PlayerEngine {
+public interface PlayerEngine {
 
     /**
      * Initialize player (if needed), and load the mediaSourceUri
      * that should be played.
-     * @param mediaSourceConfig - the source to be played.
+     * @param sourceConfig - the source to be played.
      */
-    void load(PKMediaSourceConfig mediaSourceConfig);
+    void load(SourceConfig sourceConfig);
 
     /**
      * Getter for the View to which current
@@ -136,7 +141,7 @@ interface PlayerEngine {
      *
      * @param eventTrigger - the event trigger.
      */
-    void setEventListener(PlayerController.EventListener eventTrigger);
+    void setEventListener(PlayerEngine.EventListener eventTrigger);
 
     /**
      * Set the StateChangeListener to the player, which will notify the
@@ -144,7 +149,7 @@ interface PlayerEngine {
      * Note! Same change that happens twice in a row will not be reported.
      * @param stateChangedTrigger - the state change listener.
      */
-    void setStateChangedListener(PlayerController.StateChangedListener stateChangedTrigger);
+    void setStateChangedListener(PlayerEngine.StateChangedListener stateChangedTrigger);
 
     /**
      * Release the current player.
@@ -182,7 +187,6 @@ interface PlayerEngine {
      */
     PKError getCurrentError();
 
-
     /**
      * Stop player executing the {@link PlayerEngine} implementation.
      * stop the player and seek to start position.
@@ -194,5 +198,25 @@ interface PlayerEngine {
      * @return - list of {@link PKMetadata}
      */
     List<PKMetadata> getMetadata();
+
+    interface EventListener {
+        void onEvent(PlayerEvent.Type event);
+    }
+
+    interface StateChangedListener {
+        void onStateChanged(PlayerState oldState, PlayerState newState);
+    }
+
+    interface SourceConfig {
+
+        PKMediaSource getSource();
+
+        boolean isCea608CaptionsEnabled();
+
+        boolean useTextureView();
+
+        Uri getUrl();
+    }
+
 
 }

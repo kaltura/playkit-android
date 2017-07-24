@@ -59,7 +59,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
             drmSessionManager = null;
             return;
         }
-        
+
         if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
             buildLocalDrmSessionManager(mediaSource);
         } else {
@@ -123,7 +123,7 @@ class SessionWrapper implements DrmSession<FrameworkMediaCrypto> {
     private DrmSessionManager<FrameworkMediaCrypto> realDrmSessionManager;
 
     SessionWrapper(Looper playbackLooper, DrmInitData drmInitData, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager) {
-        this.realDrmSession = drmSessionManager.acquireSession(playbackLooper, drmInitData);;
+        this.realDrmSession = drmSessionManager.acquireSession(playbackLooper, drmInitData);
         this.realDrmSessionManager = drmSessionManager;
     }
 

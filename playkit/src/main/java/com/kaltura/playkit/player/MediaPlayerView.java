@@ -49,10 +49,6 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
         initSurfaceView();
     }
 
-    public SurfaceHolder getSurfaceHolder() {
-        return  holder;
-    }
-
     private View initSurfaceView() {
         log.d("initSurfaceView");
         surfaceView = new SurfaceView(context);
@@ -69,26 +65,6 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
         return surfaceView;
     }
 
-    @Override
-    public void hideVideoSurface() {
-        surfaceView.setVisibility(GONE);
-    }
-
-    @Override
-    public void showVideoSurface() {
-        surfaceView.setVisibility(VISIBLE);
-    }
-
-    @Override
-    public void hideVideoSubtitles() {
-
-    }
-
-    @Override
-    public void showVideoSubtitles() {
-
-    }
-
     private View initPosterView() {
         View posterView = new View(getContext());
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -96,6 +72,16 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
         posterView.setBackgroundColor(Color.BLACK);
 
         return posterView;
+    }
+
+    @Override
+    public void setVideoSurfaceVisibility(int visibilityState) {
+        surfaceView.setVisibility(visibilityState);
+    }
+
+    @Override
+    public void setVideoSubtitlesVisibility(int visibilityState) {
+
     }
 
     @Override
@@ -113,4 +99,9 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
         // Do Nothing
     }
+
+    public SurfaceHolder getSurfaceHolder() {
+        return  holder;
+    }
+
 }
