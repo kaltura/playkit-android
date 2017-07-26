@@ -58,6 +58,15 @@ public class LocalDrmSessionManager<T extends ExoMediaCrypto> implements DrmSess
         this.drmStorage = mediaSource.getStorage();
     }
 
+    byte[] getOfflineKey(String key) {
+        try {
+            return drmStorage.load(key);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     public DrmSession<T> acquireSession(Looper playbackLooper, DrmInitData drmInitData) {
