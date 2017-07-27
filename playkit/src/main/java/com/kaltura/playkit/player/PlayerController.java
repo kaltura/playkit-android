@@ -83,9 +83,9 @@ public class PlayerController implements Player {
                     return;
                 }
 
-                if(playerEngineView != null) {
+                if (playerEngineView != null) {
                     playerEngineView.setVideoSurfaceVisibility(visibilityState);
-                }else {
+                } else {
                     log.w("Failed to change PlayerView state. PlayerView is null");
                 }
             }
@@ -97,7 +97,7 @@ public class PlayerController implements Player {
                     return;
                 }
 
-                if(playerEngineView != null) {
+                if (playerEngineView != null) {
                     playerEngineView.setVideoSubtitlesVisibility(visibilityState);
                 } else {
                     log.w("Failed to change SubtitlesView state. PlayerView is null");
@@ -315,10 +315,10 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public PKController getController(Class<? extends PKController> type) {
+    public <T extends PKController> T getController(Class<T> type) {
 
         if (type == VRController.class && currentPlayerEngineType == PlayerEngineType.VR_PLAYER) {
-            return new VRController() {
+            return (T) new VRController() {
                 @Override
                 public void enableVRMode(boolean shouldEnable) {
                     log.e("enableVRMode");

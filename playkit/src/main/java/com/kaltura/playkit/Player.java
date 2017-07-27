@@ -162,7 +162,7 @@ public interface Player {
      * @return - the {@link PKController} instance if specified controller type exist,
      * otherwise return null.
      */
-    PKController getController(@Nullable Class<? extends PKController> type);
+    <T extends PKController> T getController(Class<T> type);
 
     /**
      * Get the Player's {@link Settings} object, for setting some optional properties.

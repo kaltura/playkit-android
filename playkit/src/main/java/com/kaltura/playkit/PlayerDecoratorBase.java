@@ -15,8 +15,6 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.kaltura.playkit.ads.AdController;
-import com.kaltura.playkit.player.PlayerController;
 import com.kaltura.playkit.player.PlayerView;
 
 public class PlayerDecoratorBase implements Player {
@@ -52,7 +50,7 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public PKController getController(Class<? extends PKController> type) {
+    public <T extends PKController> T getController(Class<T> type) {
         return player.getController(type);
     }
 

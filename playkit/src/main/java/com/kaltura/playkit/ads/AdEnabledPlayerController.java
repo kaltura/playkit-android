@@ -168,9 +168,9 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
-    public PKController getController(Class<? extends PKController> type) {
+    public <T extends PKController> T getController(Class<T> type) {
         if (type == AdEnabledPlayerController.class) {
-            return this;
+            return (T)this;
         }
 
         return super.getController(type);
