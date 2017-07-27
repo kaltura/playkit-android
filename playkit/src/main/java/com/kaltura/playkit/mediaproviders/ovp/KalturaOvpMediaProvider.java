@@ -287,7 +287,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                             KalturaMetadataListResponse metadataList = (KalturaMetadataListResponse) responses.get(metadataResponseIdx);
                             boolean shuoldBlockRuleEnabled = false;
                             for (BasePlaybackContext.KalturaRuleAction rule :kalturaPlaybackContext.getActions()) {
-                                if (rule.getType() == BasePlaybackContext.KalturaRuleAction.KalturaRuleActionType.BLOCK ) {
+                                if (rule.getType() != null && rule.getType() == BasePlaybackContext.KalturaRuleAction.KalturaRuleActionType.BLOCK ) {
                                     shuoldBlockRuleEnabled = true;
                                     break;
                                 }
