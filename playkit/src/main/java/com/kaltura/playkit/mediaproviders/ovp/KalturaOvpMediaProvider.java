@@ -285,13 +285,23 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
                             KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) responses.get(playbackResponseIdx);
                             KalturaMetadataListResponse metadataList = (KalturaMetadataListResponse) responses.get(metadataResponseIdx);
+                            boolean shuoldBlockRuleEnabled = false;
+                            for (BasePlaybackContext.KalturaRuleAction rule :kalturaPlaybackContext.getActions()) {
+                                if (rule.getType() == BasePlaybackContext.KalturaRuleAction.KalturaRuleActionType.BLOCK ) {
+                                    shuoldBlockRuleEnabled = true;
+                                    break;
+                                }
+                            }
+                            error = hasError(kalturaPlaybackContext.getMessages());
+                            if (!shuoldBlockRuleEnabled) {
+                                if (error == null || error != null && error.getMessage() != null && error.getMessage().toLowerCase().contains("lovation")) {
+                                    error = null;
+                                    mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
+                                            ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
 
-                            if ((error = hasError(kalturaPlaybackContext.getMessages())) == null) { // check for error message
-                                mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
-                                        ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
-
-                                if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
-                                    error = KalturaOvpErrorHelper.getErrorElement("NoFilesFound");
+                                    if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
+                                        error = KalturaOvpErrorHelper.getErrorElement("NoFilesFound");
+                                    }
                                 }
                             }
                         }
