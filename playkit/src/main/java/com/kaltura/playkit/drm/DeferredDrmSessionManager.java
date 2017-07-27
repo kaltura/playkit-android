@@ -28,12 +28,14 @@ import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.Util;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKDrmParams;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.player.MediaSupport;
-import com.kaltura.playkit.utils.EventLogger;
+import com.kaltura.playkit.player.PKPlayerErrorType;
 
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -43,22 +45,24 @@ import static com.kaltura.playkit.Utils.toBase64;
  * @hide
  */
 
-public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMediaCrypto> {
+public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMediaCrypto>, DefaultDrmSessionManager.EventListener {
 
     private static final PKLog log = PKLog.get("DeferredDrmSessionManager");
 
-    private DefaultDrmSessionManager<FrameworkMediaCrypto> drmSessionManager = null;
-
     private Handler mainHandler;
-    private EventLogger eventLogger;
+    private DrmSessionListener drmSessionListener;
     private HttpDataSource.Factory dataSourceFactory;
     private LocalAssetsManager.LocalMediaSource localMediaSource = null;
+    private DefaultDrmSessionManager<FrameworkMediaCrypto> drmSessionManager = null;
 
-    public DeferredDrmSessionManager(Handler mainHandler, EventLogger eventLogger, HttpDataSource.Factory factory) {
+    public interface DrmSessionListener {
+        void onError(PKError error);
+    }
+
+    public DeferredDrmSessionManager(Handler mainHandler, HttpDataSource.Factory factory, DrmSessionListener drmSessionListener) {
         this.mainHandler = mainHandler;
-        this.eventLogger = eventLogger;
-
         this.dataSourceFactory = factory;
+        this.drmSessionListener = drmSessionListener;
     }
 
     public void setMediaSource(PKMediaSource mediaSource) {
@@ -69,29 +73,14 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
 
         try {
             String licenseUrl = getLicenseUrl(mediaSource);
-            drmSessionManager = DefaultDrmSessionManager.newWidevineInstance(new HttpMediaDrmCallback(licenseUrl, dataSourceFactory), null, mainHandler, eventLogger);
+            drmSessionManager = DefaultDrmSessionManager.newWidevineInstance(new HttpMediaDrmCallback(licenseUrl, dataSourceFactory), null, mainHandler, this);
             if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
                 localMediaSource = (LocalAssetsManager.LocalMediaSource) mediaSource;
             }
         } catch (UnsupportedDrmException exception) {
-            log.w("This device doesn't support widevine modular " + exception.getMessage());
+            PKError error = new PKError(PKPlayerErrorType.DRM_ERROR, "This device doesn't support widevine modular", exception);
+            drmSessionListener.onError(error);
         }
-    }
-
-    private String getLicenseUrl(PKMediaSource mediaSource) {
-        String licenseUrl = null;
-
-        if (mediaSource.hasDrmParams()) {
-            List<PKDrmParams> drmData = mediaSource.getDrmData();
-            for (PKDrmParams pkDrmParam : drmData) {
-                // selecting WidevineCENC as default right now
-                if (PKDrmParams.Scheme.WidevineCENC == pkDrmParam.getScheme()) {
-                    licenseUrl = pkDrmParam.getLicenseUri();
-                    break;
-                }
-            }
-        }
-        return licenseUrl;
     }
 
     @Override
@@ -102,15 +91,16 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
 
         if (localMediaSource != null) {
             byte[] offlineKey;
+            DrmInitData.SchemeData schemeData = getWidevineInitData(drmInitData);
             try {
-                DrmInitData.SchemeData schemeData = getWidevineInitData(drmInitData);
                 if (schemeData != null) {
                     offlineKey = localMediaSource.getStorage().load(toBase64(schemeData.data));
                     drmSessionManager.setMode(DefaultDrmSessionManager.MODE_PLAYBACK, offlineKey);
                     localMediaSource = null;
                 }
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
+                PKError error = new PKError(PKPlayerErrorType.DRM_ERROR, "Failed to obtain offline licence from LocalDataStore. Requested key: " + Arrays.toString(schemeData.data) + ", for keysetId not found.", e);
+                drmSessionListener.onError(error);
             }
         }
 
@@ -149,6 +139,45 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
         }
         return schemeData;
     }
+
+    private String getLicenseUrl(PKMediaSource mediaSource) {
+        String licenseUrl = null;
+
+        if (mediaSource.hasDrmParams()) {
+            List<PKDrmParams> drmData = mediaSource.getDrmData();
+            for (PKDrmParams pkDrmParam : drmData) {
+                // selecting WidevineCENC as default right now
+                if (PKDrmParams.Scheme.WidevineCENC == pkDrmParam.getScheme()) {
+                    licenseUrl = pkDrmParam.getLicenseUri();
+                    break;
+                }
+            }
+        }
+        return licenseUrl;
+    }
+
+    @Override
+    public void onDrmKeysLoaded() {
+        log.d("onDrmKeysLoaded");
+    }
+
+    @Override
+    public void onDrmSessionManagerError(Exception e) {
+        log.d("onDrmSessionManagerError");
+        PKError error = new PKError(PKPlayerErrorType.DRM_ERROR, e.getMessage(), e);
+        drmSessionListener.onError(error);
+    }
+
+    @Override
+    public void onDrmKeysRestored() {
+        log.d("onDrmKeysRestored");
+    }
+
+    @Override
+    public void onDrmKeysRemoved() {
+        log.d("onDrmKeysRemoved");
+    }
+
 }
 
 
