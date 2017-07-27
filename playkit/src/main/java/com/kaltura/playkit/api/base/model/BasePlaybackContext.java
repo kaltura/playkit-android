@@ -63,6 +63,10 @@ public class BasePlaybackContext extends BaseResult {
         public KalturaRuleAction() {
         }
 
+        public KalturaRuleActionType getType() {
+            return type;
+        }
+
 
         public enum KalturaRuleActionType{
             DRM_POLICY("drm.DRM_POLICY"),
@@ -99,6 +103,7 @@ public class BasePlaybackContext extends BaseResult {
             objectType = "KalturaAccessControlDrmPolicyAction";
         }
     }
+
     public static class KalturaAccessControlLimitDeliveryProfilesAction extends KalturaRuleAction{
         String deliveryProfileIds;
         boolean isBlockedList;

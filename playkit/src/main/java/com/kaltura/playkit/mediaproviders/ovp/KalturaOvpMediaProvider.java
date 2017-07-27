@@ -294,7 +294,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                             }
                             error = hasError(kalturaPlaybackContext.getMessages());
                             if (!shuoldBlockRuleEnabled) {
-                                if (error == null || error != null && error.getMessage() != null && error.getMessage().toLowerCase().contains("lovation")) {
+                                if (error == null || error != null && error.getMessage() != null && error.getMessage().toLowerCase().contains("location")) {
                                     error = null;
                                     mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
                                             ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
