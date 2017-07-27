@@ -53,7 +53,6 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
     private EventLogger eventLogger;
     private HttpDataSource.Factory dataSourceFactory;
     private LocalAssetsManager.LocalMediaSource localMediaSource = null;
-    private boolean modeSet = false;
 
     public DeferredDrmSessionManager(Handler mainHandler, EventLogger eventLogger, HttpDataSource.Factory factory) {
         this.mainHandler = mainHandler;
@@ -100,31 +99,26 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
         if (drmSessionManager == null) {
             return null;
         }
-        log.e("acqure session");
 
-        if (localMediaSource != null && !modeSet) {
-            log.e("acqure session inner");
+        if (localMediaSource != null) {
             byte[] offlineKey;
             try {
-                byte[] initData =  getWidevineInitData(drmInitData).data;
-                if(initData != null) {
-                    offlineKey = localMediaSource.getStorage().load(toBase64(initData));
+                DrmInitData.SchemeData schemeData = getWidevineInitData(drmInitData);
+                if (schemeData != null) {
+                    offlineKey = localMediaSource.getStorage().load(toBase64(schemeData.data));
                     drmSessionManager.setMode(DefaultDrmSessionManager.MODE_PLAYBACK, offlineKey);
-                    modeSet = true;
+                    localMediaSource = null;
                 }
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-
-
         }
+
         return new SessionWrapper(playbackLooper, drmInitData, drmSessionManager);
     }
 
     @Override
     public void releaseSession(DrmSession drmSession) {
-        localMediaSource = null;
-        modeSet = false;
         if (drmSession instanceof SessionWrapper) {
             ((SessionWrapper) drmSession).release();
         } else {
@@ -156,7 +150,6 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
         return schemeData;
     }
 }
-
 
 
 class SessionWrapper implements DrmSession<FrameworkMediaCrypto> {
