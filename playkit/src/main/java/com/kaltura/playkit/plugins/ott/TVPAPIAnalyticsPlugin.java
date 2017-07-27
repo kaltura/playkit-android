@@ -56,6 +56,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         setPluginMembers(config);
         this.player = player;
         this.context = context;
+        this.messageBus = messageBus;
         this.timer = new Timer();
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         if (baseUrl != null && !baseUrl.isEmpty() &&  initObject != null) {
