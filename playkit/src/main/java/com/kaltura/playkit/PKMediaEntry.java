@@ -17,6 +17,7 @@ import android.os.Parcelable;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -115,6 +116,16 @@ public class PKMediaEntry implements Parcelable {
             }
         } else {
             dest.writeInt(-1);
+        }
+    }
+
+    public void removeSourcesByFormat(PKMediaFormat mediaFormat) {
+        for (Iterator<PKMediaSource> iter = sources.listIterator(); iter.hasNext(); ) {
+            PKMediaSource source = iter.next();
+            PKMediaFormat sourceFormat = source.getMediaFormat();
+            if (sourceFormat != null && sourceFormat == mediaFormat) {
+                iter.remove();
+            }
         }
     }
 
