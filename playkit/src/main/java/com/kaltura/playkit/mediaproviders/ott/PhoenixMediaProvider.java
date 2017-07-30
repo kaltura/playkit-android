@@ -405,7 +405,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                         KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) playbackContextResult;
 
-                        if (!kalturaPlaybackContext.hasBlockedAction()) { // check for BLOCKED Action
+                        if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error or unauthorized content
 
                             mediaEntry = ProviderParser.getMedia(mediaAsset.assetId,
                                     mediaAsset.formats != null ? mediaAsset.formats : mediaAsset.mediaFileIds,
@@ -414,8 +414,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                             if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
                                 error = ErrorElement.NotFound.message("Content can't be played due to lack of sources");
                             }
-                        } else {
-                            error = kalturaPlaybackContext.hasError();
                         }
                     }
                 } catch (JsonParseException | InvalidParameterException ex) {
