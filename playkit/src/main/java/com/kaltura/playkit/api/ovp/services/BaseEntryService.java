@@ -77,13 +77,16 @@ public class BaseEntryService extends OvpService {
                 .params(params);
     }
 
-    public static OvpRequestBuilder getPlaybackContext(String baseUrl, String ks, String entryId) {
+    public static OvpRequestBuilder getPlaybackContext(String baseUrl, String ks, String entryId, String referrer) {
         JsonObject params = new JsonObject();
         params.addProperty("entryId", entryId);
         params.addProperty("ks", ks);
 
         JsonObject contextDataParams = new JsonObject();
         contextDataParams.addProperty("objectType","KalturaContextDataParams");
+        if (referrer != null && !referrer.isEmpty()) {
+            contextDataParams.addProperty("referrer", referrer);
+        }
 
         params.add("contextDataParams", contextDataParams);
 
