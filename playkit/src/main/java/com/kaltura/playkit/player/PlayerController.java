@@ -83,9 +83,9 @@ public class PlayerController implements Player {
                     return;
                 }
 
-                if(playerEngineView != null) {
+                if (playerEngineView != null) {
                     playerEngineView.setVideoSurfaceVisibility(visibilityState);
-                }else {
+                } else {
                     log.w("Failed to change PlayerView state. PlayerView is null");
                 }
             }
@@ -97,7 +97,7 @@ public class PlayerController implements Player {
                     return;
                 }
 
-                if(playerEngineView != null) {
+                if (playerEngineView != null) {
                     playerEngineView.setVideoSubtitlesVisibility(visibilityState);
                 } else {
                     log.w("Failed to change SubtitlesView state. PlayerView is null");
