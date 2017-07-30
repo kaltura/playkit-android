@@ -143,7 +143,7 @@ public class MockPlayer implements Player {
     }
 
     @Override
-    public PKController getController(@Nullable Class<? extends PKController> type) {
+    public <T extends PKController> T getController(Class<T> type) {
         return null;
     }
 

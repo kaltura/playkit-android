@@ -315,10 +315,10 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public PKController getController(Class<? extends PKController> type) {
+    public <T extends PKController> T getController(Class<T> type) {
 
         if (type == VRController.class && currentPlayerEngineType == PlayerEngineType.VR_PLAYER) {
-            return new VRController() {
+            return (T) new VRController() {
                 @Override
                 public void enableVRMode(boolean shouldEnable) {
                     log.e("enableVRMode");
