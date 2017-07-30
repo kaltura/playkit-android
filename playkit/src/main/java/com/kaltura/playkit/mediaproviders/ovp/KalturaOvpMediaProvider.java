@@ -284,22 +284,15 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                         if (error == null) {
                             KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) responses.get(playbackResponseIdx);
                             KalturaMetadataListResponse metadataList = (KalturaMetadataListResponse) responses.get(metadataResponseIdx);
-                            boolean shouldBlockRuleEnabled = false;
-                            for (BasePlaybackContext.KalturaRuleAction rule :kalturaPlaybackContext.getActions()) {
-                                if (rule.getType() != null && rule.getType() == BasePlaybackContext.KalturaRuleAction.KalturaRuleActionType.BLOCK ) {
-                                    shouldBlockRuleEnabled = true;
-                                    error = hasError(kalturaPlaybackContext.getMessages());
-                                    break;
-                                }
-                            }
-
-                            if (!shouldBlockRuleEnabled) {
+                            if (!kalturaPlaybackContext.hasBlockedAction()) {
                                 mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
                                         ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
 
                                 if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
                                     error = KalturaOvpErrorHelper.getErrorElement("NoFilesFound");
                                 }
+                            } else {
+                                error = hasError(kalturaPlaybackContext.getMessages());
                             }
                         }
                     }
@@ -341,10 +334,8 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 return error;
             }
         }
-
         return null;
     }
-
 
     private static class ProviderParser {
 

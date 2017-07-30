@@ -54,7 +54,16 @@ public class BasePlaybackContext extends BaseResult {
         return error;
     }
 
-
+    public boolean hasBlockedAction() {
+        if (actions != null) {
+            for (BasePlaybackContext.KalturaRuleAction rule : actions) {
+                if (rule != null && BasePlaybackContext.KalturaRuleAction.KalturaRuleActionType.BLOCK.equals(rule.getType())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     public static class KalturaRuleAction extends BaseResult{
         String objectType;
