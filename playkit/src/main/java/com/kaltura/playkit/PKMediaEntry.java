@@ -117,7 +117,7 @@ public class PKMediaEntry implements Parcelable {
             dest.writeInt(-1);
         }
     }
-
+    
     protected PKMediaEntry(Parcel in) {
         this.id = in.readString();
         this.name = in.readString();

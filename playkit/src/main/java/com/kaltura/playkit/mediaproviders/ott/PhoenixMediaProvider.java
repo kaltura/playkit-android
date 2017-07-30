@@ -405,7 +405,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                         KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) playbackContextResult;
 
-                        if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error message
+                        if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error or unauthorized content
 
                             mediaEntry = ProviderParser.getMedia(mediaAsset.assetId,
                                     mediaAsset.formats != null ? mediaAsset.formats : mediaAsset.mediaFileIds,
