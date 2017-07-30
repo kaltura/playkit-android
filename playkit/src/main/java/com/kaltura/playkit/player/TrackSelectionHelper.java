@@ -90,8 +90,6 @@ class TrackSelectionHelper {
         void onTrackChanged();
 
         void onRelease(String[] selectedTracks);
-
-        void onError(PKError error);
     }
 
 

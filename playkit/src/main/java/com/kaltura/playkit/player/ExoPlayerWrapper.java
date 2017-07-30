@@ -48,9 +48,10 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
-import com.kaltura.playkit.BuildConfig;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
@@ -59,7 +60,6 @@ import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.EventLogger;
-import com.kaltura.playkit.PKError;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,6 +95,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private PKError currentError = null;
 
     private boolean isSeeking = false;
+    private boolean useTextureView = false;
     private boolean shouldRestorePlayerToPreviousState = false;
 
     private int playerWindow;
@@ -104,12 +105,14 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
     private List<PKMetadata> metadataList = new ArrayList<>();
-    private boolean useTextureView = false;
 
 
     private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
+    private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
+
+
 
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
@@ -128,7 +131,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         eventLogger = new EventLogger();
 
         DefaultTrackSelector trackSelector = initializeTrackSelector();
-        drmSessionManager = new DeferredDrmSessionManager(mainHandler, eventLogger, buildHttpDataSourceFactory(false));
+        drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildHttpDataSourceFactory(false), drmSessionListener);
         player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager);
         window = new Timeline.Window();
         setPlayerListeners();
@@ -234,9 +237,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             applicationName = "?";
         }
 
-        String sdkName = "PlayKit/" + BuildConfig.VERSION_NAME;
-
-        return sdkName + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE
+        return PlayKitManager.CLIENT_TAG + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE
                 + ") " + "ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
     }
 
@@ -632,7 +633,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         }
     }
 
-    void savePlayerPosition() {
+    private void savePlayerPosition() {
         if (player == null) {
             log.w("Attempt to invoke 'savePlayerPosition()' on null instance of the exoplayer");
             return;
@@ -668,7 +669,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             public void onRelease(String[] selectedTrackIds) {
                 lastSelectedTrackIds = selectedTrackIds;
             }
+        };
+    }
 
+    private DeferredDrmSessionManager.DrmSessionListener initDrmSessionListener() {
+        return new DeferredDrmSessionManager.DrmSessionListener() {
             @Override
             public void onError(PKError error) {
                 currentError = error;
@@ -676,7 +681,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             }
         };
     }
-
 }
 
 

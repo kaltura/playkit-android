@@ -33,18 +33,18 @@ tasks.withType(Javadoc) {
 
 dependencies {
 
-    compile 'com.kaltura.netkit:netkit-core:1.0.4'
-    //compile 'com.kaltura.netkit-android:netkit-core:14febad609f117a5006a8d646d7a6f70598d3c69'
+    compile 'com.kaltura.netkit:netkit-core:1.0.5'
+    //compile ('com.kaltura.netkit-android:netkit-core:b6175662cfae258e98a5b028363fbf0962d9c5a8')
 
     // Google Extras
     compile 'com.google.android.exoplayer:exoplayer:r2.3.1'
 
     // Google Ads
     compile 'com.google.ads.interactivemedia.v3:interactivemedia:3.7.2'
-    compile 'com.google.android.gms:play-services-ads:10.2.1'
+    compile 'com.google.android.gms:play-services-ads:11.0.2'
 
     // Google Cast
-    compile 'com.google.android.gms:play-services-cast-framework:10.2.1'
+    compile 'com.google.android.gms:play-services-cast-framework:11.0.2'
     compile 'com.android.support:mediarouter-v7:25.3.1'
 
     // Youbora Analytics

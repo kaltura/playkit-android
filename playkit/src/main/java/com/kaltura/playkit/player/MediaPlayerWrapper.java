@@ -15,15 +15,20 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.drm.DrmErrorEvent;
 import android.drm.DrmEvent;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
+import android.support.annotation.NonNull;
 import android.view.SurfaceHolder;
 
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
@@ -33,7 +38,9 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.NOT_PREPARED;
 import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARED;
@@ -132,7 +139,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         log.d("playback uri = " + playbackUri);
         try {
             mediaPlayerView.getSurfaceHolder().addCallback(this);
-            player.setDataSource(playbackUri);
+            player.setDataSource(context, Uri.parse(playbackUri), getHeadersMap());
             setPlayerListeners();
         } catch (IOException e) {
             log.e(e.toString());
@@ -244,7 +251,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public long getCurrentPosition() {
-        log.d("getCurrentPosition");
         if (player == null || !PREPARED.equals(prepareState)) {
             return 0;
         }
@@ -538,7 +544,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             release();
             player.reset();
             try {
-                player.setDataSource(assetUri);
+                player.setDataSource(context, Uri.parse(assetUri), getHeadersMap());
             } catch (IOException e) {
                 log.e(e.getMessage());
                 sendDistinctEvent(PlayerEvent.Type.ERROR);
@@ -560,5 +566,25 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     @Override
     public List<PKMetadata> getMetadata() {
         return null;
+    }
+
+    @NonNull
+    private Map<String, String> getHeadersMap() {
+        Map<String, String> headersMap = new HashMap();
+        headersMap.put("User-Agent", getUserAgent(context));
+        return headersMap;
+    }
+
+    private String getUserAgent(Context context) {
+        String applicationName;
+        try {
+            String packageName = context.getPackageName();
+            PackageInfo info = context.getPackageManager().getPackageInfo(packageName, 0);
+            applicationName = packageName + "/" + info.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            applicationName = "?";
+        }
+
+        return PlayKitManager.CLIENT_TAG + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE + " MediaPlayer)";
     }
 }

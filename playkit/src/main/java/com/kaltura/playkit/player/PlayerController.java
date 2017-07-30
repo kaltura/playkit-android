@@ -399,20 +399,6 @@ public class PlayerController implements Player {
         }
     }
 
-    private boolean maybeHandleExceptionLocally(PKError error) {
-        if (error.errorType == PKPlayerErrorType.RENDERER_ERROR) {
-            if (error.cause instanceof MediaCodec.CryptoException) {
-                ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
-                long currentPosition = player.getCurrentPosition();
-                exoPlayerWrapper.savePlayerPosition();
-                exoPlayerWrapper.load(sourceConfig);
-                exoPlayerWrapper.startFrom(currentPosition);
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void sendErrorMessage(Enum errorType, String errorMessage) {
         log.e(errorMessage);
         PlayerEvent errorEvent = new PlayerEvent.Error(new PKError(errorType, errorMessage, null));
@@ -451,13 +437,7 @@ public class PlayerController implements Player {
                                 log.e("can not send error event");
                                 return;
                             }
-
                             event = new PlayerEvent.Error(player.getCurrentError());
-                            //If error should be handled locally, do not send it to messageBus.
-                            if (maybeHandleExceptionLocally(player.getCurrentError())) {
-                                return;
-                            }
-
                             break;
                         case METADATA_AVAILABLE:
                             if (player.getMetadata() == null || player.getMetadata().isEmpty()) {
