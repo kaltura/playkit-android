@@ -123,7 +123,7 @@ public class PKMediaEntry implements Parcelable {
         for (Iterator<PKMediaSource> iter = sources.listIterator(); iter.hasNext(); ) {
             PKMediaSource source = iter.next();
             PKMediaFormat sourceFormat = source.getMediaFormat();
-            if (sourceFormat != null && sourceFormat == mediaFormat) {
+            if (mediaFormat.equals(sourceFormat)){
                 iter.remove();
             }
         }
