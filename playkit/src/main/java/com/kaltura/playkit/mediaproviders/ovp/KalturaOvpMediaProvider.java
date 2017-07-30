@@ -31,7 +31,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.api.base.model.BasePlaybackContext;
 import com.kaltura.playkit.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.api.ovp.KalturaOvpErrorHelper;
 import com.kaltura.playkit.api.ovp.KalturaOvpParser;
@@ -285,7 +284,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                             KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) responses.get(playbackResponseIdx);
                             KalturaMetadataListResponse metadataList = (KalturaMetadataListResponse) responses.get(metadataResponseIdx);
 
-                            if ((error = hasError(kalturaPlaybackContext)) == null) { // check for error or unauthorized content
+                            if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error or unauthorized content
                                 mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
                                         ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
 
@@ -316,28 +315,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
         }
 
-    }
-
-    /**
-     * checks if messages list contains relevant error message
-     *
-     * @param kalturaPlaybackContext
-     * @return
-     */
-    private ErrorElement hasError(KalturaPlaybackContext kalturaPlaybackContext) {
-        ErrorElement error = null;
-
-        if (kalturaPlaybackContext.hasBlockedAction()) {
-            ArrayList<BasePlaybackContext.KalturaAccessControlMessage> messages = kalturaPlaybackContext.getMessages();
-            // in case we'll want to gather errors or priorities message, loop over messages. Currently returns the first error
-            for (BasePlaybackContext.KalturaAccessControlMessage message : messages) {
-                error = KalturaOvpErrorHelper.getErrorElement(message.getCode(), message.getMessage());
-                if (error != null) {
-                    return error;
-                }
-            }
-        }
-        return null;
     }
 
     private static class ProviderParser {

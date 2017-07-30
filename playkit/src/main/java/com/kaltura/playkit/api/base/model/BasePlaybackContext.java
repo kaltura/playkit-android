@@ -15,7 +15,6 @@ package com.kaltura.playkit.api.base.model;
 import com.google.gson.annotations.SerializedName;
 import com.kaltura.netkit.connect.response.BaseResult;
 import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.playkit.api.phoenix.PhoenixErrorHelper;
 
 import java.util.ArrayList;
 
@@ -46,7 +45,7 @@ public class BasePlaybackContext extends BaseResult {
             // in case we'll want to gather errors or priorities message, loop over messages. Currently returns the first error
             if (messages != null) {
                 for (BasePlaybackContext.KalturaAccessControlMessage message : messages) {
-                    error = message.getErrorElement();
+                    error = getErrorElement(message);
                     if (error != null) {
                         break;
                     }
@@ -54,6 +53,10 @@ public class BasePlaybackContext extends BaseResult {
             }
         }
         return error;
+    }
+
+    protected ErrorElement getErrorElement(KalturaAccessControlMessage message) {
+       return  null;
     }
 
     public boolean hasBlockedAction() {
@@ -135,20 +138,6 @@ public class BasePlaybackContext extends BaseResult {
 
         public String getMessage() {
             return message;
-        }
-
-        /**
-         * if message is error, returns matching {@link ErrorElement}
-         * currently all messages indicates error
-         * @return
-         */
-        public ErrorElement getErrorElement(){
-            switch (code){
-                case "OK":
-                    return null;
-                default:
-                    return PhoenixErrorHelper.getErrorElement(code, message);
-            }
         }
     }
 }
