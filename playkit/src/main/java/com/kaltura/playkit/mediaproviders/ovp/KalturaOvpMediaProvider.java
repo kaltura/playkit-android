@@ -282,20 +282,18 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                         }
 
                         if (error == null) {
-
                             KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) responses.get(playbackResponseIdx);
                             KalturaMetadataListResponse metadataList = (KalturaMetadataListResponse) responses.get(metadataResponseIdx);
-                            boolean shuoldBlockRuleEnabled = false;
+                            boolean shouldBlockRuleEnabled = false;
                             for (BasePlaybackContext.KalturaRuleAction rule :kalturaPlaybackContext.getActions()) {
                                 if (rule.getType() != null && rule.getType() == BasePlaybackContext.KalturaRuleAction.KalturaRuleActionType.BLOCK ) {
-                                    shuoldBlockRuleEnabled = true;
+                                    shouldBlockRuleEnabled = true;
+                                    error = hasError(kalturaPlaybackContext.getMessages());
                                     break;
                                 }
                             }
-                            error = hasError(kalturaPlaybackContext.getMessages());
-                            if (!shuoldBlockRuleEnabled &&
-                                    (error == null || (error != null && error.getMessage() != null && error.getMessage().toLowerCase().contains("location")))) {
-                                error = null;
+
+                            if (!shouldBlockRuleEnabled) {
                                 mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
                                         ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
 
