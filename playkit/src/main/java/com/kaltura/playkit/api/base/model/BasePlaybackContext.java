@@ -41,14 +41,13 @@ public class BasePlaybackContext extends BaseResult {
     public ErrorElement hasError() {
         ErrorElement error = null;
 
-        if (hasBlockedAction()) {
+        if (hasBlockedAction() && messages != null) {
             // in case we'll want to gather errors or priorities message, loop over messages. Currently returns the first error
-            if (messages != null) {
-                for (BasePlaybackContext.KalturaAccessControlMessage message : messages) {
-                    error = getErrorElement(message);
-                    if (error != null) {
-                        break;
-                    }
+
+            for (BasePlaybackContext.KalturaAccessControlMessage message : messages) {
+                error = getErrorElement(message);
+                if (error != null) {
+                    break;
                 }
             }
         }
@@ -56,7 +55,7 @@ public class BasePlaybackContext extends BaseResult {
     }
 
     protected ErrorElement getErrorElement(KalturaAccessControlMessage message) {
-       return  null;
+        return  null;
     }
 
     public boolean hasBlockedAction() {

@@ -29,10 +29,11 @@ public class KalturaOvpErrorHelper {
                 return ErrorElement.NotFound.message("Content can't be played due to lack of sources");
 
             default:
-                if (!"".equals(code)) {
-                    code += ":";
+                String messageCode = code;
+                if (!"".equals(messageCode)) {
+                    messageCode += ":";
                 }
-                return new RestrictionError(code + message, RestrictionError.Restriction.NotAllowed);
+                return new RestrictionError(messageCode + message, RestrictionError.Restriction.NotAllowed);
         }
     }
 
