@@ -294,14 +294,13 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                             }
                             error = hasError(kalturaPlaybackContext.getMessages());
                             if (!shuoldBlockRuleEnabled &&
-                               (error == null || (error != null && error.getMessage() != null && error.getMessage().toLowerCase().contains("location")))) {
-                                    error = null;
-                                    mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
-                                            ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
+                                    (error == null || (error != null && error.getMessage() != null && error.getMessage().toLowerCase().contains("location")))) {
+                                error = null;
+                                mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
+                                        ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
 
-                                    if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
-                                        error = KalturaOvpErrorHelper.getErrorElement("NoFilesFound");
-                                    }
+                                if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
+                                    error = KalturaOvpErrorHelper.getErrorElement("NoFilesFound");
                                 }
                             }
                         }
