@@ -89,6 +89,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     private BEResponseListener responseListener;
 
+    private String referrer;
+
     private class MediaAsset {
 
         public String assetId;
@@ -120,6 +122,11 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     public PhoenixMediaProvider() {
         super(PhoenixMediaProvider.TAG);
         this.mediaAsset = new MediaAsset();
+    }
+
+    public PhoenixMediaProvider setReferrer(String referrer) {
+        this.referrer = referrer;
+        return this;
     }
 
     /**
@@ -277,7 +284,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
 
-        private RequestBuilder getPlaybackContextRequest(String baseUrl, String ks, MediaAsset mediaAsset) {
+        private RequestBuilder getPlaybackContextRequest(String baseUrl, String ks, String referrer, MediaAsset mediaAsset) {
             AssetService.KalturaPlaybackContextOptions contextOptions = new AssetService.KalturaPlaybackContextOptions(mediaAsset.contextType);
             if (mediaAsset.mediaFileIds != null) { // else - will fetch all available sources
                 contextOptions.setMediaFileIds(mediaAsset.mediaFileIds);
@@ -291,21 +298,26 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 contextOptions.setMediaProtocol(mediaAsset.protocol);
             }
 
+            if (!TextUtils.isEmpty(referrer)) {
+                contextOptions.setReferrer(referrer);
+            }
+
+
             return AssetService.getPlaybackContext(baseUrl, ks, mediaAsset.assetId,
                     mediaAsset.assetType, contextOptions);
         }
 
-        private RequestBuilder getRemoteRequest(String baseUrl, String ks, MediaAsset mediaAsset) {
+        private RequestBuilder getRemoteRequest(String baseUrl, String ks, String referrer, MediaAsset mediaAsset) {
 
             if (TextUtils.isEmpty(ks)) {
                 MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) PhoenixService.getMultirequest(baseUrl, ks)
                         .tag("asset-play-data-multireq");
                 String multiReqKs = "{1:result:ks}";
                 return multiRequestBuilder.add(OttUserService.anonymousLogin(baseUrl, sessionProvider.partnerId(), null),
-                        getPlaybackContextRequest(baseUrl, multiReqKs, mediaAsset));
+                        getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset));
             }
 
-            return getPlaybackContextRequest(baseUrl, ks, mediaAsset);
+            return getPlaybackContextRequest(baseUrl, ks, referrer, mediaAsset);
         }
 
         /**
@@ -316,7 +328,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
          */
         @Override
         protected void requestRemote(String ks) throws InterruptedException {
-            final RequestBuilder requestBuilder = getRemoteRequest(getApiBaseUrl(), ks, mediaAsset)
+            final RequestBuilder requestBuilder = getRemoteRequest(getApiBaseUrl(), ks, referrer, mediaAsset)
                     .completion(new OnRequestCompletion() {
                         @Override
                         public void onComplete(ResponseElement response) {
@@ -349,7 +361,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         private String getApiBaseUrl() {
             return sessionProvider.baseUrl();
         }
-
 
         /**
          * Parse and create a {@link PKMediaEntry} object from the API response.
