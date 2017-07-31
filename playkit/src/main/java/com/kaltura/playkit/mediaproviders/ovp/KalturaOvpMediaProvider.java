@@ -88,6 +88,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     private String entryId;
     private String uiConfId;
+    private String referrer;
 
     private int maxBitrate;
     private Map<String, Object> flavorsFilter;
@@ -109,6 +110,17 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     }
 
     /**
+     *  NOT MANDATORY! The referrer url, to fetch the data for.
+     *
+     * @param referrer
+     * @return
+     */
+    public KalturaOvpMediaProvider setReferrer(String referrer) {
+        this.referrer = referrer;
+        return this;
+    }
+
+    /**
      * MANDATORY! the entry id, to fetch the data for.
      *
      * @param entryId
@@ -118,7 +130,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         this.entryId = entryId;
         return this;
     }
-
     /**
      * optional parameter.
      * Defaults to {@link com.kaltura.netkit.connect.executor.APIOkRequestsExecutor} implementation.
@@ -145,7 +156,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     @Override
     protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
-        return new Loader(requestsExecutor, sessionProvider, entryId, uiConfId, completion);
+        return new Loader(requestsExecutor, sessionProvider, entryId, uiConfId, referrer, completion);
     }
 
     @Override
@@ -160,12 +171,14 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
         private String entryId;
         private String uiConfId;
+        private String referrer;
 
-        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String uiConfId, OnMediaLoadCompletion completion) {
+        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String uiConfId, String referrer, OnMediaLoadCompletion completion) {
             super(KalturaOvpMediaProvider.TAG + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.entryId = entryId;
             this.uiConfId = uiConfId;
+            this.referrer = referrer;
 
             PKLog.v(TAG, loadId + ": construct new Loader");
         }
@@ -182,7 +195,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             return null;
         }
 
-        private RequestBuilder getEntryInfo(String baseUrl, String ks, int partnerId, String entryId) {
+        private RequestBuilder getEntryInfo(String baseUrl, String ks, int partnerId, String entryId, String referrer) {
             MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks, partnerId)
                     .tag("entry-info-multireq");
 
@@ -193,7 +206,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             }
 
             return multiRequestBuilder.add(BaseEntryService.list(baseUrl, ks, entryId),
-                    BaseEntryService.getPlaybackContext(baseUrl, ks, entryId),
+                    BaseEntryService.getPlaybackContext(baseUrl, ks, entryId, referrer),
                     MetaDataService.list(baseUrl, ks, entryId));
         }
 
@@ -205,7 +218,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          */
         @Override
         protected void requestRemote(final String ks) throws InterruptedException {
-            final RequestBuilder entryRequest = getEntryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId(), entryId)
+            final RequestBuilder entryRequest = getEntryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId(), entryId, referrer)
                     .completion(new OnRequestCompletion() {
                         @Override
                         public void onComplete(ResponseElement response) {
