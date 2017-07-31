@@ -97,6 +97,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private PKError currentError = null;
 
     private boolean isSeeking = false;
+    private boolean useTextureView = false;
     private boolean shouldRestorePlayerToPreviousState = false;
 
     private int playerWindow;
@@ -106,12 +107,14 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
     private List<PKMetadata> metadataList = new ArrayList<>();
-    private boolean useTextureView = false;
 
 
     private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
+    private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
+
+
 
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
@@ -130,7 +133,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         eventLogger = new EventLogger();
 
         DefaultTrackSelector trackSelector = initializeTrackSelector();
-        drmSessionManager = new DeferredDrmSessionManager(mainHandler, eventLogger, buildHttpDataSourceFactory(false));
+        drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildHttpDataSourceFactory(false), drmSessionListener);
         player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager);
         window = new Timeline.Window();
         setPlayerListeners();
@@ -632,7 +635,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         }
     }
 
-    void savePlayerPosition() {
+    private void savePlayerPosition() {
         if (player == null) {
             log.w("Attempt to invoke 'savePlayerPosition()' on null instance of the exoplayer");
             return;
@@ -668,7 +671,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             public void onRelease(String[] selectedTrackIds) {
                 lastSelectedTrackIds = selectedTrackIds;
             }
+        };
+    }
 
+    private DeferredDrmSessionManager.DrmSessionListener initDrmSessionListener() {
+        return new DeferredDrmSessionManager.DrmSessionListener() {
             @Override
             public void onError(PKError error) {
                 currentError = error;
@@ -676,7 +683,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             }
         };
     }
-
 }
 
 

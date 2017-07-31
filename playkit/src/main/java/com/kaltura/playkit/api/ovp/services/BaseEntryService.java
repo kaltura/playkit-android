@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.api.ovp.services;
 
+import android.text.TextUtils;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.api.ovp.APIDefines;
@@ -77,13 +79,16 @@ public class BaseEntryService extends OvpService {
                 .params(params);
     }
 
-    public static OvpRequestBuilder getPlaybackContext(String baseUrl, String ks, String entryId) {
+    public static OvpRequestBuilder getPlaybackContext(String baseUrl, String ks, String entryId, String referrer) {
         JsonObject params = new JsonObject();
         params.addProperty("entryId", entryId);
         params.addProperty("ks", ks);
 
         JsonObject contextDataParams = new JsonObject();
         contextDataParams.addProperty("objectType","KalturaContextDataParams");
+        if(!TextUtils.isEmpty(referrer)) {
+            contextDataParams.addProperty("referrer", referrer);
+        }
 
         params.add("contextDataParams", contextDataParams);
 

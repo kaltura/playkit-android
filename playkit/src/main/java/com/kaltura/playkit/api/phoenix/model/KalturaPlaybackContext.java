@@ -12,7 +12,9 @@
 
 package com.kaltura.playkit.api.phoenix.model;
 
+import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.api.base.model.BasePlaybackContext;
+import com.kaltura.playkit.api.phoenix.PhoenixErrorHelper;
 
 import java.util.ArrayList;
 
@@ -30,5 +32,13 @@ public class KalturaPlaybackContext extends BasePlaybackContext{
     }
 
 
-
+    @Override
+    protected ErrorElement getErrorElement(KalturaAccessControlMessage message) {
+        switch (message.getCode()){
+            case "OK":
+                return null;
+            default:
+                return PhoenixErrorHelper.getErrorElement(message.getCode(), message.getMessage());
+        }
+    }
 }

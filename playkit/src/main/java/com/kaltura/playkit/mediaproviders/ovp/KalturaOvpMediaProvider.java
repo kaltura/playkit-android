@@ -31,7 +31,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.api.base.model.BasePlaybackContext;
 import com.kaltura.playkit.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.api.ovp.KalturaOvpErrorHelper;
 import com.kaltura.playkit.api.ovp.KalturaOvpParser;
@@ -89,6 +88,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     private String entryId;
     private String uiConfId;
+    private String referrer;
 
     private int maxBitrate;
     private Map<String, Object> flavorsFilter;
@@ -110,6 +110,17 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     }
 
     /**
+     *  NOT MANDATORY! The referrer url, to fetch the data for.
+     *
+     * @param referrer
+     * @return
+     */
+    public KalturaOvpMediaProvider setReferrer(String referrer) {
+        this.referrer = referrer;
+        return this;
+    }
+
+    /**
      * MANDATORY! the entry id, to fetch the data for.
      *
      * @param entryId
@@ -119,7 +130,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         this.entryId = entryId;
         return this;
     }
-
     /**
      * optional parameter.
      * Defaults to {@link com.kaltura.netkit.connect.executor.APIOkRequestsExecutor} implementation.
@@ -146,7 +156,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     @Override
     protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
-        return new Loader(requestsExecutor, sessionProvider, entryId, uiConfId, completion);
+        return new Loader(requestsExecutor, sessionProvider, entryId, uiConfId, referrer, completion);
     }
 
     @Override
@@ -161,12 +171,14 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
         private String entryId;
         private String uiConfId;
+        private String referrer;
 
-        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String uiConfId, OnMediaLoadCompletion completion) {
+        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String uiConfId, String referrer, OnMediaLoadCompletion completion) {
             super(KalturaOvpMediaProvider.TAG + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.entryId = entryId;
             this.uiConfId = uiConfId;
+            this.referrer = referrer;
 
             PKLog.v(TAG, loadId + ": construct new Loader");
         }
@@ -183,7 +195,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             return null;
         }
 
-        private RequestBuilder getEntryInfo(String baseUrl, String ks, int partnerId, String entryId) {
+        private RequestBuilder getEntryInfo(String baseUrl, String ks, int partnerId, String entryId, String referrer) {
             MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks, partnerId)
                     .tag("entry-info-multireq");
 
@@ -194,7 +206,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             }
 
             return multiRequestBuilder.add(BaseEntryService.list(baseUrl, ks, entryId),
-                    BaseEntryService.getPlaybackContext(baseUrl, ks, entryId),
+                    BaseEntryService.getPlaybackContext(baseUrl, ks, entryId, referrer),
                     MetaDataService.list(baseUrl, ks, entryId));
         }
 
@@ -206,7 +218,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          */
         @Override
         protected void requestRemote(final String ks) throws InterruptedException {
-            final RequestBuilder entryRequest = getEntryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId(), entryId)
+            final RequestBuilder entryRequest = getEntryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId(), entryId, referrer)
                     .completion(new OnRequestCompletion() {
                         @Override
                         public void onComplete(ResponseElement response) {
@@ -282,11 +294,10 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                         }
 
                         if (error == null) {
-
                             KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) responses.get(playbackResponseIdx);
                             KalturaMetadataListResponse metadataList = (KalturaMetadataListResponse) responses.get(metadataResponseIdx);
 
-                            if ((error = hasError(kalturaPlaybackContext.getMessages())) == null) { // check for error message
+                            if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error or unauthorized content
                                 mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
                                         ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
 
@@ -318,26 +329,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
 
     }
-
-    /**
-     * checks if messages list contains at least 1 error message
-     *
-     * @param messages
-     * @return
-     */
-    private ErrorElement hasError(ArrayList<BasePlaybackContext.KalturaAccessControlMessage> messages) {
-        ErrorElement error = null;
-        // in case we'll want to gather errors or priorities message, loop over messages. Currently returns the first error
-        for (BasePlaybackContext.KalturaAccessControlMessage message : messages) {
-            error = KalturaOvpErrorHelper.getErrorElement(message.getCode(), message.getMessage());
-            if (error != null) {
-                return error;
-            }
-        }
-
-        return null;
-    }
-
 
     private static class ProviderParser {
 

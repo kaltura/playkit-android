@@ -15,7 +15,6 @@ package com.kaltura.playkit.api.base.model;
 import com.google.gson.annotations.SerializedName;
 import com.kaltura.netkit.connect.response.BaseResult;
 import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.playkit.api.phoenix.PhoenixErrorHelper;
 
 import java.util.ArrayList;
 
@@ -41,26 +40,44 @@ public class BasePlaybackContext extends BaseResult {
 
     public ErrorElement hasError() {
         ErrorElement error = null;
-        // in case we'll want to gather errors or priorities message, loop over messages. Currently returns the first error
-        if(messages != null) {
+
+        if (hasBlockedAction() && messages != null) {
+            // in case we'll want to gather errors or priorities message, loop over messages. Currently returns the first error
+
             for (BasePlaybackContext.KalturaAccessControlMessage message : messages) {
-                error = message.getErrorElement();
+                error = getErrorElement(message);
                 if (error != null) {
                     break;
                 }
             }
         }
-
         return error;
     }
 
+    protected ErrorElement getErrorElement(KalturaAccessControlMessage message) {
+        return  null;
+    }
 
+    public boolean hasBlockedAction() {
+        if (actions != null) {
+            for (BasePlaybackContext.KalturaRuleAction rule : actions) {
+                if (rule != null && BasePlaybackContext.KalturaRuleAction.KalturaRuleActionType.BLOCK.equals(rule.getType())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     public static class KalturaRuleAction extends BaseResult{
         String objectType;
         KalturaRuleActionType type;
 
         public KalturaRuleAction() {
+        }
+
+        public KalturaRuleActionType getType() {
+            return type;
         }
 
 
@@ -99,6 +116,7 @@ public class BasePlaybackContext extends BaseResult {
             objectType = "KalturaAccessControlDrmPolicyAction";
         }
     }
+
     public static class KalturaAccessControlLimitDeliveryProfilesAction extends KalturaRuleAction{
         String deliveryProfileIds;
         boolean isBlockedList;
@@ -119,20 +137,6 @@ public class BasePlaybackContext extends BaseResult {
 
         public String getMessage() {
             return message;
-        }
-
-        /**
-         * if message is error, returns matching {@link ErrorElement}
-         * currently all messages indicates error
-         * @return
-         */
-        public ErrorElement getErrorElement(){
-            switch (code){
-                case "OK":
-                    return null;
-                default:
-                    return PhoenixErrorHelper.getErrorElement(code, message);
-            }
         }
     }
 }

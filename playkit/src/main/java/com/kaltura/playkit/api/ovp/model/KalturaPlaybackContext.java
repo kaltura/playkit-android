@@ -12,7 +12,9 @@
 
 package com.kaltura.playkit.api.ovp.model;
 
+import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.api.base.model.BasePlaybackContext;
+import com.kaltura.playkit.api.ovp.KalturaOvpErrorHelper;
 
 import java.util.ArrayList;
 
@@ -36,4 +38,9 @@ public class KalturaPlaybackContext extends BasePlaybackContext{
         return flavorAssets;
     }
 
+    @Override
+    protected ErrorElement getErrorElement(KalturaAccessControlMessage message) {
+        return KalturaOvpErrorHelper.getErrorElement(message.getCode(), message.getMessage());
+    }
 }
+
