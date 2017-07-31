@@ -124,6 +124,12 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         this.mediaAsset = new MediaAsset();
     }
 
+    /**
+     *  NOT MANDATORY! The referrer url, to fetch the data for.
+     *
+     * @param referrer
+     * @return
+     */
     public PhoenixMediaProvider setReferrer(String referrer) {
         this.referrer = referrer;
         return this;
