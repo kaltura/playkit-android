@@ -112,7 +112,7 @@ class WidevineModularAdapter extends DrmAdapter {
         try {
             keyResponse = executeKeyRequest(licenseUri, keyRequest);
             log.d("registerAsset: response data (b64): " + toBase64(keyResponse));
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RegisterException("Can't send key request for registration", e);
         }
 
@@ -307,14 +307,9 @@ class WidevineModularAdapter extends DrmAdapter {
         return session;
     }
 
-    private byte[] executeKeyRequest(String licenseUrl, ExoMediaDrm.KeyRequest keyRequest) throws IOException {
+    private byte[] executeKeyRequest(String licenseUrl, ExoMediaDrm.KeyRequest keyRequest) throws Exception {
         HttpMediaDrmCallback httpMediaDrmCallback = new HttpMediaDrmCallback(licenseUrl, buildDataSourceFactory());
-        try {
-            return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+        return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest);
     }
 
     private HttpDataSource.Factory buildDataSourceFactory() {
