@@ -309,11 +309,7 @@ class WidevineModularAdapter extends DrmAdapter {
 
     private byte[] executeKeyRequest(String licenseUrl, ExoMediaDrm.KeyRequest keyRequest) throws Exception {
         HttpMediaDrmCallback httpMediaDrmCallback = new HttpMediaDrmCallback(licenseUrl, buildDataSourceFactory());
-        try {
-            return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest);
-        } catch (Exception e) {
-            throw e;
-        }
+        return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest);
     }
 
     private HttpDataSource.Factory buildDataSourceFactory() {
