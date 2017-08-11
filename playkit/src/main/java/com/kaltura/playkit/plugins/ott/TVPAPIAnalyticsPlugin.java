@@ -21,6 +21,7 @@ import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
@@ -81,6 +82,13 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     }
 
     @Override
+    protected void onUpdateMedia(PKMediaConfig mediaConfig) {
+        this.mediaConfig = mediaConfig;
+        super.setFirstPlay(false);
+        super.setMediaFinished(false);
+    }
+
+    @Override
     protected void onUpdateConfig(Object config) {
         setPluginMembers(config);
         if (baseUrl == null || baseUrl.isEmpty() || initObject == null) {
@@ -104,6 +112,10 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
 
         if (eventType != PhoenixActionType.STOP) {
             lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
+        }
+        if (mediaConfig == null || mediaConfig.getMediaEntry() == null || mediaConfig.getMediaEntry().getId() == null) {
+            log.e("Error mediaConfig is not valid");
+            return;
         }
         RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEvent(baseUrl + "m=" + method, initObject, action,
                 mediaConfig.getMediaEntry().getId(), this.fileId, lastKnownPlayerPosition);

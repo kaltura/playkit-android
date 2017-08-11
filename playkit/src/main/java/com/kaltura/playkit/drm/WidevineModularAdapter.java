@@ -99,29 +99,32 @@ class WidevineModularAdapter extends DrmAdapter {
             throw new RegisterException("Can't open session", e);
         }
 
-
         // Get keyRequest
-        FrameworkMediaDrm.KeyRequest keyRequest = session.getOfflineKeyRequest(initData, mimeType);
-        log.d("registerAsset: init data (b64): " + toBase64(initData));
-
-        byte[] data = keyRequest.getData();
-        log.d("registerAsset: request data (b64): " + toBase64(data));
-
-        // Send request to server
-        byte[] keyResponse;
         try {
-            keyResponse = executeKeyRequest(licenseUri, keyRequest);
-            log.d("registerAsset: response data (b64): " + toBase64(keyResponse));
-        } catch (Exception e) {
-            throw new RegisterException("Can't send key request for registration", e);
-        }
+            FrameworkMediaDrm.KeyRequest keyRequest = session.getOfflineKeyRequest(initData, mimeType);
+            log.d("registerAsset: init data (b64): " + toBase64(initData));
 
-        // Provide keyResponse
-        try {
-            byte[] offlineKeyId = session.provideKeyResponse(keyResponse);
-            localDataStore.save(toBase64(initData), offlineKeyId);
-        } catch (DeniedByServerException e) {
-            throw new RegisterException("Request denied by server", e);
+            byte[] data = keyRequest.getData();
+            log.d("registerAsset: request data (b64): " + toBase64(data));
+
+            // Send request to server
+            byte[] keyResponse;
+            try {
+                keyResponse = executeKeyRequest(licenseUri, keyRequest);
+                log.d("registerAsset: response data (b64): " + toBase64(keyResponse));
+            } catch (Exception e) {
+                throw new RegisterException("Can't send key request for registration", e);
+            }
+
+            // Provide keyResponse
+            try {
+                byte[] offlineKeyId = session.provideKeyResponse(keyResponse);
+                localDataStore.save(toBase64(initData), offlineKeyId);
+            } catch (DeniedByServerException e) {
+                throw new RegisterException("Request denied by server", e);
+            }
+        } catch (WidevineNotSupportedException e) {
+            throw new RegisterException("Can't execute KeyRequest", e);
         }
 
         session.close();
