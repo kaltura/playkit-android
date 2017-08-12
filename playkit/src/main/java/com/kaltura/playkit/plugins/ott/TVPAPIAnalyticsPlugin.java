@@ -21,7 +21,6 @@ import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
@@ -79,13 +78,6 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
             }
             this.mediaHitInterval = (int) timerInterval;
         }
-    }
-
-    @Override
-    protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-        this.mediaConfig = mediaConfig;
-        super.setFirstPlay(false);
-        super.setMediaFinished(false);
     }
 
     @Override

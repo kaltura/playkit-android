@@ -297,12 +297,4 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
         return null;
     }
-
-    public void setFirstPlay(boolean firstPlay) {
-        isFirstPlay = firstPlay;
-    }
-
-    public void setMediaFinished(boolean mediaFinished) {
-        isMediaFinished = mediaFinished;
-    }
 }
