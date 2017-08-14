@@ -99,29 +99,32 @@ class WidevineModularAdapter extends DrmAdapter {
             throw new RegisterException("Can't open session", e);
         }
 
-
         // Get keyRequest
-        FrameworkMediaDrm.KeyRequest keyRequest = session.getOfflineKeyRequest(initData, mimeType);
-        log.d("registerAsset: init data (b64): " + toBase64(initData));
-
-        byte[] data = keyRequest.getData();
-        log.d("registerAsset: request data (b64): " + toBase64(data));
-
-        // Send request to server
-        byte[] keyResponse;
         try {
-            keyResponse = executeKeyRequest(licenseUri, keyRequest);
-            log.d("registerAsset: response data (b64): " + toBase64(keyResponse));
-        } catch (IOException e) {
-            throw new RegisterException("Can't send key request for registration", e);
-        }
+            FrameworkMediaDrm.KeyRequest keyRequest = session.getOfflineKeyRequest(initData, mimeType);
+            log.d("registerAsset: init data (b64): " + toBase64(initData));
 
-        // Provide keyResponse
-        try {
-            byte[] offlineKeyId = session.provideKeyResponse(keyResponse);
-            localDataStore.save(toBase64(initData), offlineKeyId);
-        } catch (DeniedByServerException e) {
-            throw new RegisterException("Request denied by server", e);
+            byte[] data = keyRequest.getData();
+            log.d("registerAsset: request data (b64): " + toBase64(data));
+
+            // Send request to server
+            byte[] keyResponse;
+            try {
+                keyResponse = executeKeyRequest(licenseUri, keyRequest);
+                log.d("registerAsset: response data (b64): " + toBase64(keyResponse));
+            } catch (Exception e) {
+                throw new RegisterException("Can't send key request for registration", e);
+            }
+
+            // Provide keyResponse
+            try {
+                byte[] offlineKeyId = session.provideKeyResponse(keyResponse);
+                localDataStore.save(toBase64(initData), offlineKeyId);
+            } catch (DeniedByServerException e) {
+                throw new RegisterException("Request denied by server", e);
+            }
+        } catch (WidevineNotSupportedException e) {
+            throw new RegisterException("Can't execute KeyRequest", e);
         }
 
         session.close();
@@ -307,14 +310,9 @@ class WidevineModularAdapter extends DrmAdapter {
         return session;
     }
 
-    private byte[] executeKeyRequest(String licenseUrl, ExoMediaDrm.KeyRequest keyRequest) throws IOException {
+    private byte[] executeKeyRequest(String licenseUrl, ExoMediaDrm.KeyRequest keyRequest) throws Exception {
         HttpMediaDrmCallback httpMediaDrmCallback = new HttpMediaDrmCallback(licenseUrl, buildDataSourceFactory());
-        try {
-            return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+        return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest);
     }
 
     private HttpDataSource.Factory buildDataSourceFactory() {
