@@ -112,6 +112,9 @@ public class Utils {
     }
 
     public static String toBase64(byte[] data) {
+        if (data == null || data.length == 0) {
+            return null;
+        }
         return Base64.encodeToString(data, Base64.NO_WRAP);
     }
 

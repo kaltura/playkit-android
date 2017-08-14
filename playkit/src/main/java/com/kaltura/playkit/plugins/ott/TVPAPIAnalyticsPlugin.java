@@ -105,6 +105,10 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         if (eventType != PhoenixActionType.STOP) {
             lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
         }
+        if (mediaConfig == null || mediaConfig.getMediaEntry() == null || mediaConfig.getMediaEntry().getId() == null) {
+            log.e("Error mediaConfig is not valid");
+            return;
+        }
         RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEvent(baseUrl + "m=" + method, initObject, action,
                 mediaConfig.getMediaEntry().getId(), this.fileId, lastKnownPlayerPosition);
 

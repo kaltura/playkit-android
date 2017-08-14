@@ -229,6 +229,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      */
     private void startMediaHitInterval() {
         log.d("timer interval");
+        if (timer == null) {
+            timer = new Timer();
+        }
+
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -251,6 +255,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
         if (eventType != PhoenixActionType.STOP) {
             lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
+        }
+        if (mediaConfig == null || mediaConfig.getMediaEntry() == null || mediaConfig.getMediaEntry().getId() == null) {
+            log.e("Error mediaConfig is not valid");
+            return;
         }
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
                 "media", mediaConfig.getMediaEntry().getId(), eventType.name(), lastKnownPlayerPosition, fileId);
