@@ -1,6 +1,6 @@
 
 // PlayKit Library Version
-ext.playkitVersion = '3.1.2'
+ext.playkitVersion = 'dev'
 
 
 android.libraryVariants.all { variant ->
