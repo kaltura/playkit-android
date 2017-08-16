@@ -1,97 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
     android:orientation="vertical"
     tools:context="com.kaltura.playkitdemo.MainActivity">
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
 
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/spiner_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:weightSum="3">
-
-        <TextView
-            android:id="@+id/tvVideo"
+        >
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/video"
-            />
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvAudio"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/audio"
-            />
-        <TextView
-            android:id="@+id/tvText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/cc"
-            />
-    </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:weightSum="3">
 
+                <TextView
+                    android:id="@+id/tvVideo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/video"
+                    />
 
-    <!--<Spinner-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:id="@+id/spinner"-->
-        <!--/>-->
+                <TextView
+                    android:id="@+id/tvAudio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/audio"
+                    />
+                <TextView
+                    android:id="@+id/tvText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/cc"
+                    />
+            </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:weightSum="3">
 
-    <LinearLayout
+                <Spinner
+                    android:id="@+id/videoSpinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    />
+
+                <Spinner
+                    android:id="@+id/audioSpinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    />
+                <Spinner
+                    android:id="@+id/subtitleSpinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    />
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/player_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:weightSum="3">
+        android:layout_height="@dimen/player_height"
+        android:layout_below="@id/spiner_container"
+        >
 
-        <Spinner
-            android:id="@+id/videoSpinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+        <FrameLayout
+            android:id="@+id/player_root"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/controls_container"
             />
 
-        <Spinner
-            android:id="@+id/audioSpinner"
+        <ProgressBar
+            android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_centerInParent="true"
+            style="@android:style/Widget.ProgressBar.Large"
             />
-        <Spinner
-            android:id="@+id/subtitleSpinner"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:id="@id/controls_container"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            />
-    </LinearLayout>
-</LinearLayout>
-    <LinearLayout
-        android:id="@+id/player_root"
-        android:layout_width="360dp"
-        android:layout_height="200dp"
-        android:orientation="horizontal" />
+            android:layout_alignParentBottom="true"
+            >
+            <com.kaltura.playkitdemo.PlaybackControlsView
+                android:id="@+id/playerControls"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            </com.kaltura.playkitdemo.PlaybackControlsView>
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        style="@android:style/Widget.ProgressBar.Large"
-        />
-    <com.kaltura.playkitdemo.PlaybackControlsView
-        android:id="@+id/playerControls"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+            <android.support.v7.widget.AppCompatImageView
+                android:id="@+id/full_screen_switcher"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="5dp"
+                android:src="@drawable/ic_fullscreen"
+                android:padding="10dp"
+                />
+        </RelativeLayout>
+
+    </RelativeLayout>
 
 
-</LinearLayout>
+
+</RelativeLayout>

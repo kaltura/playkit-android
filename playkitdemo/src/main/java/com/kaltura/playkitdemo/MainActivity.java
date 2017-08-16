@@ -1,15 +1,21 @@
 package com.kaltura.playkitdemo;
 
 import android.Manifest;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatImageView;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -73,7 +79,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private MediaEntryProvider mediaProvider;
     private PlaybackControlsView controlsView;
     private boolean nowPlaying;
+    private boolean isFullScreen;
     ProgressBar progressBar;
+    private RelativeLayout playerContainer;
+    private RelativeLayout spinerContainer;
+    private AppCompatImageView fullScreenBtn;
 
     private Spinner videoSpinner, audioSpinner, textSpinner;
 
@@ -126,7 +136,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //      startOttMediaLoading(playLoadedEntry);
 //      startSimpleOvpMediaLoading(playLoadedEntry);
 //      LocalAssets.start(this, playLoadedEntry);
-
+        playerContainer = (RelativeLayout)findViewById(R.id.player_container);
+        spinerContainer = (RelativeLayout)findViewById(R.id.spiner_container);
+        fullScreenBtn = (AppCompatImageView)findViewById(R.id.full_screen_switcher);
+        fullScreenBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isFullScreen) {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                }
+                else {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                }
+            }
+        });
     }
 
     private PKMediaEntry simpleMediaEntry(String id, String contentUrl, String licenseUrl, PKDrmParams.Scheme scheme) {
@@ -229,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
 
-            LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
+            FrameLayout layout = (FrameLayout) findViewById(R.id.player_root);
             layout.addView(player.getView());
 
             controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
@@ -404,6 +427,32 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (controlsView != null) {
             controlsView.resume();
         }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)playerContainer.getLayoutParams();
+        // Checks the orientation of the screen
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            isFullScreen = true;
+            getSupportActionBar().hide();
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            fullScreenBtn.setImageResource(R.drawable.ic_no_fullscreen);
+            spinerContainer.setVisibility(View.GONE);
+            params.height = RelativeLayout.LayoutParams.MATCH_PARENT;
+            params.width = RelativeLayout.LayoutParams.MATCH_PARENT;
+
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+            isFullScreen = false;
+            getSupportActionBar().show();
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            fullScreenBtn.setImageResource(R.drawable.ic_fullscreen);
+            spinerContainer.setVisibility(View.VISIBLE);
+            params.height = (int)getResources().getDimension(R.dimen.player_height);
+            params.width = RelativeLayout.LayoutParams.MATCH_PARENT;
+        }
+        playerContainer.requestLayout();
     }
 
     /**
