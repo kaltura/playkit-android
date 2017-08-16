@@ -10,13 +10,11 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatImageView;
-import android.util.Log;
 import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -329,7 +327,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onPause() {
         super.onPause();
-        //mRotateDeviceTracker.stopListener();
         if (controlsView != null) {
             controlsView.release();
         }
@@ -428,7 +425,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     protected void onResume() {
         log.d("Ad Event onResume");
         super.onResume();
-        //mRotateDeviceTracker.startListener();
         if (player != null) {
             player.onApplicationResumed();
             if (nowPlaying && AUTO_PLAY_ON_RESUME) {
