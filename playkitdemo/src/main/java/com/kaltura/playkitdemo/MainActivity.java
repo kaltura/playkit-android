@@ -4,11 +4,14 @@ import android.Manifest;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatImageView;
+import android.util.Log;
+import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -68,7 +71,8 @@ import static com.kaltura.playkitdemo.MockParams.PnxKS;
 import static com.kaltura.playkitdemo.MockParams.SingMediaId;
 
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,
+        OrientationManager.OrientationListener {
 
 
     public static final boolean AUTO_PLAY_ON_RESUME = true;
@@ -87,6 +91,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private Spinner videoSpinner, audioSpinner, textSpinner;
 
+    private OrientationManager mOrientationManager;
+
     private void registerPlugins() {
 
         PlayKitManager.registerPlugins(this, SamplePlugin.factory);
@@ -98,8 +104,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mOrientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL, this);
+        mOrientationManager.enable();
         setContentView(R.layout.activity_main);
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
             Toast.makeText(this, "Please tap ALLOW", Toast.LENGTH_LONG).show();
             ActivityCompat.requestPermissions(this,
@@ -142,12 +149,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         fullScreenBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int orient;
                 if (isFullScreen) {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                    orient = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
                 }
                 else {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                    orient = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
                 }
+                setRequestedOrientation(orient);
             }
         });
     }
@@ -320,6 +329,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onPause() {
         super.onPause();
+        //mRotateDeviceTracker.stopListener();
         if (controlsView != null) {
             controlsView.release();
         }
@@ -418,6 +428,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     protected void onResume() {
         log.d("Ad Event onResume");
         super.onResume();
+        //mRotateDeviceTracker.startListener();
         if (player != null) {
             player.onApplicationResumed();
             if (nowPlaying && AUTO_PLAY_ON_RESUME) {
@@ -432,10 +443,32 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        setFullScreen(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE);
+    }
+
+    private int getOrientationFromAngle() {
+        int angle = getWindow().getWindowManager().getDefaultDisplay().getRotation();
+        int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        switch (angle) {
+            case Surface.ROTATION_0:
+            case Surface.ROTATION_180:
+                orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                break;
+            case Surface.ROTATION_90:
+            case Surface.ROTATION_270:
+                orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                break;
+        }
+        return orientation;
+    }
+
+
+
+    private void setFullScreen(boolean isFullScreen) {
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)playerContainer.getLayoutParams();
         // Checks the orientation of the screen
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            isFullScreen = true;
+        this.isFullScreen = isFullScreen;
+        if (isFullScreen) {
             getSupportActionBar().hide();
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             fullScreenBtn.setImageResource(R.drawable.ic_no_fullscreen);
@@ -443,8 +476,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             params.height = RelativeLayout.LayoutParams.MATCH_PARENT;
             params.width = RelativeLayout.LayoutParams.MATCH_PARENT;
 
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-            isFullScreen = false;
+        } else {
             getSupportActionBar().show();
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             fullScreenBtn.setImageResource(R.drawable.ic_fullscreen);
@@ -454,7 +486,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
         playerContainer.requestLayout();
     }
-
     /**
      * populating spinners with track info.
      *
@@ -559,5 +590,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
 
+    }
+
+    @Override
+    public void onOrientationChange(OrientationManager.ScreenOrientation screenOrientation) {
+        switch(screenOrientation){
+            case PORTRAIT:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                break;
+            case REVERSED_PORTRAIT:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+                break;
+            case LANDSCAPE:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                break;
+            case REVERSED_LANDSCAPE:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+                break;
+        }
     }
 }
