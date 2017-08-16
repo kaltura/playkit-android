@@ -1,15 +1,22 @@
 package com.kaltura.playkitdemo;
 
 import android.Manifest;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatImageView;
+import android.view.Surface;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,7 +69,8 @@ import static com.kaltura.playkitdemo.MockParams.PnxKS;
 import static com.kaltura.playkitdemo.MockParams.SingMediaId;
 
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,
+        OrientationManager.OrientationListener {
 
 
     public static final boolean AUTO_PLAY_ON_RESUME = true;
@@ -73,9 +81,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private MediaEntryProvider mediaProvider;
     private PlaybackControlsView controlsView;
     private boolean nowPlaying;
+    private boolean isFullScreen;
     ProgressBar progressBar;
+    private RelativeLayout playerContainer;
+    private RelativeLayout spinerContainer;
+    private AppCompatImageView fullScreenBtn;
 
     private Spinner videoSpinner, audioSpinner, textSpinner;
+
+    private OrientationManager mOrientationManager;
 
     private void registerPlugins() {
 
@@ -88,8 +102,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mOrientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL, this);
+        mOrientationManager.enable();
         setContentView(R.layout.activity_main);
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
             Toast.makeText(this, "Please tap ALLOW", Toast.LENGTH_LONG).show();
             ActivityCompat.requestPermissions(this,
@@ -126,7 +141,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //      startOttMediaLoading(playLoadedEntry);
 //      startSimpleOvpMediaLoading(playLoadedEntry);
 //      LocalAssets.start(this, playLoadedEntry);
-
+        playerContainer = (RelativeLayout)findViewById(R.id.player_container);
+        spinerContainer = (RelativeLayout)findViewById(R.id.spiner_container);
+        fullScreenBtn = (AppCompatImageView)findViewById(R.id.full_screen_switcher);
+        fullScreenBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int orient;
+                if (isFullScreen) {
+                    orient = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                }
+                else {
+                    orient = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                }
+                setRequestedOrientation(orient);
+            }
+        });
     }
 
     private PKMediaEntry simpleMediaEntry(String id, String contentUrl, String licenseUrl, PKDrmParams.Scheme scheme) {
@@ -229,7 +259,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
 
-            LinearLayout layout = (LinearLayout) findViewById(R.id.player_root);
+            FrameLayout layout = (FrameLayout) findViewById(R.id.player_root);
             layout.addView(player.getView());
 
             controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
@@ -406,6 +436,52 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        setFullScreen(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE);
+    }
+
+    private int getOrientationFromAngle() {
+        int angle = getWindow().getWindowManager().getDefaultDisplay().getRotation();
+        int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        switch (angle) {
+            case Surface.ROTATION_0:
+            case Surface.ROTATION_180:
+                orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                break;
+            case Surface.ROTATION_90:
+            case Surface.ROTATION_270:
+                orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                break;
+        }
+        return orientation;
+    }
+
+
+
+    private void setFullScreen(boolean isFullScreen) {
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)playerContainer.getLayoutParams();
+        // Checks the orientation of the screen
+        this.isFullScreen = isFullScreen;
+        if (isFullScreen) {
+            getSupportActionBar().hide();
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            fullScreenBtn.setImageResource(R.drawable.ic_no_fullscreen);
+            spinerContainer.setVisibility(View.GONE);
+            params.height = RelativeLayout.LayoutParams.MATCH_PARENT;
+            params.width = RelativeLayout.LayoutParams.MATCH_PARENT;
+
+        } else {
+            getSupportActionBar().show();
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            fullScreenBtn.setImageResource(R.drawable.ic_fullscreen);
+            spinerContainer.setVisibility(View.VISIBLE);
+            params.height = (int)getResources().getDimension(R.dimen.player_height);
+            params.width = RelativeLayout.LayoutParams.MATCH_PARENT;
+        }
+        playerContainer.requestLayout();
+    }
     /**
      * populating spinners with track info.
      *
@@ -510,5 +586,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
 
+    }
+
+    @Override
+    public void onOrientationChange(OrientationManager.ScreenOrientation screenOrientation) {
+        switch(screenOrientation){
+            case PORTRAIT:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                break;
+            case REVERSED_PORTRAIT:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+                break;
+            case LANDSCAPE:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                break;
+            case REVERSED_LANDSCAPE:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+                break;
+        }
     }
 }
