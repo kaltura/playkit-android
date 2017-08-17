@@ -56,6 +56,8 @@ public class Consts {
      */
     public static final long NO_VALUE = -1;
 
+    public static final int DEFAULT_PLAYHEAD_UPDATE_MILI = 100;
+
     /**
      * Flag that indicates, that this specified track will be
      * selected by the player as default track.

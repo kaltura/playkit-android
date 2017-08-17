@@ -418,8 +418,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             }
         }, PlayerEvent.Type.TRACKS_AVAILABLE);
-    }
 
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                //When the track data available, this event occurs. It brings the info object with it.
+                PlayerEvent.PlayheadUpdated playheadUpdated = (PlayerEvent.PlayheadUpdated) event;
+                log.d("playheadUpdated event  position = " + playheadUpdated.position + " duration = " + playheadUpdated.duration);
+
+            }
+        }, PlayerEvent.Type.PLAYHEAD_UPDATED);
+    }
 
     @Override
     protected void onResume() {

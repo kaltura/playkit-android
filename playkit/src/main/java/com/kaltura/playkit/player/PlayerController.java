@@ -13,12 +13,12 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
-import android.media.MediaCodec;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 
 import com.kaltura.playkit.Assert;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
@@ -30,7 +30,6 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.PKError;
 
 import java.util.UUID;
 
@@ -61,6 +60,13 @@ public class PlayerController implements Player {
     private boolean isNewEntry = true;
     private boolean useTextureView = false;
     private boolean cea608CaptionsEnabled = false;
+
+    private final Runnable updateProgressAction = new Runnable() {
+        @Override
+        public void run() {
+            updateProgress();
+        }
+    };
 
     private Settings settings = new Settings();
 
@@ -108,10 +114,18 @@ public class PlayerController implements Player {
         public void onEvent(PlayerEvent.Type eventType) {
             if (eventListener != null) {
 
-                PKEvent event;
+                PKEvent event = null;
 
                 // TODO: use specific event class
                 switch (eventType) {
+                    case PLAYING:
+                        updateProgress();
+                        break;
+                    case PAUSE:
+                    case ENDED:
+                    case STOPPED:
+                        cancelUpdateProgress();
+                        break;
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
                         if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
@@ -134,6 +148,7 @@ public class PlayerController implements Player {
                             return;
                         }
                         event = new PlayerEvent.Error(player.getCurrentError());
+                        cancelUpdateProgress();
                         break;
                     case METADATA_AVAILABLE:
                         if (player.getMetadata() == null || player.getMetadata().isEmpty()) {
@@ -148,8 +163,9 @@ public class PlayerController implements Player {
                     default:
                         event = new PlayerEvent.Generic(eventType);
                 }
-
-                eventListener.onEvent(event);
+                if (event != null) {
+                    eventListener.onEvent(event);
+                }
             }
         }
     };
@@ -540,5 +556,30 @@ public class PlayerController implements Player {
         log.e(errorMessage);
         PlayerEvent errorEvent = new PlayerEvent.Error(new PKError(errorType, errorMessage, null));
         eventListener.onEvent(errorEvent);
+    }
+
+    private void updateProgress() {
+
+        long position = 0;
+        long duration = 0;
+        if (player != null) {
+            position = player.getCurrentPosition();
+            duration = player.getDuration();
+            if (position > 0 && duration > 0) {
+                eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position,duration));
+            }
+        }
+        if (player.getView() == null) {
+            return;
+        }
+
+        // Cancel any pending updates and schedule a new one if necessary.
+        player.getView().removeCallbacks(updateProgressAction);
+        player.getView().postDelayed(updateProgressAction, Consts.DEFAULT_PLAYHEAD_UPDATE_MILI);
+
+    }
+
+    private void cancelUpdateProgress() {
+        player.getView().removeCallbacks(updateProgressAction);
     }
 }
