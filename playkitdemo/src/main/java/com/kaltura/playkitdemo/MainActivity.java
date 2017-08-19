@@ -10,8 +10,11 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatImageView;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Surface;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
@@ -438,26 +441,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
         setFullScreen(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE);
+        super.onConfigurationChanged(newConfig);
+        Log.v("orientation", "state = "+newConfig.orientation);
     }
-
-    private int getOrientationFromAngle() {
-        int angle = getWindow().getWindowManager().getDefaultDisplay().getRotation();
-        int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-        switch (angle) {
-            case Surface.ROTATION_0:
-            case Surface.ROTATION_180:
-                orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-                break;
-            case Surface.ROTATION_90:
-            case Surface.ROTATION_270:
-                orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-                break;
-        }
-        return orientation;
-    }
-
 
 
     private void setFullScreen(boolean isFullScreen) {
@@ -465,15 +452,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // Checks the orientation of the screen
         this.isFullScreen = isFullScreen;
         if (isFullScreen) {
-            getSupportActionBar().hide();
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             fullScreenBtn.setImageResource(R.drawable.ic_no_fullscreen);
             spinerContainer.setVisibility(View.GONE);
-            params.height = RelativeLayout.LayoutParams.MATCH_PARENT;
+            params.height = getScreenHeight();//RelativeLayout.LayoutParams.MATCH_PARENT;
             params.width = RelativeLayout.LayoutParams.MATCH_PARENT;
 
         } else {
-            getSupportActionBar().show();
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             fullScreenBtn.setImageResource(R.drawable.ic_fullscreen);
             spinerContainer.setVisibility(View.VISIBLE);
@@ -481,6 +466,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             params.width = RelativeLayout.LayoutParams.MATCH_PARENT;
         }
         playerContainer.requestLayout();
+    }
+
+    private int getScreenHeight() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
+        return height;
     }
     /**
      * populating spinners with track info.
@@ -496,7 +489,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         TrackItem[] audioTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_AUDIO, tracksInfo.getAudioTracks());
         applyAdapterOnSpinner(audioSpinner, audioTrackItems);
-
 
         TrackItem[] subtitlesTrackItems = obtainRelevantTrackInfo(Consts.TRACK_TYPE_TEXT, tracksInfo.getTextTracks());
         applyAdapterOnSpinner(textSpinner, subtitlesTrackItems);
