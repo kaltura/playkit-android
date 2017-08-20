@@ -112,6 +112,7 @@ public class PlayerController implements Player {
 
         @Override
         public void onEvent(PlayerEvent.Type eventType) {
+            //log.d("onEvent event =  " + eventType.name());
             if (eventListener != null) {
 
                 PKEvent event = null;
@@ -120,10 +121,12 @@ public class PlayerController implements Player {
                 switch (eventType) {
                     case PLAYING:
                         updateProgress();
+                        event = new PlayerEvent.Generic(eventType);
                         break;
                     case PAUSE:
                     case ENDED:
                     case STOPPED:
+                        event = new PlayerEvent.Generic(eventType);
                         cancelUpdateProgress();
                         break;
                     case DURATION_CHANGE:
@@ -512,7 +515,7 @@ public class PlayerController implements Player {
             log.w("Attempt to invoke 'release()' on null instance of the player engine");
             return;
         }
-
+        cancelUpdateProgress();
         player.release();
         togglePlayerListeners(false);
     }
@@ -522,6 +525,7 @@ public class PlayerController implements Player {
         log.d("onApplicationResumed");
         if (player != null) {
             player.restore();
+            updateProgress();
         }
         togglePlayerListeners(true);
         prepare(mediaConfig);
@@ -562,15 +566,15 @@ public class PlayerController implements Player {
 
         long position = 0;
         long duration = 0;
-        if (player != null) {
-            position = player.getCurrentPosition();
-            duration = player.getDuration();
-            if (position > 0 && duration > 0) {
-                eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position,duration));
-            }
-        }
-        if (player.getView() == null) {
+
+        if (player == null || player.getView() == null) {
             return;
+        }
+
+        position = player.getCurrentPosition();
+        duration = player.getDuration();
+        if (position > 0 && duration > 0) {
+            eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position,duration));
         }
 
         // Cancel any pending updates and schedule a new one if necessary.
@@ -580,6 +584,8 @@ public class PlayerController implements Player {
     }
 
     private void cancelUpdateProgress() {
-        player.getView().removeCallbacks(updateProgressAction);
+        if (player != null && player.getView() != null) {
+            player.getView().removeCallbacks(updateProgressAction);
+        }
     }
 }
