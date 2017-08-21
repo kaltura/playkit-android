@@ -12,9 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Surface;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
@@ -455,7 +453,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             fullScreenBtn.setImageResource(R.drawable.ic_no_fullscreen);
             spinerContainer.setVisibility(View.GONE);
-            params.height = getScreenHeight();//RelativeLayout.LayoutParams.MATCH_PARENT;
+            params.height = RelativeLayout.LayoutParams.MATCH_PARENT;
             params.width = RelativeLayout.LayoutParams.MATCH_PARENT;
 
         } else {
@@ -467,14 +465,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
         playerContainer.requestLayout();
     }
-
-    private int getScreenHeight() {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
-        int width = displayMetrics.widthPixels;
-        return height;
-    }
+    
     /**
      * populating spinners with track info.
      *
@@ -594,6 +585,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 break;
             case REVERSED_LANDSCAPE:
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+                break;
+            default:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 break;
         }
     }
