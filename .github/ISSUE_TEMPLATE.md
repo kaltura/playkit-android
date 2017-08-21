@@ -18,5 +18,5 @@ What actually happened
 
 ##### Console output
 ```
-Paste the contents of the Xcode console here.
+Paste the contents of the Android Studio console here.
 ```
