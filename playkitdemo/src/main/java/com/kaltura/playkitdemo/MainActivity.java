@@ -465,7 +465,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
         playerContainer.requestLayout();
     }
-    
+
     /**
      * populating spinners with track info.
      *
