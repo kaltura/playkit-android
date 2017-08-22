@@ -276,7 +276,9 @@ public class PlayerController implements Player {
         } else if (shouldSwitchBetweenPlayers) {
             switchPlayers(source.getMediaFormat(), true);
         }
-
+        if (sourceConfig != null && sourceConfig.getUrl() != null) {
+            log.d("Loading playback URL to player = " + sourceConfig.getUrl());
+        }
         player.load(sourceConfig);
 
     }
@@ -563,7 +565,7 @@ public class PlayerController implements Player {
     }
 
     private void updateProgress() {
-
+        log.d("AD updateProgress enter");
         long position = 0;
         long duration = 0;
 
@@ -574,8 +576,10 @@ public class PlayerController implements Player {
         position = player.getCurrentPosition();
         duration = player.getDuration();
         if (position > 0 && duration > 0) {
+            log.d("AD updateProgress = " + position + "/" + duration);
             eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position,duration));
         }
+
 
         // Cancel any pending updates and schedule a new one if necessary.
         player.getView().removeCallbacks(updateProgressAction);
@@ -584,6 +588,7 @@ public class PlayerController implements Player {
     }
 
     private void cancelUpdateProgress() {
+        log.d("AD cancelUpdateProgress");
         if (player != null && player.getView() != null) {
             player.getView().removeCallbacks(updateProgressAction);
         }

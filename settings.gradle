@@ -1,1 +1,2 @@
-include ':playkit', ':playkitdemo'
+include ':playkit', ':admanager', ':playkitdemo'
+project(':admanager').projectDir = new File('../../playkit-admanager-android/admanager')

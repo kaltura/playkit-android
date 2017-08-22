@@ -32,7 +32,7 @@ tasks.withType(Javadoc) {
 }
 
 dependencies {
-
+    compile project(":admanager")
     compile 'com.kaltura.netkit:netkit-core:1.0.5'
     //compile ('com.kaltura.netkit-android:netkit-core:b6175662cfae258e98a5b028363fbf0962d9c5a8')
 
@@ -41,10 +41,10 @@ dependencies {
 
     // Google Ads
     compile 'com.google.ads.interactivemedia.v3:interactivemedia:3.7.2'
-    compile 'com.google.android.gms:play-services-ads:11.0.2'
+    compile 'com.google.android.gms:play-services-ads:11.0.4'
 
     // Google Cast
-    compile 'com.google.android.gms:play-services-cast-framework:11.0.2'
+    compile 'com.google.android.gms:play-services-cast-framework:11.0.4'
     compile 'com.android.support:mediarouter-v7:25.3.1'
 
     // Youbora Analytics

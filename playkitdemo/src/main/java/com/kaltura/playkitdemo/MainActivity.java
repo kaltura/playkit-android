@@ -51,8 +51,8 @@ import com.kaltura.playkit.player.VideoTrack;
 import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
-import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
-import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
+import com.kaltura.playkit.plugins.ads.kaltura.ADConfig;
+import com.kaltura.playkit.plugins.ads.kaltura.ADPlugin;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 import com.kaltura.playkit.utils.Consts;
 
@@ -94,7 +94,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void registerPlugins() {
 
         PlayKitManager.registerPlugins(this, SamplePlugin.factory);
-        PlayKitManager.registerPlugins(this, IMAPlugin.factory);
+        PlayKitManager.registerPlugins(this, ADPlugin.factory);
+        //PlayKitManager.registerPlugins(this, IMAPlugin.factory);
         //PlayKitManager.registerPlugins(this, TVPAPIAnalyticsPlugin.factory);
         //PlayKitManager.registerPlugins(this, PhoenixAnalyticsPlugin.factory);
     }
@@ -246,21 +247,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void onMediaLoaded(PKMediaEntry mediaEntry) {
-        
+
         PKMediaConfig mediaConfig = new PKMediaConfig().setMediaEntry(mediaEntry).setStartPosition(0);
         PKPluginConfigs pluginConfig = new PKPluginConfigs();
+        FrameLayout layout = (FrameLayout) findViewById(R.id.player_root);
+        configurePlugins(pluginConfig, layout);
         if (player == null) {
-
-            configurePlugins(pluginConfig);
-
             player = PlayKitManager.loadPlayer(this, pluginConfig);
+            if (layout != null) {
+                layout.addView(player.getView());
+            }
+
             KalturaPlaybackRequestAdapter.install(player, "myApp"); // in case app developer wants to give customized referrer instead the default referrer in the playmanifest
                     
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
 
-            FrameLayout layout = (FrameLayout) findViewById(R.id.player_root);
-            layout.addView(player.getView());
+
 
             controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
             controlsView.setPlayer(player);
@@ -282,11 +285,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         videoSpinner.setOnItemSelectedListener(this);
     }
 
-    private void configurePlugins(PKPluginConfigs config) {
+    private void configurePlugins(PKPluginConfigs config, FrameLayout layout) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("delay", 1200);
         config.setPluginConfig("Sample", jsonObject);
-        addIMAPluginConfig(config);
+        addIMAPluginConfig(config, layout);
         //addPhoenixAnalyticsPluginConfig(config);
         //addTVPAPIAnalyticsPluginConfig(config);
         //config.setPluginConfig("IMASimplePlugin", jsonObject);
@@ -309,7 +312,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //        config.setPluginConfig(TVPAPIAnalyticsPlugin.factory.getName(),tvpapiAnalyticsConfig);
 //    }
 
-    private void addIMAPluginConfig(PKPluginConfigs config) {
+    private void addIMAPluginConfig(PKPluginConfigs config, FrameLayout layout) {
+        String multi_ad_vast = "https://pubads.g.doubleclick.net/gampad/ads?slotname=/124319096/external/ad_rule_samples&sz=640x480&ciu_szs=300x250&unviewed_position_start=1&output=xml_vast3&impl=s&env=vp&gdfp_req=1&ad_rule=0&cue=15000&vad_type=linear&vpos=midroll&pod=2&mridx=1&pmnd=0&pmxd=31000&pmad=-1&vrid=6616&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpod&url=https://developers.google.com/interactive-media-ads/docs/sdks/html5/tags&video_doc_id=short_onecue&cmsid=496&kfa=0&tfcd=0";
+
         String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";
                 //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
@@ -320,8 +325,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //Map<Double, String> tagTimesMap = new HashMap<>();
         //tagTimesMap.put(2.0,"ADTAG");
 
-        IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
-        config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
+        //IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
+        //config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
+
+        ADConfig adsConfig = new ADConfig().setAdTagURL(multi_ad_vast).setPlayerViewContainer(layout);
+        config.setPluginConfig(ADPlugin.factory.getName(), adsConfig);
 
     }
     @Override
