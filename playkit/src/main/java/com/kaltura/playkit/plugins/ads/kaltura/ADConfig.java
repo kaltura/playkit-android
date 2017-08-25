@@ -50,6 +50,7 @@ public class ADConfig {
     private String language;
     private String adTagURL;
     private View playerViewContainer;
+    private View adSkinContainer;
     private long startPosition;
     private AdTagType adTagType;
     private boolean enableBackgroundPlayback;
@@ -76,6 +77,7 @@ public class ADConfig {
         this.videoMimeTypes.add(PKMediaFormat.mp4.mimeType);
         this.adTagURL = null;         //=> must be set via setter
         this.playerViewContainer = null;
+        this.adSkinContainer = null;
         this.startPosition = 0;
 
 
@@ -108,6 +110,11 @@ public class ADConfig {
 
     public ADConfig setPlayerViewContainer(View playerViewContainer) {
         this.playerViewContainer = playerViewContainer;
+        return this;
+    }
+
+    public ADConfig setAdSkinContainer(View adSkinContainer) {
+        this.adSkinContainer = adSkinContainer;
         return this;
     }
 
@@ -203,6 +210,10 @@ public class ADConfig {
 
     public View getPlayerViewContainer() {
         return playerViewContainer;
+    }
+
+    public View getAdSkinContainer() {
+        return adSkinContainer;
     }
 
     public long getStartPosition() {

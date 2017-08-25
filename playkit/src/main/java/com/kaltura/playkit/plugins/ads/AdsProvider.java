@@ -35,4 +35,5 @@ public interface AdsProvider {
     void setAdProviderListener(AdEnabledPlayerController adEnabledPlayerController);
     void removeAdProviderListener();
     void skipAd();
+    void openLearnMore();
 }

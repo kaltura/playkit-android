@@ -142,6 +142,13 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
+    public void openLearnMore() {
+        if (adsProvider != null && !adsProvider.isAdError()) {
+            adsProvider.openLearnMore();
+        }
+    }
+
+    @Override
     public long getAdCurrentPosition() {
         if (adsProvider != null) {
             long currPos = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();

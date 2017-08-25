@@ -89,6 +89,11 @@
             android:layout_above="@+id/controls_container"
             />
 
+        <include
+            android:id="@+id/ad_skin"
+            layout="@layout/ad_skin_layout"
+            android:visibility="invisible" />
+
         <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="wrap_content"

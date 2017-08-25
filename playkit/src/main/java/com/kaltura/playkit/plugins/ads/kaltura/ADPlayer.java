@@ -83,6 +83,11 @@ public class ADPlayer implements AdPlayer {
     }
 
     @Override
+    public void destroy() {
+        player.destroy();
+    }
+
+    @Override
     public float getDurationSec() {
         return playbackState == PlaybackState.STOPPED ? 0 : player.getDuration();
     }
@@ -105,6 +110,20 @@ public class ADPlayer implements AdPlayer {
     @Override
     public void removeListener(Listener listener) {
         adPlayerCallbacks.remove(listener);
+    }
+
+    @Override
+    public void onApplicationPaused() {
+        if (player != null) {
+            player.onApplicationPaused();
+        }
+    }
+
+    @Override
+    public void onApplicationResumed() {
+        if (player != null) {
+            player.onApplicationResumed();
+        }
     }
 
 

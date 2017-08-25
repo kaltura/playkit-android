@@ -565,7 +565,6 @@ public class PlayerController implements Player {
     }
 
     private void updateProgress() {
-        log.d("AD updateProgress enter");
         long position = 0;
         long duration = 0;
 
@@ -576,7 +575,7 @@ public class PlayerController implements Player {
         position = player.getCurrentPosition();
         duration = player.getDuration();
         if (position > 0 && duration > 0) {
-            log.d("AD updateProgress = " + position + "/" + duration);
+            log.d("updateProgress = " + position + "/" + duration);
             eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position,duration));
         }
 
@@ -588,8 +587,8 @@ public class PlayerController implements Player {
     }
 
     private void cancelUpdateProgress() {
-        log.d("AD cancelUpdateProgress");
         if (player != null && player.getView() != null) {
+            log.d("cancelUpdateProgress");
             player.getView().removeCallbacks(updateProgressAction);
         }
     }
