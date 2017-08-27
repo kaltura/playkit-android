@@ -506,13 +506,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         if (player == null) {
             initializePlayer();
         }
-        if (shouldResetPlayerPosition) {
+//        if (shouldResetPlayerPosition) {
             if (playerPosition == Consts.TIME_UNSET) {
                 player.seekToDefaultPosition(playerWindow);
             } else {
                 player.seekTo(playerWindow, playerPosition);
             }
-        }
+//        }
     }
 
     @Override
