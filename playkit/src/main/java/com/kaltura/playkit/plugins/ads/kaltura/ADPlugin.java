@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.admanager.AdBreakEndedReason;
+import com.kaltura.admanager.AdBreakInfo;
 import com.kaltura.admanager.AdEvent;
 import com.kaltura.admanager.AdInfo;
 import com.kaltura.admanager.AdManager;
@@ -32,6 +33,8 @@ import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.ads.PKAdProviderListener;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.plugins.ads.kaltura.events.AdPluginErrorEvent;
+import com.kaltura.playkit.plugins.ads.kaltura.events.AdPluginEvent;
+import com.kaltura.playkit.utils.Consts;
 
 import java.util.List;
 
@@ -120,6 +123,10 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
             }, PlayerEvent.Type.ENDED);
         }
         adConfig = parseConfig(config);
+        if (adConfig == null) {
+            handleErrorEvent(AdEvent.AdErrorEventType.invalidArgumentsError, "AdConfig is null", null);
+            return;
+        }
         setupAdManager();
     }
 
@@ -176,44 +183,57 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         adManagerListener = new AdManager.Listener() {
 
             @Override
+            public void onAdBreakStartedEvent(AdBreakInfo adBreakInfo, AdInfo adInfo) {
+                if (!isAppInBackground) {
+                    log.d("received event onAdBreakStartedEvent isAppInBackground = " + isAppInBackground);
+                    preparePlayer(false);
+                }
+                messageBus.post(new AdPluginEvent.AdBreakStarted(adBreakInfo, adInfo));
+            }
+
+            @Override
+            public void onAdRequestedEvent(String adTagURL) {
+                log.d("received event onAdRequestedEvent adTagURL = " + adTagURL);
+                messageBus.post(new AdPluginEvent.AdRequestedEvent(adTagURL));
+            }
+
+            @Override
             public void onAdEvent(AdEvent.AdEventType adEventType, AdInfo adInfo) {
-                log.d("recieved event " + adEventType + " isAppInBackground = " + isAppInBackground);
+                log.d("received event " + adEventType + " isAppInBackground = " + isAppInBackground);
                 switch(adEventType) {
                     case adBreakPending:
-
                         isAdRequested = true;
                         if (!isAppInBackground) {
                             adManager.playAdBreak();
                         }
-                        break;
-                    case adBreakStarted:
-                        if (!isAppInBackground) {
-                            log.d("XXX  PREPAREErecieved event " + adEventType + " isAppInBackground = " + isAppInBackground);
-                            preparePlayer(false);
-                        }
+                        messageBus.post(new AdPluginEvent(AdPluginEvent.Type.AD_BREAK_PENDING));
                         break;
                     case allAdsCompleted:
                         isAllAdsCompleted = true;
-                        break;
-                    case adProgress:
+                        messageBus.post(new AdPluginEvent(AdPluginEvent.Type.ALL_ADS_COMPLETED));
                         break;
                     case adClicked:
+                        messageBus.post(new AdPluginEvent.AdvtClickEvent(adInfo.getClickThroughUrl()));
                         break;
-                    case adTouched:
-                        break;
+                    //case adTouched:
+                    //    break;
                     case adPaused:
                         isAdIsPaused = true;
+                        messageBus.post(new AdPluginEvent(AdPluginEvent.Type.PAUSED));
                         break;
                     case adResumed:
                         isAdIsPaused = false;
                         if (!isAppInBackground) {
                             adConfig.getAdSkinContainer().setVisibility(View.VISIBLE);
                         }
+                        messageBus.post(new AdPluginEvent(AdPluginEvent.Type.RESUMED));
                         break;
                     case adSkipped:
                         isAdDisplayed = false;
+                        messageBus.post(new AdPluginEvent(AdPluginEvent.Type.SKIPPED));
                         break;
                     case adLoaded:
+                        messageBus.post(new AdPluginEvent.AdLoadedEvent(adInfo));
                         break;
                     case adStarted:
                         isAdDisplayed = true;
@@ -221,16 +241,18 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         if (!isAppInBackground) {
                             adConfig.getAdSkinContainer().setVisibility(View.VISIBLE);
                         }
+                        messageBus.post(new AdPluginEvent(AdPluginEvent.Type.STARTED));
                         break;
                     case adEnded:
                         isAdDisplayed = false;
                         adConfig.getAdSkinContainer().setVisibility(View.INVISIBLE);
-                        break;
-                    case timeSpentViewing:
+                        messageBus.post(new AdPluginEvent(AdPluginEvent.Type.COMPLETED));
                         break;
                     case adBufferStart:
+                        messageBus.post(new AdPluginEvent.AdBufferEvent(true));
                         break;
                     case adBufferEnd:
+                        messageBus.post(new AdPluginEvent.AdBufferEvent(false));
                         break;
                     default:
                         break;
@@ -239,7 +261,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
 
             @Override
             public void onAdBreakEndedEvent(AdBreakEndedReason adBreakEndedReason) {
-                log.d("recieved event onAdBreakEnded");
+                log.d("received event onAdBreakEnded isContentPrepared = " + isContentPrepared);
                 log.d("XXX remove adplayer");
                 removeAdPlayer();
                 if (!isContentPrepared) {
@@ -247,26 +269,31 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                 } else {
                     player.play();
                 }
+                messageBus.post(new AdPluginEvent(AdPluginEvent.Type.CONTENT_RESUME_REQUESTED));
             }
 
             @Override
-            public void onAdProgressEvent(AdInfo adInfo, long currentPosition, long adPlaybackPosition) {
-
+            public void onAdProgressEvent(AdInfo adInfo, long currentPosition, long duration) {
+                messageBus.post(new AdPluginEvent.ProgressUpdateEvent(currentPosition, duration));
             }
 
             @Override
             public void onAdErrorEvent(AdEvent.AdErrorEventType adErrorEventType, Exception ex) {
-                log.e("onAdErrorEvent " + adErrorEventType.name());
-                String msg = (ex == null) ? "No error message" : ex.getMessage();
-                sendError(adErrorEventType, msg, ex);
-                isAdRequested = true;
-                isAdError = true;
-                removeAdPlayer();
-                preparePlayer(true);
-                //TODO Check if fatal error and clear all the adBreaks
+                log.e("received onAdErrorEvent " + adErrorEventType.name());
+                handleErrorEvent(adErrorEventType, "", ex);
             }
         };
         return adManagerListener;
+    }
+
+    private void handleErrorEvent(AdEvent.AdErrorEventType adErrorEventType, String errMsg, Exception ex) {
+        String msg = (ex == null) ? errMsg : ex.getMessage();
+        sendError(adErrorEventType, msg, ex);
+        isAdRequested = true;
+        isAdError = true;
+        removeAdPlayer();
+        preparePlayer(true);
+        //TODO Check if fatal error and clear all the adBreaks
     }
 
     //-----------------------------
@@ -287,7 +314,11 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         isAllAdsCompleted = false;
         //isContentEndedBeforeMidroll = false;
 
-        requestForAds(adConfig.getAdTagURL());
+        if (adConfig != null) {
+            requestForAds(adConfig.getAdTagURL());
+        } else {
+            preparePlayer(true);
+        }
     }
 
     private void requestForAds(String adTagURL) {
@@ -396,12 +427,12 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
 
     @Override
     public long getDuration() {
-        return adPlayer != null ? (long) adPlayer.getDurationSec() / 1000 : 0;
+        return adPlayer != null ? (long) adPlayer.getDuration() / Consts.MILLISECONDS_MULTIPLIER : 0;
     }
 
     @Override
     public long getCurrentPosition() {
-        return adPlayer != null ? (long) adPlayer.getPositionSec() / 1000 : 0;
+        return adPlayer != null ? (long) adPlayer.getPosition() / Consts.MILLISECONDS_MULTIPLIER : 0;
     }
 
     @Override
@@ -499,7 +530,11 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     }
 
     private void removeAdPlayer() {
-        adConfig.getAdSkinContainer().setVisibility(View.INVISIBLE);
+        log.d("XXX removeAdPlayer");
+        if (adConfig != null) {
+            adConfig.getAdSkinContainer().setVisibility(View.INVISIBLE);
+        }
+
         if (adPlayer != null) {
             adPlayer.destroy();
             adPlayer = null;

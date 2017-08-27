@@ -1,8 +1,8 @@
 package com.kaltura.playkit.plugins.ads.kaltura.events;
 
+import com.kaltura.admanager.AdBreakInfo;
 import com.kaltura.admanager.AdInfo;
 import com.kaltura.playkit.PKEvent;
-
 
 
 public class AdPluginEvent implements PKEvent {
@@ -17,17 +17,13 @@ public class AdPluginEvent implements PKEvent {
         this.type = type;
     }
 
-    public static class UpdateUIEvent extends AdPluginEvent {
+    public static class AdRequestedEvent extends AdPluginEvent {
 
-        public boolean show;
-        public int uiType;
-        public float cuePoint;
+        public String adTagUrl;
 
-        public UpdateUIEvent(boolean show, int type, float cuePoint) {
-            super(Type.UPDATE_UI);
-            this.show = show;
-            this.uiType = type;
-            this.cuePoint = cuePoint;
+        public AdRequestedEvent(String adTagUrl) {
+            super(Type.AD_REQUESTED);
+            this.adTagUrl = adTagUrl;
         }
     }
 
@@ -43,13 +39,15 @@ public class AdPluginEvent implements PKEvent {
         }
     }
 
-    public static class AdRequestedEvent extends AdPluginEvent {
+    public static class AdBreakStarted extends AdPluginEvent {
 
-        public String adTagUrl;
+        public AdBreakInfo adBreakInfo;
+        public AdInfo adInfo;
 
-        public AdRequestedEvent(String adTagUrl) {
-            super(Type.AD_REQUESTED);
-            this.adTagUrl = adTagUrl;
+        public AdBreakStarted(AdBreakInfo adBreakInfo, AdInfo adInfo) {
+            super(Type.CONTENT_PAUSE_REQUESTED);
+            this.adBreakInfo = adBreakInfo;
+            this.adInfo = adInfo;
         }
     }
 
@@ -73,84 +71,19 @@ public class AdPluginEvent implements PKEvent {
         }
     }
 
-    public static class AdCountEvent extends AdPluginEvent {
-
-        public int adIndex;
-        public int totalAdCount;
-
-        public AdCountEvent(int adIndex, int totalAdCount) {
-            super(Type.AD_COUNT);
-            this.adIndex = adIndex;
-            this.totalAdCount = totalAdCount;
-        }
-    }
-
-
-//    public static class InitCompletedEvent extends AdPluginEvent {
-//
-//        public MessageBus messageBus;
-//
-//        public InitCompletedEvent(MessageBus messageBus) {
-//            super(Type.INIT);
-//            this.messageBus = messageBus;
-//        }
-//    }
-
-    public static class PlayBackUpdateEvent extends AdPluginEvent {
-
-        public float duration;
-
-        public PlayBackUpdateEvent(float duration) {
-            super(Type.PLAYBACK_UPDATE);
-            this.duration = duration;
-        }
-    }
-
     public static class AdBufferEvent extends AdPluginEvent {
 
         public boolean show;
 
         public AdBufferEvent(boolean show) {
-            super(Type.AD_BUFFERING);
+            super(Type.AD_BUFFER);
             this.show = show;
         }
     }
 
-//    public static class ReplayEvent extends AdPluginEvent {
-//
-//        public boolean isAppInBackground;
-//
-//        public ReplayEvent(boolean isAppInBackground) {
-//            super(Type.REPLAY);
-//            this.isAppInBackground = isAppInBackground;
-//        }
-//    }
-
-//    public static class AudioFocusEvent extends AdPluginEvent {
-//
-//        public boolean isAudioFocusGained;
-//
-//        public AudioFocusEvent(boolean isAudioFocusGained) {
-//            super(Type.AUDIO_FOCUS);
-//            this.isAudioFocusGained = isAudioFocusGained;
-//        }
-//    }
-//
-//    public static class ApplicationResumeEvent extends AdPluginEvent {
-//        public boolean isPopupPlayerPause;
-//
-//        public ApplicationResumeEvent(boolean isPopupPlayerPause) {
-//            super(Type.CUSTOM_APP_RESUME);
-//            this.isPopupPlayerPause = isPopupPlayerPause;
-//        }
-//    }
-
-
     public enum Type {
-        UPDATE_UI,
-        ATTRIBUTION_UPDATE,
+        AD_BREAK_PENDING,
         AD_PROGRESS_UPDATE,
-        END_AD_PLAYBACK_CONTROL,
         PLAYBACK_STATE,
         AD_REQUESTED,
         LOADED,
@@ -160,19 +93,12 @@ public class AdPluginEvent implements PKEvent {
         COMPLETED,
         SKIPPED,
         CLICKED,
-        POSTROLL_AVAILABLE,
-        POSTROLL_COMPLETED,
-        AD_COUNT,
         PLAYER_SWITCH_MAXIMIZE,
         PLAYER_STATE,
-        INIT,
-        PLAYBACK_UPDATE,
-        AD_BUFFERING,
-//        REPLAY,
-//        REMOVE_AD_ON_CAST,
-//        AUDIO_FOCUS,
-//        CUSTOM_APP_PAUSE,
-//        CUSTOM_APP_RESUME
+        AD_BUFFER,
+        CONTENT_PAUSE_REQUESTED,
+        CONTENT_RESUME_REQUESTED,
+        ALL_ADS_COMPLETED
     }
 
 

@@ -53,6 +53,8 @@ import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.kaltura.ADConfig;
 import com.kaltura.playkit.plugins.ads.kaltura.ADPlugin;
+import com.kaltura.playkit.plugins.ads.kaltura.events.AdPluginErrorEvent;
+import com.kaltura.playkit.plugins.ads.kaltura.events.AdPluginEvent;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 import com.kaltura.playkit.utils.Consts;
 
@@ -338,6 +340,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         String multi_ad_vast = "https://pubads.g.doubleclick.net/gampad/ads?slotname=/124319096/external/ad_rule_samples&sz=640x480&ciu_szs=300x250&unviewed_position_start=1&output=xml_vast3&impl=s&env=vp&gdfp_req=1&ad_rule=0&cue=15000&vad_type=linear&vpos=midroll&pod=2&mridx=1&pmnd=0&pmxd=31000&pmad=-1&vrid=6616&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpod&url=https://developers.google.com/interactive-media-ads/docs/sdks/html5/tags&video_doc_id=short_onecue&cmsid=496&kfa=0&tfcd=0";
         String skip_ad = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";
+        String v18_ad_vmap = "https://in-viacom18.videoplaza.tv/proxy/distributor/v2?s=VORG&t=Language=Hindi,Series%20Title=Yo%20Ke%20Hua%20Bro,Genre=Drama,SBU=VORG,Content%20Type=Full%20Episode,Media%20ID=524406,Age=,Gender=&tt=p,m,po&rt=vmap_1.0&rnd=0.15867538995841546&pf=html5&cd=1435000&bp=464,764,1100";
                 //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
@@ -354,6 +357,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         config.setPluginConfig(ADPlugin.factory.getName(), adsConfig);
 
     }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -366,6 +370,40 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void addPlayerListeners(final ProgressBar appProgressBar) {
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                log.d("received NEW AD_CONTENT_PAUSE_REQUESTED");
+            }
+        }, AdPluginEvent.Type.CONTENT_PAUSE_REQUESTED);
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                AdPluginEvent.AdRequestedEvent adRequestEvent = (AdPluginEvent.AdRequestedEvent) event;
+                log.d("received NEW AD_REQUESTED adtag = " + adRequestEvent.adTagUrl);
+            }
+        }, AdPluginEvent.Type.AD_REQUESTED);
+
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                AdPluginEvent.ProgressUpdateEvent adPluginEventProress = (AdPluginEvent.ProgressUpdateEvent) event;
+                log.d("received NEW AD_PROGRESS_UPDATE " + adPluginEventProress.currentPosition + "/" +  adPluginEventProress.duration);
+            }
+        }, AdPluginEvent.Type.AD_PROGRESS_UPDATE);
+
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                AdPluginErrorEvent.AdErrorEvent adError = (AdPluginErrorEvent.AdErrorEvent) event;
+                log.d("received NEW AD_ERROR " + adError.errorEvent.name() + " "  + adError.adErrorMessage);
+            }
+        }, AdPluginErrorEvent.Type.AD_ERROR);
+
+
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {

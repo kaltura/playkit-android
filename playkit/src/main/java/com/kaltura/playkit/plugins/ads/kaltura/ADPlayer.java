@@ -88,12 +88,12 @@ public class ADPlayer implements AdPlayer {
     }
 
     @Override
-    public float getDurationSec() {
+    public float getDuration() {
         return playbackState == PlaybackState.STOPPED ? 0 : player.getDuration();
     }
 
     @Override
-    public float getPositionSec() {
+    public float getPosition() {
         return player.getCurrentPosition();
     }
 

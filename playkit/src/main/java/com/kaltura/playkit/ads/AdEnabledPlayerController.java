@@ -37,7 +37,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     /*
-     In order to avoid network resources race between IMA and Content CDN
+     In order to avoid network resources race between plugin and Content CDN
      we prevent the prepare until AD is STARTED, No Pre-Roll or AD ERROR is received
     */
     @Override
@@ -46,10 +46,10 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
 
         if (adsProvider != null) {
             if (adsProvider.isAdRequested()) {
-                log.d("IMA calling super.prepare");
+                log.d("calling super.prepare");
                 super.prepare(mediaConfig);
             } else {
-                log.d("IMA setAdProviderListener");
+                log.d("setAdProviderListener");
                 adsProvider.setAdProviderListener(this);
             }
         }
@@ -95,9 +95,9 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
 
     @Override
     public void play() {
-        log.d("PLAY IMA decorator");
+        log.d("PLAY plugin decorator");
         if (adsProvider != null && !adsProvider.isAdError()) {
-            log.d("PLAY IMA decorator isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted = " + adsProvider.isAllAdsCompleted());
+            log.d("PLAY plugin decorator isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted = " + adsProvider.isAllAdsCompleted());
             if (!adsProvider.isAllAdsCompleted()) {
                 if (!adsProvider.isAdRequested()) {
                     adsProvider.start();
@@ -108,7 +108,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
                 }
             }
         }
-        log.d("IMA decorator Calling player play");
+        log.d("decorator Calling player play");
         getView().showVideoSurface();
         super.play();
 
@@ -116,18 +116,18 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
 
     @Override
     public void pause() {
-        log.d("PAUSE IMA decorator isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
+        log.d("PAUSE decorator isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
         if (adsProvider.isAdDisplayed() && !adsProvider.isAdError()) {
             adsProvider.pause();
         } else {
-            log.d("IMA decorator Calling player pause");
+            log.d("decorator Calling player pause");
             super.pause();
         }
     }
 
     @Override
     public void stop() {
-        log.d("AdEnabled IMA stop");
+        log.d("AdEnabled stop");
         if (adsProvider != null) {
             adsProvider.destroyAdsManager();
         }
@@ -178,7 +178,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     public void onAdLoadingFinished() {
         log.d("onAdLoadingFinished pkPrepareReason");
         if (mediaConfig == null) {
-            log.e("IMA onAdLoadingFinished mediaConfig == null");
+            log.d("onAdLoadingFinished mediaConfig == null");
             return;
         }
         prepare(mediaConfig);
