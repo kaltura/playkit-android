@@ -462,6 +462,15 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         adManager.onAdClicked();
     }
 
+    @Override
+    public void screenOrientationChanged(boolean isFullScreen) {
+        if (isFullScreen) {
+            adManager.onExpand();
+        } else {
+            adManager.onCollapse();
+        }
+    }
+
     private static ADConfig parseConfig(Object config) {
         if (config instanceof ADConfig) {
             return ((ADConfig) config);

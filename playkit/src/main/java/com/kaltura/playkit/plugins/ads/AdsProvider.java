@@ -36,4 +36,5 @@ public interface AdsProvider {
     void removeAdProviderListener();
     void skipAd();
     void openLearnMore();
+    void screenOrientationChanged(boolean isFullScreen);
 }

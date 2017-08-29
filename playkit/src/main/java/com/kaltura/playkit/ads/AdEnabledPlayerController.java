@@ -149,6 +149,11 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
+    public void screenOrientationChanged(boolean isFullScreen) {
+        adsProvider.screenOrientationChanged(isFullScreen);
+    }
+
+    @Override
     public long getAdCurrentPosition() {
         if (adsProvider != null) {
             long currPos = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();

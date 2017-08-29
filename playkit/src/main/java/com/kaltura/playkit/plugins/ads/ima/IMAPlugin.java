@@ -599,6 +599,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     @Override
+    public void screenOrientationChanged(boolean isFullScreen) {
+
+    }
+
+    @Override
     public void onAdEvent(com.google.ads.interactivemedia.v3.api.AdEvent adEvent) {
         lastEventReceived = adEvent.getType();
         log.d("Event Name: " + lastEventReceived.name());
