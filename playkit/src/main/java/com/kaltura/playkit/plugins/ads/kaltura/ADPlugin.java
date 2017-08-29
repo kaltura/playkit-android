@@ -471,6 +471,15 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         }
     }
 
+    @Override
+    public void volumeKeySilent(boolean isMute) {
+        if (isMute) {
+            adManager.onMute();
+        } else {
+            adManager.onUnMute();
+        }
+    }
+
     private static ADConfig parseConfig(Object config) {
         if (config instanceof ADConfig) {
             return ((ADConfig) config);

@@ -154,6 +154,11 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
+    public void volumeKeySilent(boolean isMute) {
+        adsProvider.volumeKeySilent(isMute);
+    }
+
+    @Override
     public long getAdCurrentPosition() {
         if (adsProvider != null) {
             long currPos = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
