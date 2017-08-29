@@ -36,7 +36,7 @@ import com.kaltura.playkit.plugins.ads.kaltura.events.AdPluginErrorEvent;
 import com.kaltura.playkit.plugins.ads.kaltura.events.AdPluginEvent;
 import com.kaltura.playkit.utils.Consts;
 
-import static com.google.obf.hi.b.adsManager;
+import java.util.Set;
 
 public class ADPlugin extends PKPlugin implements AdsProvider {
 
@@ -155,7 +155,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         ContentProgressProvider contentProgressProvider = new ContentProgressProvider() {
             @Override
             public VideoProgressUpdate getContentProgress() {
-                if (adsManager == null || player == null) {
+                if (adManager == null || player == null) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
                 long currentPosition = player.getCurrentPosition();
@@ -202,6 +202,11 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
             public void onAdRequestedEvent(String adTagURL) {
                 log.d("received event onAdRequestedEvent adTagURL = " + adTagURL);
                 messageBus.post(new AdPluginEvent.AdRequestedEvent(adTagURL));
+            }
+
+            @Override
+            public void onCuePointsChangedEvent(Set<Double> cuePoints) {
+                messageBus.post(new AdPluginEvent.CuePointsChangedEvent(cuePoints));
             }
 
             @Override
@@ -399,7 +404,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         if (adManager != null) {
             adManager.removeAdPlayer();
             adManager.addListener(null);
-            //adsManager.destroy();
+            //adManager.destroy();
             adManager = null;
         }
     }

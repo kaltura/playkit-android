@@ -4,6 +4,8 @@ import com.kaltura.admanager.AdBreakInfo;
 import com.kaltura.admanager.AdInfo;
 import com.kaltura.playkit.PKEvent;
 
+import java.util.Set;
+
 
 public class AdPluginEvent implements PKEvent {
 
@@ -81,11 +83,22 @@ public class AdPluginEvent implements PKEvent {
         }
     }
 
+    public static class CuePointsChangedEvent extends AdPluginEvent {
+
+        public Set<Double> cuePoints;
+
+        public CuePointsChangedEvent(Set<Double> cuePoints) {
+            super(Type.CUEPOINTS_CHANGED);
+            this.cuePoints = cuePoints;
+        }
+    }
+
     public enum Type {
         AD_BREAK_PENDING,
         AD_PROGRESS_UPDATE,
         PLAYBACK_STATE,
         AD_REQUESTED,
+        CUEPOINTS_CHANGED,
         LOADED,
         STARTED,
         PAUSED,
@@ -98,6 +111,7 @@ public class AdPluginEvent implements PKEvent {
         AD_BUFFER,
         CONTENT_PAUSE_REQUESTED,
         CONTENT_RESUME_REQUESTED,
+        AD_BREAK_IGNORED,
         ALL_ADS_COMPLETED
     }
 
