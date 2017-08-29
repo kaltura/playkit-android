@@ -463,19 +463,23 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
 
     @Override
     public void screenOrientationChanged(boolean isFullScreen) {
-        if (isFullScreen) {
-            adManager.onExpand();
-        } else {
-            adManager.onCollapse();
+        if (isAdDisplayed()) {
+            if (isFullScreen) {
+                adManager.onExpand();
+            } else {
+                adManager.onCollapse();
+            }
         }
     }
 
     @Override
     public void volumeKeySilent(boolean isMute) {
-        if (isMute) {
-            adManager.onMute();
-        } else {
-            adManager.onUnMute();
+        if (isAdDisplayed()) {
+            if (isMute) {
+                adManager.onMute();
+            } else {
+                adManager.onUnMute();
+            }
         }
     }
 
