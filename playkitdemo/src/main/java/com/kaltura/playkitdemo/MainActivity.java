@@ -357,7 +357,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
         //config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
 
-        ADConfig adsConfig = new ADConfig().setAdTagURL(google_ad).setPlayerViewContainer(layout).setAdSkinContainer(adSkin);
+        ADConfig adsConfig = new ADConfig().setAdTagURL(multi_ad_vast).setPlayerViewContainer(layout).setAdSkinContainer(adSkin);
         config.setPluginConfig(ADPlugin.factory.getName(), adsConfig);
 
     }

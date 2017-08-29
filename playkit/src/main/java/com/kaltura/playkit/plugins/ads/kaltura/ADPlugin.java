@@ -49,7 +49,9 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     private ADConfig adConfig;
     private PKAdProviderListener pkAdProviderListener;
     private PKMediaConfig mediaConfig;
-    private boolean isAllAdsCompleted = false;
+    private boolean isAllAdsCompleted;
+    private boolean appIsInBackground;
+    private boolean adManagerInitDuringBackground;
 
     //---------------------------
 
@@ -322,11 +324,12 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         isAllAdsCompleted = false;
         isContentPrepared = false;
         //isContentEndedBeforeMidroll = false;
-
-        if (adConfig != null) {
-            requestForAds(adConfig.getAdTagURL());
-        } else {
-            preparePlayer(true);
+        if (!adManagerInitDuringBackground) {
+            if (adConfig != null) {
+                requestForAds(adConfig.getAdTagURL());
+            } else {
+                preparePlayer(true);
+            }
         }
     }
 
@@ -359,14 +362,46 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     @Override
     protected void onApplicationResumed() {
         isAppInBackground = false;
+        if (adManagerInitDuringBackground) {
+            adManagerInitDuringBackground = false;
+            setupAdManager();
+            requestForAds(adConfig.getAdTagURL());
+            return;
+        }
+
         if (isAdDisplayed()) {
             adManager.getAdPlayer().onApplicationResumed();
         }
+
     }
 
     @Override
     protected void onDestroy() {
+        log.d("IMA Start onDestroy");
+        resetAdPlugin();
+        if (adManager != null) {
+            //adManager.destroy();
+            adManager.removeAdPlayer();
+            adManager.addListener(null);
+            adManager = null;
+        }
 
+        isContentPrepared = false;
+        removeAdProviderListener();
+    }
+
+    private void resetAdPlugin() {
+        log.d("Start resetAdPlugin");
+        isAdError = false;
+        isAdRequested = false;
+        isAdDisplayed = false;
+
+        if (adManager != null) {
+            adManager.removeAdPlayer();
+            adManager.addListener(null);
+            //adsManager.destroy();
+            adManager = null;
+        }
     }
 
 
@@ -379,12 +414,20 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
 
     @Override
     public void start() {
-
+        if (adManager != null) {
+            log.d("AD Plugin start called");
+            if (appIsInBackground) {
+                adManagerInitDuringBackground = true;
+                log.d("Start: Ad Manager Init : " + adManagerInitDuringBackground);
+            }
+        } else {
+            //setupAdManager();
+        }
     }
 
     @Override
     public void destroyAdsManager() {
-
+        resetAdPlugin();
     }
 
     @Override
