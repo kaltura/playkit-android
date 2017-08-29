@@ -192,7 +192,7 @@ public class ADPlayer implements AdPlayer {
                                     @Override
                                     public void onEvent(PKEvent event) {
                                         if ( event.eventType() != PlayerEvent.Type.PLAYHEAD_UPDATED) {
-                                            Log.d(TAG, "XXX Ad Player Event => " + event.eventType());
+                                            Log.d(TAG, "Ad Player Event => " + event.eventType());
                                         }
                                         Enum receivedEventType = event.eventType();
                                         if (event instanceof PlayerEvent) {

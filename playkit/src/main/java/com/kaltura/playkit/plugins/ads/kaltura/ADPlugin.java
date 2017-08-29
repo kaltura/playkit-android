@@ -261,7 +261,6 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
             @Override
             public void onAdBreakEndedEvent(AdBreakEndedReason adBreakEndedReason) {
                 log.d("received event onAdBreakEnded isContentPrepared = " + isContentPrepared);
-                log.d("XXX remove adplayer");
 
                 if (!isContentPrepared) {
                     isContentPrepared = false;
@@ -491,9 +490,9 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     }
 
     private void preparePlayer(boolean doPlay) {
-        log.d("XX AdPlugin prepare");
+        log.d("AdPlugin preparePlayer");
         if (pkAdProviderListener != null && !isAppInBackground) {
-            log.d("XX AdPlugin in prepare player");
+            log.d("AdPlugin doing prepare player");
             isContentPrepared = true;
             pkAdProviderListener.onAdLoadingFinished();
             if (doPlay) {
@@ -512,7 +511,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     }
 
     private void removeAdPlayer() {
-        log.d("XXX removeAdPlayer");
+        log.d("removeAdPlayer");
         if (adConfig != null) {
             adConfig.getAdSkinContainer().setVisibility(View.INVISIBLE);
         }

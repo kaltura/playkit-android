@@ -22,9 +22,6 @@ import com.kaltura.playkit.ads.AdTagType;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by gilad.nadav on 17/11/2016.
- */
 
 public class IMAConfig {
 

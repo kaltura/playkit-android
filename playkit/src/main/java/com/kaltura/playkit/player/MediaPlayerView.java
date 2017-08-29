@@ -22,9 +22,6 @@ import android.view.ViewGroup;
 
 import com.kaltura.playkit.PKLog;
 
-/**
- * Created by gilad.nadav on 01/01/2017.
- */
 
 public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callback {
 

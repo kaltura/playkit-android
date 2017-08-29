@@ -14,10 +14,6 @@ package com.kaltura.playkit.plugins.ads;
 
 import java.util.List;
 
-/**
- * Created by gilad.nadav on 22/11/2016.
- */
-
 public class AdCuePoints {
 
     private List<Long> adCuePoints;

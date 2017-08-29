@@ -14,9 +14,6 @@ package com.kaltura.playkit.plugins.ott;
 
 import com.google.gson.JsonObject;
 
-/**
- * Created by gilad.nadav on 22/06/2017.
- */
 
 public class PhoenixAnalyticsConfig {
     public static final String PARTNER_ID = "partnerId";

@@ -15,9 +15,6 @@ package com.kaltura.playkit.plugins.ovp;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.utils.Consts;
 
-/**
- * Created by gilad.nadav on 18/05/2017.
- */
 
 public class KalturaStatsConfig {
 

@@ -15,10 +15,6 @@ package com.kaltura.playkit.plugins.ads;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKError;
 
-/**
- * Created by gilad.nadav on 22/11/2016.
- */
-
 public class AdEvent implements PKEvent {
 
     public Type type;

@@ -16,10 +16,6 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
-/**
- * Created by gilad.nadav on 27/12/2016.
- */
-
 public abstract class PlayerView extends FrameLayout {
     public PlayerView(Context context) {
         super(context);

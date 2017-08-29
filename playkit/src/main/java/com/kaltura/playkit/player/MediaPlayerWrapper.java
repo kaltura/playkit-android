@@ -46,11 +46,6 @@ import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.NOT_PRE
 import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARED;
 import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARING;
 
-/**
- * Created by gilad.nadav on 30/12/2016.
- * @hide
- */
-
 class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaPlayer.OnPreparedListener,
         MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener {
 
