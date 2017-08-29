@@ -96,12 +96,12 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
         }
 
         if(duration != C.TIME_UNSET){
-            log.d("updateProgress Set Duration:" + duration);
+            //log.d("updateProgress Set Duration:" + duration);
             tvTime.setText(stringForTime(duration));
         }
 
         if (!dragging && position != C.POSITION_UNSET && duration != C.TIME_UNSET) {
-            log.d("updateProgress Set Position:" + position);
+            //log.d("updateProgress Set Position:" + position);
             tvCurTime.setText(stringForTime(position));
             seekBar.setProgress(progressBarValue(position));
         }

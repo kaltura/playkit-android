@@ -217,7 +217,7 @@ public class ADPlayer implements AdPlayer {
                                                             break;
                                                         case PAUSED:
                                                             for (Listener callback : adPlayerCallbacks) {
-                                                                callback.onResume();
+                                                                callback.onAdResume();
                                                             }
                                                             break;
                                                         default:
@@ -233,7 +233,7 @@ public class ADPlayer implements AdPlayer {
                                                     break;
                                                 case PAUSE:
                                                     for (Listener callback : adPlayerCallbacks) {
-                                                        callback.onPause();
+                                                        callback.onAdPause();
                                                     }
                                                     playbackState = PlaybackState.PAUSED;
                                                     //stopTimer();
@@ -246,6 +246,9 @@ public class ADPlayer implements AdPlayer {
                                                     playbackState = PlaybackState.STOPPED;
                                                     break;
                                                 case TRACKS_AVAILABLE:
+                                                    //for (Listener callback : adPlayerCallbacks) {
+                                                    //    callback.onPlayerReady();
+                                                   // }
                                                     break;
                                                 case STOPPED:
                                                     playbackState = PlaybackState.STOPPED;

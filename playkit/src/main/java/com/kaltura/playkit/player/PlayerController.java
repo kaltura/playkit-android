@@ -575,7 +575,7 @@ public class PlayerController implements Player {
         position = player.getCurrentPosition();
         duration = player.getDuration();
         if (position > 0 && duration > 0) {
-            log.d("updateProgress = " + position + "/" + duration);
+            //log.d("updateProgress = " + position + "/" + duration);
             eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position,duration));
         }
 

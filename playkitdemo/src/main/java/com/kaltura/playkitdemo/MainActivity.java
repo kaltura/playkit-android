@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void startMockMediaLoading(OnMediaLoadCompletion completion) {
 
-        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", getApplicationContext(), "hls");
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", getApplicationContext(), "hls1");
 
         mediaProvider.load(completion);
     }
@@ -336,11 +336,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //    }
 
     private void addIMAPluginConfig(PKPluginConfigs config, FrameLayout layout, RelativeLayout adSkin) {
+
         String error_ad = "https://in-viacom18.videoplaza.tv/proxy/distributor/v2?s=viacom18/hindi/COH&t=Content+Type=Full+Episode,Series+Title=Shani,Gender=,GeoCity=,Age=,Carrier=,Media+ID=490060,Genre=Mythology,SBU=COH,Content+Name=From+royalty+to+rubble,OEM=LGE,Language=Hindi,WiFi=Y,appversion=0.5.119,useragent=Android+LGE+google+Nexus+5,KidsPinEnabled=false&tt=p%2Cm%2Cpo&bp=366.6,727.2,1095.6&rnd=8170019078998&cd=1224&vbw=400&ang_pbname=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.tv.v18.viola&pid=62952433-ccf0-4952-8bef-27920bfd739a&rt=vmap_1.0&pf=and_6.0.1&cp.useragent=Android+LGE+google+Nexus+5&cp.adid=d928acbe-4276-422e-b97a-9d9b681f94c3&cp.optout=false&cp.deviceid=3a6cabcc961b0229&cp.osversion=6.0.1";
         String multi_ad_vast = "https://pubads.g.doubleclick.net/gampad/ads?slotname=/124319096/external/ad_rule_samples&sz=640x480&ciu_szs=300x250&unviewed_position_start=1&output=xml_vast3&impl=s&env=vp&gdfp_req=1&ad_rule=0&cue=15000&vad_type=linear&vpos=midroll&pod=2&mridx=1&pmnd=0&pmxd=31000&pmad=-1&vrid=6616&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpod&url=https://developers.google.com/interactive-media-ads/docs/sdks/html5/tags&video_doc_id=short_onecue&cmsid=496&kfa=0&tfcd=0";
         String skip_ad = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";
         String v18_ad_vmap = "https://in-viacom18.videoplaza.tv/proxy/distributor/v2?s=VORG&t=Language=Hindi,Series%20Title=Yo%20Ke%20Hua%20Bro,Genre=Drama,SBU=VORG,Content%20Type=Full%20Episode,Media%20ID=524406,Age=,Gender=&tt=p,m,po&rt=vmap_1.0&rnd=0.15867538995841546&pf=html5&cd=1435000&bp=464,764,1100";
+        String ad_hls_usa = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=%2F57869717%2FDeportes%2FDeportes_Videos&gdfp_req=1&env=vp&output=xml_vast3&unviewed_position_start=1&url=http%3A%2F%2Fcdnapi.kaltura.com%2Fhtml5%2Fhtml5lib%2Fv2.59%2FmwEmbedFrame.php%2Fp%2F1901501%2Fuiconf_id%2F28709932%2Fentry_id%2F0_lpgr4luv%3Fwid%3D_1901501%26iframeembed%3Dtrue%26playerId%3Dkaltura_player_1448321939%26entry_id%3D0_lpgr4luv%26flashvars%255BstreamerType%255D%3Dauto&description_url=%5Bdescription_url%5D&correlator=3547248123560359&sdkv=h.3.176.0&sdki=3c0d&scor=2332314844558947&adk=333819758&u_so=l&osd=2&frm=0&sdr=1&mpt=kaltura%2FmwEmbed&mpv=2.59&afvsz=200x200%2C250x250%2C300x250%2C336x280%2C450x50%2C468x60%2C480x70%2C728x90&ged=ve4_td2_tt0_pd2_la2000_er0.0.153.300_vi0.0.916.1127_vp100_eb24171";
+        String honda_ad =  "http://pubads.g.doubleclick.net/gampad/ads?sz=400x300&iu=%2F6062%2Fhanna_MA_group%2Fvideo_comp_app&ciu_szs=&impl=s&gdfp_req=1&env=vp&output=xml_vast3&unviewed_position_start=1&m_ast=vast&url=";
+
                 //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
@@ -353,7 +357,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
         //config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
 
-        ADConfig adsConfig = new ADConfig().setAdTagURL(multi_ad_vast).setPlayerViewContainer(layout).setAdSkinContainer(adSkin);
+        ADConfig adsConfig = new ADConfig().setAdTagURL(skip_ad).setPlayerViewContainer(layout).setAdSkinContainer(adSkin);
         config.setPluginConfig(ADPlugin.factory.getName(), adsConfig);
 
     }
@@ -390,7 +394,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onEvent(PKEvent event) {
                 AdPluginEvent.ProgressUpdateEvent adPluginEventProress = (AdPluginEvent.ProgressUpdateEvent) event;
-                log.d("received NEW AD_PROGRESS_UPDATE " + adPluginEventProress.currentPosition + "/" +  adPluginEventProress.duration);
+                //log.d("received NEW AD_PROGRESS_UPDATE " + adPluginEventProress.currentPosition + "/" +  adPluginEventProress.duration);
             }
         }, AdPluginEvent.Type.AD_PROGRESS_UPDATE);
 
@@ -492,7 +496,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onEvent(PKEvent event) {
                 //When the track data available, this event occurs. It brings the info object with it.
                 PlayerEvent.PlayheadUpdated playheadUpdated = (PlayerEvent.PlayheadUpdated) event;
-                log.d("playheadUpdated event  position = " + playheadUpdated.position + " duration = " + playheadUpdated.duration);
+                //log.d("playheadUpdated event  position = " + playheadUpdated.position + " duration = " + playheadUpdated.duration);
 
             }
         }, PlayerEvent.Type.PLAYHEAD_UPDATED);

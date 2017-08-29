@@ -36,8 +36,6 @@ import com.kaltura.playkit.plugins.ads.kaltura.events.AdPluginErrorEvent;
 import com.kaltura.playkit.plugins.ads.kaltura.events.AdPluginEvent;
 import com.kaltura.playkit.utils.Consts;
 
-import java.util.List;
-
 import static com.google.obf.hi.b.adsManager;
 
 public class ADPlugin extends PKPlugin implements AdsProvider {
@@ -52,9 +50,6 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     private PKAdProviderListener pkAdProviderListener;
     private PKMediaConfig mediaConfig;
     private boolean isAllAdsCompleted = false;
-    private List<Double> adBreaksCuePoints;
-    private DefaultAdUIController adUIController;
-    private AdUiListener adUiListener;
 
     //---------------------------
 
@@ -63,7 +58,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     private DefaultUrlPinger urlPinger;
     private DefaultStringFetcher stringFetcher;
     private DefaultAdManager adManager;
-    private AdPlayer adPlayer;
+    //private AdPlayer adPlayer;
 
 
     //------------------------------
@@ -109,6 +104,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                 @Override
                 public void onEvent(PKEvent event) {
                     log.d("Received:PlayerEvent:" + event.eventType().name());
+//                    AdPositionType adPositionType = adManager.getAdBreakInfo().getAdPositionType();
 //                    AdCuePoints adCuePoints = new AdCuePoints(getAdCuePoints());
 //                    if (event.eventType() == PlayerEvent.Type.ENDED) {
 //                        if (isAllAdsCompleted || !adCuePoints.hasPostRoll() || adInfo == null || (adInfo.getAdIndexInPod() == adInfo.getTotalAdsInPod())) {
@@ -137,13 +133,11 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         AdPlayer.Factory adPlayerFactory = new AdPlayer.Factory() {
             @Override
             public AdPlayer newPlayer() {
-                adPlayer = new ADPlayer(context);
+                AdPlayer adPlayer = new ADPlayer(context);
                 ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT);
                 View adPlayerView = adPlayer.getView();
                 adPlayerView.setLayoutParams(layoutParams);
-                ((ViewGroup) adConfig.getPlayerViewContainer()).removeAllViews();
-                ((ViewGroup) adConfig.getPlayerViewContainer()).addView(adPlayerView);
                 return adPlayer;
             }
         };
@@ -151,10 +145,11 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         AdUIController.Factory adUIFactory =  new AdUIController.Factory() {
             @Override
             public AdUIController newAdController(AdUiListener listener, AdPlayer adPlayer) {
-                adUIController = new DefaultAdUIController(context, listener, adConfig.getAdSkinContainer());
+                AdUIController adUIController = new DefaultAdUIController(context, listener, adConfig.getAdSkinContainer());
                 return adUIController;
             }
         };
+
         ContentProgressProvider contentProgressProvider = new ContentProgressProvider() {
             @Override
             public VideoProgressUpdate getContentProgress() {
@@ -186,6 +181,8 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
             public void onAdBreakStartedEvent(AdBreakInfo adBreakInfo, AdInfo adInfo) {
                 if (!isAppInBackground) {
                     log.d("received event onAdBreakStartedEvent isAppInBackground = " + isAppInBackground);
+                    ((ViewGroup) adConfig.getPlayerViewContainer()).removeAllViews();
+                    ((ViewGroup) adConfig.getPlayerViewContainer()).addView(adManager.getAdPlayer().getView());
                     preparePlayer(false);
                 }
                 messageBus.post(new AdPluginEvent.AdBreakStarted(adBreakInfo, adInfo));
@@ -202,10 +199,9 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                 log.d("received event " + adEventType + " isAppInBackground = " + isAppInBackground);
                 switch(adEventType) {
                     case adBreakPending:
+                        adManager.createAdPlayer();
+                        player.pause();
                         isAdRequested = true;
-                        if (!isAppInBackground) {
-                            adManager.playAdBreak();
-                        }
                         messageBus.post(new AdPluginEvent(AdPluginEvent.Type.AD_BREAK_PENDING));
                         break;
                     case allAdsCompleted:
@@ -233,6 +229,9 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         messageBus.post(new AdPluginEvent(AdPluginEvent.Type.SKIPPED));
                         break;
                     case adLoaded:
+                        if (!isAppInBackground) {
+                            adManager.playAdBreak();
+                        }
                         messageBus.post(new AdPluginEvent.AdLoadedEvent(adInfo));
                         break;
                     case adStarted:
@@ -263,12 +262,14 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
             public void onAdBreakEndedEvent(AdBreakEndedReason adBreakEndedReason) {
                 log.d("received event onAdBreakEnded isContentPrepared = " + isContentPrepared);
                 log.d("XXX remove adplayer");
-                removeAdPlayer();
+
                 if (!isContentPrepared) {
+                    isContentPrepared = false;
                     preparePlayer(true);
                 } else {
                     player.play();
                 }
+                removeAdPlayer(); // remove the player and the view
                 messageBus.post(new AdPluginEvent(AdPluginEvent.Type.CONTENT_RESUME_REQUESTED));
             }
 
@@ -312,6 +313,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         isAdRequested = false;
         isAdDisplayed = false;
         isAllAdsCompleted = false;
+        isContentPrepared = false;
         //isContentEndedBeforeMidroll = false;
 
         if (adConfig != null) {
@@ -334,26 +336,24 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         isAdDisplayed = false;
         isAdIsPaused  = false;
         isAdError     = false;
+        isContentPrepared = false;
         isAllAdsCompleted = false;
     }
 
     @Override
     protected void onApplicationPaused() {
         isAppInBackground = true;
-        if (adPlayer != null) {
-            if (isAdDisplayed()) {
-                adPlayer.onApplicationPaused();
-            }
+        if (isAdDisplayed()) {
+            adManager.onPause();
+            adManager.getAdPlayer().onApplicationPaused();
         }
     }
 
     @Override
     protected void onApplicationResumed() {
         isAppInBackground = false;
-        if (adPlayer != null) {
-            if (isAdDisplayed()) {
-                adPlayer.onApplicationResumed();
-            }
+        if (isAdDisplayed()) {
+            adManager.getAdPlayer().onApplicationResumed();
         }
     }
 
@@ -382,12 +382,12 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
 
     @Override
     public void resume() {
-        adPlayer.play();
+        adManager.getAdPlayer().play();
     }
 
     @Override
     public void pause() {
-        adPlayer.pause();
+        adManager.getAdPlayer().pause();
     }
 
     @Override
@@ -427,12 +427,19 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
 
     @Override
     public long getDuration() {
-        return adPlayer != null ? (long) adPlayer.getDuration() / Consts.MILLISECONDS_MULTIPLIER : 0;
+        if (isAdDisplayed()) {
+            return  (long) adManager.getAdPlayer().getDuration() / Consts.MILLISECONDS_MULTIPLIER;
+        }
+        return 0;
     }
 
     @Override
     public long getCurrentPosition() {
-        return adPlayer != null ? (long) adPlayer.getPosition() / Consts.MILLISECONDS_MULTIPLIER : 0;
+        if (isAdDisplayed()) {
+            return (long) adManager.getAdPlayer().getPosition() / Consts.MILLISECONDS_MULTIPLIER;
+        } else {
+            return 0;
+        }
     }
 
     @Override
@@ -465,49 +472,6 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         return null;
     }
 
-//   public AdUiListener getAdUiListener() {
-//        if (adUiListener != null) {
-//            return  adUiListener;
-//        }
-//        adUiListener = new AdUiListener() {
-//            @Override
-//            public void onAdClicked() {
-//
-//            }
-//
-//            @Override
-//            public void onSkip() {
-//
-//            }
-//
-//            @Override
-//            public void onTouch() {
-//
-//            }
-//
-//            @Override
-//            public void onExpand() {
-//
-//            }
-//
-//            @Override
-//            public void onCollapse() {
-//
-//            }
-//
-//            @Override
-//            public void onPause() {
-//
-//            }
-//
-//            @Override
-//            public void onResume() {
-//
-//            }
-//        };
-//        return adUiListener;
-//    }
-
     private void preparePlayer(boolean doPlay) {
         log.d("XX AdPlugin prepare");
         if (pkAdProviderListener != null && !isAppInBackground) {
@@ -534,10 +498,8 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         if (adConfig != null) {
             adConfig.getAdSkinContainer().setVisibility(View.INVISIBLE);
         }
-
-        if (adPlayer != null) {
-            adPlayer.destroy();
-            adPlayer = null;
-        }
+        adManager.removeAdPlayer();
+        ((ViewGroup) adConfig.getPlayerViewContainer()).removeAllViews();
+        ((ViewGroup) adConfig.getPlayerViewContainer()).addView(player.getView());
     }
 }

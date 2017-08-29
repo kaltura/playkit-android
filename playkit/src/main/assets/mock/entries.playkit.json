@@ -82,6 +82,18 @@
       }
     ]
   },
+  "hls1": {
+    "duration": 102000,
+    "id": "0_uka1msg4",
+    "name": "Harold",
+    "sources": [
+      {
+        "id": "0_uka1msg4",
+        "mimeType": "application/x-mpegURL",
+        "url": "https://cdnapisec.kaltura.com/p/243342/sp/24334200/playManifest/entryId/0_uka1msg4/flavorIds/1_vqhfu6uy,1_80sohj7p,1_ry9w1l0b/format/applehttp/protocol/https/a.m3u8"
+      }
+    ]
+  },
   "live": {
     "duration": 102000,
     "id": "0_f8re4ujs",
