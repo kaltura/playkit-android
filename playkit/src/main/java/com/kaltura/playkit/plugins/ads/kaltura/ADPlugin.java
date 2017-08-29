@@ -165,8 +165,16 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                 return new VideoProgressUpdate(currentPosition, duration);
             }
         };
+        AdManager.Settings settings = new AdManager.Settings();
+        settings.preferredBitrate = adConfig.getVideoBitrate();;
+        settings.preferredMimeType = adConfig.getVideoMimeType();
+        if (mediaConfig != null && mediaConfig.getStartPosition() > 0) {
+            settings.statAdsFromPosition = mediaConfig.getStartPosition();
+        } else {
+            settings.statAdsFromPosition = 0;
+        }
 
-        adManager = new DefaultAdManager(context, adPlayerFactory, contentProgressProvider, adUIFactory, stringFetcher, urlPinger, null/*Settings*/);
+        adManager = new DefaultAdManager(context, adPlayerFactory, contentProgressProvider, adUIFactory, stringFetcher, urlPinger, settings);
         adManager.addListener(getAdManagerListener());
     }
 
