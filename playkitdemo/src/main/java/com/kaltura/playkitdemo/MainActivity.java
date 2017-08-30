@@ -403,7 +403,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onEvent(PKEvent event) {
                 AdPluginErrorEvent.AdErrorEvent adError = (AdPluginErrorEvent.AdErrorEvent) event;
-                log.d("received NEW AD_ERROR " + adError.errorEvent.name() + " "  + adError.adErrorMessage);
+                log.d("received NEW AD_ERROR " + adError.adErrorEvent.type + " "  + adError.adErrorMessage);
             }
         }, AdPluginErrorEvent.Type.AD_ERROR);
 

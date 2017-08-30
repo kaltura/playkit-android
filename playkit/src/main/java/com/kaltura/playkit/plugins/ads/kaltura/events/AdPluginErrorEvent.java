@@ -1,39 +1,31 @@
 
 package com.kaltura.playkit.plugins.ads.kaltura.events;
 
-import com.kaltura.admanager.AdEvent;
 import com.kaltura.playkit.PKEvent;
 
 public class AdPluginErrorEvent implements PKEvent {
 
-    public AdPluginErrorEvent.Type type;
+    public AdErrorEvent.Type type;
 
-    public AdPluginErrorEvent(AdPluginErrorEvent.Type type) {
-        this.type = type;
-    }
-
-    public AdPluginErrorEvent(AdPluginErrorEvent.Type type, String message) {
+    public AdPluginErrorEvent(AdErrorEvent.Type type) {
         this.type = type;
     }
 
     public static class AdErrorEvent extends AdPluginErrorEvent {
-        public AdEvent.AdErrorEventType errorEvent;
-        public String adErrorMessage;
-        public Throwable ex;
 
-        public AdErrorEvent(AdEvent.AdErrorEventType errorEvent, String adErrorMessage, Throwable ex) {
+        public final com.kaltura.admanager.AdErrorEvent adErrorEvent;
+        public final String adErrorMessage;
+
+        public AdErrorEvent(com.kaltura.admanager.AdErrorEvent adErrorEvent, String adErrorMessage) {
             super(Type.AD_ERROR);
-            this.errorEvent = errorEvent;
+            this.adErrorEvent = adErrorEvent;
             this.adErrorMessage = adErrorMessage;
-            this.ex = ex;
         }
     }
-
 
     public enum Type {
         AD_ERROR
     }
-
 
     @Override
     public Enum eventType() {
