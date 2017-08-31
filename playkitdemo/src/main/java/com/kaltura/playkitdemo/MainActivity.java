@@ -195,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void startMockMediaLoading(OnMediaLoadCompletion completion) {
 
-        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", getApplicationContext(), "hls1");
+        mediaProvider = new MockMediaProvider("mock/entries.playkit.json", getApplicationContext(), "hls");
 
         mediaProvider.load(completion);
     }

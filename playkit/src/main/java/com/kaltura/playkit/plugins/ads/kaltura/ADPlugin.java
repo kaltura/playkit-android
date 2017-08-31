@@ -46,8 +46,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     private PKAdProviderListener pkAdProviderListener;
     private PKMediaConfig mediaConfig;
     private boolean isAllAdsCompleted;
-    private boolean appIsInBackground;
-    private boolean adManagerInitDuringBackground;
+
 
     //---------------------------
 
@@ -62,6 +61,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     //------------------------------
 
     private boolean isAppInBackground = false;
+    private boolean adManagerInitDuringBackground = false;
     private boolean isContentPrepared = false;
     private boolean isAdDisplayed;
     private boolean isAdIsPaused;
@@ -143,8 +143,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         AdUIController.Factory adUIFactory =  new AdUIController.Factory() {
             @Override
             public AdUIController newAdController(AdUiListener listener, AdPlayer adPlayer) {
-                AdUIController adUIController = new DefaultAdUIController(context, listener, adConfig.getAdSkinContainer(), adConfig.getCompanionAdWidth(), adConfig.getCompanionAdHeight());
-                return adUIController;
+                return new DefaultAdUIController(context, listener, adConfig.getAdSkinContainer(), adConfig.getCompanionAdWidth(), adConfig.getCompanionAdHeight());
             }
         };
 
@@ -164,8 +163,9 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
             }
         };
         AdManager.Settings settings = new AdManager.Settings();
-        settings.preferredBitrate = adConfig.getVideoBitrate();;
-        settings.preferredMimeType = adConfig.getVideoMimeType();
+        settings.preferredBitrate   = adConfig.getVideoBitrate();
+        settings.preferredMimeType  = adConfig.getVideoMimeType();
+        settings.adLoadTimeout      = adConfig.getAdLoadTimeOut();
         if (mediaConfig != null && mediaConfig.getStartPosition() > 0) {
             settings.statAdsFromPosition = mediaConfig.getStartPosition();
         } else {
@@ -176,7 +176,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         adManager.addListener(getAdManagerListener());
     }
 
-    public AdManager.Listener getAdManagerListener() {
+    private AdManager.Listener getAdManagerListener() {
         if (adManagerListener != null) {
             return adManagerListener;
         }
@@ -293,7 +293,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     }
 
     private void handleErrorEvent(AdPluginErrorEvent.AdErrorEvent adPluginErrorEvent) {
-        String msg = (adPluginErrorEvent.adErrorEvent.exception == null) ? adPluginErrorEvent.adErrorMessage : adPluginErrorEvent.adErrorEvent.exception.getMessage();
+        //String msg = (adPluginErrorEvent.adErrorEvent.exception == null) ? adPluginErrorEvent.adErrorMessage : adPluginErrorEvent.adErrorEvent.exception.getMessage();
         sendError(adPluginErrorEvent);
         isAdRequested = true;
         isAdError = true;
@@ -357,6 +357,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     @Override
     protected void onApplicationResumed() {
         isAppInBackground = false;
+        adManagerInitDuringBackground = false;
         if (adManagerInitDuringBackground) {
             adManagerInitDuringBackground = false;
             setupAdManager();
@@ -411,9 +412,9 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     public void start() {
         if (adManager != null) {
             log.d("AD Plugin start called");
-            if (appIsInBackground) {
+            if (isAppInBackground) {
                 adManagerInitDuringBackground = true;
-                log.d("Start: Ad Manager Init : " + adManagerInitDuringBackground);
+                log.d("Start: Ad Manager Init adManagerInitDuringBackground : " + adManagerInitDuringBackground);
             }
         } else {
             //setupAdManager();
