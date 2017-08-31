@@ -149,6 +149,11 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
+    public void openCompanionAdLearnMore() {
+        adsProvider.openComapanionAdLearnMore();
+    }
+
+    @Override
     public void screenOrientationChanged(boolean isFullScreen) {
         adsProvider.screenOrientationChanged(isFullScreen);
     }

@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -130,7 +131,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         if (response.isSuccess()) {
                             onMediaLoaded(response.getResponse());
                         } else {
-
                             Toast.makeText(MainActivity.this, "failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""), Toast.LENGTH_LONG).show();
                             log.e("failed to fetch media data: " + (response.getError() != null ? response.getError().getMessage() : ""));
                         }
@@ -145,6 +145,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //      startSimpleOvpMediaLoading(playLoadedEntry);
 //      LocalAssets.start(this, playLoadedEntry);
         playerContainer = (RelativeLayout)findViewById(R.id.player_container);
+//        ViewGroup companionAdSlot = (ViewGroup) findViewById(R.id.companionAdSlot);
+//        ImageView imageView1 = (ImageView) findViewById(R.id.imageViewCompanion);
+//        Glide.with(getApplicationContext())
+//                .load("http://kimg.voot.com/kimg/224332525b1c428d9800cf69b1688913_1280X720.jpg")
+//                .into(imageView1);
         spinerContainer = (RelativeLayout)findViewById(R.id.spiner_container);
         fullScreenBtn = (AppCompatImageView)findViewById(R.id.full_screen_switcher);
         fullScreenBtn.setOnClickListener(new View.OnClickListener() {
@@ -269,6 +274,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
 
+        LinearLayout companionAdPlaceHolder = (LinearLayout)adSkin.findViewById(R.id.companionAdSlot);
+        ((View)companionAdPlaceHolder).findViewById(R.id.imageViewCompanion).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                player.getAdController().openCompanionAdLearnMore();
+            }
+        });
 
 
 
@@ -345,6 +357,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         String ad_hls = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=%2F57869717%2FDeportes%2FDeportes_Videos&gdfp_req=1&env=vp&output=xml_vast3&unviewed_position_start=1&url=http%3A%2F%2Fcdnapi.kaltura.com%2Fhtml5%2Fhtml5lib%2Fv2.59%2FmwEmbedFrame.php%2Fp%2F1901501%2Fuiconf_id%2F28709932%2Fentry_id%2F0_lpgr4luv%3Fwid%3D_1901501%26iframeembed%3Dtrue%26playerId%3Dkaltura_player_1448321939%26entry_id%3D0_lpgr4luv%26flashvars%255BstreamerType%255D%3Dauto&description_url=%5Bdescription_url%5D&correlator=3547248123560359&sdkv=h.3.176.0&sdki=3c0d&scor=2332314844558947&adk=333819758&u_so=l&osd=2&frm=0&sdr=1&mpt=kaltura%2FmwEmbed&mpv=2.59&afvsz=200x200%2C250x250%2C300x250%2C336x280%2C450x50%2C468x60%2C480x70%2C728x90&ged=ve4_td2_tt0_pd2_la2000_er0.0.153.300_vi0.0.916.1127_vp100_eb24171";
         String honda_ad =  "http://pubads.g.doubleclick.net/gampad/ads?sz=400x300&iu=%2F6062%2Fhanna_MA_group%2Fvideo_comp_app&ciu_szs=&impl=s&gdfp_req=1&env=vp&output=xml_vast3&unviewed_position_start=1&m_ast=vast&url=";
         String google_ad = "http://pubads.g.doubleclick.net/gampad/ads?sz=640x360&iu=/6062/iab_vast_samples/skippable&ciu_szs=300x250,728x90&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&correlator=[timestamp]";
+        String two_comp  = "http://pubads.g.doubleclick.net/gampad/ads?sz=640x360&iu=/6062/iab_vast_samples/skippable&ciu_szs=300x250,728x90&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=";
+
+        String ps_pwc = "https://pubads.g.doubleclick.net/gampad/ads?sz=1920x1080&iu=%2F210325652%2FK00001&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&url=https%3A%2F%2Fwww.kocowa.com&description_url=https%3A%2F%2Fwww.kocowa.com&correlator=1500328110&ad_rule=1&cmsid=2456701&vid=0_9yjd6dhw";
                 //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
@@ -357,9 +372,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
         //config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
 
-        ADConfig adsConfig = new ADConfig().setAdTagURL(multi_ad_vast).setPlayerViewContainer(layout).setAdSkinContainer(adSkin);
+        ADConfig adsConfig = new ADConfig().setAdTagURL(two_comp).setPlayerViewContainer(layout).setAdSkinContainer(adSkin).setCompanionAdWidth(728).setCompanionAdHeight(90);
         config.setPluginConfig(ADPlugin.factory.getName(), adsConfig);
-
     }
 
     @Override

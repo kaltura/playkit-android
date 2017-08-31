@@ -71,6 +71,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     /////////////////////
     private Player player;
     private Context context;
+
+
     private AdInfo adInfo;
     private IMAConfig adConfig;
     private PKAdProviderListener pkAdProviderListener;
@@ -590,6 +592,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     public void openLearnMore() {
+
+    }
+
+    @Override
+    public void openComapanionAdLearnMore() {
 
     }
 

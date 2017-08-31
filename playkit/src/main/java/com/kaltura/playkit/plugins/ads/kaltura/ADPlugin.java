@@ -143,7 +143,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         AdUIController.Factory adUIFactory =  new AdUIController.Factory() {
             @Override
             public AdUIController newAdController(AdUiListener listener, AdPlayer adPlayer) {
-                AdUIController adUIController = new DefaultAdUIController(context, listener, adConfig.getAdSkinContainer());
+                AdUIController adUIController = new DefaultAdUIController(context, listener, adConfig.getAdSkinContainer(), adConfig.getCompanionAdWidth(), adConfig.getCompanionAdHeight());
                 return adUIController;
             }
         };
@@ -505,6 +505,11 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     @Override
     public void openLearnMore() {
         adManager.onAdClicked();
+    }
+
+    @Override
+    public void openComapanionAdLearnMore() {
+        adManager.onCompanionAdClicked();
     }
 
     @Override

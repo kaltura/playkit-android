@@ -44,21 +44,26 @@ public class ADConfig {
     private int videoBitrate; // in KB
     private boolean adAttribution;
     private boolean adCountDown;
-    private boolean enableDebugMode;
+    //private boolean enableDebugMode;
     private int  adLoadTimeOut;
     private String videoMimeType;
+    private int companionAdWidth;
+    private int companionAdHeight;
 
     public ADConfig() {
         this.language                 = "en";
         this.adTagType = AdTagType.VAST;
         this.videoBitrate             = -1;
         this.adLoadTimeOut            = DEFAULT_AD_LOAD_TIMEOUT;
-        this.enableDebugMode          = false;
+        //this.enableDebugMode          = false;
         this.videoMimeType =          PKMediaFormat.mp4.mimeType;
         this.adTagURL = null;         //=> must be set via setter
         this.playerViewContainer = null;
         this.adSkinContainer = null;
         this.startPosition = 0;
+        this.companionAdWidth = 0;
+        this.companionAdHeight = 0;
+
         //this.companionView = companionView;
     }
 
@@ -161,14 +166,24 @@ public class ADConfig {
         return this;
     }
 
-    public ADConfig enableDebugMode(boolean enableDebugMode) {
-        this.enableDebugMode = enableDebugMode;
+    public ADConfig setCompanionAdWidth(int companionAdWidth) {
+        this.companionAdWidth = companionAdWidth;
         return this;
     }
 
-    public boolean isDebugMode() {
-        return enableDebugMode;
+    public ADConfig setCompanionAdHeight(int companionAdHeight) {
+        this.companionAdHeight = companionAdHeight;
+        return this;
     }
+
+    //public ADConfig enableDebugMode(boolean enableDebugMode) {
+    //    this.enableDebugMode = enableDebugMode;
+    //    return this;
+    //}
+
+    //public boolean isDebugMode() {
+    //    return enableDebugMode;
+    //}
 
     public View getPlayerViewContainer() {
         return playerViewContainer;
@@ -180,6 +195,14 @@ public class ADConfig {
 
     public long getStartPosition() {
         return startPosition;
+    }
+
+    public int getCompanionAdWidth() {
+        return companionAdWidth;
+    }
+
+    public int getCompanionAdHeight() {
+        return companionAdHeight;
     }
 
 //    public View getCompanionView() {
@@ -200,7 +223,7 @@ public class ADConfig {
         jsonObject.addProperty(AD_ATTRIBUTION_UIELEMENT, adAttribution);
         jsonObject.addProperty(AD_COUNTDOWN_UIELEMENT, adCountDown);
         jsonObject.addProperty(AD_LOAD_TIMEOUT, adLoadTimeOut);
-        jsonObject.addProperty(AD_ENABLE_DEBUG_MODE, enableDebugMode);
+        //jsonObject.addProperty(AD_ENABLE_DEBUG_MODE, enableDebugMode);
         jsonObject.addProperty(AD_VIDEO_MIME_TYPES, videoMimeType);
 
         return jsonObject;

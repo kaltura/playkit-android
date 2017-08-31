@@ -17,4 +17,5 @@
     <string name="video">Video</string>
     <string name="audio">Audio</string>
     <string name="cc">CC</string>
+    <string name="companionPlaceholder">Companion Ad Slot</string>
 </resources>

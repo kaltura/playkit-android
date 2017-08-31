@@ -3,4 +3,5 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="player_height">300dp</dimen>
+    <dimen name="font_size">16dp</dimen>
 </resources>

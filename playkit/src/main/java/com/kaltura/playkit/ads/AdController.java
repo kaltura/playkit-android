@@ -18,6 +18,7 @@ package com.kaltura.playkit.ads;
 public interface AdController {
     void skipAd();
     void openLearnMore();
+    void openCompanionAdLearnMore();
     void screenOrientationChanged(boolean isFullScreen);
     void volumeKeySilent(boolean isMute);
     long getAdCurrentPosition();
