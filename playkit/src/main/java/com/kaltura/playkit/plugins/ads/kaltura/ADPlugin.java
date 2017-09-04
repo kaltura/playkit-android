@@ -55,6 +55,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     private DefaultUrlPinger urlPinger;
     private DefaultStringFetcher stringFetcher;
     private DefaultAdManager adManager;
+    private long playingContentDuration = 0;
     //private AdPlayer adPlayer;
 
 
@@ -63,6 +64,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     private boolean isAppInBackground = false;
     private boolean adManagerInitDuringBackground = false;
     private boolean isContentPrepared = false;
+    private long adDuration;
     private boolean isAdDisplayed;
     private boolean isAdIsPaused;
     private boolean isAdRequested;
@@ -154,7 +156,10 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
                 long currentPosition = player.getCurrentPosition();
-                long duration = player.getDuration();
+                if (playingContentDuration == 0) {
+                    playingContentDuration = player.getDuration();
+                }
+                long duration = playingContentDuration;
 
                 if (isAdDisplayed || currentPosition < 0 || duration <= 0) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
@@ -255,6 +260,9 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         if (!isAppInBackground) {
                             adManager.playAdBreak();
                         }
+                        if (adEvent.adInfo != null) {
+                            adDuration = Double.valueOf(adEvent.adInfo.getDuration()).longValue();
+                        }
                         messageBus.post(new AdPluginEvent.AdLoadedEvent(adEvent.adInfo));
                         break;
                     case adStarted:
@@ -318,6 +326,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         isAdDisplayed = false;
         isAllAdsCompleted = false;
         isContentPrepared = false;
+        playingContentDuration = 0;
         //isContentEndedBeforeMidroll = false;
         if (!adManagerInitDuringBackground) {
             if (adConfig != null) {
@@ -357,7 +366,6 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     @Override
     protected void onApplicationResumed() {
         isAppInBackground = false;
-        adManagerInitDuringBackground = false;
         if (adManagerInitDuringBackground) {
             adManagerInitDuringBackground = false;
             setupAdManager();
@@ -391,7 +399,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         isAdError = false;
         isAdRequested = false;
         isAdDisplayed = false;
-
+        playingContentDuration = 0;
         if (adManager != null) {
             adManager.removeAdPlayer();
             adManager.addListener(null);
@@ -473,15 +481,20 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
 
     @Override
     public long getDuration() {
-        if (isAdDisplayed()) {
-            return  (long) adManager.getAdPlayer().getDuration() / Consts.MILLISECONDS_MULTIPLIER;
+        if (adManager != null && isAdDisplayed()) {
+            if (adDuration == 0) {
+                adDuration = (long) adManager.getAdPlayer().getPosition() / Consts.MILLISECONDS_MULTIPLIER;
+                return adDuration;
+            } else {
+                return adDuration;
+            }
         }
         return 0;
     }
 
     @Override
     public long getCurrentPosition() {
-        if (isAdDisplayed()) {
+        if (adManager != null && isAdDisplayed()) {
             return (long) adManager.getAdPlayer().getPosition() / Consts.MILLISECONDS_MULTIPLIER;
         } else {
             return 0;
