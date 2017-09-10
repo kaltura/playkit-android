@@ -95,6 +95,7 @@ public class AdPluginEvent implements PKEvent {
 
     public enum Type {
         AD_BREAK_PENDING,
+        AD_BREAK_ENDED,
         AD_PROGRESS_UPDATE,
         PLAYBACK_STATE,
         AD_REQUESTED,

@@ -156,7 +156,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
                 long currentPosition = player.getCurrentPosition();
-                if (playingContentDuration == 0) {
+                if (playingContentDuration <= 0) {
                     playingContentDuration = player.getDuration();
                 }
                 long duration = playingContentDuration;
@@ -218,6 +218,9 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         messageBus.post(new AdPluginEvent.AdBreakStarted(adBreakStartedEvent.adBreakInfo, adBreakStartedEvent.adInfo));
                         break;
                     case adBreakEnded:
+                        messageBus.post(new AdPluginEvent(AdPluginEvent.Type.AD_BREAK_ENDED));
+                        break;
+                    case adBreakCompleted:
                         if (!isContentPrepared) {
                             isContentPrepared = false;
                             preparePlayer(true);
