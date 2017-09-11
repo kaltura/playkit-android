@@ -220,7 +220,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                     case adBreakEnded:
                         messageBus.post(new AdPluginEvent(AdPluginEvent.Type.AD_BREAK_ENDED));
                         break;
-                    case adBreakCompleted:
+                    case adsPlaybackEnded:
                         if (!isContentPrepared) {
                             isContentPrepared = false;
                             preparePlayer(true);
