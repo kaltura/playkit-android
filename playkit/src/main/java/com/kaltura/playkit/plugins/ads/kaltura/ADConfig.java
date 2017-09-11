@@ -39,7 +39,7 @@ public class ADConfig {
     private View playerViewContainer;
     private View adSkinContainer;
     //View companionView;
-    private long startPosition;
+    private long startAdFromPosition;
     private AdTagType adTagType;
     private int videoBitrate; // in KB
     private boolean adAttribution;
@@ -60,7 +60,7 @@ public class ADConfig {
         this.adTagURL = null;         //=> must be set via setter
         this.playerViewContainer = null;
         this.adSkinContainer = null;
-        this.startPosition = 0;
+        this.startAdFromPosition = 0;
         this.companionAdWidth = 0;
         this.companionAdHeight = 0;
 
@@ -82,8 +82,8 @@ public class ADConfig {
         return this;
     }
 
-    public ADConfig setStartPosition(long startPosition) {
-        this.startPosition = startPosition;
+    public ADConfig setStartAdFromPosition(long startAdFromPosition) {
+        this.startAdFromPosition = startAdFromPosition;
         return this;
     }
 
@@ -193,8 +193,8 @@ public class ADConfig {
         return adSkinContainer;
     }
 
-    public long getStartPosition() {
-        return startPosition;
+    public long getStartAdFromPosition() {
+        return startAdFromPosition;
     }
 
     public int getCompanionAdWidth() {
