@@ -215,17 +215,20 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         messageBus.post(new AdPluginEvent.AdBreakStarted(adBreakStartedEvent.adBreakInfo, adBreakStartedEvent.adInfo));
                         break;
                     case adBreakEnded:
+                        removeAdPlayer(); // remove the player and the view
                         messageBus.post(new AdPluginEvent(AdPluginEvent.Type.AD_BREAK_ENDED));
                         break;
                     case adsPlaybackEnded:
-                        if (!isContentPrepared) {
-                            isContentPrepared = false;
-                            preparePlayer(true);
-                        } else {
-                            player.play();
+                        if (!player.isPlaying()) {
+                            if (!isContentPrepared) {
+                                isAdRequested = true; // in case we ignore adbreak
+                                preparePlayer(true);
+                            } else {
+                                player.play();
+
+                            }
+                            messageBus.post(new AdPluginEvent(AdPluginEvent.Type.CONTENT_RESUME_REQUESTED));
                         }
-                        removeAdPlayer(); // remove the player and the view
-                        messageBus.post(new AdPluginEvent(AdPluginEvent.Type.CONTENT_RESUME_REQUESTED));
                         break;
                     case progress:
                         AdEvent.AdProgressEvent adProgressEvent = (AdEvent.AdProgressEvent) adEvent;
@@ -357,10 +360,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     @Override
     protected void onApplicationPaused() {
         isAppInBackground = true;
-        if (isAdDisplayed()) {
-            adManager.onPause();
-            adManager.getAdPlayer().onApplicationPaused();
-        }
+        adManager.onPause();
     }
 
     @Override
@@ -373,9 +373,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
             return;
         }
 
-        if (isAdDisplayed()) {
-            adManager.getAdPlayer().onApplicationResumed();
-        }
+        adManager.onResume();
 
     }
 
