@@ -115,7 +115,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
 
 
-
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
         sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
@@ -506,13 +505,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         if (player == null) {
             initializePlayer();
         }
-//        if (shouldResetPlayerPosition) {
-            if (playerPosition == Consts.TIME_UNSET) {
-                player.seekToDefaultPosition(playerWindow);
-            } else {
-                player.seekTo(playerWindow, playerPosition);
-            }
-//        }
+        if (playerPosition == Consts.TIME_UNSET) {
+            player.seekToDefaultPosition(playerWindow);
+        } else {
+            player.seekTo(playerWindow, playerPosition);
+        }
     }
 
     @Override
