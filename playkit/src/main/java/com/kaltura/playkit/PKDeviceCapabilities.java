@@ -98,7 +98,7 @@ public class PKDeviceCapabilities {
         try {
             report = getReport(context);
             reportString = report.toString();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             log.e("Failed to get report", e);
             reportString = Log.getStackTraceString(e);
         }
@@ -196,7 +196,7 @@ public class PKDeviceCapabilities {
                                 .put("status", status)
                 );
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             json.put("error", e.getMessage() + '\n' + Log.getStackTraceString(e));
         }
 
@@ -323,7 +323,7 @@ public class PKDeviceCapabilities {
             try {
                 value = mediaDrm.getPropertyString(prop);
                 
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 value = "<" + e + ">";
             }
             props.put(prop, value);
@@ -333,7 +333,7 @@ public class PKDeviceCapabilities {
             try {
                 value = Base64.encodeToString(mediaDrm.getPropertyByteArray(prop), Base64.NO_WRAP);
 
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 value = "<" + e + ">";
             }
             props.put(prop, value);
