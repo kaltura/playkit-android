@@ -44,13 +44,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Created by Noam Tamim @ Kaltura on 25/04/2017.
- */
 public class PKDeviceCapabilities {
     private static final PKLog log = PKLog.get("PKDeviceCapabilities");
     
     private static final UUID WIDEVINE_UUID = new UUID(0xEDEF8BA979D64ACEL, 0xA3C827DCD51D21EDL);
+    private static final UUID PLAYREADY_UUID = new UUID(0x9A04F07998404286L, 0xAB92E65BE0885F95L);
+    
     private static final String SHARED_PREFS_NAME = "PKDeviceCapabilities";
     private static final String PREFS_ENTRY_FINGERPRINT = "Build.FINGERPRINT";
     private static final String DEVICE_CAPABILITIES_URL = "https://cdnapisec.kaltura.com/api_v3/index.php?service=stats&action=reportDeviceCapabilities";
@@ -94,10 +93,18 @@ public class PKDeviceCapabilities {
 
     private static void sendReport(Context context, SharedPreferences sharedPrefs) {
 
-        JsonObject report = getReport(context);
-        
+        JsonObject report = null;
+        String reportString;
+        try {
+            report = getReport(context);
+            reportString = report.toString();
+        } catch (Exception e) {
+            log.e("Failed to get report", e);
+            reportString = Log.getStackTraceString(e);
+        }
+
         JsonObject data = new JsonObject();
-        data.addProperty("data", report.toString());
+        data.addProperty("data", reportString);
 
         String dataString = data.toString();
         try {
@@ -252,10 +259,21 @@ public class PKDeviceCapabilities {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             return new JSONObject()
-                    .put("widevine", widevineModularDrmInfo());
+                    .put("widevine", widevineModularDrmInfo())
+                    .put("playready", playreadyDrmInfo());
         } else {
             return null;
         }
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private JSONObject playreadyDrmInfo() throws JSONException {
+        if (!MediaDrm.isCryptoSchemeSupported(PLAYREADY_UUID)) {
+            return null; 
+        }
+        
+        // No information other that "supported".
+        return new JSONObject().put("supported", true);
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -304,8 +322,9 @@ public class PKDeviceCapabilities {
             String value;
             try {
                 value = mediaDrm.getPropertyString(prop);
-            } catch (IllegalStateException e) {
-                value = "<unknown>";
+                
+            } catch (Exception e) {
+                value = "<" + e + ">";
             }
             props.put(prop, value);
         }
@@ -313,8 +332,9 @@ public class PKDeviceCapabilities {
             String value;
             try {
                 value = Base64.encodeToString(mediaDrm.getPropertyByteArray(prop), Base64.NO_WRAP);
-            } catch (IllegalStateException|NullPointerException e) {
-                value = "<unknown>";
+
+            } catch (Exception e) {
+                value = "<" + e + ">";
             }
             props.put(prop, value);
         }
