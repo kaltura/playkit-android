@@ -25,8 +25,10 @@ public class ADPlayer implements AdPlayer {
     private Context context;
     private Player player;
     private PKMediaConfig mediaConfig;
-    private final List<Listener> adPlayerCallbacks = new ArrayList<Listener>(3);
+    private final List<Listener> adPlayerCallbacks = new ArrayList<>();
     private PlaybackState playbackState;
+    private PKEvent.Listener stateListener;
+    private PKEvent.Listener eventListener;
 
     private enum PlaybackState {
         STOPPED, PAUSED, PLAYING
@@ -84,6 +86,13 @@ public class ADPlayer implements AdPlayer {
 
     @Override
     public void destroy() {
+        eventListener = null;
+        stateListener = null;
+        if (adPlayerCallbacks != null) {
+            for (Listener adPlayerCallback : adPlayerCallbacks) {
+                adPlayerCallback = null;
+            }
+        }
         player.destroy();
     }
 
@@ -132,7 +141,34 @@ public class ADPlayer implements AdPlayer {
      */
     private void subscribeToPlayerStateChanges() {
         //Add event listener to the player.
-        player.addStateChangeListener(new PKEvent.Listener() {
+        player.addStateChangeListener(getStateListener());
+    }
+
+    /**
+     * Will subscribe to the player events. The main difference between
+     * player state changes and player events, is that events are notify us
+     * about playback events like PLAY, PAUSE, TRACKS_AVAILABLE, SEEKING etc.
+     * The player state changed events, notify us about more major changes in
+     * his states. Like IDLE, LOADING, READY and BUFFERING.
+     * For simplicity, in this example we will show subscription to the couple of events.
+     * For the full list of events you can check our documentation.
+     * !!!Note, we will receive only events, we subscribed to.
+     */
+    private void subscribeToPlayerEvents() {
+
+        //Add event listener. Note, that it have two parameters.
+        // 1. PKEvent.Listener itself.
+        // 2. Array of events you want to listen to.
+        player.addEventListener(getEventListener(), PlayerEvent.Type.PLAY,  PlayerEvent.Type.PAUSE, PlayerEvent.Type.CAN_PLAY, PlayerEvent.Type.PLAYING,
+                PlayerEvent.Type.ENDED, PlayerEvent.Type.TRACKS_AVAILABLE, PlayerEvent.Type.ERROR, PlayerEvent.Type.STOPPED,
+                PlayerEvent.Type.PLAYHEAD_UPDATED);
+    }
+
+    public PKEvent.Listener getStateListener() {
+        if (stateListener != null) {
+            return stateListener;
+        }
+        stateListener = new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
 
@@ -170,106 +206,94 @@ public class ADPlayer implements AdPlayer {
                         break;
                 }
             }
-        });
+        };
+        return stateListener;
     }
 
-    /**
-     * Will subscribe to the player events. The main difference between
-     * player state changes and player events, is that events are notify us
-     * about playback events like PLAY, PAUSE, TRACKS_AVAILABLE, SEEKING etc.
-     * The player state changed events, notify us about more major changes in
-     * his states. Like IDLE, LOADING, READY and BUFFERING.
-     * For simplicity, in this example we will show subscription to the couple of events.
-     * For the full list of events you can check our documentation.
-     * !!!Note, we will receive only events, we subscribed to.
-     */
-    private void subscribeToPlayerEvents() {
+    public PKEvent.Listener getEventListener() {
+        if (eventListener != null) {
+            return  eventListener;
+        }
 
-        //Add event listener. Note, that it have two parameters.
-        // 1. PKEvent.Listener itself.
-        // 2. Array of events you want to listen to.
-        player.addEventListener(new PKEvent.Listener() {
-                                    @Override
-                                    public void onEvent(PKEvent event) {
-                                        if ( event.eventType() != PlayerEvent.Type.PLAYHEAD_UPDATED) {
-                                            Log.d(TAG, "Ad Player Event => " + event.eventType());
-                                        }
-                                        Enum receivedEventType = event.eventType();
-                                        if (event instanceof PlayerEvent) {
-                                            switch (((PlayerEvent) event).type) {
-                                                case PLAYHEAD_UPDATED:
-                                                    PlayerEvent.PlayheadUpdated playheadUpdated = (PlayerEvent.PlayheadUpdated) event;
-                                                    for (Listener callback : adPlayerCallbacks) {
-                                                        callback.onAdPlayHeadUpdate(playheadUpdated.position, playheadUpdated.duration);
-                                                    }
-                                                    break;
-                                                case CAN_PLAY:
-                                                    for (Listener callback : adPlayerCallbacks) {
-                                                        callback.onPlayerReady();
-                                                    }
-                                                    break;
-                                                case PLAY:
-                                                    switch (playbackState) {
-                                                        case STOPPED:
-                                                            for (Listener callback : adPlayerCallbacks) {
-                                                                callback.onPlay();
-                                                            }
-                                                            break;
-                                                        case PAUSED:
-                                                            for (Listener callback : adPlayerCallbacks) {
-                                                                callback.onAdResume();
-                                                            }
-                                                            break;
-                                                        default:
-                                                            break;
-                                                    }
-                                                    playbackState = PlaybackState.PLAYING;
-                                                    break;
-                                                case PLAYING:
-                                                    for (Listener callback : adPlayerCallbacks) {
-                                                        callback.onPlaying();
-                                                    }
-                                                    playbackState = PlaybackState.PLAYING;
-                                                    break;
-                                                case PAUSE:
-                                                    for (Listener callback : adPlayerCallbacks) {
-                                                        callback.onAdPause();
-                                                    }
-                                                    playbackState = PlaybackState.PAUSED;
-                                                    //stopTimer();
-                                                    break;
-                                                case ENDED:
-                                                    for (Listener callback : adPlayerCallbacks) {
-                                                        callback.onEnded();
-                                                    }
-
-                                                    playbackState = PlaybackState.STOPPED;
-                                                    break;
-                                                case TRACKS_AVAILABLE:
-                                                    //for (Listener callback : adPlayerCallbacks) {
-                                                    //    callback.onPlayerReady();
-                                                   // }
-                                                    break;
-                                                case STOPPED:
-                                                    playbackState = PlaybackState.STOPPED;
-                                                    break;
-                                                case ERROR:
-                                                    for (Listener callback : adPlayerCallbacks) {
-                                                        callback.onError();
-                                                    }
-                                                    playbackState = PlaybackState.STOPPED;
-//                                                    // TODO check for valid ad in pod and play / play content.
-//                                                    // TODO Do the same for skip
-
-                                                     //stopTimer();
-                                                    break;
-                                            }
-                                        }
-
+        eventListener = new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                if (event.eventType() != PlayerEvent.Type.PLAYHEAD_UPDATED) {
+                    Log.d(TAG, "Ad Player Event => " + event.eventType());
+                }
+                Enum receivedEventType = event.eventType();
+                if (event instanceof PlayerEvent) {
+                    switch (((PlayerEvent) event).type) {
+                        case PLAYHEAD_UPDATED:
+                            PlayerEvent.PlayheadUpdated playheadUpdated = (PlayerEvent.PlayheadUpdated) event;
+                            for (Listener callback : adPlayerCallbacks) {
+                                callback.onAdPlayHeadUpdate(playheadUpdated.position, playheadUpdated.duration);
+                            }
+                            break;
+                        case CAN_PLAY:
+                            for (Listener callback : adPlayerCallbacks) {
+                                callback.onPlayerReady();
+                            }
+                            break;
+                        case PLAY:
+                            switch (playbackState) {
+                                case STOPPED:
+                                    for (Listener callback : adPlayerCallbacks) {
+                                        callback.onPlay();
                                     }
+                                    break;
+                                case PAUSED:
+                                    for (Listener callback : adPlayerCallbacks) {
+                                        callback.onAdResume();
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                            playbackState = PlaybackState.PLAYING;
+                            break;
+                        case PLAYING:
+                            for (Listener callback : adPlayerCallbacks) {
+                                callback.onPlaying();
+                            }
+                            playbackState = PlaybackState.PLAYING;
+                            break;
+                        case PAUSE:
+                            for (Listener callback : adPlayerCallbacks) {
+                                callback.onAdPause();
+                            }
+                            playbackState = PlaybackState.PAUSED;
+                            //stopTimer();
+                            break;
+                        case ENDED:
+                            for (Listener callback : adPlayerCallbacks) {
+                                callback.onEnded();
+                            }
 
-                                }, PlayerEvent.Type.PLAY,  PlayerEvent.Type.PAUSE, PlayerEvent.Type.CAN_PLAY, PlayerEvent.Type.PLAYING,
-                                   PlayerEvent.Type.ENDED, PlayerEvent.Type.TRACKS_AVAILABLE, PlayerEvent.Type.ERROR, PlayerEvent.Type.STOPPED,
-                                   PlayerEvent.Type.PLAYHEAD_UPDATED);
+                            playbackState = PlaybackState.STOPPED;
+                            break;
+                        case TRACKS_AVAILABLE:
+                            //for (Listener callback : adPlayerCallbacks) {
+                            //    callback.onPlayerReady();
+                            // }
+                            break;
+                        case STOPPED:
+                            playbackState = PlaybackState.STOPPED;
+                            break;
+                        case ERROR:
+                            for (Listener callback : adPlayerCallbacks) {
+                                callback.onError();
+                            }
+                            playbackState = PlaybackState.STOPPED;
+                            //                                                    // TODO check for valid ad in pod and play / play content.
+                            //                                                    // TODO Do the same for skip
+
+                            //stopTimer();
+                            break;
+                    }
+                }
+            }
+        };
+        return eventListener;
     }
 }

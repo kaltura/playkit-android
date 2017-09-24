@@ -34,6 +34,8 @@ import com.kaltura.playkit.plugins.ads.kaltura.events.AdPluginErrorEvent;
 import com.kaltura.playkit.plugins.ads.kaltura.events.AdPluginEvent;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.Set;
+
 public class ADPlugin extends PKPlugin implements AdsProvider {
 
     private static final PKLog log = PKLog.get("ADPlugin");
@@ -103,7 +105,10 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
             this.messageBus.listen(new PKEvent.Listener() {
                 @Override
                 public void onEvent(PKEvent event) {
-                    log.d("Received:PlayerEvent:" + event.eventType().name());
+                    if (!"progress".equals(event.eventType().name())) {
+                        log.d("Received:PlayerEvent:" + event.eventType().name());
+
+                    }
 //                    AdPositionType adPositionType = adManager.getAdBreakInfo().getAdPositionType();
 //                    AdCuePoints adCuePoints = new AdCuePoints(getAdCuePoints());
 //                    if (event.eventType() == PlayerEvent.Type.ENDED) {
@@ -203,14 +208,19 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         messageBus.post(new AdPluginEvent(AdPluginEvent.Type.AD_BREAK_PENDING));
                         break;
                     case cuePointsChanged:
-                        messageBus.post(new AdPluginEvent.CuePointsChangedEvent(((AdEvent.CuePointsChangedEvent) adEvent).cuePoints));
+                        Set<Double> adTagCuePoints = ((AdEvent.CuePointsChangedEvent) adEvent).cuePoints;
+                        if (adTagCuePoints != null && !adTagCuePoints.contains(0.0)) {
+                            isAdRequested = true;
+                            preparePlayer(true);
+                        }
+                        messageBus.post(new AdPluginEvent.CuePointsChangedEvent(adTagCuePoints));
                         break;
                     case adBreakStarted:
                         if (!isAppInBackground) {
-                            ((ViewGroup) adConfig.getPlayerViewContainer()).removeAllViews();
-                            ((ViewGroup) adConfig.getPlayerViewContainer()).addView(adManager.getAdPlayer().getView());
-                            preparePlayer(false);
-                        }
+                        ((ViewGroup) adConfig.getPlayerViewContainer()).removeAllViews();
+                        ((ViewGroup) adConfig.getPlayerViewContainer()).addView(adManager.getAdPlayer().getView());
+                        preparePlayer(false);
+                    }
                         AdEvent.AdBreakStartedEvent adBreakStartedEvent = (AdEvent.AdBreakStartedEvent) adEvent;
                         messageBus.post(new AdPluginEvent.AdBreakStarted(adBreakStartedEvent.adBreakInfo, adBreakStartedEvent.adInfo));
                         break;
@@ -270,6 +280,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         break;
                     case adStarted:
                         isAdDisplayed = true;
+                        isAdError = false;
                         isAdIsPaused = false;
                         if (!isAppInBackground) {
                             adConfig.getAdSkinContainer().setVisibility(View.VISIBLE);
@@ -309,7 +320,11 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         isAdRequested = true;
         isAdError = true;
         removeAdPlayer();
-        preparePlayer(true);
+        if (isContentPrepared) {
+            player.play();
+        } else {
+            preparePlayer(true);
+        }
         //TODO Check if fatal error and clear all the adBreaks
     }
 
@@ -492,7 +507,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
 
     @Override
     public long getCurrentPosition() {
-        if (adManager != null && isAdDisplayed()) {
+        if (adManager != null && adManager.getAdPlayer() != null && isAdDisplayed()) {
             return (long) adManager.getAdPlayer().getPosition() / Consts.MILLISECONDS_MULTIPLIER;
         } else {
             return 0;
