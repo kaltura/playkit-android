@@ -298,6 +298,15 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                     case adBufferEnd:
                         messageBus.post(new AdPluginEvent.AdBufferEvent(false));
                         break;
+                    case firstQuartile:
+                        messageBus.post(new AdPluginEvent(AdPluginEvent.Type.FIRST_QUARTILE));
+                        break;
+                    case midpoint:
+                        messageBus.post(new AdPluginEvent(AdPluginEvent.Type.MIDPOINT));
+                        break;
+                    case thirdQuartile:
+                        messageBus.post(new AdPluginEvent(AdPluginEvent.Type.THIRD_QUARTILE));
+                        break;
                     default:
                         break;
                 }
