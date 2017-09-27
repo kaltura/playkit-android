@@ -109,17 +109,6 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         log.d("Received:PlayerEvent:" + event.eventType().name());
 
                     }
-//                    AdPositionType adPositionType = adManager.getAdBreakInfo().getAdPositionType();
-//                    AdCuePoints adCuePoints = new AdCuePoints(getAdCuePoints());
-//                    if (event.eventType() == PlayerEvent.Type.ENDED) {
-//                        if (isAllAdsCompleted || !adCuePoints.hasPostRoll() || adInfo == null || (adInfo.getAdIndexInPod() == adInfo.getTotalAdsInPod())) {
-//                            log.d("contentCompleted on ended");
-//                            contentCompleted();
-//                        } else {
-//                            log.d("contentCompleted delayed");
-//                            //isContentEndedBeforeMidroll = true;
-//                        }
-//                    }
                 }
             }, PlayerEvent.Type.ENDED);
         }
@@ -217,10 +206,10 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         break;
                     case adBreakStarted:
                         if (!isAppInBackground) {
-                        ((ViewGroup) adConfig.getPlayerViewContainer()).removeAllViews();
-                        ((ViewGroup) adConfig.getPlayerViewContainer()).addView(adManager.getAdPlayer().getView());
-                        preparePlayer(false);
-                    }
+                            ((ViewGroup) adConfig.getPlayerViewContainer()).removeAllViews();
+                            ((ViewGroup) adConfig.getPlayerViewContainer()).addView(adManager.getAdPlayer().getView());
+                            preparePlayer(false);
+                        }
                         AdEvent.AdBreakStartedEvent adBreakStartedEvent = (AdEvent.AdBreakStartedEvent) adEvent;
                         messageBus.post(new AdPluginEvent.AdBreakStarted(adBreakStartedEvent.adBreakInfo, adBreakStartedEvent.adInfo));
                         break;
@@ -237,7 +226,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                                 player.play();
 
                             }
-                            messageBus.post(new AdPluginEvent(AdPluginEvent.Type.CONTENT_RESUME_REQUESTED));
+                            messageBus.post(new AdPluginEvent(AdPluginEvent.Type.ADS_PLAYBACK_ENDED));
                         }
                         break;
                     case progress:
@@ -293,10 +282,14 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         messageBus.post(new AdPluginEvent(AdPluginEvent.Type.COMPLETED));
                         break;
                     case adBufferStart:
-                        messageBus.post(new AdPluginEvent.AdBufferEvent(true));
+                        if (isAdDisplayed) {
+                            messageBus.post(new AdPluginEvent.AdBufferEvent(true));
+                        }
                         break;
                     case adBufferEnd:
-                        messageBus.post(new AdPluginEvent.AdBufferEvent(false));
+                        if (isAdDisplayed || (player.getCurrentPosition() > 0  && player.getCurrentPosition() >= player.getDuration())) {
+                            messageBus.post(new AdPluginEvent.AdBufferEvent(false));
+                        }
                         break;
                     case firstQuartile:
                         messageBus.post(new AdPluginEvent(AdPluginEvent.Type.FIRST_QUARTILE));
@@ -311,8 +304,6 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         break;
                 }
             }
-
-
 
             @Override
             public void onAdErrorEvent(AdErrorEvent adErrorEvent) {

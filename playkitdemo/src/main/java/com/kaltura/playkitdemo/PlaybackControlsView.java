@@ -167,7 +167,9 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
                 }
                 break;
             case R.id.pause:
-                player.pause();
+                if(player != null) {
+                    player.pause();
+                }
                 break;
             case R.id.ffwd:
                 //Do nothing for now

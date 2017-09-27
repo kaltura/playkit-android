@@ -47,7 +47,7 @@ public class AdPluginEvent implements PKEvent {
         public AdInfo adInfo;
 
         public AdBreakStarted(AdBreakInfo adBreakInfo, AdInfo adInfo) {
-            super(Type.CONTENT_PAUSE_REQUESTED);
+            super(Type.AD_BREAK_STARTED);
             this.adBreakInfo = adBreakInfo;
             this.adInfo = adInfo;
         }
@@ -95,7 +95,9 @@ public class AdPluginEvent implements PKEvent {
 
     public enum Type {
         AD_BREAK_PENDING,
+        AD_BREAK_STARTED, //CONTENT_PAUSE_REQUESTED
         AD_BREAK_ENDED,
+        ADS_PLAYBACK_ENDED, //CONTENT_RESUME_REQUESTED
         AD_PROGRESS_UPDATE,
         PLAYBACK_STATE,
         AD_REQUESTED,
@@ -113,10 +115,10 @@ public class AdPluginEvent implements PKEvent {
         PLAYER_SWITCH_MAXIMIZE,
         PLAYER_STATE,
         AD_BUFFER,
-        CONTENT_PAUSE_REQUESTED,
-        CONTENT_RESUME_REQUESTED,
         AD_BREAK_IGNORED,
+        ERROR_LOG, // none fatal error while player cannot play stream URL
         ALL_ADS_COMPLETED
+
     }
 
 
