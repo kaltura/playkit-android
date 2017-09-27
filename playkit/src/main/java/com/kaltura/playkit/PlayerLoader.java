@@ -41,13 +41,13 @@ class PlayerLoader extends PlayerDecoratorBase {
 
 
     private static final PKLog log = PKLog.get("PlayerLoader");
-
+    public Boolean isPlayingBeforeBackground;
     private Context context;
     private MessageBus messageBus;
     
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
     private PlayerController playerController;
-
+    
     PlayerLoader(Context context) {
         this.context = context;
         this.messageBus = new MessageBus();
@@ -112,11 +112,13 @@ class PlayerLoader extends PlayerDecoratorBase {
         for (Map.Entry<String, LoadedPlugin> stringLoadedPluginEntry : loadedPlugins.entrySet()) {
             stringLoadedPluginEntry.getValue().plugin.onApplicationResumed();
         }
+        isPlayingBeforeBackground = null;
     }
 
 
     @Override
     public void onApplicationPaused() {
+        isPlayingBeforeBackground = getPlayer().isPlaying();
         for (Map.Entry<String, LoadedPlugin> stringLoadedPluginEntry : loadedPlugins.entrySet()) {
             stringLoadedPluginEntry.getValue().plugin.onApplicationPaused();
         }
@@ -186,5 +188,13 @@ class PlayerLoader extends PlayerDecoratorBase {
     @Override
     public void addStateChangeListener(@NonNull final PKEvent.Listener listener) {
         messageBus.listen(listener, PlayerEvent.Type.STATE_CHANGED);
+    }
+
+    @Override
+    public boolean isPlaying() {
+        if (isPlayingBeforeBackground != null) {
+            return isPlayingBeforeBackground;
+        }
+        return super.isPlaying();
     }
 }
