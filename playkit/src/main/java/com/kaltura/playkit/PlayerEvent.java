@@ -101,6 +101,18 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class PlayheadUpdated extends PlayerEvent {
+
+        public final long position;
+        public final long duration;
+
+        public PlayheadUpdated(long position, long duration) {
+            super(Type.PLAYHEAD_UPDATED);
+            this.position = position;
+            this.duration = duration;
+        }
+    }
+
     public static class Error extends PlayerEvent {
 
         public final PKError error;
@@ -135,7 +147,8 @@ public class PlayerEvent implements PKEvent {
         VOLUME_CHANGED, // Sent when volume is changed.
         STOPPED, // sent when stop player api is called
         METADATA_AVAILABLE, // Sent when there is metadata available for this entry.
-        SOURCE_SELECTED // Sent when the source was selected.
+        SOURCE_SELECTED, // Sent when the source was selected.
+        PLAYHEAD_UPDATED //Send player position every 100 Milisec
     }
 
     @Override
