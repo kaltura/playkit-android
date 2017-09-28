@@ -214,7 +214,12 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         messageBus.post(new AdPluginEvent.AdBreakStarted(adBreakStartedEvent.adBreakInfo, adBreakStartedEvent.adInfo));
                         break;
                     case adBreakEnded:
-                        removeAdPlayer(); // remove the player and the view
+                        AdEvent.AdBreakEndedEvent adBreakEndedEvent = (AdEvent.AdBreakEndedEvent) adEvent;
+                        if (((AdEvent.AdBreakEndedEvent) adEvent).removeAdPlayer){
+                            removeAdPlayer(); // remove the player and the view
+                        }
+                        messageBus.post(new AdPluginEvent.AdBreakEnded(((AdEvent.AdBreakEndedEvent) adEvent).adBreakEndedReason, ((AdEvent.AdBreakEndedEvent) adEvent).removeAdPlayer));
+
                         messageBus.post(new AdPluginEvent(AdPluginEvent.Type.AD_BREAK_ENDED));
                         break;
                     case adsPlaybackEnded:

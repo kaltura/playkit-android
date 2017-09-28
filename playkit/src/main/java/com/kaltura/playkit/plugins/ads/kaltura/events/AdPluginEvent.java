@@ -1,5 +1,6 @@
 package com.kaltura.playkit.plugins.ads.kaltura.events;
 
+import com.kaltura.admanager.AdBreakEndedReason;
 import com.kaltura.admanager.AdBreakInfo;
 import com.kaltura.admanager.AdInfo;
 import com.kaltura.playkit.PKEvent;
@@ -50,6 +51,18 @@ public class AdPluginEvent implements PKEvent {
             super(Type.AD_BREAK_STARTED);
             this.adBreakInfo = adBreakInfo;
             this.adInfo = adInfo;
+        }
+    }
+
+    public static class AdBreakEnded extends AdPluginEvent {
+
+        public AdBreakEndedReason adBreakEndedReason;
+        public boolean shouldRemoveAdPlayer;
+
+        public AdBreakEnded(AdBreakEndedReason adBreakEndedReason, boolean shouldRemoveAdPlayer) {
+            super(Type.AD_BREAK_ENDED);
+            this.adBreakEndedReason = adBreakEndedReason;
+            this.shouldRemoveAdPlayer = shouldRemoveAdPlayer;
         }
     }
 
