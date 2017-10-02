@@ -15,26 +15,26 @@ package com.kaltura.playkit.plugins.ads;
 import com.kaltura.playkit.ads.PKAdInfo;
 
 public class AdInfo implements PKAdInfo {
-
+    private String  adId;
+    private String  adTitle;
     private String  adDescription;
     private long    adDuration;
-    private long    adPlayHead;
-
-    private String  adTitle;
-    private boolean isAdSkippable;
-    private String  adContnentType;
-    private String  adId;
-    private String  adSystem;
-    private int     adHeight;
-    private int     adWidth;
     private int     totalAdsInPod;
     private int     adIndexInPod;
+
+
+    private boolean isAdSkippable;
+    private String  adContnentType;
+    private String  adSystem;
+
     private int     podIndex;
     private int     podCount;
     private boolean isBumper;
+    private int     adHeight;
+    private int     adWidth;
     private long    adPodTimeOffset;
 
-    public AdInfo(String adDescription, long adDuration, long adPlayHead, String adTitle,
+    public AdInfo(String adDescription, long adDuration, String adTitle,
                   boolean isAdSkippable, String adContnentType,
                   String adId, String adSystem, int adHeight, int adWidth,
                   int totalAdsInPod, int adIndexInPod, int currentPodIndex, int podCount,
@@ -42,7 +42,6 @@ public class AdInfo implements PKAdInfo {
 
         this.adDescription = adDescription;
         this.adDuration    = adDuration;
-        this.adPlayHead    = adPlayHead;
         this.adTitle       = adTitle;
         this.isAdSkippable = isAdSkippable;
         this.adContnentType  = adContnentType;
@@ -95,11 +94,6 @@ public class AdInfo implements PKAdInfo {
     }
 
     @Override
-    public long getAdPlayHead() {
-        return adPlayHead;
-    }
-
-    @Override
     public AdPositionType getAdPositionType() {
 
         if (adPodTimeOffset > 0 ) {
@@ -149,10 +143,6 @@ public class AdInfo implements PKAdInfo {
     @Override
     public long getAdPodTimeOffset() {
         return adPodTimeOffset;
-    }
-
-    public void setAdPlayHead(long adPlayHead) {
-        this.adPlayHead = adPlayHead;
     }
 
     public String getAdContnentType() {

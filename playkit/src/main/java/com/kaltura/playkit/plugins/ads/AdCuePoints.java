@@ -12,18 +12,24 @@
 
 package com.kaltura.playkit.plugins.ads;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class AdCuePoints {
 
-    private List<Long> adCuePoints;
+    private List<Double> adCuePoints;
 
-    public AdCuePoints(List<Long> adCuePoints) {
+    public AdCuePoints(List<Double> adCuePoints) {
         this.adCuePoints = adCuePoints;
     }
 
-    public List<Long> getAdCuePoints() {
+    public List<Double> getAdCuePoints() {
         return adCuePoints;
+    }
+
+    public Set<Double> getAdCuePointsSet() {
+        return new HashSet<Double>(adCuePoints);
     }
 
     public boolean hasPreRoll() {
@@ -37,7 +43,7 @@ public class AdCuePoints {
 
     public boolean hasMidRoll() {
         if (adCuePoints != null && !adCuePoints.isEmpty()) {
-            for (Long cuePoint : adCuePoints) {
+            for (Double cuePoint : adCuePoints) {
                 if (cuePoint > 0) {
                     return true;
                 }

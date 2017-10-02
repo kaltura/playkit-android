@@ -30,9 +30,8 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.api.ovp.services.StatsService;
-import com.kaltura.playkit.plugins.ads.AdEvent;
-import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdPositionType;
+import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.TimerTask;
@@ -45,7 +44,6 @@ public class KalturaStatsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("KalturaStatsPlugin");
 
     private Context context;
-    private AdInfo adInfo;
     private Player player;
     private PKMediaConfig mediaConfig;
     private KalturaStatsConfig pluginConfig;
@@ -66,6 +64,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     private boolean isMediaLoaded = false;
     private boolean isFirstPlay = true;
     private boolean durationValid = false;
+    private AdPositionType adPositionType = AdPositionType.UNKNOWN;
 
     public enum KStatsEvent {
         WIDGET_LOADED(1),
@@ -220,7 +219,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
-            if (event.eventType() != AdEvent.Type.PLAY_HEAD_CHANGED) {
+            if (event.eventType() != AdEvent.Type.AD_PROGRESS_UPDATE && event.eventType() != PlayerEvent.Type.PLAYHEAD_UPDATED) {
                 log.d("New PKEvent = " + event.eventType().name());
             }
 
@@ -228,8 +227,6 @@ public class KalturaStatsPlugin extends PKPlugin {
                 if (player.getDuration() < 0) {
                     return;
                 }
-
-                log.d(((PlayerEvent) event).type.toString());
                 switch (((PlayerEvent) event).type) {
                     case METADATA_AVAILABLE:
                         sendMediaLoaded();
@@ -326,62 +323,67 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     public void onEvent(AdEvent event) {
         switch (event.type) {
-            case STARTED:
-                adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
-                if (adInfo != null) {
-                    if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
+
+            case LOADED:
+                AdEvent.AdLoadedEvent adLoadedEvent = (AdEvent.AdLoadedEvent) event;
+                adPositionType = adLoadedEvent.adInfo.getAdPositionType();
+
+                if (adPositionType != AdPositionType.UNKNOWN) {
+                    if (AdPositionType.PRE_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.PREROLL_STARTED);
-                    } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
+                    } else if (AdPositionType.MID_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.MIDROLL_STARTED);
-                    } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
+                    } else if (AdPositionType.POST_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.POSTROLL_STARTED);
                     }
                 }
+                break;
+            case STARTED:
                 break;
             case PAUSED:
             case RESUMED:
             case COMPLETED:
                 break;
             case FIRST_QUARTILE:
-                if (adInfo != null) {
-                    if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
+                if (adPositionType != AdPositionType.UNKNOWN) {
+                    if (AdPositionType.PRE_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.PREROLL_25);
-                    } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
+                    } else if (AdPositionType.MID_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.MIDROLL_25);
-                    } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
+                    } else if (AdPositionType.POST_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.POSTROLL_25);
                     }
                 }
                 break;
             case MIDPOINT:
-                if (adInfo != null) {
-                    if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
+                if (adPositionType != AdPositionType.UNKNOWN) {
+                    if (AdPositionType.PRE_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.PREROLL_50);
-                    } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
+                    } else if (AdPositionType.MID_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.MIDROLL_50);
-                    } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
+                    } else if (AdPositionType.POST_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.POSTROLL_50);
                     }
                 }
                 break;
             case THIRD_QUARTILE:
-                if (adInfo != null) {
-                    if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
+                if (adPositionType != AdPositionType.UNKNOWN) {
+                    if (AdPositionType.PRE_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.PREROLL_75);
-                    } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
+                    } else if (AdPositionType.MID_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.MIDROLL_75);
-                    } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
+                    } else if (AdPositionType.POST_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.POSTROLL_75);
                     }
                 }
                 break;
             case CLICKED:
-                if (adInfo != null) {
-                    if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
+                if (adPositionType != AdPositionType.UNKNOWN) {
+                    if (AdPositionType.PRE_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.PREROLL_CLICKED);
-                    } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
+                    } else if (AdPositionType.MID_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.MIDROLL_CLICKED);
-                    } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
+                    } else if (AdPositionType.POST_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.POSTROLL_CLICKED);
                     }
                 }
@@ -438,7 +440,7 @@ public class KalturaStatsPlugin extends PKPlugin {
             @Override
             public void run() {
                 float progress = ((float) player.getCurrentPosition() / player.getDuration());
-                log.d("progress = " + progress + " seekPercent = " + seekPercent);
+                //log.d("progress = " + progress + " seekPercent = " + seekPercent);
                 if (!playReached25 && progress >= 0.25 && seekPercent < 0.5) {
                     sendPlayReached25();
                 } else if (!playReached50 && progress >= 0.5 && seekPercent < 0.75) {

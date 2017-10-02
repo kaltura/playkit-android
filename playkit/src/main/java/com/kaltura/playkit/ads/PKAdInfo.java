@@ -31,6 +31,5 @@ public interface PKAdInfo {
     boolean  isBumper();
     long     getAdPodTimeOffset();
     long     getAdDuration();
-    long     getAdPlayHead();
     AdPositionType getAdPositionType();
 }

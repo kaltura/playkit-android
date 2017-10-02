@@ -13,6 +13,7 @@
 package com.kaltura.playkit.plugins.youbora;
 
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
@@ -24,7 +25,6 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.PKError;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.BuildConfig;
 import com.npaw.youbora.youboralib.utils.Utils;
@@ -33,6 +33,7 @@ import org.json.JSONException;
 
 import java.util.Map;
 
+import static com.kaltura.playkit.PlayerEvent.Type.PLAYHEAD_UPDATED;
 import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
 
 /**
@@ -120,7 +121,9 @@ class YouboraLibraryManager extends PluginGeneric {
             }
 
             if (event instanceof PlayerEvent && viewManager != null) {
-                log.d("PlayerEvent: " + ((PlayerEvent) event).type.toString());
+                if (((PlayerEvent) event).type != PLAYHEAD_UPDATED) {
+                    log.d("PlayerEvent: " + ((PlayerEvent) event).type.toString());
+                }
                 switch (((PlayerEvent) event).type) {
                     case DURATION_CHANGE:
                         log.d("new duration = " + ((PlayerEvent.DurationChanged) event).duration);
@@ -198,7 +201,7 @@ class YouboraLibraryManager extends PluginGeneric {
     }
 
     private void onAdEvent(AdEvent event) {
-        if (event.type != AdEvent.Type.PLAY_HEAD_CHANGED) {
+        if (event.type != AdEvent.Type.AD_PROGRESS_UPDATE) {
             log.d("Ad Event: " + event.type.name());
         }
 
@@ -207,12 +210,12 @@ class YouboraLibraryManager extends PluginGeneric {
                 ignoringAdHandler();
                 allowSendingYouboraBufferEvents = false;
                 break;
-            case CONTENT_RESUME_REQUESTED:
+            case ADS_PLAYBACK_ENDED:
                 ignoredAdHandler();
                 break;
             case CUEPOINTS_CHANGED:
-                AdEvent.AdCuePointsUpdateEvent cuePointsList = (AdEvent.AdCuePointsUpdateEvent) event;
-                adCuePoints = cuePointsList.cuePoints;
+                AdEvent.AdCuePointsChangedEvent cuePointsList = (AdEvent.AdCuePointsChangedEvent) event;
+                adCuePoints = cuePointsList.adCuePoints;
                 break;
             case ALL_ADS_COMPLETED:
                 if (adCuePoints != null && adCuePoints.hasPostRoll()) {
@@ -264,7 +267,7 @@ class YouboraLibraryManager extends PluginGeneric {
 
     public Double getPlayhead() {
         double currPos = Long.valueOf(player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
-        log.d("getPlayhead currPos = " + currPos);
+        //log.d("getPlayhead currPos = " + currPos);
         return (currPos >= 0) ? currPos : 0;
     }
 

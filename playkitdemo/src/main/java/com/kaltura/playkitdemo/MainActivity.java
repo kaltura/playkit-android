@@ -10,7 +10,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatImageView;
-import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -52,10 +51,10 @@ import com.kaltura.playkit.player.VideoTrack;
 import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
+import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
+import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
 import com.kaltura.playkit.plugins.ads.kaltura.ADConfig;
 import com.kaltura.playkit.plugins.ads.kaltura.ADPlugin;
-import com.kaltura.playkit.plugins.ads.kaltura.events.AdPluginErrorEvent;
-import com.kaltura.playkit.plugins.ads.kaltura.events.AdPluginEvent;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 import com.kaltura.playkit.utils.Consts;
 
@@ -76,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         OrientationManager.OrientationListener {
 
 
-    public static final boolean AUTO_PLAY_ON_RESUME = true;
+    public static final boolean AUTO_PLAY_ON_RESUME = false;
 
     private static final PKLog log = PKLog.get("MainActivity");
 
@@ -324,10 +323,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("delay", 1200);
         config.setPluginConfig("Sample", jsonObject);
-        addIMAPluginConfig(config, layout, adSkin);
+        addADPluginConfig(config, layout, adSkin);
+
+        //addIMAPluginConfig(config);
         //addPhoenixAnalyticsPluginConfig(config);
         //addTVPAPIAnalyticsPluginConfig(config);
-        //config.setPluginConfig("IMASimplePlugin", jsonObject);
         //config.setPluginConfig("KalturaStatistics", jsonObject);
         //config.setPluginConfig("PhoenixAnalytics", jsonObject);
         //config.setPluginConfig("Youbora", jsonObject);
@@ -347,34 +347,54 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //        config.setPluginConfig(TVPAPIAnalyticsPlugin.factory.getName(),tvpapiAnalyticsConfig);
 //    }
 
-    private void addIMAPluginConfig(PKPluginConfigs config, FrameLayout layout, RelativeLayout adSkin) {
+    private void addIMAPluginConfig(PKPluginConfigs config) {
 
-        String error_ad = "https://in-viacom18.videoplaza.tv/proxy/distributor/v2?s=viacom18/hindi/COH&t=Content+Type=Full+Episode,Series+Title=Shani,Gender=,GeoCity=,Age=,Carrier=,Media+ID=490060,Genre=Mythology,SBU=COH,Content+Name=From+royalty+to+rubble,OEM=LGE,Language=Hindi,WiFi=Y,appversion=0.5.119,useragent=Android+LGE+google+Nexus+5,KidsPinEnabled=false&tt=p%2Cm%2Cpo&bp=366.6,727.2,1095.6&rnd=8170019078998&cd=1224&vbw=400&ang_pbname=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.tv.v18.viola&pid=62952433-ccf0-4952-8bef-27920bfd739a&rt=vmap_1.0&pf=and_6.0.1&cp.useragent=Android+LGE+google+Nexus+5&cp.adid=d928acbe-4276-422e-b97a-9d9b681f94c3&cp.optout=false&cp.deviceid=3a6cabcc961b0229&cp.osversion=6.0.1";
+        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";
         String multi_ad_vast = "https://pubads.g.doubleclick.net/gampad/ads?slotname=/124319096/external/ad_rule_samples&sz=640x480&ciu_szs=300x250&unviewed_position_start=1&output=xml_vast3&impl=s&env=vp&gdfp_req=1&ad_rule=0&cue=15000&vad_type=linear&vpos=midroll&pod=2&mridx=1&pmnd=0&pmxd=31000&pmad=-1&vrid=6616&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpod&url=https://developers.google.com/interactive-media-ads/docs/sdks/html5/tags&video_doc_id=short_onecue&cmsid=496&kfa=0&tfcd=0";
         String skip_ad = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
-        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";
-        String v18_ad_vmap = "https://in-viacom18.videoplaza.tv/proxy/distributor/v2?s=VORG&t=Language=Hindi,Series%20Title=Yo%20Ke%20Hua%20Bro,Genre=Drama,SBU=VORG,Content%20Type=Full%20Episode,Media%20ID=524406,Age=,Gender=&tt=p,m,po&rt=vmap_1.0&rnd=0.15867538995841546&pf=html5&cd=1435000&bp=464,764,1100";
         String ad_hls = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=%2F57869717%2FDeportes%2FDeportes_Videos&gdfp_req=1&env=vp&output=xml_vast3&unviewed_position_start=1&url=http%3A%2F%2Fcdnapi.kaltura.com%2Fhtml5%2Fhtml5lib%2Fv2.59%2FmwEmbedFrame.php%2Fp%2F1901501%2Fuiconf_id%2F28709932%2Fentry_id%2F0_lpgr4luv%3Fwid%3D_1901501%26iframeembed%3Dtrue%26playerId%3Dkaltura_player_1448321939%26entry_id%3D0_lpgr4luv%26flashvars%255BstreamerType%255D%3Dauto&description_url=%5Bdescription_url%5D&correlator=3547248123560359&sdkv=h.3.176.0&sdki=3c0d&scor=2332314844558947&adk=333819758&u_so=l&osd=2&frm=0&sdr=1&mpt=kaltura%2FmwEmbed&mpv=2.59&afvsz=200x200%2C250x250%2C300x250%2C336x280%2C450x50%2C468x60%2C480x70%2C728x90&ged=ve4_td2_tt0_pd2_la2000_er0.0.153.300_vi0.0.916.1127_vp100_eb24171";
         String honda_ad =  "http://pubads.g.doubleclick.net/gampad/ads?sz=400x300&iu=%2F6062%2Fhanna_MA_group%2Fvideo_comp_app&ciu_szs=&impl=s&gdfp_req=1&env=vp&output=xml_vast3&unviewed_position_start=1&m_ast=vast&url=";
         String google_ad = "http://pubads.g.doubleclick.net/gampad/ads?sz=640x360&iu=/6062/iab_vast_samples/skippable&ciu_szs=300x250,728x90&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&correlator=[timestamp]";
         String two_comp  = "http://pubads.g.doubleclick.net/gampad/ads?sz=640x360&iu=/6062/iab_vast_samples/skippable&ciu_szs=300x250,728x90&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=";
+        String vmap_preroll = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpreonly&cmsid=496&vid=short_onecue&correlator=";
+        String vmap_pre_bump = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpreonlybumper&cmsid=496&vid=short_onecue&correlator=";
+        String vmap_single_pmp = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpost&cmsid=496&vid=short_onecue&correlator=";
+        String vmap_pods = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
+        String vmap_postroll_bump = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpostonlybumper&cmsid=496&vid=short_onecue&correlator=";
+        String complicatedVmap = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";
+        String vomplicatedVmap2 = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostlongpod&cmsid=496&vid=short_tencue&correlator=";
 
-        String ps_pwc = "https://pubads.g.doubleclick.net/gampad/ads?sz=1920x1080&iu=%2F210325652%2FK00001&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&url=https%3A%2F%2Fwww.kocowa.com&description_url=https%3A%2F%2Fwww.kocowa.com&correlator=1500328110&ad_rule=1&cmsid=2456701&vid=0_9yjd6dhw";
-                //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
-        //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
-        //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
         List<String> videoMimeTypes = new ArrayList<>();
         //videoMimeTypes.add(MimeTypes.APPLICATION_MP4);
         //videoMimeTypes.add(MimeTypes.APPLICATION_M3U8);
         //Map<Double, String> tagTimesMap = new HashMap<>();
         //tagTimesMap.put(2.0,"ADTAG");
 
-        //IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
-        //config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
+        IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
+        config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
+    }
 
-        ADConfig adsConfig = new ADConfig().setAdTagURL(two_comp).setPlayerViewContainer(layout).setAdSkinContainer(adSkin).setCompanionAdWidth(728).setCompanionAdHeight(90);
+    private void addADPluginConfig(PKPluginConfigs config, FrameLayout layout, RelativeLayout adSkin) {
+
+        String multi_ad_vast = "https://pubads.g.doubleclick.net/gampad/ads?slotname=/124319096/external/ad_rule_samples&sz=640x480&ciu_szs=300x250&unviewed_position_start=1&output=xml_vast3&impl=s&env=vp&gdfp_req=1&ad_rule=0&cue=15000&vad_type=linear&vpos=midroll&pod=2&mridx=1&pmnd=0&pmxd=31000&pmad=-1&vrid=6616&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpod&url=https://developers.google.com/interactive-media-ads/docs/sdks/html5/tags&video_doc_id=short_onecue&cmsid=496&kfa=0&tfcd=0";
+        String skip_ad = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
+        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";
+        String ad_hls = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=%2F57869717%2FDeportes%2FDeportes_Videos&gdfp_req=1&env=vp&output=xml_vast3&unviewed_position_start=1&url=http%3A%2F%2Fcdnapi.kaltura.com%2Fhtml5%2Fhtml5lib%2Fv2.59%2FmwEmbedFrame.php%2Fp%2F1901501%2Fuiconf_id%2F28709932%2Fentry_id%2F0_lpgr4luv%3Fwid%3D_1901501%26iframeembed%3Dtrue%26playerId%3Dkaltura_player_1448321939%26entry_id%3D0_lpgr4luv%26flashvars%255BstreamerType%255D%3Dauto&description_url=%5Bdescription_url%5D&correlator=3547248123560359&sdkv=h.3.176.0&sdki=3c0d&scor=2332314844558947&adk=333819758&u_so=l&osd=2&frm=0&sdr=1&mpt=kaltura%2FmwEmbed&mpv=2.59&afvsz=200x200%2C250x250%2C300x250%2C336x280%2C450x50%2C468x60%2C480x70%2C728x90&ged=ve4_td2_tt0_pd2_la2000_er0.0.153.300_vi0.0.916.1127_vp100_eb24171";
+        String honda_ad =  "http://pubads.g.doubleclick.net/gampad/ads?sz=400x300&iu=%2F6062%2Fhanna_MA_group%2Fvideo_comp_app&ciu_szs=&impl=s&gdfp_req=1&env=vp&output=xml_vast3&unviewed_position_start=1&m_ast=vast&url=";
+        String google_ad = "http://pubads.g.doubleclick.net/gampad/ads?sz=640x360&iu=/6062/iab_vast_samples/skippable&ciu_szs=300x250,728x90&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&correlator=[timestamp]";
+        String two_comp  = "http://pubads.g.doubleclick.net/gampad/ads?sz=640x360&iu=/6062/iab_vast_samples/skippable&ciu_szs=300x250,728x90&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=";
+        String vmap_preroll = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpreonly&cmsid=496&vid=short_onecue&correlator=";
+        String vmap_pre_bump = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpreonlybumper&cmsid=496&vid=short_onecue&correlator=";
+        String vmap_single_pmp = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpost&cmsid=496&vid=short_onecue&correlator=";
+        String vmap_pods = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
+        String vmap_postroll_bump = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpostonlybumper&cmsid=496&vid=short_onecue&correlator=";
+        String complicatedVmap = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";
+        String vomplicatedVmap2 = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostlongpod&cmsid=496&vid=short_tencue&correlator=";
+
+        ADConfig adsConfig = new ADConfig().setAdTagURL(google_ad).setPlayerViewContainer(layout).setAdSkinContainer(adSkin).setCompanionAdWidth(300).setCompanionAdHeight(60).setStartAdFromPosition(0);
         config.setPluginConfig(ADPlugin.factory.getName(), adsConfig);
     }
+
 
     @Override
     protected void onPause() {
@@ -391,54 +411,63 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                log.d("received NEW AD_CONTENT_PAUSE_REQUESTED");
+                log.d("received NEW AD_BREAK_STARTED");
             }
-        }, AdPluginEvent.Type.CONTENT_PAUSE_REQUESTED);
+        }, AdEvent.Type.AD_BREAK_STARTED);
 
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                AdPluginEvent.AdRequestedEvent adRequestEvent = (AdPluginEvent.AdRequestedEvent) event;
+                log.d("received NEW ADS_PLAYBACK_ENDED");
+            }
+        }, AdEvent.Type.ADS_PLAYBACK_ENDED);
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                AdEvent.AdRequestedEvent adRequestEvent = (AdEvent.AdRequestedEvent) event;
                 log.d("received NEW AD_REQUESTED adtag = " + adRequestEvent.adTagUrl);
             }
-        }, AdPluginEvent.Type.AD_REQUESTED);
+        }, AdEvent.Type.AD_REQUESTED);
 
 
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                AdPluginEvent.ProgressUpdateEvent adPluginEventProress = (AdPluginEvent.ProgressUpdateEvent) event;
+                AdEvent.AdProgressUpdateEvent adPluginEventProress = (AdEvent.AdProgressUpdateEvent) event;
                 //log.d("received NEW AD_PROGRESS_UPDATE " + adPluginEventProress.currentPosition + "/" +  adPluginEventProress.duration);
             }
-        }, AdPluginEvent.Type.AD_PROGRESS_UPDATE);
+        }, AdEvent.Type.AD_PROGRESS_UPDATE);
 
 
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                AdPluginErrorEvent.AdErrorEvent adError = (AdPluginErrorEvent.AdErrorEvent) event;
-                log.d("received NEW AD_ERROR " + adError.adErrorEvent.type + " "  + adError.adErrorMessage);
+                AdEvent.Error adError = (AdEvent.Error) event;
+                log.d("received NEW AD_ERROR " + adError.type + " "  + adError.error.message);
             }
-        }, AdPluginErrorEvent.Type.AD_ERROR);
+        }, AdEvent.Type.ERROR);
 
 
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                log.d("AD_CONTENT_PAUSE_REQUESTED");
+                log.d("AD_BREAK_STARTED");
                 appProgressBar.setVisibility(View.VISIBLE);
             }
-        }, AdEvent.Type.CONTENT_PAUSE_REQUESTED);
+        }, AdEvent.Type.AD_BREAK_STARTED);
+
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                AdEvent.AdCuePointsUpdateEvent cuePointsList = (AdEvent.AdCuePointsUpdateEvent) event;
-                AdCuePoints adCuePoints = cuePointsList.cuePoints;
+                AdEvent.AdCuePointsChangedEvent cuePointsList = (AdEvent.AdCuePointsChangedEvent) event;
+                AdCuePoints adCuePoints = cuePointsList.adCuePoints;
                 if (adCuePoints != null) {
                     log.d("Has Postroll = " + adCuePoints.hasPostRoll());
                 }
             }
         }, AdEvent.Type.CUEPOINTS_CHANGED);
+
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
@@ -446,6 +475,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 appProgressBar.setVisibility(View.INVISIBLE);
             }
         }, AdEvent.Type.STARTED);
+
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
@@ -457,10 +487,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                log.d("Ad Event AD_ALL_ADS_COMPLETED");
+                log.d("Ad Event ALL_ADS_COMPLETED");
                 appProgressBar.setVisibility(View.INVISIBLE);
             }
         }, AdEvent.Type.ALL_ADS_COMPLETED);
+
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
@@ -478,9 +509,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
+                log.d("Ad Event SKIPPED");
                 nowPlaying = true;
             }
         }, AdEvent.Type.SKIPPED);
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                log.d("Ad Event CLICKED");
+                nowPlaying = true;
+            }
+        }, AdEvent.Type.CLICKED);
 
         player.addStateChangeListener(new PKEvent.Listener() {
             @Override
@@ -495,6 +535,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
             }
         });
+
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
@@ -536,24 +577,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onConfigurationChanged(newConfig);
         setFullScreen(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE);
     }
-
-    private int getOrientationFromAngle() {
-        int angle = getWindow().getWindowManager().getDefaultDisplay().getRotation();
-        int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-        switch (angle) {
-            case Surface.ROTATION_0:
-            case Surface.ROTATION_180:
-                orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-                break;
-            case Surface.ROTATION_90:
-            case Surface.ROTATION_270:
-                orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-                break;
-        }
-        return orientation;
-    }
-
-
 
     private void setFullScreen(boolean isFullScreen) {
         if (player != null) {
@@ -621,7 +644,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     VideoTrack videoTrackInfo = (VideoTrack) trackInfos.get(i);
                     if(videoTrackInfo.isAdaptive()){
                         trackItems[i] = new TrackItem("Auto", videoTrackInfo.getUniqueId());
-                    }else{
+                    } else {
                         trackItems[i] = new TrackItem(String.valueOf(videoTrackInfo.getBitrate()), videoTrackInfo.getUniqueId());
                     }
                 }
