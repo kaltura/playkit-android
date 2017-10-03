@@ -30,8 +30,8 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.api.ovp.services.StatsService;
-import com.kaltura.playkit.plugins.ads.AdPositionType;
 import com.kaltura.playkit.plugins.ads.AdEvent;
+import com.kaltura.playkit.plugins.ads.AdPositionType;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.TimerTask;
@@ -219,7 +219,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
-            if (event.eventType() != AdEvent.Type.AD_PROGRESS_UPDATE && event.eventType() != PlayerEvent.Type.PLAYHEAD_UPDATED) {
+            if (event.eventType() != AdEvent.Type.AD_POSITION_UPDATED && event.eventType() != PlayerEvent.Type.PLAYHEAD_UPDATED) {
                 log.d("New PKEvent = " + event.eventType().name());
             }
 
@@ -324,7 +324,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     public void onEvent(AdEvent event) {
         switch (event.type) {
 
-            case LOADED:
+            case AD_LOADED:
                 AdEvent.AdLoadedEvent adLoadedEvent = (AdEvent.AdLoadedEvent) event;
                 adPositionType = adLoadedEvent.adInfo.getAdPositionType();
 
@@ -338,11 +338,11 @@ public class KalturaStatsPlugin extends PKPlugin {
                     }
                 }
                 break;
-            case STARTED:
+            case AD_STARTED:
                 break;
-            case PAUSED:
-            case RESUMED:
-            case COMPLETED:
+            case AD_PAUSED:
+            case AD_RESUMED:
+            case AD_ENDED:
                 break;
             case FIRST_QUARTILE:
                 if (adPositionType != AdPositionType.UNKNOWN) {
@@ -377,7 +377,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                     }
                 }
                 break;
-            case CLICKED:
+            case AD_CLICKED:
                 if (adPositionType != AdPositionType.UNKNOWN) {
                     if (AdPositionType.PRE_ROLL.equals(adPositionType)) {
                         sendAnalyticsEvent(KStatsEvent.PREROLL_CLICKED);

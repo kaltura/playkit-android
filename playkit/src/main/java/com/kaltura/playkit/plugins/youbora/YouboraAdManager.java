@@ -18,6 +18,7 @@ import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.ads.PKAdEndedReason;
 import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdPositionType;
@@ -87,7 +88,7 @@ class YouboraAdManager extends AdnalyzerGeneric {
         public void onEvent(PKEvent event) {
 
             if (event instanceof AdEvent) {
-                if (((AdEvent) event).type != AdEvent.Type.AD_PROGRESS_UPDATE) {
+                if (((AdEvent) event).type != AdEvent.Type.AD_POSITION_UPDATED) {
                     log.d("AdManager: " + ((AdEvent) event).type.toString());
                 }
                 switch (((AdEvent) event).type) {
@@ -95,7 +96,7 @@ class YouboraAdManager extends AdnalyzerGeneric {
                         lastReportedAdResource = ((AdEvent.AdRequestedEvent) event).adTagUrl;
                         log.d("lastReportedAdResource: " + lastReportedAdResource);
                         break;
-                    case LOADED:
+                    case AD_LOADED:
                         log.d("Youbora AD_LOADED");
                         if (isFirstPlay) {
                             lastReportedAdPlayhead = 0.0;
@@ -115,14 +116,14 @@ class YouboraAdManager extends AdnalyzerGeneric {
                         log.d("lastReportedAdTitle: " + lastReportedAdTitle);
                         playAdHandler();
                         break;
-                    case STARTED:
+                    case AD_STARTED:
                         log.d("Youbora AD_STARTED");
                         joinAdHandler();
                         break;
-                    case PAUSED:
+                    case AD_PAUSED:
                         pauseAdHandler();
                         break;
-                    case RESUMED:
+                    case AD_RESUMED:
                         if (isFirstPlay) {
                             isFirstPlay = false;
                             populateAdValues();
@@ -131,9 +132,14 @@ class YouboraAdManager extends AdnalyzerGeneric {
                         }
                         resumeAdHandler();
                         break;
-                    case COMPLETED:
-                        lastReportedAdPlayhead = lastReportedAdDuration;
-                        endedAdHandler();
+                    case AD_ENDED:
+                        AdEvent.AdEndedEvent adEndedEvent = (AdEvent.AdEndedEvent) event;
+                        if (((AdEvent.AdEndedEvent) event).adEndedReason == PKAdEndedReason.COMPLETED) {
+                            lastReportedAdPlayhead = lastReportedAdDuration;
+                            endedAdHandler();
+                        } else if (((AdEvent.AdEndedEvent) event).adEndedReason == PKAdEndedReason.SKIPPED) {
+                            skipAdHandler();
+                        }
                         break;
                     case AD_BREAK_IGNORED:
                         endedAdHandler();
@@ -141,19 +147,16 @@ class YouboraAdManager extends AdnalyzerGeneric {
                     case ADS_PLAYBACK_ENDED:
                         endedAdHandler();
                         break;
-                    case SKIPPED:
-                        skipAdHandler();
-                        break;
                     case ERROR:
                         AdEvent.Error errorEvent = (AdEvent.Error) event;
                         handleAdError(errorEvent.error);
                         break;
-                    case CLICKED:
+                    case AD_CLICKED:
                         log.d("learn more clicked");
                         //We are not sending this event to youbora,
                         //so prevent it from dispatching through YouboraEvent.YouboraReport.
                         return;
-                    case AD_PROGRESS_UPDATE:
+                    case AD_POSITION_UPDATED:
                         if (event instanceof AdEvent.AdProgressUpdateEvent) {
                             if (((AdEvent.AdProgressUpdateEvent) event).currentPosition < Consts.MILLISECONDS_MULTIPLIER) {
                                 lastReportedAdPlayhead = ((AdEvent.AdProgressUpdateEvent) event).currentPosition * 1.0;

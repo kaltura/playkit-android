@@ -1,8 +1,8 @@
 package com.kaltura.playkit.ads;
 
 
-public enum PKAdBreakEndedReason {
+public enum PKAdEndedReason {
+    SKIPPED,
     COMPLETED,
-    DISCARDED,
     ERROR;
 }

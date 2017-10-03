@@ -45,13 +45,14 @@ import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdEnabledPlayerController;
 import com.kaltura.playkit.ads.AdTagType;
+import com.kaltura.playkit.ads.PKAdEndedReason;
 import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.ads.PKAdProviderListener;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
+import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
-import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
@@ -166,7 +167,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
         adConfig = parseConfig(config);
         adUiContainer = player.getView();
-        imaSetup();
     }
 
     private static IMAConfig parseConfig(Object config) {
@@ -234,6 +234,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         isAdDisplayed = false;
         isAllAdsCompleted = false;
         isContentEndedBeforeMidroll = false;
+        imaSetup();
         requestAdsFromIMA(adConfig.getAdTagURL());
     }
 
@@ -724,7 +725,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 }
 
                 adInfo = createAdInfo(adEvent.getAd());
-                messageBus.post(new AdEvent(AdEvent.Type.STARTED));
+                messageBus.post(new AdEvent(AdEvent.Type.AD_STARTED));
 
                 preparePlayer(false);
 
@@ -743,7 +744,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             case PAUSED:
                 log.d("AD PAUSED");
                 isAdIsPaused = true;
-                messageBus.post(new AdEvent(AdEvent.Type.PAUSED));
+                messageBus.post(new AdEvent(AdEvent.Type.AD_PAUSED));
                 break;
             case RESUMED:
                 log.d("AD RESUMED");
@@ -751,11 +752,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     player.getView().hideVideoSurface();
                 }
                 isAdIsPaused = false;
-                messageBus.post(new AdEvent(AdEvent.Type.RESUMED));
+                messageBus.post(new AdEvent(AdEvent.Type.AD_RESUMED));
                 break;
             case COMPLETED:
                 log.d("AD COMPLETED");
-                messageBus.post(new AdEvent(AdEvent.Type.COMPLETED));
+                messageBus.post(new AdEvent.AdEndedEvent(PKAdEndedReason.COMPLETED));
                 cancelAdDisplayedCheckTimer();
                 break;
             case FIRST_QUARTILE:
@@ -768,17 +769,16 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.post(new AdEvent(AdEvent.Type.THIRD_QUARTILE));
                 break;
             case SKIPPED:
-                messageBus.post(new AdEvent(AdEvent.Type.SKIPPED));
+                messageBus.post(new AdEvent.AdEndedEvent(PKAdEndedReason.SKIPPED));
                 cancelAdDisplayedCheckTimer();
                 preparePlayer(true);
                 break;
             case CLICKED:
                 isAdIsPaused = true;
                 messageBus.post(new AdEvent.AdvtClickEvent("NA"));
-
                 break;
             case TAPPED:
-                messageBus.post(new AdEvent(AdEvent.Type.TAPPED));
+                messageBus.post(new AdEvent(AdEvent.Type.AD_TOUCHED));
                 break;
             case ICON_TAPPED:
                 messageBus.post(new AdEvent(AdEvent.Type.ICON_TAPPED));

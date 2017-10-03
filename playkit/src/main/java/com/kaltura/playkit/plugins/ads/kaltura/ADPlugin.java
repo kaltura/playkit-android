@@ -32,6 +32,7 @@ import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdEnabledPlayerController;
 import com.kaltura.playkit.ads.PKAdBreakEndedReason;
+import com.kaltura.playkit.ads.PKAdEndedReason;
 import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.ads.PKAdProviderListener;
@@ -266,7 +267,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                     //    break;
                     case adPaused:
                         isAdIsPaused = true;
-                        messageBus.post(new AdEvent(AdEvent.Type.PAUSED));
+                        messageBus.post(new AdEvent(AdEvent.Type.AD_PAUSED));
                         break;
 
                     case adResumed:
@@ -274,12 +275,12 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         if (!isAppInBackground) {
                             adConfig.getAdSkinContainer().setVisibility(View.VISIBLE);
                         }
-                        messageBus.post(new AdEvent(AdEvent.Type.RESUMED));
+                        messageBus.post(new AdEvent(AdEvent.Type.AD_RESUMED));
                         break;
 
                     case adSkipped:
                         isAdDisplayed = false;
-                        messageBus.post(new AdEvent(AdEvent.Type.SKIPPED));
+                        messageBus.post(new AdEvent.AdEndedEvent(PKAdEndedReason.SKIPPED));
                         break;
 
                     case adLoaded:
@@ -306,23 +307,23 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         if (!isAppInBackground) {
                             adConfig.getAdSkinContainer().setVisibility(View.VISIBLE);
                         }
-                        messageBus.post(new AdEvent(AdEvent.Type.STARTED));
+                        messageBus.post(new AdEvent(AdEvent.Type.AD_STARTED));
                         break;
 
                     case adEnded:
                         isAdDisplayed = false;
                         adConfig.getAdSkinContainer().setVisibility(View.INVISIBLE);
-                        messageBus.post(new AdEvent(AdEvent.Type.COMPLETED));
+                        messageBus.post(new AdEvent.AdEndedEvent(PKAdEndedReason.COMPLETED));
                         break;
                     case adBufferStart:
                         if (isAdDisplayed) {
-                            messageBus.post(new AdEvent.AdBufferEvent(true));
+                            messageBus.post(new AdEvent(AdEvent.Type.AD_STARTED_BUFFERING));
                         }
                         break;
 
                     case adBufferEnd:
                         if (isAdDisplayed || (player.getCurrentPosition() > 0  && player.getCurrentPosition() >= player.getDuration())) {
-                            messageBus.post(new AdEvent.AdBufferEvent(false));
+                            messageBus.post(new AdEvent(AdEvent.Type.AD_PLAYBACK_READY));
                         }
                         break;
 
@@ -359,7 +360,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
             case completed:
                 return PKAdBreakEndedReason.COMPLETED;
             default:
-                return PKAdBreakEndedReason.UNKNOWN;
+                return PKAdBreakEndedReason.ERROR;
         }
     }
 
@@ -428,20 +429,20 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
 
 
     private void sendError(AdManagerAdErrorEvent adErrorEvent) {
-        log.e("Ad Error: " + adErrorEvent.type + " with message " + adErrorEvent.exception.getMessage());
+        String errMsg = "";
+        if (adErrorEvent.exception != null) {
+            errMsg = adErrorEvent.exception.getMessage();
+        }
+        log.e("Ad Error: " + adErrorEvent.type + " with message " + errMsg);
 
-        String message = "";
         Throwable cause = null;
         if (adErrorEvent.exception != null) {
-            if (adErrorEvent.exception.getMessage() != null) {
-                message = adErrorEvent.exception.getMessage();
-            }
             if (adErrorEvent.exception.getCause() != null) {
                 cause = adErrorEvent.exception.getCause();
             }
         }
         PKAdErrorType pkErrorType = getPKErrorType(adErrorEvent.type);
-        AdEvent.Error errorEvent = new AdEvent.Error(new PKError(pkErrorType, message, cause));
+        AdEvent.Error errorEvent = new AdEvent.Error(new PKError(pkErrorType, errMsg, cause));
         messageBus.post(errorEvent);
     }
 

@@ -201,19 +201,19 @@ class YouboraLibraryManager extends PluginGeneric {
     }
 
     private void onAdEvent(AdEvent event) {
-        if (event.type != AdEvent.Type.AD_PROGRESS_UPDATE) {
+        if (event.type != AdEvent.Type.AD_POSITION_UPDATED) {
             log.d("Ad Event: " + event.type.name());
         }
 
         switch (event.type) {
-            case STARTED:
+            case AD_STARTED:
                 ignoringAdHandler();
                 allowSendingYouboraBufferEvents = false;
                 break;
             case ADS_PLAYBACK_ENDED:
                 ignoredAdHandler();
                 break;
-            case CUEPOINTS_CHANGED:
+            case AD_CUEPOINTS_UPDATED:
                 AdEvent.AdCuePointsChangedEvent cuePointsList = (AdEvent.AdCuePointsChangedEvent) event;
                 adCuePoints = cuePointsList.adCuePoints;
                 break;

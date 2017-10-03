@@ -37,6 +37,7 @@ import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.ads.PKAdEndedReason;
 import com.kaltura.playkit.api.ovp.SimpleOvpSessionProvider;
 import com.kaltura.playkit.api.phoenix.APIDefines;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
@@ -394,7 +395,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         ADConfig adsConfig = new ADConfig().setAdTagURL(google_ad).setPlayerViewContainer(layout).setAdSkinContainer(adSkin).setCompanionAdWidth(728).setCompanionAdHeight(90);
         config.setPluginConfig(ADPlugin.factory.getName(), adsConfig);
     }
-    
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -436,7 +437,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 AdEvent.AdProgressUpdateEvent adPluginEventProress = (AdEvent.AdProgressUpdateEvent) event;
                 //log.d("received NEW AD_PROGRESS_UPDATE " + adPluginEventProress.currentPosition + "/" +  adPluginEventProress.duration);
             }
-        }, AdEvent.Type.AD_PROGRESS_UPDATE);
+        }, AdEvent.Type.AD_POSITION_UPDATED);
 
 
         player.addEventListener(new PKEvent.Listener() {
@@ -465,7 +466,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     log.d("Has Postroll = " + adCuePoints.hasPostRoll());
                 }
             }
-        }, AdEvent.Type.CUEPOINTS_CHANGED);
+        }, AdEvent.Type.AD_CUEPOINTS_UPDATED);
 
         player.addEventListener(new PKEvent.Listener() {
             @Override
@@ -473,7 +474,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 log.d("AD_STARTED");
                 appProgressBar.setVisibility(View.INVISIBLE);
             }
-        }, AdEvent.Type.STARTED);
+        }, AdEvent.Type.AD_STARTED);
 
         player.addEventListener(new PKEvent.Listener() {
             @Override
@@ -482,7 +483,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 nowPlaying = true;
                 appProgressBar.setVisibility(View.INVISIBLE);
             }
-        }, AdEvent.Type.RESUMED);
+        }, AdEvent.Type.AD_RESUMED);
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
@@ -508,10 +509,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                log.d("Ad Event SKIPPED");
-                nowPlaying = true;
+                AdEvent.AdEndedEvent adEndedEvent = (AdEvent.AdEndedEvent) event;
+                if (adEndedEvent.adEndedReason == PKAdEndedReason.SKIPPED) {
+                    log.d("Ad Event SKIPPED");
+                    nowPlaying = true;
+                } else if (adEndedEvent.adEndedReason == PKAdEndedReason.COMPLETED) {
+                    log.d("Ad Event AD_ENDED");
+                }
             }
-        }, AdEvent.Type.SKIPPED);
+        }, AdEvent.Type.AD_ENDED);
 
         player.addEventListener(new PKEvent.Listener() {
             @Override
@@ -519,7 +525,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 log.d("Ad Event CLICKED");
                 nowPlaying = true;
             }
-        }, AdEvent.Type.CLICKED);
+        }, AdEvent.Type.AD_CLICKED);
 
         player.addStateChangeListener(new PKEvent.Listener() {
             @Override

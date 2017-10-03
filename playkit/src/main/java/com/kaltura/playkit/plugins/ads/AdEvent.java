@@ -15,6 +15,7 @@ package com.kaltura.playkit.plugins.ads;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.ads.PKAdBreakEndedReason;
+import com.kaltura.playkit.ads.PKAdEndedReason;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -48,7 +49,7 @@ public class AdEvent implements PKEvent {
         public long duration;
 
         public AdProgressUpdateEvent(long currentPosition, long duration) {
-            super(Type.AD_PROGRESS_UPDATE);
+            super(Type.AD_POSITION_UPDATED);
             this.currentPosition = currentPosition;
             this.duration = duration;
         }
@@ -79,8 +80,17 @@ public class AdEvent implements PKEvent {
         public AdInfo adInfo;
 
         public AdLoadedEvent(AdInfo adInfo) {
-            super(Type.LOADED);
+            super(Type.AD_LOADED);
             this.adInfo = adInfo;
+        }
+    }
+
+    public static class AdEndedEvent extends AdEvent {
+
+        public PKAdEndedReason adEndedReason;
+        public AdEndedEvent(PKAdEndedReason adEndedReason) {
+            super(Type.AD_ENDED);
+            this.adEndedReason = adEndedReason;
         }
     }
 
@@ -89,18 +99,8 @@ public class AdEvent implements PKEvent {
         public String advtLink;
 
         public AdvtClickEvent(String advtLink) {
-            super(Type.CLICKED);
+            super(Type.AD_CLICKED);
             this.advtLink = advtLink;
-        }
-    }
-
-    public static class AdBufferEvent extends AdEvent {
-
-        public boolean show;
-
-        public AdBufferEvent(boolean show) {
-            super(Type.AD_BUFFER);
-            this.show = show;
         }
     }
 
@@ -109,7 +109,7 @@ public class AdEvent implements PKEvent {
         public AdCuePoints adCuePoints;
 
         public AdCuePointsChangedEvent(Set<Double> cuePoints) {
-            super(Type.CUEPOINTS_CHANGED);
+            super(Type.AD_CUEPOINTS_UPDATED);
             this.adCuePoints = new AdCuePoints(new ArrayList<Double>(cuePoints));
         }
     }
@@ -126,34 +126,33 @@ public class AdEvent implements PKEvent {
 
 
     public enum Type {
-        AD_BREAK_PENDING, //CONTENT_PAUSE_REQUESTED
+        AD_BREAK_PENDING,
         AD_BREAK_STARTED,
         AD_BREAK_ENDED,
         AD_BREAK_IGNORED,
-        ADS_PLAYBACK_ENDED, //CONTENT_RESUME_REQUESTED
-        AD_PROGRESS_UPDATE,
-        PLAYBACK_STATE,
+        ADS_PLAYBACK_ENDED,
+        ALL_ADS_COMPLETED,
+        AD_POSITION_UPDATED,
         AD_REQUESTED,
-        CUEPOINTS_CHANGED,
-        LOADED,
-        STARTED,
+        AD_CUEPOINTS_UPDATED,
+        AD_LOADED,
+        AD_STARTED,
+        AD_ENDED,
         FIRST_QUARTILE,
         MIDPOINT,
         THIRD_QUARTILE,
-        PAUSED,
-        RESUMED,
-        COMPLETED,
-        SKIPPED,
-        CLICKED,
-        PLAYER_SWITCH_MAXIMIZE,
+        AD_PAUSED,
+        AD_RESUMED,
+        AD_CLICKED,
+        //AD_EXPAND,
+        //AD_COLLAPSED,
         PLAYER_STATE,
-        AD_BUFFER,
-        TAPPED,
+        AD_STARTED_BUFFERING,
+        AD_PLAYBACK_READY,
+        AD_TOUCHED,
         ICON_TAPPED,
         ERROR_LOG, // none fatal error while player cannot play stream URL
-        ERROR,
-        ALL_ADS_COMPLETED
-
+        ERROR
     }
 
     @Override
