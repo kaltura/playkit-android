@@ -1,6 +1,7 @@
 package com.kaltura.playkit.plugins.ads.kaltura;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -55,6 +56,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     private PKAdProviderListener pkAdProviderListener;
     private PKMediaConfig mediaConfig;
     private boolean isAllAdsCompleted;
+
 
 
     //---------------------------
@@ -114,7 +116,6 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                 public void onEvent(PKEvent event) {
                     if (!"progress".equals(event.eventType().name())) {
                         log.d("Received:PlayerEvent:" + event.eventType().name());
-
                     }
                 }
             }, PlayerEvent.Type.ENDED);
@@ -168,11 +169,11 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                 return new VideoProgressUpdate(currentPosition, duration);
             }
         };
+
         AdManager.Settings settings = new AdManager.Settings();
         settings.preferredBitrate    = adConfig.getVideoBitrate();
         settings.preferredMimeType   = adConfig.getVideoMimeType();
         settings.adLoadTimeout       = adConfig.getAdLoadTimeOut();
-        settings.startAdFromPosition = adConfig.getStartAdFromPosition();
 
         adManager = new DefaultAdManager(context, adPlayerFactory, contentProgressProvider, adUIFactory, stringFetcher, urlPinger, settings);
         adManager.addListener(getAdManagerListener());
@@ -481,11 +482,24 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         //isContentEndedBeforeMidroll = false;
         if (!adManagerInitDuringBackground) {
             if (adConfig != null) {
+                AdManager.Settings settings = getSettings(mediaConfig);
+                adManager.updateSettings(settings);
+
                 requestForAds(adConfig.getAdTagURL());
             } else {
                 preparePlayer(true);
             }
         }
+    }
+
+    @NonNull
+    private AdManager.Settings getSettings(PKMediaConfig mediaConfig) {
+        AdManager.Settings settings = new AdManager.Settings();
+        settings.preferredBitrate    = adConfig.getVideoBitrate();
+        settings.preferredMimeType   = adConfig.getVideoMimeType();
+        settings.adLoadTimeout       = adConfig.getAdLoadTimeOut();
+        settings.startAdFromPosition = mediaConfig.getStartPosition();
+        return settings;
     }
 
     private void requestForAds(String adTagURL) {
@@ -527,7 +541,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
 
     @Override
     protected void onDestroy() {
-        log.d("IMA Start onDestroy");
+        log.d("Start onDestroy");
         resetAdPlugin();
         if (adManager != null) {
             //adManager.destroy();

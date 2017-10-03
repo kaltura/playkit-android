@@ -37,7 +37,6 @@ public class ADConfig {
     private String adTagURL;
     private View playerViewContainer;
     private View adSkinContainer;
-    private long startAdFromPosition;
     private int videoBitrate; // in KB
     private AdTagType adTagType;
     private int  adLoadTimeOut;
@@ -54,7 +53,6 @@ public class ADConfig {
         this.adTagURL = null;         //=> must be set via setter
         this.playerViewContainer = null;
         this.adSkinContainer = null;
-        this.startAdFromPosition = 0;
         this.companionAdWidth = 0;
         this.companionAdHeight = 0;
 
@@ -73,11 +71,6 @@ public class ADConfig {
 
     public ADConfig setAdTagType(AdTagType adTagType) {
         this.adTagType = adTagType;
-        return this;
-    }
-
-    public ADConfig setStartAdFromPosition(long startAdFromPosition) {
-        this.startAdFromPosition = startAdFromPosition;
         return this;
     }
 
@@ -156,10 +149,6 @@ public class ADConfig {
         return adSkinContainer;
     }
 
-    public long getStartAdFromPosition() {
-        return startAdFromPosition;
-    }
-
     public int getCompanionAdWidth() {
         return companionAdWidth;
     }
@@ -167,8 +156,6 @@ public class ADConfig {
     public int getCompanionAdHeight() {
         return companionAdHeight;
     }
-
-
 
     public JsonObject toJSONObject() {
         JsonObject jsonObject = new JsonObject();
