@@ -254,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void onMediaLoaded(PKMediaEntry mediaEntry) {
 
-        PKMediaConfig mediaConfig = new PKMediaConfig().setMediaEntry(mediaEntry).setStartPosition(13);
+        PKMediaConfig mediaConfig = new PKMediaConfig().setMediaEntry(mediaEntry).setStartPosition(0);
         PKPluginConfigs pluginConfig = new PKPluginConfigs();
         FrameLayout layout = (FrameLayout) findViewById(R.id.player_root);
         RelativeLayout adSkin = (RelativeLayout) findViewById(R.id.ad_skin);
@@ -391,11 +391,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         String complicatedVmap = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";
         String vomplicatedVmap2 = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostlongpod&cmsid=496&vid=short_tencue&correlator=";
 
-        ADConfig adsConfig = new ADConfig().setAdTagURL(vmap_postroll_bump).setPlayerViewContainer(layout).setAdSkinContainer(adSkin).setCompanionAdWidth(300).setCompanionAdHeight(60);
+        ADConfig adsConfig = new ADConfig().setAdTagURL(google_ad).setPlayerViewContainer(layout).setAdSkinContainer(adSkin).setCompanionAdWidth(728).setCompanionAdHeight(90);
         config.setPluginConfig(ADPlugin.factory.getName(), adsConfig);
     }
-
-
+    
     @Override
     protected void onPause() {
         super.onPause();
