@@ -20,7 +20,6 @@ import com.kaltura.admanager.DefaultAdUIController;
 import com.kaltura.admanager.DefaultStringFetcher;
 import com.kaltura.admanager.DefaultUrlPinger;
 import com.kaltura.admanager.VideoProgressUpdate;
-import com.kaltura.admanager.model.CompanionAd;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
@@ -40,7 +39,6 @@ import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
 
-import java.util.Map;
 import java.util.Set;
 
 import static com.kaltura.admanager.AdManagerAdErrorEvent.Type.invalidArgumentsError;
@@ -174,8 +172,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         settings.preferredBitrate    = adConfig.getVideoBitrate();
         settings.preferredMimeType   = adConfig.getVideoMimeType();
         settings.adLoadTimeout       = adConfig.getAdLoadTimeOut();
-        settings.statAdsFromPosition = adConfig.getStartAdFromPosition();
-
+        settings.startAdFromPosition = adConfig.getStartAdFromPosition();
 
         adManager = new DefaultAdManager(context, adPlayerFactory, contentProgressProvider, adUIFactory, stringFetcher, urlPinger, settings);
         adManager.addListener(getAdManagerListener());
@@ -375,13 +372,14 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         String adSystem = adInfo.getAdSystem();
         int adHeight = 0;
         int adWidth = 0;
+
         if (adInfo.getComapnionAdIdByResMap().containsKey(0)) {
             if (adInfo.getComapnionAdIdByResMap().get(0).size() > 0) {
-                for (Map.Entry<String, CompanionAd> entry : adInfo.getComapnionAdIdByResMap().get(0).entrySet()) {
-                    System.out.println("Key : " + entry.getKey() + " Value : " + entry.getValue());
-                    adHeight = entry.getValue().getHeight();
-                    adWidth =  entry.getValue().getWidth();
-                    break;
+                String companionAdResolution = adConfig.getCompanionAdWidth() + "_" + adConfig.getCompanionAdHeight();
+                if (adInfo.getComapnionAdIdByResMap().get(0).containsKey(companionAdResolution)) {
+                    adHeight = adConfig.getCompanionAdHeight();
+                    adWidth =  adConfig.getCompanionAdWidth();
+                    log.d("Found Key : " + companionAdResolution);
                 }
             }
         }

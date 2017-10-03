@@ -24,27 +24,22 @@ public class ADConfig {
     public static final int DEFAULT_AD_LOAD_TIMEOUT = 15000;
 
     public static final String AD_TAG_LANGUAGE     = "language";
-    public static final String AD_TAG_TYPE = "adTagType";
     public static final String AD_TAG_URL          = "adTagURL";
     public static final String AD_VIDEO_BITRATE    = "videoBitrate";
-    public static final String AD_VIDEO_MIME_TYPES      = "videoMimeTypes";
-    public static final String AD_ATTRIBUTION_UIELEMENT = "adAttribution";
-    public static final String AD_COUNTDOWN_UIELEMENT   = "adCountDown";
+    public static final String AD_VIDEO_MIME_TYPE      = "videoMimeType";
     public static final String AD_LOAD_TIMEOUT          = "adLoadTimeOut";
-    public static final String AD_ENABLE_DEBUG_MODE     = "enableDebugMode";
+    public static final String AD_TAG_TYPE = "adTagType";
+
+
 
 
     private String language;
     private String adTagURL;
     private View playerViewContainer;
     private View adSkinContainer;
-    //View companionView;
     private long startAdFromPosition;
-    private AdTagType adTagType;
     private int videoBitrate; // in KB
-    private boolean adAttribution;
-    private boolean adCountDown;
-    //private boolean enableDebugMode;
+    private AdTagType adTagType;
     private int  adLoadTimeOut;
     private String videoMimeType;
     private int companionAdWidth;
@@ -52,11 +47,10 @@ public class ADConfig {
 
     public ADConfig() {
         this.language                 = "en";
-        this.adTagType = AdTagType.VAST;
         this.videoBitrate             = -1;
         this.adLoadTimeOut            = DEFAULT_AD_LOAD_TIMEOUT;
-        //this.enableDebugMode          = false;
         this.videoMimeType =          PKMediaFormat.mp4.mimeType;
+        this.adTagType = AdTagType.UNKNOWN;
         this.adTagURL = null;         //=> must be set via setter
         this.playerViewContainer = null;
         this.adSkinContainer = null;
@@ -130,31 +124,8 @@ public class ADConfig {
         return this;
     }
 
-    public boolean getAdAttribution() {
-        return adAttribution;
-    }
-
     public AdTagType getAdTagType() {
         return adTagType;
-    }
-
-
-    //ad attribution true is required for a countdown timer to be displayed
-    // default is true
-    public ADConfig setAdAttribution(boolean adAttribution) {
-        this.adAttribution = adAttribution;
-        return this;
-    }
-
-    public boolean getAdCountDown() {
-        return adCountDown;
-    }
-
-    // set if ad countdown will be shown or not.
-    // default is true
-    public ADConfig setAdCountDown(boolean adCountDown) {
-        this.adCountDown = adCountDown;
-        return this;
     }
 
     public int getAdLoadTimeOut() {
@@ -176,14 +147,6 @@ public class ADConfig {
         return this;
     }
 
-    //public ADConfig enableDebugMode(boolean enableDebugMode) {
-    //    this.enableDebugMode = enableDebugMode;
-    //    return this;
-    //}
-
-    //public boolean isDebugMode() {
-    //    return enableDebugMode;
-    //}
 
     public View getPlayerViewContainer() {
         return playerViewContainer;
@@ -205,26 +168,16 @@ public class ADConfig {
         return companionAdHeight;
     }
 
-//    public View getCompanionView() {
-//        return companionView;
-//    }
-//
-//    public void setCompanionView(View companionView) {
-//        this.companionView = companionView;
-//    }
-//
+
 
     public JsonObject toJSONObject() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(AD_TAG_LANGUAGE, language);
-        jsonObject.addProperty(AD_TAG_TYPE, adTagType.name());
+
         jsonObject.addProperty(AD_TAG_URL, adTagURL);
         jsonObject.addProperty(AD_VIDEO_BITRATE, videoBitrate);
-        jsonObject.addProperty(AD_ATTRIBUTION_UIELEMENT, adAttribution);
-        jsonObject.addProperty(AD_COUNTDOWN_UIELEMENT, adCountDown);
         jsonObject.addProperty(AD_LOAD_TIMEOUT, adLoadTimeOut);
-        //jsonObject.addProperty(AD_ENABLE_DEBUG_MODE, enableDebugMode);
-        jsonObject.addProperty(AD_VIDEO_MIME_TYPES, videoMimeType);
+        jsonObject.addProperty(AD_VIDEO_MIME_TYPE, videoMimeType);
 
         return jsonObject;
     }
