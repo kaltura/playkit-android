@@ -775,7 +775,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 break;
             case CLICKED:
                 isAdIsPaused = true;
-                messageBus.post(new AdEvent.AdvtClickEvent("NA"));
+                messageBus.post(new AdEvent.AdClickEvent("NA"));
                 break;
             case TAPPED:
                 messageBus.post(new AdEvent(AdEvent.Type.AD_TOUCHED));

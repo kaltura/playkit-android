@@ -172,12 +172,18 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         };
 
         AdManager.Settings settings = new AdManager.Settings();
-        settings.preferredBitrate    = adConfig.getVideoBitrate();
-        settings.preferredMimeType   = adConfig.getVideoMimeType();
-        settings.adLoadTimeout       = adConfig.getAdLoadTimeOut();
+        buildAdConfigSettings(settings);
 
         adManager = new DefaultAdManager(context, adPlayerFactory, contentProgressProvider, adUIFactory, stringFetcher, urlPinger, settings);
         adManager.addListener(getAdManagerListener());
+    }
+
+    private void buildAdConfigSettings(AdManager.Settings settings) {
+        settings.preferredBitrate    = adConfig.getVideoBitrate();
+        settings.preferredMimeType   = adConfig.getVideoMimeType();
+        settings.adLoadTimeout       = adConfig.getAdLoadTimeOut();
+        settings.companionAdWidth    = adConfig.getCompanionAdWidth();
+        settings.companionAdHeight   = adConfig.getCompanionAdHeight();
     }
 
     private AdManager.Listener getAdManagerListener() {
@@ -260,9 +266,15 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         break;
 
                     case adClicked:
-                        messageBus.post(new AdEvent.AdvtClickEvent(adEvent.adInfo.getClickThroughUrl()));
+                        AdManagerAdEvent.AdClickedEvent adClickedEvent = (AdManagerAdEvent.AdClickedEvent) adEvent;
+                        messageBus.post(new AdEvent.AdClickEvent(adClickedEvent.advtClickThroughUrl));
                         break;
 
+                    case companionAdClicked:
+                        AdManagerAdEvent.CompanionAdClickedEvent companionAdClickedEvent = (AdManagerAdEvent.CompanionAdClickedEvent) adEvent;
+
+                        messageBus.post(new AdEvent.CompanionAdClickEvent(companionAdClickedEvent.advtClickThroughUrl));
+                        break;
                     //case adTouched:
                     //    break;
                     case adPaused:
@@ -372,20 +384,8 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
 
         String adId = adInfo.getId();
         String adSystem = adInfo.getAdSystem();
-        int adHeight = 0;
-        int adWidth = 0;
-
-        if (adInfo.getComapnionAdIdByResMap().containsKey(0)) {
-            if (adInfo.getComapnionAdIdByResMap().get(0).size() > 0) {
-                String companionAdResolution = adConfig.getCompanionAdWidth() + "_" + adConfig.getCompanionAdHeight();
-                if (adInfo.getComapnionAdIdByResMap().get(0).containsKey(companionAdResolution)) {
-                    adHeight = adConfig.getCompanionAdHeight();
-                    adWidth =  adConfig.getCompanionAdWidth();
-                    log.d("Found Key : " + companionAdResolution);
-                }
-            }
-        }
-
+        int adHeight = adInfo.getHeight();
+        int adWidth  = adInfo.getWidth();
         String contentType = adInfo.getAdMimeType();
         int totalAdsInPod = adInfo.getTotalAds();
         int adIndexInPod = adInfo.getAdIndex();   // index starts in 1
@@ -496,9 +496,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     @NonNull
     private AdManager.Settings getSettings(PKMediaConfig mediaConfig) {
         AdManager.Settings settings = new AdManager.Settings();
-        settings.preferredBitrate    = adConfig.getVideoBitrate();
-        settings.preferredMimeType   = adConfig.getVideoMimeType();
-        settings.adLoadTimeout       = adConfig.getAdLoadTimeOut();
+        buildAdConfigSettings(settings);
         settings.startAdFromPosition = mediaConfig.getStartPosition();
         return settings;
     }
@@ -644,7 +642,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     public long getDuration() {
         if (adManager != null && isAdDisplayed()) {
             if (adDuration == 0) {
-                adDuration = (long) adManager.getAdPlayer().getPosition() / Consts.MILLISECONDS_MULTIPLIER;
+                adDuration = (long) Math.round(adManager.getAdPlayer().getPosition() / Consts.MILLISECONDS_MULTIPLIER);
                 return adDuration;
             } else {
                 return adDuration;
@@ -656,7 +654,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     @Override
     public long getCurrentPosition() {
         if (adManager != null && adManager.getAdPlayer() != null && isAdDisplayed()) {
-            return (long) adManager.getAdPlayer().getPosition() / Consts.MILLISECONDS_MULTIPLIER;
+            return (long) Math.round(adManager.getAdPlayer().getPosition() / Consts.MILLISECONDS_MULTIPLIER);
         } else {
             return 0;
         }

@@ -94,13 +94,23 @@ public class AdEvent implements PKEvent {
         }
     }
 
-    public static class AdvtClickEvent extends AdEvent {
+    public static class AdClickEvent extends AdEvent {
 
         public String advtLink;
 
-        public AdvtClickEvent(String advtLink) {
+        public AdClickEvent(String advtLink) {
             super(Type.AD_CLICKED);
             this.advtLink = advtLink;
+        }
+    }
+
+    public static class CompanionAdClickEvent extends AdEvent {
+
+        public String advtCompanionLink;
+
+        public CompanionAdClickEvent(String advtCompanionLink) {
+            super(Type.COMPANION_AD_CLICKED);
+            this.advtCompanionLink = advtCompanionLink;
         }
     }
 
@@ -144,6 +154,7 @@ public class AdEvent implements PKEvent {
         AD_PAUSED,
         AD_RESUMED,
         AD_CLICKED,
+        COMPANION_AD_CLICKED,
         //AD_EXPAND,
         //AD_COLLAPSED,
         PLAYER_STATE,
