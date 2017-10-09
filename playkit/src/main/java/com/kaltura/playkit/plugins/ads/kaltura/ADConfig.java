@@ -21,7 +21,7 @@ import com.kaltura.playkit.ads.AdTagType;
 
 public class ADConfig {
 
-    public static final int DEFAULT_AD_LOAD_TIMEOUT = 15000;
+    public static final int DEFAULT_AD_LOAD_TIMEOUT = 10000;
 
     public static final String AD_TAG_LANGUAGE     = "language";
     public static final String AD_TAG_URL          = "adTagURL";

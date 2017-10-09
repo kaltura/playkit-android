@@ -132,7 +132,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     private void setupAdManager() {
         adManagerListener = getAdManagerListener();
         urlPinger = new DefaultUrlPinger();
-        stringFetcher = new DefaultStringFetcher();
+        stringFetcher = new DefaultStringFetcher(adConfig.getAdLoadTimeOut());
         AdPlayer.Factory adPlayerFactory = new AdPlayer.Factory() {
             @Override
             public AdPlayer newPlayer() {
