@@ -71,12 +71,16 @@ public class ADPlayer implements AdPlayer {
 
     @Override
     public void play() {
-        player.play();
+        if (player != null) {
+            player.play();
+        }
     }
 
     @Override
     public void pause() {
-        player.pause();
+        if (player != null) {
+            player.pause();
+        }
     }
 
     @Override

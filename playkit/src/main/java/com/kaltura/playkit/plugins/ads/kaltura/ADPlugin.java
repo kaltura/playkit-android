@@ -498,6 +498,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         AdManager.Settings settings = new AdManager.Settings();
         buildAdConfigSettings(settings);
         settings.startAdFromPosition = mediaConfig.getStartPosition();
+        settings.contentDuration  = mediaConfig.getMediaEntry().getDuration();
         return settings;
     }
 
