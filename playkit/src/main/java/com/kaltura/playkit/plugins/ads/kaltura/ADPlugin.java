@@ -67,7 +67,6 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     private DefaultUrlPinger urlPinger;
     private DefaultStringFetcher stringFetcher;
     private DefaultAdManager adManager;
-    private long playingContentDuration = 0;
 
     AdInfo currentAdInfo;
 
@@ -159,10 +158,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
                 long currentPosition = player.getCurrentPosition();
-                if (playingContentDuration <= 0) {
-                    playingContentDuration = player.getDuration();
-                }
-                long duration = playingContentDuration;
+                long duration =  player.getDuration();
 
                 if (isAdDisplayed || currentPosition < 0 || duration <= 0) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
@@ -479,13 +475,15 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         isAdDisplayed = false;
         isAllAdsCompleted = false;
         isContentPrepared = false;
-        playingContentDuration = 0;
         //isContentEndedBeforeMidroll = false;
         if (!adManagerInitDuringBackground) {
             if (adConfig != null) {
                 AdManager.Settings settings = getSettings(mediaConfig);
+                if (adManager == null) {
+                    this.isAllAdsCompleted = false;
+                    setupAdManager();
+                }
                 adManager.updateSettings(settings);
-
                 requestForAds(adConfig.getAdTagURL());
             } else {
                 preparePlayer(true);
@@ -543,12 +541,12 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     protected void onDestroy() {
         log.d("Start onDestroy");
         resetAdPlugin();
-        if (adManager != null) {
-            //adManager.destroy();
-            adManager.removeAdPlayer();
-            adManager.addListener(null);
-            adManager = null;
-        }
+//        if (adManager != null) {
+//            //adManager.destroy();
+//            adManager.removeAdPlayer();
+//            adManager.addListener(null);
+//            adManager = null;
+//        }
 
         isContentPrepared = false;
         removeAdProviderListener();
@@ -559,10 +557,10 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         isAdError = false;
         isAdRequested = false;
         isAdDisplayed = false;
-        playingContentDuration = 0;
         if (adManager != null) {
             adManager.removeAdPlayer();
             adManager.addListener(null);
+            adManagerListener = null;
             //adManager.destroy();
             adManager = null;
         }
