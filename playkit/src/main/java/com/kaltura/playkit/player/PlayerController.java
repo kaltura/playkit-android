@@ -60,6 +60,8 @@ public class PlayerController implements Player {
     private boolean isNewEntry = true;
     private boolean useTextureView = false;
     private boolean cea608CaptionsEnabled = false;
+    private long targetSeekPosition;
+
 
     private final Runnable updateProgressAction = new Runnable() {
         @Override
@@ -162,6 +164,9 @@ public class PlayerController implements Player {
                         break;
                     case SOURCE_SELECTED:
                         event = new PlayerEvent.SourceSelected(sourceConfig.mediaSource);
+                        break;
+                    case SEEKING:
+                        event = new PlayerEvent.Seeking(targetSeekPosition);
                         break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
@@ -417,6 +422,7 @@ public class PlayerController implements Player {
             log.w("Attempt to invoke 'seekTo()' on null instance of the player engine");
             return;
         }
+        targetSeekPosition = position;
         player.seekTo(position);
     }
 
@@ -515,6 +521,9 @@ public class PlayerController implements Player {
             log.w("Attempt to invoke 'release()' on null instance of the player engine");
             return;
         }
+        if (player.isPlaying()) {
+            player.pause();
+        }
         cancelUpdateProgress();
         player.release();
         togglePlayerListeners(false);
@@ -574,7 +583,7 @@ public class PlayerController implements Player {
         position = player.getCurrentPosition();
         duration = player.getDuration();
         if (position > 0 && duration > 0) {
-            eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position,duration));
+            eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
         }
 
         // Cancel any pending updates and schedule a new one if necessary.

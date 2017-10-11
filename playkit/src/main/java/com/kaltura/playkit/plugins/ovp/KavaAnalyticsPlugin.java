@@ -13,13 +13,16 @@ import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.api.ovp.services.KavaService;
+import com.kaltura.playkit.utils.Consts;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +40,12 @@ public class KavaAnalyticsPlugin extends PKPlugin {
     private static final int TEN_SECONDS_IN_MS = 10000;
     private static final long DISTANCE_FROM_LIVE_THRESHOLD = 15000;
 
+    private static final String DELIVERY_TYPE_HLS = "hls";
+    private static final String DELIVERY_TYPE_DASH = "dash";
+    private static final String DELIVERY_TYPE_OTHER = "url";
+
     private Player player;
+    private Context context;
     private PKMediaConfig mediaConfig;
     private MessageBus messageBus;
     private KavaAnalyticsConfig pluginConfig;
@@ -57,6 +65,8 @@ public class KavaAnalyticsPlugin extends PKPlugin {
     private int eventIndex = 1;
     private String playbackType = PKMediaEntry.MediaEntryType.Unknown.name();
     private long actualBitrate;
+    private String referrer;
+    private long targetSeekPositionInSeconds;
 
     private String deliveryType;
     private long lastKnownBufferingTimestamp;
@@ -110,10 +120,16 @@ public class KavaAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onLoad(Player player, Object config, MessageBus messageBus, Context context) {
         this.player = player;
+        this.context = context;
         this.messageBus = messageBus;
-        this.pluginConfig = parsePluginConfig(config);
         this.requestExecuter = APIOkRequestsExecutor.getSingleton();
         this.messageBus.listen(eventListener, (Enum[]) PlayerEvent.Type.values());
+        onUpdateConfig(config);
+    }
+
+    private String buildDefaultReferrer() {
+        String referrer = "app://" + context.getPackageName();
+        return Utils.toBase64(referrer.getBytes());
     }
 
     @Override
@@ -126,6 +142,10 @@ public class KavaAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onUpdateConfig(Object config) {
         this.pluginConfig = parsePluginConfig(config);
+        referrer = pluginConfig.getReferrerAsBase64();
+        if(referrer == null) {
+            referrer = buildDefaultReferrer();
+        }
     }
 
     @Override
@@ -150,6 +170,13 @@ public class KavaAnalyticsPlugin extends PKPlugin {
             public void onEvent(PKEvent event) {
                 if (event instanceof PlayerEvent) {
                     switch (((PlayerEvent) event).type) {
+                        case LOADED_METADATA:
+                            if (!isImpressionSent) {
+                                isImpressionSent = true;
+                                sendAnalyticsEvent(KavaEvents.IMPRESSION);
+                                startAnalyticsTimer();
+                            }
+                            break;
                         case STATE_CHANGED:
                             handleStateChanged((PlayerEvent.StateChanged) event);
                             break;
@@ -172,6 +199,8 @@ public class KavaAnalyticsPlugin extends PKPlugin {
                             isPaused = false;
                             break;
                         case SEEKING:
+                            PlayerEvent.Seeking seekingEvent = (PlayerEvent.Seeking) event;
+                            targetSeekPositionInSeconds = seekingEvent.requestedPosition / Consts.MILLISECONDS_MULTIPLIER;
                             sendAnalyticsEvent(KavaEvents.SEEK);
                             break;
                         case REPLAY:
@@ -179,8 +208,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
                             break;
                         case SOURCE_SELECTED:
                             PKMediaSource selectedSource = ((PlayerEvent.SourceSelected) event).source;
-                            deliveryType = selectedSource.getMediaFormat().name();
-                            sendAnalyticsEvent(KavaEvents.SOURCE_SELECTED);
+                            updateDeliveryType(selectedSource.getMediaFormat());
                             break;
                         case ENDED:
                             maybeSentPlayerReachedEvent();
@@ -192,9 +220,8 @@ public class KavaAnalyticsPlugin extends PKPlugin {
                             resetFlags();
                             break;
                         case PLAYBACK_INFO_UPDATED:
-
                             PlaybackInfo playbackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).playbackInfo;
-                            actualBitrate = playbackInfo.getVideoBitrate();
+                            actualBitrate = playbackInfo.getVideoThroughput();
                             if (playbackType == PKMediaEntry.MediaEntryType.Vod.name()) {
                                 return;
                             }
@@ -219,12 +246,6 @@ public class KavaAnalyticsPlugin extends PKPlugin {
                 }
                 break;
             case READY:
-                if (!isImpressionSent) {
-                    isImpressionSent = true;
-                    sendAnalyticsEvent(KavaEvents.IMPRESSION);
-                    startAnalyticsTimer();
-                }
-
                 calculateTotalBufferTimePerViewEvent();
                 break;
         }
@@ -285,14 +306,12 @@ public class KavaAnalyticsPlugin extends PKPlugin {
         params.put("sessionId", sessionId);
         params.put("eventIndex", Integer.toString(eventIndex));
         params.put("ks", pluginConfig.getKs());
-        params.put("playbackContext", "playbackContext"); //Todo find playbackContext.
-        params.put("referrer", "referrer"); //Todo find referrer.
+        params.put("referrer", referrer);
         params.put("deliveryType", deliveryType);
         params.put("playbackType", playbackType);
-        params.put("kalsig", "kalsig"); //TODO find kalsig.
         params.put("sessionStartTime", "sessionStartTime"); //TODO what is sessionStartTime.
         params.put("uiConfId", Integer.toString(pluginConfig.getUiconfId()));
-        params.put("clientVer", PlayKitManager.CLIENT_TAG); //TODO find clientVer.
+        params.put("clientVer", PlayKitManager.CLIENT_TAG);
         params.put("clientTag", PlayKitManager.CLIENT_TAG);
         params.put("position", Long.toString(player.getCurrentPosition()));
 
@@ -300,19 +319,39 @@ public class KavaAnalyticsPlugin extends PKPlugin {
             case VIEW:
             case PLAY:
             case RESUME:
-
                 float curBufferTimeInSeconds = totalBufferTimePerViewEvent == 0 ? 0 : totalBufferTimePerViewEvent / 1000.0f;
 
                 params.put("bufferTime", Float.toString(curBufferTimeInSeconds));
                 params.put("actualBitrate", Long.toString(actualBitrate));
-                params.put("preferredBitrate", "preferredBitrate"); //ToDO get prefferedBitrate.
                 break;
             case SEEK:
-                params.put("targetPosition", Long.toString(player.getCurrentPosition()));
+                params.put("targetPosition", Long.toString(targetSeekPositionInSeconds));
                 break;
 
         }
+
+        addOptionalParams(params);
         return params;
+    }
+
+    private void addOptionalParams(Map<String, String> params) {
+
+        if(pluginConfig.getPlaybackContext() != null) {
+            params.put("playbackContext", pluginConfig.getPlaybackContext());
+        }
+
+        if(pluginConfig.getCustomVar1() != null) {
+            params.put("customVar1", pluginConfig.getCustomVar1());
+        }
+
+        if(pluginConfig.getCustomVar2() != null) {
+            params.put("customVar2", pluginConfig.getCustomVar2());
+        }
+
+        if(pluginConfig.getCustomVar3() != null) {
+            params.put("customVar3", pluginConfig.getCustomVar3());
+        }
+
     }
 
     private void startAnalyticsTimer() {
@@ -377,6 +416,16 @@ public class KavaAnalyticsPlugin extends PKPlugin {
         }
 
         return null;
+    }
+
+    private void updateDeliveryType(PKMediaFormat mediaFormat) {
+        if(mediaFormat == PKMediaFormat.dash) {
+            deliveryType = DELIVERY_TYPE_DASH;
+        } else if (mediaFormat == PKMediaFormat.hls) {
+            deliveryType = DELIVERY_TYPE_HLS;
+        } else {
+            deliveryType = DELIVERY_TYPE_OTHER;
+        }
     }
 
 }
