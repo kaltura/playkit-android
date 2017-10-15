@@ -129,12 +129,14 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     }
 
     private void setupAdManager() {
+        log.d("setupAdManager");
         adManagerListener = getAdManagerListener();
         urlPinger = new DefaultUrlPinger();
         stringFetcher = new DefaultStringFetcher(adConfig.getAdLoadTimeOut());
         AdPlayer.Factory adPlayerFactory = new AdPlayer.Factory() {
             @Override
             public AdPlayer newPlayer() {
+                log.d("Create adPlayer -  newPlayer");
                 AdPlayer adPlayer = new ADPlayer(context);
                 ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT);
@@ -202,7 +204,12 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         break;
 
                     case adBreakPending:
-                        adManager.createAdPlayer();
+                        AdManagerAdEvent adEventReceived = (AdManagerAdEvent) adEvent;
+                        log.d("adBreakPending at offset "  + adEventReceived.adInfo.getAdCuePoint() + " - " + adEventReceived.adInfo.getAdBreakIndexInCuePoint() + "/" + adEventReceived.adInfo.getTotalAdBreaksInCuePoint());
+                        if (adEventReceived.adInfo.getAdBreakIndexInCuePoint() == 1) { // create ad player only in first ad in adBreak
+                            adManager.createAdPlayer();
+                        }
+
                         player.pause();
                         isAdRequested = true;
                         messageBus.post(new AdEvent(AdEvent.Type.AD_BREAK_PENDING));
@@ -230,7 +237,9 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
 
                     case adBreakEnded:
                         AdManagerAdEvent.AdBreakEndedEvent adBreakEndedEvent = (AdManagerAdEvent.AdBreakEndedEvent) adEvent;
-                        if (((AdManagerAdEvent.AdBreakEndedEvent) adEvent).removeAdPlayer){
+                        boolean shouldRemoveAdPlayer = ((AdManagerAdEvent.AdBreakEndedEvent) adEvent).removeAdPlayer;
+                        log.d("adBreakEnded removeAdPlayer = " + shouldRemoveAdPlayer);
+                        if (shouldRemoveAdPlayer){
                             removeAdPlayer(); // remove the player and the view
                         }
                         PKAdBreakEndedReason adBreakEndedReason = getPKAdBreakEndedReason(((AdManagerAdEvent.AdBreakEndedEvent) adEvent).adBreakEndedReason);
@@ -238,6 +247,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
 
                         break;
                     case adsPlaybackEnded:
+
                         if (!player.isPlaying()) {
                             if (!isContentPrepared) {
                                 isAdRequested = true; // in case we ignore adbreak
