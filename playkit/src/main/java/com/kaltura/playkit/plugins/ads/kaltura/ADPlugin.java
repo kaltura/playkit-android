@@ -651,7 +651,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     public long getDuration() {
         if (adManager != null && isAdDisplayed()) {
             if (adDuration == 0) {
-                adDuration = (long) Math.round(adManager.getAdPlayer().getPosition() / Consts.MILLISECONDS_MULTIPLIER);
+                adDuration = (long) Math.round(adManager.getAdPlayer().getDuration() / Consts.MILLISECONDS_MULTIPLIER);
                 return adDuration;
             } else {
                 return adDuration;
@@ -663,7 +663,8 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     @Override
     public long getCurrentPosition() {
         if (adManager != null && adManager.getAdPlayer() != null && isAdDisplayed()) {
-            return (long) Math.round(adManager.getAdPlayer().getPosition() / Consts.MILLISECONDS_MULTIPLIER);
+            long currPos = (long) Math.round(adManager.getAdPlayer().getPosition() / Consts.MILLISECONDS_MULTIPLIER);
+            return (currPos <= adDuration) ? currPos : adDuration;
         } else {
             return 0;
         }
