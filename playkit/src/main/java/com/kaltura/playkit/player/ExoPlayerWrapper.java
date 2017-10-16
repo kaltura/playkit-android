@@ -102,7 +102,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     private int playerWindow;
     private long playerPosition = Consts.TIME_UNSET;
-    private Uri lastPlayedSource;
     private Timeline.Window window;
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
@@ -117,7 +116,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
-        sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+        sendEvent(PlayerEvent.Type.BANDWIDTH_ESTIMATION_CHANGED);
     }
 
 
@@ -167,7 +166,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         drmSessionManager.setMediaSource(sourceConfig.mediaSource);
 
         shouldGetTracksInfo = true;
-        this.lastPlayedSource = sourceConfig.getUrl();
         trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.cea608CaptionsEnabled);
 
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
@@ -522,7 +520,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         player = null;
         eventLogger = null;
         exoPlayerView = null;
-        lastPlayedSource = null;
         playerPosition = Consts.TIME_UNSET;
     }
 
@@ -607,17 +604,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     }
 
     @Override
-    public PlaybackInfo getPlaybackInfo() {
-        return new PlaybackInfo(lastPlayedSource.toString(),
-                trackSelectionHelper.getCurrentVideoBitrate(),
-                trackSelectionHelper.getCurrentAudioBitrate(),
-                bandwidthMeter.getBitrateEstimate(),
-                trackSelectionHelper.getCurrentVideoWidth(),
-                trackSelectionHelper.getCurrentVideoHeight(),
-                player.isCurrentWindowDynamic());
-    }
-
-    @Override
     public PKError getCurrentError() {
         return currentError;
     }
@@ -660,13 +646,23 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             }
 
             @Override
-            public void onTrackChanged() {
-                sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+            public void onRelease(String[] selectedTrackIds) {
+                lastSelectedTrackIds = selectedTrackIds;
             }
 
             @Override
-            public void onRelease(String[] selectedTrackIds) {
-                lastSelectedTrackIds = selectedTrackIds;
+            public void onVideoTrackChanged() {
+                sendEvent(PlayerEvent.Type.VIDEO_TRACK_CHANGED);
+            }
+
+            @Override
+            public void onAudioTrackChanged() {
+                sendEvent(PlayerEvent.Type.AUDIO_TRACK_CHANGED);
+            }
+
+            @Override
+            public void onTextTrackChanged() {
+                sendEvent(PlayerEvent.Type.TEXT_TRACK_CHANGED);
             }
         };
     }
@@ -679,6 +675,21 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
                 sendEvent(PlayerEvent.Type.ERROR);
             }
         };
+    }
+
+    @Override
+    public BaseTrack getLastSelectedTrack(int renderType) {
+        return trackSelectionHelper.getLastSelectedTrack(renderType);
+    }
+
+    @Override
+    public long getBandwidthEstimation() {
+        return bandwidthMeter.getBitrateEstimate();
+    }
+
+    @Override
+    public boolean isLiveStream() {
+        return player.isCurrentWindowDynamic();
     }
 }
 

@@ -56,6 +56,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public boolean isLiveStream() {
+        return player.isLiveStream();
+    }
+
+    @Override
     public void play() {
         player.play();
     }

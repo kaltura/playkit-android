@@ -44,6 +44,8 @@ public class KavaAnalyticsPlugin extends PKPlugin {
     private static final String DELIVERY_TYPE_DASH = "dash";
     private static final String DELIVERY_TYPE_OTHER = "url";
 
+    private static final String DVR = "Dvr";
+
     private Player player;
     private Context context;
     private PKMediaConfig mediaConfig;
@@ -63,7 +65,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
     private boolean isPaused = true;
     private int viewEventTimeCounter;
     private int eventIndex = 1;
-    private String playbackType = PKMediaEntry.MediaEntryType.Unknown.name();
+    private PKMediaEntry.MediaEntryType playbackType = PKMediaEntry.MediaEntryType.Unknown;
     private long actualBitrate;
     private String referrer;
     private long targetSeekPositionInSeconds;
@@ -134,7 +136,6 @@ public class KavaAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-        playbackType = mediaConfig.getMediaEntry().getMediaType().name();
         this.mediaConfig = mediaConfig;
         resetFlags();
     }
@@ -143,7 +144,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
     protected void onUpdateConfig(Object config) {
         this.pluginConfig = parsePluginConfig(config);
         referrer = pluginConfig.getReferrerAsBase64();
-        if(referrer == null) {
+        if (referrer == null) {
             referrer = buildDefaultReferrer();
         }
     }
@@ -219,19 +220,19 @@ public class KavaAnalyticsPlugin extends PKPlugin {
 
                             resetFlags();
                             break;
-                        case PLAYBACK_INFO_UPDATED:
-                            PlaybackInfo playbackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).playbackInfo;
-                            actualBitrate = playbackInfo.getVideoThroughput();
-                            if (playbackType == PKMediaEntry.MediaEntryType.Vod.name()) {
-                                return;
-                            }
-
-                            if (playbackInfo.getIsLiveStream()) {
-                                long distanceFromLive = player.getDuration() - player.getCurrentPosition();
-                                playbackType = distanceFromLive > DISTANCE_FROM_LIVE_THRESHOLD ? "Dvr" : "Live";
-                            }
-
+                        case VIDEO_TRACK_CHANGED:
+                            PlayerEvent.VideoTrackChanged videoTrackChanged = ((PlayerEvent.VideoTrackChanged) event);
                             break;
+                        case AUDIO_TRACK_CHANGED:
+                            PlayerEvent.AudioTrackChanged audioTrackChanged = ((PlayerEvent.AudioTrackChanged) event);
+                            break;
+                        case TEXT_TRACK_CHANGED:
+                            PlayerEvent.TextTrackChanged textTrackChanged = ((PlayerEvent.TextTrackChanged) event);
+                            break;
+                        case BANDWIDTH_ESTIMATION_CHANGED:
+                            actualBitrate = ((PlayerEvent.BandwidthEstimationChanged) event).bandwidth;
+                            break;
+
                     }
                 }
             }
@@ -290,7 +291,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
     }
 
     private Map<String, String> gatherParams(KavaEvents event) {
-        if(pluginConfig == null) {
+        if (pluginConfig == null) {
             log.w("Plugin config was not set! Use default one.");
             pluginConfig = new KavaAnalyticsConfig();
         }
@@ -298,6 +299,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
         Map<String, String> params = new HashMap<>();
 
         String sessionId = player.getSessionId() != null ? player.getSessionId() : "";
+
 
         params.put("eventType", Integer.toString(event.getValue()));
         params.put("partnerId", Integer.toString(pluginConfig.getPartnerId()));
@@ -308,7 +310,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
         params.put("ks", pluginConfig.getKs());
         params.put("referrer", referrer);
         params.put("deliveryType", deliveryType);
-        params.put("playbackType", playbackType);
+        params.put("playbackType", getPlaybackType());
         params.put("sessionStartTime", "sessionStartTime"); //TODO what is sessionStartTime.
         params.put("uiConfId", Integer.toString(pluginConfig.getUiconfId()));
         params.put("clientVer", PlayKitManager.CLIENT_TAG);
@@ -334,21 +336,33 @@ public class KavaAnalyticsPlugin extends PKPlugin {
         return params;
     }
 
+    private String getPlaybackType() {
+
+        playbackType = mediaConfig.getMediaEntry().getMediaType();
+
+        if (player.isLiveStream()) {
+            long distanceFromLive = player.getDuration() - player.getCurrentPosition();
+            return distanceFromLive > DISTANCE_FROM_LIVE_THRESHOLD ? DVR : PKMediaEntry.MediaEntryType.Live.name();
+        }
+
+        return playbackType.name();
+    }
+
     private void addOptionalParams(Map<String, String> params) {
 
-        if(pluginConfig.getPlaybackContext() != null) {
+        if (pluginConfig.getPlaybackContext() != null) {
             params.put("playbackContext", pluginConfig.getPlaybackContext());
         }
 
-        if(pluginConfig.getCustomVar1() != null) {
+        if (pluginConfig.getCustomVar1() != null) {
             params.put("customVar1", pluginConfig.getCustomVar1());
         }
 
-        if(pluginConfig.getCustomVar2() != null) {
+        if (pluginConfig.getCustomVar2() != null) {
             params.put("customVar2", pluginConfig.getCustomVar2());
         }
 
-        if(pluginConfig.getCustomVar3() != null) {
+        if (pluginConfig.getCustomVar3() != null) {
             params.put("customVar3", pluginConfig.getCustomVar3());
         }
 
@@ -419,7 +433,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
     }
 
     private void updateDeliveryType(PKMediaFormat mediaFormat) {
-        if(mediaFormat == PKMediaFormat.dash) {
+        if (mediaFormat == PKMediaFormat.dash) {
             deliveryType = DELIVERY_TYPE_DASH;
         } else if (mediaFormat == PKMediaFormat.hls) {
             deliveryType = DELIVERY_TYPE_HLS;

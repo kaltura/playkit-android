@@ -27,10 +27,11 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PlayKitManager;
-import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.api.ovp.services.LiveStatsService;
+import com.kaltura.playkit.player.PKTracks;
+import com.kaltura.playkit.player.VideoTrack;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Date;
@@ -101,7 +102,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         this.messageBus = messageBus;
         this.pluginConfig = parseConfig(config);
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
-        this.messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY, PlayerEvent.Type.PLAYBACK_INFO_UPDATED, PlayerEvent.Type.SOURCE_SELECTED);
+        this.messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY, PlayerEvent.Type.TRACKS_AVAILABLE, PlayerEvent.Type.SOURCE_SELECTED, PlayerEvent.Type.VIDEO_TRACK_CHANGED);
     }
 
     @Override
@@ -145,10 +146,14 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                     case PAUSE:
                         stopLiveEvents();
                         break;
-                    case PLAYBACK_INFO_UPDATED:
-                        PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).playbackInfo;
-                        lastReportedBitrate = currentPlaybackInfo.getVideoBitrate();
-                        log.d("lastReportedBitrate = " + lastReportedBitrate + ", isLiveStream = " + currentPlaybackInfo.getIsLiveStream());
+                    case TRACKS_AVAILABLE:
+                        PKTracks tracks = ((PlayerEvent.TracksAvailable) event).tracksInfo;
+                        VideoTrack currentVideoTrack = tracks.getVideoTracks().get(tracks.getDefaultVideoTrackIndex());
+                        lastReportedBitrate = currentVideoTrack.getBitrate();
+                        break;
+                    case VIDEO_TRACK_CHANGED:
+                        VideoTrack changedVideoTrack = ((PlayerEvent.VideoTrackChanged) event).newTrack;
+                        lastReportedBitrate = changedVideoTrack.getBitrate();
                         break;
                     case SOURCE_SELECTED:
                         PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;

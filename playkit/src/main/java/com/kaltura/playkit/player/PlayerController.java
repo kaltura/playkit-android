@@ -102,6 +102,11 @@ public class PlayerController implements Player {
         return sessionId;
     }
 
+    @Override
+    public boolean isLiveStream() {
+        return player.isLiveStream();
+    }
+
     interface EventListener {
         void onEvent(PlayerEvent.Type event);
     }
@@ -117,7 +122,7 @@ public class PlayerController implements Player {
             //log.d("onEvent event =  " + eventType.name());
             if (eventListener != null) {
 
-                PKEvent event = null;
+                PKEvent event;
 
                 // TODO: use specific event class
                 switch (eventType) {
@@ -144,9 +149,6 @@ public class PlayerController implements Player {
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());
                         break;
-                    case PLAYBACK_INFO_UPDATED:
-                        event = new PlayerEvent.PlaybackInfoUpdated(player.getPlaybackInfo());
-                        break;
                     case ERROR:
                         if (player.getCurrentError() == null) {
                             log.e("can not send error event");
@@ -168,9 +170,22 @@ public class PlayerController implements Player {
                     case SEEKING:
                         event = new PlayerEvent.Seeking(targetSeekPosition);
                         break;
+                    case VIDEO_TRACK_CHANGED:
+                        event = new PlayerEvent.VideoTrackChanged((VideoTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_VIDEO));
+                        break;
+                    case AUDIO_TRACK_CHANGED:
+                        event = new PlayerEvent.AudioTrackChanged((AudioTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_AUDIO));
+                        break;
+                    case TEXT_TRACK_CHANGED:
+                        event = new PlayerEvent.TextTrackChanged((TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT));
+                        break;
+                    case BANDWIDTH_ESTIMATION_CHANGED:
+                        event = new PlayerEvent.BandwidthEstimationChanged(player.getBandwidthEstimation());
+                        break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
                 }
+
                 if (event != null) {
                     eventListener.onEvent(event);
                 }
@@ -573,8 +588,8 @@ public class PlayerController implements Player {
 
     private void updateProgress() {
 
-        long position = 0;
-        long duration = 0;
+        long position;
+        long duration;
 
         if (player == null || player.getView() == null) {
             return;
