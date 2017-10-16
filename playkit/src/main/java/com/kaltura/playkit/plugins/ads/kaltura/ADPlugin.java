@@ -7,20 +7,20 @@ import android.view.ViewGroup;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.kaltura.admanager.AdBreakEndedReason;
-import com.kaltura.admanager.AdBreakInfo;
 import com.kaltura.admanager.AdManager;
-import com.kaltura.admanager.AdManagerAdErrorEvent;
-import com.kaltura.admanager.AdManagerAdEvent;
 import com.kaltura.admanager.AdPlayer;
-import com.kaltura.admanager.AdUIController;
-import com.kaltura.admanager.AdUiListener;
 import com.kaltura.admanager.ContentProgressProvider;
 import com.kaltura.admanager.DefaultAdManager;
-import com.kaltura.admanager.DefaultAdUIController;
-import com.kaltura.admanager.DefaultStringFetcher;
-import com.kaltura.admanager.DefaultUrlPinger;
 import com.kaltura.admanager.VideoProgressUpdate;
+import com.kaltura.admanager.events.AdBreakEndedReason;
+import com.kaltura.admanager.events.AdBreakInfo;
+import com.kaltura.admanager.events.AdManagerAdErrorEvent;
+import com.kaltura.admanager.events.AdManagerAdEvent;
+import com.kaltura.admanager.network.DefaultStringFetcher;
+import com.kaltura.admanager.network.DefaultUrlPinger;
+import com.kaltura.admanager.ui.AdUIController;
+import com.kaltura.admanager.ui.AdUiListener;
+import com.kaltura.admanager.ui.DefaultAdUIController;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
@@ -43,7 +43,8 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.util.Set;
 
-import static com.kaltura.admanager.AdManagerAdErrorEvent.Type.invalidArgumentsError;
+import static com.kaltura.admanager.events.AdManagerAdErrorEvent.Type.invalidArgumentsError;
+
 
 public class ADPlugin extends PKPlugin implements AdsProvider {
 
@@ -382,7 +383,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         }
     }
 
-    private AdInfo createAdInfo(com.kaltura.admanager.AdInfo adInfo, AdBreakInfo adBreakInfo) {
+    private AdInfo createAdInfo(com.kaltura.admanager.events.AdInfo adInfo, AdBreakInfo adBreakInfo) {
         String adDescription = adInfo.getDescription();
         long adDuration = (long) (adInfo.getDuration() * Consts.MILLISECONDS_MULTIPLIER);
         String adTitle = adInfo.getTitle();
