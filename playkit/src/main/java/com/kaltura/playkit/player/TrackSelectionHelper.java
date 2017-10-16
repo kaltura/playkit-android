@@ -51,8 +51,13 @@ class TrackSelectionHelper {
 
     static final String NONE = "none";
     private static final String ADAPTIVE = "adaptive";
+
+    private static final String VIDEO = "video";
     private static final String VIDEO_PREFIX = "Video:";
+
+    private static final String AUDIO = "audio";
     private static final String AUDIO_PREFIX = "Audio:";
+
     private static final String TEXT_PREFIX = "Text:";
 
     private static final String CEA_608 = "application/cea-608";
@@ -68,6 +73,12 @@ class TrackSelectionHelper {
 
     private String[] lastSelectedTrackIds;
     private String[] requestedChangeTrackIds = {NONE, NONE, NONE};
+
+    private long currentVideoBitrate = Consts.NO_VALUE;
+    private long currentAudioBitrate = Consts.NO_VALUE;
+    private long currentVideoWidth = Consts.NO_VALUE;
+    private long currentVideoHeight = Consts.NO_VALUE;
+
 
     private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
 
@@ -580,17 +591,63 @@ class TrackSelectionHelper {
         clearTracksLists();
     }
 
+    long getCurrentVideoBitrate() {
+        return currentVideoBitrate;
+    }
+
+    long getCurrentAudioBitrate() {
+        return currentAudioBitrate;
+    }
+
+    long getCurrentVideoWidth() {
+        return currentVideoWidth;
+    }
+
+    long getCurrentVideoHeight() {
+        return currentVideoHeight;
+    }
+
     void updateSelectedTracksBitrate(TrackSelectionArray trackSelections) {
 
         if (tracksInfoListener == null || trackSelections == null) {
             return;
         }
 
+        for (TrackSelection trackSelection : trackSelections.getAll()) {
+            if (trackSelection == null || trackSelection.getSelectedFormat() == null) {
+                continue;
+            }
+
+            String sampleMimeType = "";
+            String containerMimeType = "";
+            if (trackSelection.getSelectedFormat().sampleMimeType != null) {
+                sampleMimeType = trackSelection.getSelectedFormat().sampleMimeType;
+            }
+            if (trackSelection.getSelectedFormat().containerMimeType != null) {
+                containerMimeType = trackSelection.getSelectedFormat().containerMimeType;
+            }
+
+            if ("".equals(sampleMimeType) && "".equals(containerMimeType)) {
+                continue;
+            }
+
+            if ((sampleMimeType.contains(VIDEO) || containerMimeType.contains(VIDEO))) {
+                currentVideoBitrate = trackSelection.getSelectedFormat().bitrate;
+                currentVideoWidth = trackSelection.getSelectedFormat().width;
+                currentVideoHeight = trackSelection.getSelectedFormat().height;
+            } else if ((sampleMimeType.contains(AUDIO) || containerMimeType.contains(AUDIO))) {
+                currentAudioBitrate = trackSelection.getSelectedFormat().bitrate;
+            }
+        }
+
+        maybeNotifyAboutTrackChange();
+    }
+
+    private void maybeNotifyAboutTrackChange() {
         if (shouldNotifyAboutTrackChanged(Consts.TRACK_TYPE_VIDEO)) {
             lastSelectedTrackIds[Consts.TRACK_TYPE_VIDEO] = requestedChangeTrackIds[Consts.TRACK_TYPE_VIDEO];
             tracksInfoListener.onVideoTrackChanged();
         }
-
 
         if (shouldNotifyAboutTrackChanged(Consts.TRACK_TYPE_AUDIO)) {
             lastSelectedTrackIds[Consts.TRACK_TYPE_AUDIO] = requestedChangeTrackIds[Consts.TRACK_TYPE_AUDIO];

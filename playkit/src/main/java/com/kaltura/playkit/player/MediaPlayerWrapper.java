@@ -177,7 +177,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
         sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
-        sendDistinctEvent(PlayerEvent.Type.BANDWIDTH_ESTIMATION_CHANGED);
+        sendDistinctEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
         sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
 
     }
@@ -379,6 +379,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
+    public PlaybackInfo getPlaybackInfo() {
+        return new PlaybackInfo(-1, -1, -1, player.getVideoWidth(), player.getVideoHeight());
+    }
+
+    @Override
     public PKError getCurrentError() {
         return null;
     }
@@ -393,7 +398,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         }
     }
 
-    public static String getWidevineAssetPlaybackUri(String assetUri) {
+    private static String getWidevineAssetPlaybackUri(String assetUri) {
         String assetUriForPlayback = assetUri;
         if (assetUri.startsWith("file:")) {
             assetUriForPlayback = Uri.parse(assetUri).getPath();
@@ -406,7 +411,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     // Convert file:///local/path/a.wvm to /local/path/a.wvm
     // Convert widevine://example.com/path/a.wvm to http://example.com/path/a.wvm
     // Everything else remains the same.
-    public static String getWidevineAssetAcquireUri(String assetUri) {
+    private static String getWidevineAssetAcquireUri(String assetUri) {
         String assetAcquireUriForPlayback = assetUri;
         if (assetUri.startsWith("file:")) {
             assetAcquireUriForPlayback = Uri.parse(assetUri).getPath();
@@ -567,10 +572,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         return null;
     }
 
-    @Override
-    public long getBandwidthEstimation() {
-        return -1;
-    }
+
 
     @Override
     public boolean isLiveStream() {

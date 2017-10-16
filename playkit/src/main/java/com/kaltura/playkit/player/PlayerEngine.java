@@ -168,6 +168,13 @@ interface PlayerEngine {
     void destroy();
 
     /**
+     * Holds current media url(as String), current playing video and audio bitrates.
+     * @return the playback params data object of the current media.
+     *
+     */
+    PlaybackInfo getPlaybackInfo();
+
+    /**
      * Return the ExceptionInfo object, which holds the last error that happened,
      * and counter, which holds amount of the same exception that happened in a row.
      * This counter will help us to avoid the infinite loop, in case when we retry the playback, when handle the exception.
@@ -189,8 +196,6 @@ interface PlayerEngine {
     List<PKMetadata> getMetadata();
 
     BaseTrack getLastSelectedTrack(int renderType);
-
-    long getBandwidthEstimation();
 
     boolean isLiveStream();
 }

@@ -220,6 +220,10 @@ public class KavaAnalyticsPlugin extends PKPlugin {
 
                             resetFlags();
                             break;
+                        case PLAYBACK_INFO_UPDATED:
+                            PlaybackInfo playbackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).playbackInfo;
+                            actualBitrate = playbackInfo.getVideoThroughput();
+                            break;
                         case VIDEO_TRACK_CHANGED:
                             PlayerEvent.VideoTrackChanged videoTrackChanged = ((PlayerEvent.VideoTrackChanged) event);
                             break;
@@ -228,9 +232,6 @@ public class KavaAnalyticsPlugin extends PKPlugin {
                             break;
                         case TEXT_TRACK_CHANGED:
                             PlayerEvent.TextTrackChanged textTrackChanged = ((PlayerEvent.TextTrackChanged) event);
-                            break;
-                        case BANDWIDTH_ESTIMATION_CHANGED:
-                            actualBitrate = ((PlayerEvent.BandwidthEstimationChanged) event).bandwidth;
                             break;
 
                     }

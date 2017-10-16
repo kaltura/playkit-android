@@ -18,10 +18,9 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PlayKitManager;
+import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.player.PKTracks;
-import com.kaltura.playkit.player.VideoTrack;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.utils.Consts;
@@ -55,7 +54,7 @@ class YouboraLibraryManager extends PluginGeneric {
 
     private String lastReportedResource = "unknown";
     private Double lastReportedBitrate = -1.0;
-    private Double lastReportedBandwidth;
+    private Double lastReportedThroughput;
     private String lastReportedRendition;
     private AdCuePoints adCuePoints;
 
@@ -111,14 +110,11 @@ class YouboraLibraryManager extends PluginGeneric {
         @Override
         public void onEvent(PKEvent event) {
 
-            if (event.eventType() == PlayerEvent.Type.BANDWIDTH_ESTIMATION_CHANGED) {
-                long bandwidth = ((PlayerEvent.BandwidthEstimationChanged) event).bandwidth;
-                lastReportedBandwidth = Long.valueOf(bandwidth).doubleValue();
-                return;
-            } else if(event.eventType() == PlayerEvent.Type.VIDEO_TRACK_CHANGED) {
-                VideoTrack videoTrack = ((PlayerEvent.VideoTrackChanged) event).newTrack;
-                lastReportedBitrate = Long.valueOf(videoTrack.getBitrate()).doubleValue();
-                lastReportedRendition = generateRendition(lastReportedBitrate, videoTrack.getWidth(), videoTrack.getHeight());
+            if (event.eventType() == PlayerEvent.Type.PLAYBACK_INFO_UPDATED) {
+                PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).playbackInfo;
+                lastReportedBitrate = Long.valueOf(currentPlaybackInfo.getVideoBitrate()).doubleValue();
+                lastReportedThroughput = Long.valueOf(currentPlaybackInfo.getVideoThroughput()).doubleValue();
+                lastReportedRendition = generateRendition(lastReportedBitrate, (int) currentPlaybackInfo.getVideoWidth(), (int) currentPlaybackInfo.getVideoHeight());
                 return;
             }
 
@@ -169,12 +165,6 @@ class YouboraLibraryManager extends PluginGeneric {
                     case SOURCE_SELECTED:
                         PlayerEvent.SourceSelected sourceSelected = ((PlayerEvent.SourceSelected) event);
                         lastReportedResource = sourceSelected.source.getUrl();
-                        break;
-                    case TRACKS_AVAILABLE:
-                        PKTracks tracks = ((PlayerEvent.TracksAvailable) event).tracksInfo;
-                        VideoTrack currentVideoTrack = tracks.getVideoTracks().get(tracks.getDefaultVideoTrackIndex());
-                        lastReportedBitrate = Long.valueOf(currentVideoTrack.getBitrate()).doubleValue();
-                        lastReportedRendition = generateRendition(lastReportedBitrate, currentVideoTrack.getWidth(), currentVideoTrack.getHeight());
                         break;
                     default:
                         break;
@@ -262,8 +252,8 @@ class YouboraLibraryManager extends PluginGeneric {
     }
 
     public Double getThroughput() {
-        log.d("getThroughput = " + lastReportedBandwidth);
-        return this.lastReportedBandwidth;
+        log.d("getThroughput = " + lastReportedThroughput);
+        return this.lastReportedThroughput;
     }
 
     public String getRendition() {
@@ -308,7 +298,7 @@ class YouboraLibraryManager extends PluginGeneric {
         messageBus.post(new YouboraEvent.YouboraReport(reportedEventName));
     }
 
-    private String generateRendition(double bitrate, int width, int height) {
+    public String generateRendition(double bitrate, int width, int height) {
 
         if ((width <= 0 || height <= 0) && bitrate <= 0) {
             return super.getRendition();
@@ -320,7 +310,7 @@ class YouboraLibraryManager extends PluginGeneric {
     public void resetValues() {
         lastReportedBitrate = super.getBitrate();
         lastReportedRendition = super.getRendition();
-        lastReportedBandwidth = super.getThroughput();
+        lastReportedThroughput = super.getThroughput();
         isFirstPlay = true;
     }
 

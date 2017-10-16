@@ -104,7 +104,7 @@ public class PlayerController implements Player {
 
     @Override
     public boolean isLiveStream() {
-        return player.isLiveStream();
+        return player != null && player.isLiveStream();
     }
 
     interface EventListener {
@@ -149,6 +149,9 @@ public class PlayerController implements Player {
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());
                         break;
+                    case PLAYBACK_INFO_UPDATED:
+                        event = new PlayerEvent.PlaybackInfoUpdated(player.getPlaybackInfo());
+                        break;
                     case ERROR:
                         if (player.getCurrentError() == null) {
                             log.e("can not send error event");
@@ -179,16 +182,11 @@ public class PlayerController implements Player {
                     case TEXT_TRACK_CHANGED:
                         event = new PlayerEvent.TextTrackChanged((TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT));
                         break;
-                    case BANDWIDTH_ESTIMATION_CHANGED:
-                        event = new PlayerEvent.BandwidthEstimationChanged(player.getBandwidthEstimation());
-                        break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
                 }
 
-                if (event != null) {
-                    eventListener.onEvent(event);
-                }
+                eventListener.onEvent(event);
             }
         }
     };

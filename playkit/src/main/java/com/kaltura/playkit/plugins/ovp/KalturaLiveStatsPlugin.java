@@ -27,11 +27,10 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PlayKitManager;
+import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.api.ovp.services.LiveStatsService;
-import com.kaltura.playkit.player.PKTracks;
-import com.kaltura.playkit.player.VideoTrack;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Date;
@@ -64,7 +63,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private boolean isBuffering = false;
     private boolean isFirstPlay = true;
 
-    public enum KLiveStatsEvent {
+    private enum KLiveStatsEvent {
         LIVE(1),
         DVR(2);
 
@@ -146,14 +145,10 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                     case PAUSE:
                         stopLiveEvents();
                         break;
-                    case TRACKS_AVAILABLE:
-                        PKTracks tracks = ((PlayerEvent.TracksAvailable) event).tracksInfo;
-                        VideoTrack currentVideoTrack = tracks.getVideoTracks().get(tracks.getDefaultVideoTrackIndex());
-                        lastReportedBitrate = currentVideoTrack.getBitrate();
-                        break;
-                    case VIDEO_TRACK_CHANGED:
-                        VideoTrack changedVideoTrack = ((PlayerEvent.VideoTrackChanged) event).newTrack;
-                        lastReportedBitrate = changedVideoTrack.getBitrate();
+                    case PLAYBACK_INFO_UPDATED:
+                        PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).playbackInfo;
+                        lastReportedBitrate = currentPlaybackInfo.getVideoBitrate();
+                        log.d("lastReportedBitrate = " + lastReportedBitrate + ", isLiveStream = " + player.isLiveStream());
                         break;
                     case SOURCE_SELECTED:
                         PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;

@@ -116,7 +116,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
-        sendEvent(PlayerEvent.Type.BANDWIDTH_ESTIMATION_CHANGED);
+        sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
     }
 
 
@@ -604,6 +604,15 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     }
 
     @Override
+    public PlaybackInfo getPlaybackInfo() {
+        return new PlaybackInfo(trackSelectionHelper.getCurrentVideoBitrate(),
+                trackSelectionHelper.getCurrentAudioBitrate(),
+                bandwidthMeter.getBitrateEstimate(),
+                trackSelectionHelper.getCurrentVideoWidth(),
+                trackSelectionHelper.getCurrentVideoHeight());
+    }
+
+    @Override
     public PKError getCurrentError() {
         return currentError;
     }
@@ -653,11 +662,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             @Override
             public void onVideoTrackChanged() {
                 sendEvent(PlayerEvent.Type.VIDEO_TRACK_CHANGED);
+                sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
             }
 
             @Override
             public void onAudioTrackChanged() {
                 sendEvent(PlayerEvent.Type.AUDIO_TRACK_CHANGED);
+                sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
             }
 
             @Override
@@ -680,11 +691,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public BaseTrack getLastSelectedTrack(int renderType) {
         return trackSelectionHelper.getLastSelectedTrack(renderType);
-    }
-
-    @Override
-    public long getBandwidthEstimation() {
-        return bandwidthMeter.getBitrateEstimate();
     }
 
     @Override
