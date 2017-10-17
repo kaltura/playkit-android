@@ -28,7 +28,7 @@ public class KavaAnalyticsConfig {
     private int uiconfId = 0;
     private int partnerId = 0;
 
-    private String ks = "Unknown";
+    private String ks;
     private String baseUrl = DEFAULT_BASE_URL;
     private String customVar1, customVar2, customVar3;
     private String playbackContext;
@@ -57,8 +57,6 @@ public class KavaAnalyticsConfig {
 
         if (Utils.isJsonObjectValueValid(config, KS_KEY)) {
             ks = config.getAsJsonPrimitive(KS_KEY).getAsString();
-        } else {
-            ks = "Unknown";
         }
 
         if(Utils.isJsonObjectValueValid(config, CUSTOM_VAR_1_KEY)) {
