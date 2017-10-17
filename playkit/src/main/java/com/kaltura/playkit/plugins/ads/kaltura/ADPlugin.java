@@ -420,6 +420,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
     }
 
     private void handleErrorEvent(AdManagerAdErrorEvent adErrorEvent) {
+        log.e("handleErrorEvent  isContentPrepared " + isContentPrepared);
         sendError(adErrorEvent);
         isAdRequested = true;
         isAdError = true;
