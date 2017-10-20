@@ -226,12 +226,16 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                         break;
 
                     case adBreakStarted:
+                        AdManagerAdEvent.AdBreakStartedEvent adBreakStartedEvent = (AdManagerAdEvent.AdBreakStartedEvent) adEvent;
+                        if (adBreakStartedEvent.adBreakInfo.isEmptyAdBreak()) {
+                            messageBus.post(new AdEvent.AdBreakStarted(null));
+                            return;
+                        }
                         if (!isAppInBackground) {
                             ((ViewGroup) adConfig.getPlayerViewContainer()).removeAllViews();
                             ((ViewGroup) adConfig.getPlayerViewContainer()).addView(adManager.getAdPlayer().getView());
                             preparePlayer(false);
                         }
-                        AdManagerAdEvent.AdBreakStartedEvent adBreakStartedEvent = (AdManagerAdEvent.AdBreakStartedEvent) adEvent;
                         currentAdInfo = createAdInfo(adBreakStartedEvent.adInfo, adBreakStartedEvent.adBreakInfo);
                         messageBus.post(new AdEvent.AdBreakStarted(currentAdInfo));
                         break;
@@ -304,7 +308,9 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
 
                     case adLoaded:
                         log.d("AD_LOADED");
-
+                        if (isAppInBackground) {
+                            isAdDisplayed = true;
+                        }
                         if (!isAppInBackground) {
                             adManager.playAdBreak();
                         }
@@ -423,6 +429,17 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
         log.e("handleErrorEvent  isContentPrepared " + isContentPrepared);
         sendError(adErrorEvent);
         isAdRequested = true;
+
+        if (adErrorEvent.eventType() == AdManagerAdErrorEvent.Type.quietError) {
+            AdManagerAdErrorEvent.AdManagerQuietAdErrorEvent event = null;
+            if (adErrorEvent instanceof AdManagerAdErrorEvent.AdManagerQuietAdErrorEvent) {
+                event = (AdManagerAdErrorEvent.AdManagerQuietAdErrorEvent) adErrorEvent;
+            }
+            if (event != null && !event.shouldPlayVideo) {
+                adManager.createAdPlayer();
+                return;
+            }
+        }
         isAdError = true;
         removeAdPlayer();
         if (isContentPrepared) {
@@ -474,6 +491,8 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                 return PKAdErrorType.NO_TRACKING_EVENTS;
             case videoPlayError:
                 return PKAdErrorType.VIDEO_PLAY_ERROR;
+            case quietError:
+                return PKAdErrorType.QUIET_LOG_ERROR;
             default:
                 return PKAdErrorType.UNKNOWN_ERROR;
         }
