@@ -24,6 +24,7 @@ import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.api.ovp.services.KavaService;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
+import com.kaltura.playkit.player.VideoTrack;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.HashMap;
@@ -57,7 +58,6 @@ public class KavaAnalyticsPlugin extends PKPlugin {
     private KavaAnalyticsConfig pluginConfig;
     private PKEvent.Listener eventListener = initEventListener();
 
-
     private boolean playReached25;
     private boolean playReached50;
     private boolean playReached75;
@@ -67,7 +67,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
     private boolean isFirstPlay = true;
     private boolean isImpressionSent;
 
-    private int eventIndex = 1;
+    private int eventIndex;
     private int viewEventTimeCounter;
 
     private long actualBitrate;
@@ -140,6 +140,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         this.mediaConfig = mediaConfig;
         sessionStartTime = null;
+        eventIndex = 1;
         resetFlags();
     }
 
@@ -225,13 +226,10 @@ public class KavaAnalyticsPlugin extends PKPlugin {
                             break;
                         case PLAYBACK_INFO_UPDATED:
                             PlaybackInfo playbackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).playbackInfo;
-                            actualBitrate = playbackInfo.getVideoThroughput();
+                            actualBitrate = playbackInfo.getVideoBitrate();
                             break;
                         case VIDEO_TRACK_CHANGED:
-                            PlayerEvent.VideoTrackChanged videoTrackChanged = ((PlayerEvent.VideoTrackChanged) event);
-                            break;
-                        case AUDIO_TRACK_CHANGED:
-                            PlayerEvent.AudioTrackChanged audioTrackChanged = ((PlayerEvent.AudioTrackChanged) event);
+                            sendAnalyticsEvent(KavaEvents.SOURCE_SELECTED);
                             break;
                         case TEXT_TRACK_CHANGED:
                             PlayerEvent.TextTrackChanged textTrackChanged = ((PlayerEvent.TextTrackChanged) event);
@@ -264,7 +262,6 @@ public class KavaAnalyticsPlugin extends PKPlugin {
                 break;
         }
     }
-
 
     private void sendAnalyticsEvent(final KavaEvents event) {
 
@@ -327,7 +324,6 @@ public class KavaAnalyticsPlugin extends PKPlugin {
             case CAPTIONS:
                 params.put("caption", currentCaptionLanguage);
                 break;
-
         }
 
         addOptionalParams(params);
@@ -467,6 +463,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
 
         totalBufferTimePerEntry = 0;
         totalBufferTimePerViewEvent = 0;
+
     }
 
 }
