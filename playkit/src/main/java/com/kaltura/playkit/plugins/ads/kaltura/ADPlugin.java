@@ -179,7 +179,7 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
 
     private void buildAdConfigSettings(AdManager.Settings settings) {
         settings.preferredBitrate    = adConfig.getVideoBitrate();
-        settings.preferredMimeType   = adConfig.getVideoMimeType();
+        settings.preferredMimeType   = adConfig.getVideoMimeType().mimeType;
         settings.adLoadTimeout       = adConfig.getAdLoadTimeOut();
         settings.companionAdWidth    = adConfig.getCompanionAdWidth();
         settings.companionAdHeight   = adConfig.getCompanionAdHeight();

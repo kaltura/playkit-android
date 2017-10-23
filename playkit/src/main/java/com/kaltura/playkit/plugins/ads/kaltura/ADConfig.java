@@ -40,7 +40,7 @@ public class ADConfig {
     private int videoBitrate; // in KB
     private AdTagType adTagType;
     private int  adLoadTimeOut;
-    private String videoMimeType;
+    private PKMediaFormat videoMimeType;
     private int companionAdWidth;
     private int companionAdHeight;
 
@@ -48,7 +48,7 @@ public class ADConfig {
         this.language                 = "en";
         this.videoBitrate             = -1;
         this.adLoadTimeOut            = DEFAULT_AD_LOAD_TIMEOUT;
-        this.videoMimeType =          PKMediaFormat.mp4.mimeType;
+        this.videoMimeType =          PKMediaFormat.mp4;
         this.adTagType = AdTagType.UNKNOWN;
         this.adTagURL = null;         //=> must be set via setter
         this.playerViewContainer = null;
@@ -94,7 +94,7 @@ public class ADConfig {
         return this;
     }
 
-    public String getVideoMimeType() {
+    public PKMediaFormat getVideoMimeType() {
         return videoMimeType;
     }
 
@@ -102,7 +102,7 @@ public class ADConfig {
     // default selected MIME TYPE by plugin is MP4
     // if null or empty list is set then it will be selected automatically
     // if MIME TYPE is sent it will try playing one of the given MIME TYPE in the list i.e "video/mp4", "video/webm", "video/3gpp"
-    public ADConfig setVideoMimeTypes(String videoMimeType) {
+    public ADConfig setVideoMimeTypes(PKMediaFormat videoMimeType) {
         this.videoMimeType = videoMimeType;
         return this;
     }
@@ -160,11 +160,10 @@ public class ADConfig {
     public JsonObject toJSONObject() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(AD_TAG_LANGUAGE, language);
-
         jsonObject.addProperty(AD_TAG_URL, adTagURL);
         jsonObject.addProperty(AD_VIDEO_BITRATE, videoBitrate);
         jsonObject.addProperty(AD_LOAD_TIMEOUT, adLoadTimeOut);
-        jsonObject.addProperty(AD_VIDEO_MIME_TYPE, videoMimeType);
+        jsonObject.addProperty(AD_VIDEO_MIME_TYPE, videoMimeType.mimeType);
 
         return jsonObject;
     }
