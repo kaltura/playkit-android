@@ -9,6 +9,7 @@ import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
@@ -21,10 +22,11 @@ import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.api.ovp.services.KavaService;
+import com.kaltura.playkit.player.PKPlayerErrorType;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
-import com.kaltura.playkit.player.VideoTrack;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.HashMap;
@@ -68,6 +70,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
     private boolean isImpressionSent;
 
     private int eventIndex;
+    private int errorCode = -1;
     private int viewEventTimeCounter;
 
     private long actualBitrate;
@@ -112,6 +115,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
         SEEK(35),
         CAPTIONS(38),
         SOURCE_SELECTED(39), // video track changed
+        ERROR(98),
         VIEW(99);
 
         private final int value;
@@ -244,6 +248,17 @@ public class KavaAnalyticsPlugin extends PKPlugin {
                                 currentCaptionLanguage = track.getLanguage();
                             }
                             break;
+                        case ERROR:
+                            PKError error = ((PlayerEvent.Error) event).error;
+                            if (error.errorType instanceof PKPlayerErrorType) {
+                                errorCode = ((PKPlayerErrorType) error.errorType).errorCode;
+                            } else if (error.errorType instanceof PKAdErrorType) {
+                                errorCode = ((PKAdErrorType) error.errorType).errorCode;
+                            } else {
+                                errorCode = -1;
+                            }
+                            sendAnalyticsEvent(KavaEvents.ERROR);
+                            break;
                     }
                 }
             }
@@ -264,6 +279,10 @@ public class KavaAnalyticsPlugin extends PKPlugin {
     }
 
     private void sendAnalyticsEvent(final KavaEvents event) {
+        if (!pluginConfig.isPartnerIdValid()) {
+            log.w("Can not send analytics event. Mandatory field partnerId is missing");
+            return;
+        }
 
         Map<String, String> params = gatherParams(event);
 
@@ -323,6 +342,12 @@ public class KavaAnalyticsPlugin extends PKPlugin {
                 break;
             case CAPTIONS:
                 params.put("caption", currentCaptionLanguage);
+                break;
+            case ERROR:
+                if (errorCode != -1) {
+                    params.put("errorCode", Integer.toString(errorCode));
+                    errorCode = -1;
+                }
                 break;
         }
 
@@ -461,6 +486,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
         playReached75 = false;
         playReached100 = false;
 
+        errorCode = -1;
         totalBufferTimePerEntry = 0;
         totalBufferTimePerViewEvent = 0;
 

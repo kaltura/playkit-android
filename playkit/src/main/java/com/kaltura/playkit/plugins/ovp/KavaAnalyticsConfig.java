@@ -26,7 +26,7 @@ public class KavaAnalyticsConfig {
 
 
     private int uiconfId = 0;
-    private int partnerId = 0;
+    private int partnerId = -1;
 
     private String ks;
     private String baseUrl = DEFAULT_BASE_URL;
@@ -137,43 +137,47 @@ public class KavaAnalyticsConfig {
         return this;
     }
 
-    public int getUiconfId() {
+    int getUiconfId() {
         return uiconfId;
     }
 
-    public int getPartnerId() {
+    int getPartnerId() {
         return partnerId;
     }
 
-    public String getKs() {
+    String getKs() {
         return ks;
     }
 
-    public String getBaseUrl() {
+    String getBaseUrl() {
         return baseUrl;
     }
 
-    public String getCustomVar1() {
+    String getCustomVar1() {
         return customVar1;
     }
 
-    public String getCustomVar2() {
+    String getCustomVar2() {
         return customVar2;
     }
 
-    public String getCustomVar3() {
+    String getCustomVar3() {
         return customVar3;
     }
 
-    public String getPlaybackContext() {
+    String getPlaybackContext() {
         return playbackContext;
     }
 
-    public String getReferrerAsBase64() {
+    String getReferrerAsBase64() {
         return referrerAsBase64;
     }
 
     private boolean isValidReferrer(String referrer) {
         return (referrer.startsWith("app://") || referrer.startsWith("http://") || referrer.startsWith("https://"));
+    }
+
+    boolean isPartnerIdValid() {
+        return partnerId != -1;
     }
 }
