@@ -3,11 +3,7 @@ package com.kaltura.playkit.api.ovp.services;
 import android.net.Uri;
 
 import com.kaltura.netkit.connect.request.RequestBuilder;
-import com.kaltura.playkit.PKLog;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -16,8 +12,6 @@ import java.util.Map;
  */
 
 public class KavaService {
-
-    private static final PKLog log = PKLog.get(KavaService.class.getSimpleName());
 
     public static RequestBuilder sendAnalyticsEvent(String baseUrl, Map<String, String> params) {
         return new RequestBuilder()
