@@ -384,6 +384,8 @@ public class ADPlugin extends PKPlugin implements AdsProvider {
                 return PKAdBreakEndedReason.DISCARDED;
             case completed:
                 return PKAdBreakEndedReason.COMPLETED;
+            case error:
+                return PKAdBreakEndedReason.ERROR;
             default:
                 return PKAdBreakEndedReason.ERROR;
         }

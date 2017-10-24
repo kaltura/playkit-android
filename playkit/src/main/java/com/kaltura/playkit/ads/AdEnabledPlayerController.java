@@ -185,7 +185,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
 
     @Override
     public AdController getAdController() {
-        log.d("AdDecorator getAdController");
+        //log.d("AdDecorator getAdController");
         return this;
     }
 
