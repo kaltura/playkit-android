@@ -36,13 +36,6 @@ public class KavaService {
             builder.appendQueryParameter(entry.getKey(), entry.getValue());
         }
 
-        try {
-            URL url = new URL(builder.build().toString());
-            return url.toString();
-        } catch (MalformedURLException rx) {
-            log.d("MalformedURLException: ");
-        }
-
         return builder.build().toString();
     }
 }
