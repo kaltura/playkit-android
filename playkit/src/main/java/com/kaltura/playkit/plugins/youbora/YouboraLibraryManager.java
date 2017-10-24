@@ -114,7 +114,6 @@ class YouboraLibraryManager extends PluginGeneric {
                 PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).playbackInfo;
                 lastReportedBitrate = Long.valueOf(currentPlaybackInfo.getVideoBitrate()).doubleValue();
                 lastReportedThroughput = Long.valueOf(currentPlaybackInfo.getVideoThroughput()).doubleValue();
-                lastReportedResource = currentPlaybackInfo.getMediaUrl();
                 lastReportedRendition = generateRendition(lastReportedBitrate, (int) currentPlaybackInfo.getVideoWidth(), (int) currentPlaybackInfo.getVideoHeight());
                 return;
             }
@@ -162,6 +161,10 @@ class YouboraLibraryManager extends PluginGeneric {
                         break;
                     case SEEKING:
                         seekingHandler();
+                        break;
+                    case SOURCE_SELECTED:
+                        PlayerEvent.SourceSelected sourceSelected = ((PlayerEvent.SourceSelected) event);
+                        lastReportedResource = sourceSelected.source.getUrl();
                         break;
                     default:
                         break;

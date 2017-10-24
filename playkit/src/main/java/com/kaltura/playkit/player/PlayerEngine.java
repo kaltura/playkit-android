@@ -195,4 +195,7 @@ interface PlayerEngine {
      */
     List<PKMetadata> getMetadata();
 
+    BaseTrack getLastSelectedTrack(int renderType);
+
+    boolean isLiveStream();
 }

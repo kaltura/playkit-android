@@ -60,6 +60,8 @@ public class PlayerController implements Player {
     private boolean isNewEntry = true;
     private boolean useTextureView = false;
     private boolean cea608CaptionsEnabled = false;
+    private long targetSeekPosition;
+
 
     private final Runnable updateProgressAction = new Runnable() {
         @Override
@@ -100,6 +102,11 @@ public class PlayerController implements Player {
         return sessionId;
     }
 
+    @Override
+    public boolean isLiveStream() {
+        return player != null && player.isLiveStream();
+    }
+
     interface EventListener {
         void onEvent(PlayerEvent.Type event);
     }
@@ -112,12 +119,9 @@ public class PlayerController implements Player {
 
         @Override
         public void onEvent(PlayerEvent.Type eventType) {
-            //log.d("onEvent event =  " + eventType.name());
             if (eventListener != null) {
 
-                PKEvent event = null;
-
-                // TODO: use specific event class
+                PKEvent event;
                 switch (eventType) {
                     case PLAYING:
                         updateProgress();
@@ -163,12 +167,23 @@ public class PlayerController implements Player {
                     case SOURCE_SELECTED:
                         event = new PlayerEvent.SourceSelected(sourceConfig.mediaSource);
                         break;
+                    case SEEKING:
+                        event = new PlayerEvent.Seeking(targetSeekPosition);
+                        break;
+                    case VIDEO_TRACK_CHANGED:
+                        event = new PlayerEvent.VideoTrackChanged((VideoTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_VIDEO));
+                        break;
+                    case AUDIO_TRACK_CHANGED:
+                        event = new PlayerEvent.AudioTrackChanged((AudioTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_AUDIO));
+                        break;
+                    case TEXT_TRACK_CHANGED:
+                        event = new PlayerEvent.TextTrackChanged((TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT));
+                        break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
                 }
-                if (event != null) {
-                    eventListener.onEvent(event);
-                }
+
+                eventListener.onEvent(event);
             }
         }
     };
@@ -417,6 +432,7 @@ public class PlayerController implements Player {
             log.w("Attempt to invoke 'seekTo()' on null instance of the player engine");
             return;
         }
+        targetSeekPosition = position;
         player.seekTo(position);
     }
 
@@ -515,6 +531,9 @@ public class PlayerController implements Player {
             log.w("Attempt to invoke 'release()' on null instance of the player engine");
             return;
         }
+        if (player.isPlaying()) {
+            player.pause();
+        }
         cancelUpdateProgress();
         player.release();
         togglePlayerListeners(false);
@@ -564,8 +583,8 @@ public class PlayerController implements Player {
 
     private void updateProgress() {
 
-        long position = 0;
-        long duration = 0;
+        long position;
+        long duration;
 
         if (player == null || player.getView() == null) {
             return;
@@ -574,7 +593,7 @@ public class PlayerController implements Player {
         position = player.getCurrentPosition();
         duration = player.getDuration();
         if (position > 0 && duration > 0) {
-            eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position,duration));
+            eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
         }
 
         // Cancel any pending updates and schedule a new one if necessary.
