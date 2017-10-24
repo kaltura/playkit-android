@@ -2,6 +2,7 @@ package com.kaltura.playkit.plugins.ovp;
 
 import android.content.Context;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
@@ -25,8 +26,6 @@ import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.api.ovp.services.KavaService;
 import com.kaltura.playkit.player.PKPlayerErrorType;
-import com.kaltura.playkit.player.PKTracks;
-import com.kaltura.playkit.player.TextTrack;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.HashMap;
@@ -129,7 +128,6 @@ public class KavaAnalyticsPlugin extends PKPlugin {
         }
     }
 
-
     @Override
     protected void onLoad(Player player, Object config, MessageBus messageBus, Context context) {
         this.player = player;
@@ -209,7 +207,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
                             break;
                         case SEEKING:
                             PlayerEvent.Seeking seekingEvent = (PlayerEvent.Seeking) event;
-                            targetSeekPositionInSeconds = seekingEvent.requestedPosition / Consts.MILLISECONDS_MULTIPLIER;
+                            targetSeekPositionInSeconds = seekingEvent.targetPosition / Consts.MILLISECONDS_MULTIPLIER;
                             sendAnalyticsEvent(KavaEvents.SEEK);
                             break;
                         case REPLAY:
@@ -239,14 +237,6 @@ public class KavaAnalyticsPlugin extends PKPlugin {
                             PlayerEvent.TextTrackChanged textTrackChanged = ((PlayerEvent.TextTrackChanged) event);
                             currentCaptionLanguage = textTrackChanged.newTrack.getLanguage();
                             sendAnalyticsEvent(KavaEvents.CAPTIONS);
-                            break;
-                        case TRACKS_AVAILABLE:
-                            PKTracks tracks = ((PlayerEvent.TracksAvailable) event).tracksInfo;
-
-                            if (!tracks.getTextTracks().isEmpty()) {
-                                TextTrack track = tracks.getTextTracks().get(tracks.getDefaultTextTrackIndex());
-                                currentCaptionLanguage = track.getLanguage();
-                            }
                             break;
                         case ERROR:
                             PKError error = ((PlayerEvent.Error) event).error;
@@ -324,7 +314,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
         params.put("clientVer", PlayKitManager.CLIENT_TAG);
         params.put("clientTag", PlayKitManager.CLIENT_TAG);
         params.put("position", Long.toString(player.getCurrentPosition()));
-        params.put("uiConfId", Integer.toString(pluginConfig.getUiconfId()));
+
         if (sessionStartTime != null) params.put("sessionStartTime", sessionStartTime);
 
         switch (event) {
@@ -357,24 +347,28 @@ public class KavaAnalyticsPlugin extends PKPlugin {
 
     private void addOptionalParams(Map<String, String> params) {
 
-        if (pluginConfig.getPlaybackContext() != null) {
+        if (pluginConfig.hasPlaybackContext()) {
             params.put("playbackContext", pluginConfig.getPlaybackContext());
         }
 
-        if (pluginConfig.getCustomVar1() != null) {
+        if (pluginConfig.hasCustomVar1()) {
             params.put("customVar1", pluginConfig.getCustomVar1());
         }
 
-        if (pluginConfig.getCustomVar2() != null) {
+        if (pluginConfig.hasCustomVar2()) {
             params.put("customVar2", pluginConfig.getCustomVar2());
         }
 
-        if (pluginConfig.getCustomVar3() != null) {
+        if (pluginConfig.hasCustomVar3()) {
             params.put("customVar3", pluginConfig.getCustomVar3());
         }
 
-        if (pluginConfig.getKs() != null) {
+        if (pluginConfig.hasKs()) {
             params.put("ks", pluginConfig.getKs());
+        }
+
+        if(pluginConfig.hasUiConfId()) {
+            params.put("uiConfId", Integer.toString(pluginConfig.getUiConfId()));
         }
     }
 
@@ -436,12 +430,11 @@ public class KavaAnalyticsPlugin extends PKPlugin {
         if (config instanceof KavaAnalyticsConfig) {
             return (KavaAnalyticsConfig) config;
         } else if (config instanceof JsonObject) {
-            return new KavaAnalyticsConfig((JsonObject) config);
+            return new Gson().fromJson((JsonObject) config, KavaAnalyticsConfig.class);
         }
 
         return null;
     }
-
 
     private void calculateTotalBufferTimePerViewEvent() {
         if (lastKnownBufferingTimestamp == 0) return;
@@ -489,7 +482,6 @@ public class KavaAnalyticsPlugin extends PKPlugin {
         errorCode = -1;
         totalBufferTimePerEntry = 0;
         totalBufferTimePerViewEvent = 0;
-
     }
 
 }

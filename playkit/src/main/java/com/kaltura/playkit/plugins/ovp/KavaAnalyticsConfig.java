@@ -1,6 +1,5 @@
 package com.kaltura.playkit.plugins.ovp;
 
-import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Utils;
 
@@ -14,76 +13,14 @@ public class KavaAnalyticsConfig {
 
     private static final String DEFAULT_BASE_URL = "http://analytics.kaltura.com/api_v3/index.php";
 
-    private static final String KS_KEY = "ks";
-    private static final String BASE_URL_KEY = "baseUrl";
-    private static final String UI_CONF_ID_KEY = "uiconfId";
-    private static final String PARTNER_ID_KEY = "partnerId";
-    private static final String CUSTOM_VAR_1_KEY = "customVar1";
-    private static final String CUSTOM_VAR_2_KEY = "customVar2";
-    private static final String CUSTOM_VAR_3_KEY = "customVar3";
-    private static final String PLAYBACK_CONTEXT_KEY = "playbackContext";
-    private static final String REFERRER_KEY = "referrer";
-
-
-    private int uiconfId = 0;
-    private int partnerId = -1;
+    private int uiconfId;
+    private int partnerId;
 
     private String ks;
-    private String baseUrl = DEFAULT_BASE_URL;
-    private String customVar1, customVar2, customVar3;
     private String playbackContext;
     private String referrerAsBase64;
-
-    public KavaAnalyticsConfig() {}
-
-    public KavaAnalyticsConfig(JsonObject config) {
-        if (Utils.isJsonObjectValueValid(config, UI_CONF_ID_KEY)) {
-            uiconfId = Integer.valueOf(config.get(UI_CONF_ID_KEY).toString());
-        } else {
-            uiconfId = 0;
-        }
-
-        if (Utils.isJsonObjectValueValid(config, BASE_URL_KEY)) {
-            baseUrl = config.getAsJsonPrimitive(BASE_URL_KEY).getAsString();
-        } else {
-            baseUrl = DEFAULT_BASE_URL;
-        }
-
-        if (Utils.isJsonObjectValueValid(config, PARTNER_ID_KEY)) {
-            partnerId = config.getAsJsonPrimitive(PARTNER_ID_KEY).getAsInt();
-        } else {
-            partnerId = 0;
-        }
-
-        if (Utils.isJsonObjectValueValid(config, KS_KEY)) {
-            ks = config.getAsJsonPrimitive(KS_KEY).getAsString();
-        }
-
-        if(Utils.isJsonObjectValueValid(config, CUSTOM_VAR_1_KEY)) {
-            customVar1 = config.getAsJsonPrimitive(CUSTOM_VAR_1_KEY).getAsString();
-        }
-
-        if(Utils.isJsonObjectValueValid(config, CUSTOM_VAR_2_KEY)) {
-            customVar2 = config.getAsJsonPrimitive(CUSTOM_VAR_2_KEY).getAsString();
-        }
-
-        if(Utils.isJsonObjectValueValid(config, CUSTOM_VAR_3_KEY)) {
-            customVar3 = config.getAsJsonPrimitive(CUSTOM_VAR_3_KEY).getAsString();
-        }
-        
-        if(Utils.isJsonObjectValueValid(config, PLAYBACK_CONTEXT_KEY)) {
-            playbackContext = config.getAsJsonPrimitive(PLAYBACK_CONTEXT_KEY).getAsString();
-        }
-
-        if(Utils.isJsonObjectValueValid(config, REFERRER_KEY)) {
-            String referrer = config.getAsJsonPrimitive(REFERRER_KEY).getAsString();
-            if(isValidReferrer(referrer)){
-                this.referrerAsBase64 = Utils.toBase64(referrer.getBytes());
-            } else {
-                this.referrerAsBase64 = null;
-            }
-        }
-    }
+    private String baseUrl = DEFAULT_BASE_URL;
+    private String customVar1, customVar2, customVar3;
 
     public KavaAnalyticsConfig setUiConfId(int uiConfId) {
         this.uiconfId = uiConfId;
@@ -121,7 +58,7 @@ public class KavaAnalyticsConfig {
     }
 
     public KavaAnalyticsConfig setReferrer(String referrer) {
-        if(isValidReferrer(referrer)) {
+        if (isValidReferrer(referrer)) {
             this.referrerAsBase64 = Utils.toBase64(referrer.getBytes());
         } else {
             log.w("Invalid referrer argument. Should start with app:// or http:// or https://");
@@ -129,7 +66,6 @@ public class KavaAnalyticsConfig {
         }
 
         return this;
-
     }
 
     public KavaAnalyticsConfig setPlaybackContext(String playbackContext) {
@@ -137,7 +73,7 @@ public class KavaAnalyticsConfig {
         return this;
     }
 
-    int getUiconfId() {
+    int getUiConfId() {
         return uiconfId;
     }
 
@@ -173,11 +109,35 @@ public class KavaAnalyticsConfig {
         return referrerAsBase64;
     }
 
+    boolean hasPlaybackContext() {
+        return playbackContext != null;
+    }
+
+    boolean hasCustomVar1() {
+        return customVar1 != null;
+    }
+
+    boolean hasCustomVar2() {
+        return customVar2 != null;
+    }
+
+    boolean hasCustomVar3() {
+        return customVar3 != null;
+    }
+
+    boolean hasKs() {
+        return ks != null;
+    }
+
+    boolean hasUiConfId() {
+        return uiconfId != 0;
+    }
+
     private boolean isValidReferrer(String referrer) {
         return (referrer.startsWith("app://") || referrer.startsWith("http://") || referrer.startsWith("https://"));
     }
 
     boolean isPartnerIdValid() {
-        return partnerId != -1;
+        return partnerId != 0;
     }
 }

@@ -119,12 +119,9 @@ public class PlayerController implements Player {
 
         @Override
         public void onEvent(PlayerEvent.Type eventType) {
-            //log.d("onEvent event =  " + eventType.name());
             if (eventListener != null) {
 
                 PKEvent event;
-
-                // TODO: use specific event class
                 switch (eventType) {
                     case PLAYING:
                         updateProgress();

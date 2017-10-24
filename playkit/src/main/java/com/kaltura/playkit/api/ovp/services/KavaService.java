@@ -26,9 +26,8 @@ public class KavaService {
     }
 
     private static String buildUrlWithParams(String baserUrl, Map<String, String> params) {
-        Uri.Builder builder = new Uri.Builder();
 
-        builder.path(baserUrl);
+        Uri.Builder builder = Uri.parse(baserUrl).buildUpon();
 
         Iterator iterator = params.entrySet().iterator();
         Map.Entry<String, String> entry;
@@ -38,13 +37,12 @@ public class KavaService {
         }
 
         try {
-            URL url =  new URL(URLDecoder.decode(builder.build().toString(), "UTF-8"));
+            URL url = new URL(builder.build().toString());
             return url.toString();
-        } catch (java.io.UnsupportedEncodingException ex) {
-            log.d("UnsupportedEncodingException: ");
         } catch (MalformedURLException rx) {
             log.d("MalformedURLException: ");
         }
+
         return builder.build().toString();
     }
 }
