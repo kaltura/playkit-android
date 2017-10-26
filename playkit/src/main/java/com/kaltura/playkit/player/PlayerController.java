@@ -70,13 +70,6 @@ public class PlayerController implements Player {
         }
     };
 
-    private final Runnable updateProgressAction = new Runnable() {
-        @Override
-        public void run() {
-            updateProgress();
-        }
-    };
-
     private Settings settings = new Settings();
 
     private class Settings implements Player.Settings {
