@@ -49,10 +49,10 @@ import com.kaltura.playkit.ads.PKAdEndedReason;
 import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.ads.PKAdProviderListener;
-import com.kaltura.playkit.plugins.ads.AdCuePoints;
-import com.kaltura.playkit.plugins.ads.AdEvent;
-import com.kaltura.playkit.plugins.ads.AdInfo;
-import com.kaltura.playkit.plugins.ads.AdsProvider;
+import com.kaltura.playkit.ads.AdCuePoints;
+import com.kaltura.playkit.ads.AdEvent;
+import com.kaltura.playkit.ads.AdInfo;
+import com.kaltura.playkit.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
@@ -61,7 +61,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_STARTED;
+import static com.kaltura.playkit.ads.AdEvent.Type.AD_BREAK_STARTED;
 
 public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.interactivemedia.v3.api.AdEvent.AdEventListener, AdErrorEvent.AdErrorListener {
 

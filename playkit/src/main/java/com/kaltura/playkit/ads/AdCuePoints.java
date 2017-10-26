@@ -10,7 +10,7 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.plugins.ads;
+package com.kaltura.playkit.ads;
 
 import java.util.HashSet;
 import java.util.List;

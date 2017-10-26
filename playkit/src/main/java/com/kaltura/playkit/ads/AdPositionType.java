@@ -10,7 +10,7 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.plugins.ads;
+package com.kaltura.playkit.ads;
 
 public enum AdPositionType {
     UNKNOWN,

@@ -1,4 +1,4 @@
-package com.kaltura.playkit.plugins.ads;
+package com.kaltura.playkit.ads;
 
 ///*
 // * ============================================================================
@@ -14,8 +14,6 @@ package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
-import com.kaltura.playkit.ads.PKAdBreakEndedReason;
-import com.kaltura.playkit.ads.PKAdEndedReason;
 
 import java.util.ArrayList;
 import java.util.Set;

@@ -12,8 +12,6 @@
 
 package com.kaltura.playkit.ads;
 
-import com.kaltura.playkit.plugins.ads.AdPositionType;
-
 public interface PKAdInfo {
 
     String   getAdDescription();

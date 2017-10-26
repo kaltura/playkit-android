@@ -3,25 +3,6 @@
 ext.playkitVersion = 'dev'
 
 
-android.libraryVariants.all { variant ->
-    task("generate${variant.name.capitalize()}Javadoc", type: Javadoc) {
-        title = null // doclava does not support title
-        destinationDir = new File("${project.buildDir}/javadoc/", variant.baseName)
-        source = variant.javaCompile.source
-
-        ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
-        classpath = files(variant.javaCompile.classpath.files) + files(ext.androidJar)
-
-        description "Generates Javadoc for $variant.name."
-
-        exclude '**/R.java'
-
-        // reset options
-        options = new StandardJavadocDocletOptions()
-        options.doclet("com.google.doclava.Doclava")
-        options.docletpath(new File(project.rootDir, "tools/doclava.jar"))
-    }
-}
 
 
 

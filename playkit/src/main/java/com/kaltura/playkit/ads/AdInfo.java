@@ -10,9 +10,7 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.plugins.ads;
-
-import com.kaltura.playkit.ads.PKAdInfo;
+package com.kaltura.playkit.ads;
 
 public class AdInfo implements PKAdInfo {
     private String  adId;

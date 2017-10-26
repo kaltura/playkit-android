@@ -10,11 +10,7 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.plugins.ads;
-
-import com.kaltura.playkit.ads.AdEnabledPlayerController;
-import com.kaltura.playkit.ads.PKAdInfo;
-
+package com.kaltura.playkit.ads;
 
 public interface AdsProvider {
     Object getAdsConfig();
