@@ -24,6 +24,7 @@ import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.MediaDrm;
 import android.media.UnsupportedSchemeException;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -31,7 +32,6 @@ import android.util.Base64;
 import android.util.Log;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,26 +44,26 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Created by Noam Tamim @ Kaltura on 25/04/2017.
- */
 public class PKDeviceCapabilities {
     private static final PKLog log = PKLog.get("PKDeviceCapabilities");
     
     private static final UUID WIDEVINE_UUID = new UUID(0xEDEF8BA979D64ACEL, 0xA3C827DCD51D21EDL);
+    private static final UUID PLAYREADY_UUID = new UUID(0x9A04F07998404286L, 0xAB92E65BE0885F95L);
+    
     private static final String SHARED_PREFS_NAME = "PKDeviceCapabilities";
     private static final String PREFS_ENTRY_FINGERPRINT = "Build.FINGERPRINT";
     private static final String DEVICE_CAPABILITIES_URL = "https://cdnapisec.kaltura.com/api_v3/index.php?service=stats&action=reportDeviceCapabilities";
-    
+    private static final String FINGERPRINT = Build.FINGERPRINT;
+
     private static boolean reportSent = false;
     
     private final Context context;
     private final JSONObject root = new JSONObject();
 
-    public static JsonObject getReport(Context ctx) {
+    public static String getReport(Context ctx) {
         PKDeviceCapabilities collector = new PKDeviceCapabilities(ctx);
         JSONObject collect = collector.collect();
-        return new JsonParser().parse(collect.toString()).getAsJsonObject();
+        return collect.toString();
     }
 
     private PKDeviceCapabilities(Context context) {
@@ -76,28 +76,47 @@ public class PKDeviceCapabilities {
         }
 
         final SharedPreferences sharedPrefs = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
-        String fingerprint = sharedPrefs.getString(PREFS_ENTRY_FINGERPRINT, null);
+        String savedFingerprint = sharedPrefs.getString(PREFS_ENTRY_FINGERPRINT, null);
         
         // If we already sent capabilities for this Android build, don't send again.
-        if (Build.FINGERPRINT.equals(fingerprint)) {
+        if (FINGERPRINT.equals(savedFingerprint)) {
             reportSent = true;
             return;
         }
 
-        new Thread() {
+        // Do everything else in a thread.
+        AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
                 sendReport(context, sharedPrefs);
             }
-        }.start();
+        });
+    }
+    
+    private static String getErrorReport(Exception e) {
+        
+        try {
+            return new JSONObject()
+                    .put("system", systemInfo())
+                    .put("error", Log.getStackTraceString(e))
+                    .toString();
+        } catch (JSONException e1) {
+            return "{\"error\": \"Failed to create error object\"}";
+        }
     }
 
     private static void sendReport(Context context, SharedPreferences sharedPrefs) {
 
-        JsonObject report = getReport(context);
-        
+        String reportString;
+        try {
+            reportString = getReport(context);
+        } catch (RuntimeException e) {
+            log.e("Failed to get report", e);
+            reportString = getErrorReport(e);
+        }
+
         JsonObject data = new JsonObject();
-        data.addProperty("data", report.toString());
+        data.addProperty("data", reportString);
 
         String dataString = data.toString();
         try {
@@ -112,7 +131,7 @@ public class PKDeviceCapabilities {
         }
 
         // If we got here, save the fingerprint so we don't send again until the OS updates.
-        sharedPrefs.edit().putString(PREFS_ENTRY_FINGERPRINT, Build.FINGERPRINT).apply();
+        sharedPrefs.edit().putString(PREFS_ENTRY_FINGERPRINT, FINGERPRINT).apply();
         reportSent = true;
     }
 
@@ -126,7 +145,6 @@ public class PKDeviceCapabilities {
             root.put("media", mediaCodecInfo());
 
         } catch (JSONException e) {
-            
             log.e("Error", e);
         }
         
@@ -189,7 +207,7 @@ public class PKDeviceCapabilities {
                                 .put("status", status)
                 );
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             json.put("error", e.getMessage() + '\n' + Log.getStackTraceString(e));
         }
 
@@ -252,10 +270,21 @@ public class PKDeviceCapabilities {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             return new JSONObject()
-                    .put("widevine", widevineModularDrmInfo());
+                    .put("widevine", widevineModularDrmInfo())
+                    .put("playready", playreadyDrmInfo());
         } else {
             return null;
         }
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private JSONObject playreadyDrmInfo() throws JSONException {
+        if (!MediaDrm.isCryptoSchemeSupported(PLAYREADY_UUID)) {
+            return null; 
+        }
+        
+        // No information other that "supported".
+        return new JSONObject().put("supported", true);
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -304,8 +333,9 @@ public class PKDeviceCapabilities {
             String value;
             try {
                 value = mediaDrm.getPropertyString(prop);
-            } catch (IllegalStateException e) {
-                value = "<unknown>";
+                
+            } catch (RuntimeException e) {
+                value = "<" + e + ">";
             }
             props.put(prop, value);
         }
@@ -313,8 +343,9 @@ public class PKDeviceCapabilities {
             String value;
             try {
                 value = Base64.encodeToString(mediaDrm.getPropertyByteArray(prop), Base64.NO_WRAP);
-            } catch (IllegalStateException|NullPointerException e) {
-                value = "<unknown>";
+
+            } catch (RuntimeException e) {
+                value = "<" + e + ">";
             }
             props.put(prop, value);
         }
@@ -326,7 +357,7 @@ public class PKDeviceCapabilities {
         return response;
     }
 
-    private JSONObject systemInfo() throws JSONException {
+    private static JSONObject systemInfo() throws JSONException {
         JSONObject arch = new JSONObject().put("os.arch", System.getProperty("os.arch"));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             arch.put("SUPPORTED_ABIS", new JSONArray(Build.SUPPORTED_ABIS));
@@ -340,7 +371,7 @@ public class PKDeviceCapabilities {
                 .put("MODEL", Build.MODEL)
                 .put("MANUFACTURER", Build.MANUFACTURER)
                 .put("TAGS", Build.TAGS)
-                .put("FINGERPRINT", Build.FINGERPRINT)
+                .put("FINGERPRINT", FINGERPRINT)
                 .put("ARCH", arch);
     }
 }

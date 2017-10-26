@@ -63,7 +63,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     private boolean isBuffering = false;
     private boolean isFirstPlay = true;
 
-    public enum KLiveStatsEvent {
+    private enum KLiveStatsEvent {
         LIVE(1),
         DVR(2);
 
@@ -101,7 +101,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         this.messageBus = messageBus;
         this.pluginConfig = parseConfig(config);
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
-        this.messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY, PlayerEvent.Type.PLAYBACK_INFO_UPDATED, PlayerEvent.Type.SOURCE_SELECTED);
+        this.messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY, PlayerEvent.Type.TRACKS_AVAILABLE, PlayerEvent.Type.SOURCE_SELECTED, PlayerEvent.Type.VIDEO_TRACK_CHANGED);
     }
 
     @Override
@@ -148,7 +148,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                     case PLAYBACK_INFO_UPDATED:
                         PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).playbackInfo;
                         lastReportedBitrate = currentPlaybackInfo.getVideoBitrate();
-                        log.d("lastReportedBitrate = " + lastReportedBitrate + ", isLiveStream = " + currentPlaybackInfo.getIsLiveStream());
+                        log.d("lastReportedBitrate = " + lastReportedBitrate + ", isLiveStream = " + player.isLiveStream());
                         break;
                     case SOURCE_SELECTED:
                         PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;

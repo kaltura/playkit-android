@@ -375,7 +375,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public PlaybackInfo getPlaybackInfo() {
-        return new PlaybackInfo(getWidevineAssetPlaybackUri(assetUri), -1, -1, -1, player.getVideoWidth(), player.getVideoHeight(), false);
+        return new PlaybackInfo(-1, -1, -1, player.getVideoWidth(), player.getVideoHeight());
     }
 
     @Override
@@ -393,7 +393,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         }
     }
 
-    public static String getWidevineAssetPlaybackUri(String assetUri) {
+    private static String getWidevineAssetPlaybackUri(String assetUri) {
         String assetUriForPlayback = assetUri;
         if (assetUri.startsWith("file:")) {
             assetUriForPlayback = Uri.parse(assetUri).getPath();
@@ -406,7 +406,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     // Convert file:///local/path/a.wvm to /local/path/a.wvm
     // Convert widevine://example.com/path/a.wvm to http://example.com/path/a.wvm
     // Everything else remains the same.
-    public static String getWidevineAssetAcquireUri(String assetUri) {
+    private static String getWidevineAssetAcquireUri(String assetUri) {
         String assetAcquireUriForPlayback = assetUri;
         if (assetUri.startsWith("file:")) {
             assetAcquireUriForPlayback = Uri.parse(assetUri).getPath();
@@ -560,6 +560,18 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     @Override
     public List<PKMetadata> getMetadata() {
         return null;
+    }
+
+    @Override
+    public BaseTrack getLastSelectedTrack(int renderType) {
+        return null;
+    }
+
+
+
+    @Override
+    public boolean isLiveStream() {
+        return false;
     }
 
     @NonNull

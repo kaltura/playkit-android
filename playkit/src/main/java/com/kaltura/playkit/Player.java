@@ -191,5 +191,7 @@ public interface Player {
      * @return Player's SessionId, as a String object.
      */
     String getSessionId();
+
+    boolean isLiveStream();
 }
 
