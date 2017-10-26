@@ -163,7 +163,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private void preparePlayer(PKMediaSourceConfig sourceConfig) {
         //reset metadata on prepare.
         metadataList.clear();
-        drmSessionManager.setMediaSource(sourceConfig.mediaSource);
+
+        if (sourceConfig.mediaSource.hasDrmParams()) {
+            drmSessionManager.setMediaSource(sourceConfig.mediaSource);
+        }
 
         shouldGetTracksInfo = true;
         trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.cea608CaptionsEnabled);
