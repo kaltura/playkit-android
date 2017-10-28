@@ -25,7 +25,6 @@ android.libraryVariants.all { variant ->
 
 
 
-
 // Append short commit hash to dev builds, i.e. "dev.a1b2c3d"
 if (playkitVersion == 'dev') {
     def cmd = "git rev-parse --short HEAD"
