@@ -171,7 +171,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
         adConfig = parseConfig(config);
         adUiContainer = player.getView();
-        imaSetup();
     }
 
     private static IMAConfig parseConfig(Object config) {
@@ -239,6 +238,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         isAdDisplayed = false;
         isAllAdsCompleted = false;
         isContentEndedBeforeMidroll = false;
+        imaSetup();
         requestAdsFromIMA(adConfig.getAdTagURL());
     }
 
