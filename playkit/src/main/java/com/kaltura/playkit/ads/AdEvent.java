@@ -10,7 +10,7 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.plugins.ads;
+package com.kaltura.playkit.ads;
 
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKError;

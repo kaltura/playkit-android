@@ -21,8 +21,8 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.plugins.ads.AdCuePoints;
-import com.kaltura.playkit.plugins.ads.AdEvent;
+import com.kaltura.playkit.ads.AdCuePoints;
+import com.kaltura.playkit.ads.AdEvent;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.PKError;
 import com.npaw.youbora.plugins.PluginGeneric;
@@ -298,7 +298,7 @@ class YouboraLibraryManager extends PluginGeneric {
         messageBus.post(new YouboraEvent.YouboraReport(reportedEventName));
     }
 
-    public String generateRendition(double bitrate, int width, int height) {
+    private String generateRendition(double bitrate, int width, int height) {
 
         if ((width <= 0 || height <= 0) && bitrate <= 0) {
             return super.getRendition();
@@ -307,7 +307,7 @@ class YouboraLibraryManager extends PluginGeneric {
         }
     }
 
-    public void resetValues() {
+    private void resetValues() {
         lastReportedBitrate = super.getBitrate();
         lastReportedRendition = super.getRendition();
         lastReportedThroughput = super.getThroughput();
