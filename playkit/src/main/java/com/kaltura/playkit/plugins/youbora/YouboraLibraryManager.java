@@ -307,7 +307,7 @@ class YouboraLibraryManager extends PluginGeneric {
         }
     }
 
-    private void resetValues() {
+    public void resetValues() {
         lastReportedBitrate = super.getBitrate();
         lastReportedRendition = super.getRendition();
         lastReportedThroughput = super.getThroughput();
