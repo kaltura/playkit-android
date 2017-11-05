@@ -273,7 +273,7 @@ public class LocalAssetsManager {
     private void checkClearAssetStatus(String localAssetPath, String assetId, AssetStatusListener listener) {
         try {
             localDataStore.load(buildAssetKey(assetId));
-            listener.onStatus(localAssetPath, 0, 0, true);
+            listener.onStatus(localAssetPath, Long.MAX_VALUE, Long.MAX_VALUE, true);
         } catch (FileNotFoundException e) {
             listener.onStatus(localAssetPath, 0, 0, false);
         }
