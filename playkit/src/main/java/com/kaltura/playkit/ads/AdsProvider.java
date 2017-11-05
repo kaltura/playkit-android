@@ -10,15 +10,11 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.plugins.ads;
+package com.kaltura.playkit.ads;
 
-import com.kaltura.playkit.ads.AdEnabledPlayerController;
-import com.kaltura.playkit.ads.PKAdInfo;
-import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
 
 
 public interface AdsProvider {
-    IMAConfig getAdsConfig();
 
     void start();
     void destroyAdsManager();
