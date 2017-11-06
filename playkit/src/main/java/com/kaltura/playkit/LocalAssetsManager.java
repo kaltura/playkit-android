@@ -419,7 +419,6 @@ public class LocalAssetsManager {
          */
         LocalMediaSource(LocalDataStore localDataStore, String localPath, String assetId) {
             setId(assetId);
-            setMediaFormat(PKMediaFormat.valueOfUrl(localPath));
             setUrl(localPath);
             this.localDataStore = localDataStore;
         }
