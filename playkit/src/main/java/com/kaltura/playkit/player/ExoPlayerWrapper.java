@@ -48,7 +48,6 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
-import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaFormat;
@@ -165,7 +164,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         //reset metadata on prepare.
         metadataList.clear();
 
-        if (sourceConfig.mediaSource instanceof LocalAssetsManager.LocalMediaSource || sourceConfig.mediaSource.hasDrmParams()) {
+        if (sourceConfig.mediaSource.hasDrmParams()) {
             drmSessionManager.setMediaSource(sourceConfig.mediaSource);
         }
 

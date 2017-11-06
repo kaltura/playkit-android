@@ -27,6 +27,8 @@ import com.kaltura.playkit.player.MediaSupport;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Responsible for managing the local(offline) assets. When offline playback of the
@@ -195,7 +197,7 @@ public class LocalAssetsManager {
                                 @NonNull final String assetId, final AssetRemovalListener listener) {
 
 
-        PKDrmParams.Scheme scheme = getLocalAssetScheme(assetId);
+        PKDrmParams.Scheme scheme = getLocalAssetScheme(assetId, localDataStore);
 
         if (scheme == null) {
             removeAsset(localAssetPath, assetId, listener);
@@ -222,8 +224,8 @@ public class LocalAssetsManager {
         });
     }
 
-    public void refreshDrmAsset (@NonNull final PKMediaSource mediaSource, @NonNull final String localAssetPath,
-    @NonNull final String assetId, final AssetRegistrationListener listener) {
+    public void refreshAsset(@NonNull final PKMediaSource mediaSource, @NonNull final String localAssetPath,
+                             @NonNull final String assetId, final AssetRegistrationListener listener) {
         registerAsset(mediaSource, localAssetPath, assetId, listener);
     }
 
@@ -243,7 +245,7 @@ public class LocalAssetsManager {
     public void checkAssetStatus(@NonNull final String localAssetPath, @NonNull final String assetId,
                                  @Nullable final AssetStatusListener listener) {
 
-        PKDrmParams.Scheme scheme = getLocalAssetScheme(assetId);
+        PKDrmParams.Scheme scheme = getLocalAssetScheme(assetId, localDataStore);
         if (scheme == null) {
             checkClearAssetStatus(localAssetPath, assetId, listener);
         } else {
@@ -310,7 +312,7 @@ public class LocalAssetsManager {
     }
 
     @Nullable
-    private PKDrmParams.Scheme getLocalAssetScheme(@NonNull String assetId) {
+    private static PKDrmParams.Scheme getLocalAssetScheme(@NonNull String assetId, LocalDataStore localDataStore) {
         try {
             String mediaFormatValue = new String(localDataStore.load(buildAssetKey(assetId)));
             String[] splitFormatValue = mediaFormatValue.split(":");
@@ -387,7 +389,7 @@ public class LocalAssetsManager {
         return !(netInfo == null || !netInfo.isConnected() || !netInfo.isAvailable());
     }
 
-    private String buildAssetKey(String assetId) {
+    private static String buildAssetKey(String assetId) {
         return ASSET_ID_PREFIX + assetId;
     }
 
@@ -410,6 +412,7 @@ public class LocalAssetsManager {
      */
     public static class LocalMediaSource extends PKMediaSource {
 
+        private PKDrmParams.Scheme scheme;
         private LocalDataStore localDataStore;
 
         /**
@@ -421,6 +424,8 @@ public class LocalAssetsManager {
             setId(assetId);
             setUrl(localPath);
             this.localDataStore = localDataStore;
+
+            this.scheme = getLocalAssetScheme(assetId, localDataStore);
         }
 
         /**
@@ -430,6 +435,15 @@ public class LocalAssetsManager {
             return localDataStore;
         }
 
+        @Override
+        public boolean hasDrmParams() {
+            return this.scheme != null;
+        }
+
+        @Override
+        public List<PKDrmParams> getDrmData() {
+            return Collections.emptyList();
+        }
     }
 
     /**
