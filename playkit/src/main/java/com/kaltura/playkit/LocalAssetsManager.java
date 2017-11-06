@@ -222,15 +222,9 @@ public class LocalAssetsManager {
         });
     }
 
-    public void refreshDrmAsset(final String localAssetPath, final String assetId, final PKDrmParams drmParams, final AssetRegistrationListener listener) {
-        doInBackground(new Runnable() {
-            @Override
-            public void run() {
-                final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(drmParams.getScheme(), context, localDataStore);
-                final String licenseUri = drmParams.getLicenseUri();
-                drmAdapter.refreshAsset(localAssetPath, assetId, licenseUri, listener);
-            }
-        });
+    public void refreshDrmAsset (@NonNull final PKMediaSource mediaSource, @NonNull final String localAssetPath,
+    @NonNull final String assetId, final AssetRegistrationListener listener) {
+        registerAsset(mediaSource, localAssetPath, assetId, listener);
     }
 
     private void removeAsset(String localAssetPath, String assetId, AssetRemovalListener listener) {
