@@ -17,6 +17,7 @@ import android.view.Surface;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
@@ -52,6 +53,11 @@ public class EventLogger implements ExoPlayer.EventListener, AudioRendererEventL
     }
 
     @Override
+    public void onRepeatModeChanged(int repeatMode) {
+        
+    }
+
+    @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
 
     }
@@ -68,6 +74,11 @@ public class EventLogger implements ExoPlayer.EventListener, AudioRendererEventL
 
     @Override
     public void onPositionDiscontinuity() {
+
+    }
+
+    @Override
+    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
 
     }
 

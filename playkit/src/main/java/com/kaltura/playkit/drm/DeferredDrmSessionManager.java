@@ -84,6 +84,11 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
     }
 
     @Override
+    public boolean canAcquireSession(DrmInitData drmInitData) {
+        return drmSessionManager != null && drmSessionManager.canAcquireSession(drmInitData);
+    }
+
+    @Override
     public DrmSession<FrameworkMediaCrypto> acquireSession(Looper playbackLooper, DrmInitData drmInitData) {
         if (drmSessionManager == null) {
             return null;
@@ -134,7 +139,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
             if (psshData == null) {
                 log.w("Extraction failed. schemeData isn't a Widevine PSSH atom, so leave it unchanged.");
             } else {
-                schemeData = new DrmInitData.SchemeData(MediaSupport.WIDEVINE_UUID, schemeData.mimeType, psshData);
+                schemeData = new DrmInitData.SchemeData(MediaSupport.WIDEVINE_UUID, schemeData.type, schemeData.mimeType, psshData);
             }
         }
         return schemeData;
@@ -205,11 +210,6 @@ class SessionWrapper implements DrmSession<FrameworkMediaCrypto> {
     @Override
     public FrameworkMediaCrypto getMediaCrypto() {
         return realDrmSession.getMediaCrypto();
-    }
-
-    @Override
-    public boolean requiresSecureDecoderComponent(String mimeType) {
-        return realDrmSession.requiresSecureDecoderComponent(mimeType);
     }
 
     @Override
