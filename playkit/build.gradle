@@ -57,3 +57,10 @@ dependencies {
     androidTestCompile 'com.android.support.test:runner:0.5'
 }
 
+
+repositories {
+    maven {
+        url 'https://maven.google.com/'
+        name 'Google'
+    }
+}
