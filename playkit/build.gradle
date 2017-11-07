@@ -45,7 +45,7 @@ dependencies {
 
     // Google Cast
     compile 'com.google.android.gms:play-services-cast-framework:11.6.0'
-    compile 'com.android.support:mediarouter-v7:25.4.0'
+    compile 'com.android.support:mediarouter-v7:25.3.1'
 
     // Youbora Analytics
     compile files('lib/YouboraLib-5.3.10.jar')
@@ -57,10 +57,3 @@ dependencies {
     androidTestCompile 'com.android.support.test:runner:0.5'
 }
 
-
-repositories {
-    maven {
-        url 'https://maven.google.com/'
-        name 'Google'
-    }
-}
