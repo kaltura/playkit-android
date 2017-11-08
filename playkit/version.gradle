@@ -52,3 +52,10 @@ try {
 } catch (UnknownPluginException ignored) {
     // Ignore - it's ok not to have this plugin - it's only used for bintray uploads.
 }
+
+repositories {
+    maven {
+        url 'https://maven.google.com/'
+        name 'Google'
+    }
+}
