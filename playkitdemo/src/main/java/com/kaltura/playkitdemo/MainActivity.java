@@ -340,6 +340,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onEvent(PKEvent event) {
                 log.d("AD_CONTENT_PAUSE_REQUESTED");
+                appProgressBar.setVisibility(View.INVISIBLE);
+            }
+        }, AdEvent.Type.CONTENT_RESUME_REQUESTED);
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                log.d("AD_CONTENT_PAUSE_REQUESTED");
                 appProgressBar.setVisibility(View.VISIBLE);
             }
         }, AdEvent.Type.CONTENT_PAUSE_REQUESTED);

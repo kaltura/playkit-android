@@ -13,6 +13,7 @@
 package com.kaltura.playkit.plugins.youbora;
 
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
@@ -24,13 +25,14 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.PKError;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.BuildConfig;
 import com.npaw.youbora.youboralib.utils.Utils;
 
 import org.json.JSONException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
@@ -43,6 +45,8 @@ class YouboraLibraryManager extends PluginGeneric {
 
     private static final PKLog log = PKLog.get("YouboraLibraryManager");
     private static final String KALTURA_ANDROID = "Kaltura-Android";
+    private static final String PLAYER_ERROR_STR = "Player error occurred";
+
 
     private Player player;
     private MessageBus messageBus;
@@ -181,23 +185,42 @@ class YouboraLibraryManager extends PluginGeneric {
     private void sendErrorHandler(PKEvent event) {
 
         PlayerEvent.Error errorEvent = (PlayerEvent.Error) event;
-        String errorMsg = "Player error occurred.";
+        String errorMetadata = (errorEvent != null &&  errorEvent.error != null) ? errorEvent.error.message : PLAYER_ERROR_STR;
         PKError error = errorEvent.error;
-        if (error.cause == null) {
-            errorHandler(errorMsg, event.eventType().toString());
+        if (error.exception == null) {
+            errorHandler(errorMetadata, event.eventType().name());
             return;
         }
 
-        Exception playerErrorException = (Exception) error.cause;
-        String errorMetadata = errorMsg;
+        Exception playerErrorException = (Exception) error.exception;
         String exceptionClass = "";
         String exceptionCause = "";
+
         if (playerErrorException.getCause() != null && playerErrorException.getCause().getClass() != null) {
             exceptionClass = playerErrorException.getCause().getClass().getName();
-            errorMetadata = (playerErrorException.getCause().toString() != null) ? playerErrorException.getCause().toString() : "NA";
-            exceptionCause = playerErrorException.toString();
+            errorMetadata = (playerErrorException.getCause().toString() != null) ? playerErrorException.getCause().toString() : errorMetadata;
+        } else {
+            exceptionClass = error.exception.getClass().getName();
+            List<String> causesList = getExceptionMessageChain(playerErrorException);
+            if (causesList.isEmpty()) {
+                exceptionCause = playerErrorException.toString();
+            } else {
+                exceptionCause = causesList.get(0);
+            }
         }
+
         errorHandler(exceptionCause, exceptionClass, errorMetadata);
+    }
+
+    public static List<String> getExceptionMessageChain(Throwable throwable) {
+        List<String> result = new ArrayList();
+        while (throwable != null) {
+            if (throwable.getMessage() != null){
+                result.add(throwable.getMessage());
+            }
+            throwable = throwable.getCause();
+        }
+        return result;
     }
 
     private void onAdEvent(AdEvent event) {

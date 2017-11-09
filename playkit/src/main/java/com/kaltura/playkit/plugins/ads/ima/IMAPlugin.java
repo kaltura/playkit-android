@@ -941,13 +941,13 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
         resetFlagsOnError();
 
-        AdError cause = adErrorEvent.getError();
-        String errorMessage = cause == null ? "No error message" : cause.getMessage();
+        AdError adException = adErrorEvent.getError();
+        String errorMessage = (adException == null) ? "Unknown Error" : adException.getMessage();
         Enum errorType = PKAdErrorType.UNKNOWN_ERROR;
 
-        if (cause != null) {
+        if (adException != null) {
 
-            switch (cause.getErrorCode()) {
+            switch (adException.getErrorCode()) {
                 case INTERNAL_ERROR:
                     errorType = PKAdErrorType.INTERNAL_ERROR;
                     break;
@@ -1006,9 +1006,12 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     errorType = PKAdErrorType.PLAYLIST_NO_CONTENT_TRACKING;
                     break;
             }
+            if (errorMessage == null) {
+                errorMessage = "Error code = " + adException.getErrorCode();
+            }
         }
 
-        sendError(errorType, errorMessage, cause);
+        sendError(errorType, errorMessage, adException);
         preparePlayer(true);
     }
 
@@ -1021,9 +1024,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         cancelAdManagerTimer();
     }
 
-    private void sendError(Enum errorType, String message, Throwable cause) {
+    private void sendError(Enum errorType, String message, Throwable exception) {
         log.e("Ad Error: " + errorType.name() + " with message " + message);
-        AdEvent errorEvent = new AdEvent.Error(new PKError(errorType, message, cause));
+        AdEvent errorEvent = new AdEvent.Error(new PKError(errorType, message, exception));
         messageBus.post(errorEvent);
     }
 }
