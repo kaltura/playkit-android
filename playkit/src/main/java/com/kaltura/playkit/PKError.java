@@ -24,14 +24,14 @@ public class PKError {
     @Nullable
     public final String message;
     @Nullable
-    public final Throwable cause;
+    public final Throwable exception;
     @NonNull
     public final Enum errorType;
 
-    public PKError(@NonNull Enum errorType, @Nullable String message, @Nullable Throwable cause) {
+    public PKError(@NonNull Enum errorType, @Nullable String message, @Nullable Throwable exception) {
         this.errorType = errorType;
         this.message = message;
-        this.cause = cause;
+        this.exception = exception;
     }
 
 }
