@@ -16,5 +16,5 @@ public enum AdPositionType {
     UNKNOWN,
     PRE_ROLL,
     MID_ROLL,
-    POST_ROLL;
+    POST_ROLL
 }

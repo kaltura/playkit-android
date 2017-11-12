@@ -14,7 +14,6 @@ package com.kaltura.playkit.ads;
 
 public interface AdsProvider {
     Object getAdsConfig();
-
     void start();
     void destroyAdsManager();
     void resume();

@@ -1,124 +1,109 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ * 
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ * 
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.ads;
 
-///*
-// * ============================================================================
-// * Copyright (C) 2017 Kaltura Inc.
-// *
-// * Licensed under the AGPLv3 license, unless a different license for a
-// * particular library is specified in the applicable library path.
-// *
-// * You may obtain a copy of the License at
-// * https://www.gnu.org/licenses/agpl-3.0.html
-// * ============================================================================
-// */
-
-import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKError;
 
-import java.util.ArrayList;
-import java.util.Set;
-
+/**
+ * Created by gilad.nadav on 22/11/2016.
+ */
 
 public class AdEvent implements PKEvent {
 
-    public AdEvent.Type type;
+    public Type type;
 
-    public AdEvent(AdEvent.Type type) {
+    public AdEvent(Type type) {
         this.type = type;
-    }
-
-    public AdEvent(AdEvent.Type type, String message) {
-        this.type = type;
-    }
-
-    public static class AdRequestedEvent extends AdEvent {
-
-        public String adTagUrl;
-
-        public AdRequestedEvent(String adTagUrl) {
-            super(Type.AD_REQUESTED);
-            this.adTagUrl = adTagUrl;
-        }
-    }
-
-    public static class AdProgressUpdateEvent extends AdEvent {
-
-        public long currentPosition;
-        public long duration;
-
-        public AdProgressUpdateEvent(long currentPosition, long duration) {
-            super(Type.AD_POSITION_UPDATED);
-            this.currentPosition = currentPosition;
-            this.duration = duration;
-        }
-    }
-
-    public static class AdBreakStarted extends AdEvent {
-
-        public AdInfo adInfo;
-
-        public AdBreakStarted(AdInfo adInfo) {
-            super(Type.AD_BREAK_STARTED);
-            this.adInfo = adInfo;
-        }
-    }
-
-    public static class AdBreakEnded extends AdEvent {
-
-        public PKAdBreakEndedReason adBreakEndedReason;
-
-        public AdBreakEnded(PKAdBreakEndedReason adBreakEndedReason) {
-            super(Type.AD_BREAK_ENDED);
-            this.adBreakEndedReason = adBreakEndedReason;
-        }
     }
 
     public static class AdLoadedEvent extends AdEvent {
 
-        public AdInfo adInfo;
+        public final AdInfo adInfo;
 
         public AdLoadedEvent(AdInfo adInfo) {
-            super(Type.AD_LOADED);
+            super(Type.LOADED);
             this.adInfo = adInfo;
         }
     }
 
-    public static class AdEndedEvent extends AdEvent {
+    public static class AdStartedEvent extends AdEvent {
 
-        public PKAdEndedReason adEndedReason;
-        public AdEndedEvent(PKAdEndedReason adEndedReason) {
-            super(Type.AD_ENDED);
-            this.adEndedReason = adEndedReason;
+        public final AdInfo adInfo;
+
+        public AdStartedEvent(AdInfo adInfo) {
+            super(Type.STARTED);
+            this.adInfo = adInfo;
         }
     }
 
-    public static class AdClickEvent extends AdEvent {
+    public static class AdPausedEvent extends AdEvent {
 
-        public String advtLink;
+        public final AdInfo adInfo;
 
-        public AdClickEvent(String advtLink) {
-            super(Type.AD_CLICKED);
-            this.advtLink = advtLink;
+        public AdPausedEvent(AdInfo adInfo) {
+            super(Type.PAUSED);
+            this.adInfo = adInfo;
         }
     }
 
-    public static class CompanionAdClickEvent extends AdEvent {
+    public static class AdResumedEvent extends AdEvent {
 
-        public String advtCompanionLink;
+        public final AdInfo adInfo;
 
-        public CompanionAdClickEvent(String advtCompanionLink) {
-            super(Type.COMPANION_AD_CLICKED);
-            this.advtCompanionLink = advtCompanionLink;
+        public AdResumedEvent(AdInfo adInfo) {
+            super(Type.RESUMED);
+            this.adInfo = adInfo;
         }
     }
 
-    public static class AdCuePointsChangedEvent extends AdEvent {
+    public static class AdSkippedEvent extends AdEvent {
 
-        public AdCuePoints adCuePoints;
+        public final AdInfo adInfo;
 
-        public AdCuePointsChangedEvent(Set<Double> cuePoints) {
-            super(Type.AD_CUEPOINTS_UPDATED);
-            this.adCuePoints = new AdCuePoints(new ArrayList<Double>(cuePoints));
+        public AdSkippedEvent(AdInfo adInfo) {
+            super(Type.SKIPPED);
+            this.adInfo = adInfo;
+        }
+    }
+
+    public static class AdCuePointsUpdateEvent extends AdEvent {
+
+        public final AdCuePoints cuePoints;
+
+        public AdCuePointsUpdateEvent(AdCuePoints cuePoints) {
+            super(Type.CUEPOINTS_CHANGED);
+            this.cuePoints = cuePoints;
+        }
+    }
+
+    public static class AdPlayHeadEvent extends AdEvent {
+
+        public final long adPlayHead;
+
+        public AdPlayHeadEvent(long adPlayHead) {
+            super(Type.PLAY_HEAD_CHANGED);
+            this.adPlayHead = adPlayHead;
+        }
+    }
+
+    public static class AdRequestedEvent extends AdEvent {
+
+        public final String adTagUrl;
+
+        public AdRequestedEvent(String adTagUrl) {
+            super(Type.AD_REQUESTED);
+            this.adTagUrl = adTagUrl;
         }
     }
 
@@ -132,37 +117,35 @@ public class AdEvent implements PKEvent {
         }
     }
 
-
     public enum Type {
-        AD_BREAK_PENDING,
-        AD_BREAK_STARTED,
-        AD_BREAK_ENDED,
-        AD_BREAK_IGNORED,
-        ADS_PLAYBACK_ENDED,
-        ALL_ADS_COMPLETED,
-        AD_POSITION_UPDATED,
         AD_REQUESTED,
-        AD_CUEPOINTS_UPDATED,
-        AD_LOADED,
-        AD_STARTED,
-        AD_ENDED,
+        STARTED,
+        AD_DISPLAYED_AFTER_CONTENT_PAUSE,
+        PAUSED,
+        RESUMED,
+        COMPLETED,
         FIRST_QUARTILE,
         MIDPOINT,
         THIRD_QUARTILE,
-        AD_PAUSED,
-        AD_RESUMED,
-        AD_CLICKED,
-        COMPANION_AD_CLICKED,
-        //AD_EXPAND,
-        //AD_COLLAPSED,
-        PLAYER_STATE,
-        AD_STARTED_BUFFERING,
-        AD_PLAYBACK_READY,
-        AD_TOUCHED,
+        SKIPPED(),
+        CLICKED,
+        TAPPED,
         ICON_TAPPED,
-        ERROR_LOG, // none fatal error while player cannot play stream URL
+        AD_BREAK_READY,
+        AD_PROGRESS,
+        AD_BREAK_STARTED,
+        AD_BREAK_ENDED,
+        AD_BREAK_IGNORED,
+        CUEPOINTS_CHANGED,
+        PLAY_HEAD_CHANGED,
+        LOADED,
+        CONTENT_PAUSE_REQUESTED,
+        CONTENT_RESUME_REQUESTED,
+        ALL_ADS_COMPLETED,
+        AD_LOAD_TIMEOUT_TIMER_STARTED,
         ERROR
     }
+
 
     @Override
     public Enum eventType() {

@@ -336,30 +336,28 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
-
         Enum errorType;
-        Throwable cause;
         String errorMessage = error.getMessage();
 
         switch (error.type) {
             case ExoPlaybackException.TYPE_SOURCE:
                 errorType = PKPlayerErrorType.SOURCE_ERROR;
-                cause = error.getSourceException();
                 break;
             case ExoPlaybackException.TYPE_RENDERER:
                 errorType = PKPlayerErrorType.RENDERER_ERROR;
-                cause = error.getRendererException();
                 break;
             default:
                 errorType = PKPlayerErrorType.UNEXPECTED;
-                cause = error.getUnexpectedException();
                 break;
         }
 
-        log.e("Player error " + errorType.name());
-        currentError = new PKError(errorType, errorMessage, cause);
+        String errorStr = (errorMessage == null) ? "Player error: " + errorType.name() : errorMessage;
+        log.e(errorStr);
+        currentError = new PKError(errorType, errorStr, error);
         eventListener.onEvent(PlayerEvent.Type.ERROR);
     }
+
+
 
     @Override
     public void onPositionDiscontinuity() {
