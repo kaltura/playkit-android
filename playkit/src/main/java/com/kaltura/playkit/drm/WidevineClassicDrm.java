@@ -141,7 +141,7 @@ public class WidevineClassicDrm {
             throw new UnsupportedOperationException("Widevine Classic is not supported");
         }
 
-        mDeviceId = new DeviceUuidFactory(context).getDeviceUuid().toString();
+        mDeviceId = DeviceUuidFactory.getDeviceUuid(context).toString();
 
         mDrmManager.setOnInfoListener(new DrmManagerClient.OnInfoListener() {
             @Override
