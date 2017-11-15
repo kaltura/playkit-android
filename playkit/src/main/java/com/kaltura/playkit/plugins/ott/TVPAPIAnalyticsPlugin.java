@@ -27,6 +27,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.api.tvpapi.services.MediaMarkService;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.Locale;
 import java.util.Timer;
 
 public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
@@ -96,7 +97,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     @Override
     protected void sendAnalyticsEvent(final PhoenixActionType eventType){
         String method = eventType == PhoenixActionType.HIT ? "MediaHit": "MediaMark";
-        String action = eventType.name().toLowerCase();
+        String action = eventType.name().toLowerCase(Locale.ENGLISH);
 
         if (initObject == null) {
             return;
@@ -115,7 +116,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
-                if (response.isSuccess() && response.getResponse().toLowerCase().contains("concurrent")){
+                if (response.isSuccess() && response.getResponse().toLowerCase(Locale.ENGLISH).contains("concurrent")){
                     messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
                     messageBus.post(new TVPAPIAnalyticsEvent.TVPAPIAnalyticsReport(eventType.toString()));
                 }

@@ -285,7 +285,10 @@ public class PlayerController implements Player {
 
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
-
+        if(sourceConfig == null) {
+            log.e("source config not found. Can not prepare source.");
+            return;
+        }
         PKMediaSource source = sourceConfig.mediaSource;
         boolean shouldSwitchBetweenPlayers = shouldSwitchBetweenPlayers(source);
         if (player == null) {
