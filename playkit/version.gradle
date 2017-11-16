@@ -13,7 +13,6 @@ if (playkitVersion == 'dev') {
     ext.playkitVersion = 'dev.' + commit
 }
 
-
 // Publish to Bintray
 try {
 	apply plugin: 'bintray-release'
