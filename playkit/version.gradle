@@ -1,3 +1,6 @@
+apply plugin: 'com.github.dcendents.android-maven'
+
+
 
 // PlayKit Library Version
 ext.playkitVersion = 'dev'
@@ -10,11 +13,9 @@ if (playkitVersion == 'dev') {
     ext.playkitVersion = 'dev.' + commit
 }
 
-
 // Publish to Bintray
 try {
-    apply plugin: 'bintray-release'
-
+	apply plugin: 'bintray-release'
     publish {
         artifactId = 'playkit'
         description = 'PlayKit: Kaltura Player SDK'
