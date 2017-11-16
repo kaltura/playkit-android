@@ -35,12 +35,7 @@ fi
 
 
 # Assuming a successful playkit:build, create javadoc jar, sources jar, pom
-./gradlew playkit:publishReleasePublicationToMavenLocal
-
-# Build a better POM
-./gradlew playkit:install
-
-mv playkit/build/poms/pom-default.xml playkit/build/publications/release/pom-default.xml
+./gradlew playkit:publishMavenPublicationToMavenLocal -x mavenAndroidJavadocs
 
 # Upload
 ./gradlew playkit:bintrayUpload -PdryRun=$DRY_RUN -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY
