@@ -1,6 +1,8 @@
 apply plugin: 'com.android.library'
 apply from: 'version.gradle'
 
+
+
 android {
     compileSdkVersion 26
     buildToolsVersion "26.0.2"
