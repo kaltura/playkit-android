@@ -207,7 +207,7 @@ class YouboraLibraryManager extends PluginGeneric {
             exceptionCause = playerErrorException.toString();
         } else {
             for (String cause : causeMessages)
-                exceptionCause = causeMessages + "\n";
+                exceptionCause += causeMessages + "\n";
         }
 
         String errorCode = (errorEvent != null && errorEvent.error != null && errorEvent.error.errorType != null) ?  errorEvent.error.errorType + " - " : "";
