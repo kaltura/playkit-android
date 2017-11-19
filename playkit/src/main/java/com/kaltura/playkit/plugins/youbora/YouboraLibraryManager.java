@@ -31,8 +31,7 @@ import com.npaw.youbora.youboralib.utils.Utils;
 
 import org.json.JSONException;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
 
 import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
@@ -185,7 +184,7 @@ class YouboraLibraryManager extends PluginGeneric {
     private void sendErrorHandler(PKEvent event) {
 
         PlayerEvent.Error errorEvent = (PlayerEvent.Error) event;
-        String errorMetadata = (errorEvent != null &&  errorEvent.error != null) ? errorEvent.error.message : PLAYER_ERROR_STR;
+        String errorMetadata = (errorEvent != null && errorEvent.error != null) ? errorEvent.error.message : PLAYER_ERROR_STR;
         PKError error = errorEvent.error;
         if (error.exception == null) {
             errorHandler(errorMetadata, event.eventType().name());
@@ -200,20 +199,25 @@ class YouboraLibraryManager extends PluginGeneric {
             exceptionClass = playerErrorException.getCause().getClass().getName();
             errorMetadata = (playerErrorException.getCause().toString() != null) ? playerErrorException.getCause().toString() : errorMetadata;
         } else {
-            exceptionClass = error.exception.getClass().getName();
-            List<String> causesList = getExceptionMessageChain(playerErrorException);
-            if (causesList.isEmpty()) {
-                exceptionCause = playerErrorException.toString();
-            } else {
-                exceptionCause = causesList.get(0);
+            if (error.exception.getClass() != null) {
+                exceptionClass = error.exception.getClass().getName();
             }
         }
 
-        errorHandler(exceptionCause, exceptionClass, errorMetadata);
+        LinkedHashSet<String> causeMessages = getExceptionMessageChain(playerErrorException);
+        if (causeMessages.isEmpty()) {
+            exceptionCause = playerErrorException.toString();
+        } else {
+            for (String cause : causeMessages)
+                exceptionCause += cause + "\n";
+        }
+
+        String errorCode = (errorEvent != null && errorEvent.error != null && errorEvent.error.errorType != null) ?  errorEvent.error.errorType + " - " : "";
+        errorHandler(exceptionCause, errorCode + exceptionClass, errorMetadata);
     }
 
-    public static List<String> getExceptionMessageChain(Throwable throwable) {
-        List<String> result = new ArrayList();
+    public static LinkedHashSet<String> getExceptionMessageChain(Throwable throwable) {
+        LinkedHashSet<String> result = new LinkedHashSet();
         while (throwable != null) {
             if (throwable.getMessage() != null){
                 result.add(throwable.getMessage());
