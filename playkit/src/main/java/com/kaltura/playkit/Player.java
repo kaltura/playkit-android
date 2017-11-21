@@ -192,10 +192,20 @@ public interface Player {
      */
     String getSessionId();
 
+    /**
+     * @return - If stream is live stream
+     */
     boolean isLive();
 
+    /**
+     * @return - If stream is live and has dvr support in it
+     */
     boolean hasDvr();
 
+    /**
+     * @return - Getter for the current mediaFormat
+     * or {@link null} if the media format is not set yet
+     */
     PKMediaFormat getMediaFormat();
 }
 
