@@ -28,6 +28,7 @@ import android.view.SurfaceHolder;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
@@ -572,11 +573,19 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         return null;
     }
 
-
+    @Override
+    public boolean isLive() {
+        return false;
+    }
 
     @Override
-    public boolean isLiveStream() {
+    public boolean hasDvr() {
         return false;
+    }
+
+    @Override
+    public PKMediaFormat getMediaFormat() {
+        return PKMediaFormat.wvm;
     }
 
     @NonNull

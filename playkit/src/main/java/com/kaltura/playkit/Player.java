@@ -192,6 +192,10 @@ public interface Player {
      */
     String getSessionId();
 
-    boolean isLiveStream();
+    boolean isLive();
+
+    boolean hasDvr();
+
+    PKMediaFormat getMediaFormat();
 }
 

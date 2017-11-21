@@ -103,8 +103,18 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public boolean isLiveStream() {
-        return player != null && player.isLiveStream();
+    public boolean isLive() {
+        return player != null && player.isLive();
+    }
+
+    @Override
+    public boolean hasDvr() {
+        return player != null && player.hasDvr();
+    }
+
+    @Override
+    public PKMediaFormat getMediaFormat() {
+        return (player != null) ? player.getMediaFormat() : null;
     }
 
     interface EventListener {

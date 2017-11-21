@@ -75,4 +75,6 @@ public class Consts {
     public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH = 30000;
 
     public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC = 30;
+
+    public static final long DISTANCE_FROM_LIVE_THRESHOLD = 150000;
 }
