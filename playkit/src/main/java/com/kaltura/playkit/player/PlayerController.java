@@ -133,6 +133,15 @@ public class PlayerController implements Player {
                         String sourceUrl = sourceConfig.getUrl().toString();
                         event = new PlayerEvent.SourceSelected(sourceUrl);
                         break;
+                    case VIDEO_TRACK_CHANGED:
+                        event = new PlayerEvent.VideoTrackChanged((VideoTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_VIDEO));
+                        break;
+                    case AUDIO_TRACK_CHANGED:
+                        event = new PlayerEvent.AudioTrackChanged((AudioTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_AUDIO));
+                        break;
+                    case TEXT_TRACK_CHANGED:
+                        event = new PlayerEvent.TextTrackChanged((TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT));
+                        break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
                 }
