@@ -1,6 +1,9 @@
 package com.kaltura.playkit;
 
+import com.kaltura.playkit.player.AudioTrack;
 import com.kaltura.playkit.player.PKTracks;
+import com.kaltura.playkit.player.TextTrack;
+import com.kaltura.playkit.player.VideoTrack;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 
 import java.util.List;
@@ -120,6 +123,37 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+
+    public static class VideoTrackChanged extends PlayerEvent {
+
+        public final VideoTrack newTrack;
+
+        public VideoTrackChanged(VideoTrack newTrack) {
+            super(Type.VIDEO_TRACK_CHANGED);
+            this.newTrack = newTrack;
+        }
+    }
+
+    public static class AudioTrackChanged extends PlayerEvent {
+
+        public final AudioTrack newTrack;
+
+        public AudioTrackChanged(AudioTrack newTrack) {
+            super(Type.AUDIO_TRACK_CHANGED);
+            this.newTrack = newTrack;
+        }
+    }
+
+    public static class TextTrackChanged extends PlayerEvent {
+
+        public final TextTrack newTrack;
+
+        public TextTrackChanged(TextTrack newTrack) {
+            super(Type.TEXT_TRACK_CHANGED);
+            this.newTrack = newTrack;
+        }
+    }
+
     public final Type type;
 
     public PlayerEvent(Type type) {
@@ -144,7 +178,10 @@ public class PlayerEvent implements PKEvent {
         VOLUME_CHANGED, // Sent when volume is changed.
         STOPPED, // sent when stop player api is called
         METADATA_AVAILABLE, // Sent when there is metadata available for this entry.
-        SOURCE_SELECTED // Sent when the source was selected.
+        SOURCE_SELECTED, // Sent when the source was selected.
+        VIDEO_TRACK_CHANGED,
+        AUDIO_TRACK_CHANGED,
+        TEXT_TRACK_CHANGED
     }
 
     @Override

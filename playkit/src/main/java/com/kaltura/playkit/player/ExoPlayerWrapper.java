@@ -629,15 +629,37 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             }
 
             @Override
-            public void onTrackChanged() {
+            public void onRelease(String[] selectedTrackIds) {
+                lastSelectedTrackIds = selectedTrackIds;
+            }
+
+            @Override
+            public void onVideoTrackChanged() {
+                sendEvent(PlayerEvent.Type.VIDEO_TRACK_CHANGED);
                 sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
             }
 
             @Override
-            public void onRelease(String[] selectedTrackIds) {
-                lastSelectedTrackIds = selectedTrackIds;
+            public void onAudioTrackChanged() {
+                sendEvent(PlayerEvent.Type.AUDIO_TRACK_CHANGED);
+                sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+            }
+
+            @Override
+            public void onTextTrackChanged() {
+                sendEvent(PlayerEvent.Type.TEXT_TRACK_CHANGED);
             }
         };
+    }
+
+    @Override
+    public BaseTrack getLastSelectedTrack(int renderType) {
+        return trackSelectionHelper.getLastSelectedTrack(renderType);
+    }
+
+    @Override
+    public boolean isLiveStream() {
+        return player != null && player.isCurrentWindowDynamic();
     }
 
 }

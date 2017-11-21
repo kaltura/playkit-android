@@ -61,6 +61,7 @@ class TrackSelectionHelper {
     private List<TextTrack> textTracks = new ArrayList<>();
 
     private String[] lastSelectedTrackIds;
+    private String[] requestedChangeTrackIds = {NONE, NONE, NONE};
 
     private long currentVideoBitrate = Consts.NO_VALUE;
     private long currentAudioBitrate = Consts.NO_VALUE;
@@ -74,9 +75,13 @@ class TrackSelectionHelper {
 
         void onTracksInfoReady(PKTracks PKTracks);
 
-        void onTrackChanged();
-
         void onRelease(String[] selectedTracks);
+
+        void onVideoTrackChanged();
+
+        void onAudioTrackChanged();
+
+        void onTextTrackChanged();
     }
 
 
@@ -332,7 +337,7 @@ class TrackSelectionHelper {
         int[] uniqueTrackId = parseUniqueId(uniqueId);
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
-        lastSelectedTrackIds[rendererIndex] = uniqueId;
+        requestedChangeTrackIds[rendererIndex] = uniqueId;
 
         if (shouldDisableTextTrack(uniqueTrackId)) {
             //disable text track
@@ -447,7 +452,7 @@ class TrackSelectionHelper {
     }
 
     /**
-     * Actually doing the override acrion on the track.
+     * Actually doing the override action on the track.
      *
      * @param rendererIndex - renderer index on which we want to apply the change.
      * @param override      - the new selection with which we want to override the currently active track.
@@ -614,28 +619,68 @@ class TrackSelectionHelper {
             if ("".equals(sampleMimeType) && "".equals(containerMimeType)) {
                 continue;
             }
-            log.d("sampleMimeType = " + sampleMimeType);
-            log.d("containerMimeType = " + containerMimeType);
 
-            String auto = "";
             if ((sampleMimeType.contains(VIDEO) || containerMimeType.contains(VIDEO))) {
 
-                if (trackSelection instanceof AdaptiveTrackSelection) {
-                    auto = " Auto";
-                }
-                log.d("Selected" + auto + " video bitrate = " + trackSelection.getSelectedFormat().bitrate);
                 currentVideoBitrate = trackSelection.getSelectedFormat().bitrate;
                 currentVideoWidth = trackSelection.getSelectedFormat().width;
                 currentVideoHeight = trackSelection.getSelectedFormat().height;
             } else if ((sampleMimeType.contains(AUDIO) || containerMimeType.contains(AUDIO))) {
-                if (trackSelection instanceof AdaptiveTrackSelection) {
-                    auto = " Auto";
-                }
-                log.d("Selected" + auto + " audio bitrate = " + trackSelection.getSelectedFormat().bitrate);
                 currentAudioBitrate = trackSelection.getSelectedFormat().bitrate;
             }
         }
-        tracksInfoListener.onTrackChanged();
+        maybeNotifyAboutTrackChange();
+    }
+
+    private void maybeNotifyAboutTrackChange() {
+        if (shouldNotifyAboutTrackChanged(Consts.TRACK_TYPE_VIDEO)) {
+            lastSelectedTrackIds[Consts.TRACK_TYPE_VIDEO] = requestedChangeTrackIds[Consts.TRACK_TYPE_VIDEO];
+            tracksInfoListener.onVideoTrackChanged();
+        }
+
+        if (shouldNotifyAboutTrackChanged(Consts.TRACK_TYPE_AUDIO)) {
+            lastSelectedTrackIds[Consts.TRACK_TYPE_AUDIO] = requestedChangeTrackIds[Consts.TRACK_TYPE_AUDIO];
+            tracksInfoListener.onAudioTrackChanged();
+        }
+
+        if (shouldNotifyAboutTrackChanged(Consts.TRACK_TYPE_TEXT)) {
+            lastSelectedTrackIds[Consts.TRACK_TYPE_TEXT] = requestedChangeTrackIds[Consts.TRACK_TYPE_TEXT];
+            tracksInfoListener.onTextTrackChanged();
+        }
+    }
+
+    private boolean shouldNotifyAboutTrackChanged(int renderType) {
+        return !requestedChangeTrackIds[renderType].equals(lastSelectedTrackIds[renderType]);
+    }
+
+    BaseTrack getLastSelectedTrack(int renderType) {
+
+        switch (renderType) {
+            case Consts.TRACK_TYPE_VIDEO:
+                for (VideoTrack track : videoTracks) {
+                    if (track.getUniqueId().equals(lastSelectedTrackIds[renderType])) {
+                        return track;
+                    }
+                }
+                break;
+            case Consts.TRACK_TYPE_AUDIO:
+                for (AudioTrack track : audioTracks) {
+                    if (track.getUniqueId().equals(lastSelectedTrackIds[renderType])) {
+                        return track;
+                    }
+                }
+                break;
+            case Consts.TRACK_TYPE_TEXT:
+                for (TextTrack track : textTracks) {
+                    if (track.getUniqueId().equals(lastSelectedTrackIds[renderType])) {
+                        return track;
+                    }
+                }
+                break;
+        }
+
+        log.w("For some reason we could not found lastSelectedTrack of the specified render type = " + renderType);
+        return null;
     }
 
     void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
