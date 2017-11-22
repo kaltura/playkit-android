@@ -65,6 +65,9 @@ import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.EventLogger;
 
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,6 +80,13 @@ import static com.kaltura.playkit.utils.Consts.DISTANCE_FROM_LIVE_THRESHOLD;
 class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, MetadataRenderer.Output, BandwidthMeter.EventListener {
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
+
+    private static final CookieManager DEFAULT_COOKIE_MANAGER;
+
+    static {
+        DEFAULT_COOKIE_MANAGER = new CookieManager();
+        DEFAULT_COOKIE_MANAGER.setCookiePolicy(CookiePolicy.ACCEPT_ORIGINAL_SERVER);
+    }
 
     private DefaultBandwidthMeter bandwidthMeter;
 
@@ -129,6 +139,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         bandwidthMeter = new DefaultBandwidthMeter(mainHandler, this);
         mediaDataSourceFactory = buildDataSourceFactory(true);
         exoPlayerView = new ExoPlayerView(context);
+        if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
+            CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
+        }
     }
 
     private void initializePlayer() {
