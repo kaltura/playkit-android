@@ -72,12 +72,16 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
         }
 
         try {
-            String licenseUrl = getLicenseUrl(mediaSource);
-            drmSessionManager = DefaultDrmSessionManager.newWidevineInstance(new HttpMediaDrmCallback(licenseUrl, dataSourceFactory), null, mainHandler, this);
+            String licenseUrl = null;
             if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
                 localMediaSource = (LocalAssetsManager.LocalMediaSource) mediaSource;
+            } else {
+                licenseUrl = getLicenseUrl(mediaSource);
             }
+            drmSessionManager = DefaultDrmSessionManager.newWidevineInstance(new HttpMediaDrmCallback(licenseUrl, dataSourceFactory), null, mainHandler, this);
+            
         } catch (UnsupportedDrmException exception) {
+            
             PKError error = new PKError(PKPlayerErrorType.DRM_ERROR, "This device doesn't support widevine modular", exception);
             drmSessionListener.onError(error);
         }

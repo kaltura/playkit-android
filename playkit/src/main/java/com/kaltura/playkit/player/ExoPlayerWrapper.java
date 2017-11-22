@@ -64,6 +64,9 @@ import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.EventLogger;
 
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,6 +77,13 @@ import java.util.List;
 class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, MetadataRenderer.Output, BandwidthMeter.EventListener {
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
+
+    private static final CookieManager DEFAULT_COOKIE_MANAGER;
+
+    static {
+        DEFAULT_COOKIE_MANAGER = new CookieManager();
+        DEFAULT_COOKIE_MANAGER.setCookiePolicy(CookiePolicy.ACCEPT_ORIGINAL_SERVER);
+    }
 
     private DefaultBandwidthMeter bandwidthMeter;
 
@@ -126,6 +136,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         bandwidthMeter = new DefaultBandwidthMeter(mainHandler, this);
         mediaDataSourceFactory = buildDataSourceFactory(true);
         exoPlayerView = new ExoPlayerView(context);
+        if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
+            CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
+        }
     }
 
     private void initializePlayer() {
@@ -342,30 +355,28 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
-
         Enum errorType;
-        Throwable cause;
         String errorMessage = error.getMessage();
 
         switch (error.type) {
             case ExoPlaybackException.TYPE_SOURCE:
                 errorType = PKPlayerErrorType.SOURCE_ERROR;
-                cause = error.getSourceException();
                 break;
             case ExoPlaybackException.TYPE_RENDERER:
                 errorType = PKPlayerErrorType.RENDERER_ERROR;
-                cause = error.getRendererException();
                 break;
             default:
                 errorType = PKPlayerErrorType.UNEXPECTED;
-                cause = error.getUnexpectedException();
                 break;
         }
 
-        log.e("Player error " + errorType.name());
-        currentError = new PKError(errorType, errorMessage, cause);
+        String errorStr = (errorMessage == null) ? "Player error: " + errorType.name() : errorMessage;
+        log.e(errorStr);
+        currentError = new PKError(errorType, errorStr, error);
         eventListener.onEvent(PlayerEvent.Type.ERROR);
     }
+
+
 
     @Override
     public void onPositionDiscontinuity() {
