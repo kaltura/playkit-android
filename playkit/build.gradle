@@ -3,7 +3,6 @@ apply from: 'version.gradle'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.3"
 
     defaultConfig {
         minSdkVersion 16
@@ -38,11 +37,7 @@ dependencies {
     compile 'com.kaltura.netkit:netkit-core:1.0.5'
 
     // ExoPlayer
-    def exoVersion = '2.5.4'
-    compile "com.google.android.exoplayer:exoplayer-core:r${exoVersion}"
-    compile "com.google.android.exoplayer:exoplayer-dash:r${exoVersion}"
-    compile "com.google.android.exoplayer:exoplayer-hls:r${exoVersion}"
-    compile "com.google.android.exoplayer:exoplayer-ui:r${exoVersion}"
+    compile "com.google.android.exoplayer:exoplayer:r2.5.4"
 
     // Google Cast
     compile 'com.google.android.gms:play-services-cast-framework:11.6.0'
