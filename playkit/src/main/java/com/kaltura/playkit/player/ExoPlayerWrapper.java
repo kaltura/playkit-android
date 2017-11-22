@@ -71,8 +71,6 @@ import java.net.CookiePolicy;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.kaltura.playkit.utils.Consts.DISTANCE_FROM_LIVE_THRESHOLD;
-
 
 /**
  * Created by anton.afanasiev on 31/10/2016.
@@ -714,15 +712,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public boolean isLive() {
         return player != null && player.isCurrentWindowDynamic();
-    }
-
-    @Override
-    public boolean hasDvr() {
-        if (isLive()) {
-            long distanceFromLive = player.getDuration() - player.getCurrentPosition();
-            return (distanceFromLive > DISTANCE_FROM_LIVE_THRESHOLD) ? true : false;
-        }
-        return false;
     }
 
     @Override

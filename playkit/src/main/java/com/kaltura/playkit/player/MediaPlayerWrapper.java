@@ -579,11 +579,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public boolean hasDvr() {
-        return false;
-    }
-
-    @Override
     public PKMediaFormat getMediaFormat() {
         return PKMediaFormat.wvm;
     }

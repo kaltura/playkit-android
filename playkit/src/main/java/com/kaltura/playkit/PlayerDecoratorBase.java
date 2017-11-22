@@ -61,11 +61,6 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public boolean hasDvr() {
-        return player.hasDvr();
-    }
-
-    @Override
     public PKMediaFormat getMediaFormat() {
         return player.getMediaFormat();
     }

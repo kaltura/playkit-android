@@ -200,7 +200,5 @@ interface PlayerEngine {
 
     boolean isLive();
 
-    boolean hasDvr();
-
     PKMediaFormat getMediaFormat();
 }
