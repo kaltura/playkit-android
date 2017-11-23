@@ -19,7 +19,6 @@ import android.support.annotation.Nullable;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.drm.DrmInitData;
-import com.google.android.exoplayer2.drm.DrmInitData.SchemeData;
 import com.google.android.exoplayer2.extractor.mp4.FragmentedMp4Extractor;
 import com.google.android.exoplayer2.extractor.mp4.PsshAtomUtil;
 import com.google.android.exoplayer2.source.chunk.ChunkExtractorWrapper;
@@ -115,7 +114,7 @@ class SimpleDashParser {
         }
 
         if (drmInitData != null) {
-            SchemeData schemeInitData = getWidevineInitData(drmInitData);
+            DrmInitData.SchemeData schemeInitData = getWidevineInitData(drmInitData);
             if (schemeInitData != null) {
                 widevineInitData = schemeInitData.data;
             }
@@ -140,7 +139,7 @@ class SimpleDashParser {
             // Prior to L the Widevine CDM required data to be extracted from the PSSH atom.
             byte[] psshData = PsshAtomUtil.parseSchemeSpecificData(schemeData.data, widevineUUID);
             if (psshData != null) {
-                schemeData = new DrmInitData.SchemeData(widevineUUID, schemeData.mimeType, psshData);
+                schemeData = new DrmInitData.SchemeData(widevineUUID, schemeData.type, schemeData.mimeType, psshData);
             }
         }
         return schemeData;
