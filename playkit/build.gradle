@@ -31,13 +31,15 @@ tasks.withType(Javadoc) {
     options.addBooleanOption('Xdoclint:none', true)
 }
 
+
 dependencies {
 
+    // NetKit
     compile 'com.kaltura.netkit:netkit-core:1.0.5'
     //compile ('com.kaltura.netkit-android:netkit-core:b6175662cfae258e98a5b028363fbf0962d9c5a8')
 
-    // Google Extras
-    compile 'com.google.android.exoplayer:exoplayer:r2.3.1'
+    // ExoPlayer
+    compile "com.google.android.exoplayer:exoplayer:r2.5.4"
 
     // Google Ads
     compile 'com.google.ads.interactivemedia.v3:interactivemedia:3.7.2'
@@ -57,4 +59,3 @@ dependencies {
     testCompile "org.mockito:mockito-core:2.2.26"
     androidTestCompile 'com.android.support.test:runner:0.5'
 }
-
