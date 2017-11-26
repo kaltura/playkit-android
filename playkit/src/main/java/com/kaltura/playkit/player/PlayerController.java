@@ -109,7 +109,10 @@ public class PlayerController implements Player {
 
     @Override
     public PKMediaFormat getMediaFormat() {
-        return (player != null) ? player.getMediaFormat() : null;
+        if(sourceConfig != null) {
+            return sourceConfig.mediaSource.getMediaFormat();
+        }
+        return null;
     }
 
     interface EventListener {

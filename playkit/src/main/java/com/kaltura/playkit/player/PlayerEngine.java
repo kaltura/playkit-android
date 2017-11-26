@@ -13,7 +13,6 @@
 package com.kaltura.playkit.player;
 
 import com.kaltura.playkit.PKError;
-import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
@@ -200,5 +199,4 @@ interface PlayerEngine {
 
     boolean isLive();
 
-    PKMediaFormat getMediaFormat();
 }

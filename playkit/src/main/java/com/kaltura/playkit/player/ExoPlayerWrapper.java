@@ -36,8 +36,6 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
-import com.google.android.exoplayer2.source.dash.manifest.DashManifest;
-import com.google.android.exoplayer2.source.hls.HlsManifest;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -724,24 +722,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     public boolean isLive() {
         return player != null && player.isCurrentWindowDynamic();
 
-    }
-
-    @Override
-    public PKMediaFormat getMediaFormat() {
-        if (player != null) {
-            if (player.getCurrentManifest() instanceof HlsManifest) {
-                return PKMediaFormat.hls;
-            } else if (player.getCurrentManifest() instanceof DashManifest) {
-                return PKMediaFormat.dash;
-            } else {
-                if (player.getVideoFormat() != null) {
-                    return PKMediaFormat.mp4;
-                } else {
-                    return PKMediaFormat.mp3;
-                }
-            }
-        }
-        return null;
     }
 }
 
