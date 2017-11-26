@@ -68,6 +68,8 @@ public class Consts {
 
     public static final long MILLISECONDS_MULTIPLIER = 1000L;
 
+    public static final float MILLISECONDS_MULTIPLIER_FLOAT = 1000F;
+
     public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW = 10000;
 
     public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW_SEC = 10;
@@ -75,4 +77,6 @@ public class Consts {
     public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH = 30000;
 
     public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC = 30;
+
+    public static final int DISTANCE_FROM_LIVE_THRESHOLD = 120000; //2 Min;
 }
