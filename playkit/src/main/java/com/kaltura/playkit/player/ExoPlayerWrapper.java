@@ -719,8 +719,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     }
 
     @Override
-    public boolean isLiveStream() {
+    public boolean isLive() {
         return player != null && player.isCurrentWindowDynamic();
+
     }
 }
 

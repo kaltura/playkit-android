@@ -56,8 +56,13 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public boolean isLiveStream() {
-        return player.isLiveStream();
+    public boolean isLive() {
+        return player.isLive();
+    }
+
+    @Override
+    public PKMediaFormat getMediaFormat() {
+        return player.getMediaFormat();
     }
 
     @Override

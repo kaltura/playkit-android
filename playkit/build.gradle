@@ -49,3 +49,7 @@ dependencies {
     testImplementation "org.mockito:mockito-core:2.2.26"
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
 }
+
+repositories {
+    google()
+}
