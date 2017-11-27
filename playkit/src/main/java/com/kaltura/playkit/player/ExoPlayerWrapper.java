@@ -387,7 +387,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
         sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
-
+    }
+    
     @Override
     public void onPositionDiscontinuity(int reason) {
         log.d("onPositionDiscontinuity");
