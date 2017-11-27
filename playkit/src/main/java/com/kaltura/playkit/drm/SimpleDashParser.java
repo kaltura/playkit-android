@@ -102,7 +102,7 @@ class SimpleDashParser {
         FileDataSource initChunkSource = new FileDataSource();
         DataSpec initDataSpec = new DataSpec(initFile);
         int trigger = C.SELECTION_REASON_MANUAL;
-        ChunkExtractorWrapper extractorWrapper = new ChunkExtractorWrapper(new FragmentedMp4Extractor(), format);
+        ChunkExtractorWrapper extractorWrapper = new ChunkExtractorWrapper(new FragmentedMp4Extractor(), C.TRACK_TYPE_DEFAULT, format);
         InitializationChunk chunk = new InitializationChunk(initChunkSource, initDataSpec, format, trigger, format, extractorWrapper); // TODO why do we need the 5 -fth argument
         try {
             chunk.load();
@@ -139,7 +139,7 @@ class SimpleDashParser {
             // Prior to L the Widevine CDM required data to be extracted from the PSSH atom.
             byte[] psshData = PsshAtomUtil.parseSchemeSpecificData(schemeData.data, widevineUUID);
             if (psshData != null) {
-                schemeData = new DrmInitData.SchemeData(widevineUUID, schemeData.type, schemeData.mimeType, psshData);
+                schemeData = new DrmInitData.SchemeData(widevineUUID, schemeData.mimeType, psshData);
             }
         }
         return schemeData;
