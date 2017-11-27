@@ -26,6 +26,7 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
@@ -299,18 +300,18 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         switch (playbackState) {
-            case ExoPlayer.STATE_IDLE:
+            case Player.STATE_IDLE:
                 log.d("onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
                 if (isSeeking) {
                     isSeeking = false;
                 }
                 break;
-            case ExoPlayer.STATE_BUFFERING:
+            case Player.STATE_BUFFERING:
                 log.d("onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.BUFFERING);
                 break;
-            case ExoPlayer.STATE_READY:
+            case Player.STATE_READY:
                 log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.READY);
 
@@ -328,7 +329,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
                 }
 
                 break;
-            case ExoPlayer.STATE_ENDED:
+            case Player.STATE_ENDED:
                 log.d("onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
                 sendDistinctEvent(PlayerEvent.Type.ENDED);
@@ -347,7 +348,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
-
+        // TODO: implement if we add playlist support
     }
 
     @Override
@@ -384,18 +385,17 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     }
 
     @Override
-    public void onPositionDiscontinuity(int reason) {
-
-    }
-
-    @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
         sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
+
+    @Override
+    public void onPositionDiscontinuity(int reason) {
+        log.d("onPositionDiscontinuity");
     }
 
     @Override
     public void onSeekProcessed() {
-
+        // TODO: use this instead of STATE_READY after isSeeking.
     }
 
     @Override

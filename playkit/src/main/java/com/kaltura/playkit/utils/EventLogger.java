@@ -59,7 +59,7 @@ public class EventLogger implements ExoPlayer.EventListener, AudioRendererEventL
 
     @Override
     public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
-
+        
     }
 
     @Override
@@ -116,7 +116,6 @@ public class EventLogger implements ExoPlayer.EventListener, AudioRendererEventL
     public void onAudioSinkUnderrun(int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
 
     }
-
 
     @Override
     public void onAudioDisabled(DecoderCounters counters) {
