@@ -79,4 +79,6 @@ public class Consts {
     public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC = 30;
 
     public static final int DISTANCE_FROM_LIVE_THRESHOLD = 120000; //2 Min;
+
+    public static float DEFAULT_PITCH_RATE = 1.0f;
 }

@@ -115,6 +115,13 @@ public class PlayerController implements Player {
         return null;
     }
 
+    @Override
+    public void setPlaybackRate(float rate) {
+        if (player != null) {
+            player.setPlaybackRate(rate);
+        }
+    }
+
     interface EventListener {
         void onEvent(PlayerEvent.Type event);
     }
@@ -186,6 +193,9 @@ public class PlayerController implements Player {
                         break;
                     case TEXT_TRACK_CHANGED:
                         event = new PlayerEvent.TextTrackChanged((TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT));
+                        break;
+                    case PLAYBACK_RATE_CHANGED:
+                        event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
                         break;
                     default:
                         event = new PlayerEvent.Generic(eventType);

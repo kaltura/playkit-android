@@ -70,6 +70,8 @@ import java.net.CookiePolicy;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
+
 
 /**
  * Created by anton.afanasiev on 31/10/2016.
@@ -344,6 +346,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     }
 
     @Override
+    public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
+
+    }
+
+    @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
         log.d("onTimelineChanged");
         sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
@@ -376,16 +383,19 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         eventListener.onEvent(PlayerEvent.Type.ERROR);
     }
 
-
-
     @Override
-    public void onPositionDiscontinuity() {
-        log.d("onPositionDiscontinuity");
+    public void onPositionDiscontinuity(int reason) {
+
     }
 
     @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-        // TODO: if/when we start using ExoPlayer's speed and pitch settings, listen to this event.
+        sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
+    }
+
+    @Override
+    public void onSeekProcessed() {
+
     }
 
     @Override
@@ -721,7 +731,22 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public boolean isLive() {
         return player != null && player.isCurrentWindowDynamic();
+    }
 
+    @Override
+    public void setPlaybackRate(float rate) {
+        if (player != null) {
+            PlaybackParameters playbackParameters = new PlaybackParameters(rate, DEFAULT_PITCH_RATE);
+            player.setPlaybackParameters(playbackParameters);
+        }
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        if (player != null) {
+            return player.getPlaybackParameters().speed;
+        }
+        return 1.0f;
     }
 }
 
