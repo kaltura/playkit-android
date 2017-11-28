@@ -747,7 +747,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         if (player != null) {
             return player.getPlaybackParameters().speed;
         }
-        return 1.0f;
+        return 0.0f;
     }
 }
 
