@@ -71,6 +71,8 @@ import java.net.CookiePolicy;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
+
 
 /**
  * Created by anton.afanasiev on 31/10/2016.
@@ -383,13 +385,13 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     }
 
     @Override
+    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+        sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
+    }
+    
+    @Override
     public void onPositionDiscontinuity(int reason) {
         log.d("onPositionDiscontinuity");
-    }
-
-    @Override
-    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-        // TODO: if/when we start using ExoPlayer's speed and pitch settings, listen to this event.
     }
 
     @Override
@@ -730,7 +732,22 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public boolean isLive() {
         return player != null && player.isCurrentWindowDynamic();
+    }
 
+    @Override
+    public void setPlaybackRate(float rate) {
+        if (player != null) {
+            PlaybackParameters playbackParameters = new PlaybackParameters(rate, DEFAULT_PITCH_RATE);
+            player.setPlaybackParameters(playbackParameters);
+        }
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        if (player != null) {
+            return player.getPlaybackParameters().speed;
+        }
+        return 0.0f;
     }
 }
 

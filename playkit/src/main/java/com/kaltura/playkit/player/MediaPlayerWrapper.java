@@ -577,6 +577,16 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         return false;
     }
 
+    @Override
+    public void setPlaybackRate(float rate) {
+        log.w("setPlaybackRate is not supported since RequiresApi(api = Build.VERSION_CODES.M");
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        return 1.0f;
+    }
+
     @NonNull
     private Map<String, String> getHeadersMap() {
         Map<String, String> headersMap = new HashMap();

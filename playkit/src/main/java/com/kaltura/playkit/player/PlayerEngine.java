@@ -199,4 +199,7 @@ interface PlayerEngine {
 
     boolean isLive();
 
+    void setPlaybackRate(float rate);
+
+    float getPlaybackRate();
 }
