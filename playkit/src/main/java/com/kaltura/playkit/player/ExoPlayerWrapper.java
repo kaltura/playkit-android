@@ -192,8 +192,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         if (PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) {
             player.seekToDefaultPosition();
         }
+
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
-        player.prepare(mediaSource, !shouldResetPlayerPosition, shouldResetPlayerPosition);
+        player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
     }
 
@@ -392,7 +393,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
         sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
     }
-
+    
     @Override
     public void onPositionDiscontinuity(int reason) {
         log.d("onPositionDiscontinuity");
@@ -751,7 +752,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         if (player != null) {
             return player.getPlaybackParameters().speed;
         }
-        return 1.0f;
+        return 0.0f;
     }
 }
 
