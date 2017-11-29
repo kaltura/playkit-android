@@ -52,6 +52,7 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
@@ -188,8 +189,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         shouldGetTracksInfo = true;
         trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.cea608CaptionsEnabled);
 
+        if (PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) {
+            player.seekToDefaultPosition();
+        }
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
-        player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
+        player.prepare(mediaSource, !shouldResetPlayerPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
     }
 
@@ -388,7 +392,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
         sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
     }
-    
+
     @Override
     public void onPositionDiscontinuity(int reason) {
         log.d("onPositionDiscontinuity");
