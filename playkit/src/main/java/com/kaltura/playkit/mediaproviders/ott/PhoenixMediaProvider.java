@@ -83,7 +83,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     private static final String TAG = "PhoenixMediaProvider";
 
-    private static String  LIVE_ASST_OBJRCT_TYPE= "KalturaLinearMediaAsset";
+    private static String  LIVE_ASST_OBJRCT_TYPE = "KalturaLinearMediaAsset";
 
     private static final boolean EnableEmptyKs = true;
 
@@ -332,8 +332,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     String multiReqKs = ks;
                     return multiRequestBuilder.add(getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset)).add(getMediaAssetRequest(baseUrl, multiReqKs, referrer,mediaAsset));
             }
-
-            //return getPlaybackContextRequest(baseUrl, ks, referrer, mediaAsset);
         }
 
         /**
