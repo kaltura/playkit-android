@@ -350,7 +350,8 @@ public class PlayerController implements Player {
             return false;
         }
 
-        this.sourceConfig = new PKMediaSourceConfig(source, mediaConfig.getMediaEntry().getMediaType(), contentRequestAdapter, cea608CaptionsEnabled, useTextureView);        eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
+        this.sourceConfig = new PKMediaSourceConfig(source, mediaConfig.getMediaEntry().getMediaType(), contentRequestAdapter, cea608CaptionsEnabled, useTextureView);
+        eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
         return true;
     }
 
