@@ -39,7 +39,6 @@ import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
@@ -148,7 +147,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private void initializePlayer() {
         eventLogger = new EventLogger();
 
-        DefaultTrackSelector trackSelector = initializeTrackSelector();
+        MultiAudioTrackSelector trackSelector = initializeTrackSelector();
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildHttpDataSourceFactory(false), drmSessionListener);
         player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager);
         window = new Timeline.Window();
@@ -167,11 +166,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         }
     }
 
-    private DefaultTrackSelector initializeTrackSelector() {
+    private MultiAudioTrackSelector initializeTrackSelector() {
 
         TrackSelection.Factory trackSelectionFactory =
                 new AdaptiveTrackSelection.Factory(bandwidthMeter);
-        DefaultTrackSelector trackSelector = new DefaultTrackSelector(trackSelectionFactory);
+        MultiAudioTrackSelector trackSelector = new MultiAudioTrackSelector(trackSelectionFactory);
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, trackSelectionFactory, lastSelectedTrackIds);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
