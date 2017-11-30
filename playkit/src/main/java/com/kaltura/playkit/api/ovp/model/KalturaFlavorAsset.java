@@ -24,6 +24,7 @@ public class KalturaFlavorAsset implements FlavorAssetsFilter.Filterable {
     private int bitrate;
     private int width;
     private int height;
+    private String videoCodecId;
 
     public String getId() {
         return id;
@@ -51,6 +52,10 @@ public class KalturaFlavorAsset implements FlavorAssetsFilter.Filterable {
 
     public int getHeight() {
         return height;
+    }
+
+    public String getVideoCodecId() {
+        return videoCodecId;
     }
 
     @Override
