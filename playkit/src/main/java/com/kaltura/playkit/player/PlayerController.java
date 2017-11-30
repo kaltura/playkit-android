@@ -26,16 +26,23 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.PKTrackLanguage;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static com.kaltura.playkit.PKMediaFormat.wvm;
+import static com.kaltura.playkit.utils.Consts.AUTO_TRACK_DESCRIPTION;
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
 
 /**
  * @hide
@@ -164,7 +171,17 @@ public class PlayerController implements Player {
                        
                         break;
                     case TRACKS_AVAILABLE:
-                        event = new PlayerEvent.TracksAvailable(player.getPKTracks());
+                        PKTracks assetTracks = player.getPKTracks();
+                        mediaConfig.setPreferredAudioTrack(PKTrackLanguage.WA);
+                        if (mediaConfig.getPreferredAudioTrack() != null) {
+                            selectPreferredTrackLanguage(TRACK_TYPE_AUDIO, assetTracks, mediaConfig.getPreferredAudioTrack()); //PKTrackLanguage.SP
+                        }
+                        mediaConfig.setPreferredTextTrack(PKTrackLanguage.SD);
+                        if (mediaConfig.getPreferredTextTrack() != null) {
+                            selectPreferredTrackLanguage(TRACK_TYPE_TEXT, assetTracks, mediaConfig.getPreferredTextTrack()); //PKTrackLanguage.FR
+                        }
+                        event = new PlayerEvent.TracksAvailable(assetTracks);
+
                         break;
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());
@@ -213,6 +230,74 @@ public class PlayerController implements Player {
             }
         }
     };
+
+    private void selectPreferredTrackLanguage(int trackType, PKTracks tracks, PKTrackLanguage trackLanguage) {
+        if (tracks == null || trackLanguage == null) {
+            return;
+        }
+
+        List<TrackItem> trackItems = createTrackItemsByTrackType(tracks, trackType);
+        if (trackItems == null) {
+            return;
+        }
+
+        for(TrackItem trackItem : trackItems) {
+            if (trackLanguage.twoLettersLang.equals(trackItem.getTrackLanguage()) ||
+                    trackLanguage.threeLettersLang.equals(trackItem.getTrackLanguage())) {
+                player.changeTrack(trackItem.getUniqueId());
+                break;
+            }
+        }
+    }
+
+    private List<TrackItem> createTrackItemsByTrackType(PKTracks tracks, int trackType) {
+        List<TrackItem> trackItems = new ArrayList<>();
+        TrackItem trackItem;
+        switch (trackType) {
+            case TRACK_TYPE_VIDEO:
+                List<VideoTrack> videoTracksInfo = tracks.getVideoTracks();
+                for (int i = 0; i < videoTracksInfo.size(); i++) {
+                    VideoTrack trackInfo = videoTracksInfo.get(i);
+                    if (trackInfo.isAdaptive()) {
+                        trackItem = new TrackItem(trackInfo.getUniqueId(), AUTO_TRACK_DESCRIPTION);
+                    } else {
+                        trackItem = new TrackItem(trackInfo.getUniqueId(), String.valueOf(trackInfo.getBitrate()));
+                    }
+                    trackItems.add(trackItem);
+                }
+                break;
+            case TRACK_TYPE_AUDIO:
+                List<AudioTrack> audioTracksInfo = tracks.getAudioTracks();
+                for (int i = 0; i < audioTracksInfo.size(); i++) {
+                    AudioTrack trackInfo = audioTracksInfo.get(i);
+                    if (trackInfo.isAdaptive()) {
+                        log.e("AUTO AUDIO TRACK =" + AUTO_TRACK_DESCRIPTION + "_" + trackInfo.getLanguage());
+                        trackItem = new TrackItem(trackInfo.getUniqueId(),AUTO_TRACK_DESCRIPTION + "_" + trackInfo.getLanguage()); // + " " + AUTO_TRACK_DESCRIPTION);
+                    } else {
+                        log.e("AUDIO TRACK = " + trackInfo.getLanguage());
+
+                        trackItem = new TrackItem(trackInfo.getUniqueId(), trackInfo.getLanguage());// + " " + trackInfo.getBitrate());
+                    }
+                    trackItems.add(trackItem);
+                }
+                break;
+            case TRACK_TYPE_TEXT:
+                List<TextTrack> textTracksInfo = tracks.getTextTracks();
+                for (int i = 0; i < textTracksInfo.size(); i++) {
+                    TextTrack trackInfo = textTracksInfo.get(i);
+                    if (trackInfo.isAdaptive()) {
+                        log.e("AUTO TEXT TRACK = " + AUTO_TRACK_DESCRIPTION + "_" + trackInfo.getLanguage());
+                        trackItem = new TrackItem(trackInfo.getUniqueId(), AUTO_TRACK_DESCRIPTION);
+                    } else {
+                        log.e("TEXT TRACK = " + trackInfo.getLanguage());
+                        trackItem = new TrackItem(trackInfo.getUniqueId(),trackInfo.getLanguage());
+                    }
+                    trackItems.add(trackItem);
+                }
+                break;
+        }
+        return trackItems;
+    }
 
     private StateChangedListener stateChangedTrigger = new StateChangedListener() {
         @Override

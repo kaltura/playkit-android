@@ -17,6 +17,8 @@ package com.kaltura.playkit;
  */
 public class PKMediaConfig {
     private long startPosition = 0;
+    PKTrackLanguage preferredAudioTrack;
+    PKTrackLanguage preferredTextTrack;
     private PKMediaEntry mediaEntry;
 
     /**
@@ -41,6 +43,16 @@ public class PKMediaConfig {
         return this;
     }
 
+    public PKMediaConfig setPreferredAudioTrack(PKTrackLanguage pkTrackLanguage) {
+        this.preferredAudioTrack = pkTrackLanguage;
+        return this;
+    }
+
+    public PKMediaConfig setPreferredTextTrack(PKTrackLanguage pkTrackLanguage) {
+        this.preferredTextTrack = pkTrackLanguage;
+        return this;
+    }
+
     public PKMediaEntry getMediaEntry() {
         return mediaEntry;
     }
@@ -48,6 +60,14 @@ public class PKMediaConfig {
     public PKMediaConfig setMediaEntry(PKMediaEntry mediaEntry) {
         this.mediaEntry = mediaEntry;
         return this;
+    }
+
+    public PKTrackLanguage getPreferredAudioTrack() {
+        return preferredAudioTrack;
+    }
+
+    public PKTrackLanguage getPreferredTextTrack() {
+        return preferredTextTrack;
     }
 }
 
