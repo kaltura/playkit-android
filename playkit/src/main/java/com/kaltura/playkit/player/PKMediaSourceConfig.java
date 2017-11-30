@@ -14,6 +14,7 @@ package com.kaltura.playkit.player;
 
 import android.net.Uri;
 
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
 
@@ -22,12 +23,14 @@ import com.kaltura.playkit.PKRequestParams;
  */
 class PKMediaSourceConfig {
     PKMediaSource mediaSource;
+    PKMediaEntry.MediaEntryType mediaEntryType;
     PKRequestParams.Adapter adapter;
     boolean cea608CaptionsEnabled;
     boolean useTextureView;
 
-    PKMediaSourceConfig(PKMediaSource mediaSource, PKRequestParams.Adapter adapter, boolean cea608CaptionsEnabled, boolean useTextureView) {
+    PKMediaSourceConfig(PKMediaSource mediaSource, PKMediaEntry.MediaEntryType mediaEntryType, PKRequestParams.Adapter adapter, boolean cea608CaptionsEnabled, boolean useTextureView) {
         this.mediaSource = mediaSource;
+        this.mediaEntryType = mediaEntryType;
         this.adapter = adapter;
         this.useTextureView = useTextureView;
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
