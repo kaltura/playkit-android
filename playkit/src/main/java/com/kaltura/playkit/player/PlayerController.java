@@ -168,18 +168,18 @@ public class PlayerController implements Player {
                             }
                             isNewEntry = false;
                         }
-                       
+
                         break;
                     case TRACKS_AVAILABLE:
                         PKTracks assetTracks = player.getPKTracks();
-                        mediaConfig.setPreferredAudioTrack(PKTrackLanguage.WA);
+
                         if (mediaConfig.getPreferredAudioTrack() != null) {
                             selectPreferredTrackLanguage(TRACK_TYPE_AUDIO, assetTracks, mediaConfig.getPreferredAudioTrack()); //PKTrackLanguage.SP
                         }
-                        mediaConfig.setPreferredTextTrack(PKTrackLanguage.SD);
                         if (mediaConfig.getPreferredTextTrack() != null) {
                             selectPreferredTrackLanguage(TRACK_TYPE_TEXT, assetTracks, mediaConfig.getPreferredTextTrack()); //PKTrackLanguage.FR
                         }
+
                         event = new PlayerEvent.TracksAvailable(assetTracks);
 
                         break;
