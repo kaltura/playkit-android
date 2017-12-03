@@ -1,8 +1,7 @@
 package com.kaltura.playkit;
 
 public enum PKTrackLanguage {
-
-    UND("un","und"), // Undefined
+    NONE("none","none"), // No Lang
     AA("aa","aar"), // Afar
     AAL("NULL","aal"), // Afade
     AB("ab","abk"), // Abkhazian
@@ -590,6 +589,7 @@ public enum PKTrackLanguage {
     ZAI("NULL","zai"), // Zapotec
     ZH("zh","zho"), // Chinese
     ZU("zu","zul"); // Zulu
+    //UND("un","und"), // Undefined
 
 
     public final String twoLettersLang;

@@ -30,6 +30,10 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -127,20 +131,48 @@ public class MockMediaProvider implements MediaEntryProvider {
 
     static class MockMediaParser {
 
-        static PKMediaEntry parseMedia(JsonObject mediaObject) throws JsonSyntaxException {
+        static PKMediaEntry parseMedia(JsonObject mediaObject) {
+            String mimeType = null;
+            try {
+                JSONObject jsonObj = new JSONObject(mediaObject.toString());
+                JSONArray sources = jsonObj.getJSONArray("sources");
+                if (sources != null) {
+                    for (int i = 0; i < sources.length(); i++) {
+                        JSONObject c = sources.getJSONObject(i);
+                        mimeType = c.getString("mimeType");
+                        break;
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
             PKMediaEntry mediaEntry =  new Gson().fromJson(mediaObject, PKMediaEntry.class);
             if (mediaEntry.getMediaType() == null) {
                 mediaEntry.setMediaType(Unknown);
             }
             List<PKMediaSource> mediaSources = mediaEntry.getSources();
             for (PKMediaSource mediaSource : mediaSources) {
-                mediaSource.setMediaFormat(PKMediaFormat.valueOfUrl(mediaSource.getUrl()));
+                PKMediaFormat format = PKMediaFormat.valueOfUrl(mediaSource.getUrl());
+                if (format == null) {
+                    if (mimeType != null) {
+                        if (mimeType.equals(PKMediaFormat.dash.mimeType)) {
+                            format = PKMediaFormat.dash;
+                        } else if (mimeType.equals(PKMediaFormat.hls.mimeType)) {
+                            format = PKMediaFormat.hls;
+                        }else if (mimeType.equals(PKMediaFormat.wvm.mimeType)) {
+                            format = PKMediaFormat.wvm;
+                        } else if (mimeType.equals(PKMediaFormat.mp4.mimeType)) {
+                            format = PKMediaFormat.mp4;
+                        } else if (mimeType.equals(PKMediaFormat.mp3.mimeType)) {
+                            format = PKMediaFormat.mp3;
+                        }
+                    }
+                }
+                mediaSource.setMediaFormat(format);
             }
             return mediaEntry;
         }
-
-
-
     }
 
 

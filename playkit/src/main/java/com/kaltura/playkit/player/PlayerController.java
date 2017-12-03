@@ -172,7 +172,6 @@ public class PlayerController implements Player {
                         break;
                     case TRACKS_AVAILABLE:
                         PKTracks assetTracks = player.getPKTracks();
-
                         if (mediaConfig.getPreferredAudioTrack() != null) {
                             selectPreferredTrackLanguage(TRACK_TYPE_AUDIO, assetTracks, mediaConfig.getPreferredAudioTrack()); //PKTrackLanguage.SP
                         }
@@ -242,8 +241,11 @@ public class PlayerController implements Player {
         }
 
         for(TrackItem trackItem : trackItems) {
-            if (trackLanguage.twoLettersLang.equals(trackItem.getTrackLanguage()) ||
-                    trackLanguage.threeLettersLang.equals(trackItem.getTrackLanguage())) {
+                if (trackLanguage.twoLettersLang.equals(trackItem.getTrackLanguage()) ||
+                    (AUTO_TRACK_DESCRIPTION + "_" + trackLanguage.twoLettersLang).equals(trackItem.getTrackLanguage()) ||
+                    trackLanguage.threeLettersLang.equals(trackItem.getTrackLanguage()) ||
+                    (AUTO_TRACK_DESCRIPTION + "_" + trackLanguage.threeLettersLang).equals(trackItem.getTrackLanguage())) {
+                log.d("hanging track type " + trackType + " to " + trackLanguage.threeLettersLang);
                 player.changeTrack(trackItem.getUniqueId());
                 break;
             }
@@ -271,12 +273,12 @@ public class PlayerController implements Player {
                 for (int i = 0; i < audioTracksInfo.size(); i++) {
                     AudioTrack trackInfo = audioTracksInfo.get(i);
                     if (trackInfo.isAdaptive()) {
-                        log.e("AUTO AUDIO TRACK =" + AUTO_TRACK_DESCRIPTION + "_" + trackInfo.getLanguage());
-                        trackItem = new TrackItem(trackInfo.getUniqueId(),AUTO_TRACK_DESCRIPTION + "_" + trackInfo.getLanguage()); // + " " + AUTO_TRACK_DESCRIPTION);
+                        log.d("ADAPTIVE AUDIO TRACK = " + AUTO_TRACK_DESCRIPTION + "_" + trackInfo.getLanguage());
+                        trackItem = new TrackItem(trackInfo.getUniqueId(),AUTO_TRACK_DESCRIPTION + "_" + trackInfo.getLanguage());
                     } else {
-                        log.e("AUDIO TRACK = " + trackInfo.getLanguage());
+                        log.d("AUDIO TRACK = " + trackInfo.getLanguage());
 
-                        trackItem = new TrackItem(trackInfo.getUniqueId(), trackInfo.getLanguage());// + " " + trackInfo.getBitrate());
+                        trackItem = new TrackItem(trackInfo.getUniqueId(), trackInfo.getLanguage());
                     }
                     trackItems.add(trackItem);
                 }
@@ -286,10 +288,10 @@ public class PlayerController implements Player {
                 for (int i = 0; i < textTracksInfo.size(); i++) {
                     TextTrack trackInfo = textTracksInfo.get(i);
                     if (trackInfo.isAdaptive()) {
-                        log.e("AUTO TEXT TRACK = " + AUTO_TRACK_DESCRIPTION + "_" + trackInfo.getLanguage());
-                        trackItem = new TrackItem(trackInfo.getUniqueId(), AUTO_TRACK_DESCRIPTION);
+                        log.d("ADAPTIVE TEXT TRACK = " + AUTO_TRACK_DESCRIPTION + "_" + trackInfo.getLanguage());
+                        trackItem = new TrackItem(trackInfo.getUniqueId(), AUTO_TRACK_DESCRIPTION + "_" + trackInfo.getLanguage());
                     } else {
-                        log.e("TEXT TRACK = " + trackInfo.getLanguage());
+                        log.d("TEXT TRACK = " + trackInfo.getLanguage());
                         trackItem = new TrackItem(trackInfo.getUniqueId(),trackInfo.getLanguage());
                     }
                     trackItems.add(trackItem);
