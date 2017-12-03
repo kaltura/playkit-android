@@ -131,7 +131,7 @@ public class MockMediaProvider implements MediaEntryProvider {
 
     static class MockMediaParser {
 
-        static PKMediaEntry parseMedia(JsonObject mediaObject) throws JsonSyntaxException{
+        static PKMediaEntry parseMedia(JsonObject mediaObject) throws JsonSyntaxException {
             String mimeType = null;
             try {
                 JSONObject jsonObj = new JSONObject(mediaObject.toString());
