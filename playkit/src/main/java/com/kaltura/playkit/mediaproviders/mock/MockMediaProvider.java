@@ -13,6 +13,7 @@
 package com.kaltura.playkit.mediaproviders.mock;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -132,21 +133,6 @@ public class MockMediaProvider implements MediaEntryProvider {
     static class MockMediaParser {
 
         static PKMediaEntry parseMedia(JsonObject mediaObject) throws JsonSyntaxException {
-            String mimeType = null;
-            try {
-                JSONObject jsonObj = new JSONObject(mediaObject.toString());
-                JSONArray sources = jsonObj.getJSONArray("sources");
-                if (sources != null) {
-                    for (int i = 0; i < sources.length(); i++) {
-                        JSONObject c = sources.getJSONObject(i);
-                        mimeType = c.getString("mimeType");
-                        break;
-                    }
-                }
-            } catch (JSONException e) {
-                //e.printStackTrace();
-                PKLog.w(TAG, "Sources does not contain mime type in it - hope url extention is valid...");
-            }
 
             PKMediaEntry mediaEntry =  new Gson().fromJson(mediaObject, PKMediaEntry.class);
             if (mediaEntry.getMediaType() == null) {
@@ -156,12 +142,13 @@ public class MockMediaProvider implements MediaEntryProvider {
             for (PKMediaSource mediaSource : mediaSources) {
                 PKMediaFormat format = PKMediaFormat.valueOfUrl(mediaSource.getUrl());
                 if (format == null) {
+                    String mimeType = getMimeTypeFromJson(mediaObject);
                     if (mimeType != null) {
                         if (mimeType.equals(PKMediaFormat.dash.mimeType)) {
                             format = PKMediaFormat.dash;
                         } else if (mimeType.equals(PKMediaFormat.hls.mimeType)) {
                             format = PKMediaFormat.hls;
-                        }else if (mimeType.equals(PKMediaFormat.wvm.mimeType)) {
+                        } else if (mimeType.equals(PKMediaFormat.wvm.mimeType)) {
                             format = PKMediaFormat.wvm;
                         } else if (mimeType.equals(PKMediaFormat.mp4.mimeType)) {
                             format = PKMediaFormat.mp4;
@@ -174,6 +161,26 @@ public class MockMediaProvider implements MediaEntryProvider {
             }
             return mediaEntry;
         }
+    }
+
+    @Nullable
+    private static String getMimeTypeFromJson(JsonObject mediaObject) {
+        String mimeType = null;
+        try {
+            JSONObject jsonObj = new JSONObject(mediaObject.toString());
+            JSONArray sources = jsonObj.getJSONArray("sources");
+            if (sources != null) {
+                for (int i = 0; i < sources.length(); i++) {
+                    JSONObject sourcesJson = sources.getJSONObject(i);
+                    mimeType = sourcesJson.getString("mimeType");
+                    return mimeType;
+                }
+            }
+        } catch (JSONException e) {
+            //e.printStackTrace();
+            PKLog.w(TAG, "Sources does not contain mime type in it - hope url extention is valid...");
+        }
+        return mimeType;
     }
 
 

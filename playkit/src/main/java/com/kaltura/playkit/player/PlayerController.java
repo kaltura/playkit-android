@@ -241,7 +241,7 @@ public class PlayerController implements Player {
         }
 
         for(TrackItem trackItem : trackItems) {
-            if (trackLanguage.twoLettersLang.equals(trackItem.getTrackLanguage()) ||
+                if (trackLanguage.twoLettersLang.equals(trackItem.getTrackLanguage()) ||
                     (AUTO_TRACK_DESCRIPTION + "_" + trackLanguage.twoLettersLang).equals(trackItem.getTrackLanguage()) ||
                     trackLanguage.threeLettersLang.equals(trackItem.getTrackLanguage()) ||
                     (AUTO_TRACK_DESCRIPTION + "_" + trackLanguage.threeLettersLang).equals(trackItem.getTrackLanguage())) {
