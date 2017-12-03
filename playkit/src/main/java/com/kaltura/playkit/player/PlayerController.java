@@ -26,23 +26,16 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
-import com.kaltura.playkit.PKTrackLanguage;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import static com.kaltura.playkit.PKMediaFormat.wvm;
-import static com.kaltura.playkit.utils.Consts.AUTO_TRACK_DESCRIPTION;
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
-import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
-import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
-import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
 
 /**
  * @hide
