@@ -17,7 +17,6 @@ import android.net.Uri;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
-import com.kaltura.playkit.PKTrackLanguage;
 
 /**
  * Created by Noam Tamim @ Kaltura on 29/03/2017.
@@ -28,10 +27,10 @@ class PKMediaSourceConfig {
     PKRequestParams.Adapter adapter;
     boolean cea608CaptionsEnabled;
     boolean useTextureView;
-    PKTrackLanguage preferredAudioTrack;
-    PKTrackLanguage preferredTextTrack;
+    String preferredAudioTrack;
+    String preferredTextTrack;
 
-    PKMediaSourceConfig(PKMediaSource mediaSource, PKMediaEntry.MediaEntryType mediaEntryType, PKRequestParams.Adapter adapter, boolean cea608CaptionsEnabled, boolean useTextureView, PKTrackLanguage preferredAudioTrack, PKTrackLanguage preferredTextTrack) {
+    PKMediaSourceConfig(PKMediaSource mediaSource, PKMediaEntry.MediaEntryType mediaEntryType, PKRequestParams.Adapter adapter, boolean cea608CaptionsEnabled, boolean useTextureView, String preferredAudioTrack, String preferredTextTrack) {
         this.mediaSource = mediaSource;
         this.mediaEntryType = mediaEntryType;
         this.adapter = adapter;
