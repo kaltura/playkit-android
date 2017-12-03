@@ -17,8 +17,8 @@ package com.kaltura.playkit;
  */
 public class PKMediaConfig {
     private long startPosition = 0;
-    PKTrackLanguage preferredAudioTrack;
-    PKTrackLanguage preferredTextTrack;
+    private PKTrackLanguage preferredAudioTrack;
+    private PKTrackLanguage preferredTextTrack;
     private PKMediaEntry mediaEntry;
 
     /**
