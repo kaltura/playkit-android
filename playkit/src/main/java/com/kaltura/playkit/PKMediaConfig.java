@@ -16,8 +16,8 @@ package com.kaltura.playkit;
  * Created by Noam Tamim @ Kaltura on 22/02/2017.
  */
 public class PKMediaConfig {
-    private String preferredAudioTrack;
-    private String preferredTextTrack;
+    private PKTrackConfig preferredAudioTrackConfig;
+    private PKTrackConfig preferredTextTrackConfig;
     private long startPosition = 0;
     private PKMediaEntry mediaEntry;
 
@@ -43,13 +43,13 @@ public class PKMediaConfig {
         return this;
     }
 
-    public PKMediaConfig setPreferredAudioTrack(String preferredAudioTrack) {
-        this.preferredAudioTrack = preferredAudioTrack;
+    public PKMediaConfig setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
+        this.preferredAudioTrackConfig = preferredAudioTrackConfig;
         return this;
     }
 
-    public PKMediaConfig setPreferredTextTrack(String preferredTextTrack) {
-        this.preferredTextTrack = preferredTextTrack;
+    public PKMediaConfig setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
+        this.preferredTextTrackConfig = preferredTextTrackConfig;
         return this;
     }
 
@@ -62,12 +62,12 @@ public class PKMediaConfig {
         return this;
     }
 
-    public String getPreferredAudioTrack() {
-        return preferredAudioTrack;
+    public PKTrackConfig getPreferredAudioTrackConfig() {
+        return preferredAudioTrackConfig;
     }
 
-    public String getPreferredTextTrack() {
-        return preferredTextTrack;
+    public PKTrackConfig getPreferredTextTrackConfig() {
+        return preferredTextTrackConfig;
     }
 }
 

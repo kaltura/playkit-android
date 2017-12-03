@@ -24,6 +24,8 @@ import com.google.android.exoplayer2.trackselection.MappingTrackSelector.Selecti
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKPreferredTrackSelectionMode;
+import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ import java.util.List;
 
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
+import static java.util.Locale.getDefault;
 
 /**
  * Responsible for generating/sorting/holding and changing track info.
@@ -65,6 +68,7 @@ class TrackSelectionHelper {
 
     private static final String CEA_608 = "application/cea-608";
 
+
     private final DefaultTrackSelector selector;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
     private final TrackSelection.Factory adaptiveTrackSelectionFactory;
@@ -82,8 +86,8 @@ class TrackSelectionHelper {
     private long currentVideoWidth = Consts.NO_VALUE;
     private long currentVideoHeight = Consts.NO_VALUE;
 
-    private String preferredAudioLanguage;
-    private String preferredTextLanguage;
+    private PKTrackConfig preferredAudioLanguageConfig;
+    private PKTrackConfig preferredTextLanguageConfig;
 
     private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
 
@@ -701,51 +705,75 @@ class TrackSelectionHelper {
     }
 
     String getPreferredTrackId(int trackType) {
+        preferredTextLanguageConfig.setTrackLanguage("nld");
+        preferredTextLanguageConfig.setPreferredTrackSelectionMode(PKPreferredTrackSelectionMode.EXPLICIT);
 
+        String trackUniqueId = null;
         switch (trackType) {
             case TRACK_TYPE_AUDIO:
-                if (preferredAudioLanguage == null) {
+                if (preferredAudioLanguageConfig == null) {
                     return null;
                 }
+
+                else if (preferredTextLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.AUTO) {
+                    preferredTextLanguageConfig.setTrackLanguage(getDefault().getLanguage());
+                }
+
                 for (AudioTrack track : audioTracks) {
 
-                    if (preferredAudioLanguage.equals(track.getLanguage())) {
-                            //|| preferredAudioLanguage.threeLettersLang.equals(track.getLanguage())) {
-                        log.d("hanging track type " + trackType + " to " + preferredAudioLanguage);
-                        return track.getUniqueId();
+                    if (preferredAudioLanguageConfig.getTrackLanguage().equals(track.getLanguage())) {
+                        log.d("changing track type " + trackType + " to " + preferredAudioLanguageConfig.getTrackLanguage());
+                        trackUniqueId = track.getUniqueId();
+                        break;
                     }
                 }
+
+                if (trackUniqueId == null && audioTracks.size() > 1) {
+                    if (preferredAudioLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.AUTO) {
+                        trackUniqueId =  audioTracks.get(0).getUniqueId();
+                    }
+                }
+
                 break;
 
             case TRACK_TYPE_TEXT:
-                if (preferredTextLanguage == null) {
-                    return null;
+                if (preferredTextLanguageConfig == null || preferredTextLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.OFF) {
+                    preferredTextLanguageConfig.setTrackLanguage(NONE);
+                } else if (preferredTextLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.AUTO) {
+                    preferredTextLanguageConfig.setTrackLanguage(getDefault().getLanguage());
                 }
+
                 for (TextTrack track : textTracks) {
 
-                    if (preferredTextLanguage.equals(track.getLanguage())){
-                            //|| preferredTextLanguage.threeLettersLang.equals(track.getLanguage())) {
-                        log.d("hanging track type " + trackType + " to " + preferredTextLanguage);
-                        return track.getUniqueId();
+                    if (preferredTextLanguageConfig.getTrackLanguage().equals(track.getLanguage())){
+                        log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage() );
+                        trackUniqueId =  track.getUniqueId();
+                        break;
                     }
-
                 }
+
+                if (trackUniqueId == null && textTracks.size() > 1) {
+                    if (preferredTextLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.AUTO) {
+                        trackUniqueId =  textTracks.get(0).getUniqueId();
+                    }
+                }
+
                 break;
         }
 
-        return null;
+        return trackUniqueId;
     }
 
     void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
     }
 
-    void setPreferredAudioLanguage(String preferredAudioLanguage) {
-        this.preferredAudioLanguage = preferredAudioLanguage;
+    void setPreferredAudioLanguage(PKTrackConfig preferredAudioLanguageConfig) {
+        this.preferredAudioLanguageConfig = preferredAudioLanguageConfig;
     }
 
-    void setPreferredTextLanguage(String preferredTextLanguage) {
-        this.preferredTextLanguage = preferredTextLanguage;
+    void setPreferredTextLanguage(PKTrackConfig preferredTextLanguageConfig) {
+        this.preferredTextLanguageConfig = preferredTextLanguageConfig;
     }
 
 

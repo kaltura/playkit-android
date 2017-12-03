@@ -352,7 +352,7 @@ public class PlayerController implements Player {
             return false;
         }
 
-        this.sourceConfig = new PKMediaSourceConfig(source, mediaConfig.getMediaEntry().getMediaType(), contentRequestAdapter, cea608CaptionsEnabled, useTextureView, mediaConfig.getPreferredAudioTrack(), mediaConfig.getPreferredTextTrack());
+        this.sourceConfig = new PKMediaSourceConfig(source, mediaConfig.getMediaEntry().getMediaType(), contentRequestAdapter, cea608CaptionsEnabled, useTextureView, mediaConfig.getPreferredAudioTrackConfig(), mediaConfig.getPreferredTextTrackConfig());
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
         return true;
     }
