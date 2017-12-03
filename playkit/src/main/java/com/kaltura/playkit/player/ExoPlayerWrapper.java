@@ -73,6 +73,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
 
 /**
@@ -127,6 +129,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
+    private boolean preferredLanguageWasSelected = false;
 
 
     @Override
@@ -188,6 +191,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
         shouldGetTracksInfo = true;
         trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.cea608CaptionsEnabled);
+        trackSelectionHelper.setPreferredAudioLanguage(sourceConfig.preferredAudioTrack);
+        trackSelectionHelper.setPreferredTextLanguage(sourceConfig.preferredTextTrack);
 
         if (PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) {
             player.seekToDefaultPosition();
@@ -393,7 +398,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
         sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
     }
-    
+
     @Override
     public void onPositionDiscontinuity(int reason) {
         log.d("onPositionDiscontinuity");
@@ -536,6 +541,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             eventLogger = null;
         }
         shouldRestorePlayerToPreviousState = true;
+
     }
 
     @Override
@@ -660,6 +666,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public void stop() {
+        preferredLanguageWasSelected = false;
         if (player != null) {
             player.setPlayWhenReady(false);
             player.seekTo(0);
@@ -693,6 +700,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
                 tracks = tracksReady;
                 shouldRestorePlayerToPreviousState = false;
                 sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+                if (!preferredLanguageWasSelected) {
+                    selectPreferredTracksLanguage();
+                    preferredLanguageWasSelected = true;
+                }
             }
 
             @Override
@@ -753,6 +764,17 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             return player.getPlaybackParameters().speed;
         }
         return 0.0f;
+    }
+
+    private void selectPreferredTracksLanguage() {
+
+        for (int trackType : new int[]{TRACK_TYPE_AUDIO, TRACK_TYPE_TEXT}) {
+            String preferredLanguageId = trackSelectionHelper.getPreferredTrackId(trackType);
+            if (preferredLanguageId != null) {
+                changeTrack(preferredLanguageId);
+                log.d("preferred language selected. For track type " + trackType);
+            }
+        }
     }
 }
 

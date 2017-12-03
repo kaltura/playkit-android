@@ -24,10 +24,14 @@ import com.google.android.exoplayer2.trackselection.MappingTrackSelector.Selecti
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKTrackLanguage;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
 /**
  * Responsible for generating/sorting/holding and changing track info.
@@ -79,8 +83,11 @@ class TrackSelectionHelper {
     private long currentVideoWidth = Consts.NO_VALUE;
     private long currentVideoHeight = Consts.NO_VALUE;
 
+    private PKTrackLanguage preferredAudioLanguage;
+    private PKTrackLanguage preferredTextLanguage;
 
     private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
+
 
     interface TracksInfoListener {
 
@@ -694,8 +701,54 @@ class TrackSelectionHelper {
         return null;
     }
 
+    String getPreferredTrackId(int trackType) {
+
+        switch (trackType) {
+            case TRACK_TYPE_AUDIO:
+                if (preferredAudioLanguage == null) {
+                    return null;
+                }
+                for (AudioTrack track : audioTracks) {
+
+                    if (preferredAudioLanguage.twoLettersLang.equals(track.getLanguage()) ||
+                            preferredAudioLanguage.threeLettersLang.equals(track.getLanguage())) {
+                        log.d("hanging track type " + trackType + " to " + preferredAudioLanguage.threeLettersLang);
+                        return track.getUniqueId();
+                    }
+                }
+                break;
+
+            case TRACK_TYPE_TEXT:
+                if (preferredTextLanguage == null) {
+                    return null;
+                }
+                for (TextTrack track : textTracks) {
+
+                    if (preferredTextLanguage.twoLettersLang.equals(track.getLanguage()) ||
+                            preferredTextLanguage.threeLettersLang.equals(track.getLanguage())) {
+                        log.d("hanging track type " + trackType + " to " + preferredTextLanguage.threeLettersLang);
+                        return track.getUniqueId();
+                    }
+
+                }
+                break;
+        }
+
+        return null;
+    }
+
     void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
     }
+
+    void setPreferredAudioLanguage(PKTrackLanguage preferredAudioLanguage) {
+        this.preferredAudioLanguage = preferredAudioLanguage;
+    }
+
+    void setPreferredTextLanguage(PKTrackLanguage preferredTextLanguage) {
+        this.preferredTextLanguage = preferredTextLanguage;
+    }
+
+
 }
 

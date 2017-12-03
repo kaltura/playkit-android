@@ -117,7 +117,7 @@ public class PlayerController implements Player {
 
     @Override
     public PKMediaFormat getMediaFormat() {
-        if(sourceConfig != null) {
+        if (sourceConfig != null) {
             return sourceConfig.mediaSource.getMediaFormat();
         }
         return null;
@@ -171,16 +171,7 @@ public class PlayerController implements Player {
 
                         break;
                     case TRACKS_AVAILABLE:
-                        PKTracks assetTracks = player.getPKTracks();
-                        if (mediaConfig.getPreferredAudioTrack() != null) {
-                            selectPreferredTrackLanguage(TRACK_TYPE_AUDIO, assetTracks, mediaConfig.getPreferredAudioTrack()); //PKTrackLanguage.SP
-                        }
-                        if (mediaConfig.getPreferredTextTrack() != null) {
-                            selectPreferredTrackLanguage(TRACK_TYPE_TEXT, assetTracks, mediaConfig.getPreferredTextTrack()); //PKTrackLanguage.FR
-                        }
-
-                        event = new PlayerEvent.TracksAvailable(assetTracks);
-
+                        event = new PlayerEvent.TracksAvailable(player.getPKTracks());
                         break;
                     case VOLUME_CHANGED:
                         event = new PlayerEvent.VolumeChanged(player.getVolume());
@@ -230,76 +221,7 @@ public class PlayerController implements Player {
         }
     };
 
-    private void selectPreferredTrackLanguage(int trackType, PKTracks tracks, PKTrackLanguage trackLanguage) {
-        if (tracks == null || trackLanguage == null) {
-            return;
-        }
 
-        List<TrackItem> trackItems = createTrackItemsByTrackType(tracks, trackType);
-        if (trackItems == null) {
-            return;
-        }
-
-        for(TrackItem trackItem : trackItems) {
-                if (trackLanguage.twoLettersLang.equals(trackItem.getTrackLanguage()) ||
-                    (AUTO_TRACK_DESCRIPTION + "_" + trackLanguage.twoLettersLang).equals(trackItem.getTrackLanguage()) ||
-                    trackLanguage.threeLettersLang.equals(trackItem.getTrackLanguage()) ||
-                    (AUTO_TRACK_DESCRIPTION + "_" + trackLanguage.threeLettersLang).equals(trackItem.getTrackLanguage())) {
-                log.d("hanging track type " + trackType + " to " + trackLanguage.threeLettersLang);
-                player.changeTrack(trackItem.getUniqueId());
-                break;
-            }
-        }
-    }
-
-    private List<TrackItem> createTrackItemsByTrackType(PKTracks tracks, int trackType) {
-        List<TrackItem> trackItems = new ArrayList<>();
-        TrackItem trackItem;
-        switch (trackType) {
-            case TRACK_TYPE_VIDEO:
-                List<VideoTrack> videoTracksInfo = tracks.getVideoTracks();
-                for (int i = 0; i < videoTracksInfo.size(); i++) {
-                    VideoTrack trackInfo = videoTracksInfo.get(i);
-                    if (trackInfo.isAdaptive()) {
-                        trackItem = new TrackItem(trackInfo.getUniqueId(), AUTO_TRACK_DESCRIPTION);
-                    } else {
-                        trackItem = new TrackItem(trackInfo.getUniqueId(), String.valueOf(trackInfo.getBitrate()));
-                    }
-                    trackItems.add(trackItem);
-                }
-                break;
-            case TRACK_TYPE_AUDIO:
-                List<AudioTrack> audioTracksInfo = tracks.getAudioTracks();
-                for (int i = 0; i < audioTracksInfo.size(); i++) {
-                    AudioTrack trackInfo = audioTracksInfo.get(i);
-                    if (trackInfo.isAdaptive()) {
-                        log.d("ADAPTIVE AUDIO TRACK = " + AUTO_TRACK_DESCRIPTION + "_" + trackInfo.getLanguage());
-                        trackItem = new TrackItem(trackInfo.getUniqueId(),AUTO_TRACK_DESCRIPTION + "_" + trackInfo.getLanguage());
-                    } else {
-                        log.d("AUDIO TRACK = " + trackInfo.getLanguage());
-
-                        trackItem = new TrackItem(trackInfo.getUniqueId(), trackInfo.getLanguage());
-                    }
-                    trackItems.add(trackItem);
-                }
-                break;
-            case TRACK_TYPE_TEXT:
-                List<TextTrack> textTracksInfo = tracks.getTextTracks();
-                for (int i = 0; i < textTracksInfo.size(); i++) {
-                    TextTrack trackInfo = textTracksInfo.get(i);
-                    if (trackInfo.isAdaptive()) {
-                        log.d("ADAPTIVE TEXT TRACK = " + AUTO_TRACK_DESCRIPTION + "_" + trackInfo.getLanguage());
-                        trackItem = new TrackItem(trackInfo.getUniqueId(), AUTO_TRACK_DESCRIPTION + "_" + trackInfo.getLanguage());
-                    } else {
-                        log.d("TEXT TRACK = " + trackInfo.getLanguage());
-                        trackItem = new TrackItem(trackInfo.getUniqueId(),trackInfo.getLanguage());
-                    }
-                    trackItems.add(trackItem);
-                }
-                break;
-        }
-        return trackItems;
-    }
 
     private StateChangedListener stateChangedTrigger = new StateChangedListener() {
         @Override
@@ -396,7 +318,7 @@ public class PlayerController implements Player {
 
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
-        if(sourceConfig == null) {
+        if (sourceConfig == null) {
             log.e("source config not found. Can not prepare source.");
             return;
         }
@@ -437,7 +359,7 @@ public class PlayerController implements Player {
             return false;
         }
 
-        this.sourceConfig = new PKMediaSourceConfig(source, mediaConfig.getMediaEntry().getMediaType(), contentRequestAdapter, cea608CaptionsEnabled, useTextureView);
+        this.sourceConfig = new PKMediaSourceConfig(source, mediaConfig.getMediaEntry().getMediaType(), contentRequestAdapter, cea608CaptionsEnabled, useTextureView, mediaConfig.getPreferredAudioTrack(), mediaConfig.getPreferredTextTrack());
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
         return true;
     }

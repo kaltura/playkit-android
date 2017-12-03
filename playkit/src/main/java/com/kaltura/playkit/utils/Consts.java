@@ -81,6 +81,4 @@ public class Consts {
     public static final long DISTANCE_FROM_LIVE_THRESHOLD = 120000; //2 Min;
 
     public static float DEFAULT_PITCH_RATE = 1.0f;
-
-    public static final String AUTO_TRACK_DESCRIPTION = "Auto";
 }
