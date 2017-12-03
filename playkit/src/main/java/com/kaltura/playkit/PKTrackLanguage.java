@@ -1,5 +1,8 @@
 package com.kaltura.playkit;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum PKTrackLanguage {
     NONE("none","none"), // No Lang
     AA("aa","aar"), // Afar
@@ -594,6 +597,21 @@ public enum PKTrackLanguage {
 
     public final String twoLettersLang;
     public final String threeLettersLang;
+
+
+    private static Map<String, PKTrackLanguage> languagesLookup = new HashMap<>();
+
+    static {
+        for (PKTrackLanguage lang : values()) {
+            if (languagesLookup.get(lang.threeLettersLang) == null) {
+                languagesLookup.put(lang.threeLettersLang, lang);
+            }
+        }
+    }
+
+    public static PKTrackLanguage valueOfLanguage(String threeLettersLang) {
+        return languagesLookup.get(threeLettersLang);
+    }
 
     PKTrackLanguage(String twoLettersLang, String threeLettersLang) {
         this.twoLettersLang = twoLettersLang;
