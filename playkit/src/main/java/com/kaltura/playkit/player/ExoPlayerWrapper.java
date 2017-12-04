@@ -174,18 +174,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         TrackSelection.Factory trackSelectionFactory =
                 new AdaptiveTrackSelection.Factory(bandwidthMeter);
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(trackSelectionFactory);
-//        DefaultTrackSelector.Parameters currentParameters = trackSelector.getParameters();
-//        if (mediaSourceConfig.preferredAudioTrackConfig != null || mediaSourceConfig.preferredTextTrackConfig != null) {
-//            DefaultTrackSelector.Parameters newParameters = currentParameters;
-//            if (mediaSourceConfig.preferredAudioTrackConfig != null && mediaSourceConfig.preferredAudioTrackConfig.getTrackLanguage() != null) {
-//                currentParameters.withPreferredAudioLanguage(mediaSourceConfig.preferredAudioTrackConfig.getTrackLanguage());
-//            }
-//            if (mediaSourceConfig.preferredTextTrackConfig != null && mediaSourceConfig.preferredTextTrackConfig.getTrackLanguage() != null) {
-//                currentParameters.withPreferredTextLanguage(mediaSourceConfig.preferredTextTrackConfig.getTrackLanguage());
-//            }
-//            // Set the new parameters on the selector.
-//            trackSelector.setParameters(newParameters);
-//        }
+        DefaultTrackSelector.Parameters currentParameters = trackSelector.getParameters();
+        DefaultTrackSelector.Parameters newParameters = currentParameters.withViewportSizeFromContext(context, true);
+        trackSelector.setParameters(newParameters);
+
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, trackSelectionFactory, lastSelectedTrackIds);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
