@@ -115,7 +115,7 @@ class TrackSelectionHelper {
                          String[] lastSelectedTrackIds) {
         this.selector = selector;
         this.adaptiveTrackSelectionFactory = adaptiveTrackSelectionFactory;
-        this.lastSelectedTrackIds = lastSelectedTrackIds;
+        this.requestedChangeTrackIds = this.lastSelectedTrackIds = lastSelectedTrackIds;
     }
 
     /**
@@ -269,13 +269,6 @@ class TrackSelectionHelper {
             }
         }
 
-        if (lastSelectedTrackId.startsWith(AUDIO_PREFIX)) {
-            requestedChangeTrackIds[Consts.TRACK_TYPE_AUDIO] = lastSelectedTrackId;
-        } else if (lastSelectedTrackId.startsWith(TEXT_PREFIX)) {
-            requestedChangeTrackIds[Consts.TRACK_TYPE_TEXT] = lastSelectedTrackId;
-        } else if (lastSelectedTrackId.startsWith(VIDEO_PREFIX)) {
-            requestedChangeTrackIds[Consts.TRACK_TYPE_VIDEO] = lastSelectedTrackId;
-        }
         return defaultTrackIndex;
     }
 
