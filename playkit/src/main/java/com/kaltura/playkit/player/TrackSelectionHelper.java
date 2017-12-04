@@ -79,7 +79,7 @@ class TrackSelectionHelper {
     private List<TextTrack> textTracks = new ArrayList<>();
 
     private String[] lastSelectedTrackIds;
-    private String[] requestedChangeTrackIds = {NONE, NONE, NONE};
+    private String[] requestedChangeTrackIds;
 
     private long currentVideoBitrate = Consts.NO_VALUE;
     private long currentAudioBitrate = Consts.NO_VALUE;
