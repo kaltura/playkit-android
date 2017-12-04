@@ -91,7 +91,6 @@ class TrackSelectionHelper {
 
     private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
 
-
     interface TracksInfoListener {
 
         void onTracksInfoReady(PKTracks PKTracks);
@@ -269,7 +268,6 @@ class TrackSelectionHelper {
                 }
             }
         }
-
         return defaultTrackIndex;
     }
 
@@ -354,7 +352,6 @@ class TrackSelectionHelper {
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
         requestedChangeTrackIds[rendererIndex] = uniqueId;
-
         if (shouldDisableTextTrack(uniqueTrackId)) {
             //disable text track
             selector.setRendererDisabled(Consts.TRACK_TYPE_TEXT, true);
@@ -705,23 +702,23 @@ class TrackSelectionHelper {
     }
 
     String getPreferredTrackId(int trackType) {
-        preferredTextLanguageConfig.setTrackLanguage("nld");
+        String trackUniqueId = null;
+        preferredTextLanguageConfig.setTrackLanguage("zho");
         preferredTextLanguageConfig.setPreferredTrackSelectionMode(PKPreferredTrackSelectionMode.EXPLICIT);
 
-        String trackUniqueId = null;
+        preferredAudioLanguageConfig.setTrackLanguage(null);
+        preferredAudioLanguageConfig.setPreferredTrackSelectionMode(PKPreferredTrackSelectionMode.AUTO);
         switch (trackType) {
             case TRACK_TYPE_AUDIO:
-                if (preferredAudioLanguageConfig == null) {
+                if (preferredAudioLanguageConfig == null || preferredAudioLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.OFF) {
                     return null;
-                }
-
-                else if (preferredTextLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.AUTO) {
-                    preferredTextLanguageConfig.setTrackLanguage(getDefault().getLanguage());
+                } else if (preferredAudioLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.AUTO) {
+                    preferredAudioLanguageConfig.setTrackLanguage(getDefault().getLanguage());
                 }
 
                 for (AudioTrack track : audioTracks) {
 
-                    if (preferredAudioLanguageConfig.getTrackLanguage().equals(track.getLanguage())) {
+                    if (preferredAudioLanguageConfig.getTrackLanguage() != null && preferredAudioLanguageConfig.getTrackLanguage().equals(track.getLanguage())) {
                         log.d("changing track type " + trackType + " to " + preferredAudioLanguageConfig.getTrackLanguage());
                         trackUniqueId = track.getUniqueId();
                         break;
@@ -730,7 +727,7 @@ class TrackSelectionHelper {
 
                 if (trackUniqueId == null && audioTracks.size() > 1) {
                     if (preferredAudioLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.AUTO) {
-                        trackUniqueId =  audioTracks.get(0).getUniqueId();
+                        trackUniqueId = audioTracks.get(0).getUniqueId();
                     }
                 }
 
@@ -745,16 +742,16 @@ class TrackSelectionHelper {
 
                 for (TextTrack track : textTracks) {
 
-                    if (preferredTextLanguageConfig.getTrackLanguage().equals(track.getLanguage())){
-                        log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage() );
-                        trackUniqueId =  track.getUniqueId();
+                    if (preferredTextLanguageConfig.getTrackLanguage() != null && preferredTextLanguageConfig.getTrackLanguage().equals(track.getLanguage())){
+                        log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
+                        trackUniqueId = track.getUniqueId();
                         break;
                     }
                 }
 
                 if (trackUniqueId == null && textTracks.size() > 1) {
                     if (preferredTextLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.AUTO) {
-                        trackUniqueId =  textTracks.get(0).getUniqueId();
+                        trackUniqueId = textTracks.get(0).getUniqueId();
                     }
                 }
 
@@ -775,7 +772,5 @@ class TrackSelectionHelper {
     void setPreferredTextLanguage(PKTrackConfig preferredTextLanguageConfig) {
         this.preferredTextLanguageConfig = preferredTextLanguageConfig;
     }
-
-
 }
 

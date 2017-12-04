@@ -137,7 +137,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
     }
 
-
     ExoPlayerWrapper(Context context) {
         this.context = context;
         bandwidthMeter = new DefaultBandwidthMeter(mainHandler, this);
@@ -175,6 +174,18 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         TrackSelection.Factory trackSelectionFactory =
                 new AdaptiveTrackSelection.Factory(bandwidthMeter);
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(trackSelectionFactory);
+//        DefaultTrackSelector.Parameters currentParameters = trackSelector.getParameters();
+//        if (mediaSourceConfig.preferredAudioTrackConfig != null || mediaSourceConfig.preferredTextTrackConfig != null) {
+//            DefaultTrackSelector.Parameters newParameters = currentParameters;
+//            if (mediaSourceConfig.preferredAudioTrackConfig != null && mediaSourceConfig.preferredAudioTrackConfig.getTrackLanguage() != null) {
+//                currentParameters.withPreferredAudioLanguage(mediaSourceConfig.preferredAudioTrackConfig.getTrackLanguage());
+//            }
+//            if (mediaSourceConfig.preferredTextTrackConfig != null && mediaSourceConfig.preferredTextTrackConfig.getTrackLanguage() != null) {
+//                currentParameters.withPreferredTextLanguage(mediaSourceConfig.preferredTextTrackConfig.getTrackLanguage());
+//            }
+//            // Set the new parameters on the selector.
+//            trackSelector.setParameters(newParameters);
+//        }
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, trackSelectionFactory, lastSelectedTrackIds);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
@@ -772,7 +783,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             String preferredLanguageId = trackSelectionHelper.getPreferredTrackId(trackType);
             if (preferredLanguageId != null) {
                 changeTrack(preferredLanguageId);
-                log.d("preferred language selected. For track type " + trackType);
+                log.d("preferred language selected for track type = " + trackType);
             }
         }
     }
