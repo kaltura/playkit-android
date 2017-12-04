@@ -170,6 +170,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
                 new AdaptiveTrackSelection.Factory(bandwidthMeter);
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(trackSelectionFactory);
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, trackSelectionFactory, lastSelectedTrackIds);
+        DefaultTrackSelector.Parameters currentParameters = trackSelector.getParameters();
+        DefaultTrackSelector.Parameters newParameters = currentParameters.withViewportSizeFromContext(context, true);
+        trackSelector.setParameters(newParameters);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
         return trackSelector;
