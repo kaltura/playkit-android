@@ -711,11 +711,6 @@ class TrackSelectionHelper {
 
     String getPreferredTrackId(int trackType) {
         String trackUniqueId = null;
-        preferredTextLanguageConfig.setTrackLanguage("zho");
-        preferredTextLanguageConfig.setPreferredTrackSelectionMode(PKPreferredTrackSelectionMode.EXPLICIT);
-
-        preferredAudioLanguageConfig.setTrackLanguage(null);
-        preferredAudioLanguageConfig.setPreferredTrackSelectionMode(PKPreferredTrackSelectionMode.AUTO);
         switch (trackType) {
             case TRACK_TYPE_AUDIO:
                 if (preferredAudioLanguageConfig == null || preferredAudioLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.OFF) {
