@@ -268,6 +268,14 @@ class TrackSelectionHelper {
                 }
             }
         }
+
+        if (lastSelectedTrackId.startsWith(AUDIO_PREFIX)) {
+            requestedChangeTrackIds[Consts.TRACK_TYPE_AUDIO] = lastSelectedTrackId;
+        } else if (lastSelectedTrackId.startsWith(TEXT_PREFIX)) {
+            requestedChangeTrackIds[Consts.TRACK_TYPE_TEXT] = lastSelectedTrackId;
+        } else if (lastSelectedTrackId.startsWith(VIDEO_PREFIX)) {
+            requestedChangeTrackIds[Consts.TRACK_TYPE_VIDEO] = lastSelectedTrackId;
+        }
         return defaultTrackIndex;
     }
 
@@ -730,9 +738,7 @@ class TrackSelectionHelper {
                         trackUniqueId = audioTracks.get(0).getUniqueId();
                     }
                 }
-
                 break;
-
             case TRACK_TYPE_TEXT:
                 if (preferredTextLanguageConfig == null || preferredTextLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.OFF) {
                     preferredTextLanguageConfig.setTrackLanguage(NONE);
@@ -754,10 +760,8 @@ class TrackSelectionHelper {
                         trackUniqueId = textTracks.get(0).getUniqueId();
                     }
                 }
-
                 break;
         }
-
         return trackUniqueId;
     }
 
