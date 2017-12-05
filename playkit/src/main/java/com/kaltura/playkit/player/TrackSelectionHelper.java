@@ -736,7 +736,7 @@ class TrackSelectionHelper {
         String trackUniqueId = null;
         switch (trackType) {
             case TRACK_TYPE_AUDIO:
-                if (preferredAudioLanguageConfig == null || preferredAudioLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.OFF) {
+                if (preferredAudioLanguageConfig == null ||  preferredAudioLanguageConfig.getPreferredTrackSelectionMode() == null || preferredAudioLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.OFF) {
                     return null;
                 } else if (preferredAudioLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.AUTO) {
                     preferredAudioLanguageConfig.setTrackLanguage(getDefault().getLanguage());
@@ -758,7 +758,7 @@ class TrackSelectionHelper {
                 }
                 break;
             case TRACK_TYPE_TEXT:
-                if (preferredTextLanguageConfig == null || preferredTextLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.OFF) {
+                if (preferredTextLanguageConfig == null || preferredTextLanguageConfig.getPreferredTrackSelectionMode() == null || preferredTextLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.OFF) {
                     preferredTextLanguageConfig.setTrackLanguage(NONE);
                 } else if (preferredTextLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.AUTO) {
                     preferredTextLanguageConfig.setTrackLanguage(getDefault().getLanguage());
