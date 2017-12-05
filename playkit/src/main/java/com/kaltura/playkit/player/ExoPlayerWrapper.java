@@ -118,6 +118,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private boolean shouldRestorePlayerToPreviousState = false;
 
     private int playerWindow;
+    private float rate = Consts.DEFAULT_PLAYBACK_SPEED;
     private long playerPosition = Consts.TIME_UNSET;
     private Timeline.Window window;
     private boolean shouldGetTracksInfo;
@@ -552,6 +553,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         log.d("resume");
         if (player == null) {
             initializePlayer();
+            setPlaybackRate(rate);
         }
         if (playerPosition == Consts.TIME_UNSET) {
             player.seekToDefaultPosition(playerWindow);
@@ -670,6 +672,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void stop() {
         preferredLanguageWasSelected = false;
+        rate = Consts.DEFAULT_PLAYBACK_SPEED;
         if (player != null) {
             player.setPlayWhenReady(false);
             player.seekTo(0);
@@ -755,6 +758,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public void setPlaybackRate(float rate) {
+        this.rate = rate;
         if (player != null) {
             PlaybackParameters playbackParameters = new PlaybackParameters(rate, DEFAULT_PITCH_RATE);
             player.setPlaybackParameters(playbackParameters);
