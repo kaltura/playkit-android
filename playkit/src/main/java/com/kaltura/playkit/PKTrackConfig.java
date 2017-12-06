@@ -17,11 +17,7 @@ import android.support.annotation.NonNull;
 public class PKTrackConfig {
 
     private String trackLanguage;
-    private PKPreferredTrackSelectionMode preferredTrackSelectionMode;
-
-    public PKTrackConfig() {
-        preferredTrackSelectionMode = PKPreferredTrackSelectionMode.OFF;
-    }
+    private PKPreferredTrackSelectionMode preferredTrackSelectionMode = PKPreferredTrackSelectionMode.OFF;
 
     public String getTrackLanguage() {
         return trackLanguage;
@@ -36,6 +32,11 @@ public class PKTrackConfig {
         return this;
     }
 
+    /**
+     * Set preferred Track Selection Mode. Can not be null.
+     * @param preferredTrackSelectionMode - the preferred mode.
+     * @return - {@link PKTrackConfig}
+     */
     public PKTrackConfig setPreferredTrackSelectionMode(@NonNull PKPreferredTrackSelectionMode preferredTrackSelectionMode) {
         this.preferredTrackSelectionMode = preferredTrackSelectionMode;
         return this;
