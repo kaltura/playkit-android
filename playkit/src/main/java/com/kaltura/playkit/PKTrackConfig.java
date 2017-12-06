@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit;
 
+import android.support.annotation.NonNull;
+
 public class PKTrackConfig {
 
     private String trackLanguage;
@@ -34,7 +36,7 @@ public class PKTrackConfig {
         return this;
     }
 
-    public PKTrackConfig setPreferredTrackSelectionMode(PKPreferredTrackSelectionMode preferredTrackSelectionMode) {
+    public PKTrackConfig setPreferredTrackSelectionMode(@NonNull PKPreferredTrackSelectionMode preferredTrackSelectionMode) {
         this.preferredTrackSelectionMode = preferredTrackSelectionMode;
         return this;
     }
