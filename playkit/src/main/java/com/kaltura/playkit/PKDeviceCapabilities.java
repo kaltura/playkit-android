@@ -354,6 +354,8 @@ public class PKDeviceCapabilities {
         response.put("properties", props);
         response.put("events", mediaDrmEvents);
 
+        mediaDrm.release();
+        
         return response;
     }
 
