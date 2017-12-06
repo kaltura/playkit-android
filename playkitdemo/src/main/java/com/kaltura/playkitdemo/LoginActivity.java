@@ -325,7 +325,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         if(loginResult.error == null){
                             DemoSessionProvider.getSessionProvider().setKs(loginResult.getKs());
                         }
-                        getResources().getString(com.kaltura.playkit.R.string.mock_url);
+                        getResources().getString(R.string.mock_url);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
