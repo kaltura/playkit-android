@@ -17,6 +17,10 @@ public class PKTrackConfig {
     private String trackLanguage;
     private PKPreferredTrackSelectionMode preferredTrackSelectionMode;
 
+    public PKTrackConfig() {
+        preferredTrackSelectionMode = PKPreferredTrackSelectionMode.OFF;
+    }
+
     public String getTrackLanguage() {
         return trackLanguage;
     }
