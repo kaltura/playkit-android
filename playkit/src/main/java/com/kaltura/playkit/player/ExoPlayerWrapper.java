@@ -102,6 +102,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private ExoPlayerView exoPlayerView;
 
     private PKTracks tracks;
+    private Timeline.Window window;
     private TrackSelectionHelper trackSelectionHelper;
     private DeferredDrmSessionManager drmSessionManager;
 
@@ -113,24 +114,24 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private Handler mainHandler = new Handler(Looper.getMainLooper());
     private PKError currentError = null;
 
+    private boolean shouldGetTracksInfo;
+    private boolean shouldResetPlayerPosition;
     private boolean isSeeking = false;
     private boolean useTextureView = false;
+    private boolean preferredLanguageWasSelected = false;
     private boolean shouldRestorePlayerToPreviousState = false;
 
     private int playerWindow;
-    private float lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_SPEED;
     private long playerPosition = Consts.TIME_UNSET;
-    private Timeline.Window window;
-    private boolean shouldGetTracksInfo;
-    private boolean shouldResetPlayerPosition;
+
+    private float lastKnownVolume = Consts.DEFAULT_VOLUME;
+    private float lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_SPEED;
+
     private List<PKMetadata> metadataList = new ArrayList<>();
-
-
     private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
-    private boolean preferredLanguageWasSelected = false;
 
 
     @Override
@@ -553,6 +554,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         log.d("resume");
         if (player == null) {
             initializePlayer();
+            setVolume(lastKnownVolume);
             setPlaybackRate(lastKnownPlaybackRate);
         }
         if (playerPosition == Consts.TIME_UNSET) {
@@ -629,15 +631,14 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             log.w("Attempt to invoke 'setVolume()' on null instance of the exoplayer");
             return;
         }
-
-        if (volume < 0) {
-            volume = 0;
-        } else if (volume > 1) {
-            volume = 1;
+        this.lastKnownVolume = volume;
+        if (lastKnownVolume < 0) {
+            lastKnownVolume = 0;
+        } else if (lastKnownVolume > 1) {
+            lastKnownVolume = 1;
         }
-
         if (volume != player.getVolume()) {
-            player.setVolume(volume);
+            player.setVolume(lastKnownVolume);
             sendEvent(PlayerEvent.Type.VOLUME_CHANGED);
         }
     }
@@ -672,6 +673,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void stop() {
         preferredLanguageWasSelected = false;
+        lastKnownVolume = Consts.DEFAULT_VOLUME;
         lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_SPEED;
         if (player != null) {
             player.setPlayWhenReady(false);

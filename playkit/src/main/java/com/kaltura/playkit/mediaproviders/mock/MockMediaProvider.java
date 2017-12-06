@@ -109,7 +109,7 @@ public class MockMediaProvider implements MediaEntryProvider {
     private PKMediaEntry getFromFile() throws IOException {
         JsonParser parser = new JsonParser();
 
-        if(context != null){
+        if (context != null) {
             JsonReader jsonReader = new JsonReader(new InputStreamReader(context.getAssets().open(inputFile)));
             inputJson = parser.parse(jsonReader).getAsJsonObject();
         } else {
@@ -119,7 +119,7 @@ public class MockMediaProvider implements MediaEntryProvider {
         return getFromJson(inputJson);
     }
 
-    private PKMediaEntry getFromJson(JsonObject data)  throws JsonSyntaxException{
+    private PKMediaEntry getFromJson(JsonObject data) throws JsonSyntaxException {
         if (data.has(id)) { // data holds multiple entry objects
             return MockMediaParser.parseMedia(data.getAsJsonObject(id));
 
@@ -134,7 +134,7 @@ public class MockMediaProvider implements MediaEntryProvider {
 
         static PKMediaEntry parseMedia(JsonObject mediaObject) throws JsonSyntaxException {
 
-            PKMediaEntry mediaEntry =  new Gson().fromJson(mediaObject, PKMediaEntry.class);
+            PKMediaEntry mediaEntry = new Gson().fromJson(mediaObject, PKMediaEntry.class);
             if (mediaEntry.getMediaType() == null) {
                 mediaEntry.setMediaType(Unknown);
             }
@@ -169,12 +169,10 @@ public class MockMediaProvider implements MediaEntryProvider {
         try {
             JSONObject jsonObj = new JSONObject(mediaObject.toString());
             JSONArray sources = jsonObj.getJSONArray("sources");
-            if (sources != null) {
-                for (int i = 0; i < sources.length(); i++) {
-                    JSONObject sourcesJson = sources.getJSONObject(i);
-                    mimeType = sourcesJson.getString("mimeType");
-                    return mimeType;
-                }
+            if (sources != null && sources.length() > 0) {
+                JSONObject sourcesJson = sources.getJSONObject(0);
+                mimeType = sourcesJson.getString("mimeType");
+                return mimeType;
             }
         } catch (JSONException e) {
             //e.printStackTrace();
