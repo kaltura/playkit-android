@@ -14,6 +14,7 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="mock_url">12345</string>
     <string name="video">Video</string>
     <string name="audio">Audio</string>
     <string name="cc">CC</string>
