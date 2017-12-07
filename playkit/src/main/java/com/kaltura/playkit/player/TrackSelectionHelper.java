@@ -773,6 +773,8 @@ class TrackSelectionHelper {
                     }
                 }
                 break;
+            default:
+                break;
         }
         return null;
     }
