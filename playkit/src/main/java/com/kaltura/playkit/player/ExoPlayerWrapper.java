@@ -781,6 +781,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             String preferredLanguageId = trackSelectionHelper.getPreferredTrackId(trackType);
             if (preferredLanguageId != null) {
                 changeTrack(preferredLanguageId);
+                if (trackType == TRACK_TYPE_AUDIO) {
+                    sendEvent(PlayerEvent.Type.AUDIO_TRACK_CHANGED);
+                } else {
+                    sendEvent(PlayerEvent.Type.TEXT_TRACK_CHANGED);
+                }
                 log.d("preferred language selected for track type = " + trackType);
             }
         }
