@@ -196,8 +196,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
         shouldGetTracksInfo = true;
         trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.cea608CaptionsEnabled);
-        trackSelectionHelper.setPreferredAudioLanguage(sourceConfig.preferredAudioTrackConfig);
-        trackSelectionHelper.setPreferredTextLanguage(sourceConfig.preferredTextTrackConfig);
+        trackSelectionHelper.setPreferredAudioLanguageConfig(sourceConfig.preferredAudioTrackConfig);
+        trackSelectionHelper.setPreferredTextLanguageConfig(sourceConfig.preferredTextTrackConfig);
 
         if (PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) {
             player.seekToDefaultPosition();

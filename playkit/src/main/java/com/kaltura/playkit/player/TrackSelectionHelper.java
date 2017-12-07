@@ -24,7 +24,6 @@ import com.google.android.exoplayer2.trackselection.MappingTrackSelector.Selecti
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKPreferredTrackSelectionMode;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.utils.Consts;
 
@@ -34,7 +33,6 @@ import java.util.List;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
-import static java.util.Locale.getDefault;
 
 /**
  * Responsible for generating/sorting/holding and changing track info.
@@ -733,62 +731,75 @@ class TrackSelectionHelper {
         return null;
     }
 
+    /**
+     * Helper method which return the uniqueId of the preferred audio/text track. Base on user selection and/or
+     * predefined requirements.
+     * @param trackType - the type of the track we are looking for (audio/text).
+     * @return - uniqueId of the preferred track.
+     * If no preferred AudioTrack exist or user defined to use AUTO/OFF will return null.
+     * In case of TextTrack if no preferred track exist will return null. But if user defined AUTO/OFF will return uniqueId of
+     * the "disabled" text track.
+     */
     String getPreferredTrackId(int trackType) {
-        String trackUniqueId = null;
+
         switch (trackType) {
             case TRACK_TYPE_AUDIO:
-                if (preferredAudioLanguageConfig == null || preferredAudioLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.OFF) {
+                //When preferredLanguageConfig not specified or SelectionMode is OFF or AUTO do not apply change track logic.
+                //Exoplayer will select the default by himself.
+                if (preferredAudioLanguageConfig == null
+                        || preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.OFF
+                        || preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO) {
                     return null;
-                } else if (preferredAudioLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.AUTO) {
-                    preferredAudioLanguageConfig.setTrackLanguage(getDefault().getLanguage());
                 }
 
                 for (AudioTrack track : audioTracks) {
 
                     if (preferredAudioLanguageConfig.getTrackLanguage() != null && preferredAudioLanguageConfig.getTrackLanguage().equals(track.getLanguage())) {
                         log.d("changing track type " + trackType + " to " + preferredAudioLanguageConfig.getTrackLanguage());
-                        trackUniqueId = track.getUniqueId();
-                        break;
+                        return track.getUniqueId();
                     }
                 }
 
-                if (trackUniqueId == null && audioTracks.size() > 1 && preferredAudioLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.AUTO) {
-                    trackUniqueId = audioTracks.get(0).getUniqueId();
-                }
                 break;
             case TRACK_TYPE_TEXT:
-                if (preferredTextLanguageConfig == null || preferredTextLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.OFF) {
-                    preferredTextLanguageConfig.setTrackLanguage(NONE);
-                } else if (preferredTextLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.AUTO) {
-                    preferredTextLanguageConfig.setTrackLanguage(getDefault().getLanguage());
+                //When preferredLanguageConfig not specified or SelectionMode is OFF or AUTO and there are available text tracks
+                //set the default text track to be "disabled".
+                if (preferredTextLanguageConfig == null
+                        || preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.OFF
+                        || preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO) {
+
+                    if (!textTracks.isEmpty()) {
+                        //Return the first text track which is "text track disabled"
+                        return textTracks.get(0).getUniqueId();
+                    } else {
+                        //Return null, so the change track logic won`t happen.
+                        return null;
+                    }
                 }
 
                 for (TextTrack track : textTracks) {
 
                     if (preferredTextLanguageConfig.getTrackLanguage() != null && preferredTextLanguageConfig.getTrackLanguage().equals(track.getLanguage())) {
                         log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
-                        trackUniqueId = track.getUniqueId();
-                        break;
+                        return track.getUniqueId();
                     }
                 }
 
-                if (trackUniqueId == null && textTracks.size() > 1 && preferredTextLanguageConfig.getPreferredTrackSelectionMode() == PKPreferredTrackSelectionMode.AUTO) {
-                    trackUniqueId = textTracks.get(0).getUniqueId();
-                }
                 break;
         }
-        return trackUniqueId;
+
+        return null;
     }
 
     void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
     }
 
-    void setPreferredAudioLanguage(PKTrackConfig preferredAudioLanguageConfig) {
+    void setPreferredAudioLanguageConfig(PKTrackConfig preferredAudioLanguageConfig) {
         this.preferredAudioLanguageConfig = preferredAudioLanguageConfig;
     }
 
-    void setPreferredTextLanguage(PKTrackConfig preferredTextLanguageConfig) {
+    void setPreferredTextLanguageConfig(PKTrackConfig preferredTextLanguageConfig) {
         this.preferredTextLanguageConfig = preferredTextLanguageConfig;
     }
 }
