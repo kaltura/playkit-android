@@ -16,18 +16,12 @@ package com.kaltura.playkit;
  * Created by Noam Tamim @ Kaltura on 22/02/2017.
  */
 public class PKMediaConfig {
+
     private long startPosition = 0;
     private PKMediaEntry mediaEntry;
+    private PKTrackConfig preferredTextTrackConfig;
+    private PKTrackConfig preferredAudioTrackConfig;
 
-    /**
-     * Getter for start position. Default is 0.
-     * Note, that start position is in seconds.
-     *
-     * @return - the start position
-     */
-    public long getStartPosition() {
-        return startPosition;
-    }
 
     /**
      * Setter for start position.
@@ -41,13 +35,41 @@ public class PKMediaConfig {
         return this;
     }
 
+    public PKMediaConfig setMediaEntry(PKMediaEntry mediaEntry) {
+        this.mediaEntry = mediaEntry;
+        return this;
+    }
+
+    public PKMediaConfig setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
+        this.preferredAudioTrackConfig = preferredAudioTrackConfig;
+        return this;
+    }
+
+    public PKMediaConfig setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
+        this.preferredTextTrackConfig = preferredTextTrackConfig;
+        return this;
+    }
+
+    /**
+     * Getter for start position. Default is 0.
+     * Note, that start position is in seconds.
+     *
+     * @return - the start position
+     */
+    public long getStartPosition() {
+        return startPosition;
+    }
+
     public PKMediaEntry getMediaEntry() {
         return mediaEntry;
     }
 
-    public PKMediaConfig setMediaEntry(PKMediaEntry mediaEntry) {
-        this.mediaEntry = mediaEntry;
-        return this;
+    public PKTrackConfig getPreferredAudioTrackConfig() {
+        return preferredAudioTrackConfig;
+    }
+
+    public PKTrackConfig getPreferredTextTrackConfig() {
+        return preferredTextTrackConfig;
     }
 }
 

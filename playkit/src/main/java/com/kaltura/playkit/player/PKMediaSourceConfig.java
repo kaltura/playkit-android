@@ -14,26 +14,35 @@ package com.kaltura.playkit.player;
 
 import android.net.Uri;
 
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.PKTrackConfig;
 
 /**
  * Created by Noam Tamim @ Kaltura on 29/03/2017.
  */
 class PKMediaSourceConfig {
-    PKMediaSource mediaSource;
-    PKMediaEntry.MediaEntryType mediaEntryType;
-    PKRequestParams.Adapter adapter;
-    boolean cea608CaptionsEnabled;
-    boolean useTextureView;
 
-    PKMediaSourceConfig(PKMediaSource mediaSource, PKMediaEntry.MediaEntryType mediaEntryType, PKRequestParams.Adapter adapter, boolean cea608CaptionsEnabled, boolean useTextureView) {
-        this.mediaSource = mediaSource;
-        this.mediaEntryType = mediaEntryType;
+    PKMediaSource mediaSource;
+    PKRequestParams.Adapter adapter;
+    PKMediaEntry.MediaEntryType mediaEntryType;
+
+    PKTrackConfig preferredAudioTrackConfig;
+    PKTrackConfig preferredTextTrackConfig;
+
+    boolean useTextureView;
+    boolean cea608CaptionsEnabled;
+
+    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PKRequestParams.Adapter adapter, boolean cea608CaptionsEnabled, boolean useTextureView) {
         this.adapter = adapter;
+        this.mediaSource = source;
         this.useTextureView = useTextureView;
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
+        this.mediaEntryType = mediaConfig.getMediaEntry().getMediaType();
+        this.preferredAudioTrackConfig = mediaConfig.getPreferredAudioTrackConfig();
+        this.preferredTextTrackConfig = mediaConfig.getPreferredTextTrackConfig();
     }
 
     Uri getUrl() {

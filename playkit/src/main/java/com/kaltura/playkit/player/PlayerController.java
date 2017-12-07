@@ -110,7 +110,7 @@ public class PlayerController implements Player {
 
     @Override
     public PKMediaFormat getMediaFormat() {
-        if(sourceConfig != null) {
+        if (sourceConfig != null) {
             return sourceConfig.mediaSource.getMediaFormat();
         }
         return null;
@@ -161,7 +161,7 @@ public class PlayerController implements Player {
                             }
                             isNewEntry = false;
                         }
-                       
+
                         break;
                     case TRACKS_AVAILABLE:
                         event = new PlayerEvent.TracksAvailable(player.getPKTracks());
@@ -213,6 +213,8 @@ public class PlayerController implements Player {
             }
         }
     };
+
+
 
     private StateChangedListener stateChangedTrigger = new StateChangedListener() {
         @Override
@@ -309,7 +311,7 @@ public class PlayerController implements Player {
 
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
-        if(sourceConfig == null) {
+        if (sourceConfig == null) {
             log.e("source config not found. Can not prepare source.");
             return;
         }
@@ -350,7 +352,7 @@ public class PlayerController implements Player {
             return false;
         }
 
-        this.sourceConfig = new PKMediaSourceConfig(source, mediaConfig.getMediaEntry().getMediaType(), contentRequestAdapter, cea608CaptionsEnabled, useTextureView);
+        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, contentRequestAdapter, cea608CaptionsEnabled, useTextureView);
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
         return true;
     }
