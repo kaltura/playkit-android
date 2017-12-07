@@ -28,6 +28,7 @@ import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
@@ -77,7 +78,7 @@ class TrackSelectionHelper {
     private List<TextTrack> textTracks = new ArrayList<>();
 
     private String[] lastSelectedTrackIds;
-    private String[] requestedChangeTrackIds;
+    private String[] requestedChangeTrackIds = {NONE, NONE, NONE};
 
     private long currentVideoBitrate = Consts.NO_VALUE;
     private long currentAudioBitrate = Consts.NO_VALUE;
@@ -113,7 +114,8 @@ class TrackSelectionHelper {
                          String[] lastSelectedTrackIds) {
         this.selector = selector;
         this.adaptiveTrackSelectionFactory = adaptiveTrackSelectionFactory;
-        this.requestedChangeTrackIds = this.lastSelectedTrackIds = lastSelectedTrackIds;
+        this.lastSelectedTrackIds = lastSelectedTrackIds;
+        this.lastSelectedTrackIds = Arrays.copyOf(lastSelectedTrackIds, lastSelectedTrackIds.length);
     }
 
     /**
