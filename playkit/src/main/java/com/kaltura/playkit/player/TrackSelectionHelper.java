@@ -736,16 +736,14 @@ class TrackSelectionHelper {
      * predefined requirements.
      * @param trackType - the type of the track we are looking for (audio/text).
      * @return - uniqueId of the preferred track.
-     * If no preferred AudioTrack exist or user defined to use AUTO/OFF will return null.
-     * In case of TextTrack if no preferred track exist will return null. But if user defined AUTO/OFF will return uniqueId of
-     * the "disabled" text track.
+     * If no preferred AudioTrack exist or user defined to use OFF mode, will return null.
+     * In case of TextTrack if no preferred track exist will return null.
+     * Otherwise will return uniqueId that is corresponded to the selected {@link PKTrackConfig.Mode}.
      */
     String getPreferredTrackId(int trackType) {
 
         switch (trackType) {
             case TRACK_TYPE_AUDIO:
-                //When preferredLanguageConfig not specified or SelectionMode is OFF or AUTO do not apply change track logic.
-                //Exoplayer will select the default by himself.
                 if (preferredAudioLanguageConfig == null || preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.OFF) {
                     return null;
                 }
@@ -759,8 +757,6 @@ class TrackSelectionHelper {
                 }
                 break;
             case TRACK_TYPE_TEXT:
-                //When preferredLanguageConfig not specified or SelectionMode is OFF or AUTO and there are available text tracks
-                //set the default text track to be "disabled".
                 if (preferredTextLanguageConfig == null) {
                     return null;
                 }
