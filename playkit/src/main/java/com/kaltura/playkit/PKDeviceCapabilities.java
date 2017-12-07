@@ -353,6 +353,8 @@ public class PKDeviceCapabilities {
         JSONObject response = new JSONObject();
         response.put("properties", props);
         response.put("events", mediaDrmEvents);
+        
+        mediaDrm.release();
 
         return response;
     }
