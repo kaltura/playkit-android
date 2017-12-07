@@ -77,7 +77,7 @@ class TrackSelectionHelper {
     private List<TextTrack> textTracks = new ArrayList<>();
 
     private String[] lastSelectedTrackIds;
-    private String[] requestedChangeTrackIds;
+    private String[] requestedChangeTrackIds = {NONE, NONE, NONE};
 
     private long currentVideoBitrate = Consts.NO_VALUE;
     private long currentAudioBitrate = Consts.NO_VALUE;
@@ -113,7 +113,8 @@ class TrackSelectionHelper {
                          String[] lastSelectedTrackIds) {
         this.selector = selector;
         this.adaptiveTrackSelectionFactory = adaptiveTrackSelectionFactory;
-        this.requestedChangeTrackIds = this.lastSelectedTrackIds = lastSelectedTrackIds;
+        this.lastSelectedTrackIds = lastSelectedTrackIds;
+        System.arraycopy(lastSelectedTrackIds,0, requestedChangeTrackIds, 0, lastSelectedTrackIds.length);
     }
 
     /**
