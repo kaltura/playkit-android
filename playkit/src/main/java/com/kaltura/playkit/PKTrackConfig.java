@@ -25,7 +25,8 @@ public class PKTrackConfig {
         if (preferredMode == Mode.OFF) {
             return NONE;
         } else if (preferredMode == Mode.AUTO) {
-            trackLanguage  = Locale.getDefault().getLanguage();
+            trackLanguage = Locale.getDefault().getLanguage();
+            // for 3 languages need to fix the deprecated languages code that Locale returns
             switch (trackLanguage) {
                 case "iw":
                     return "he";
@@ -38,7 +39,6 @@ public class PKTrackConfig {
             }
         }
         return trackLanguage;
-
     }
 
     public Mode getPreferredMode() {
