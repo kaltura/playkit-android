@@ -17,12 +17,14 @@ import android.support.annotation.NonNull;
 import java.util.Locale;
 
 public class PKTrackConfig {
-
+    private static final String NONE = "none";
     private String trackLanguage;
     private Mode preferredMode = Mode.OFF;
 
     public String getTrackLanguage() {
-        if (preferredMode == Mode.AUTO) {
+        if (preferredMode == Mode.OFF) {
+            return NONE;
+        } else if (preferredMode == Mode.AUTO) {
             return Locale.getDefault().getLanguage();
         }
         return trackLanguage;

@@ -746,9 +746,7 @@ class TrackSelectionHelper {
             case TRACK_TYPE_AUDIO:
                 //When preferredLanguageConfig not specified or SelectionMode is OFF or AUTO do not apply change track logic.
                 //Exoplayer will select the default by himself.
-                if (preferredAudioLanguageConfig == null
-                        || preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.OFF
-                        || preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO) {
+                if (preferredAudioLanguageConfig == null || preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.OFF) {
                     return null;
                 }
 
@@ -759,22 +757,12 @@ class TrackSelectionHelper {
                         return track.getUniqueId();
                     }
                 }
-
                 break;
             case TRACK_TYPE_TEXT:
                 //When preferredLanguageConfig not specified or SelectionMode is OFF or AUTO and there are available text tracks
                 //set the default text track to be "disabled".
-                if (preferredTextLanguageConfig == null
-                        || preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.OFF
-                        || preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO) {
-
-                    if (!textTracks.isEmpty()) {
-                        //Return the first text track which is "text track disabled"
-                        return textTracks.get(0).getUniqueId();
-                    } else {
-                        //Return null, so the change track logic won`t happen.
-                        return null;
-                    }
+                if (preferredTextLanguageConfig == null) {
+                    return null;
                 }
 
                 for (TextTrack track : textTracks) {
@@ -784,10 +772,8 @@ class TrackSelectionHelper {
                         return track.getUniqueId();
                     }
                 }
-
                 break;
         }
-
         return null;
     }
 
