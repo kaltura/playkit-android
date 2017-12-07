@@ -115,7 +115,7 @@ class TrackSelectionHelper {
         this.selector = selector;
         this.adaptiveTrackSelectionFactory = adaptiveTrackSelectionFactory;
         this.lastSelectedTrackIds = lastSelectedTrackIds;
-        this.lastSelectedTrackIds = Arrays.copyOf(lastSelectedTrackIds, lastSelectedTrackIds.length);
+        this.requestedChangeTrackIds = Arrays.copyOf(lastSelectedTrackIds, lastSelectedTrackIds.length);
     }
 
     /**
