@@ -20,7 +20,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -154,7 +154,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
         DefaultTrackSelector trackSelector = initializeTrackSelector();
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildHttpDataSourceFactory(false), drmSessionListener);
-        player = ExoPlayerFactory.newSimpleInstance(context, trackSelector, new DefaultLoadControl(), drmSessionManager);
+        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context,
+                drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
+        player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setPlayer(player);
