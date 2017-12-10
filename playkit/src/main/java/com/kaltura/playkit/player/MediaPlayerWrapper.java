@@ -262,7 +262,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public long getBufferedPosition() {
-        return Double.valueOf(Math.floor(playerDuration * (currentBufferPercentage / Consts.PERCENT_FACTOR))).longValue();
+        return (long) Math.floor(playerDuration * (currentBufferPercentage / Consts.PERCENT_FACTOR));
     }
 
     @Override
@@ -570,6 +570,16 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     @Override
     public boolean isLive() {
         return false;
+    }
+
+    @Override
+    public void setPlaybackRate(float rate) {
+        log.w("setPlaybackRate is not supported since RequiresApi(api = Build.VERSION_CODES.M");
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        return 1.0f;
     }
 
     @NonNull

@@ -26,6 +26,7 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
@@ -51,6 +52,7 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
@@ -69,6 +71,10 @@ import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
 
 /**
@@ -96,6 +102,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private ExoPlayerView exoPlayerView;
 
     private PKTracks tracks;
+    private Timeline.Window window;
     private TrackSelectionHelper trackSelectionHelper;
     private DeferredDrmSessionManager drmSessionManager;
 
@@ -107,18 +114,20 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     private Handler mainHandler = new Handler(Looper.getMainLooper());
     private PKError currentError = null;
 
+    private boolean shouldGetTracksInfo;
+    private boolean shouldResetPlayerPosition;
     private boolean isSeeking = false;
     private boolean useTextureView = false;
+    private boolean preferredLanguageWasSelected = false;
     private boolean shouldRestorePlayerToPreviousState = false;
 
     private int playerWindow;
     private long playerPosition = Consts.TIME_UNSET;
-    private Timeline.Window window;
-    private boolean shouldGetTracksInfo;
-    private boolean shouldResetPlayerPosition;
+
+    private float lastKnownVolume = Consts.DEFAULT_VOLUME;
+    private float lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_SPEED;
+
     private List<PKMetadata> metadataList = new ArrayList<>();
-
-
     private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
@@ -129,7 +138,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
         sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
     }
-
 
     ExoPlayerWrapper(Context context) {
         this.context = context;
@@ -168,6 +176,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         TrackSelection.Factory trackSelectionFactory =
                 new AdaptiveTrackSelection.Factory(bandwidthMeter);
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(trackSelectionFactory);
+        DefaultTrackSelector.Parameters currentParameters = trackSelector.getParameters();
+        DefaultTrackSelector.Parameters newParameters = currentParameters.withViewportSizeFromContext(context, true);
+        trackSelector.setParameters(newParameters);
+
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, trackSelectionFactory, lastSelectedTrackIds);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
@@ -184,6 +196,12 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
         shouldGetTracksInfo = true;
         trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.cea608CaptionsEnabled);
+        trackSelectionHelper.setPreferredAudioLanguageConfig(sourceConfig.preferredAudioTrackConfig);
+        trackSelectionHelper.setPreferredTextLanguageConfig(sourceConfig.preferredTextTrackConfig);
+
+        if (PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) {
+            player.seekToDefaultPosition();
+        }
 
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
@@ -297,18 +315,18 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         switch (playbackState) {
-            case ExoPlayer.STATE_IDLE:
+            case Player.STATE_IDLE:
                 log.d("onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
                 if (isSeeking) {
                     isSeeking = false;
                 }
                 break;
-            case ExoPlayer.STATE_BUFFERING:
+            case Player.STATE_BUFFERING:
                 log.d("onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.BUFFERING);
                 break;
-            case ExoPlayer.STATE_READY:
+            case Player.STATE_READY:
                 log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.READY);
 
@@ -326,7 +344,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
                 }
 
                 break;
-            case ExoPlayer.STATE_ENDED:
+            case Player.STATE_ENDED:
                 log.d("onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
                 sendDistinctEvent(PlayerEvent.Type.ENDED);
@@ -341,6 +359,11 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public void onRepeatModeChanged(int repeatMode) {
         // TODO: if/when we start using ExoPlayer's repeat mode, listen to this event.
+    }
+
+    @Override
+    public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
+        // TODO: implement if we add playlist support
     }
 
     @Override
@@ -376,16 +399,19 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         eventListener.onEvent(PlayerEvent.Type.ERROR);
     }
 
-
+    @Override
+    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+        sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
+    }
 
     @Override
-    public void onPositionDiscontinuity() {
+    public void onPositionDiscontinuity(int reason) {
         log.d("onPositionDiscontinuity");
     }
 
     @Override
-    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-        // TODO: if/when we start using ExoPlayer's speed and pitch settings, listen to this event.
+    public void onSeekProcessed() {
+        // TODO: use this instead of STATE_READY after isSeeking.
     }
 
     @Override
@@ -407,7 +433,6 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     public void onMetadata(Metadata metadata) {
 
         this.metadataList = MetadataConverter.convert(metadata);
-
         sendEvent(PlayerEvent.Type.METADATA_AVAILABLE);
     }
 
@@ -520,6 +545,7 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             eventLogger = null;
         }
         shouldRestorePlayerToPreviousState = true;
+
     }
 
     @Override
@@ -527,6 +553,8 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
         log.d("resume");
         if (player == null) {
             initializePlayer();
+            setVolume(lastKnownVolume);
+            setPlaybackRate(lastKnownPlaybackRate);
         }
         if (playerPosition == Consts.TIME_UNSET) {
             player.seekToDefaultPosition(playerWindow);
@@ -602,15 +630,14 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
             log.w("Attempt to invoke 'setVolume()' on null instance of the exoplayer");
             return;
         }
-
-        if (volume < 0) {
-            volume = 0;
-        } else if (volume > 1) {
-            volume = 1;
+        this.lastKnownVolume = volume;
+        if (lastKnownVolume < 0) {
+            lastKnownVolume = 0;
+        } else if (lastKnownVolume > 1) {
+            lastKnownVolume = 1;
         }
-
         if (volume != player.getVolume()) {
-            player.setVolume(volume);
+            player.setVolume(lastKnownVolume);
             sendEvent(PlayerEvent.Type.VOLUME_CHANGED);
         }
     }
@@ -644,6 +671,9 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
 
     @Override
     public void stop() {
+        preferredLanguageWasSelected = false;
+        lastKnownVolume = Consts.DEFAULT_VOLUME;
+        lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_SPEED;
         if (player != null) {
             player.setPlayWhenReady(false);
             player.seekTo(0);
@@ -677,6 +707,10 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
                 tracks = tracksReady;
                 shouldRestorePlayerToPreviousState = false;
                 sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+                if (!preferredLanguageWasSelected) {
+                    selectPreferredTracksLanguage();
+                    preferredLanguageWasSelected = true;
+                }
             }
 
             @Override
@@ -721,7 +755,34 @@ class ExoPlayerWrapper implements PlayerEngine, ExoPlayer.EventListener, Metadat
     @Override
     public boolean isLive() {
         return player != null && player.isCurrentWindowDynamic();
+    }
 
+    @Override
+    public void setPlaybackRate(float rate) {
+        this.lastKnownPlaybackRate = rate;
+        if (player != null) {
+            PlaybackParameters playbackParameters = new PlaybackParameters(rate, DEFAULT_PITCH_RATE);
+            player.setPlaybackParameters(playbackParameters);
+        }
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        if (player != null) {
+            return player.getPlaybackParameters().speed;
+        }
+        return 0.0f;
+    }
+
+    private void selectPreferredTracksLanguage() {
+
+        for (int trackType : new int[]{TRACK_TYPE_AUDIO, TRACK_TYPE_TEXT}) {
+            String preferredLanguageId = trackSelectionHelper.getPreferredTrackId(trackType);
+            if (preferredLanguageId != null) {
+                changeTrack(preferredLanguageId);
+                log.d("preferred language selected for track type = " + trackType);
+            }
+        }
     }
 }
 

@@ -143,7 +143,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
             if (psshData == null) {
                 log.w("Extraction failed. schemeData isn't a Widevine PSSH atom, so leave it unchanged.");
             } else {
-                schemeData = new DrmInitData.SchemeData(MediaSupport.WIDEVINE_UUID, schemeData.type, schemeData.mimeType, psshData);
+                schemeData = new DrmInitData.SchemeData(MediaSupport.WIDEVINE_UUID, schemeData.mimeType, psshData);
             }
         }
         return schemeData;

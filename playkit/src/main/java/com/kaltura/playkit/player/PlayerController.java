@@ -22,6 +22,7 @@ import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
@@ -109,10 +110,17 @@ public class PlayerController implements Player {
 
     @Override
     public PKMediaFormat getMediaFormat() {
-        if(sourceConfig != null) {
+        if (sourceConfig != null) {
             return sourceConfig.mediaSource.getMediaFormat();
         }
         return null;
+    }
+
+    @Override
+    public void setPlaybackRate(float rate) {
+        if (player != null) {
+            player.setPlaybackRate(rate);
+        }
     }
 
     interface EventListener {
@@ -145,9 +153,16 @@ public class PlayerController implements Player {
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
                         if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
-                            startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+                            if (!PKMediaEntry.MediaEntryType.Live.equals(sourceConfig.mediaEntryType)) {
+                                startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+                            } else {
+                                if (mediaConfig.getStartPosition() < 0) {
+                                    startPlaybackFrom(getDuration() + (mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER));
+                                }
+                            }
                             isNewEntry = false;
                         }
+
                         break;
                     case TRACKS_AVAILABLE:
                         event = new PlayerEvent.TracksAvailable(player.getPKTracks());
@@ -188,6 +203,9 @@ public class PlayerController implements Player {
                     case TEXT_TRACK_CHANGED:
                         event = new PlayerEvent.TextTrackChanged((TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT));
                         break;
+                    case PLAYBACK_RATE_CHANGED:
+                        event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
+                        break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
                 }
@@ -197,6 +215,8 @@ public class PlayerController implements Player {
             }
         }
     };
+
+
 
     private StateChangedListener stateChangedTrigger = new StateChangedListener() {
         @Override
@@ -293,7 +313,7 @@ public class PlayerController implements Player {
 
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
-        if(sourceConfig == null) {
+        if (sourceConfig == null) {
             log.e("source config not found. Can not prepare source.");
             return;
         }
@@ -336,7 +356,7 @@ public class PlayerController implements Player {
             return false;
         }
 
-        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestAdapter, cea608CaptionsEnabled, useTextureView);
+        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, contentRequestAdapter, cea608CaptionsEnabled, useTextureView);
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
         return true;
     }

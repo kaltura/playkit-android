@@ -58,6 +58,11 @@ public class EventLogger implements ExoPlayer.EventListener, AudioRendererEventL
     }
 
     @Override
+    public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
+        
+    }
+
+    @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
 
     }
@@ -73,12 +78,17 @@ public class EventLogger implements ExoPlayer.EventListener, AudioRendererEventL
     }
 
     @Override
-    public void onPositionDiscontinuity() {
+    public void onPositionDiscontinuity(int reason) {
 
     }
 
     @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+
+    }
+
+    @Override
+    public void onSeekProcessed() {
 
     }
 
@@ -103,7 +113,7 @@ public class EventLogger implements ExoPlayer.EventListener, AudioRendererEventL
     }
 
     @Override
-    public void onAudioTrackUnderrun(int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
+    public void onAudioSinkUnderrun(int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
 
     }
 

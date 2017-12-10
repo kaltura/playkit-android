@@ -22,7 +22,11 @@ import java.util.List;
 public class KalturaMediaAsset extends BaseResult {
     int id;
     int type;
+    String objectType;
     String name;
+    Long externalIds;
+    long startDate;
+    long endDate;
     List<KalturaMediaFile> mediaFiles;
 
     public int getId() {
@@ -31,6 +35,26 @@ public class KalturaMediaAsset extends BaseResult {
 
     public int getType() {
         return type;
+    }
+
+    public String getObjectType() {
+        return objectType;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Long getExternalIds() {
+        return externalIds;
+    }
+
+    public long getStartDate() {
+        return startDate;
+    }
+
+    public long getEndDate() {
+        return endDate;
     }
 
     public List<KalturaMediaFile> getFiles() {
