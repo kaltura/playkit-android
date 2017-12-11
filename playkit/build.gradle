@@ -34,7 +34,9 @@ tasks.withType(Javadoc) {
 dependencies {
 
     // NetKit
-    compile 'com.kaltura.netkit:netkit-core:1.0.5'
+   // compile 'com.kaltura.netkit:netkit-core:1.0.5'
+    implementation 'com.kaltura:netkit-android:FEM-1736_AS3-SNAPSHOT'
+
 
     // ExoPlayer
     implementation 'com.google.android.exoplayer:exoplayer-core:2.6.0'
