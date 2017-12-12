@@ -83,6 +83,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     private static final String TAG = "PhoenixMediaProvider";
 
+    private static String  LIVE_ASST_OBJRCT_TYPE = "KalturaLinearMediaAsset";
+
     private static final boolean EnableEmptyKs = true;
 
     private MediaAsset mediaAsset;
@@ -308,9 +310,12 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 contextOptions.setReferrer(referrer);
             }
 
-
             return AssetService.getPlaybackContext(baseUrl, ks, mediaAsset.assetId,
                     mediaAsset.assetType, contextOptions);
+        }
+
+        private RequestBuilder getMediaAssetRequest(String baseUrl, String ks, String referrer, MediaAsset mediaAsset) {
+            return AssetService.get(baseUrl, ks, mediaAsset.assetId, APIDefines.AssetReferenceType.Media);
         }
 
         private RequestBuilder getRemoteRequest(String baseUrl, String ks, String referrer, MediaAsset mediaAsset) {
@@ -320,10 +325,13 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                         .tag("asset-play-data-multireq");
                 String multiReqKs = "{1:result:ks}";
                 return multiRequestBuilder.add(OttUserService.anonymousLogin(baseUrl, sessionProvider.partnerId(), null),
-                        getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset));
+                        getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset)).add(getMediaAssetRequest(baseUrl, multiReqKs, referrer,mediaAsset));
+            } else {
+                MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) PhoenixService.getMultirequest(baseUrl, ks)
+                        .tag("asset-play-data-multireq");
+                String multiReqKs = ks;
+                return multiRequestBuilder.add(getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset)).add(getMediaAssetRequest(baseUrl, multiReqKs, referrer,mediaAsset));
             }
-
-            return getPlaybackContextRequest(baseUrl, ks, referrer, mediaAsset);
         }
 
         /**
@@ -411,22 +419,33 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                        type defined by the value of "objectType" property provided in the response objects, if type wasn't found or in
                        case of error object in the response, will be parsed to BaseResult object (error if occurred will be accessible from this object)*/
 
-                    Object parsedResponses = PhoenixParser.parse(response.getResponse());
-                    BaseResult playbackContextResult = parsedResponses instanceof BaseResult ? (BaseResult) parsedResponses : ((List<BaseResult>) parsedResponses).get(1);
+                    List<BaseResult> parsedResponses = PhoenixParser.parse(response.getResponse());
+                    BaseResult playbackContextResult = null;
+                    BaseResult assetGetResult = null;
 
-                    if (playbackContextResult.error != null) {
-                        //error = ErrorElement.LoadError.message("failed to get multirequest responses on load request for asset "+mediaAsset.assetId);
-                        error = PhoenixErrorHelper.getErrorElement(playbackContextResult.error); // get predefined error if exists for this error code
+                    if (parsedResponses != null && parsedResponses.size() > 1) {
+                        // position size -1 is asset get result size - 2 is playbackContext size - 3 is the login data
+                        playbackContextResult = parsedResponses.get(parsedResponses.size() - 2);
+                        assetGetResult = parsedResponses.get(parsedResponses.size() - 1);
+                    }
 
+                    if (playbackContextResult == null || assetGetResult == null || playbackContextResult.error != null || assetGetResult.error != null) {
+                        error = updateErrorElement(response, playbackContextResult, assetGetResult);
                     } else {
-
                         KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) playbackContextResult;
+                        KalturaMediaAsset kalturaMediaAsset = (KalturaMediaAsset) assetGetResult;
 
                         if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error or unauthorized content
 
                             mediaEntry = ProviderParser.getMedia(mediaAsset.assetId,
                                     mediaAsset.formats != null ? mediaAsset.formats : mediaAsset.mediaFileIds,
                                     kalturaPlaybackContext.getSources());
+
+                            if (isLiveMediaEntry(kalturaMediaAsset))  {
+                                mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Live);
+                            } else {
+                                mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Vod);
+                            }
 
                             if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
                                 error = ErrorElement.NotFound.message("Content can't be played due to lack of sources");
@@ -438,7 +457,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 } catch (IndexOutOfBoundsException ex) {
                     error = ErrorElement.GeneralError.message("responses list doesn't contain the expected responses number: " + ex.getMessage());
                 }
-
             } else {
                 error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
             }
@@ -455,6 +473,27 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
     }
 
+    private ErrorElement updateErrorElement(ResponseElement response, BaseResult playbackContextResult, BaseResult assetGetResult) {
+        //error = ErrorElement.LoadError.message("failed to get multirequest responses on load request for asset "+mediaAsset.assetId);
+        ErrorElement error;
+        if (playbackContextResult != null && playbackContextResult.error != null) {
+            error = PhoenixErrorHelper.getErrorElement(playbackContextResult.error); // get predefined error if exists for this error code
+        } else if (assetGetResult != null && assetGetResult.error != null) {
+            error = PhoenixErrorHelper.getErrorElement(assetGetResult.error); // get predefined error if exists for this error code
+        } else {
+            error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
+        }
+        return error;
+    }
+
+    private boolean isLiveMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
+        if (kalturaMediaAsset.getExternalIds() != null ||
+                (mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver) ||
+                LIVE_ASST_OBJRCT_TYPE.equals(kalturaMediaAsset.getObjectType())) {
+            return true;
+        }
+        return false;
+    }
 
     static class ProviderParser {
 
