@@ -25,9 +25,12 @@ public class PKTrackConfig {
         if (preferredMode == Mode.OFF) {
             return NONE;
         } else if (preferredMode == Mode.AUTO) {
-            return Locale.getDefault().getLanguage();
+            return Locale.getDefault().getISO3Language();
         }
-        return trackLanguage;
+        if (trackLanguage != null) {
+            return new Locale(trackLanguage).getISO3Language();
+        }
+        return null;
     }
 
     public Mode getPreferredMode() {

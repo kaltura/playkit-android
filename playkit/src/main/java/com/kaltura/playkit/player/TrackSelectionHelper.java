@@ -752,7 +752,7 @@ class TrackSelectionHelper {
                     return null;
                 }
 
-                Locale preferredAudioLang =  new Locale(preferredAudioLanguageConfig.getTrackLanguage());
+                String preferredAudioISO3Lang =  preferredAudioLanguageConfig.getTrackLanguage();
                 for (AudioTrack track : audioTracks) {
                     String trackLang = track.getLanguage();
                     if (trackLang == null) {
@@ -760,7 +760,7 @@ class TrackSelectionHelper {
                     }
                     Locale streamLang = new Locale(trackLang);
                     try {
-                        if (streamLang.getISO3Language().equals(preferredAudioLang.getISO3Language())) {
+                        if (streamLang.getISO3Language().equals(preferredAudioISO3Lang)) {
                             log.d("changing track type " + trackType + " to " + preferredAudioLanguageConfig.getTrackLanguage());
                             return track.getUniqueId();
                         }
@@ -775,8 +775,8 @@ class TrackSelectionHelper {
                     return null;
                 }
 
-                Locale preferredTextLang = new Locale(preferredTextLanguageConfig.getTrackLanguage());
-                if (preferredTextLanguageConfig.getTrackLanguage() != null) {
+                String preferredTextISO3Lang = preferredTextLanguageConfig.getTrackLanguage();
+                if (preferredTextISO3Lang != null) {
                     for (TextTrack track : textTracks) {
                         String trackLang = track.getLanguage();
                         if (trackLang == null) {
@@ -792,7 +792,7 @@ class TrackSelectionHelper {
                         Locale streamLang = new Locale(trackLang);
                         try {
 
-                            if (streamLang.getISO3Language().equals(preferredTextLang.getISO3Language())) {
+                            if (streamLang.getISO3Language().equals(preferredTextISO3Lang)) {
                                 log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
                                 return track.getUniqueId();
                             }
