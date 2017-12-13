@@ -760,7 +760,7 @@ class TrackSelectionHelper {
                     }
                     Locale streamLang = new Locale(trackLang);
                     try {
-                        if (streamLang != null && preferredAudioLang != null && streamLang.getISO3Language().equals(preferredAudioLang.getISO3Language())) {
+                        if (streamLang.getISO3Language().equals(preferredAudioLang.getISO3Language())) {
                             log.d("changing track type " + trackType + " to " + preferredAudioLanguageConfig.getTrackLanguage());
                             return track.getUniqueId();
                         }
@@ -782,13 +782,17 @@ class TrackSelectionHelper {
                         if (trackLang == null) {
                             continue;
                         }
+
                         if (NONE.equals(preferredTextLanguageConfig.getTrackLanguage()) && NONE.equals(trackLang)) {
                             return track.getUniqueId();
+                        } else if (NONE.equals(trackLang)){
+                            continue;
                         }
+
                         Locale streamLang = new Locale(trackLang);
                         try {
 
-                            if (streamLang != null && preferredTextLang != null && streamLang.getISO3Language().equals(preferredTextLang.getISO3Language())) {
+                            if (streamLang.getISO3Language().equals(preferredTextLang.getISO3Language())) {
                                 log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
                                 return track.getUniqueId();
                             }
