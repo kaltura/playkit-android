@@ -752,7 +752,7 @@ class TrackSelectionHelper {
                     return null;
                 }
 
-                String preferredAudioISO3Lang =  preferredAudioLanguageConfig.getTrackLanguage();
+                String preferredAudioISO3Lang = preferredAudioLanguageConfig.getTrackLanguage();
                 for (AudioTrack track : audioTracks) {
                     String trackLang = track.getLanguage();
                     if (trackLang == null) {
