@@ -810,25 +810,16 @@ class TrackSelectionHelper {
     }
 
     private boolean isValidPreferredAudioConfig() {
-        if (preferredAudioLanguageConfig == null || preferredAudioLanguageConfig.getPreferredMode() == null || preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.OFF) {
-            return false;
-        }
-
-        if (preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.EXPLICIT && preferredAudioLanguageConfig.getTrackLanguage() == null) {
-            return false;
-        }
-        return true;
+        return !(preferredAudioLanguageConfig == null ||
+                preferredAudioLanguageConfig.getPreferredMode() == null ||
+                preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.OFF ||
+                (preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.EXPLICIT && preferredAudioLanguageConfig.getTrackLanguage() == null));
     }
 
     private boolean isValidPreferredTextConfig() {
-        if (preferredTextLanguageConfig == null || preferredTextLanguageConfig.getPreferredMode() == null) {
-            return false;
-        }
-
-        if (preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.EXPLICIT && preferredTextLanguageConfig.getTrackLanguage() == null) {
-            return false;
-        }
-        return true;
+        return !(preferredTextLanguageConfig == null ||
+                preferredTextLanguageConfig.getPreferredMode() == null ||
+                (preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.EXPLICIT && preferredTextLanguageConfig.getTrackLanguage() == null));
     }
 
     void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
