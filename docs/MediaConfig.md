@@ -70,6 +70,5 @@ setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig)
 default Audio/Ttext track
 
 ### NOTE!!!
-The languages that are expected by player should match the ISO definition
-
+The languages that are expected by player should match the SO 639-X codes definition
 ```
