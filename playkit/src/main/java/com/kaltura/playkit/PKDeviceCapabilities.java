@@ -123,7 +123,7 @@ public class PKDeviceCapabilities {
             Map<String, String> headers = new HashMap<>(1);
             headers.put("Content-Type", "application/json");
             
-            byte[] bytes = Utils.executePost(DEVICE_CAPABILITIES_URL, dataString.getBytes(), headers);
+            byte[] bytes = PlaykitUtils.executePost(DEVICE_CAPABILITIES_URL, dataString.getBytes(), headers);
             log.d("Sent report, response was: " + new String(bytes));
         } catch (IOException e) {
             log.e("Failed to report device capabilities", e);

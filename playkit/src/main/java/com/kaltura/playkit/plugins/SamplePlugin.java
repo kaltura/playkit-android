@@ -90,7 +90,7 @@ public class SamplePlugin extends PKPlugin {
     }
 
     @Override
-    public void onDestroy() {
+    protected void onDestroy() {
 
     }
 

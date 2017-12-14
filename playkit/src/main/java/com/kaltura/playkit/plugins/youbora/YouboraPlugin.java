@@ -118,7 +118,7 @@ public class YouboraPlugin extends PKPlugin {
     }
 
     @Override
-    public void onDestroy() {
+    protected void onDestroy() {
         if (isMonitoring) {
             stopMonitoring();
         }

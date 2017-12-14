@@ -142,7 +142,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     @Override
-    public void onDestroy() {
+    protected void onDestroy() {
         log.d("onDestroy");
         cancelTimer();
         timerWasCancelled = true;

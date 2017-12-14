@@ -41,7 +41,7 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.PlaykitUtils;
 import com.kaltura.playkit.api.ovp.services.AnalyticsService;
 import com.kaltura.playkit.utils.Consts;
 
@@ -137,7 +137,7 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
     }
 
     @Override
-    public void onDestroy() {
+    protected void onDestroy() {
         resetPlayerFlags();
         intervalOn = false;
         timer.cancel();
@@ -145,17 +145,17 @@ public class KalturaAnalyticsPlugin extends PKPlugin{
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-        if (Utils.isJsonObjectValueValid(pluginConfig, "uiconfId")) {
+        if (PlaykitUtils.isJsonObjectValueValid(pluginConfig, "uiconfId")) {
             uiconfId = Integer.valueOf(pluginConfig.get("uiconfId").toString());
         } else {
             uiconfId = 0;
         }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
+        if (PlaykitUtils.isJsonObjectValueValid(pluginConfig, "baseUrl")) {
             baseUrl = pluginConfig.getAsJsonPrimitive("baseUrl").getAsString();
         } else {
             baseUrl = DEFAULT_BASE_URL;
         }
-        if (Utils.isJsonObjectValueValid(pluginConfig, "partnerId")) {
+        if (PlaykitUtils.isJsonObjectValueValid(pluginConfig, "partnerId")) {
             partnerId = pluginConfig.getAsJsonPrimitive("partnerId").getAsInt();
         } else {
             partnerId = 0;

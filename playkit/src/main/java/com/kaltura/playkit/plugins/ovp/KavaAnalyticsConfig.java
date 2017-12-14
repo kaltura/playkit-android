@@ -13,7 +13,7 @@
 package com.kaltura.playkit.plugins.ovp;
 
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.PlaykitUtils;
 
 /**
  * Created by anton.afanasiev on 04/10/2017.
@@ -71,7 +71,7 @@ public class KavaAnalyticsConfig {
 
     public KavaAnalyticsConfig setReferrer(String referrer) {
         if (isValidReferrer(referrer)) {
-            this.referrerAsBase64 = Utils.toBase64(referrer.getBytes());
+            this.referrerAsBase64 = PlaykitUtils.toBase64(referrer.getBytes());
         } else {
             log.w("Invalid referrer argument. Should start with app:// or http:// or https://");
             referrerAsBase64 = null;

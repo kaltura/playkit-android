@@ -17,7 +17,7 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.PlaykitUtils;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Collections;
@@ -145,14 +145,14 @@ public class YouboraConfig {
 
     private static void setYouboraConfigObject(Map<String, Object> defaultJsonObject, JsonObject jsonObject, String[] fieldNames, String[] booleanFieldNames) {
         for (String fieldName : fieldNames) {
-            if (Utils.isJsonObjectValueValid(jsonObject, fieldName)) {
+            if (PlaykitUtils.isJsonObjectValueValid(jsonObject, fieldName)) {
                 log.d("setYouboraConfigObject: " + fieldName);
                 defaultJsonObject.put(fieldName, jsonObject.getAsJsonPrimitive(fieldName).getAsString());
             }
         }
         if (booleanFieldNames != null) {
             for (String fieldName : booleanFieldNames) {
-                if (Utils.isJsonObjectValueValid(jsonObject, fieldName)) {
+                if (PlaykitUtils.isJsonObjectValueValid(jsonObject, fieldName)) {
                     log.d("setYouboraConfigObject: " + fieldName);
                     defaultJsonObject.put(fieldName, jsonObject.getAsJsonPrimitive(fieldName).getAsBoolean());
                 }

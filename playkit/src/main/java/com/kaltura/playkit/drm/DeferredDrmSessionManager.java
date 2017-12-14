@@ -39,7 +39,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static com.kaltura.playkit.Utils.toBase64;
+import static com.kaltura.playkit.PlaykitUtils.toBase64;
 
 /**
  * @hide

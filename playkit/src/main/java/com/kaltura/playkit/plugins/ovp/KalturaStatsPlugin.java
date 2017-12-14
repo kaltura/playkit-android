@@ -148,7 +148,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     }
 
     @Override
-    public void onDestroy() {
+    protected void onDestroy() {
         log.d("onDestroy");
         intervalOn = false;
         if (timer != null) {

@@ -34,7 +34,7 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.PlaykitUtils;
 import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.api.ovp.services.KavaService;
 import com.kaltura.playkit.player.PKPlayerErrorType;
@@ -469,7 +469,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
 
     private String buildDefaultReferrer() {
         String referrer = "app://" + context.getPackageName();
-        return Utils.toBase64(referrer.getBytes());
+        return PlaykitUtils.toBase64(referrer.getBytes());
     }
 
     private String getPlaybackType() {

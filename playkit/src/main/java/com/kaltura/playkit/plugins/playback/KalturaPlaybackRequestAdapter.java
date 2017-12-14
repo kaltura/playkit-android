@@ -18,7 +18,7 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
 
 import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
-import static com.kaltura.playkit.Utils.toBase64;
+import static com.kaltura.playkit.PlaykitUtils.toBase64;
 
 /**
  * Created by Noam Tamim @ Kaltura on 28/03/2017.

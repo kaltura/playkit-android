@@ -38,8 +38,8 @@ import java.util.Map;
  * @hide
  */
 
-public class Utils {
-    private static final String TAG = "Utils";
+public class PlaykitUtils {
+    private static final String TAG = "PlaykitUtils";
 
     public static String readAssetToString(Context context, String asset) {
         try {

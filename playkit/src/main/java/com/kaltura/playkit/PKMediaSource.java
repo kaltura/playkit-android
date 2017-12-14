@@ -29,7 +29,7 @@ public class PKMediaSource implements Parcelable {
     protected PKMediaSource(Parcel in) {
         id = in.readString();
         url = in.readString();
-        mediaFormat = Utils.byValue(PKMediaFormat.class, in.readString());
+        mediaFormat = PlaykitUtils.byValue(PKMediaFormat.class, in.readString());
         drmData = in.createTypedArrayList(PKDrmParams.CREATOR);
     }
 

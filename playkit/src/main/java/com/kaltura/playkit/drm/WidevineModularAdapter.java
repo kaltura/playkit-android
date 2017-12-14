@@ -41,7 +41,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 
-import static com.kaltura.playkit.Utils.toBase64;
+import static com.kaltura.playkit.PlaykitUtils.toBase64;
 
 /**
  * Created by anton.afanasiev on 13/12/2016.

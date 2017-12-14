@@ -105,7 +105,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     }
 
     @Override
-    public void onDestroy() {
+    protected void onDestroy() {
         stopLiveEvents();
         eventIndex = 1;
     }

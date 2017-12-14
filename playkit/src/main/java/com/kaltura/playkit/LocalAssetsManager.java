@@ -465,7 +465,7 @@ public class LocalAssetsManager {
 
         @Override
         public void save(String key, byte[] value) {
-            String encodedValue = Utils.toBase64(value);
+            String encodedValue = PlaykitUtils.toBase64(value);
             log.i("save to storage with key " + key + " and value " + encodedValue);
             sharedPreferences.edit()
                     .putString(key, encodedValue)
