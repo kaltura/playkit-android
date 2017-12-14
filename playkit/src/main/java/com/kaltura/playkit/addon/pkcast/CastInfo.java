@@ -10,13 +10,13 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.addon.cast;
+package com.kaltura.playkit.addon.pkcast;
 
 
 
 import com.google.android.gms.cast.MediaMetadata;
 import com.google.android.gms.cast.TextTrackStyle;
-import com.kaltura.playkit.addon.cast.BasicCastBuilder.StreamType;
+import com.kaltura.playkit.addon.pkcast.BasicCastBuilder.StreamType;
 
 /**
  * Created by itanbarpeled on 13/12/2016.

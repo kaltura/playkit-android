@@ -10,11 +10,9 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.addon.cast;
+package com.kaltura.playkit.addon.pkcast;
 
 import android.text.TextUtils;
-
-import com.kaltura.playkit.PKLog;
 
 import org.json.JSONException;
 import org.json.JSONObject;

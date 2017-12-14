@@ -10,7 +10,7 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.addon.cast;
+package com.kaltura.playkit.addon.pkcast;
 
 import org.json.JSONArray;
 import org.json.JSONException;

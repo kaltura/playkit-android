@@ -10,7 +10,7 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.addon.cast;
+package com.kaltura.playkit.addon.pkcast;
 
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -19,17 +19,11 @@ import android.text.TextUtils;
  * Created by itanbarpeled on 14/12/2016.
  */
 
-public class TVPAPICastBuilder extends BasicCastBuilder<TVPAPICastBuilder> {
+public class OVPCastBuilder extends BasicCastBuilder<OVPCastBuilder> {
 
 
-    public TVPAPICastBuilder setFormat(@NonNull String format) {
-        castInfo.setFormat(format);
-        return this;
-    }
-
-
-    public TVPAPICastBuilder setInitObject(@NonNull String initObject) {
-        castInfo.setInitObject(initObject);
+    public OVPCastBuilder setKs(@NonNull String ks) {
+        castInfo.setKs(ks);
         return this;
     }
 
@@ -37,7 +31,7 @@ public class TVPAPICastBuilder extends BasicCastBuilder<TVPAPICastBuilder> {
     @Override
     protected CastConfigHelper getCastHelper() {
 
-        return new TVPAPICastConfigHelper();
+        return new OVPCastConfigHelper();
 
     }
 
@@ -47,13 +41,13 @@ public class TVPAPICastBuilder extends BasicCastBuilder<TVPAPICastBuilder> {
 
         super.validate(castInfo);
 
-        if (TextUtils.isEmpty(castInfo.getFormat())) {
+        // ks isn't mandatory in OVP environment, but if you do set a ks it must be valid
+        String ks = castInfo.getKs();
+        if (ks != null && TextUtils.isEmpty(ks)) {
             throw new IllegalArgumentException();
         }
 
-        if (TextUtils.isEmpty(castInfo.getInitObject())) {
-            throw new IllegalArgumentException();
-        }
+
     }
 
 
