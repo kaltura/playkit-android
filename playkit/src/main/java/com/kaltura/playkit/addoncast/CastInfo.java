@@ -10,13 +10,12 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.addon.pkcast;
+package com.kaltura.playkit.addoncast;
 
 
 
 import com.google.android.gms.cast.MediaMetadata;
 import com.google.android.gms.cast.TextTrackStyle;
-import com.kaltura.playkit.addon.pkcast.BasicCastBuilder.StreamType;
 
 /**
  * Created by itanbarpeled on 13/12/2016.
@@ -34,7 +33,7 @@ class CastInfo {
     private MediaMetadata mediaMetadata;
     private TextTrackStyle textTrackStyle;
     private String mwEmbedUrl;
-    private StreamType streamType;
+    private BasicCastBuilder.StreamType streamType;
 
 
     CastInfo() {
@@ -81,7 +80,7 @@ class CastInfo {
         this.mwEmbedUrl = mwEmbedUrl;
     }
 
-    void setStreamType(StreamType streamType) {
+    void setStreamType(BasicCastBuilder.StreamType streamType) {
         this.streamType = streamType;
     }
 
@@ -125,7 +124,7 @@ class CastInfo {
         return mwEmbedUrl;
     }
 
-    StreamType getStreamType() {
+    BasicCastBuilder.StreamType getStreamType() {
         return streamType;
     }
 

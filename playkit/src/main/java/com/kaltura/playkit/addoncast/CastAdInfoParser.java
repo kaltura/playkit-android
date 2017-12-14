@@ -10,7 +10,7 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.addon.pkcast;
+package com.kaltura.playkit.addoncast;
 
 import com.google.android.gms.cast.AdBreakInfo;
 import com.google.android.gms.cast.MediaStatus;

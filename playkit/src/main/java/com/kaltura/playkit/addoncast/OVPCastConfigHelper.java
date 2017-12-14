@@ -10,7 +10,7 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.addon.pkcast;
+package com.kaltura.playkit.addoncast;
 
 import android.text.TextUtils;
 
