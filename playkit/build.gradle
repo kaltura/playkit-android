@@ -7,7 +7,6 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 26
-        multiDexEnabled true
         versionName playkitVersion  // defined in version.gradle
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
