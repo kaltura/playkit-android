@@ -10,6 +10,10 @@ android {
         versionName playkitVersion  // defined in version.gradle
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+    dexOptions {
+        jumboMode true
+    }
+    
     buildTypes {
         release {
             minifyEnabled false
