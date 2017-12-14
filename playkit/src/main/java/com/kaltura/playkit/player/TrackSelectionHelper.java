@@ -127,14 +127,14 @@ class TrackSelectionHelper {
      *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
-    boolean prepareTracks() {
+    boolean prepareTracks(boolean isDashManifest) {
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
             log.w("Trying to get current MappedTrackInfo returns null");
             return false;
         }
         warnAboutUnsupportedRenderTypes();
-        PKTracks tracksInfo = buildTracks();
+        PKTracks tracksInfo = buildTracks(isDashManifest);
 
         if (tracksInfoListener != null) {
             tracksInfoListener.onTracksInfoReady(tracksInfo);
@@ -147,7 +147,7 @@ class TrackSelectionHelper {
      * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
      */
-    private PKTracks buildTracks() {
+    private PKTracks buildTracks(boolean isDashManifest) {
 
         clearTracksLists();
 
@@ -181,16 +181,23 @@ class TrackSelectionHelper {
                                 videoTracks.add(new VideoTrack(uniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false));
                                 break;
                             case TRACK_TYPE_AUDIO:
-
-                                audioTracks.add(new AudioTrack(uniqueId, format.language, format.id, format.bitrate, format.selectionFlags, false));
+                                String audioTrackLabel = null;
+                                if (!isDashManifest) {
+                                    audioTrackLabel = format.id;
+                                }
+                                audioTracks.add(new AudioTrack(uniqueId, format.language, audioTrackLabel, format.bitrate, format.selectionFlags, false));
                                 break;
                             case TRACK_TYPE_TEXT:
+                                String textTrackLabel = null;
+                                if (!isDashManifest) {
+                                    textTrackLabel = format.id;
+                                }
                                 if (CEA_608.equals(format.sampleMimeType)) {
                                     if (cea608CaptionsEnabled) {
                                         textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
                                     }
                                 } else {
-                                    textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
+                                    textTracks.add(new TextTrack(uniqueId, format.language, textTrackLabel, format.selectionFlags));
                                 }
                                 break;
                         }
