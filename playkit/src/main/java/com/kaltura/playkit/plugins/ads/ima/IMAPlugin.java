@@ -1026,7 +1026,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     private void sendError(Enum errorType, String message, Throwable exception) {
         log.e("Ad Error: " + errorType.name() + " with message " + message);
-        AdEvent errorEvent = new AdEvent.Error(new PKError(errorType, message, exception));
+        AdEvent errorEvent = new AdEvent.AdErrorEvent(new PKError(errorType, message, exception));
         messageBus.post(errorEvent);
     }
 }

@@ -107,13 +107,13 @@ public class AdEvent implements PKEvent {
         }
     }
 
-    public static class Error extends AdEvent {
+    public static class AdErrorEvent extends AdEvent {
 
-        public final PKError error;
+        public final PKError pkError;
 
-        public Error(PKError error) {
+        public AdErrorEvent(PKError pkError) {
             super(Type.ERROR);
-            this.error = error;
+            this.pkError = pkError;
         }
     }
 

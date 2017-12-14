@@ -145,8 +145,8 @@ class YouboraAdManager extends AdnalyzerGeneric {
                         skipAdHandler();
                         break;
                     case ERROR:
-                        AdEvent.Error errorEvent = (AdEvent.Error) event;
-                        handleAdError(errorEvent.error);
+                        AdEvent.AdErrorEvent errorEvent = (AdEvent.AdErrorEvent) event;
+                        handleAdError(errorEvent.pkError );
                         break;
                     case CLICKED:
                         log.d("learn more clicked");
