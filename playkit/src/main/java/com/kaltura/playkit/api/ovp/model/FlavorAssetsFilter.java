@@ -25,7 +25,7 @@ import java.util.List;
 public class FlavorAssetsFilter {
 
     public interface Filterable{
-        <V> V getMemberValue(String name);
+        String getMemberValue(String name);
     }
 
     public static <T extends Filterable> List<T> filter(List<T> source, String filterBy, String... filterValues) {
