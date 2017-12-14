@@ -118,11 +118,11 @@ public class PlayerEvent implements PKEvent {
 
     public static class Error extends PlayerEvent {
 
-        public final PKError error;
+        public final PKError pkError;
 
         public Error(PKError error) {
             super(Type.ERROR);
-            this.error = error;
+            this.pkError = error;
         }
     }
 
