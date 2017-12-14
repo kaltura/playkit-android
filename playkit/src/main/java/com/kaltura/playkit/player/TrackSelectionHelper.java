@@ -194,7 +194,7 @@ class TrackSelectionHelper {
                                 }
                                 if (CEA_608.equals(format.sampleMimeType)) {
                                     if (cea608CaptionsEnabled) {
-                                        textTracks.add(new TextTrack(uniqueId, format.language, textTrackLabel, format.selectionFlags));
+                                        textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
                                     }
                                 } else {
                                     textTracks.add(new TextTrack(uniqueId, format.language, textTrackLabel, format.selectionFlags));
