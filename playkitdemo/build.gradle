@@ -7,9 +7,15 @@ android {
         applicationId "com.kaltura.playkitdemo"
         minSdkVersion 16
         targetSdkVersion 26
+        multiDexEnabled true
         versionCode 1
         versionName "1.0"
     }
+
+    dexOptions {
+        jumboMode true
+    }
+    
     buildTypes {
         release {
             minifyEnabled false
@@ -25,8 +31,8 @@ repositories {
 
 dependencies {
     compile project(path: ':playkit')
+    //compile 'com.kaltura:playkit-android:xamarin_integ-SNAPSHOT'
     compile 'com.android.support:appcompat-v7:26.1.0'
     compile 'com.android.support:design:26.1.0'
     compile 'com.github.kaltura:playkit-dtg-android:v2.3.0'
-
 }
