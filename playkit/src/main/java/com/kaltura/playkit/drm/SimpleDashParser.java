@@ -32,7 +32,7 @@ import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.FileDataSource;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.player.MediaSupport;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;

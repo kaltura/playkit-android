@@ -24,7 +24,7 @@ import com.google.android.exoplayer2.trackselection.MappingTrackSelector.Selecti
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 
 import java.util.ArrayList;
 import java.util.List;

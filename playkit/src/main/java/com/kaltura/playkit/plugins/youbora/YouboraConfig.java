@@ -18,7 +18,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlaykitUtils;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 
 import java.util.Collections;
 import java.util.HashMap;

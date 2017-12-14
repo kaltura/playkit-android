@@ -43,7 +43,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlaykitUtils;
 import com.kaltura.playkit.api.ovp.services.AnalyticsService;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 
 import java.util.TimerTask;
 

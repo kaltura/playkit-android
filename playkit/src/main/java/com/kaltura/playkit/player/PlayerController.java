@@ -29,12 +29,12 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 
 import java.util.UUID;
 
 import static com.kaltura.playkit.PKMediaFormat.wvm;
-import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
+import static com.kaltura.playkit.pkutils.Consts.MILLISECONDS_MULTIPLIER;
 
 /**
  * @hide

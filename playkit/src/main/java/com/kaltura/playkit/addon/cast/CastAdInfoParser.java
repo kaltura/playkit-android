@@ -17,7 +17,7 @@ import com.google.android.gms.cast.MediaStatus;
 import com.google.android.gms.cast.framework.media.RemoteMediaClient;
 import com.google.gson.GsonBuilder;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 
 import org.json.JSONException;
 import org.json.JSONObject;

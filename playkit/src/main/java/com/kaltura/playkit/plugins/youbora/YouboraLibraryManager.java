@@ -24,7 +24,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.BuildConfig;
 import com.npaw.youbora.youboralib.utils.Utils;

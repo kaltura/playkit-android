@@ -25,7 +25,7 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.api.tvpapi.services.MediaMarkService;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 
 import java.util.Locale;
 import java.util.Timer;

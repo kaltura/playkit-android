@@ -38,7 +38,7 @@ import com.kaltura.playkit.PlaykitUtils;
 import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.api.ovp.services.KavaService;
 import com.kaltura.playkit.player.PKPlayerErrorType;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 
 import java.util.HashMap;
 import java.util.Map;

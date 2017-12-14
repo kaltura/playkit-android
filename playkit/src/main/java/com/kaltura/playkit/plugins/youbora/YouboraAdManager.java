@@ -19,7 +19,7 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.PKError;
 import com.npaw.youbora.adnalyzers.AdnalyzerGeneric;

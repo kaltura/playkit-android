@@ -34,7 +34,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.WidevineClassicDrm;
 import com.kaltura.playkit.player.metadata.PKMetadata;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 
 import java.io.IOException;
 import java.util.ArrayList;

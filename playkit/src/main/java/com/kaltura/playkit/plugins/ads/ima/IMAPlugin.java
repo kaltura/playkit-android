@@ -50,7 +50,7 @@ import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.PKError;
 

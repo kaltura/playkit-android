@@ -62,8 +62,8 @@ import com.kaltura.playkit.player.PlayerController.EventListener;
 import com.kaltura.playkit.player.PlayerController.StateChangedListener;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
-import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.utils.EventLogger;
+import com.kaltura.playkit.pkutils.Consts;
+import com.kaltura.playkit.pkutils.EventLogger;
 
 import java.net.CookieHandler;
 import java.net.CookieManager;

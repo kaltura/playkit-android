@@ -22,7 +22,7 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 import com.npaw.youbora.youboralib.data.Options;
 
 import java.util.Map;

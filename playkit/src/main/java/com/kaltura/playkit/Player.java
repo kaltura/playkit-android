@@ -17,7 +17,7 @@ import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 
 /**
  * Created by Noam Tamim @ Kaltura on 18/09/2016.

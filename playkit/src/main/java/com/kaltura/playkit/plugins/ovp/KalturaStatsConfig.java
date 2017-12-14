@@ -13,7 +13,7 @@
 package com.kaltura.playkit.plugins.ovp;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 
 /**
  * Created by gilad.nadav on 18/05/2017.

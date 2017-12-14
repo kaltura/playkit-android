@@ -10,7 +10,7 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.utils;
+package com.kaltura.playkit.pkutils;
 
 /**
  * Created by anton.afanasiev on 04/12/2016.

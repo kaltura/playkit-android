@@ -10,7 +10,7 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.utils;
+package com.kaltura.playkit.pkutils;
 
 import android.view.Surface;
 

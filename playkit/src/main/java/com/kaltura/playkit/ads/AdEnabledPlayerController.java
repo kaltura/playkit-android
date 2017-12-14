@@ -18,7 +18,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 
 /**
  * @hide

@@ -54,7 +54,7 @@ import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
 import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 
 import java.util.ArrayList;
 import java.util.Collections;

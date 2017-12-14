@@ -14,7 +14,7 @@ package com.kaltura.playkit.player;
 
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.player.metadata.PKMetadata;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.pkutils.Consts;
 import com.kaltura.playkit.PKError;
 
 import java.util.List;
