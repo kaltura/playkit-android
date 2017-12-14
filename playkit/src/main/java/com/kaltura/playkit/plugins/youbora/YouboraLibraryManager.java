@@ -184,8 +184,8 @@ class YouboraLibraryManager extends PluginGeneric {
     private void sendErrorHandler(PKEvent event) {
 
         PlayerEvent.Error errorEvent = (PlayerEvent.Error) event;
-        String errorMetadata = (errorEvent != null && errorEvent.error != null) ? errorEvent.error.message : PLAYER_ERROR_STR;
-        PKError error = errorEvent.error;
+        String errorMetadata = (errorEvent != null && errorEvent.pkError != null) ? errorEvent.pkError.message : PLAYER_ERROR_STR;
+        PKError error = errorEvent.pkError;
         if (error.exception == null) {
             errorHandler(errorMetadata, event.eventType().name());
             return;
@@ -212,7 +212,7 @@ class YouboraLibraryManager extends PluginGeneric {
                 exceptionCause += cause + "\n";
         }
 
-        String errorCode = (errorEvent != null && errorEvent.error != null && errorEvent.error.errorType != null) ?  errorEvent.error.errorType + " - " : "";
+        String errorCode = (errorEvent != null && errorEvent.pkError != null && errorEvent.pkError.errorType != null) ?  errorEvent.pkError.errorType + " - " : "";
         errorHandler(exceptionCause, errorCode + exceptionClass, errorMetadata);
     }
 

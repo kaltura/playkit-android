@@ -251,7 +251,7 @@ public class KavaAnalyticsPlugin extends PKPlugin {
                             sendAnalyticsEvent(KavaEvents.CAPTIONS);
                             break;
                         case ERROR:
-                            PKError error = ((PlayerEvent.Error) event).error;
+                            PKError error = ((PlayerEvent.Error) event).pkError;
                             if (error.errorType instanceof PKPlayerErrorType) {
                                 errorCode = ((PKPlayerErrorType) error.errorType).errorCode;
                             } else if (error.errorType instanceof PKAdErrorType) {
