@@ -15,6 +15,7 @@ package com.kaltura.playkit.plugins.ads.ima;
 import android.content.Context;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.view.ViewGroup;
 
 import com.google.ads.interactivemedia.v3.api.Ad;
@@ -35,6 +36,7 @@ import com.google.ads.interactivemedia.v3.api.player.VideoProgressUpdate;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
@@ -44,6 +46,7 @@ import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdEnabledPlayerController;
 import com.kaltura.playkit.ads.AdTagType;
+import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.ads.PKAdProviderListener;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
@@ -51,8 +54,6 @@ import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.ads.PKAdErrorType;
-import com.kaltura.playkit.PKError;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -248,14 +249,20 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         if (adsManager != null) {
             adsManager.destroy();
         }
-        if (adsLoader != null) {
-            adsLoader.contentComplete();
-        }
-
+        clearAdsLoader();
         adConfig = parseConfig(config);
         isAdRequested = false;
         isAdDisplayed = false;
         isAllAdsCompleted = false;
+    }
+
+    private void clearAdsLoader() {
+        if (adsLoader != null) {
+            adsLoader.removeAdErrorListener(this);
+            adsLoader.removeAdsLoadedListener(adsLoadedListener);
+            adsLoadedListener = null;
+            adsLoader = null;
+        }
     }
 
     @Override
@@ -340,12 +347,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     protected void onDestroy() {
         log.d("IMA Start onDestroy");
         resetIMA();
-        if (adsLoader != null) {
-            adsLoader.removeAdErrorListener(this);
-            adsLoader.removeAdsLoadedListener(adsLoadedListener);
-            adsLoadedListener = null;
-            adsLoader = null;
-        }
+        clearAdsLoader();
         sdkFactory = null;
         imaSdkSettings = null;
 
@@ -444,6 +446,14 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     private void requestAdsFromIMA(String adTagUrl) {
         log.d("Do requestAdsFromIMA adTagUrl = " + adTagUrl);
+
+        if (TextUtils.isEmpty(adTagUrl)) {
+            log.d("AdTag is empty avoiding ad request");
+            isAdRequested = true;
+            preparePlayer(false);
+            return;
+        }
+
         resetIMA();
         // Create the ads request.
         final AdsRequest request = sdkFactory.createAdsRequest();
