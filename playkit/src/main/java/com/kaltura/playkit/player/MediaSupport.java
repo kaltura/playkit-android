@@ -15,11 +15,16 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 import android.drm.DrmManagerClient;
 import android.media.MediaDrm;
+import android.media.NotProvisionedException;
+import android.os.AsyncTask;
 import android.os.Build;
-import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
+import android.util.Base64;
+import android.util.Log;
 
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.Utils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -30,27 +35,72 @@ import java.util.UUID;
  */
 public class MediaSupport {
 
+    private static final PKLog log = PKLog.get("MediaSupport");
+
+    // Should be called by applications that use DRM, to make sure they can handle provision issues.
+    public static void initializeDrm(Context context) throws DrmNotProvisionedException {
+        if (widevineClassic == null) {
+            checkWidevineClassic(context);
+        }
+
+        if (widevineModular == null) {
+            checkWidevineModular();
+        }
+    }
+
+    // Should only be called by the SDK, if the app didn't call initializeDrm().
+    public static void initializeDrmQuiet(Context context) {
+        try {
+            initializeDrm(context);
+        } catch (Exception e) {
+            log.e("MediaSupport.initializeDrm() failed", e);
+        }
+    }
+
+    public static class DrmNotProvisionedException extends Exception {
+        DrmNotProvisionedException(Exception e) {
+            super(e);
+        }
+
+        DrmNotProvisionedException(String message, Exception e) {
+            super(message, e);
+        }
+    }
+    
+    public interface DrmProvisionCallback {
+        void onDrmProvisionComplete(Exception e);
+    }
+
     public static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
 
 
-    private static boolean widevineClassic = false;
-    private static boolean widevineModular = false;
-    private static boolean initialized = false;
+    private static Boolean widevineClassic;
+    private static Boolean widevineModular;
 
-    private static final PKLog log = PKLog.get("MediaSupport");
-
-    public static void initialize(@NonNull final Context context) {
-        if (initialized) {
-            return;
-        }
-        checkWidevineClassic(context);
-        widevineModular();
-        initialized = true;
+    public static void attemptDrmProvision(final Context context, final DrmProvisionCallback callback) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    try {
+                        provisionWidevine();
+                        initializeDrm(context);
+                        if (callback != null) {
+                            callback.onDrmProvisionComplete(null);
+                        }
+                    } catch (Exception e) {
+                        if (callback != null) {
+                            callback.onDrmProvisionComplete(e);
+                        }
+                    }
+                }
+            }
+        });
     }
 
-    public static Set<PKDrmParams.Scheme> supportedDrmSchemes(Context context) {
+    public static Set<PKDrmParams.Scheme> supportedDrmSchemes(Context context) throws DrmNotProvisionedException {
 
-        initialize(context);
+        initializeDrm(context);
 
         HashSet<PKDrmParams.Scheme> schemes = new HashSet<>();
 
@@ -89,18 +139,27 @@ public class MediaSupport {
     }
 
     public static boolean widevineClassic() {
-        if (initialized) {
-            return widevineClassic;
+        if (widevineClassic == null) {
+            log.w("MediaSupport not initialized; assuming no Widevine Classic support");
+            return false;
+        }
+        
+        return widevineClassic;
+    }
+    
+    public static boolean widevineModular() {
+        if (widevineModular == null) {
+            log.w("MediaSupport not initialized; assuming no Widevine Modular support");
+            return false;
         }
 
-        log.w("MediaSupport not initialized; assuming no Widevine Classic support");
-        return false;
+        return widevineModular;
     }
 
-    public static boolean widevineModular() {
+    private static void checkWidevineModular() throws DrmNotProvisionedException {
         // Encrypted dash is only supported in Android v4.3 and up -- needs MediaDrm class.
         // Make sure Widevine is supported
-        if (!initialized && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID)) {
+        if (widevineModular == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID)) {
 
             MediaDrm mediaDrm = null;
             byte[] session = null;
@@ -108,6 +167,9 @@ public class MediaSupport {
                 mediaDrm = new MediaDrm(WIDEVINE_UUID);
                 session = mediaDrm.openSession();
                 widevineModular = true;
+            } catch (NotProvisionedException e) {
+                log.e("Widevine Modular not provisioned", e);
+                throw new DrmNotProvisionedException("Widevine Modular not provisioned", e);
             } catch (Exception e) {
                 widevineModular = false;
             } finally {
@@ -119,10 +181,34 @@ public class MediaSupport {
                 }
             }
         }
-        return widevineModular;
     }
 
     public static boolean playReady() {
-        return Boolean.parseBoolean("false");   // Not yet.
+        return Boolean.FALSE;   // Not yet.
     }
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private static void provisionWidevine() throws Exception {
+        MediaDrm mediaDrm = null;
+        try {
+            mediaDrm = new MediaDrm(WIDEVINE_UUID);
+            MediaDrm.ProvisionRequest provisionRequest = mediaDrm.getProvisionRequest();
+            String url = provisionRequest.getDefaultUrl() + "&signedRequest=" + new String(provisionRequest.getData());
+
+            final byte[] response = Utils.executePost(url, null, null);
+
+            Log.d("RESULT", Base64.encodeToString(response, Base64.NO_WRAP));
+
+            mediaDrm.provideProvisionResponse(response);
+        } catch (Exception e) {
+            log.e("Provision Widevine failed", e);
+            throw e;
+            
+        } finally {
+            if (mediaDrm != null) {
+                mediaDrm.release();
+            }
+        }
+    }
+
 }

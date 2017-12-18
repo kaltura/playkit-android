@@ -99,7 +99,7 @@ public class LocalAssetsManager {
         this.context = context;
         this.localDataStore = localDataStore;
 
-        MediaSupport.initialize(context);
+        MediaSupport.initializeDrmQuiet(context);
     }
 
     /**

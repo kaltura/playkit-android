@@ -20,10 +20,10 @@ import com.kaltura.playkit.player.MediaSupport;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by Noam Tamim @ Kaltura on 13/10/2016.
- */
 public class PlayKitManager {
+    
+    private static final PKLog log = PKLog.get("PlayKitManager");
+    
 
     public static final String VERSION_STRING = BuildConfig.VERSION_NAME;
     public static final String CLIENT_TAG = "playkit/android-" + VERSION_STRING;
@@ -55,7 +55,7 @@ public class PlayKitManager {
 
     public static Player loadPlayer(Context context, @Nullable PKPluginConfigs pluginConfigs) {
         
-        MediaSupport.initialize(context);
+        MediaSupport.initializeDrmQuiet(context);
         
         if (shouldSendDeviceCapabilitiesReport) {
             PKDeviceCapabilities.maybeSendReport(context);

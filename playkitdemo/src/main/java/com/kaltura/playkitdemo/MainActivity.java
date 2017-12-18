@@ -45,6 +45,7 @@ import com.kaltura.playkit.mediaproviders.ott.PhoenixMediaProvider;
 import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.player.AudioTrack;
 import com.kaltura.playkit.player.BaseTrack;
+import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
 import com.kaltura.playkit.player.VideoTrack;
@@ -102,6 +103,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        checkDRM();
+
         mOrientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL, this);
         mOrientationManager.enable();
         setContentView(R.layout.activity_main);
@@ -157,6 +161,26 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 setRequestedOrientation(orient);
             }
         });
+    }
+
+    private void checkDRM() {
+        try {
+            MediaSupport.initializeDrm(this);
+            log.d("DRM support: " + MediaSupport.widevineModular());
+        } catch (MediaSupport.DrmNotProvisionedException e) {
+            log.d("DRM not provisioned, try to provision");
+            MediaSupport.attemptDrmProvision(this, new MediaSupport.DrmProvisionCallback() {
+                @Override
+                public void onDrmProvisionComplete(Exception e) {
+                    if (e == null) {
+                        log.d("Provision successful");
+                        log.d("DRM support: " + MediaSupport.widevineModular());
+                    } else {
+                        log.e("Provision failed", e);
+                    }
+                }
+            });
+        }
     }
 
     private PKMediaEntry simpleMediaEntry(String id, String contentUrl, String licenseUrl, PKDrmParams.Scheme scheme) {
