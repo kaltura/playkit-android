@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -26,6 +26,7 @@ import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
+import com.kaltura.playkit.PKDeviceCapabilities;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -65,6 +66,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,7 +112,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     }
 
     /**
-     *  NOT MANDATORY! The referrer url, to fetch the data for.
+     * NOT MANDATORY! The referrer url, to fetch the data for.
      *
      * @param referrer
      * @return
@@ -130,6 +132,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         this.entryId = entryId;
         return this;
     }
+
     /**
      * optional parameter.
      * Defaults to {@link com.kaltura.netkit.connect.executor.APIOkRequestsExecutor} implementation.
@@ -238,7 +241,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
 
-            if(!isCanceled()) {
+            if (!isCanceled()) {
                 waitCompletion();
             }
         }
@@ -295,6 +298,11 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
                         if (error == null) {
                             KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) responses.get(playbackResponseIdx);
+
+                            //TODO needed only for mocking flavorAssets until BE fix bug.
+                            kalturaPlaybackContext.getFlavorAssets().addAll(mockHEVCFlavourAssets());
+
+
                             KalturaMetadataListResponse metadataList = (KalturaMetadataListResponse) responses.get(metadataResponseIdx);
 
                             if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error or unauthorized content
@@ -329,6 +337,35 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
 
     }
+
+    private static ArrayList<KalturaFlavorAsset> mockHEVCFlavourAssets() {
+        ArrayList<KalturaFlavorAsset> mockFlavourAssets = new ArrayList<>();
+        String[] mockFlavourParamsIds = {"1801461", "1801471", "1801481", "1801491", "1801501", "1801511", "1801521", "1801531", "1801541", "1801551"};
+        String[] mockIds = {"1_z84zd96i", "1_inadjk9r", "1_94407q4u", "1_7ccjrlqt", "1_k78jcvzs", "1_ha0o8dt0", "1_odrtct2n", "1_z0xu4y9e", "1_12vaf3fk", "1_1qaxjo6g"};
+        String mockFileExt = "mp4";
+        String[] mockVideoCodecId = {"hvc1", "hev1", "hev1", "hev1", "hev1", "hev1", "hev1", "hev1", "hev1", "hev1"};
+        int[] mockBitrate = {415, 1161, 6391, 6391, 6348, 4230, 2921, 1873, 750, 549};
+        int[] mockWidth = {640, 1280, 1920, 1920, 1920, 1920, 1920, 1280, 960, 640};
+        int[] mockHeight = {360, 720, 1080, 1080, 1080, 1080, 1080, 720, 540, 360};
+
+        KalturaFlavorAsset mockFlavourAsset;
+        for (int i = 0; i < mockFlavourParamsIds.length; i++) {
+            mockFlavourAsset = new KalturaFlavorAsset();
+            mockFlavourAsset.setId(mockIds[i]);
+            mockFlavourAsset.setFlavorParamsId(mockFlavourParamsIds[i]);
+            mockFlavourAsset.setFileExt(mockFileExt);
+            mockFlavourAsset.setBitrate(mockBitrate[i]);
+            mockFlavourAsset.setWidth(mockWidth[i]);
+            mockFlavourAsset.setHeight(mockHeight[i]);
+            mockFlavourAsset.setVideoCodecId(mockVideoCodecId[i]);
+
+            mockFlavourAssets.add(mockFlavourAsset);
+        }
+
+
+        return mockFlavourAssets;
+    }
+
 
     private static class ProviderParser {
 
@@ -452,10 +489,13 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                         baseProtocol = OvpConfigs.DefaultHttpProtocol;
                     }
 
+                    //Appending hevc flavors to source in order to mock the expected BE flow.
+                    appendToPlaybackSourceMockHEVCFlavorAssets(playbackSource, playbackContext.getFlavorAssets());
+
                     PlaySourceUrlBuilder playUrlBuilder = new PlaySourceUrlBuilder()
                             .setBaseUrl(baseUrl)
                             .setEntryId(entry.getId())
-                            .setFlavorIds(playbackSource.getFlavorIds())
+                            .setFlavorIds(buildFlavorAssets(playbackSource, playbackContext.getFlavorAssets()))
                             .setFormat(playbackSource.getFormat())
                             .setKs(ks)
                             .setPartnerId(partnerId)
@@ -504,6 +544,88 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             }
 
             return sources;
+        }
+
+        private static String buildFlavorAssets(KalturaPlaybackSource playbackSource, ArrayList<KalturaFlavorAsset> flavorAssets) {
+            //Find out flavors that should be removed from source flavors.
+            List<String> flavorAssetsToRemove = findFlavorAssetsToRemove(flavorAssets);
+            //Split the source flavors from String to String[]
+            List<String> sourceFlavorAssets = Arrays.asList(playbackSource.getFlavorIds().split(","));
+            //Initialize list that will hold the relevant flavors.
+            List<String> newFlavorAssets = new ArrayList<>();
+            String sourceFlavorAsset;
+
+            //Iterate through all the source flavors and add flavors that should be added.
+            for (int i = 0; i < sourceFlavorAssets.size(); i++) {
+                sourceFlavorAsset = sourceFlavorAssets.get(i);
+                if (!flavorAssetsToRemove.contains(sourceFlavorAsset)) {
+                    newFlavorAssets.add(sourceFlavorAsset);
+                }
+            }
+
+            return TextUtils.join(",", newFlavorAssets);
+        }
+
+        /**
+         * Here we find out the list of {@link KalturaFlavorAsset}  that should be removed from source flavors.
+         *
+         * @param flavorAssets - all the flavors.
+         * @return - list of flavors to remove.
+         */
+        private static List<String> findFlavorAssetsToRemove(ArrayList<KalturaFlavorAsset> flavorAssets) {
+
+            KalturaFlavorAsset flavorAsset;
+            List<String> flavorAssetsToRemove = new ArrayList<>();
+            KalturaFlavorAsset.VideoCodecType videoCodecTypeToRemove = findCodecTypeToRemove();
+
+            for (int i = 0; i < flavorAssets.size(); i++) {
+                flavorAsset = flavorAssets.get(i);
+                if (flavorAsset.getVideoCodecType() == videoCodecTypeToRemove) {
+                    flavorAssetsToRemove.add(flavorAsset.getId());
+                }
+            }
+
+            return flavorAssetsToRemove;
+        }
+
+
+        private static void appendToPlaybackSourceMockHEVCFlavorAssets(KalturaPlaybackSource playbackSource, ArrayList<KalturaFlavorAsset> flavorAssets) {
+            List<String> hevcFlavorAssets = new ArrayList<>();
+            KalturaFlavorAsset flavorAsset;
+            for (int i = 0; i < flavorAssets.size(); i++) {
+                flavorAsset = flavorAssets.get(i);
+                if (flavorAsset.isH265()) {
+                    hevcFlavorAssets.add(flavorAsset.getId());
+                }
+            }
+
+            String hevcFlavorIdsString = TextUtils.join(",", hevcFlavorAssets);
+            String playbackSourceFlavorStringWithHevc = playbackSource.getFlavorIds();
+            if (!hevcFlavorAssets.isEmpty()) {
+                playbackSourceFlavorStringWithHevc += ",";
+                playbackSourceFlavorStringWithHevc += hevcFlavorIdsString;
+                playbackSource.setFlavorIds(playbackSourceFlavorStringWithHevc);
+            }
+        }
+
+        /**
+         * Find the codec type that should be removed from source flavors.
+         *
+         * @return
+         */
+        private static KalturaFlavorAsset.VideoCodecType findCodecTypeToRemove() {
+            //Here should be returned the exact correct type of the video codec to filter out.
+            //All the variants/flags/user preferences should be taken in consideration in this method.
+            //For now just make it simple and stupid.
+            PKDeviceCapabilities.SupportedCodecType supportedCodecType = PKDeviceCapabilities.getSupportedCodecType();
+
+            if (supportedCodecType != PKDeviceCapabilities.SupportedCodecType.H265_HARDWARE_AND_SOFTWARE) {
+                return KalturaFlavorAsset.VideoCodecType.H265;
+            }
+
+
+
+            return KalturaFlavorAsset.VideoCodecType.H264;
         }
 
         @NonNull

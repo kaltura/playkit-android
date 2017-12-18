@@ -67,4 +67,8 @@ public class KalturaPlaybackSource extends BasePlaybackSource {
         return flavorIds != null && flavorIds.length() > 0;
     }
 
+    //TODO remove all setters after we remove the MOCK logic.
+    public void setFlavorIds(String flavorIds) {
+        this.flavorIds = flavorIds;
+    }
 }

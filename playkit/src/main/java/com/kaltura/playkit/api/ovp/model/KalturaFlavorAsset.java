@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -25,6 +25,12 @@ public class KalturaFlavorAsset implements FlavorAssetsFilter.Filterable {
     private int width;
     private int height;
     private String videoCodecId;
+
+    public enum VideoCodecType {
+        H264,
+        H265,
+        UNKNOWN
+    }
 
     public String getId() {
         return id;
@@ -58,15 +64,40 @@ public class KalturaFlavorAsset implements FlavorAssetsFilter.Filterable {
         return videoCodecId;
     }
 
+    //TODO remove all setters after we remove the MOCK logic.
+    public void setFlavorParamsId(String flavorParamsId) {
+        this.flavorParamsId = flavorParamsId;
+    }
+
+    public void setFileExt(String fileExt) {
+        this.fileExt = fileExt;
+    }
+
+    public void setBitrate(int bitrate) {
+        this.bitrate = bitrate;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public void setVideoCodecId(String videoCodecId) {
+        this.videoCodecId = videoCodecId;
+    }
+
     @Override
-    public String getMemberValue(String name){
-        switch (name){
+    public String getMemberValue(String name) {
+        switch (name) {
             case "id":
                 return id;
             case "flavorParamsId":
                 return flavorParamsId;
             case "bitrate":
-                return bitrate+"";
+                return bitrate + "";
         }
         return null;
     }
@@ -91,5 +122,23 @@ public class KalturaFlavorAsset implements FlavorAssetsFilter.Filterable {
         result = 31 * result + (fileExt != null ? fileExt.hashCode() : 0);
         result = 31 * result + bitrate;
         return result;
+    }
+
+    public boolean isH265() {
+        return videoCodecId.equals("hvc1") || videoCodecId.equals("hev1");
+    }
+
+    public boolean isH264() {
+        return videoCodecId.equals("avc1");
+    }
+
+    public VideoCodecType getVideoCodecType() {
+        if (videoCodecId.equals("hvc1") || videoCodecId.equals("hev1")) {
+            return VideoCodecType.H265;
+        } else if (videoCodecId.equals("avc1")) {
+            return VideoCodecType.H264;
+        }
+
+        return VideoCodecType.UNKNOWN;
     }
 }
