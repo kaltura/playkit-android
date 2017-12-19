@@ -60,6 +60,7 @@ import com.kaltura.playkit.utils.Consts;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static com.kaltura.playkitdemo.MockParams.Format;
 import static com.kaltura.playkitdemo.MockParams.Format2;
@@ -104,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        checkDRM();
+        initDrm();
 
         mOrientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL, this);
         mOrientationManager.enable();
@@ -163,24 +164,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
-    private void checkDRM() {
-        try {
-            MediaSupport.initializeDrm(this);
-            log.d("DRM support: " + MediaSupport.widevineModular());
-        } catch (MediaSupport.DrmNotProvisionedException e) {
-            log.d("DRM not provisioned, try to provision");
-            MediaSupport.attemptDrmProvision(this, new MediaSupport.DrmProvisionCallback() {
-                @Override
-                public void onDrmProvisionComplete(Exception e) {
-                    if (e == null) {
-                        log.d("Provision successful");
-                        log.d("DRM support: " + MediaSupport.widevineModular());
+    private void initDrm() {
+        MediaSupport.initializeDrm(this, new MediaSupport.DrmInitCallback() {
+            @Override
+            public void onDrmInitComplete(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean provisionPerformed, Exception provisionError) {
+                if (provisionPerformed) {
+                    if (provisionError != null) {
+                        log.e("DRM Provisioning failed", provisionError);
                     } else {
-                        log.e("Provision failed", e);
+                        log.d("DRM Provisioning succeeded");
                     }
                 }
-            });
-        }
+                log.d("DRM initialized; supported: " + supportedDrmSchemes);
+                
+                // Now it's safe to look at `supportedDrmSchemes`
+            }
+        });
     }
 
     private PKMediaEntry simpleMediaEntry(String id, String contentUrl, String licenseUrl, PKDrmParams.Scheme scheme) {
