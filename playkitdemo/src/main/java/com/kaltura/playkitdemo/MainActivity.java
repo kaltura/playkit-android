@@ -45,6 +45,7 @@ import com.kaltura.playkit.mediaproviders.ott.PhoenixMediaProvider;
 import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.player.AudioTrack;
 import com.kaltura.playkit.player.BaseTrack;
+import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
 import com.kaltura.playkit.player.VideoTrack;
@@ -59,6 +60,7 @@ import com.kaltura.playkit.utils.Consts;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static com.kaltura.playkitdemo.MockParams.Format;
 import static com.kaltura.playkitdemo.MockParams.Format2;
@@ -102,6 +104,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        initDrm();
+
         mOrientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL, this);
         mOrientationManager.enable();
         setContentView(R.layout.activity_main);
@@ -155,6 +160,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     orient = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
                 }
                 setRequestedOrientation(orient);
+            }
+        });
+    }
+
+    private void initDrm() {
+        MediaSupport.initializeDrm(this, new MediaSupport.DrmInitCallback() {
+            @Override
+            public void onDrmInitComplete(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean provisionPerformed, Exception provisionError) {
+                if (provisionPerformed) {
+                    if (provisionError != null) {
+                        log.e("DRM Provisioning failed", provisionError);
+                    } else {
+                        log.d("DRM Provisioning succeeded");
+                    }
+                }
+                log.d("DRM initialized; supported: " + supportedDrmSchemes);
+                
+                // Now it's safe to look at `supportedDrmSchemes`
             }
         });
     }
