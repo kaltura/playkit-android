@@ -250,6 +250,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             adsManager.destroy();
         }
         clearAdsLoader();
+        imaSetup();
         adConfig = parseConfig(config);
         isAdRequested = false;
         isAdDisplayed = false;
