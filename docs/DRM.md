@@ -1,7 +1,3 @@
----
-title: DRM
----
-
 # DRM
 
 ## Supported DRM Schemes
