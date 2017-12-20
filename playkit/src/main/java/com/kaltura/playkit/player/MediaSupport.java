@@ -35,34 +35,16 @@ import java.util.UUID;
  */
 public class MediaSupport {
 
+    public static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
     private static final PKLog log = PKLog.get("MediaSupport");
     private static boolean initSucceeded;
-    
-    // Should be called by applications that use DRM, to make sure they can handle provision issues.
-    public static void checkDrm(Context context) throws DrmNotProvisionedException {
-        if (widevineClassic == null) {
-            checkWidevineClassic(context);
-        }
+    private static Boolean widevineClassic;
+    private static Boolean widevineModular;
 
-        if (widevineModular == null) {
-            checkWidevineModular();
-        }
-    }
-
-    public interface DrmInitCallback {
-        /**
-         * Called when the DRM subsystem is initialized (with possible errors).
-         * @param supportedDrmSchemes   supported DRM schemes
-         * @param provisionPerformed    true if provisioning was required and performed, false otherwise
-         * @param provisionError        null if provisioning is successful, exception otherwise
-         */
-        void onDrmInitComplete(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean provisionPerformed, Exception provisionError);
-    }
-    
     /**
      * Initialize the DRM subsystem, performing provisioning if required. The callback is called
      * when done. If provisioning was required, it is performed before the callback is called.
-     * @param context           
+     * @param context           Context
      * @param drmInitCallback   callback object that will get the result. See {@link DrmInitCallback}.
      */
     public static void initializeDrm(Context context, final DrmInitCallback drmInitCallback) {
@@ -92,7 +74,7 @@ public class MediaSupport {
             });
         }
     }
-
+    
     private static void runCallback(DrmInitCallback drmInitCallback, boolean provisionPerformed, Exception provisionError) {
 
         final Set<PKDrmParams.Scheme> supportedDrmSchemes = supportedDrmSchemes();
@@ -109,20 +91,9 @@ public class MediaSupport {
         log.i("Supported DRM schemes " + supportedDrmSchemes);
     }
 
-    public static class DrmNotProvisionedException extends Exception {
-        DrmNotProvisionedException(String message, Exception e) {
-            super(message, e);
-        }
-    }
-    
-    public static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
-
-
-    private static Boolean widevineClassic;
-    private static Boolean widevineModular;
-
     /**
      * @deprecated This method does not perform possibly required DRM provisioning. Call {@link #initializeDrm(Context, DrmInitCallback)} instead.
+     * Will be removed in the next version.
      */
     @Deprecated
     public static Set<PKDrmParams.Scheme> supportedDrmSchemes(Context context) {
@@ -136,7 +107,7 @@ public class MediaSupport {
         
         return supportedDrmSchemes();
     }
-    
+
     private static Set<PKDrmParams.Scheme> supportedDrmSchemes() {
 
         HashSet<PKDrmParams.Scheme> schemes = new HashSet<>();
@@ -183,7 +154,7 @@ public class MediaSupport {
             widevineClassic = false;
         }
     }
-
+    
     public static boolean widevineClassic() {
         if (widevineClassic == null) {
             log.w("Widevine Classic DRM is not initialized; assuming not supported");
@@ -192,7 +163,7 @@ public class MediaSupport {
         
         return widevineClassic;
     }
-    
+
     public static boolean widevineModular() {
         if (widevineModular == null) {
             log.w("Widevine Modular DRM is not initialized; assuming not supported");
@@ -236,7 +207,7 @@ public class MediaSupport {
             widevineModular = false;
         }
     }
-
+    
     public static boolean playReady() {
         return Boolean.FALSE;   // Not yet.
     }
@@ -267,4 +238,19 @@ public class MediaSupport {
         }
     }
 
+    public interface DrmInitCallback {
+        /**
+         * Called when the DRM subsystem is initialized (with possible errors).
+         * @param supportedDrmSchemes   supported DRM schemes
+         * @param provisionPerformed    true if provisioning was required and performed, false otherwise
+         * @param provisionError        null if provisioning is successful, exception otherwise
+         */
+        void onDrmInitComplete(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean provisionPerformed, Exception provisionError);
+    }
+
+    private static class DrmNotProvisionedException extends Exception {
+        DrmNotProvisionedException(String message, Exception e) {
+            super(message, e);
+        }
+    }
 }
