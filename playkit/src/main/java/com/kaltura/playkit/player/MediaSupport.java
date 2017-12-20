@@ -67,6 +67,8 @@ public class MediaSupport {
                             provisionWidevine();
                             runCallback(drmInitCallback, true, null);
                         } catch (Exception e) {
+                            // Send any exception to the callback
+                            log.e("Widevine provisioning has failed", e);
                             runCallback(drmInitCallback, true, e);
                         }
                     }
@@ -226,10 +228,6 @@ public class MediaSupport {
 
             mediaDrm.provideProvisionResponse(response);
             widevineModular = true; // provisioning didn't fail
-            
-        } catch (Exception e) {
-            log.e("Provision Widevine failed", e);
-            throw e;
             
         } finally {
             if (mediaDrm != null) {
