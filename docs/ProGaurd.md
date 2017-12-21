@@ -12,6 +12,13 @@
 -keep class com.kaltura.playkit.plugins.ads.ima.IMAConfig { *; } ### until v3.x.x
 -keepclassmembers enum com.kaltura.playkit.ads.AdTagType { *; } 
 -keep class com.kaltura.playkit.* { *; } ## needed only for apps using MockMediaProvider
--keep class com.kaltura.dtg.** { *; }
 -dontwarn okio.**
+```
+
+#####Note
+
+In case Download `dtglib` library is used you might need to keep it as well
+
+```
+-keep class com.kaltura.dtg.** { *; }
 ```
