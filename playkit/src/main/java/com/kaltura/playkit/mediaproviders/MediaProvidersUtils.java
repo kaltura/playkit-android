@@ -10,6 +10,7 @@ import java.util.List;
 
 import static com.kaltura.playkit.PKDrmParams.Scheme.FairPlay;
 import static com.kaltura.playkit.PKDrmParams.Scheme.PlayReadyCENC;
+import static com.kaltura.playkit.PKDrmParams.Scheme.PlayReadyClassic;
 import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineCENC;
 import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineClassic;
 
@@ -41,12 +42,19 @@ public class MediaProvidersUtils {
     public static PKDrmParams.Scheme getScheme(String name) {
 
         switch (name) {
+            case "WIDEVINE_CENC":
             case "drm.WIDEVINE_CENC":
                 return WidevineCENC;
+            case "PLAYREADY_CENC":
             case "drm.PLAYREADY_CENC":
                 return PlayReadyCENC;
+            case "PLAYREADY":
+            case "playready.PLAYREADY":
+                 return PlayReadyClassic;
+            case "WIDEVINE":
             case "widevine.WIDEVINE":
                 return WidevineClassic;
+            case "FAIRPLAY":
             case "fairplay.FAIRPLAY":
                 return FairPlay;
             default:
