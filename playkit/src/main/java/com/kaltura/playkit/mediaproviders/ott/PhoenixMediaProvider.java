@@ -28,7 +28,6 @@ import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.BEResponseListener;
-import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
@@ -43,6 +42,7 @@ import com.kaltura.playkit.api.phoenix.model.KalturaPlaybackSource;
 import com.kaltura.playkit.api.phoenix.services.AssetService;
 import com.kaltura.playkit.api.phoenix.services.OttUserService;
 import com.kaltura.playkit.api.phoenix.services.PhoenixService;
+import com.kaltura.playkit.mediaproviders.MediaProvidersUtils;
 import com.kaltura.playkit.mediaproviders.base.BECallableLoader;
 import com.kaltura.playkit.mediaproviders.base.BEMediaProvider;
 import com.kaltura.playkit.mediaproviders.base.FormatsHelper;
@@ -56,11 +56,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import static com.kaltura.playkit.PKDrmParams.Scheme.FairPlay;
-import static com.kaltura.playkit.PKDrmParams.Scheme.PlayReadyCENC;
-import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineCENC;
-import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineClassic;
 
 
 /**
@@ -536,10 +531,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                     List<KalturaDrmPlaybackPluginData> drmData = playbackSource.getDrmData();
                     if (drmData != null) {
-                        if (isFairPlaySource(pkMediaSource, drmData)){
+                        if (MediaProvidersUtils.isFairPlaySource(pkMediaSource, drmData)){
                             continue;
                         }
-                        updateDrmParams(pkMediaSource, drmData);
+                        MediaProvidersUtils.updateDrmParams(pkMediaSource, drmData);
                     }
 
                     sources.add(pkMediaSource);
@@ -571,42 +566,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     return valueIndex1 - valueIndex2;
                 }
             });
-        }
-    }
-
-    private static boolean isFairPlaySource(PKMediaSource pkMediaSource, List<KalturaDrmPlaybackPluginData> drmData) {
-        if (drmData.size() == 1 && pkMediaSource.getMediaFormat() == PKMediaFormat.hls) {
-            PKDrmParams.Scheme drmScheme = getScheme(drmData.get(0).getScheme());
-            if (drmScheme == FairPlay) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static void updateDrmParams(PKMediaSource pkMediaSource, List<KalturaDrmPlaybackPluginData> drmData) {
-        List<PKDrmParams> drmParams = new ArrayList<>();
-        for (KalturaDrmPlaybackPluginData drm : drmData) {
-            PKDrmParams.Scheme drmScheme = getScheme(drm.getScheme());
-            drmParams.add(new PKDrmParams(drm.getLicenseURL(), drmScheme));
-        }
-        pkMediaSource.setDrmData(drmParams);
-    }
-
-
-    public static PKDrmParams.Scheme getScheme(String name) {
-
-        switch (name) {
-            case "drm.WIDEVINE_CENC":
-                return WidevineCENC;
-            case "drm.PLAYREADY_CENC":
-                return PlayReadyCENC;
-            case "widevine.WIDEVINE":
-                return WidevineClassic;
-            case "fairplay.FAIRPLAY":
-                return FairPlay;
-            default:
-                return null;
         }
     }
 
