@@ -49,7 +49,7 @@ public class MediaProvidersUtils {
             case "drm.PLAYREADY_CENC":
                 return PlayReadyCENC;
             case "PLAYREADY":
-            case "playready.PLAYREADY":
+            case "playReady.PLAY_READY":
                  return PlayReadyClassic;
             case "WIDEVINE":
             case "widevine.WIDEVINE":
