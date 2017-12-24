@@ -1,5 +1,5 @@
 
-# Playkit PROGUARD HowTo
+# Playkit ProGuard HowTo
 
 ## Suggested progaurd configuration for apps that use playkit SDK. 
 ```
