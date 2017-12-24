@@ -1,7 +1,7 @@
 
-#Playkit PROGUARD HowTo
+# Playkit PROGUARD HowTo
 
-### Suggested progaurd configuration for apps that use playkit SDK. 
+## Suggested progaurd configuration for apps that use playkit SDK. 
 ```
 -keep class com.kaltura.playkit.api.ovp.** { *; }
 -keep class com.kaltura.playkit.api.base.** { *; }
@@ -15,7 +15,7 @@
 -dontwarn okio.**
 ```
 
-#####Note
+## Note
 
 In case Download `dtglib` library is used you might need to keep it as well
 
