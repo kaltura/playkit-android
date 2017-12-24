@@ -488,7 +488,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 //-> sources with multiple drm data are split to PKMediaSource per drm
                 List<KalturaDrmPlaybackPluginData> drmData = playbackSource.getDrmData();
                 if (drmData != null) {
-                    if (MediaProvidersUtils.isFairPlaySource(pkMediaSource, drmData)){
+                    if (!MediaProvidersUtils.isDRMSchemeValid(pkMediaSource, drmData)){
                         continue;
                     }
                     MediaProvidersUtils.updateDrmParams(pkMediaSource, drmData);
