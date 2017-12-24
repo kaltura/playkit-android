@@ -123,7 +123,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onUpdateConfig(Object config) {
         setConfigMembers(config);
-        if (baseUrl == null || baseUrl.isEmpty() || partnerId >= 0) {
+        if (baseUrl == null || baseUrl.isEmpty() || partnerId <= 0) {
             cancelTimer();
             messageBus.remove(mEventListener, (Enum[]) PlayerEvent.Type.values());
         }

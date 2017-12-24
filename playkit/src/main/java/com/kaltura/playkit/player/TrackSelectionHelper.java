@@ -30,10 +30,12 @@ import com.kaltura.playkit.utils.Consts;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.MissingResourceException;
 
-import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
 
 /**
  * Responsible for generating/sorting/holding and changing track info.
@@ -125,14 +127,14 @@ class TrackSelectionHelper {
      *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
-    boolean prepareTracks() {
+    boolean prepareTracks(boolean isDashManifest) {
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
             log.w("Trying to get current MappedTrackInfo returns null");
             return false;
         }
         warnAboutUnsupportedRenderTypes();
-        PKTracks tracksInfo = buildTracks();
+        PKTracks tracksInfo = buildTracks(isDashManifest);
 
         if (tracksInfoListener != null) {
             tracksInfoListener.onTracksInfoReady(tracksInfo);
@@ -145,7 +147,7 @@ class TrackSelectionHelper {
      * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
      */
-    private PKTracks buildTracks() {
+    private PKTracks buildTracks(boolean isDashManifest) {
 
         clearTracksLists();
 
@@ -179,16 +181,23 @@ class TrackSelectionHelper {
                                 videoTracks.add(new VideoTrack(uniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false));
                                 break;
                             case TRACK_TYPE_AUDIO:
-
-                                audioTracks.add(new AudioTrack(uniqueId, format.language, format.id, format.bitrate, format.selectionFlags, false));
+                                String audioTrackLabel = null;
+                                if (!isDashManifest) {
+                                    audioTrackLabel = format.id;
+                                }
+                                audioTracks.add(new AudioTrack(uniqueId, format.language, audioTrackLabel, format.bitrate, format.selectionFlags, false));
                                 break;
                             case TRACK_TYPE_TEXT:
+                                String textTrackLabel = null;
+                                if (!isDashManifest) {
+                                    textTrackLabel = format.id;
+                                }
                                 if (CEA_608.equals(format.sampleMimeType)) {
                                     if (cea608CaptionsEnabled) {
                                         textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
                                     }
                                 } else {
-                                    textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
+                                    textTracks.add(new TextTrack(uniqueId, format.language, textTrackLabel, format.selectionFlags));
                                 }
                                 break;
                         }
@@ -746,28 +755,58 @@ class TrackSelectionHelper {
 
         switch (trackType) {
             case TRACK_TYPE_AUDIO:
-                if (preferredAudioLanguageConfig == null || preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.OFF) {
+                if (!isValidPreferredAudioConfig()) {
                     return null;
                 }
 
+                String preferredAudioISO3Lang = preferredAudioLanguageConfig.getTrackLanguage();
                 for (AudioTrack track : audioTracks) {
-
-                    if (preferredAudioLanguageConfig.getTrackLanguage() != null && preferredAudioLanguageConfig.getTrackLanguage().equals(track.getLanguage())) {
-                        log.d("changing track type " + trackType + " to " + preferredAudioLanguageConfig.getTrackLanguage());
-                        return track.getUniqueId();
+                    String trackLang = track.getLanguage();
+                    if (trackLang == null) {
+                        continue;
+                    }
+                    Locale streamLang = new Locale(trackLang);
+                    try {
+                        if (streamLang.getISO3Language().equals(preferredAudioISO3Lang)) {
+                            log.d("changing track type " + trackType + " to " + preferredAudioLanguageConfig.getTrackLanguage());
+                            return track.getUniqueId();
+                        }
+                    } catch(MissingResourceException ex) {
+                        log.e(ex.getMessage());
+                        continue;
                     }
                 }
                 break;
             case TRACK_TYPE_TEXT:
-                if (preferredTextLanguageConfig == null) {
+                if (!isValidPreferredTextConfig())  {
                     return null;
                 }
 
-                for (TextTrack track : textTracks) {
+                String preferredTextISO3Lang = preferredTextLanguageConfig.getTrackLanguage();
+                if (preferredTextISO3Lang != null) {
+                    for (TextTrack track : textTracks) {
+                        String trackLang = track.getLanguage();
+                        if (trackLang == null) {
+                            continue;
+                        }
 
-                    if (preferredTextLanguageConfig.getTrackLanguage() != null && preferredTextLanguageConfig.getTrackLanguage().equals(track.getLanguage())) {
-                        log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
-                        return track.getUniqueId();
+                        if (NONE.equals(preferredTextLanguageConfig.getTrackLanguage()) && NONE.equals(trackLang)) {
+                            return track.getUniqueId();
+                        } else if (NONE.equals(trackLang)){
+                            continue;
+                        }
+
+                        Locale streamLang = new Locale(trackLang);
+                        try {
+
+                            if (streamLang.getISO3Language().equals(preferredTextISO3Lang)) {
+                                log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
+                                return track.getUniqueId();
+                            }
+                        } catch(MissingResourceException ex) {
+                            log.e(ex.getMessage());
+                            continue;
+                        }
                     }
                 }
                 break;
@@ -775,6 +814,19 @@ class TrackSelectionHelper {
                 break;
         }
         return null;
+    }
+
+    private boolean isValidPreferredAudioConfig() {
+        return !(preferredAudioLanguageConfig == null ||
+                preferredAudioLanguageConfig.getPreferredMode() == null ||
+                preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.OFF ||
+                (preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.EXPLICIT && preferredAudioLanguageConfig.getTrackLanguage() == null));
+    }
+
+    private boolean isValidPreferredTextConfig() {
+        return !(preferredTextLanguageConfig == null ||
+                preferredTextLanguageConfig.getPreferredMode() == null ||
+                (preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.EXPLICIT && preferredTextLanguageConfig.getTrackLanguage() == null));
     }
 
     void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {

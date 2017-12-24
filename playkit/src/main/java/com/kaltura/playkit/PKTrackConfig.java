@@ -15,6 +15,7 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 
 import java.util.Locale;
+import java.util.MissingResourceException;
 
 public class PKTrackConfig {
     private static final String NONE = "none";
@@ -22,23 +23,17 @@ public class PKTrackConfig {
     private Mode preferredMode = Mode.OFF;
 
     public String getTrackLanguage() {
-        if (preferredMode == Mode.OFF) {
-            return NONE;
-        } else if (preferredMode == Mode.AUTO) {
-            trackLanguage = Locale.getDefault().getLanguage();
-            // for 3 languages need to fix the deprecated languages code that Locale returns
-            switch (trackLanguage) {
-                case "iw":
-                    return "he";
-                case "ji":
-                    return "yi";
-                case "in":
-                    return "id";
-                default:
-                    return trackLanguage;
+        try {
+            if (preferredMode == Mode.OFF) {
+                return NONE;
+            } else if (preferredMode == Mode.AUTO) {
+                return Locale.getDefault().getISO3Language();
             }
-        }
-        return trackLanguage;
+            if (trackLanguage != null) {
+                return new Locale(trackLanguage).getISO3Language();
+            }
+        } catch(MissingResourceException ex) {}
+        return null;
     }
 
     public Mode getPreferredMode() {
