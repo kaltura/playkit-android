@@ -73,6 +73,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import static com.kaltura.playkit.PKDrmParams.Scheme.FairPlay;
 import static com.kaltura.playkit.PKDrmParams.Scheme.PlayReadyCENC;
 import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineCENC;
 import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineClassic;
@@ -492,15 +493,12 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 //-> sources with multiple drm data are split to PKMediaSource per drm
                 List<KalturaDrmPlaybackPluginData> drmData = playbackSource.getDrmData();
                 if (drmData != null) {
-                    List<PKDrmParams> drmParams = new ArrayList<>();
-                    for (KalturaDrmPlaybackPluginData drm : drmData) {
-                        drmParams.add(new PKDrmParams(drm.getLicenseURL(), getScheme(drm.getScheme())));
+                    if (isFairPlaySource(pkMediaSource, drmData)){
+                        continue;
                     }
-                    pkMediaSource.setDrmData(drmParams);
+                    updateDrmParams(pkMediaSource, drmData);
                 }
-
                 sources.add(pkMediaSource);
-
             }
 
             return sources;
@@ -548,7 +546,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     }
 
-
     public static class MediaTypeConverter {
 
         public static PKMediaEntry.MediaEntryType toMediaEntryType(KalturaEntryType type) {
@@ -563,6 +560,26 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
     }
 
+    private static boolean isFairPlaySource(PKMediaSource pkMediaSource, List<KalturaDrmPlaybackPluginData> drmData) {
+        if (drmData.size() == 1 && pkMediaSource.getMediaFormat() == PKMediaFormat.hls) {
+            PKDrmParams.Scheme drmScheme = getScheme(drmData.get(0).getScheme());
+            if (drmScheme == FairPlay) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void updateDrmParams(PKMediaSource pkMediaSource, List<KalturaDrmPlaybackPluginData> drmData) {
+        List<PKDrmParams> drmParams = new ArrayList<>();
+        for (KalturaDrmPlaybackPluginData drm : drmData) {
+            PKDrmParams.Scheme drmScheme = getScheme(drm.getScheme());
+            drmParams.add(new PKDrmParams(drm.getLicenseURL(), drmScheme));
+        }
+        pkMediaSource.setDrmData(drmParams);
+    }
+
+
     public static PKDrmParams.Scheme getScheme(String name) {
 
         switch (name) {
@@ -572,10 +589,11 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 return PlayReadyCENC;
             case "widevine.WIDEVINE":
                 return WidevineClassic;
+            case "fairplay.FAIRPLAY":
+                return FairPlay;
             default:
                 return null;
         }
     }
-
 }
 

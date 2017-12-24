@@ -57,8 +57,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import static com.kaltura.playkit.PKDrmParams.Scheme.FairPlay;
 import static com.kaltura.playkit.PKDrmParams.Scheme.PlayReadyCENC;
-import static com.kaltura.playkit.PKDrmParams.Scheme.PlayReadyClassic;
 import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineCENC;
 import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineClassic;
 
@@ -536,11 +536,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                     List<KalturaDrmPlaybackPluginData> drmData = playbackSource.getDrmData();
                     if (drmData != null) {
-                        List<PKDrmParams> drmParams = new ArrayList<>();
-                        for (KalturaDrmPlaybackPluginData drm : drmData) {
-                            drmParams.add(new PKDrmParams(drm.getLicenseURL(), getScheme(drm.getScheme())));
+                        if (isFairPlaySource(pkMediaSource, drmData)){
+                            continue;
                         }
-                        pkMediaSource.setDrmData(drmParams);
+                        updateDrmParams(pkMediaSource, drmData);
                     }
 
                     sources.add(pkMediaSource);
@@ -575,17 +574,37 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
     }
 
-    public static PKDrmParams.Scheme getScheme(String scheme) {
+    private static boolean isFairPlaySource(PKMediaSource pkMediaSource, List<KalturaDrmPlaybackPluginData> drmData) {
+        if (drmData.size() == 1 && pkMediaSource.getMediaFormat() == PKMediaFormat.hls) {
+            PKDrmParams.Scheme drmScheme = getScheme(drmData.get(0).getScheme());
+            if (drmScheme == FairPlay) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-        switch (scheme) {
-            case "WIDEVINE_CENC":
+    private static void updateDrmParams(PKMediaSource pkMediaSource, List<KalturaDrmPlaybackPluginData> drmData) {
+        List<PKDrmParams> drmParams = new ArrayList<>();
+        for (KalturaDrmPlaybackPluginData drm : drmData) {
+            PKDrmParams.Scheme drmScheme = getScheme(drm.getScheme());
+            drmParams.add(new PKDrmParams(drm.getLicenseURL(), drmScheme));
+        }
+        pkMediaSource.setDrmData(drmParams);
+    }
+
+
+    public static PKDrmParams.Scheme getScheme(String name) {
+
+        switch (name) {
+            case "drm.WIDEVINE_CENC":
                 return WidevineCENC;
-            case "PLAYREADY_CENC":
+            case "drm.PLAYREADY_CENC":
                 return PlayReadyCENC;
-            case "WIDEVINE":
+            case "widevine.WIDEVINE":
                 return WidevineClassic;
-            case "PLAYREADY":
-                return PlayReadyClassic;
+            case "fairplay.FAIRPLAY":
+                return FairPlay;
             default:
                 return null;
         }
