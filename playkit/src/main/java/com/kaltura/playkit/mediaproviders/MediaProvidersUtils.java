@@ -31,7 +31,7 @@ public class MediaProvidersUtils {
                 drmDataItr.remove();
             }
         }
-        if (drmData.size() == 0) {
+        if (drmData.isEmpty()) {
             return false;
         }
         return true;
