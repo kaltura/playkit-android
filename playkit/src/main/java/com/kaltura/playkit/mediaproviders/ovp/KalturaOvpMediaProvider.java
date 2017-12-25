@@ -26,7 +26,6 @@ import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
-import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
@@ -49,6 +48,7 @@ import com.kaltura.playkit.api.ovp.services.BaseEntryService;
 import com.kaltura.playkit.api.ovp.services.MetaDataService;
 import com.kaltura.playkit.api.ovp.services.OvpService;
 import com.kaltura.playkit.api.ovp.services.OvpSessionService;
+import com.kaltura.playkit.mediaproviders.MediaProvidersUtils;
 import com.kaltura.playkit.mediaproviders.base.BECallableLoader;
 import com.kaltura.playkit.mediaproviders.base.BEMediaProvider;
 import com.kaltura.playkit.mediaproviders.base.FormatsHelper;
@@ -72,10 +72,6 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
-import static com.kaltura.playkit.PKDrmParams.Scheme.PlayReadyCENC;
-import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineCENC;
-import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineClassic;
 
 /**
  * Created by tehilarozin on 30/10/2016.
@@ -492,15 +488,12 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 //-> sources with multiple drm data are split to PKMediaSource per drm
                 List<KalturaDrmPlaybackPluginData> drmData = playbackSource.getDrmData();
                 if (drmData != null) {
-                    List<PKDrmParams> drmParams = new ArrayList<>();
-                    for (KalturaDrmPlaybackPluginData drm : drmData) {
-                        drmParams.add(new PKDrmParams(drm.getLicenseURL(), getScheme(drm.getScheme())));
+                    if (!MediaProvidersUtils.isDRMSchemeValid(pkMediaSource, drmData)){
+                        continue;
                     }
-                    pkMediaSource.setDrmData(drmParams);
+                    MediaProvidersUtils.updateDrmParams(pkMediaSource, drmData);
                 }
-
                 sources.add(pkMediaSource);
-
             }
 
             return sources;
@@ -548,7 +541,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     }
 
-
     public static class MediaTypeConverter {
 
         public static PKMediaEntry.MediaEntryType toMediaEntryType(KalturaEntryType type) {
@@ -562,20 +554,5 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             }
         }
     }
-
-    public static PKDrmParams.Scheme getScheme(String name) {
-
-        switch (name) {
-            case "drm.WIDEVINE_CENC":
-                return WidevineCENC;
-            case "drm.PLAYREADY_CENC":
-                return PlayReadyCENC;
-            case "widevine.WIDEVINE":
-                return WidevineClassic;
-            default:
-                return null;
-        }
-    }
-
 }
 

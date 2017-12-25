@@ -28,7 +28,6 @@ import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.BEResponseListener;
-import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
@@ -43,6 +42,7 @@ import com.kaltura.playkit.api.phoenix.model.KalturaPlaybackSource;
 import com.kaltura.playkit.api.phoenix.services.AssetService;
 import com.kaltura.playkit.api.phoenix.services.OttUserService;
 import com.kaltura.playkit.api.phoenix.services.PhoenixService;
+import com.kaltura.playkit.mediaproviders.MediaProvidersUtils;
 import com.kaltura.playkit.mediaproviders.base.BECallableLoader;
 import com.kaltura.playkit.mediaproviders.base.BEMediaProvider;
 import com.kaltura.playkit.mediaproviders.base.FormatsHelper;
@@ -56,11 +56,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import static com.kaltura.playkit.PKDrmParams.Scheme.PlayReadyCENC;
-import static com.kaltura.playkit.PKDrmParams.Scheme.PlayReadyClassic;
-import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineCENC;
-import static com.kaltura.playkit.PKDrmParams.Scheme.WidevineClassic;
 
 
 /**
@@ -536,11 +531,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                     List<KalturaDrmPlaybackPluginData> drmData = playbackSource.getDrmData();
                     if (drmData != null) {
-                        List<PKDrmParams> drmParams = new ArrayList<>();
-                        for (KalturaDrmPlaybackPluginData drm : drmData) {
-                            drmParams.add(new PKDrmParams(drm.getLicenseURL(), getScheme(drm.getScheme())));
+                        if (!MediaProvidersUtils.isDRMSchemeValid(pkMediaSource, drmData)){
+                            continue;
                         }
-                        pkMediaSource.setDrmData(drmParams);
+                        MediaProvidersUtils.updateDrmParams(pkMediaSource, drmData);
                     }
 
                     sources.add(pkMediaSource);
@@ -572,22 +566,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     return valueIndex1 - valueIndex2;
                 }
             });
-        }
-    }
-
-    public static PKDrmParams.Scheme getScheme(String scheme) {
-
-        switch (scheme) {
-            case "WIDEVINE_CENC":
-                return WidevineCENC;
-            case "PLAYREADY_CENC":
-                return PlayReadyCENC;
-            case "WIDEVINE":
-                return WidevineClassic;
-            case "PLAYREADY":
-                return PlayReadyClassic;
-            default:
-                return null;
         }
     }
 
