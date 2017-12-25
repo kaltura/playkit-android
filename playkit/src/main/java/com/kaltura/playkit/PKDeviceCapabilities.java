@@ -54,9 +54,11 @@ public class PKDeviceCapabilities {
     private static final String PREFS_ENTRY_FINGERPRINT = "Build.FINGERPRINT";
     private static final String DEVICE_CAPABILITIES_URL = "https://cdnapisec.kaltura.com/api_v3/index.php?service=stats&action=reportDeviceCapabilities";
     private static final String FINGERPRINT = Build.FINGERPRINT;
-    private static final String[] H265_HARDWARE_CODECS_LIST = {"OMX.qualcomm.hevc.decoder", "OMX.MEDIATEK.HEVC.DECODER", "OMX.Exynos.hevc.dec"};     //OMX.qcom.video.decoder.hevc --> HW or SW???
 
-    private static final String[] H265_SOFTWARE_CODECS_LIST = {"OMX.google.hevc.decoder", "OMX.SEC.hevc.sw.dec"};
+    private static final String[] H265_HARDWARE_CODECS_LIST = {"OMX.qualcomm.hevc.decoder", "OMX.MEDIATEK.HEVC.DECODER", "OMX.Exynos.hevc.dec"};     //OMX.qcom.video.decoder.hevc --> HW or SW???
+                                                                                                                                                    // OMX.Exynos.hevc.dec.secure ---> SECURE? investigate!
+
+    private static final String[] H265_SOFTWARE_CODECS_LIST = {"OMX.google.hevc.decoder", "OMX.SEC.hevc.sw.dec", "OMX.IMG.MSVDX.Decoder.HEVC"};      //OMX.SEC.hevc.sw.dec --> 'SEC' is for secured?
     private static boolean reportSent = false;
 
     private final Context context;
