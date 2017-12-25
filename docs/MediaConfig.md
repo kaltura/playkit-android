@@ -1,5 +1,5 @@
 
-#Media Config
+# Media Config
 
 Once you have `PKMeidaEntry` which you have created manually or received from one of the `providers` you will have to create `PKMediaConfig` object which is the input to the playkitPlayer.prepare method.
 
@@ -28,7 +28,7 @@ mediaConfig = new PKMediaConfig();
 
 ```
 
-###Set Start Position
+### Set Start Position
 ```
 setStartPosition(long startPosition)
 ```
@@ -60,9 +60,9 @@ setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig)
 setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig)
 ```
 
-##Configuration possibilities
+## Configuration possibilities
 
-###There are 3 modes available:
+### There are 3 modes available:
 
  - `OFF` - for Text tracks it will cancel text tracks display for audio it will select the default in the manifest
  - `AUTO` - SDK will check if the stream has audio/text track that matches the device locale and will select it else it will take stream default
