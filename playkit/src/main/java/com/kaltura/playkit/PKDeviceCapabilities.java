@@ -55,10 +55,7 @@ public class PKDeviceCapabilities {
     private static final String DEVICE_CAPABILITIES_URL = "https://cdnapisec.kaltura.com/api_v3/index.php?service=stats&action=reportDeviceCapabilities";
     private static final String FINGERPRINT = Build.FINGERPRINT;
 
-    private static final String[] H265_HARDWARE_CODECS_LIST = {"OMX.qualcomm.hevc.decoder", "OMX.MEDIATEK.HEVC.DECODER", "OMX.Exynos.hevc.dec"};     //OMX.qcom.video.decoder.hevc --> HW or SW???
-                                                                                                                                                    // OMX.Exynos.hevc.dec.secure ---> SECURE? investigate!
 
-    private static final String[] H265_SOFTWARE_CODECS_LIST = {"OMX.google.hevc.decoder", "OMX.SEC.hevc.sw.dec", "OMX.IMG.MSVDX.Decoder.HEVC"};      //OMX.SEC.hevc.sw.dec --> 'SEC' is for secured?
     private static boolean reportSent = false;
 
     private final Context context;
@@ -364,48 +361,7 @@ public class PKDeviceCapabilities {
                 .put("ARCH", arch);
     }
 
-    public static SupportedCodecType getSupportedCodecType() {
-        ArrayList<MediaCodecInfo> mediaCodecs = getMediaDecoders();
-        boolean hasH265SoftwareDecoder = false;
-        boolean hasH265HardwareDecoder = false;
-
-        for (MediaCodecInfo mediaCodec : mediaCodecs) {
-            for (String hardwareCodecName : H265_HARDWARE_CODECS_LIST) {
-                if (mediaCodec.getName().equalsIgnoreCase(hardwareCodecName)) {
-                    hasH265HardwareDecoder = true;
-                }
-            }
-
-            for (String softwareCodecName : H265_SOFTWARE_CODECS_LIST) {
-                if (mediaCodec.getName().equalsIgnoreCase(softwareCodecName)) {
-                    hasH265SoftwareDecoder = true;
-                }
-            }
-        }
-
-        if (hasH265HardwareDecoder && hasH265SoftwareDecoder) {
-            return SupportedCodecType.H265_HARDWARE_AND_SOFTWARE;
-        }
-
-        if (hasH265HardwareDecoder) {
-            return SupportedCodecType.H265_HARDWARE;
-        }
-
-        if (hasH265SoftwareDecoder) {
-            return SupportedCodecType.H265_SOFTWARE;
-        }
-
-        return SupportedCodecType.H264;
-    }
-
-    public enum SupportedCodecType {
-        H264,
-        H265_HARDWARE,
-        H265_SOFTWARE,
-        H265_HARDWARE_AND_SOFTWARE
-    }
-
-    private static ArrayList<MediaCodecInfo> getMediaDecoders() {
+    public static ArrayList<MediaCodecInfo> getMediaDecoders() {
 
         ArrayList<MediaCodecInfo> mediaCodecs = new ArrayList<>();
         ArrayList<MediaCodecInfo> decoders = new ArrayList<>();

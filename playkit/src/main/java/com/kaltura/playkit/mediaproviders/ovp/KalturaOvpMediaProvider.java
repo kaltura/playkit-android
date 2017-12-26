@@ -26,12 +26,12 @@ import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
-import com.kaltura.playkit.PKDeviceCapabilities;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.SupportedCodecType;
 import com.kaltura.playkit.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.api.ovp.KalturaOvpErrorHelper;
 import com.kaltura.playkit.api.ovp.KalturaOvpParser;
@@ -54,6 +54,7 @@ import com.kaltura.playkit.mediaproviders.base.BECallableLoader;
 import com.kaltura.playkit.mediaproviders.base.BEMediaProvider;
 import com.kaltura.playkit.mediaproviders.base.FormatsHelper;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.player.MediaSupport;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -617,9 +618,9 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             //Here should be returned the exact correct type of the video codec to filter out.
             //All the variants/flags/user preferences should be taken in consideration in this method.
             //For now just make it simple and stupid.
-            PKDeviceCapabilities.SupportedCodecType supportedCodecType = PKDeviceCapabilities.getSupportedCodecType();
+            SupportedCodecType supportedCodecType = MediaSupport.getSupportedCodecType();
 
-            if (supportedCodecType != PKDeviceCapabilities.SupportedCodecType.H265_HARDWARE_AND_SOFTWARE) {
+            if (supportedCodecType != SupportedCodecType.H265_HW_AND_SW) {
                 return KalturaFlavorAsset.VideoCodecType.H265;
             }
 

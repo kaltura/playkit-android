@@ -14,13 +14,17 @@ package com.kaltura.playkit.player;
 
 import android.content.Context;
 import android.drm.DrmManagerClient;
+import android.media.MediaCodecInfo;
 import android.media.MediaDrm;
 import android.os.Build;
 import android.support.annotation.NonNull;
 
+import com.kaltura.playkit.PKDeviceCapabilities;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.SupportedCodecType;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -38,6 +42,10 @@ public class MediaSupport {
     private static boolean initialized = false;
 
     private static final PKLog log = PKLog.get("MediaSupport");
+    private static final String[] H265_HARDWARE_CODECS_LIST = {"OMX.qualcomm.hevc.decoder", "OMX.MEDIATEK.HEVC.DECODER", "OMX.Exynos.hevc.dec"};     //OMX.qcom.video.decoder.hevc --> HW or SW???
+    // OMX.Exynos.hevc.dec.secure ---> SECURE? investigate!
+
+    private static final String[] H265_SOFTWARE_CODECS_LIST = {"OMX.google.hevc.decoder", "OMX.SEC.hevc.sw.dec", "OMX.IMG.MSVDX.Decoder.HEVC"};      //OMX.SEC.hevc.sw.dec --> 'SEC' is for secured?
 
     public static void initialize(@NonNull final Context context) {
         if (initialized) {
@@ -124,5 +132,39 @@ public class MediaSupport {
 
     public static boolean playReady() {
         return Boolean.parseBoolean("false");   // Not yet.
+    }
+
+    public static SupportedCodecType getSupportedCodecType() {
+        ArrayList<MediaCodecInfo> mediaCodecs = PKDeviceCapabilities.getMediaDecoders();
+        boolean hasH265SoftwareDecoder = false;
+        boolean hasH265HardwareDecoder = false;
+
+        for (MediaCodecInfo mediaCodec : mediaCodecs) {
+            for (String hardwareCodecName : H265_HARDWARE_CODECS_LIST) {
+                if (mediaCodec.getName().equalsIgnoreCase(hardwareCodecName)) {
+                    hasH265HardwareDecoder = true;
+                }
+            }
+
+            for (String softwareCodecName : H265_SOFTWARE_CODECS_LIST) {
+                if (mediaCodec.getName().equalsIgnoreCase(softwareCodecName)) {
+                    hasH265SoftwareDecoder = true;
+                }
+            }
+        }
+
+        if (hasH265HardwareDecoder && hasH265SoftwareDecoder) {
+            return SupportedCodecType.H265_HW_AND_SW;
+        }
+
+        if (hasH265HardwareDecoder) {
+            return SupportedCodecType.H265_HW;
+        }
+
+        if (hasH265SoftwareDecoder) {
+            return SupportedCodecType.H265_SW;
+        }
+
+        return SupportedCodecType.H264;
     }
 }
