@@ -42,16 +42,7 @@ public enum PKMediaFormat {
         this.mimeType = mimeType;
         this.pathExt = pathExt;
     }
-
-    public static boolean contains(String playbackFormat) {
-        for (PKMediaFormat format : PKMediaFormat.values()) {
-            if (format.name().equals(playbackFormat)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
+    
     public static PKMediaFormat valueOfExt(String ext) {
         return extensionLookup.get(ext);
     }
