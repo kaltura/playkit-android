@@ -51,6 +51,7 @@ public class StatsService {
                 .appendQueryParameter("format", "1")
                 .appendQueryParameter("ignoreNull", "1")
                 .appendQueryParameter("action", "collect")
+                .appendQueryParameter("hasKanalony", "false")
                 .appendQueryParameter("event:eventType", Integer.toString(eventType))
                 .appendQueryParameter("event:clientVer", clientVer)
                 .appendQueryParameter("event:currentPoint", Long.toString(position))
