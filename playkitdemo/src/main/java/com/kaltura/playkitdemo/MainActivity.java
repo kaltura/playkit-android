@@ -54,6 +54,7 @@ import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
 import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
+import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 import com.kaltura.playkit.utils.Consts;
 
@@ -97,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         PlayKitManager.registerPlugins(this, SamplePlugin.factory);
         PlayKitManager.registerPlugins(this, IMAPlugin.factory);
+        PlayKitManager.registerPlugins(this, KalturaStatsPlugin.factory);
         //PlayKitManager.registerPlugins(this, TVPAPIAnalyticsPlugin.factory);
         //PlayKitManager.registerPlugins(this, PhoenixAnalyticsPlugin.factory);
     }
@@ -310,12 +312,36 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         jsonObject.addProperty("delay", 1200);
         config.setPluginConfig("Sample", jsonObject);
         addIMAPluginConfig(config);
+        //addKaluraStatsPluginConfig(config);
         //addPhoenixAnalyticsPluginConfig(config);
         //addTVPAPIAnalyticsPluginConfig(config);
         //config.setPluginConfig("IMASimplePlugin", jsonObject);
         //config.setPluginConfig("KalturaStatistics", jsonObject);
         //config.setPluginConfig("PhoenixAnalytics", jsonObject);
         //config.setPluginConfig("Youbora", jsonObject);
+
+    }
+
+    private void addKaluraStatsPluginConfig(PKPluginConfigs config) {
+        String KALTURA_STATS_URL = "https://stats.kaltura.com/api_v3/index.php";
+        JsonObject pluginEntry = new JsonObject();
+
+        //Put url to the kaltura stats server.
+        pluginEntry.addProperty("baseUrl", KALTURA_STATS_URL);
+
+        //Put the partner id.
+        pluginEntry.addProperty("partnerId", "2222401");
+
+        //Put ui conf id.
+        pluginEntry.addProperty("uiconfId", "38713161");
+
+        //Put entry id.
+        pluginEntry.addProperty("entryId", "1_f93tepsn");
+
+        //Put interval with which analitcs reports would be triggered.
+        pluginEntry.addProperty("timerInterval", 30);
+        //Set plugin entry to the plugin configs.
+        config.setPluginConfig(KalturaStatsPlugin.factory.getName(), pluginEntry);
 
     }
 
