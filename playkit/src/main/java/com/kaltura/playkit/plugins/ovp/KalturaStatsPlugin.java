@@ -467,7 +467,7 @@ public class KalturaStatsPlugin extends PKPlugin {
 
         final RequestBuilder requestBuilder = StatsService.sendStatsEvent(pluginConfig.getBaseUrl(), pluginConfig.getPartnerId(), eventType.getValue(), PlayKitManager.CLIENT_TAG, duration,
                 sessionId, player.getCurrentPosition(), pluginConfig.getUiconfId(), pluginConfig.getEntryId(), "_" + pluginConfig.getPartnerId(), hasSeeked,
-                pluginConfig.getContextId(), context.getPackageName(), pluginConfig.getUserId());
+                pluginConfig.getContextId(), context.getPackageName(), pluginConfig.getUserId(), pluginConfig.getHasKanalony());
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override

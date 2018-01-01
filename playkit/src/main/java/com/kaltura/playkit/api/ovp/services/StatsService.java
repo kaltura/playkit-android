@@ -31,17 +31,17 @@ public class StatsService {
 
     public static RequestBuilder sendStatsEvent(String baseUrl, int partnerId, int eventType, String clientVer, long duration,
                                                 String sessionId, long position, int uiConfId, String entryId, String widgetId, boolean isSeek,
-                                                int contextId, String applicationName, String userId) {
+                                                int contextId, String applicationName, String userId, boolean hasKanalony) {
         return new RequestBuilder()
                 .method("GET")
                 .url(getOvpUrl(baseUrl, partnerId, eventType, clientVer, duration, sessionId, position, uiConfId, entryId, widgetId, isSeek,
-                        contextId, applicationName, userId))
+                        contextId, applicationName, userId, hasKanalony))
                 .tag("stats-send");
     }
 
     private static String getOvpUrl(String baseUrl, int partnerId, int eventType, String clientVer, long duration,
                                     String sessionId, long position, int uiConfId, String entryId, String widgetId, boolean isSeek, int contextId,
-                                    String applicationName, String userId) {
+                                    String applicationName, String userId, boolean hasKanalony) {
         Uri.Builder builder = new Uri.Builder();
         builder.path(baseUrl)
                 .appendQueryParameter("service", "stats")
@@ -52,6 +52,7 @@ public class StatsService {
                 .appendQueryParameter("format", "1")
                 .appendQueryParameter("ignoreNull", "1")
                 .appendQueryParameter("action", "collect")
+                .appendQueryParameter("hasKanalony", String.valueOf(hasKanalony))
                 .appendQueryParameter("event:clientVer", clientVer)
                 .appendQueryParameter("event:currentPoint", Long.toString(position))
                 .appendQueryParameter("event:duration", Long.toString(duration))

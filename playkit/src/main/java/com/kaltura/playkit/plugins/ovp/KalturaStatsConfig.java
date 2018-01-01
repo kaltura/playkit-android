@@ -26,6 +26,7 @@ public class KalturaStatsConfig {
     public static final String USER_ID    = "userId";
     public static final String CONTEXT_ID = "contextId";
     public static final String TIMER_INTERVAL = "timerInterval"; //in seconds
+    public static final String HAS_KANALONY = "hasKanalony";
 
     private int partnerId;
     private int uiconfId;
@@ -34,8 +35,18 @@ public class KalturaStatsConfig {
     private String userId;
     private int contextId;
     private int timerInterval;
+    private boolean hasKanalony;
 
-    public KalturaStatsConfig(int uiconfId, int partnerId, String entryId, String userId, int contextId) {
+    /* hasKanalony should be provided so we can differ between :
+        * hybrid mode of kalturaAnalytics + kavaAnalytics (hasKanalony=true)
+        and
+        * katuraAnalytics only (hasKanalony=false)
+     */
+    public KalturaStatsConfig(boolean hasKanalony) {
+        this.hasKanalony = hasKanalony;
+    }
+
+    public KalturaStatsConfig(int uiconfId, int partnerId, String entryId, String userId, int contextId, boolean hasKanalony) {
         this.timerInterval = Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW_SEC;
         this.baseUrl = "https://stats.kaltura.com/api_v3/index.php";
         this.partnerId = partnerId;
@@ -43,9 +54,10 @@ public class KalturaStatsConfig {
         this.entryId = entryId;
         this.userId = userId;
         this.contextId = contextId;
+        this.hasKanalony = hasKanalony;
     }
 
-    public KalturaStatsConfig(int uiconfId, int partnerId, String entryId, String baseUrl, String userId, int contextId, int timerInterval) {
+    public KalturaStatsConfig(int uiconfId, int partnerId, String entryId, String baseUrl, String userId, int contextId, int timerInterval, boolean hasKanalony) {
         this.timerInterval = timerInterval;
         this.baseUrl = baseUrl;
         this.partnerId = partnerId;
@@ -53,6 +65,7 @@ public class KalturaStatsConfig {
         this.entryId = entryId;
         this.userId = userId;
         this.contextId = contextId;
+        this.hasKanalony = hasKanalony;
     }
 
     public KalturaStatsConfig setPartnerId(int partnerId) {
@@ -114,10 +127,13 @@ public class KalturaStatsConfig {
         return userId;
     }
 
+    public boolean getHasKanalony() {
+        return hasKanalony;
+    }
+
     public int getContextId() {
         return contextId;
     }
-
     public JsonObject toJSONObject() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(PARTNER_ID, partnerId);
@@ -127,6 +143,7 @@ public class KalturaStatsConfig {
         jsonObject.addProperty(USER_ID, userId);
         jsonObject.addProperty(CONTEXT_ID, contextId);
         jsonObject.addProperty(TIMER_INTERVAL, timerInterval);
+        jsonObject.addProperty(HAS_KANALONY, hasKanalony);
 
         return jsonObject;
     }
