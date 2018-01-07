@@ -20,6 +20,7 @@ public interface AdsProvider {
     void pause();
     void contentCompleted();
     PKAdInfo getAdInfo();
+    AdEvent.Type getAdPluginState();
     boolean isAdDisplayed();
     boolean isAdPaused();
     boolean isAdRequested();

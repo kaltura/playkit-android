@@ -134,6 +134,7 @@ public class AdEvent implements PKEvent {
 
 
     public enum Type {
+        UNKNOWN,
         AD_BREAK_PENDING,
         AD_BREAK_STARTED,
         AD_BREAK_ENDED,

@@ -94,7 +94,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
                 if (!adsProvider.isAdRequested()) {
                     adsProvider.start();
                     return;
-                } else if (adsProvider.isAdDisplayed()) {
+                } else if (adsProvider.isAdDisplayed() || adsProvider.getAdPluginState() == AdEvent.Type.AD_LOADED /* for none auto play mode */) {
                     adsProvider.resume();
                     return;
                 }
