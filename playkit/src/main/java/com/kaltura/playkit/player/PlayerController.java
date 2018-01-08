@@ -26,6 +26,7 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
@@ -61,6 +62,8 @@ public class PlayerController implements Player {
     private boolean isNewEntry = true;
     private boolean useTextureView = false;
     private boolean cea608CaptionsEnabled = false;
+    private PKTrackConfig preferredTextTrackConfig;
+    private PKTrackConfig preferredAudioTrackConfig;
     private long targetSeekPosition;
 
 
@@ -90,6 +93,18 @@ public class PlayerController implements Player {
         @Override
         public Player.Settings useTextureView(boolean useTextureView) {
             PlayerController.this.useTextureView = useTextureView;
+            return this;
+        }
+
+        @Override
+        public Player.Settings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
+            PlayerController.this.preferredAudioTrackConfig = preferredAudioTrackConfig;
+            return this;
+        }
+
+        @Override
+        public Player.Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
+            PlayerController.this.preferredTextTrackConfig = preferredTextTrackConfig;
             return this;
         }
     }
@@ -352,7 +367,7 @@ public class PlayerController implements Player {
             return false;
         }
 
-        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, contentRequestAdapter, cea608CaptionsEnabled, useTextureView);
+        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, contentRequestAdapter, cea608CaptionsEnabled, useTextureView, preferredAudioTrackConfig, preferredTextTrackConfig);
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
         return true;
     }

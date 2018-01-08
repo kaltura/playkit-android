@@ -20,11 +20,11 @@ import java.util.MissingResourceException;
 public class PKTrackConfig {
     private static final String NONE = "none";
     private String trackLanguage;
-    private Mode preferredMode = Mode.OFF;
+    private Mode preferredMode = Mode.DEFAULT;
 
     public String getTrackLanguage() {
         try {
-            if (preferredMode == Mode.OFF) {
+            if (preferredMode == Mode.DEFAULT) {
                 return NONE;
             } else if (preferredMode == Mode.AUTO) {
                 return Locale.getDefault().getISO3Language();
@@ -57,9 +57,9 @@ public class PKTrackConfig {
     }
 
     public enum Mode {
-        OFF,
+        DEFAULT, // OFF - No Captions
         AUTO,
-        EXPLICIT
+        SELECTION
     }
 }
 
