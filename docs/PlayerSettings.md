@@ -77,12 +77,13 @@ Once you created a player instance you can set the above settings on it.
 
  // SELECTING preferred TEXT TRACKS -- Default is no captions displayed.
  
- //player.getSettings().setPreferredTextTrack(new PKTrackConfig().setPreferredMode(PKTrackConfig.Mode.DEFAULT)); // no text tracks
+ //player.getSettings().setPreferredTextTrack(new PKTrackConfig().setPreferredMode(PKTrackConfig.Mode.OFF)); // no text tracks
  //player.getSettings().setPreferredTextTrack(new PKTrackConfig().setPreferredMode(PKTrackConfig.Mode.SELECTION).setTrackLanguage("hi")); // select specific track lang if not exist select manifest default if exist else the first from manifest
  player.getSettings().setPreferredTextTrack(new PKTrackConfig().setPreferredMode(PKTrackConfig.Mode.AUTO)); // select the track by locale if does not exist manifest default
 
  // SELECTING preferred AUDIO TRACKS - Default is Stream's default
- 
+
+ //player.getSettings().setPreferredAudioTrack(new PKTrackConfig().setPreferredMode(PKTrackConfig.Mode.OFF); // default audio track (Done automatically actually)
  //player.getSettings().setPreferredAudioTrack(new PKTrackConfig().setPreferredMode(PKTrackConfig.Mode.SELECTION).setTrackLanguage("ru")); // select specific track lang if not exist select manifest default
  player.getSettings().setPreferredAudioTrack(new PKTrackConfig().setPreferredMode(PKTrackConfig.Mode.AUTO));
 ```
@@ -102,7 +103,7 @@ using:
 #### Example
 
 ```
-- PKTrackConfig trackConfig = new PKTrackConfig().setPreferredMode(PKTrackConfig.Mode.DEFAULT);
+- PKTrackConfig trackConfig = new PKTrackConfig().setPreferredMode(PKTrackConfig.Mode.OFF);
 - PKTrackConfig trackConfig = new PKTrackConfig().setPreferredMode(PKTrackConfig.Mode.AUTO);
 - PKTrackConfig trackConfig = new PKTrackConfig().setPreferredMode(PKTrackConfig.Mode.SELECTION).setTrackLanguage("ru")
 ```
@@ -118,7 +119,7 @@ setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig)
 
 ### There are 3 modes available:
 
- - `DEFAULT` - for Text tracks it will cancel text tracks display for audio it will select the default from the manifest
+ - `OFF` - for Text tracks it will cancel text tracks display for audio it will select the default from the manifest
  - `AUTO` - SDK will check if the stream has audio/text track that matches the device locale and will select it else it will take stream default
  - `SELECTION` - this mode requires to set the language explicitly (2 or 3 letters)  if this language does not exist SDK will take the streams
 default Audio/Ttext track

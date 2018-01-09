@@ -828,7 +828,7 @@ class TrackSelectionHelper {
     private boolean isValidPreferredAudioConfig() {
         return !(preferredAudioLanguageConfig == null ||
                 preferredAudioLanguageConfig.getPreferredMode() == null ||
-                preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.DEFAULT ||
+                preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.OFF ||
                 (preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredAudioLanguageConfig.getTrackLanguage() == null));
     }
 
