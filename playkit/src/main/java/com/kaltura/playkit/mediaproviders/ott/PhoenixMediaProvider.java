@@ -530,7 +530,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                             .setMediaFormat(mediaFormat);
 
                     List<KalturaDrmPlaybackPluginData> drmData = playbackSource.getDrmData();
-                    if (drmData != null) {
+                    if (drmData != null && !drmData.isEmpty()) {
                         if (!MediaProvidersUtils.isDRMSchemeValid(pkMediaSource, drmData)){
                             continue;
                         }
