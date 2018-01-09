@@ -59,7 +59,7 @@ public class PKTrackConfig {
     public enum Mode {
         OFF,
         AUTO,
-        EXPLICIT
+        SELECTION
     }
 }
 

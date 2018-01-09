@@ -19,9 +19,6 @@ public class PKMediaConfig {
 
     private long startPosition = 0;
     private PKMediaEntry mediaEntry;
-    private PKTrackConfig preferredTextTrackConfig;
-    private PKTrackConfig preferredAudioTrackConfig;
-
 
     /**
      * Setter for start position.
@@ -40,15 +37,6 @@ public class PKMediaConfig {
         return this;
     }
 
-    public PKMediaConfig setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
-        this.preferredAudioTrackConfig = preferredAudioTrackConfig;
-        return this;
-    }
-
-    public PKMediaConfig setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
-        this.preferredTextTrackConfig = preferredTextTrackConfig;
-        return this;
-    }
 
     /**
      * Getter for start position. Default is 0.
@@ -62,14 +50,6 @@ public class PKMediaConfig {
 
     public PKMediaEntry getMediaEntry() {
         return mediaEntry;
-    }
-
-    public PKTrackConfig getPreferredAudioTrackConfig() {
-        return preferredAudioTrackConfig;
-    }
-
-    public PKTrackConfig getPreferredTextTrackConfig() {
-        return preferredTextTrackConfig;
     }
 }
 

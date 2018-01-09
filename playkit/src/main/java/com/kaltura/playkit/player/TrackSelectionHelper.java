@@ -808,6 +808,15 @@ class TrackSelectionHelper {
                             continue;
                         }
                     }
+                    //if user set mode to AUTO and locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
+                    if (preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null &&  textTracks.size() > 1) {
+                        for (TextTrack track : textTracks) {
+                            if (track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
+                                return track.getUniqueId();
+                            }
+                        }
+                        return textTracks.get(1).getUniqueId();
+                    }
                 }
                 break;
             default:
@@ -820,13 +829,13 @@ class TrackSelectionHelper {
         return !(preferredAudioLanguageConfig == null ||
                 preferredAudioLanguageConfig.getPreferredMode() == null ||
                 preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.OFF ||
-                (preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.EXPLICIT && preferredAudioLanguageConfig.getTrackLanguage() == null));
+                (preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredAudioLanguageConfig.getTrackLanguage() == null));
     }
 
     private boolean isValidPreferredTextConfig() {
         return !(preferredTextLanguageConfig == null ||
                 preferredTextLanguageConfig.getPreferredMode() == null ||
-                (preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.EXPLICIT && preferredTextLanguageConfig.getTrackLanguage() == null));
+                (preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredTextLanguageConfig.getTrackLanguage() == null));
     }
 
     void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
