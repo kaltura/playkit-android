@@ -58,8 +58,7 @@ public interface Player {
         Settings useTextureView(boolean useTextureView);
 
         /**
-         * Set the Player's preceiver
-         * referredAudioTrackConfig.
+         * Set the Player's preferredAudioTrackConfig.
          * @param preferredAudioTrackConfig - AudioTrackConfig.
          * @return - Player Settings.
          */
