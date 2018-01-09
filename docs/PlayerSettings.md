@@ -36,8 +36,7 @@ Player has settings object that can be configured for player instance
         Settings useTextureView(boolean useTextureView);
 
         /**
-         * Set the Player's preceiver
-         * referredAudioTrackConfig.
+         * Set the Player's preferredAudioTrackConfig.
          * @param preferredAudioTrackConfig - AudioTrackConfig.
          * @return - Player Settings.
          */
