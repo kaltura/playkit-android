@@ -808,7 +808,7 @@ class TrackSelectionHelper {
                             continue;
                         }
                     }
-                    //if user ser AUTO and locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
+                    //if user set mode to AUTO and locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
                     if (preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null &&  textTracks.size() > 1) {
                         for (TextTrack track : textTracks) {
                             if (track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
