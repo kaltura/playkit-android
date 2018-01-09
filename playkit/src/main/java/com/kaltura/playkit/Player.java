@@ -56,6 +56,20 @@ public interface Player {
          * @return - Player Settings.
          */
         Settings useTextureView(boolean useTextureView);
+
+        /**
+         * Set the Player's preferredAudioTrackConfig.
+         * @param preferredAudioTrackConfig - AudioTrackConfig.
+         * @return - Player Settings.
+         */
+        Settings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig);
+
+        /**
+         * Set the Player's preferredTextTrackConfig.
+         * @param preferredTextTrackConfig - TextTrackConfig.
+         * @return - Player Settings.
+         */
+        Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig);
     }
 
     /**

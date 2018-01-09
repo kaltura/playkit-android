@@ -35,14 +35,14 @@ class PKMediaSourceConfig {
     boolean useTextureView;
     boolean cea608CaptionsEnabled;
 
-    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PKRequestParams.Adapter adapter, boolean cea608CaptionsEnabled, boolean useTextureView) {
+    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PKRequestParams.Adapter adapter, boolean cea608CaptionsEnabled, boolean useTextureView, PKTrackConfig audioTrackConfig, PKTrackConfig textTrackConfig) {
         this.adapter = adapter;
         this.mediaSource = source;
         this.useTextureView = useTextureView;
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
         this.mediaEntryType = mediaConfig.getMediaEntry().getMediaType();
-        this.preferredAudioTrackConfig = mediaConfig.getPreferredAudioTrackConfig();
-        this.preferredTextTrackConfig = mediaConfig.getPreferredTextTrackConfig();
+        this.preferredAudioTrackConfig = audioTrackConfig;
+        this.preferredTextTrackConfig = textTrackConfig;
     }
 
     Uri getUrl() {
