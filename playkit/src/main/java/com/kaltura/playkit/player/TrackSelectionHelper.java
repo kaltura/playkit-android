@@ -835,7 +835,7 @@ class TrackSelectionHelper {
     private boolean isValidPreferredTextConfig() {
         return !(preferredTextLanguageConfig == null ||
                 preferredTextLanguageConfig.getPreferredMode() == null ||
-                (preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredTextLanguageConfig.getTrackLanguage() == null));
+                (preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredTextLanguageConfig.getTrackLanguage() == null));
     }
 
     void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
