@@ -3,6 +3,7 @@
 
 ## Suggested progaurd configuration for apps that use playkit SDK. 
 ```
+-keep class com.kaltura.netkit.utils.** { *; }
 -keep class com.kaltura.playkit.api.ovp.** { *; }
 -keep class com.kaltura.playkit.api.base.** { *; }
 -keep class com.kaltura.playkit.api.phoenix.** { *; }
