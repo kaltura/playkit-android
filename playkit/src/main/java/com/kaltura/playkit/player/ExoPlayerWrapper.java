@@ -28,7 +28,6 @@ import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
@@ -110,6 +109,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private PlayerState currentState = PlayerState.IDLE;
     private PlayerState previousState;
 
+    private Factory manifestDataSourceFactory;
     private Factory mediaDataSourceFactory;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
     private PKError currentError = null;
@@ -142,6 +142,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     ExoPlayerWrapper(Context context) {
         this.context = context;
         bandwidthMeter = new DefaultBandwidthMeter(mainHandler, this);
+        manifestDataSourceFactory = new DefaultDataSourceFactory(context, getUserAgent(context));
         mediaDataSourceFactory = buildDataSourceFactory(true);
         exoPlayerView = new ExoPlayerView(context);
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
@@ -167,8 +168,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (player != null) {
             player.addListener(this);
             player.addListener(eventLogger);
-            player.setVideoDebugListener(eventLogger);
-            player.setAudioDebugListener(eventLogger);
+            player.addVideoDebugListener(eventLogger);
+            player.addAudioDebugListener(eventLogger);
             player.addMetadataOutput(this);
         }
     }
@@ -219,20 +220,21 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         Uri uri = sourceConfig.getUrl();
 
-
         switch (format) {
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
-                return new ExtractorMediaSource(uri, mediaDataSourceFactory, new DefaultExtractorsFactory(),
-                        mainHandler, eventLogger);
-
+            return new ExtractorMediaSource.Factory(mediaDataSourceFactory)
+                    .createMediaSource(uri, mainHandler, eventLogger);
             case dash:
-                return new DashMediaSource(uri, buildDataSourceFactory(false),
-                        new DefaultDashChunkSource.Factory(mediaDataSourceFactory), mainHandler, eventLogger);
+                return new DashMediaSource.Factory(
+                    new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
+                    manifestDataSourceFactory)
+                    .createMediaSource(uri, mainHandler, eventLogger);
 
             case hls:
-                return new HlsMediaSource(uri, mediaDataSourceFactory, mainHandler, eventLogger);
+            return new HlsMediaSource.Factory(mediaDataSourceFactory)
+                    .createMediaSource(uri, mainHandler, eventLogger);
 
             default:
                 throw new IllegalStateException("Unsupported type: " + format);
