@@ -61,6 +61,13 @@ abstract class CastConfigHelper {
 
             customData.put("embedConfig", embedConfig);
 
+
+            JSONObject receiverConfig = new JSONObject();
+
+            receiverConfig.put("defaultLanguageKey", "en");
+
+            customData.put("receiverConfig", receiverConfig);
+
         } catch (JSONException e) {
             log.e(e.getMessage());
         }
