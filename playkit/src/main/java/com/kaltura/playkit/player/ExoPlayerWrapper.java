@@ -430,7 +430,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(player.getCurrentManifest() instanceof DashManifest);
         }
 
-        trackSelectionHelper.updateSelectedTracksBitrate(trackSelections);
+        trackSelectionHelper.notifyAboutTrackChange(trackSelections);
     }
 
     @Override
