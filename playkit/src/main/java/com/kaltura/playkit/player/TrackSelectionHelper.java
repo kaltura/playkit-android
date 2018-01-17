@@ -71,9 +71,9 @@ class TrackSelectionHelper {
 
 
     private final DefaultTrackSelector selector;
+    private TrackSelectionArray trackSelectionArray;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
     private final TrackSelection.Factory adaptiveTrackSelectionFactory;
-    private TracksInfoListener tracksInfoListener;
 
     private List<VideoTrack> videoTracks = new ArrayList<>();
     private List<AudioTrack> audioTracks = new ArrayList<>();
@@ -82,16 +82,12 @@ class TrackSelectionHelper {
     private String[] lastSelectedTrackIds;
     private String[] requestedChangeTrackIds = {NONE, NONE, NONE};
 
-    private long currentVideoBitrate = Consts.NO_VALUE;
-    private long currentAudioBitrate = Consts.NO_VALUE;
-    private long currentVideoWidth = Consts.NO_VALUE;
-    private long currentVideoHeight = Consts.NO_VALUE;
-
     private PKTrackConfig preferredAudioLanguageConfig;
     private PKTrackConfig preferredTextLanguageConfig;
 
     private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
 
+    private TracksInfoListener tracksInfoListener;
     interface TracksInfoListener {
 
         void onTracksInfoReady(PKTracks PKTracks);
@@ -640,58 +636,44 @@ class TrackSelectionHelper {
     }
 
     long getCurrentVideoBitrate() {
-        return currentVideoBitrate;
+        if (trackSelectionArray != null) {
+            TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
+            return trackSelection.getSelectedFormat().bitrate;
+        }
+        return -1;
     }
 
     long getCurrentAudioBitrate() {
-        return currentAudioBitrate;
+        if (trackSelectionArray != null) {
+            TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_AUDIO);
+            return trackSelection.getSelectedFormat().bitrate;
+        }
+        return -1;
     }
 
     long getCurrentVideoWidth() {
-        return currentVideoWidth;
+        if (trackSelectionArray != null) {
+            TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
+            return trackSelection.getSelectedFormat().width;
+        }
+        return -1;
     }
 
     long getCurrentVideoHeight() {
-        return currentVideoHeight;
+        if (trackSelectionArray != null) {
+            TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
+            return trackSelection.getSelectedFormat().height;
+        }
+        return -1;
     }
 
-    void updateSelectedTracksBitrate(TrackSelectionArray trackSelections) {
+    void notifyAboutTrackChange(TrackSelectionArray trackSelections) {
 
-        if (tracksInfoListener == null || trackSelections == null) {
+        this.trackSelectionArray = trackSelections;
+        if (tracksInfoListener == null) {
             return;
         }
 
-        for (TrackSelection trackSelection : trackSelections.getAll()) {
-            if (trackSelection == null || trackSelection.getSelectedFormat() == null) {
-                continue;
-            }
-
-            String sampleMimeType = "";
-            String containerMimeType = "";
-            if (trackSelection.getSelectedFormat().sampleMimeType != null) {
-                sampleMimeType = trackSelection.getSelectedFormat().sampleMimeType;
-            }
-            if (trackSelection.getSelectedFormat().containerMimeType != null) {
-                containerMimeType = trackSelection.getSelectedFormat().containerMimeType;
-            }
-
-            if ("".equals(sampleMimeType) && "".equals(containerMimeType)) {
-                continue;
-            }
-
-            if ((sampleMimeType.contains(VIDEO) || containerMimeType.contains(VIDEO))) {
-                currentVideoBitrate = trackSelection.getSelectedFormat().bitrate;
-                currentVideoWidth = trackSelection.getSelectedFormat().width;
-                currentVideoHeight = trackSelection.getSelectedFormat().height;
-            } else if ((sampleMimeType.contains(AUDIO) || containerMimeType.contains(AUDIO))) {
-                currentAudioBitrate = trackSelection.getSelectedFormat().bitrate;
-            }
-        }
-
-        maybeNotifyAboutTrackChange();
-    }
-
-    private void maybeNotifyAboutTrackChange() {
         if (shouldNotifyAboutTrackChanged(TRACK_TYPE_VIDEO)) {
             lastSelectedTrackIds[TRACK_TYPE_VIDEO] = requestedChangeTrackIds[TRACK_TYPE_VIDEO];
             tracksInfoListener.onVideoTrackChanged();
@@ -745,6 +727,7 @@ class TrackSelectionHelper {
     /**
      * Helper method which return the uniqueId of the preferred audio/text track. Base on user selection and/or
      * predefined requirements.
+     *
      * @param trackType - the type of the track we are looking for (audio/text).
      * @return - uniqueId of the preferred track.
      * If no preferred AudioTrack exist or user defined to use OFF mode, will return null.
@@ -771,14 +754,13 @@ class TrackSelectionHelper {
                             log.d("changing track type " + trackType + " to " + preferredAudioLanguageConfig.getTrackLanguage());
                             return track.getUniqueId();
                         }
-                    } catch(MissingResourceException ex) {
+                    } catch (MissingResourceException ex) {
                         log.e(ex.getMessage());
-                        continue;
                     }
                 }
                 break;
             case TRACK_TYPE_TEXT:
-                if (!isValidPreferredTextConfig())  {
+                if (!isValidPreferredTextConfig()) {
                     return null;
                 }
 
@@ -792,7 +774,7 @@ class TrackSelectionHelper {
 
                         if (NONE.equals(preferredTextLanguageConfig.getTrackLanguage()) && NONE.equals(trackLang)) {
                             return track.getUniqueId();
-                        } else if (NONE.equals(trackLang)){
+                        } else if (NONE.equals(trackLang)) {
                             continue;
                         }
 
@@ -803,13 +785,12 @@ class TrackSelectionHelper {
                                 log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
                                 return track.getUniqueId();
                             }
-                        } catch(MissingResourceException ex) {
+                        } catch (MissingResourceException ex) {
                             log.e(ex.getMessage());
-                            continue;
                         }
                     }
                     //if user set mode to AUTO and the locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
-                    if (preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null &&  textTracks.size() > 1) {
+                    if (preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null && textTracks.size() > 1) {
                         for (TextTrack track : textTracks) {
                             if (track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
                                 return track.getUniqueId();
