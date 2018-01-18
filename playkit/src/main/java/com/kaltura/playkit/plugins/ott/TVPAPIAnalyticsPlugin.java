@@ -24,6 +24,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.TokenResolver;
 import com.kaltura.playkit.api.tvpapi.services.MediaMarkService;
 import com.kaltura.playkit.utils.Consts;
 
@@ -41,6 +42,11 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         }
 
         @Override
+        public String getVersion() {
+            return null;
+        }
+
+        @Override
         public PKPlugin newInstance() {
             return new TVPAPIAnalyticsPlugin();
         }
@@ -49,10 +55,15 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         public void warmUp(Context context) {
 
         }
+
+        @Override
+        public Object mergeConfig(Object original, JsonObject additions) {
+            return null;
+        }
     };
 
     @Override
-    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
+    protected void onLoad(Context context, Player player, Object config, final MessageBus messageBus, TokenResolver tokenResolver) {
         log.d("onLoad");
         setPluginMembers(config);
         this.player = player;

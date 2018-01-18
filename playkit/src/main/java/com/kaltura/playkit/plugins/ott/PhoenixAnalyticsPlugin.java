@@ -27,6 +27,7 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.TokenResolver;
 import com.kaltura.playkit.api.phoenix.services.BookmarkService;
 import com.kaltura.playkit.utils.Consts;
 
@@ -78,6 +79,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
 
         @Override
+        public String getVersion() {
+            return null;
+        }
+
+        @Override
         public PKPlugin newInstance() {
             return new PhoenixAnalyticsPlugin();
         }
@@ -86,10 +92,15 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         public void warmUp(Context context) {
 
         }
+
+        @Override
+        public Object mergeConfig(Object original, JsonObject additions) {
+            return null;
+        }
     };
 
     @Override
-    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
+    protected void onLoad(Context context, Player player, Object config, final MessageBus messageBus, TokenResolver tokenResolver) {
         log.d("onLoad");
 
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();

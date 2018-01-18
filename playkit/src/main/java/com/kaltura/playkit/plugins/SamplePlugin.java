@@ -22,6 +22,7 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerDecorator;
+import com.kaltura.playkit.TokenResolver;
 
 /**
  * @hide
@@ -43,6 +44,11 @@ public class SamplePlugin extends PKPlugin {
         }
 
         @Override
+        public String getVersion() {
+            return null;
+        }
+
+        @Override
         public PKPlugin newInstance() {
             return new SamplePlugin();
         }
@@ -51,10 +57,15 @@ public class SamplePlugin extends PKPlugin {
         public void warmUp(Context context) {
             
         }
+
+        @Override
+        public Object mergeConfig(Object original, JsonObject additions) {
+            return null;
+        }
     };
 
     @Override
-    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
+    protected void onLoad(Context context, Player player, Object config, final MessageBus messageBus, TokenResolver tokenResolver) {
         log.i("Loading");
         this.player = player;
         this.context = context;

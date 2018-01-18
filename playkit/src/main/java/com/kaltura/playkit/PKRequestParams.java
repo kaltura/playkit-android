@@ -32,7 +32,7 @@ public class PKRequestParams {
      */
     public interface Adapter {
         /**
-         * Return a potentially modified {@link PKRequestParams} object. Note that the input object
+         * Return a potentially modified {@link PKRequestParams} getObject. Note that the input getObject
          * is immutable -- the implementation can return the same object or create a new one with
          * adapted parameters.
          * @param requestParams Request parameters, as will be sent to the server.

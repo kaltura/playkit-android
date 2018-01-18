@@ -17,7 +17,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.player.PlayerController;
-import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -57,9 +56,6 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         playerController = new PlayerController(context);
 
-        // By default, set Kaltura decorator.
-        KalturaPlaybackRequestAdapter.install(playerController, context.getPackageName());
-        
         playerController.setEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
@@ -71,7 +67,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         for (Map.Entry<String, Object> entry : pluginsConfig) {
             String name = entry.getKey();
-            PKPlugin plugin = loadPlugin(name, player, entry.getValue(), messageBus, context);
+            PKPlugin plugin = loadPlugin(context, name, player, entry.getValue(), messageBus, pluginsConfig.getTokenResolver());
 
             if (plugin == null) {
                 log.w("Plugin not found: " + name);
@@ -170,10 +166,10 @@ class PlayerLoader extends PlayerDecoratorBase {
         setPlayer(currentLayer);
     }
 
-    private PKPlugin loadPlugin(String name, Player player, Object config, MessageBus messageBus, Context context) {
+    private PKPlugin loadPlugin(Context context, String name, Player player, Object config, MessageBus messageBus, TokenResolver tokenResolver) {
         PKPlugin plugin = PlayKitManager.createPlugin(name);
         if (plugin != null) {
-            plugin.onLoad(player, config, messageBus, context);
+            plugin.onLoad(context, player, config, messageBus, tokenResolver);
         }
         return plugin;
     }

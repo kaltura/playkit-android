@@ -21,9 +21,11 @@ import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
+import com.kaltura.netkit.connect.response.PrimitiveResult;
 import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.netkit.utils.OnCompletion;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.PKLog;
@@ -92,6 +94,26 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     public KalturaOvpMediaProvider() {
         super(KalturaOvpMediaProvider.TAG);
+    }
+    
+    public KalturaOvpMediaProvider(final String baseUrl, final int partnerId, final String ks) {
+        this();
+        setSessionProvider(new SessionProvider() {
+            @Override
+            public String baseUrl() {
+                return baseUrl;
+            }
+
+            @Override
+            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
+                completion.onComplete(new PrimitiveResult(ks));
+            }
+
+            @Override
+            public int partnerId() {
+                return partnerId;
+            }
+        });
     }
 
     /**
@@ -245,11 +267,11 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
 
         /**
-         * Parse and create a {@link PKMediaEntry} object from the multirequest call sent to the BE.
+         * Parse and create a {@link PKMediaEntry} getObject from the multirequest call sent to the BE.
          *
          * @param ks
          * @param response
-         * @param completion - A callback to pass the constructed {@link PKMediaEntry} object on.
+         * @param completion - A callback to pass the constructed {@link PKMediaEntry} getObject on.
          * @throws InterruptedException - in case the load operation canceled.
          */
         private void onEntryInfoMultiResponse(String ks, ResponseElement response, OnMediaLoadCompletion completion) throws InterruptedException {
@@ -267,10 +289,10 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 try {
                     //parse multi response from request response
 
-                /* in this option, in case of error response, the type of the parsed response will be BaseResult, and not the expected object type,
+                /* in this option, in case of error response, the type of the parsed response will be BaseResult, and not the expected getObject type,
                    since we parse the type dynamically from the result and we get "KalturaAPIException" objectType */
                     List<BaseResult> responses = KalturaOvpParser.parse(response.getResponse());//, TextUtils.isEmpty(sessionProvider.getSessionToken()) ? 1 : 0, KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
-                /* in this option, responses types will always be as expected, and in case of an error, the error can be reached from the typed object, since
+                /* in this option, responses types will always be as expected, and in case of an error, the error can be reached from the typed getObject, since
                 * all response objects should extend BaseResult */
                     //  List<BaseResult> responses = (List<BaseResult>) KalturaOvpParser.parse(response.getResponse(), KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
                     if (responses.size() == 0) {
@@ -419,7 +441,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          * @param partnerId
          * @param uiConfId        - if not empty, will be added to the playing url path
          * @param entry
-         * @param playbackContext - the response object of the "baseEntry/getPlaybackContext" API.
+         * @param playbackContext - the response getObject of the "baseEntry/getPlaybackContext" API.
          * @return - list of PKMediaSource created from sources list
          */
         @NonNull

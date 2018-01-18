@@ -22,9 +22,14 @@ import java.util.Map;
 public class PKPluginConfigs implements Iterable<Map.Entry<String, Object>> {
 
     private Map<String, Object> configs = new HashMap<>();
+    private TokenResolver tokenResolver;
 
     public Object getPluginConfig(String pluginName) {
         return configs.get(pluginName);
+    }
+    
+    public boolean hasConfig(String pluginName) {
+        return configs.containsKey(pluginName);
     }
 
     public void setPluginConfig(String pluginName, Object settings) {
@@ -33,5 +38,13 @@ public class PKPluginConfigs implements Iterable<Map.Entry<String, Object>> {
 
     public Iterator<Map.Entry<String, Object>> iterator() {
         return configs.entrySet().iterator();
+    }
+
+    public TokenResolver getTokenResolver() {
+        return tokenResolver;
+    }
+
+    public void setTokenResolver(TokenResolver tokenResolver) {
+        this.tokenResolver = tokenResolver;
     }
 }

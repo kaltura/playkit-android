@@ -22,9 +22,11 @@ import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
+import com.kaltura.netkit.connect.response.PrimitiveResult;
 import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.netkit.utils.OnCompletion;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.BEResponseListener;
@@ -119,6 +121,26 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     public PhoenixMediaProvider() {
         super(PhoenixMediaProvider.TAG);
         this.mediaAsset = new MediaAsset();
+    }
+
+    public PhoenixMediaProvider(final String baseUrl, final int partnerId, final String ks) {
+        this();
+        setSessionProvider(new SessionProvider() {
+            @Override
+            public String baseUrl() {
+                return baseUrl;
+            }
+
+            @Override
+            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
+                completion.onComplete(new PrimitiveResult(ks));
+            }
+
+            @Override
+            public int partnerId() {
+                return partnerId;
+            }
+        });
     }
 
     /**
@@ -398,21 +420,21 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                 /* ways to parse the AssetInfo from response string:
 
-                    1. <T> T PhoenixParser.parseObject: parse json string to a single object, according to a specific type - returns an object of the specific type
+                    1. <T> T PhoenixParser.parseObject: parse json string to a single getObject, according to a specific type - returns an getObject of the specific type
                             asset = PhoenixParser.parseObject(response.getResponse(), KalturaMediaAsset.class);
 
                     2. Object PhoenixParser.parse(String response, Class...types): parse json string according to 1 or more types (dynamic types array) - returns Object since can
                        be single or an array of objects. cast is needed, can be used for multiple response
                             asset = (KalturaMediaAsset) PhoenixParser.parse(response.getResponse(), KalturaMediaAsset.class);
 
-                        in case of an error - the error will be passed over the returned object (should extend BaseResult) */
+                        in case of an error - the error will be passed over the returned getObject (should extend BaseResult) */
 
                     //*************************
 
                     PKLog.d(TAG, loadId + ": parsing response  [" + Loader.this.toString() + "]");
-                    /* 3. <T> T PhoenixParser.parse(String response): parse json string to an object of dynamically parsed type.
+                    /* 3. <T> T PhoenixParser.parse(String response): parse json string to an getObject of dynamically parsed type.
                        type defined by the value of "objectType" property provided in the response objects, if type wasn't found or in
-                       case of error object in the response, will be parsed to BaseResult object (error if occurred will be accessible from this object)*/
+                       case of error getObject in the response, will be parsed to BaseResult getObject (error if occurred will be accessible from this getObject)*/
 
                     List<BaseResult> parsedResponses = PhoenixParser.parse(response.getResponse());
                     BaseResult playbackContextResult = null;
