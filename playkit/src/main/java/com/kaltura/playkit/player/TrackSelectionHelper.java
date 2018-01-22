@@ -638,7 +638,9 @@ class TrackSelectionHelper {
     long getCurrentVideoBitrate() {
         if (trackSelectionArray != null) {
             TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
-            return trackSelection.getSelectedFormat().bitrate;
+            if (trackSelection != null) {
+                return trackSelection.getSelectedFormat().bitrate;
+            }
         }
         return -1;
     }
@@ -646,7 +648,9 @@ class TrackSelectionHelper {
     long getCurrentAudioBitrate() {
         if (trackSelectionArray != null) {
             TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_AUDIO);
-            return trackSelection.getSelectedFormat().bitrate;
+            if (trackSelection != null) {
+                return trackSelection.getSelectedFormat().bitrate;
+            }
         }
         return -1;
     }
@@ -654,7 +658,9 @@ class TrackSelectionHelper {
     long getCurrentVideoWidth() {
         if (trackSelectionArray != null) {
             TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
-            return trackSelection.getSelectedFormat().width;
+            if (trackSelection != null) {
+                return trackSelection.getSelectedFormat().width;
+            }
         }
         return -1;
     }
@@ -662,7 +668,9 @@ class TrackSelectionHelper {
     long getCurrentVideoHeight() {
         if (trackSelectionArray != null) {
             TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
-            return trackSelection.getSelectedFormat().height;
+            if (trackSelection != null) {
+                return trackSelection.getSelectedFormat().height;
+            }
         }
         return -1;
     }
