@@ -117,7 +117,7 @@ public class KalturaStatsPlugin extends PKPlugin {
         }
 
         @Override
-        public String getPluginVersion() {
+        public String getVersion() {
             return BuildConfig.VERSION_NAME;
         }
 
