@@ -21,6 +21,7 @@ import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
+import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -82,6 +83,11 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         @Override
         public String getName() {
             return "KalturaLiveStats";
+        }
+
+        @Override
+        public String getVersion() {
+            return BuildConfig.VERSION_NAME;
         }
 
         @Override
