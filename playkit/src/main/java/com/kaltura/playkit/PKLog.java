@@ -75,7 +75,7 @@ public class PKLog {
         }
     }
 
-    private static int globalLevel = DEBUG;
+    private static int globalLevel = VERBOSE;
 
     private static String shortenTag(String tag) {
         if (tag.length() > 23) {
