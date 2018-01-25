@@ -63,7 +63,7 @@ import static android.util.Log.WARN;
 public class PKLog {
 
     public final String tag;
-    private int level = DEBUG;
+    private int level = VERBOSE;
 
     public enum Level {
         verbose(VERBOSE), debug(DEBUG), info(INFO), warn(WARN), error(ERROR), off(Integer.MAX_VALUE);

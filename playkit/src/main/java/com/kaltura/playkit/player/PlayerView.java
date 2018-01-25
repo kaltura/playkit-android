@@ -20,7 +20,7 @@ import android.widget.FrameLayout;
  * Created by gilad.nadav on 27/12/2016.
  */
 
-public abstract class PlayerView extends FrameLayout {
+public class PlayerView extends FrameLayout {
     public PlayerView(Context context) {
         super(context);
     }
@@ -34,9 +34,9 @@ public abstract class PlayerView extends FrameLayout {
     }
 
 
-    public abstract void hideVideoSurface();
-    public abstract void showVideoSurface();
-    public abstract void hideVideoSubtitles();
-    public abstract void showVideoSubtitles();
+//    public abstract void hideVideoSurface();
+//    public abstract void showVideoSurface();
+//    public abstract void hideVideoSubtitles();
+//    public abstract void showVideoSubtitles();
 
 }

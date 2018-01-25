@@ -69,25 +69,25 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
         return surfaceView;
     }
 
-    @Override
-    public void hideVideoSurface() {
-        surfaceView.setVisibility(GONE);
-    }
-
-    @Override
-    public void showVideoSurface() {
-        surfaceView.setVisibility(VISIBLE);
-    }
-
-    @Override
-    public void hideVideoSubtitles() {
-
-    }
-
-    @Override
-    public void showVideoSubtitles() {
-
-    }
+//    @Override
+//    public void hideVideoSurface() {
+//        surfaceView.setVisibility(GONE);
+//    }
+//
+//    @Override
+//    public void showVideoSurface() {
+//        surfaceView.setVisibility(VISIBLE);
+//    }
+//
+//    @Override
+//    public void hideVideoSubtitles() {
+//
+//    }
+//
+//    @Override
+//    public void showVideoSubtitles() {
+//
+//    }
 
     private View initPosterView() {
         View posterView = new View(getContext());
