@@ -199,20 +199,13 @@ public class PlayerController implements Player {
 
     public PlayerController(Context context) {
         this.context = context;
-        initializeRootPlayerView();
-    }
-
-    private void initializeRootPlayerView() {
         this.rootPlayerView = new PlayerView(context);
-        ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        this.rootPlayerView.setLayoutParams(lp);
     }
 
     @Override
     public Player.Settings getSettings() {
         return settings;
     }
-
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
         if (sourceConfig == null) {

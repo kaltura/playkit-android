@@ -681,7 +681,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     if (pkAdProviderListener != null && !appIsInBackground) {
                         preparePlayer(true);
                     }
-                } else if (player != null && adInfo.getAdIndexInPod() >= adInfo.getTotalAdsInPod()) {
+                } else if (player != null) {
                     shutterView.setVisibility(View.GONE);
                     long duration = player.getDuration();
                     if (duration < 0 || player.getCurrentPosition() <= duration) {
@@ -835,7 +835,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private void preparePlayer(boolean doPlay) {
         log.d("IMA prepare");
         if (pkAdProviderListener != null && !appIsInBackground) {
-            log.e("IMA prepare player");
+            log.d("IMA prepare player");
             isContentPrepared = true;
             pkAdProviderListener.onAdLoadingFinished();
             if (doPlay) {
