@@ -33,10 +33,4 @@ public class PlayerView extends FrameLayout {
         super(context, attrs);
     }
 
-
-//    public abstract void hideVideoSurface();
-//    public abstract void showVideoSurface();
-//    public abstract void hideVideoSubtitles();
-//    public abstract void showVideoSubtitles();
-
 }

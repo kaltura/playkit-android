@@ -24,6 +24,7 @@ import android.widget.FrameLayout;
 
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.text.Cue;
+import com.google.android.exoplayer2.text.TextOutput;
 import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SubtitleView;
@@ -34,7 +35,7 @@ import java.util.List;
  * @hide
  */
 
-class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener, TextRenderer.Output {
+class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener, TextOutput {
 
     private View videoSurface;
     private final View posterView; // TODO should be changed to poster?
@@ -101,27 +102,6 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
         }
     }
 
-    /**
-     * Will set videoSurface to player, and reset all the related listeners.
-     */
-    private void applyVideoSurface() {
-        //Remove existed videoSurface from player.
-        player.setVideoSurface(null);
-
-        //Decide which type of videoSurface should be set.
-        if (videoSurface instanceof TextureView) {
-            player.setVideoTextureView((TextureView) videoSurface);
-        } else {
-            player.setVideoSurfaceView((SurfaceView) videoSurface);
-        }
-        //Clear listeners
-        player.setVideoListener(null);
-        player.setTextOutput(null);
-        //Set listeners
-        player.setVideoListener(this);
-        player.setTextOutput(this);
-    }
-
     private SubtitleView initSubtitleLayout() {
         SubtitleView subtitleLayout = new SubtitleView(getContext());
         subtitleLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -160,9 +140,15 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
         }
 
         if (this.player != null) {
-            this.player.setTextOutput(null);
-            this.player.setVideoListener(null);
-            this.player.setVideoSurface(null);
+            this.player.removeTextOutput(this);
+            this.player.removeVideoListener(this);
+
+            //Remove existed videoSurface from player.
+            if(videoSurface instanceof SurfaceView) {
+                this.player.clearVideoSurfaceView((SurfaceView) videoSurface);
+            } else if(videoSurface instanceof TextureView) {
+                this.player.clearVideoTextureView((TextureView) videoSurface);
+            }
         }
 
         this.player = player;
@@ -172,6 +158,25 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
         } else {
             posterView.setVisibility(VISIBLE);
         }
+    }
+
+    /**
+     * Will set videoSurface to player, and reset all the related listeners.
+     */
+    private void applyVideoSurface() {
+
+        player.setVideoSurface(null);
+
+        //Decide which type of videoSurface should be set.
+        if (videoSurface instanceof TextureView) {
+            player.setVideoTextureView((TextureView) videoSurface);
+        } else {
+            player.setVideoSurfaceView((SurfaceView) videoSurface);
+        }
+
+        //Set listeners
+        player.addVideoListener(this);
+        player.addTextOutput(this);
     }
 
     @Override
@@ -189,26 +194,5 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
         subtitleLayout.onCues(cues);
     }
 
-//    @Override
-//    public void hideVideoSurface() {
-//        videoSurface.setVisibility(GONE);
-//        subtitleLayout.setVisibility(GONE);
-//    }
-//
-//    @Override
-//    public void showVideoSurface() {
-//        videoSurface.setVisibility(VISIBLE);
-//        subtitleLayout.setVisibility(VISIBLE);
-//    }
-//
-//    @Override
-//    public void hideVideoSubtitles() {
-//        subtitleLayout.setVisibility(GONE);
-//    }
-//
-//    @Override
-//    public void showVideoSubtitles() {
-//        subtitleLayout.setVisibility(VISIBLE);
-//    }
 }
 

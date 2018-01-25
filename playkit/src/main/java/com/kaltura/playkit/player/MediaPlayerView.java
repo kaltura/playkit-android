@@ -53,7 +53,7 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
         return  holder;
     }
 
-    private View initSurfaceView() {
+    private void initSurfaceView() {
         log.d("initSurfaceView");
         surfaceView = new SurfaceView(context);
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
@@ -66,28 +66,7 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
         holder = surfaceView.getHolder();
         holder.addCallback(this);
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        return surfaceView;
     }
-
-//    @Override
-//    public void hideVideoSurface() {
-//        surfaceView.setVisibility(GONE);
-//    }
-//
-//    @Override
-//    public void showVideoSurface() {
-//        surfaceView.setVisibility(VISIBLE);
-//    }
-//
-//    @Override
-//    public void hideVideoSubtitles() {
-//
-//    }
-//
-//    @Override
-//    public void showVideoSubtitles() {
-//
-//    }
 
     private View initPosterView() {
         View posterView = new View(getContext());
