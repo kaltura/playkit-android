@@ -159,7 +159,7 @@ public class PlayerController implements Player {
                         break;
                     case METADATA_AVAILABLE:
                         if (player.getMetadata() == null || player.getMetadata().isEmpty()) {
-                            log.w("METADATA_AVAILABLE event received, but player engine have no metadata.");
+                             log.w("METADATA_AVAILABLE event received, but player engine have no metadata.");
                             return;
                         }
                         event = new PlayerEvent.MetadataAvailable(player.getMetadata());
@@ -199,81 +199,7 @@ public class PlayerController implements Player {
 
     public PlayerController(Context context) {
         this.context = context;
-        initializeRootPlayerView();
-    }
-
-    private void initializeRootPlayerView() {
-        this.rootPlayerView = new PlayerView(context) {
-            @Override
-            public void hideVideoSurface() {
-                setVideoSurfaceVisibility(false);
-            }
-
-            @Override
-            public void showVideoSurface() {
-                setVideoSurfaceVisibility(true);
-            }
-
-            @Override
-            public void hideVideoSubtitles() {
-                setVideoSubtitlesVisibility(false);
-
-            }
-
-            @Override
-            public void showVideoSubtitles() {
-                setVideoSubtitlesVisibility(true);
-
-            }
-        };
-        ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        this.rootPlayerView.setLayoutParams(lp);
-    }
-
-    private void setVideoSurfaceVisibility(boolean isVisible) {
-        String visibilityFunction = "showVideoSurface";
-        if (!isVisible) {
-            visibilityFunction = "hideVideoSurface";
-        }
-
-        if (player == null) {
-            log.w("Error in " + visibilityFunction + " player is null");
-            return;
-        }
-
-        PlayerView playerView = player.getView();
-        if (playerView != null) {
-            if (isVisible) {
-                playerView.showVideoSurface();
-            } else {
-                playerView.hideVideoSurface();
-            }
-        } else {
-            log.w("Error in " + visibilityFunction + " playerView is null");
-        }
-    }
-
-    private void setVideoSubtitlesVisibility(boolean isVisible) {
-        String visibilityFunction = "showVideoSubtitles";
-        if (!isVisible) {
-            visibilityFunction = "hideVideoSubtitles";
-        }
-
-        if (player == null) {
-            log.w("Error in " + visibilityFunction + " player is null");
-            return;
-        }
-
-        PlayerView playerView = player.getView();
-        if (playerView != null) {
-            if (isVisible) {
-                playerView.showVideoSubtitles();
-            } else {
-                playerView.hideVideoSubtitles();
-            }
-        } else {
-            log.w("Error in " + visibilityFunction + " playerView is null");
-        }
+        this.rootPlayerView = new PlayerView(context);
     }
 
     @Override
@@ -281,9 +207,8 @@ public class PlayerController implements Player {
         return settings;
     }
 
-
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
-        if(sourceConfig == null) {
+        if (sourceConfig == null) {
             log.e("source config not found. Can not prepare source.");
             return;
         }
@@ -296,7 +221,6 @@ public class PlayerController implements Player {
         }
 
         player.load(sourceConfig);
-
     }
 
     /**
@@ -352,12 +276,12 @@ public class PlayerController implements Player {
         //Decide which player wrapper should be initialized.
         if (mediaFormat != wvm) {
             player = new ExoPlayerWrapper(context);
-            togglePlayerListeners(true);
         } else {
             player = new MediaPlayerWrapper(context);
-            togglePlayerListeners(true);
-            addPlayerView();
         }
+
+        togglePlayerListeners(true);
+        addPlayerView();
     }
 
     private void addPlayerView() {
@@ -366,7 +290,8 @@ public class PlayerController implements Player {
         }
 
         playerEngineView = player.getView();
-        rootPlayerView.addView(playerEngineView);
+        //always place playerView as first layer in view hierarchy.
+        rootPlayerView.addView(playerEngineView, 0);
     }
 
     @Override
@@ -452,7 +377,7 @@ public class PlayerController implements Player {
             log.w("Attempt to invoke 'play()' on null instance of the player engine");
             return;
         }
-        addPlayerView();
+
         player.play();
     }
 

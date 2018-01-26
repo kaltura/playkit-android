@@ -24,7 +24,7 @@ import com.kaltura.playkit.utils.Consts;
  * @hide
  */
 
-public class AdEnabledPlayerController extends PlayerDecorator implements AdController, PKAdProviderListener{
+public class AdEnabledPlayerController extends PlayerDecorator implements AdController, PKAdProviderListener {
 
     private static final PKLog log = PKLog.get("AdEnablController");
 
@@ -58,29 +58,19 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public long getDuration() {
         if (adsProvider.isAdDisplayed()) {
-            long adDuration = adsProvider.getDuration();
-            //log.d("getDuration: " + adDuration);
-            return Consts.MILLISECONDS_MULTIPLIER * adDuration;
-        } else {
-            long contentDuration = super.getDuration();
-            //log.d("content getDuration: " + contentDuration);
-            return contentDuration;
+            return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
         }
+
+        return super.getDuration();
     }
 
     @Override
     public long getCurrentPosition() {
-        boolean isAdDisplayed = adsProvider.isAdDisplayed();
-        //log.d("getCurrentPosition isAdDisplayed = " + isAdDisplayed);
-        if (isAdDisplayed) {
-            long adPosition = adsProvider.getCurrentPosition();
-            //log.d("getCurrentPosition = " + adPosition);
-            return Consts.MILLISECONDS_MULTIPLIER * adPosition;
-        } else {
-            long contentCurrentPosition = super.getCurrentPosition();
-            //log.d("contnent getCurrentPosition: " + contentCurrentPosition);
-            return contentCurrentPosition;
+        if (adsProvider.isAdDisplayed()) {
+            return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
         }
+
+        return super.getCurrentPosition();
     }
 
     @Override
@@ -88,9 +78,9 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
         if (adsProvider.isAdDisplayed()) {
             log.d("seekTo is not enabled during AD playback");
             return;
-        } else {
-            super.seekTo(position);
         }
+
+        super.seekTo(position);
     }
 
     @Override
@@ -109,7 +99,6 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
             }
         }
         log.d("IMA decorator Calling player play");
-        getView().showVideoSurface();
         super.play();
 
     }
@@ -144,19 +133,16 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public long getAdCurrentPosition() {
         if (adsProvider != null) {
-            long currPos = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
-            //log.d("getAdCurrentPosition currPos = " + currPos);
-            return currPos;
+            return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
         }
-        return  Consts.POSITION_UNSET;
+
+        return Consts.POSITION_UNSET;
     }
 
     @Override
     public long getAdDuration() {
         if (adsProvider != null) {
-            long adDuration  = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
-            //log.d("getAdDuration adDuration = " + adDuration);
-            return adDuration;
+            return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
         }
         return Consts.TIME_UNSET;
     }
