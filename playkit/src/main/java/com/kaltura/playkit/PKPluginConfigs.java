@@ -30,7 +30,7 @@ public class PKPluginConfigs implements Iterable<Map.Entry<String, Object>> {
     public boolean hasConfig(String pluginName) {
         return configs.containsKey(pluginName);
     }
-    
+
     public void setPluginConfig(String pluginName, Object settings) {
         this.configs.put(pluginName, settings);
     }
