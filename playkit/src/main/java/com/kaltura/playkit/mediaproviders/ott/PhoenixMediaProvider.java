@@ -22,9 +22,11 @@ import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
+import com.kaltura.netkit.connect.response.PrimitiveResult;
 import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.netkit.utils.OnCompletion;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.BEResponseListener;
@@ -119,6 +121,26 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     public PhoenixMediaProvider() {
         super(PhoenixMediaProvider.TAG);
         this.mediaAsset = new MediaAsset();
+    }
+
+    public PhoenixMediaProvider(final String baseUrl, final int partnerId, final String ks) {
+        this();
+        setSessionProvider(new SessionProvider() {
+            @Override
+            public String baseUrl() {
+                return baseUrl;
+            }
+
+            @Override
+            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
+                completion.onComplete(new PrimitiveResult(ks));
+            }
+
+            @Override
+            public int partnerId() {
+                return partnerId;
+            }
+        });
     }
 
     /**
