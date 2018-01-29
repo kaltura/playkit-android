@@ -1044,6 +1044,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         shutterView.setBackgroundColor(Color.BLACK);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         shutterView.setLayoutParams(params);
+        shutterView.setVisibility(View.GONE);
         player.getView().addView(shutterView);
     }
 }
