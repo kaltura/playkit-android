@@ -457,7 +457,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                             mediaEntry = ProviderParser.getMedia(mediaAsset.assetId,
                                     mediaAsset.formats != null ? mediaAsset.formats : mediaAsset.mediaFileIds,
                                     kalturaPlaybackContext.getSources());
-
+                            mediaEntry.setName(kalturaMediaAsset.getName());
                             if (isLiveMediaEntry(kalturaMediaAsset))  {
                                 mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Live);
                             } else {
