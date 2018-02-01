@@ -24,7 +24,6 @@ import android.widget.FrameLayout;
 
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.text.Cue;
-import com.google.android.exoplayer2.text.TextOutput;
 import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SubtitleView;
@@ -35,7 +34,7 @@ import java.util.List;
  * @hide
  */
 
-class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener, TextOutput {
+class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener, TextRenderer.Output {
 
     private View videoSurface;
     private final View posterView; // TODO should be changed to poster?

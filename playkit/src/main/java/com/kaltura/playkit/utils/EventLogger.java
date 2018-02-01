@@ -15,15 +15,15 @@ package com.kaltura.playkit.utils;
 import android.view.Surface;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.PlaybackParameters;
-import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.google.android.exoplayer2.metadata.Metadata;
-import com.google.android.exoplayer2.metadata.MetadataOutput;
+import com.google.android.exoplayer2.metadata.MetadataRenderer;
 import com.google.android.exoplayer2.source.AdaptiveMediaSourceEventListener;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
@@ -37,7 +37,7 @@ import java.io.IOException;
  * @hide
  */
 
-public class EventLogger implements Player.EventListener, AudioRendererEventListener, VideoRendererEventListener, MetadataOutput,
+public class EventLogger implements ExoPlayer.EventListener, AudioRendererEventListener, VideoRendererEventListener,  MetadataRenderer.Output,
         AdaptiveMediaSourceEventListener, ExtractorMediaSource.EventListener, DefaultDrmSessionManager.EventListener {
 
 
@@ -58,11 +58,6 @@ public class EventLogger implements Player.EventListener, AudioRendererEventList
     }
 
     @Override
-    public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
-        
-    }
-
-    @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {
 
     }
@@ -78,17 +73,12 @@ public class EventLogger implements Player.EventListener, AudioRendererEventList
     }
 
     @Override
-    public void onPositionDiscontinuity(int reason) {
+    public void onPositionDiscontinuity() {
 
     }
 
     @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-
-    }
-
-    @Override
-    public void onSeekProcessed() {
 
     }
 
@@ -113,7 +103,7 @@ public class EventLogger implements Player.EventListener, AudioRendererEventList
     }
 
     @Override
-    public void onAudioSinkUnderrun(int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
+    public void onAudioTrackUnderrun(int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
 
     }
 
