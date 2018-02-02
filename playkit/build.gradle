@@ -37,8 +37,10 @@ dependencies {
     compile 'com.kaltura.netkit:netkit-core:1.0.5'
     //compile ('com.kaltura.netkit-android:netkit-core:b6175662cfae258e98a5b028363fbf0962d9c5a8')
 
-    // ExoPlayer
-    compile 'com.google.android.exoplayer:exoplayer:2.6.0'
+    compile project(':exoplayer-library-core')
+    compile project(':exoplayer-library-dash')
+    compile project(':exoplayer-library-ui')
+    compile project(':exoplayer-library-hls')
 
     // Google Ads
     compile 'com.google.ads.interactivemedia.v3:interactivemedia:3.7.4'

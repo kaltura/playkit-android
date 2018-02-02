@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void startSimpleOvpMediaLoading(OnMediaLoadCompletion completion) {
         new KalturaOvpMediaProvider()
                 .setSessionProvider(new SimpleOvpSessionProvider("https://cdnapisec.kaltura.com", 2222401, null))
-                .setEntryId("1_f93tepsn")
+                .setEntryId("1_q81a5nbp")
                 .load(completion);
     }
 
