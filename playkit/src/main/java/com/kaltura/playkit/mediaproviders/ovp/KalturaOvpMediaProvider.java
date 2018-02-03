@@ -96,6 +96,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         super(KalturaOvpMediaProvider.TAG);
     }
 
+
     public KalturaOvpMediaProvider(final String baseUrl, final int partnerId, final String ks) {
         this();
         setSessionProvider(new SessionProvider() {
@@ -115,7 +116,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             }
         });
     }
-
 
     /**
      * MANDATORY! provides the baseUrl and the session token(ks) for the API calls.
