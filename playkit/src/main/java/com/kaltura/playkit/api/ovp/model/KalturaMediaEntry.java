@@ -26,13 +26,23 @@ public class KalturaMediaEntry {
 
     /** indicate the media type: {@link KalturaEntryType} **/
     private KalturaEntryType type;
-
+    private int dvrStatus; // 1-LIVE DVR  0-LIVE
+    private String description;
     private String dataUrl;
+    private String thumbnailUrl;
     private String flavorParamsIds;
     private int msDuration;
 
     public KalturaEntryType getType() {
         return type;
+    }
+
+    public int getDvrStatus() {
+        return dvrStatus;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public String getName() {
@@ -41,6 +51,10 @@ public class KalturaMediaEntry {
 
     public String getDataUrl() {
         return dataUrl;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
     }
 
     public List<String> getFlavorParamsIdsList(){

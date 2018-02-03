@@ -17,14 +17,19 @@ import android.support.annotation.NonNull;
 import android.support.annotation.StringDef;
 import android.text.TextUtils;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
+import com.kaltura.netkit.connect.response.PrimitiveResult;
 import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.netkit.utils.OnCompletion;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.BEResponseListener;
@@ -36,6 +41,7 @@ import com.kaltura.playkit.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.api.phoenix.APIDefines;
 import com.kaltura.playkit.api.phoenix.PhoenixErrorHelper;
 import com.kaltura.playkit.api.phoenix.PhoenixParser;
+import com.kaltura.playkit.api.phoenix.model.KalturaThumbnail;
 import com.kaltura.playkit.api.phoenix.model.KalturaMediaAsset;
 import com.kaltura.playkit.api.phoenix.model.KalturaPlaybackContext;
 import com.kaltura.playkit.api.phoenix.model.KalturaPlaybackSource;
@@ -55,7 +61,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -119,6 +127,26 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     public PhoenixMediaProvider() {
         super(PhoenixMediaProvider.TAG);
         this.mediaAsset = new MediaAsset();
+    }
+
+    public PhoenixMediaProvider(final String baseUrl, final int partnerId, final String ks) {
+        this();
+        setSessionProvider(new SessionProvider() {
+            @Override
+            public String baseUrl() {
+                return baseUrl;
+            }
+
+            @Override
+            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
+                completion.onComplete(new PrimitiveResult(ks));
+            }
+
+            @Override
+            public int partnerId() {
+                return partnerId;
+            }
+        });
     }
 
     /**
@@ -430,12 +458,15 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                         KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) playbackContextResult;
                         KalturaMediaAsset kalturaMediaAsset = (KalturaMediaAsset) assetGetResult;
 
+                        Map<String, String> metadata = createOttMetadata(kalturaMediaAsset);
+
                         if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error or unauthorized content
 
                             mediaEntry = ProviderParser.getMedia(mediaAsset.assetId,
                                     mediaAsset.formats != null ? mediaAsset.formats : mediaAsset.mediaFileIds,
                                     kalturaPlaybackContext.getSources());
-
+                            mediaEntry.setMetadata(metadata);
+                            mediaEntry.setName(kalturaMediaAsset.getName());
                             if (isLiveMediaEntry(kalturaMediaAsset))  {
                                 mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Live);
                             } else {
@@ -466,6 +497,35 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             notifyCompletion();
 
         }
+    }
+
+    @NonNull
+    private Map<String, String> createOttMetadata(KalturaMediaAsset kalturaMediaAsset) {
+        Map<String, String> metadata = new HashMap<>();
+        JsonObject tags = kalturaMediaAsset.getTags();
+        for (Map.Entry<String,JsonElement> entry : tags.entrySet()) {
+            for (Map.Entry<String,JsonElement> object : entry.getValue().getAsJsonObject().entrySet()) {
+                if (object.getValue().isJsonArray()) {
+                    JsonArray objectsArray = object.getValue().getAsJsonArray();
+                    for (int i = 0; i < objectsArray.size(); i++) {
+                        metadata.put(entry.getKey(), objectsArray.get(i).getAsJsonObject().get("value").getAsString());
+                    }
+                }
+            }
+        }
+
+        JsonObject metas = kalturaMediaAsset.getMetas();
+        for (Map.Entry<String,JsonElement> entry : metas.entrySet()) {
+                metadata.put(entry.getKey(), entry.getValue().getAsJsonObject().get("value").getAsString());
+        }
+
+        for (KalturaThumbnail image : kalturaMediaAsset.getImages()) {
+            metadata.put(image.getWidth() + "X" + image.getHeight(), image.getUrl());
+        }
+
+        metadata.put("description", kalturaMediaAsset.getDescription());
+        metadata.put("name", kalturaMediaAsset.getName());
+        return metadata;
     }
 
     private ErrorElement updateErrorElement(ResponseElement response, BaseResult playbackContextResult, BaseResult assetGetResult) {

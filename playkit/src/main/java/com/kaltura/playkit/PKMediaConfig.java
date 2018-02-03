@@ -18,7 +18,9 @@ package com.kaltura.playkit;
 public class PKMediaConfig {
 
     private long startPosition = 0;
+    private PKMediaFormat preferredMediaFormat = PKMediaFormat.dash;
     private PKMediaEntry mediaEntry;
+
 
     /**
      * Setter for start position.
@@ -37,6 +39,10 @@ public class PKMediaConfig {
         return this;
     }
 
+    public PKMediaConfig setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
+        this.preferredMediaFormat = preferredMediaFormat;
+        return this;
+    }
 
     /**
      * Getter for start position. Default is 0.
@@ -50,6 +56,10 @@ public class PKMediaConfig {
 
     public PKMediaEntry getMediaEntry() {
         return mediaEntry;
+    }
+
+    public PKMediaFormat getPreferredMediaFormat() {
+        return preferredMediaFormat;
     }
 }
 
