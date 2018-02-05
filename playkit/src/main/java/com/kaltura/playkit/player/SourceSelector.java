@@ -92,14 +92,16 @@ public class SourceSelector {
     @NonNull
     private List<PKMediaFormat> getFormatsPriorityList() {
         List<PKMediaFormat> formatsPriorityList = new ArrayList<>();
+
         formatsPriorityList.add(PKMediaFormat.dash);
         formatsPriorityList.add(PKMediaFormat.hls);
         formatsPriorityList.add(PKMediaFormat.wvm);
         formatsPriorityList.add(PKMediaFormat.mp4);
         formatsPriorityList.add(PKMediaFormat.mp3);
+
         int firstIndex = formatsPriorityList.indexOf(PKMediaFormat.dash);
         int secondIndex = formatsPriorityList.indexOf(mediaConfig.getPreferredMediaFormat());
-        if (secondIndex >= 0) {
+        if (secondIndex > 0) {
             Collections.swap(formatsPriorityList, firstIndex, secondIndex);
         }
         return formatsPriorityList;
