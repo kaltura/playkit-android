@@ -1,18 +1,14 @@
 package com.kaltura.playkit.api.phoenix.model;
 
-/**
- * Created by gilad.nadav on 1/30/18.
- */
-
 public class KalturaThumbnail {
 
-     String ratio;
-     Integer width;
-     Integer height;
-     String url;
-     Integer version;
-     String id;
-     Boolean isDefault;
+    private String ratio;
+    private Integer width;
+    private Integer height;
+    private String url;
+    private Integer version;
+    private  String id;
+    private Boolean isDefault;
 
     public String getRatio() {
         return ratio;

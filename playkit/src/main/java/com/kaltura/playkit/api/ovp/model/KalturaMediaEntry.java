@@ -26,7 +26,7 @@ public class KalturaMediaEntry {
 
     /** indicate the media type: {@link KalturaEntryType} **/
     private KalturaEntryType type;
-    private int dvrStatus; // 1-LIVE DVR  0-LIVE
+    private Integer dvrStatus; // 1-LIVE DVR  0-LIVE
     private String description;
     private String dataUrl;
     private String thumbnailUrl;
@@ -37,7 +37,7 @@ public class KalturaMediaEntry {
         return type;
     }
 
-    public int getDvrStatus() {
+    public Integer getDvrStatus() {
         return dvrStatus;
     }
 

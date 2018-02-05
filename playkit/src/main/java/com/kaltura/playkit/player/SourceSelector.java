@@ -24,7 +24,6 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -37,7 +36,6 @@ public class SourceSelector {
     private static final PKLog log = PKLog.get("SourceSelector");
     private final PKMediaConfig mediaConfig;
 
-    
     public SourceSelector(PKMediaConfig mediaConfig) {
         this.mediaConfig = mediaConfig;
     }

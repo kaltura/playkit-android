@@ -21,18 +21,18 @@ import java.util.List;
  */
 
 public class KalturaMediaAsset extends BaseResult {
-    int id;
-    int type;
-    String objectType;
-    String name;
-    String description;
-    JsonObject metas;
-    JsonObject tags;
-    Long externalIds;
-    long startDate;
-    long endDate;
-    List<KalturaThumbnail> images;
-    List<KalturaMediaFile> mediaFiles;
+    private int id;
+    private int type;
+    private String objectType;
+    private String name;
+    private String description;
+    private JsonObject metas;
+    private JsonObject tags;
+    private Long externalIds;
+    private long startDate;
+    private long endDate;
+    private List<KalturaThumbnail> images;
+    private List<KalturaMediaFile> mediaFiles;
 
     public int getId() {
         return id;
