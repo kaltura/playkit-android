@@ -49,6 +49,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -195,8 +196,11 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         if (sourceConfig.mediaSource.hasDrmParams()) {
             drmSessionManager.setMediaSource(sourceConfig.mediaSource);
+            for (PKDrmParams drmPrm : sourceConfig.mediaSource.getDrmData()) {
+                log.e("XXX drm schema = " + drmPrm.getScheme() +  " license = " + drmPrm.getLicenseUri());
+            }
         }
-
+        log.e("XXX Selected source = " + sourceConfig.getUrl());
         shouldGetTracksInfo = true;
         trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.cea608CaptionsEnabled);
         trackSelectionHelper.setPreferredAudioLanguageConfig(sourceConfig.preferredAudioTrackConfig);

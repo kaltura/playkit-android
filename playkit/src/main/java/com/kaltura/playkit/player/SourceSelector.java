@@ -103,7 +103,13 @@ public class SourceSelector {
         int secondIndex = formatsPriorityList.indexOf(mediaConfig.getPreferredMediaFormat());
         if (secondIndex > 0) {
             Collections.swap(formatsPriorityList, firstIndex, secondIndex);
+        } else if (mediaConfig.getMediaEntry().getMetadata().containsKey("pref")) {
+            secondIndex = formatsPriorityList.indexOf(PKMediaFormat.valueOf(mediaConfig.getMediaEntry().getMetadata().get("pref")));
+            if (secondIndex > 0) {
+                Collections.swap(formatsPriorityList, firstIndex, secondIndex);
+            }
         }
+
         return formatsPriorityList;
     }
 
