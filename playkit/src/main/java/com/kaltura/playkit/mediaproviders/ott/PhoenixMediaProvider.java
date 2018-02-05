@@ -522,9 +522,9 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         for (KalturaThumbnail image : kalturaMediaAsset.getImages()) {
             metadata.put(image.getWidth() + "X" + image.getHeight(), image.getUrl());
         }
-
-        metadata.put("description", kalturaMediaAsset.getDescription());
-        metadata.put("name", kalturaMediaAsset.getName());
+        if (kalturaMediaAsset.getDescription() != null) {
+            metadata.put("description", kalturaMediaAsset.getDescription());
+        }
         return metadata;
     }
 

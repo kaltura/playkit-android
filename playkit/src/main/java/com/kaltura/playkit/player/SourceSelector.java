@@ -36,7 +36,6 @@ public class SourceSelector {
     private static final PKLog log = PKLog.get("SourceSelector");
     private final PKMediaConfig mediaConfig;
 
-    
     public SourceSelector(PKMediaConfig mediaConfig) {
         this.mediaConfig = mediaConfig;
     }

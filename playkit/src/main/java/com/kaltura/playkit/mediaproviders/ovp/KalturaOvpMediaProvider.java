@@ -381,15 +381,16 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 sources = parseFromFlavors(ks, partnerId, uiConfId, entry, playbackContext);
             }*/
 
-            Map<String, String> metadata = parseMetadata(metadataList);
+            Map<String, String> metadata = parseMetadata(metadataList, entry);
 
             return mediaEntry.setId(entry.getId()).setSources(sources)
-                    .setDuration(entry.getMsDuration()).setMetadata(metadata)
+                    .setDuration(entry.getMsDuration())
+                    .setMetadata(metadata)
                     .setName(entry.getName())
                     .setMediaType(MediaTypeConverter.toMediaEntryType(entry.getType()));
         }
 
-        private static Map<String, String> parseMetadata(KalturaMetadataListResponse metadataList) {
+        private static Map<String, String> parseMetadata(KalturaMetadataListResponse metadataList, KalturaMediaEntry entry) {
             Map<String, String> metadata = new HashMap<>();
 
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -405,6 +406,17 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                     extractMetadata(builder, metadataItem.xml, metadata);
                 }
             }
+
+            if (entry.getDescription() != null) {
+                metadata.put("description", entry.getDescription());
+            }
+            if (entry.getThumbnailUrl() != null) {
+                metadata.put("thumbnailUrl", entry.getThumbnailUrl());
+            }
+            if (entry.getDvrStatus() != null) {
+                metadata.put("dvrStatus", String.valueOf(entry.getDvrStatus()));
+            }
+
 
             return metadata;
         }
