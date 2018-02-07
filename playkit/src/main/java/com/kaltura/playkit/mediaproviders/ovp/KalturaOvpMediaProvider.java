@@ -407,6 +407,9 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 }
             }
 
+            if (entry.getName() != null) {
+                metadata.put("name", entry.getName());
+            }
             if (entry.getDescription() != null) {
                 metadata.put("description", entry.getDescription());
             }
