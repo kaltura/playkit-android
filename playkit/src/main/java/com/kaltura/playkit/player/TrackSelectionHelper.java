@@ -192,12 +192,42 @@ class TrackSelectionHelper {
 
         //add disable option to the text tracks.
         maybeAddDisabledTextTrack();
+        //Leave only adaptive audio tracks for user selection.
+        ArrayList<AudioTrack> filteredAudioTracks = filterAdaptiveAudioTracks();
 
         int defaultVideoTrackIndex = getDefaultTrackIndex(videoTracks, lastSelectedTrackIds[Consts.TRACK_TYPE_VIDEO]);
         int defaultAudioTrackIndex = getDefaultTrackIndex(audioTracks, lastSelectedTrackIds[Consts.TRACK_TYPE_AUDIO]);
         int defaultTextTrackIndex = getDefaultTrackIndex(textTracks, lastSelectedTrackIds[Consts.TRACK_TYPE_TEXT]);
 
-        return new PKTracks(videoTracks, audioTracks, textTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex);
+        return new PKTracks(videoTracks, filteredAudioTracks, textTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex);
+    }
+
+    /**
+     * Filter audioTracks, so that if it contain any sort of adaptive streams
+     * PKTracks will expose only adaptive option
+     * and hide all the bitrate variants.
+     */
+    private ArrayList<AudioTrack> filterAdaptiveAudioTracks() {
+        ArrayList<AudioTrack> filteredAudioTracks = new ArrayList<>();
+
+        AudioTrack audioTrack;
+        int[] parsedUniqueId;
+        int currentGroup = -1;
+
+        for (int i = 0; i < audioTracks.size(); i++) {
+            audioTrack = audioTracks.get(i);
+            parsedUniqueId = parseUniqueId(audioTrack.getUniqueId());
+
+            if (parsedUniqueId[TRACK_INDEX] == TRACK_ADAPTIVE) {
+                filteredAudioTracks.add(audioTrack);
+                currentGroup = parsedUniqueId[GROUP_INDEX];
+            } else if (parsedUniqueId[GROUP_INDEX] != currentGroup) {
+                filteredAudioTracks.add(audioTrack);
+                currentGroup = -1;
+            }
+        }
+
+        return filteredAudioTracks;
     }
 
     /**
