@@ -155,6 +155,11 @@ public class PlayerController implements Player {
                             return;
                         }
                         event = new PlayerEvent.Error(player.getCurrentError());
+                        PKError error = player.getCurrentError();
+                        if(error.errorType == PKPlayerErrorType.RENDERER_ERROR) {
+                            player.load(sourceConfig);
+                            return;
+                        }
                         cancelUpdateProgress();
                         break;
                     case METADATA_AVAILABLE:
