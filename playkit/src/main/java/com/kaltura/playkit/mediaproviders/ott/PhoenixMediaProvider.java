@@ -86,7 +86,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     private static final String TAG = "PhoenixMediaProvider";
 
-    private static String  LIVE_ASST_OBJRCT_TYPE = "KalturaLinearMediaAsset";
+    private static String  LIVE_ASSET_OBJECT_TYPE = "KalturaLinearMediaAsset";
 
     private static final boolean EnableEmptyKs = true;
 
@@ -523,6 +523,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             metadata.put(image.getWidth() + "X" + image.getHeight(), image.getUrl());
         }
 
+        metadata.put("assetId", String.valueOf(kalturaMediaAsset.getId()));
         if (kalturaMediaAsset.getName() != null) {
             metadata.put("name", kalturaMediaAsset.getName());
         }
@@ -546,9 +547,9 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
     private boolean isLiveMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
-        if (kalturaMediaAsset.getExternalIds() != null ||
+        if ((kalturaMediaAsset.getExternalIds() != null && kalturaMediaAsset.getExternalIds() != 0) ||
                 (mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver) ||
-                LIVE_ASST_OBJRCT_TYPE.equals(kalturaMediaAsset.getObjectType())) {
+                LIVE_ASSET_OBJECT_TYPE.equals(kalturaMediaAsset.getObjectType())) {
             return true;
         }
         return false;
