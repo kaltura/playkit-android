@@ -56,6 +56,14 @@ public interface Player {
          * @return - Player Settings.
          */
         Settings useTextureView(boolean useTextureView);
+
+        /**
+         * Decide if player should do cross protocol redirect or not. By default it will be always set
+         * to false.
+         * @param crossProtocolRedirectEnabled - true if should do cross protocol redirect.
+         * @return - Player Settings.
+         */
+        Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled);
     }
 
     /**

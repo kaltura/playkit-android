@@ -109,6 +109,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private boolean isSeeking = false;
     private boolean useTextureView = false;
+    private boolean crossProtocolRedirectEnabled = false;
     private boolean shouldRestorePlayerToPreviousState = false;
 
     private int playerWindow;
@@ -134,7 +135,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     ExoPlayerWrapper(Context context) {
         this.context = context;
         bandwidthMeter = new DefaultBandwidthMeter(mainHandler, this);
-        mediaDataSourceFactory = buildDataSourceFactory(true);
         exoPlayerView = new ExoPlayerView(context);
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
             CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
@@ -204,7 +204,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         Uri uri = sourceConfig.getUrl();
 
-
+        mediaDataSourceFactory = buildDataSourceFactory(true);
         switch (format) {
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
@@ -245,7 +245,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      */
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
         return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, false);
+                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
     }
 
     private static String getUserAgent(Context context) {
@@ -427,10 +427,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void load(PKMediaSourceConfig mediaSourceConfig) {
         log.d("load");
+        crossProtocolRedirectEnabled = mediaSourceConfig.crossProtocolRedirectEnabled;
         if (player == null) {
             initializePlayer();
         }
-
         maybeChangePlayerRenderView(mediaSourceConfig.useTextureView);
 
         preparePlayer(mediaSourceConfig);

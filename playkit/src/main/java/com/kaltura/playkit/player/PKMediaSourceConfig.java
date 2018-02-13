@@ -25,12 +25,14 @@ class PKMediaSourceConfig {
     PKRequestParams.Adapter adapter;
     boolean cea608CaptionsEnabled;
     boolean useTextureView;
+    boolean crossProtocolRedirectEnabled;
 
-    PKMediaSourceConfig(PKMediaSource mediaSource, PKRequestParams.Adapter adapter, boolean cea608CaptionsEnabled, boolean useTextureView) {
+    PKMediaSourceConfig(PKMediaSource mediaSource, PKRequestParams.Adapter adapter, boolean cea608CaptionsEnabled, boolean useTextureView, boolean crossProtocolRedirectEnabled) {
         this.mediaSource = mediaSource;
         this.adapter = adapter;
         this.useTextureView = useTextureView;
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
+        this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
     }
 
     Uri getUrl() {
