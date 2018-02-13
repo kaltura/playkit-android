@@ -197,9 +197,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         shouldGetTracksInfo = true;
-        trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.playerSetting.isCea608CaptionsEnabled());
-        trackSelectionHelper.setPreferredAudioLanguageConfig(sourceConfig.playerSetting.getPreferredAudioTrackConfig());
-        trackSelectionHelper.setPreferredTextLanguageConfig(sourceConfig.playerSetting.getPreferredTextTrackConfig());
+        trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.playerSettings.cea608CaptionsEnabled());
+        trackSelectionHelper.setPreferredAudioLanguageConfig(sourceConfig.playerSettings.getPreferredAudioTrackConfig());
+        trackSelectionHelper.setPreferredTextLanguageConfig(sourceConfig.playerSettings.getPreferredTextTrackConfig());
 
         if (PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) {
             player.seekToDefaultPosition();
@@ -442,12 +442,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void load(PKMediaSourceConfig mediaSourceConfig) {
         log.d("load");
-        crossProtocolRedirectEnabled = mediaSourceConfig.playerSetting.isCrossProtocolRedirectEnabled();
+        crossProtocolRedirectEnabled = mediaSourceConfig.playerSettings.crossProtocolRedirectEnabled();
         if (player == null) {
             initializePlayer();
         }
 
-        maybeChangePlayerRenderView(mediaSourceConfig.playerSetting.isUseTextureView());
+        maybeChangePlayerRenderView(mediaSourceConfig.playerSettings.useTextureView());
 
         preparePlayer(mediaSourceConfig);
     }

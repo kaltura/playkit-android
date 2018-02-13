@@ -26,20 +26,20 @@ class PKMediaSourceConfig {
 
     PKMediaSource mediaSource;
     PKMediaEntry.MediaEntryType mediaEntryType;
-    PlayerSetting playerSetting;
+    PlayerSettings playerSettings;
 
-    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSetting playerSetting) {
+    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
         this.mediaSource = source;
         this.mediaEntryType = mediaConfig.getMediaEntry().getMediaType();
-        this.playerSetting = playerSetting;
+        this.playerSettings = playerSettings;
     }
 
     Uri getUrl() {
         Uri uri = Uri.parse(mediaSource.getUrl());
-        if (playerSetting.getContentRequestAdapter() == null) {
+        if (playerSettings.getContentRequestAdapter() == null) {
             return uri;
         } else {
-            return playerSetting.getContentRequestAdapter().adapt(new PKRequestParams(uri, null)).url;
+            return playerSettings.getContentRequestAdapter().adapt(new PKRequestParams(uri, null)).url;
         }
     }
 
@@ -53,13 +53,13 @@ class PKMediaSourceConfig {
         if (mediaSource != null ? !mediaSource.equals(that.mediaSource) : that.mediaSource != null) {
             return false;
         }
-        return playerSetting.getContentRequestAdapter() != null ? playerSetting.getContentRequestAdapter().equals(that.playerSetting.getContentRequestAdapter()) : that.playerSetting.getContentRequestAdapter() == null;
+        return playerSettings.getContentRequestAdapter() != null ? playerSettings.getContentRequestAdapter().equals(that.playerSettings.getContentRequestAdapter()) : that.playerSettings.getContentRequestAdapter() == null;
     }
 
     @Override
     public int hashCode() {
         int result = mediaSource != null ? mediaSource.hashCode() : 0;
-        result = 31 * result + (playerSetting.getContentRequestAdapter() != null ? playerSetting.getContentRequestAdapter().hashCode() : 0);
+        result = 31 * result + (playerSettings.getContentRequestAdapter() != null ? playerSettings.getContentRequestAdapter().hashCode() : 0);
         return result;
     }
 }

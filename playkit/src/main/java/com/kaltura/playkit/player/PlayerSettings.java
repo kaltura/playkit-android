@@ -4,7 +4,7 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
 
-public class PlayerSetting implements Player.Settings {
+public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private boolean useTextureView = false;
@@ -17,15 +17,15 @@ public class PlayerSetting implements Player.Settings {
         return contentRequestAdapter;
     }
 
-    public boolean isUseTextureView() {
+    public boolean useTextureView() {
         return useTextureView;
     }
 
-    public boolean isCrossProtocolRedirectEnabled() {
+    public boolean crossProtocolRedirectEnabled() {
         return crossProtocolRedirectEnabled;
     }
 
-    public boolean isCea608CaptionsEnabled() {
+    public boolean cea608CaptionsEnabled() {
         return cea608CaptionsEnabled;
     }
 
@@ -38,37 +38,37 @@ public class PlayerSetting implements Player.Settings {
     }
 
     @Override
-    public PlayerSetting setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
+    public PlayerSettings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
         this.contentRequestAdapter = contentRequestAdapter;
         return this;
     }
 
     @Override
-    public PlayerSetting setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
+    public PlayerSettings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
          this.cea608CaptionsEnabled = cea608CaptionsEnabled;
          return this;
     }
 
     @Override
-    public PlayerSetting useTextureView(boolean useTextureView) {
+    public PlayerSettings useTextureView(boolean useTextureView) {
         this.useTextureView = useTextureView;
         return this;
     }
 
     @Override
-    public PlayerSetting setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
+    public PlayerSettings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
         this.preferredAudioTrackConfig = preferredAudioTrackConfig;
         return this;
     }
 
     @Override
-    public PlayerSetting setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
+    public PlayerSettings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
         this.preferredTextTrackConfig = preferredTextTrackConfig;
         return this;
     }
 
     @Override
-    public PlayerSetting setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
+    public PlayerSettings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
         this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
         return this;
     }

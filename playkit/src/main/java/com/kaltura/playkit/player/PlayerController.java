@@ -54,7 +54,7 @@ public class PlayerController implements Player {
 
     private String sessionId;
     private UUID playerSessionId = UUID.randomUUID();
-    private PlayerSetting playerSetting = new PlayerSetting();
+    private PlayerSettings playerSettings = new PlayerSettings();
     private boolean isNewEntry = true;
 
     private long targetSeekPosition;
@@ -278,7 +278,7 @@ public class PlayerController implements Player {
 
     @Override
     public Player.Settings getSettings() {
-        return playerSetting;
+        return playerSettings;
     }
 
 
@@ -312,8 +312,8 @@ public class PlayerController implements Player {
         isNewEntry = true;
 
         sessionId = generateSessionId();
-        if (playerSetting.getContentRequestAdapter() != null) {
-            playerSetting.getContentRequestAdapter().updateParams(this);
+        if (playerSettings.getContentRequestAdapter() != null) {
+            playerSettings.getContentRequestAdapter().updateParams(this);
         }
 
         this.mediaConfig = mediaConfig;
@@ -324,7 +324,7 @@ public class PlayerController implements Player {
             return false;
         }
 
-        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSetting);
+        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
         return true;
     }
