@@ -59,6 +59,7 @@ public class PlayerController implements Player {
 
     private boolean isNewEntry = true;
     private boolean useTextureView = false;
+    private boolean crossProtocolRedirectEnabled = false;
     private boolean cea608CaptionsEnabled = false;
     private long targetSeekPosition;
 
@@ -91,6 +92,14 @@ public class PlayerController implements Player {
             PlayerController.this.useTextureView = useTextureView;
             return this;
         }
+
+        @Override
+        public Player.Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
+            PlayerController.this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
+            return this;
+        }
+
+
     }
 
     public void setEventListener(PKEvent.Listener eventListener) {
@@ -248,7 +257,7 @@ public class PlayerController implements Player {
             return false;
         }
 
-        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestAdapter, cea608CaptionsEnabled, useTextureView);
+        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestAdapter, cea608CaptionsEnabled, useTextureView, crossProtocolRedirectEnabled);
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
         return true;
     }
