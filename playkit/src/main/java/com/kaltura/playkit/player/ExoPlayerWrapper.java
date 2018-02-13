@@ -109,6 +109,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private PlayerState currentState = PlayerState.IDLE;
     private PlayerState previousState;
 
+    private Factory mediaDataSourceFactory;
+    private Factory manifestDataSourceFactory;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
     private PKError currentError = null;
 
@@ -216,7 +218,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         Uri uri = sourceConfig.getUrl();
-        Factory mediaDataSourceFactory = buildDataSourceFactory(true);
+        if (mediaDataSourceFactory == null) {
+            mediaDataSourceFactory = buildDataSourceFactory(true);
+        }
         switch (format) {
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
@@ -224,7 +228,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 return new ExtractorMediaSource.Factory(mediaDataSourceFactory)
                         .createMediaSource(uri, mainHandler, eventLogger);
             case dash:
-                Factory manifestDataSourceFactory = buildDataSourceFactory(false);
+                if (manifestDataSourceFactory == null) {
+                    manifestDataSourceFactory = buildDataSourceFactory(false);
+                }
                 return new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
                         manifestDataSourceFactory)
