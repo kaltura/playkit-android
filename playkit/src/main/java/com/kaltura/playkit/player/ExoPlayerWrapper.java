@@ -109,7 +109,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private PlayerState currentState = PlayerState.IDLE;
     private PlayerState previousState;
 
-    private Factory manifestDataSourceFactory;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
     private PKError currentError = null;
 
@@ -142,7 +141,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     ExoPlayerWrapper(Context context) {
         this.context = context;
         bandwidthMeter = new DefaultBandwidthMeter(mainHandler, this);
-        manifestDataSourceFactory = new DefaultDataSourceFactory(context, getUserAgent(context));
         exoPlayerView = new ExoPlayerView(context);
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
             CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
@@ -223,17 +221,18 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
-            return new ExtractorMediaSource.Factory(mediaDataSourceFactory)
-                    .createMediaSource(uri, mainHandler, eventLogger);
+                return new ExtractorMediaSource.Factory(mediaDataSourceFactory)
+                        .createMediaSource(uri, mainHandler, eventLogger);
             case dash:
+                Factory manifestDataSourceFactory = buildDataSourceFactory(false);
                 return new DashMediaSource.Factory(
-                    new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
-                    manifestDataSourceFactory)
-                    .createMediaSource(uri, mainHandler, eventLogger);
+                        new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
+                        manifestDataSourceFactory)
+                        .createMediaSource(uri, mainHandler, eventLogger);
 
             case hls:
-            return new HlsMediaSource.Factory(mediaDataSourceFactory)
-                    .createMediaSource(uri, mainHandler, eventLogger);
+                return new HlsMediaSource.Factory(mediaDataSourceFactory)
+                        .createMediaSource(uri, mainHandler, eventLogger);
 
             default:
                 throw new IllegalStateException("Unsupported type: " + format);
