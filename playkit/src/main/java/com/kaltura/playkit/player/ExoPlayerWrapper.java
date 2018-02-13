@@ -103,7 +103,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private PlayerState currentState = PlayerState.IDLE;
     private PlayerState previousState;
 
-    private Factory mediaDataSourceFactory;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
     private PKError currentError = null;
 
@@ -204,7 +203,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         Uri uri = sourceConfig.getUrl();
 
-        mediaDataSourceFactory = buildDataSourceFactory(true);
+        Factory mediaDataSourceFactory = buildDataSourceFactory(true);
         switch (format) {
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
@@ -431,8 +430,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (player == null) {
             initializePlayer();
         }
-        maybeChangePlayerRenderView(mediaSourceConfig.useTextureView);
 
+        maybeChangePlayerRenderView(mediaSourceConfig.useTextureView);
         preparePlayer(mediaSourceConfig);
     }
 
