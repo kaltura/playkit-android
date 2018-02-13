@@ -18,7 +18,6 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
-import com.kaltura.playkit.PKTrackConfig;
 
 /**
  * Created by Noam Tamim @ Kaltura on 29/03/2017.
@@ -26,31 +25,21 @@ import com.kaltura.playkit.PKTrackConfig;
 class PKMediaSourceConfig {
 
     PKMediaSource mediaSource;
-    PKRequestParams.Adapter adapter;
     PKMediaEntry.MediaEntryType mediaEntryType;
+    PlayerSetting playerSetting;
 
-    PKTrackConfig preferredAudioTrackConfig;
-    PKTrackConfig preferredTextTrackConfig;
-
-    boolean useTextureView;
-    boolean cea608CaptionsEnabled;
-
-    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PKRequestParams.Adapter adapter, boolean cea608CaptionsEnabled, boolean useTextureView, PKTrackConfig audioTrackConfig, PKTrackConfig textTrackConfig) {
-        this.adapter = adapter;
+    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSetting playerSetting) {
         this.mediaSource = source;
-        this.useTextureView = useTextureView;
-        this.cea608CaptionsEnabled = cea608CaptionsEnabled;
         this.mediaEntryType = mediaConfig.getMediaEntry().getMediaType();
-        this.preferredAudioTrackConfig = audioTrackConfig;
-        this.preferredTextTrackConfig = textTrackConfig;
+        this.playerSetting = playerSetting;
     }
 
     Uri getUrl() {
         Uri uri = Uri.parse(mediaSource.getUrl());
-        if (adapter == null) {
+        if (playerSetting.getContentRequestAdapter() == null) {
             return uri;
         } else {
-            return adapter.adapt(new PKRequestParams(uri, null)).url;
+            return playerSetting.getContentRequestAdapter().adapt(new PKRequestParams(uri, null)).url;
         }
     }
 
@@ -64,13 +53,13 @@ class PKMediaSourceConfig {
         if (mediaSource != null ? !mediaSource.equals(that.mediaSource) : that.mediaSource != null) {
             return false;
         }
-        return adapter != null ? adapter.equals(that.adapter) : that.adapter == null;
+        return playerSetting.getContentRequestAdapter() != null ? playerSetting.getContentRequestAdapter().equals(that.playerSetting.getContentRequestAdapter()) : that.playerSetting.getContentRequestAdapter() == null;
     }
 
     @Override
     public int hashCode() {
         int result = mediaSource != null ? mediaSource.hashCode() : 0;
-        result = 31 * result + (adapter != null ? adapter.hashCode() : 0);
+        result = 31 * result + (playerSetting.getContentRequestAdapter() != null ? playerSetting.getContentRequestAdapter().hashCode() : 0);
         return result;
     }
 }

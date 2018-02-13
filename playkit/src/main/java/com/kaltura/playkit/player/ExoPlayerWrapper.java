@@ -110,7 +110,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private PlayerState previousState;
 
     private Factory manifestDataSourceFactory;
-    private Factory mediaDataSourceFactory;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
     private PKError currentError = null;
 
@@ -118,6 +117,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private boolean shouldResetPlayerPosition;
     private boolean isSeeking = false;
     private boolean useTextureView = false;
+    private boolean crossProtocolRedirectEnabled = false;
     private boolean preferredLanguageWasSelected = false;
     private boolean shouldRestorePlayerToPreviousState = false;
 
@@ -143,7 +143,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         this.context = context;
         bandwidthMeter = new DefaultBandwidthMeter(mainHandler, this);
         manifestDataSourceFactory = new DefaultDataSourceFactory(context, getUserAgent(context));
-        mediaDataSourceFactory = buildDataSourceFactory(true);
         exoPlayerView = new ExoPlayerView(context);
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
             CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
@@ -198,9 +197,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         shouldGetTracksInfo = true;
-        trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.cea608CaptionsEnabled);
-        trackSelectionHelper.setPreferredAudioLanguageConfig(sourceConfig.preferredAudioTrackConfig);
-        trackSelectionHelper.setPreferredTextLanguageConfig(sourceConfig.preferredTextTrackConfig);
+        trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.playerSetting.isCea608CaptionsEnabled());
+        trackSelectionHelper.setPreferredAudioLanguageConfig(sourceConfig.playerSetting.getPreferredAudioTrackConfig());
+        trackSelectionHelper.setPreferredTextLanguageConfig(sourceConfig.playerSetting.getPreferredTextTrackConfig());
 
         if (PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) {
             player.seekToDefaultPosition();
@@ -219,7 +218,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         Uri uri = sourceConfig.getUrl();
-
+        Factory mediaDataSourceFactory = buildDataSourceFactory(true);
         switch (format) {
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
@@ -262,7 +261,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      */
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
         return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, false);
+                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
     }
 
     private static String getUserAgent(Context context) {
@@ -443,11 +442,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void load(PKMediaSourceConfig mediaSourceConfig) {
         log.d("load");
+        crossProtocolRedirectEnabled = mediaSourceConfig.playerSetting.isCrossProtocolRedirectEnabled();
         if (player == null) {
             initializePlayer();
         }
 
-        maybeChangePlayerRenderView(mediaSourceConfig.useTextureView);
+        maybeChangePlayerRenderView(mediaSourceConfig.playerSetting.isUseTextureView());
 
         preparePlayer(mediaSourceConfig);
     }
