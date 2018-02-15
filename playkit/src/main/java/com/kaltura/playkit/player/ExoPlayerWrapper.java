@@ -118,7 +118,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private boolean shouldResetPlayerPosition;
     private boolean isSeeking = false;
     private boolean useTextureView = false;
-    private boolean crossProtocolRedirectEnabled = false;
+    private boolean crossProtocolRedirectEnabled;
     private boolean preferredLanguageWasSelected = false;
     private boolean shouldRestorePlayerToPreviousState = false;
 
