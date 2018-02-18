@@ -25,8 +25,6 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.PKRequestParams;
-import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
@@ -56,14 +54,9 @@ public class PlayerController implements Player {
 
     private String sessionId;
     private UUID playerSessionId = UUID.randomUUID();
-
-    private PKRequestParams.Adapter contentRequestAdapter;
-
+    private PlayerSettings playerSettings = new PlayerSettings();
     private boolean isNewEntry = true;
-    private boolean useTextureView = false;
-    private boolean cea608CaptionsEnabled = false;
-    private PKTrackConfig preferredTextTrackConfig;
-    private PKTrackConfig preferredAudioTrackConfig;
+
     private long targetSeekPosition;
 
 
@@ -74,40 +67,6 @@ public class PlayerController implements Player {
         }
     };
 
-    private Settings settings = new Settings();
-
-    private class Settings implements Player.Settings {
-
-        @Override
-        public Player.Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
-            PlayerController.this.contentRequestAdapter = contentRequestAdapter;
-            return this;
-        }
-
-        @Override
-        public Player.Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
-            PlayerController.this.cea608CaptionsEnabled = cea608CaptionsEnabled;
-            return this;
-        }
-
-        @Override
-        public Player.Settings useTextureView(boolean useTextureView) {
-            PlayerController.this.useTextureView = useTextureView;
-            return this;
-        }
-
-        @Override
-        public Player.Settings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
-            PlayerController.this.preferredAudioTrackConfig = preferredAudioTrackConfig;
-            return this;
-        }
-
-        @Override
-        public Player.Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
-            PlayerController.this.preferredTextTrackConfig = preferredTextTrackConfig;
-            return this;
-        }
-    }
 
     public void setEventListener(PKEvent.Listener eventListener) {
         this.eventListener = eventListener;
@@ -231,8 +190,6 @@ public class PlayerController implements Player {
         }
     };
 
-
-
     private StateChangedListener stateChangedTrigger = new StateChangedListener() {
         @Override
         public void onStateChanged(PlayerState oldState, PlayerState newState) {
@@ -323,7 +280,7 @@ public class PlayerController implements Player {
 
     @Override
     public Player.Settings getSettings() {
-        return settings;
+        return playerSettings;
     }
 
 
@@ -359,8 +316,8 @@ public class PlayerController implements Player {
         isNewEntry = true;
 
         sessionId = generateSessionId();
-        if (contentRequestAdapter != null) {
-            contentRequestAdapter.updateParams(this);
+        if (playerSettings.getContentRequestAdapter() != null) {
+            playerSettings.getContentRequestAdapter().updateParams(this);
         }
 
         this.mediaConfig = mediaConfig;
@@ -371,7 +328,7 @@ public class PlayerController implements Player {
             return false;
         }
 
-        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, contentRequestAdapter, cea608CaptionsEnabled, useTextureView, preferredAudioTrackConfig, preferredTextTrackConfig);
+        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
         return true;
     }
