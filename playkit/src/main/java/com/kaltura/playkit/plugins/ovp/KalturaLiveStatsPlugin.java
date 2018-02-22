@@ -120,6 +120,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         eventIndex = 1;
         this.mediaConfig = mediaConfig;
+        pluginConfig = parseConfig(PKPlugin.replaceKeysInPluginConfig(mediaConfig.getMediaEntry(), pluginConfig.toJson()));
     }
 
     @Override

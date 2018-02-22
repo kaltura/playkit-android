@@ -36,7 +36,7 @@ import java.util.TimerTask;
 
 
 public class PhoenixAnalyticsPlugin extends PKPlugin {
-    private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
+    private static final PKLog log = PKLog.get("phoenixAnalytics");
     private static final double MEDIA_ENDED_THRESHOLD = 0.98;
 
     // Fields shared with TVPAPIAnalyticsPlugin

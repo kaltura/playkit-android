@@ -43,7 +43,7 @@ import java.util.TimerTask;
  */
 
 public class KalturaStatsPlugin extends PKPlugin {
-    private static final PKLog log = PKLog.get("KalturaStatsPlugin");
+    private static final PKLog log = PKLog.get("kalturaStats");
 
     private Context context;
     private AdInfo adInfo;
@@ -165,6 +165,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         this.mediaConfig = mediaConfig;
+        pluginConfig = parseConfig(PKPlugin.replaceKeysInPluginConfig(mediaConfig.getMediaEntry(), pluginConfig.toJson()));
         resetPlayerFlags();
     }
 
