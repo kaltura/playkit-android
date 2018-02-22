@@ -57,8 +57,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public long getDuration() {
         if (adsProvider.isAdDisplayed()) {
-            long adDuration = adsProvider.getDuration();
-            return Consts.MILLISECONDS_MULTIPLIER * adDuration;
+            return adsProvider.getDuration() * Consts.MILLISECONDS_MULTIPLIER;
         }
 
         return super.getDuration();
@@ -66,10 +65,8 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
 
     @Override
     public long getCurrentPosition() {
-        boolean isAdDisplayed = adsProvider.isAdDisplayed();
-        if (isAdDisplayed) {
-            long adPosition = adsProvider.getCurrentPosition();
-            return Consts.MILLISECONDS_MULTIPLIER * adPosition;
+        if (adsProvider.isAdDisplayed()) {
+            return adsProvider.getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER;
         }
 
         return super.getCurrentPosition();
@@ -101,7 +98,6 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
             }
         }
         log.d("IMA decorator Calling player play");
-        getView().showVideoSurface();
         super.play();
 
     }
