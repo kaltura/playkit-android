@@ -25,10 +25,12 @@ import java.util.Map;
 
 public class KavaService {
 
-    public static RequestBuilder sendAnalyticsEvent(String baseUrl, Map<String, String> params) {
-        return new RequestBuilder()
+    public static RequestBuilder sendAnalyticsEvent(String baseUrl, String userAgent, Map<String, String> params) {
+        RequestBuilder requestBuilder = new RequestBuilder()
                 .method("GET")
                 .url(buildUrlWithParams(baseUrl, params));
+        requestBuilder.build().getHeaders().put("userAgent", userAgent);
+        return requestBuilder;
     }
 
     private static String buildUrlWithParams(String baserUrl, Map<String, String> params) {
@@ -41,7 +43,6 @@ public class KavaService {
             entry = (Map.Entry) iterator.next();
             builder.appendQueryParameter(entry.getKey(), entry.getValue());
         }
-
         return builder.build().toString();
     }
 }
