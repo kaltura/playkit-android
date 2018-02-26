@@ -166,12 +166,18 @@ public class KalturaStatsPlugin extends PKPlugin {
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         this.mediaConfig = mediaConfig;
         pluginConfig = parseConfig(PKPlugin.replaceKeysInPluginConfig(mediaConfig.getMediaEntry(), pluginConfig.toJson()));
+        if (pluginConfig != null && mediaConfig!= null  && mediaConfig.getMediaEntry() != null) {
+            pluginConfig.setEntryId(mediaConfig.getMediaEntry().getId());
+        }
         resetPlayerFlags();
     }
 
     @Override
     protected void onUpdateConfig(Object config) {
         this.pluginConfig = parseConfig(config);
+        if (pluginConfig != null && mediaConfig!= null  && mediaConfig.getMediaEntry() != null) {
+            pluginConfig.setEntryId(mediaConfig.getMediaEntry().getId());
+        }
         setTimerInterval();
     }
 
