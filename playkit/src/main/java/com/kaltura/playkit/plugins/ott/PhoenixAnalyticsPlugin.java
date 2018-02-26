@@ -274,10 +274,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             public void onComplete(ResponseElement response) {
                 if (response.isSuccess() && response.getError() != null && response.getError().getCode().equals("4001")) {
                     messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
-                    messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString()));
                 }
-
-                log.d("onComplete send event: " + eventType);
+                messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString()));
+                if (response != null) {
+                    log.d("onComplete send event: " + eventType + " Response:" + response.getResponse());
+                }
             }
         });
         requestsExecutor.queue(requestBuilder.build());
