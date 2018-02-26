@@ -170,9 +170,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 new AdaptiveTrackSelection.Factory(bandwidthMeter);
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(trackSelectionFactory);
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, trackSelectionFactory, lastSelectedTrackIds);
-        DefaultTrackSelector.Parameters currentParameters = trackSelector.getParameters();
-        DefaultTrackSelector.Parameters newParameters = currentParameters.withViewportSizeFromContext(context, true);
-        trackSelector.setParameters(newParameters);
+        DefaultTrackSelector.ParametersBuilder parametersBuilder = new DefaultTrackSelector.ParametersBuilder();
+        parametersBuilder.setViewportSizeToPhysicalDisplaySize(context, true);
+        trackSelector.setParameters(parametersBuilder.build());
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
         return trackSelector;
@@ -353,7 +353,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @Override
-    public void onTimelineChanged(Timeline timeline, Object manifest) {
+    public void onTimelineChanged(Timeline timeline, Object manifest,  int reason) {
         log.d("onTimelineChanged");
         sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
         sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);

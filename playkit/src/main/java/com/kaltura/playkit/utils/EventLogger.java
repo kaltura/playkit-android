@@ -63,7 +63,7 @@ public class EventLogger implements Player.EventListener, AudioRendererEventList
     }
 
     @Override
-    public void onTimelineChanged(Timeline timeline, Object manifest) {
+    public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
 
     }
 
