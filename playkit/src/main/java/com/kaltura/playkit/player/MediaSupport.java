@@ -66,7 +66,9 @@ public class MediaSupport {
      * @param drmInitCallback   callback object that will get the result. See {@link DrmInitCallback}.
      */
     public static void initializeDrm(Context context, final DrmInitCallback drmInitCallback) {
-        
+
+        MediaCodecWorkaroundTest.executeTest(context);
+
         try {
             checkWidevineClassic(context);
             checkWidevineModular();
