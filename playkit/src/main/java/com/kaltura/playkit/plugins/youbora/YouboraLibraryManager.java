@@ -34,6 +34,7 @@ import org.json.JSONException;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
+import static com.kaltura.playkit.PlayerEvent.Type.PLAYHEAD_UPDATED;
 import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
 
 /**
@@ -122,7 +123,9 @@ class YouboraLibraryManager extends PluginGeneric {
             }
 
             if (event instanceof PlayerEvent && viewManager != null) {
-                log.d("PlayerEvent: " + ((PlayerEvent) event).type.toString());
+                if (event.eventType() != PLAYHEAD_UPDATED) {
+                    log.d("New PKEvent = " + event.eventType().name());
+                }
                 switch (((PlayerEvent) event).type) {
                     case DURATION_CHANGE:
                         log.d("new duration = " + ((PlayerEvent.DurationChanged) event).duration);
@@ -279,12 +282,12 @@ class YouboraLibraryManager extends PluginGeneric {
     }
 
     public Double getThroughput() {
-        log.d("getThroughput = " + lastReportedThroughput);
+        //log.d("getThroughput = " + lastReportedThroughput);
         return this.lastReportedThroughput;
     }
 
     public String getRendition() {
-        log.d("getRendition = " + lastReportedRendition);
+        //log.d("getRendition = " + lastReportedRendition);
         return lastReportedRendition;
     }
 
@@ -294,7 +297,7 @@ class YouboraLibraryManager extends PluginGeneric {
 
     public Double getPlayhead() {
         double currPos = Long.valueOf(player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
-        log.d("getPlayhead currPos = " + currPos);
+        //log.d("getPlayhead currPos = " + currPos);
         return (currPos >= 0) ? currPos : 0;
     }
 

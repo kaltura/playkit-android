@@ -238,6 +238,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         log.d("Start onUpdateMedia");
         this.mediaConfig = mediaConfig;
+        isContentPrepared = false;
         isAdRequested = false;
         isAdDisplayed = false;
         isAllAdsCompleted = false;
