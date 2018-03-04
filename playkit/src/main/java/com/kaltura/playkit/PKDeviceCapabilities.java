@@ -38,6 +38,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,6 +56,7 @@ public class PKDeviceCapabilities {
     private static final String PREFS_ENTRY_FINGERPRINT = "Build.FINGERPRINT";
     private static final String DEVICE_CAPABILITIES_URL = "https://cdnapisec.kaltura.com/api_v3/index.php?service=stats&action=reportDeviceCapabilities";
     private static final String FINGERPRINT = Build.FINGERPRINT;
+    private static final String CHIPSET = chipset();
 
     private static boolean reportSent = false;
     
@@ -283,7 +286,7 @@ public class PKDeviceCapabilities {
             return null; 
         }
         
-        // No information other that "supported".
+        // No information other than "supported".
         return new JSONObject().put("supported", true);
     }
 
@@ -357,6 +360,19 @@ public class PKDeviceCapabilities {
         mediaDrm.release();
         
         return response;
+    }
+
+    private static String chipset() {
+        try {
+            Class<?> aClass = Class.forName("android.os.SystemProperties");
+            Method method = aClass.getMethod("get", String.class);
+            Object platform = method.invoke(null, "ro.board.platform");
+
+            return platform instanceof String ? (String) platform : "<" + platform + ">";
+
+        } catch (Exception e) {
+            return "<" + e + ">";
+        }
     }
 
     private static JSONObject systemInfo() throws JSONException {
