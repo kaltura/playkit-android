@@ -34,11 +34,6 @@ import java.util.UUID;
 public class MediaCodecWorkaroundTest {
 
     public static boolean workaroundRequired;
-
-    private static final String WORKAROUND_REQUIRED_KEY = "PlaykitWorkaroundRequired";
-    private static final String WORKAROUND_WAS_TESTED_KEY = "PlaykitWorkaroundWasTested";
-    private static final String WORKAROUND_SHARED_PREFS = "PlaykitWorkaroundSharedPrefs";
-
     private static final String URL = "asset:///DRMTest/index.mpd";
 
     private static MediaDrmCallback fakeDrmCallback = new MediaDrmCallback() {
@@ -56,19 +51,12 @@ public class MediaCodecWorkaroundTest {
 
     static void executeTest(Context context) {
 
-        final SharedPreferences sharedPreferences = context.getSharedPreferences(WORKAROUND_SHARED_PREFS, 0);
-        boolean wasTested = sharedPreferences.getBoolean(WORKAROUND_WAS_TESTED_KEY, false);
-
-        if (wasTested) {
-            workaroundRequired = sharedPreferences.getBoolean(WORKAROUND_REQUIRED_KEY, false);
-            return;
-        }
-
         DataSource.Factory mediaDataSourceFactory = new DefaultDataSourceFactory(context, "whatever");
 
         Handler mainHandler = new Handler(Looper.getMainLooper());
 
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory(null));
+
 
         DefaultDrmSessionManager<FrameworkMediaCrypto> drmSessionManager =
                 getDrmSessionManager(mainHandler);
@@ -83,13 +71,8 @@ public class MediaCodecWorkaroundTest {
             @Override
             public void onPlayerError(ExoPlaybackException error) {
                 if (error.getCause() instanceof MediaCodecRenderer.DecoderInitializationException) {
-
                     workaroundRequired = true;
                     player.release();
-                    sharedPreferences.edit()
-                            .putBoolean(WORKAROUND_WAS_TESTED_KEY, true)
-                            .putBoolean(WORKAROUND_REQUIRED_KEY, true)
-                            .apply();
                 }
             }
 
@@ -97,14 +80,10 @@ public class MediaCodecWorkaroundTest {
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
                 switch (playbackState) {
                     case Player.STATE_READY:
-                        //If we receive player state ready, we can assume that now workaround required.
-                        // So set the workaroundRequired flag to false and save it for previous uses.
+                        //If we receive player state ready, we can assume that no workaround required.
+                        // So set the workaroundRequired flag to false.
                         workaroundRequired = false;
                         player.release();
-                        sharedPreferences.edit()
-                                .putBoolean(WORKAROUND_WAS_TESTED_KEY, true)
-                                .putBoolean(WORKAROUND_REQUIRED_KEY, false)
-                                .apply();
                         break;
                 }
             }
