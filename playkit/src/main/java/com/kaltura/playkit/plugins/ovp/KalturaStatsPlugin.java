@@ -38,6 +38,7 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.util.TimerTask;
 
+import static com.kaltura.playkit.PlayerEvent.Type.PLAYBACK_INFO_UPDATED;
 import static com.kaltura.playkit.PlayerEvent.Type.PLAYHEAD_UPDATED;
 
 /**
@@ -235,7 +236,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
-            if (event.eventType() != AdEvent.Type.PLAY_HEAD_CHANGED && event.eventType() != PLAYHEAD_UPDATED) {
+            if (event.eventType() != AdEvent.Type.PLAY_HEAD_CHANGED && event.eventType() != PLAYHEAD_UPDATED && && event.eventType() != PLAYBACK_INFO_UPDATED)) {
                 log.d("New PKEvent = " + event.eventType().name());
             }
 
@@ -243,7 +244,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                 if (player.getDuration() < 0) {
                     return;
                 }
-                
+
                 switch (((PlayerEvent) event).type) {
                     case METADATA_AVAILABLE:
                         sendMediaLoaded();
