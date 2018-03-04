@@ -89,7 +89,10 @@ public class MediaCodecWorkaroundTest {
             }
         });
 
-        MediaSource mediaSource = new DashMediaSource(Uri.parse(URL), mediaDataSourceFactory, new DefaultDashChunkSource.Factory(mediaDataSourceFactory), mainHandler, null);
+        MediaSource mediaSource = new DashMediaSource.Factory(
+                new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
+                mediaDataSourceFactory)
+                .createMediaSource(Uri.parse(URL), mainHandler, null);
 
         player.prepare(mediaSource);
     }
