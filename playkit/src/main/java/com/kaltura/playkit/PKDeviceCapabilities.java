@@ -372,6 +372,7 @@ public class PKDeviceCapabilities {
                 .put("BRAND", Build.BRAND)
                 .put("MODEL", Build.MODEL)
                 .put("MANUFACTURER", Build.MANUFACTURER)
+                .put("DEVICE", Build.DEVICE)
                 .put("TAGS", Build.TAGS)
                 .put("FINGERPRINT", FINGERPRINT)
                 .put("ARCH", arch);
