@@ -243,8 +243,7 @@ public class KalturaStatsPlugin extends PKPlugin {
                 if (player.getDuration() < 0) {
                     return;
                 }
-
-                log.d(((PlayerEvent) event).type.toString());
+                
                 switch (((PlayerEvent) event).type) {
                     case METADATA_AVAILABLE:
                         sendMediaLoaded();
