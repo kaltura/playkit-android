@@ -145,9 +145,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         DefaultTrackSelector trackSelector = initializeTrackSelector();
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildHttpDataSourceFactory(false), drmSessionListener);
-        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context,
+        CustomRendererFactory rendererFactory = new CustomRendererFactory(context,
                 drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
-        player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
+        player = ExoPlayerFactory.newSimpleInstance(rendererFactory, trackSelector);
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setPlayer(player);

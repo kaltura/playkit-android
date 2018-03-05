@@ -38,6 +38,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,13 +51,14 @@ public class PKDeviceCapabilities {
     private static final UUID WIDEVINE_UUID = new UUID(0xEDEF8BA979D64ACEL, 0xA3C827DCD51D21EDL);
     private static final UUID PLAYREADY_UUID = new UUID(0x9A04F07998404286L, 0xAB92E65BE0885F95L);
     
-    private static final String SHARED_PREFS_NAME = "PKDeviceCapabilities";
+    public static final String SHARED_PREFS_NAME = "PKDeviceCapabilities";
     private static final String PREFS_ENTRY_FINGERPRINT = "Build.FINGERPRINT";
     private static final String DEVICE_CAPABILITIES_URL = "https://cdnapisec.kaltura.com/api_v3/index.php?service=stats&action=reportDeviceCapabilities";
     private static final String FINGERPRINT = Build.FINGERPRINT;
+    private static final String CHIPSET = chipset();
 
     private static boolean reportSent = false;
-    
+
     private final Context context;
     private final JSONObject root = new JSONObject();
 
@@ -92,8 +94,8 @@ public class PKDeviceCapabilities {
             }
         });
     }
-    
-    private static String getErrorReport(Exception e) {
+
+    public static String getErrorReport(Exception e) {
         
         try {
             return new JSONObject()
@@ -115,6 +117,14 @@ public class PKDeviceCapabilities {
             reportString = getErrorReport(e);
         }
 
+        if (!sendReport(reportString)) return;
+
+        // If we got here, save the fingerprint so we don't send again until the OS updates.
+        sharedPrefs.edit().putString(PREFS_ENTRY_FINGERPRINT, FINGERPRINT).apply();
+        reportSent = true;
+    }
+
+    public static boolean sendReport(String reportString) {
         JsonObject data = new JsonObject();
         data.addProperty("data", reportString);
 
@@ -122,22 +132,21 @@ public class PKDeviceCapabilities {
         try {
             Map<String, String> headers = new HashMap<>(1);
             headers.put("Content-Type", "application/json");
-            
+
             byte[] bytes = Utils.executePost(DEVICE_CAPABILITIES_URL, dataString.getBytes(), headers);
             log.d("Sent report, response was: " + new String(bytes));
         } catch (IOException e) {
             log.e("Failed to report device capabilities", e);
-            return;
+            return false;
         }
 
-        // If we got here, save the fingerprint so we don't send again until the OS updates.
-        sharedPrefs.edit().putString(PREFS_ENTRY_FINGERPRINT, FINGERPRINT).apply();
-        reportSent = true;
+        return true;
     }
 
     private JSONObject collect() {
         try {
             JSONObject root = this.root;
+            root.put("reportType", "DeviceCapabilities");
             root.put("host", hostInfo());
             root.put("system", systemInfo());
             root.put("drm", drmInfo());
@@ -283,7 +292,7 @@ public class PKDeviceCapabilities {
             return null; 
         }
         
-        // No information other that "supported".
+        // No information other than "supported".
         return new JSONObject().put("supported", true);
     }
 
@@ -359,7 +368,20 @@ public class PKDeviceCapabilities {
         return response;
     }
 
-    private static JSONObject systemInfo() throws JSONException {
+    private static String chipset() {
+        try {
+            Class<?> aClass = Class.forName("android.os.SystemProperties");
+            Method method = aClass.getMethod("get", String.class);
+            Object platform = method.invoke(null, "ro.board.platform");
+
+            return platform instanceof String ? (String) platform : "<" + platform + ">";
+
+        } catch (Exception e) {
+            return "<" + e + ">";
+        }
+    }
+
+    public static JSONObject systemInfo() throws JSONException {
         JSONObject arch = new JSONObject().put("os.arch", System.getProperty("os.arch"));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             arch.put("SUPPORTED_ABIS", new JSONArray(Build.SUPPORTED_ABIS));
@@ -372,8 +394,10 @@ public class PKDeviceCapabilities {
                 .put("BRAND", Build.BRAND)
                 .put("MODEL", Build.MODEL)
                 .put("MANUFACTURER", Build.MANUFACTURER)
+                .put("DEVICE", Build.DEVICE)
                 .put("TAGS", Build.TAGS)
                 .put("FINGERPRINT", FINGERPRINT)
-                .put("ARCH", arch);
+                .put("ARCH", arch)
+                .put("CHIPSET", CHIPSET);
     }
 }

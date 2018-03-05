@@ -37,7 +37,7 @@ public class MediaSupport {
 
     private static final PKLog log = PKLog.get("MediaSupport");
     private static boolean initSucceeded;
-    
+
     // Should be called by applications that use DRM, to make sure they can handle provision issues.
     public static void checkDrm(Context context) throws DrmNotProvisionedException {
         if (widevineClassic == null) {
@@ -52,29 +52,36 @@ public class MediaSupport {
     public interface DrmInitCallback {
         /**
          * Called when the DRM subsystem is initialized (with possible errors).
-         * @param supportedDrmSchemes   supported DRM schemes
-         * @param provisionPerformed    true if provisioning was required and performed, false otherwise
-         * @param provisionError        null if provisioning is successful, exception otherwise
+         *
+         * @param supportedDrmSchemes supported DRM schemes
+         * @param provisionPerformed  true if provisioning was required and performed, false otherwise
+         * @param provisionError      null if provisioning is successful, exception otherwise
          */
         void onDrmInitComplete(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean provisionPerformed, Exception provisionError);
     }
-    
+
     /**
      * Initialize the DRM subsystem, performing provisioning if required. The callback is called
      * when done. If provisioning was required, it is performed before the callback is called.
-     * @param context           
-     * @param drmInitCallback   callback object that will get the result. See {@link DrmInitCallback}.
+     *
+     * @param context
+     * @param drmInitCallback callback object that will get the result. See {@link DrmInitCallback}.
      */
     public static void initializeDrm(Context context, final DrmInitCallback drmInitCallback) {
-        
+
+        if (initSucceeded) {
+            return;
+        }
+        //Check if device needs codec`s workaround.
+        MediaCodecWorkaroundTest.executeTest(context);
         try {
             checkWidevineClassic(context);
             checkWidevineModular();
 
             initSucceeded = true;
-            
+
             runCallback(drmInitCallback, false, null);
-            
+
         } catch (DrmNotProvisionedException e) {
             log.d("Widevine Modular needs provisioning");
             AsyncTask.execute(new Runnable() {
@@ -98,14 +105,14 @@ public class MediaSupport {
         final Set<PKDrmParams.Scheme> supportedDrmSchemes = supportedDrmSchemes();
         if (drmInitCallback != null) {
             drmInitCallback.onDrmInitComplete(supportedDrmSchemes, provisionPerformed, provisionError);
-            
+
         } else if (!initSucceeded) {
             if (provisionError != null) {
                 log.e("DRM provisioning has failed, but nobody was looking. supportedDrmSchemes may be missing Widevine Modular.");
             }
             log.i("Provisioning was" + (provisionPerformed ? " " : " not ") + "performed");
         }
-        
+
         log.i("Supported DRM schemes " + supportedDrmSchemes);
     }
 
@@ -114,7 +121,7 @@ public class MediaSupport {
             super(message, e);
         }
     }
-    
+
     public static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
 
 
@@ -133,10 +140,10 @@ public class MediaSupport {
         } catch (DrmNotProvisionedException e) {
             log.e("Widevine Modular needs provisioning");
         }
-        
+
         return supportedDrmSchemes();
     }
-    
+
     private static Set<PKDrmParams.Scheme> supportedDrmSchemes() {
 
         HashSet<PKDrmParams.Scheme> schemes = new HashSet<>();
@@ -160,7 +167,7 @@ public class MediaSupport {
         if (widevineClassic != null) {
             return;
         }
-        
+
         DrmManagerClient drmManagerClient = new DrmManagerClient(context);
         try {
             widevineClassic = drmManagerClient.canHandle("", "video/wvm");
@@ -177,7 +184,7 @@ public class MediaSupport {
             //noinspection deprecation
             drmManagerClient.release();
         }
-        
+
         // Still null? that means no.
         if (widevineClassic == null) {
             widevineClassic = false;
@@ -189,10 +196,10 @@ public class MediaSupport {
             log.w("Widevine Classic DRM is not initialized; assuming not supported");
             return false;
         }
-        
+
         return widevineClassic;
     }
-    
+
     public static boolean widevineModular() {
         if (widevineModular == null) {
             log.w("Widevine Modular DRM is not initialized; assuming not supported");
@@ -207,11 +214,11 @@ public class MediaSupport {
         if (widevineModular != null) {
             return;
         }
-        
+
         // Encrypted dash is only supported in Android v4.3 and up -- needs MediaDrm class.
         // Make sure Widevine is supported
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID)) {
-            
+
             // Open a session to check if Widevine needs provisioning.
             MediaDrm mediaDrm = null;
             byte[] session = null;
@@ -255,11 +262,11 @@ public class MediaSupport {
 
             mediaDrm.provideProvisionResponse(response);
             widevineModular = true; // provisioning didn't fail
-            
+
         } catch (Exception e) {
             log.e("Provision Widevine failed", e);
             throw e;
-            
+
         } finally {
             if (mediaDrm != null) {
                 mediaDrm.release();
