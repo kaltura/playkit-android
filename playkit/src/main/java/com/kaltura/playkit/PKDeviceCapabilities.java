@@ -147,6 +147,7 @@ public class PKDeviceCapabilities {
         try {
             JSONObject root = this.root;
             root.put("reportType", "DeviceCapabilities");
+            root.put("playkitVersion", PlayKitManager.VERSION_STRING);
             root.put("host", hostInfo());
             root.put("system", systemInfo());
             root.put("drm", drmInfo());
@@ -171,8 +172,7 @@ public class PKDeviceCapabilities {
                     .put("versionCode", packageInfo.versionCode)
                     .put("versionName", packageInfo.versionName)
                     .put("firstInstallTime", packageInfo.firstInstallTime)
-                    .put("lastUpdateTime", packageInfo.lastUpdateTime)
-                    .put("playkitVersion", PlayKitManager.VERSION_STRING);
+                    .put("lastUpdateTime", packageInfo.lastUpdateTime);
             
         } catch (PackageManager.NameNotFoundException e) {
             log.e("Failed to get package info", e);

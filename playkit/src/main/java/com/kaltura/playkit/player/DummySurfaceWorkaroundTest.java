@@ -29,19 +29,21 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.playkit.PKDeviceCapabilities;
+import com.kaltura.playkit.PlayKitManager;
 
 import org.json.JSONObject;
 
 import java.util.UUID;
 
-public class MediaCodecWorkaroundTest {
+public class DummySurfaceWorkaroundTest {
 
-    private static final String TAG = "MediaCodecWorkaroundTes";
+    private static final String TAG = "DummySurfaceTest";
 
-    private static final String PREFS_ENTRY_FINGERPRINT_DUMMYSURFACE_WORKAROUND = "Build.FINGERPRINT.DummySurface";
-    public static boolean workaroundRequired;
+    private static final String PREFS_ENTRY_FINGERPRINT = "Build.FINGERPRINT.DummySurface";
     private static final String URL = "asset:///DRMTest/index.mpd";
-    private static boolean dummySurfaceWorkaroundRequiredReportSent;
+
+    public static boolean workaroundRequired;
+    private static boolean reportSent;
 
     private static MediaDrmCallback fakeDrmCallback = new MediaDrmCallback() {
         @Override
@@ -119,16 +121,16 @@ public class MediaCodecWorkaroundTest {
     }
 
     private static void maybeSendReport(final Context context) {
-        if (dummySurfaceWorkaroundRequiredReportSent) {
+        if (reportSent) {
             return;
         }
 
         final SharedPreferences sharedPrefs = context.getSharedPreferences(PKDeviceCapabilities.SHARED_PREFS_NAME, Context.MODE_PRIVATE);
-        String savedFingerprint = sharedPrefs.getString(PREFS_ENTRY_FINGERPRINT_DUMMYSURFACE_WORKAROUND, null);
+        String savedFingerprint = sharedPrefs.getString(PREFS_ENTRY_FINGERPRINT, null);
 
         // If we already sent this report for this Android build, don't send again.
         if (Build.FINGERPRINT.equals(savedFingerprint)) {
-            dummySurfaceWorkaroundRequiredReportSent = true;
+            reportSent = true;
             return;
         }
 
@@ -140,9 +142,11 @@ public class MediaCodecWorkaroundTest {
                 try {
                     JSONObject jsonObject = new JSONObject()
                             .put("reportType", "DummySurfaceWorkaround")
+                            .put("playkitVersion", PlayKitManager.VERSION_STRING)
                             .put("system", PKDeviceCapabilities.systemInfo())
+                            .put("exoPlayerVersion", ExoPlayerLibraryInfo.VERSION)
                             .put("dummySurfaceWorkaroundRequired", true)
-                            .put("exoPlayerVersion", ExoPlayerLibraryInfo.VERSION);
+                            ;
 
                     reportString = jsonObject.toString();
                 } catch (Exception e) {
@@ -153,8 +157,8 @@ public class MediaCodecWorkaroundTest {
                 if (!PKDeviceCapabilities.sendReport(reportString)) return;
 
                 // If we got here, save the fingerprint so we don't send again until the OS updates.
-                sharedPrefs.edit().putString(PREFS_ENTRY_FINGERPRINT_DUMMYSURFACE_WORKAROUND, Build.FINGERPRINT).apply();
-                dummySurfaceWorkaroundRequiredReportSent = true;
+                sharedPrefs.edit().putString(PREFS_ENTRY_FINGERPRINT, Build.FINGERPRINT).apply();
+                reportSent = true;
             }
         });
     }

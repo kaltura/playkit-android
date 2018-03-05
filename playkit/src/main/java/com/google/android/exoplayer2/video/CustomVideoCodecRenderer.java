@@ -34,7 +34,7 @@ import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.TraceUtil;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.VideoRendererEventListener.EventDispatcher;
-import com.kaltura.playkit.player.MediaCodecWorkaroundTest;
+import com.kaltura.playkit.player.DummySurfaceWorkaroundTest;
 
 import java.nio.ByteBuffer;
 
@@ -1044,7 +1044,7 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
         // https://github.com/google/ExoPlayer/issues/3439,
         // https://github.com/google/ExoPlayer/issues/3724 and
         // https://github.com/google/ExoPlayer/issues/3835.
-        return MediaCodecWorkaroundTest.workaroundRequired ||
+        return DummySurfaceWorkaroundTest.workaroundRequired ||
                 (("deb".equals(Util.DEVICE) || "flo".equals(Util.DEVICE)) // Nexus 7 (2013)
                 && "OMX.qcom.video.decoder.avc".equals(name))
                 || (("tcl_eu".equals(Util.DEVICE) // TCL Percee TV
