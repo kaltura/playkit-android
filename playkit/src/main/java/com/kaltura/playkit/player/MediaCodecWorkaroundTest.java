@@ -79,8 +79,8 @@ public class MediaCodecWorkaroundTest {
             public void onPlayerError(ExoPlaybackException error) {
                 if (error.getCause() instanceof MediaCodecRenderer.DecoderInitializationException) {
                     workaroundRequired(context, true);
-                    player.release();
                 }
+                player.release();
             }
 
             @Override
