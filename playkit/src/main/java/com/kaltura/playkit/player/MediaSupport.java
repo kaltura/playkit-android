@@ -69,33 +69,34 @@ public class MediaSupport {
      */
     public static void initializeDrm(Context context, final DrmInitCallback drmInitCallback) {
 
-        if (!initSucceeded) {
-            //Check if device needs codec`s workaround.
-            MediaCodecWorkaroundTest.executeTest(context);
-            try {
-                checkWidevineClassic(context);
-                checkWidevineModular();
+        if (initSucceeded) {
+            return;
+        }
+        //Check if device needs codec`s workaround.
+        MediaCodecWorkaroundTest.executeTest(context);
+        try {
+            checkWidevineClassic(context);
+            checkWidevineModular();
 
-                initSucceeded = true;
+            initSucceeded = true;
 
-                runCallback(drmInitCallback, false, null);
+            runCallback(drmInitCallback, false, null);
 
-            } catch (DrmNotProvisionedException e) {
-                log.d("Widevine Modular needs provisioning");
-                AsyncTask.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                            try {
-                                provisionWidevine();
-                                runCallback(drmInitCallback, true, null);
-                            } catch (Exception e) {
-                                runCallback(drmInitCallback, true, e);
-                            }
+        } catch (DrmNotProvisionedException e) {
+            log.d("Widevine Modular needs provisioning");
+            AsyncTask.execute(new Runnable() {
+                @Override
+                public void run() {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                        try {
+                            provisionWidevine();
+                            runCallback(drmInitCallback, true, null);
+                        } catch (Exception e) {
+                            runCallback(drmInitCallback, true, e);
                         }
                     }
-                });
-            }
+                }
+            });
         }
     }
 

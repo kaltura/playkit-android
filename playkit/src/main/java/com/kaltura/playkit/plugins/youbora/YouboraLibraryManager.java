@@ -282,12 +282,10 @@ class YouboraLibraryManager extends PluginGeneric {
     }
 
     public Double getThroughput() {
-        //log.d("getThroughput = " + lastReportedThroughput);
         return this.lastReportedThroughput;
     }
 
     public String getRendition() {
-        //log.d("getRendition = " + lastReportedRendition);
         return lastReportedRendition;
     }
 
@@ -297,7 +295,6 @@ class YouboraLibraryManager extends PluginGeneric {
 
     public Double getPlayhead() {
         double currPos = Long.valueOf(player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
-        //log.d("getPlayhead currPos = " + currPos);
         return (currPos >= 0) ? currPos : 0;
     }
 

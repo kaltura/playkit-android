@@ -397,6 +397,7 @@ public class PKDeviceCapabilities {
                 .put("DEVICE", Build.DEVICE)
                 .put("TAGS", Build.TAGS)
                 .put("FINGERPRINT", FINGERPRINT)
-                .put("ARCH", arch);
+                .put("ARCH", arch)
+                .put("CHIPSET", CHIPSET);
     }
 }
