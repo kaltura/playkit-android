@@ -55,6 +55,7 @@ import com.kaltura.playkit.ads.PKAdProviderListener;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
+import com.kaltura.playkit.plugins.ads.AdPositionType;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
 
@@ -103,8 +104,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     // Whether an ad is displayed.
     private boolean isAdDisplayed;
     private boolean isAdIsPaused;
-    private boolean isAdRequested = false;
-    private boolean isInitWaiting = false;
+    private boolean isAdRequested;
+    private boolean isInitWaiting;
+    private boolean isAutoPlay;
+
     private boolean appIsInBackground;
     private boolean adManagerInitDuringBackground;
     private boolean appInBackgroundDuringAdLoad;
@@ -239,6 +242,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         log.d("Start onUpdateMedia");
         this.mediaConfig = mediaConfig;
         isContentPrepared = false;
+        isAutoPlay = false;
         isAdRequested = false;
         isAdDisplayed = false;
         isAllAdsCompleted = false;
@@ -328,7 +332,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
 
         if (lastEventReceived == com.google.ads.interactivemedia.v3.api.AdEvent.AdEventType.CONTENT_RESUME_REQUESTED && player != null) {
-            player.play();
+            if (adInfo == null || (adInfo != null && adInfo.getAdPositionType() != AdPositionType.POST_ROLL)) {
+                player.play();
+            }
         }
     }
 
@@ -433,6 +439,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     @Override
     public void start() {
         log.d("Start adsManager.init");
+        isAutoPlay = true; // start will be called only on first time media is played programmatically
         isAdRequested = true;
         if (adsManager != null) {
             log.d("IMA adsManager.init called");
@@ -683,11 +690,14 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                         preparePlayer(true);
                     }
                 } else if (player != null) {
+                    log.d("Content prepared..");
                     shutterView.setVisibility(View.GONE);
                     long duration = player.getDuration();
                     if (duration < 0 || player.getCurrentPosition() <= duration) {
-                        log.d("Content prepared.. Play called.");
-                        player.play();
+                        if (adInfo == null || (adInfo != null && adInfo.getAdPositionType() != AdPositionType.POST_ROLL)) {
+                            log.d("Content prepared.. Play called.");
+                            player.play();
+                        }
                     }
                 }
                 adPlaybackCancelled = false;
@@ -1022,7 +1032,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
 
         sendError(errorType, errorMessage, adException);
-        preparePlayer(true);
+        preparePlayer(isAutoPlay);
     }
 
     private void resetFlagsOnError() {
