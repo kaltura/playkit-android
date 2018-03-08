@@ -851,7 +851,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.listen(new PKEvent.Listener() {
                     @Override
                     public void onEvent(PKEvent event) {
-                        if (player != null && player.getView() != null) {
+                        if (player != null && player.getView() != null && !isAdDisplayed()) {
                             shutterView.setVisibility(View.GONE);
                             player.play();
                         }
