@@ -29,7 +29,7 @@ public class KavaService {
         RequestBuilder requestBuilder = new RequestBuilder()
                 .method("GET")
                 .url(buildUrlWithParams(baseUrl, params));
-        requestBuilder.build().getHeaders().put("userAgent", userAgent);
+        requestBuilder.build().getHeaders().put("User-Agent", userAgent);
         return requestBuilder;
     }
 
