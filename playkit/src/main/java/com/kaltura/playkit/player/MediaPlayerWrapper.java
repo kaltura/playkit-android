@@ -320,7 +320,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public boolean isPlaying() {
-        return player.isPlaying();
+        return (player != null && player.isPlaying());
     }
 
     @Override
