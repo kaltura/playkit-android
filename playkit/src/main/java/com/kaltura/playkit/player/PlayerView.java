@@ -14,18 +14,15 @@ package com.kaltura.playkit.player;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 /**
  * Created by gilad.nadav on 27/12/2016.
  */
 
-public class PlayerView extends FrameLayout {
+public abstract class PlayerView extends FrameLayout {
     public PlayerView(Context context) {
         super(context);
-        ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        setLayoutParams(lp);
     }
 
     public PlayerView(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -35,5 +32,11 @@ public class PlayerView extends FrameLayout {
     public PlayerView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
+
+
+    public abstract void hideVideoSurface();
+    public abstract void showVideoSurface();
+    public abstract void hideVideoSubtitles();
+    public abstract void showVideoSubtitles();
 
 }

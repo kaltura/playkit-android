@@ -208,7 +208,81 @@ public class PlayerController implements Player {
 
     public PlayerController(Context context) {
         this.context = context;
-        this.rootPlayerView = new PlayerView(context);
+        initializeRootPlayerView();
+    }
+
+    private void initializeRootPlayerView() {
+        this.rootPlayerView = new PlayerView(context) {
+            @Override
+            public void hideVideoSurface() {
+                setVideoSurfaceVisibility(false);
+            }
+
+            @Override
+            public void showVideoSurface() {
+                setVideoSurfaceVisibility(true);
+            }
+
+            @Override
+            public void hideVideoSubtitles() {
+                setVideoSubtitlesVisibility(false);
+
+            }
+
+            @Override
+            public void showVideoSubtitles() {
+                setVideoSubtitlesVisibility(true);
+
+            }
+        };
+        ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        this.rootPlayerView.setLayoutParams(lp);
+    }
+
+    private void setVideoSurfaceVisibility(boolean isVisible) {
+        String visibilityFunction = "showVideoSurface";
+        if (!isVisible) {
+            visibilityFunction = "hideVideoSurface";
+        }
+
+        if (player == null) {
+            log.w("Error in " + visibilityFunction + " player is null");
+            return;
+        }
+
+        PlayerView playerView = player.getView();
+        if (playerView != null) {
+            if (isVisible) {
+                playerView.showVideoSurface();
+            } else {
+                playerView.hideVideoSurface();
+            }
+        } else {
+            log.w("Error in " + visibilityFunction + " playerView is null");
+        }
+    }
+
+    private void setVideoSubtitlesVisibility(boolean isVisible) {
+        String visibilityFunction = "showVideoSubtitles";
+        if (!isVisible) {
+            visibilityFunction = "hideVideoSubtitles";
+        }
+
+        if (player == null) {
+            log.w("Error in " + visibilityFunction + " player is null");
+            return;
+        }
+
+        PlayerView playerView = player.getView();
+        if (playerView != null) {
+            if (isVisible) {
+                playerView.showVideoSubtitles();
+            } else {
+                playerView.hideVideoSubtitles();
+            }
+        } else {
+            log.w("Error in " + visibilityFunction + " playerView is null");
+        }
     }
 
     @Override
