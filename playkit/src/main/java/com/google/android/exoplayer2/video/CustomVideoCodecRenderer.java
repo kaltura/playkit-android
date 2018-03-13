@@ -1052,7 +1052,7 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
                 || "BRAVIA_ATV2".equals(Util.DEVICE) // Sony Bravia 4K GB
                 || Util.DEVICE.startsWith("panell_") // Motorola Moto C Plus
                 || "F3311".equals(Util.DEVICE) // Sony Xperia E5
-               // || "M5c".equals(Util.DEVICE) // Meizu M5C
+                || "M5c".equals(Util.DEVICE) // Meizu M5C
                 || "A7010a48".equals(Util.DEVICE)) // Lenovo K4 Note
                 && "OMX.MTK.VIDEO.DECODER.AVC".equals(name))
                 || (("ALE-L21".equals(Util.MODEL) // Huawei P8 Lite
