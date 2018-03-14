@@ -173,7 +173,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
         adConfig = parseConfig(config);
         adUiContainer = player.getView();
-        imaSetup();
     }
 
     private static IMAConfig parseConfig(Object config) {
@@ -242,6 +241,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         isAdDisplayed = false;
         isAllAdsCompleted = false;
         isContentEndedBeforeMidroll = false;
+        imaSetup();
         requestAdsFromIMA(adConfig.getAdTagURL());
     }
 
@@ -252,7 +252,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             adsManager.destroy();
         }
         clearAdsLoader();
-        imaSetup();
         adConfig = parseConfig(config);
         isAdRequested = false;
         isAdDisplayed = false;
@@ -384,12 +383,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         }
     }
 
-    ////////Ads Plugin
-    @Override
-    public IMAConfig getAdsConfig() {
-        return adConfig;
-    }
-
     private AdsLoader.AdsLoadedListener getAdsLoadedListener() {
         if (adsLoadedListener != null) {
             return adsLoadedListener;
@@ -479,7 +472,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 return new VideoProgressUpdate(currentPosition, duration);
             }
         });
-        adManagerTimer = new CountDownTimer(getAdsConfig().getAdLoadTimeOut() * Consts.MILLISECONDS_MULTIPLIER, IMAConfig.DEFAULT_AD_LOAD_COUNT_DOWN_TICK) {
+        adManagerTimer = new CountDownTimer(adConfig.getAdLoadTimeOut() * Consts.MILLISECONDS_MULTIPLIER, IMAConfig.DEFAULT_AD_LOAD_COUNT_DOWN_TICK) {
             @Override
             public void onTick(long millisUntilFinished) {
                 log.d("adManagerTimer.onTick, adsManager=" + adsManager);
@@ -706,6 +699,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 isAllAdsCompleted = true;
                 isAdDisplayed = false;
                 messageBus.post(new AdEvent(AdEvent.Type.ALL_ADS_COMPLETED));
+                player.getView().showVideoSurface();
                 if (adsManager != null) {
                     log.d("AD_ALL_ADS_COMPLETED resetIMA");
                     resetIMA();

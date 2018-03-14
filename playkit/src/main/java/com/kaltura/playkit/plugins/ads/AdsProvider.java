@@ -18,8 +18,6 @@ import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
 
 
 public interface AdsProvider {
-    IMAConfig getAdsConfig();
-
     void start();
     void destroyAdsManager();
     void resume();
