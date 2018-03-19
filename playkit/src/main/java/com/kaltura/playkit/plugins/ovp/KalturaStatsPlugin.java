@@ -408,7 +408,9 @@ public class KalturaStatsPlugin extends PKPlugin {
             default:
                 break;
         }
-        messageBus.post(new KalturaStatsEvent.KalturaStatsReport(event.eventType().toString()));
+        if (event.eventType() != AdEvent.Type.PLAY_HEAD_CHANGED) {
+            messageBus.post(new KalturaStatsEvent.KalturaStatsReport(event.eventType().name()));
+        }
     }
 
 
