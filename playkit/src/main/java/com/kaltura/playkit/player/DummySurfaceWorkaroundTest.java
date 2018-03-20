@@ -59,6 +59,9 @@ public class DummySurfaceWorkaroundTest {
     };
 
     static void executeTest(final Context context) {
+        if(Build.VERSION.SDK_INT < 18) {
+            return;
+        }
 
         DataSource.Factory mediaDataSourceFactory = new DefaultDataSourceFactory(context, "whatever");
 
