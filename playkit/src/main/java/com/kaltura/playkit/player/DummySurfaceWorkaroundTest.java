@@ -59,7 +59,7 @@ public class DummySurfaceWorkaroundTest {
     };
 
     static void executeTest(final Context context) {
-        if(Build.VERSION.SDK_INT < 18) {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
             return;
         }
 
