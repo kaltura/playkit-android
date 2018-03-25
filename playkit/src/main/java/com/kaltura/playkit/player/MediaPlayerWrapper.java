@@ -71,8 +71,8 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private PlayerState currentState = PlayerState.IDLE, previousState;
     private long playerDuration = Consts.TIME_UNSET;
     private long playerPosition;
-    private PlayerController.EventListener eventListener;
-    private PlayerController.StateChangedListener stateChangedListener;
+    private EventListener eventListener;
+    private StateChangedListener stateChangedListener;
     private boolean shouldRestorePlayerToPreviousState = false;
     private PrepareState prepareState = NOT_PREPARED;
     private boolean isPlayAfterPrepare = false;
@@ -324,12 +324,12 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public void setEventListener(PlayerController.EventListener eventTrigger) {
+    public void setEventListener(EventListener eventTrigger) {
         this.eventListener = eventTrigger;
     }
 
     @Override
-    public void setStateChangedListener(PlayerController.StateChangedListener stateChangedTrigger) {
+    public void setStateChangedListener(StateChangedListener stateChangedTrigger) {
         this.stateChangedListener = stateChangedTrigger;
     }
 

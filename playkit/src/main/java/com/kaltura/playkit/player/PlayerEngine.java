@@ -13,6 +13,8 @@
 package com.kaltura.playkit.player;
 
 import com.kaltura.playkit.PlaybackInfo;
+import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.PKError;
@@ -136,7 +138,7 @@ interface PlayerEngine {
      *
      * @param eventTrigger - the event trigger.
      */
-    void setEventListener(PlayerController.EventListener eventTrigger);
+    void setEventListener(EventListener eventTrigger);
 
     /**
      * Set the StateChangeListener to the player, which will notify the
@@ -144,7 +146,7 @@ interface PlayerEngine {
      * Note! Same change that happens twice in a row will not be reported.
      * @param stateChangedTrigger - the state change listener.
      */
-    void setStateChangedListener(PlayerController.StateChangedListener stateChangedTrigger);
+    void setStateChangedListener(StateChangedListener stateChangedTrigger);
 
     /**
      * Release the current player.
@@ -198,4 +200,12 @@ interface PlayerEngine {
     BaseTrack getLastSelectedTrack(int renderType);
 
     boolean isLiveStream();
+
+    interface EventListener {
+        void onEvent(PlayerEvent.Type event);
+    }
+
+    interface StateChangedListener {
+        void onStateChanged(PlayerState oldState, PlayerState newState);
+    }
 }

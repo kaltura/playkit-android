@@ -46,8 +46,8 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public AdController getAdController() {
-        return player.getAdController();
+    public <T extends PKController> T getController(Class<T> type) {
+        return player.getController(type);
     }
 
     @Override
@@ -128,7 +128,7 @@ public class PlayerDecoratorBase implements Player {
     void setPlayer(Player player) {
         this.player = player;
     }
-    
+
     Player getPlayer() {
         return player;
     }

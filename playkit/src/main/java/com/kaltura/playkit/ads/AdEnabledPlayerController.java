@@ -14,6 +14,7 @@ package com.kaltura.playkit.ads;
 
 import android.support.annotation.NonNull;
 
+import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PlayerDecorator;
@@ -24,7 +25,7 @@ import com.kaltura.playkit.utils.Consts;
  * @hide
  */
 
-public class AdEnabledPlayerController extends PlayerDecorator implements AdController, PKAdProviderListener {
+public class AdEnabledPlayerController extends PlayerDecorator implements AdController, PKAdProviderListener, PKController {
 
     private static final PKLog log = PKLog.get("AdEnablController");
 
@@ -128,11 +129,9 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     public boolean isPlaying() {
         log.d("AdEnabled isPlaying");
         if (adsProvider != null && adsProvider.isAdDisplayed()) {
-            if (adsProvider.isAdPaused()) {
-                return false;
-            }
-            return true;
-        } return super.isPlaying();
+            return !adsProvider.isAdPaused();
+        }
+        return super.isPlaying();
     }
 
     @Override
@@ -160,9 +159,11 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
-    public AdController getAdController() {
-        log.d("AdDecorator getAdController");
-        return this;
+    public <T extends PKController> T getController(Class<T> type) {
+        if (type == AdEnabledPlayerController.class) {
+            return (T) this;
+        }
+        return super.getController(type);
     }
 
     @Override

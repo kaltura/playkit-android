@@ -57,8 +57,6 @@ import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
-import com.kaltura.playkit.player.PlayerController.EventListener;
-import com.kaltura.playkit.player.PlayerController.StateChangedListener;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;

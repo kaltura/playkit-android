@@ -25,11 +25,12 @@ import com.kaltura.playkit.utils.Consts;
 public interface Player {
 
     /**
-     * Interface used for setting optional Player settings. 
+     * Interface used for setting optional Player settings.
      */
     interface Settings {
         /**
          * Set the Player's contentRequestAdapter.
+         *
          * @param contentRequestAdapter - request adapter.
          * @return - Player Settings.
          */
@@ -41,6 +42,7 @@ public interface Player {
          * Note! Once set, this value will be applied to all mediaSources for that instance of Player.
          * In order to disable/enable it again, you should update that value once again.
          * Otherwise it will stay in the previous state.
+         *
          * @param cea608CaptionsEnabled - should cea-608 track should be enabled.
          * @return - Player Settings.
          */
@@ -52,6 +54,7 @@ public interface Player {
          * Note!!! Use this carefully, because {@link android.view.TextureView} is more expensive and not DRM
          * protected. But it allows dynamic animations/scaling e.t.c on the player. By default it will be always set
          * to false.
+         *
          * @param useTextureView - true if should use {@link android.view.TextureView}.
          * @return - Player Settings.
          */
@@ -60,6 +63,7 @@ public interface Player {
         /**
          * Decide if player should do cross protocol redirect or not. By default it will be always set
          * to false.
+         *
          * @param crossProtocolRedirectEnabled - true if should do cross protocol redirect.
          * @return - Player Settings.
          */
@@ -67,13 +71,15 @@ public interface Player {
     }
 
     /**
-     * Get the Player's {@link Settings} object, for setting some optional properties. 
+     * Get the Player's {@link Settings} object, for setting some optional properties.
+     *
      * @return Player Settings.
      */
     Settings getSettings();
 
     /**
      * Prepare the player for playback.
+     *
      * @param playerConfig - media configurations to apply on the player.
      */
     void prepare(@NonNull PKMediaConfig playerConfig);
@@ -128,12 +134,14 @@ public interface Player {
 
     /**
      * The Player's View.
+     *
      * @return - the view player attached to.
      */
     PlayerView getView();
 
     /**
      * Getter for the current playback position.
+     *
      * @return - position of the player or {@link Consts#POSITION_UNSET} if position is unknown or player engine is null.
      */
     long getCurrentPosition();
@@ -155,6 +163,7 @@ public interface Player {
      * Accept values between 0 and 1. Where 0 is mute and 1 is maximum volume.
      * If the volume parameter is higher then 1, it will be converted to 1.
      * If the volume parameter is lower then 0, it be converted to 0.
+     *
      * @param volume - volume to set.
      */
     void setVolume(float volume);
@@ -166,13 +175,15 @@ public interface Player {
 
     /**
      * Add event listener to the player.
+     *
      * @param listener - event listener.
-     * @param events - events the subscriber interested in.
+     * @param events   - events the subscriber interested in.
      */
     void addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
 
     /**
      * Add state changed listener to the player.
+     *
      * @param listener - state changed listener
      */
     void addStateChangeListener(@NonNull PKEvent.Listener listener);
@@ -182,24 +193,34 @@ public interface Player {
      * If uniqueId is not valid or null, this will throw {@link IllegalArgumentException}.
      * Example of the valid uniqueId for regular video track: Video:0,0,1.
      * Example of the valid uniqueId for adaptive video track: Video:0,0,adaptive.
+     *
      * @param uniqueId - the unique id of the new track that will play instead of the old one.
      */
     void changeTrack(String uniqueId);
 
     /**
      * Seek player to the specified position.
+     *
      * @param position - desired position.
      */
     void seekTo(long position);
 
-    AdController getAdController();
-
     /**
      * Get the Player's SessionId. The SessionId is generated each time new media is set.
+     *
      * @return Player's SessionId, as a String object.
      */
     String getSessionId();
 
     boolean isLiveStream();
+
+    /**
+     * Generic getters for playkit controllers.
+     *
+     * @param type - type of the controller you want to obtain.
+     * @return - the {@link PKController} instance if specified controller type exist,
+     * otherwise return null.
+     */
+    <T extends PKController> T getController(Class<T> type);
 }
 
