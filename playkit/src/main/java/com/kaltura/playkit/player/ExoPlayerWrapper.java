@@ -267,7 +267,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         return PlayKitManager.CLIENT_TAG + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE
                 + ") " + "ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
     }
-    
+
     private void changeState(PlayerState newState) {
         previousState = currentState;
         if (newState.equals(currentState)) {
@@ -432,9 +432,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     public void load(PKMediaSourceConfig mediaSourceConfig) {
         log.d("load");
         crossProtocolRedirectEnabled = mediaSourceConfig.playerSettings.crossProtocolRedirectEnabled();
-        if  (mediaSourceConfig.playerSettings.getLicenseRequestAdapter() != null) {
-            httpDataSourceRequestParams = mediaSourceConfig.playerSettings.getLicenseRequestAdapter()
-                    .adapt(new PKRequestParams(null, new HashMap<String, String>()));
+        PKRequestParams.Adapter licenseRequestAdapter = mediaSourceConfig.playerSettings.getLicenseRequestAdapter();
+        if  (licenseRequestAdapter != null) {
+            httpDataSourceRequestParams = licenseRequestAdapter.adapt(new PKRequestParams(null, new HashMap<String, String>()));
         }
 
         if (player == null) {
