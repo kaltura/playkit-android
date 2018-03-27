@@ -54,13 +54,9 @@ public class PlayerController implements Player {
 
     private String sessionId;
     private UUID playerSessionId = UUID.randomUUID();
-
-    private PKRequestParams.Adapter contentRequestAdapter;
-
+    private PlayerSettings playerSettings = new PlayerSettings();
     private boolean isNewEntry = true;
-    private boolean useTextureView = false;
-    private boolean crossProtocolRedirectEnabled = false;
-    private boolean cea608CaptionsEnabled = false;
+
     private long targetSeekPosition;
 
 
@@ -70,37 +66,6 @@ public class PlayerController implements Player {
             updateProgress();
         }
     };
-
-    private Settings settings = new Settings();
-
-    private class Settings implements Player.Settings {
-
-        @Override
-        public Player.Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
-            PlayerController.this.contentRequestAdapter = contentRequestAdapter;
-            return this;
-        }
-
-        @Override
-        public Player.Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
-            PlayerController.this.cea608CaptionsEnabled = cea608CaptionsEnabled;
-            return this;
-        }
-
-        @Override
-        public Player.Settings useTextureView(boolean useTextureView) {
-            PlayerController.this.useTextureView = useTextureView;
-            return this;
-        }
-
-        @Override
-        public Player.Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
-            PlayerController.this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
-            return this;
-        }
-
-
-    }
 
     public void setEventListener(PKEvent.Listener eventListener) {
         this.eventListener = eventListener;
@@ -115,7 +80,7 @@ public class PlayerController implements Player {
     public boolean isLiveStream() {
         return player != null && player.isLiveStream();
     }
-
+    
     interface EventListener {
         void onEvent(PlayerEvent.Type event);
     }
@@ -287,7 +252,7 @@ public class PlayerController implements Player {
 
     @Override
     public Player.Settings getSettings() {
-        return settings;
+        return playerSettings;
     }
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
@@ -319,8 +284,8 @@ public class PlayerController implements Player {
         isNewEntry = true;
 
         sessionId = generateSessionId();
-        if (contentRequestAdapter != null) {
-            contentRequestAdapter.updateParams(this);
+        if (playerSettings.getContentRequestAdapter() != null) {
+            playerSettings.getContentRequestAdapter().updateParams(this);
         }
 
         this.mediaConfig = mediaConfig;
@@ -331,7 +296,7 @@ public class PlayerController implements Player {
             return false;
         }
 
-        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestAdapter, cea608CaptionsEnabled, useTextureView, crossProtocolRedirectEnabled);
+        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
         return true;
     }
