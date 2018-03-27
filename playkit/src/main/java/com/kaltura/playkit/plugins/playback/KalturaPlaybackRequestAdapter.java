@@ -64,4 +64,9 @@ public class KalturaPlaybackRequestAdapter implements PKRequestParams.Adapter {
     public void updateParams(Player player) {
         this.playSessionId = player.getSessionId();
     }
+
+    @Override
+    public String getApplicationName() {
+        return applicationName;
+    }
 }

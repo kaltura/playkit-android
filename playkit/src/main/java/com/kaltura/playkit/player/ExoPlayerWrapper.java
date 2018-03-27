@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -53,6 +54,7 @@ import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
@@ -69,6 +71,7 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
@@ -119,9 +122,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private boolean isSeeking = false;
     private boolean useTextureView = false;
     private boolean crossProtocolRedirectEnabled;
+
     private boolean preferredLanguageWasSelected = false;
     private boolean shouldRestorePlayerToPreviousState = false;
-
+    private PKRequestParams httpDataSourceRequestParams;
     private int playerWindow;
     private long playerPosition = Consts.TIME_UNSET;
 
@@ -153,7 +157,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         eventLogger = new EventLogger();
 
         DefaultTrackSelector trackSelector = initializeTrackSelector();
-        drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildHttpDataSourceFactory(false), drmSessionListener);
+        drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildCustomHttpDataSourceFactory(false), drmSessionListener);
         DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context,
                 drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
         player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
@@ -266,6 +270,11 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      */
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
         return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
+    }
+
+    private HttpDataSource.Factory buildCustomHttpDataSourceFactory(boolean useBandwidthMeter) {
+        return new CustomHttpDataSourceFactory(getUserAgent(context), httpDataSourceRequestParams, useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
     }
 
@@ -448,6 +457,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     public void load(PKMediaSourceConfig mediaSourceConfig) {
         log.d("load");
         crossProtocolRedirectEnabled = mediaSourceConfig.playerSettings.crossProtocolRedirectEnabled();
+        httpDataSourceRequestParams = (mediaSourceConfig.playerSettings.getLicenseRequestAdapter() != null) ? mediaSourceConfig.playerSettings.getLicenseRequestAdapter().adapt(new PKRequestParams(null, new HashMap<String, String>())) : null;
         if (player == null) {
             initializePlayer();
         }

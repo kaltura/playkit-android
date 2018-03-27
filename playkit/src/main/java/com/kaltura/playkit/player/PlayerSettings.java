@@ -19,6 +19,7 @@ import com.kaltura.playkit.Player;
 public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
+    private PKRequestParams.Adapter licenseRequestAdapter;
     private boolean useTextureView = false;
     private boolean crossProtocolRedirectEnabled = false;
     private boolean cea608CaptionsEnabled = false;
@@ -27,6 +28,10 @@ public class PlayerSettings implements Player.Settings {
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
+    }
+
+    public PKRequestParams.Adapter getLicenseRequestAdapter() {
+        return licenseRequestAdapter;
     }
 
     public boolean useTextureView() {
@@ -52,6 +57,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public PlayerSettings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
         this.contentRequestAdapter = contentRequestAdapter;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
+        this.licenseRequestAdapter = licenseRequestAdapter;
         return this;
     }
 
