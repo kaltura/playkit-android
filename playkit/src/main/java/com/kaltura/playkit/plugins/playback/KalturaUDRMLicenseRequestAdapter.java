@@ -25,9 +25,4 @@ public class KalturaUDRMLicenseRequestAdapter implements PKRequestParams.Adapter
     @Override
     public void updateParams(Player player) {
     }
-
-    @Override
-    public String getApplicationName() {
-        return applicationName;
-    }
 }

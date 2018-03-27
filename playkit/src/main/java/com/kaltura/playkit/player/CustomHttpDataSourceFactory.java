@@ -1,16 +1,10 @@
 package com.kaltura.playkit.player;
 
-
-import android.text.TextUtils;
-
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
-import com.google.android.exoplayer2.upstream.HttpDataSource.BaseFactory;
-import com.google.android.exoplayer2.upstream.HttpDataSource.Factory;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.kaltura.playkit.PKRequestParams;
-
 import java.util.Map;
 
 /** A {@link HttpDataSource.Factory} that produces {@link DefaultHttpDataSource} instances. */

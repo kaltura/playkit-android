@@ -28,7 +28,7 @@ public interface Player {
      * Interface used for setting optional Player settings. 
      */
     interface Settings {
-               /**
+         /**
          * Set the Player's contentRequestAdapter.
          * @param contentRequestAdapter - request adapter.
          * @return - Player Settings.

@@ -41,7 +41,5 @@ public class PKRequestParams {
         PKRequestParams adapt(PKRequestParams requestParams);
 
         void updateParams(Player player);
-
-        String getApplicationName();
     }
 }
