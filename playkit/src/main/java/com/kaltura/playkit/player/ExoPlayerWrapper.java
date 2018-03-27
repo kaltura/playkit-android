@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -70,7 +71,6 @@ import java.net.CookiePolicy;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  * Created by anton.afanasiev on 31/10/2016.
  */
@@ -108,6 +108,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private boolean isSeeking = false;
     private boolean useTextureView = false;
+    private String referrer;
     private boolean crossProtocolRedirectEnabled = false;
     private boolean shouldRestorePlayerToPreviousState = false;
 
@@ -117,7 +118,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
     private List<PKMetadata> metadataList = new ArrayList<>();
-
 
     private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
@@ -187,7 +187,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         shouldGetTracksInfo = true;
-        trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.cea608CaptionsEnabled);
+        trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.playerSettings.cea608CaptionsEnabled());
 
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
@@ -243,8 +243,13 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      * @return A new HttpDataSource factory.
      */
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
-        return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+        if (!TextUtils.isEmpty(referrer)) {
+            return new CustomHttpDataSourceFactory(getUserAgent(context), referrer, useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
+        } else {
+            return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                    DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
+        }
     }
 
     private static String getUserAgent(Context context) {
@@ -425,12 +430,14 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void load(PKMediaSourceConfig mediaSourceConfig) {
         log.d("load");
-        crossProtocolRedirectEnabled = mediaSourceConfig.crossProtocolRedirectEnabled;
+        crossProtocolRedirectEnabled = mediaSourceConfig.playerSettings.crossProtocolRedirectEnabled();
+        referrer = mediaSourceConfig.playerSettings.getContentRequestAdapter().getApplicationName();
         if (player == null) {
             initializePlayer();
         }
 
-        maybeChangePlayerRenderView(mediaSourceConfig.useTextureView);
+        maybeChangePlayerRenderView(mediaSourceConfig.playerSettings.useTextureView());
+
         preparePlayer(mediaSourceConfig);
     }
 
