@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.player;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
@@ -25,7 +26,6 @@ import android.widget.FrameLayout;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.TextOutput;
-import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SubtitleView;
 
@@ -61,8 +61,8 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
 
         addView(layout);
 
-        //by default create with SurfaceView.
-        swapVideoSurface(false);
+        //by default create with unsecured SurfaceView.
+        swapVideoSurface(false, false);
 
         layout.addView(posterView);
         layout.addView(subtitleLayout);
@@ -97,8 +97,9 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
      * Swap the video surface view that player should render.
      *
      * @param useTextureView - if should use {@link TextureView}
+     * @param isSecure       - should allow secure rendering of the surface
      */
-    void swapVideoSurface(boolean useTextureView) {
+    void swapVideoSurface(boolean useTextureView, boolean isSecure) {
 
         if (useTextureView) {
             videoSurface = new TextureView(getContext());
@@ -124,7 +125,7 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
 
         //Apply videoSurface to the player(if exist).
         if (player != null) {
-            applyVideoSurface();
+            applyVideoSurface(isSecure);
         }
     }
 
@@ -135,7 +136,7 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
      *
      * @param player The {@link SimpleExoPlayer} to use.
      */
-    void setPlayer(SimpleExoPlayer player) {
+    void setPlayer(SimpleExoPlayer player, boolean isSecure) {
         if (this.player == player) {
             return;
         }
@@ -149,7 +150,7 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
         this.player = player;
 
         if (player != null) {
-            applyVideoSurface();
+            applyVideoSurface(isSecure);
         } else {
             posterView.setVisibility(VISIBLE);
         }
@@ -158,7 +159,8 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
     /**
      * Will set videoSurface to player, and reset all the related listeners.
      */
-    private void applyVideoSurface() {
+    @TargetApi(17)
+    private void applyVideoSurface(boolean isSecure) {
 
         removeVideoSurface();
 
@@ -166,6 +168,7 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
         if (videoSurface instanceof TextureView) {
             player.setVideoTextureView((TextureView) videoSurface);
         } else {
+            ((SurfaceView) videoSurface).setSecure(isSecure);
             player.setVideoSurfaceView((SurfaceView) videoSurface);
         }
 

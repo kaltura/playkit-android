@@ -108,11 +108,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private Handler mainHandler = new Handler(Looper.getMainLooper());
     private PKError currentError = null;
 
-    private boolean isSeeking = false;
-    private boolean useTextureView = false;
+    private boolean isSecure;
+    private boolean isSeeking;
+    private boolean useTextureView;
+    private boolean crossProtocolRedirectEnabled;
+    private boolean shouldRestorePlayerToPreviousState;
     private PKRequestParams httpDataSourceRequestParams;
-    private boolean crossProtocolRedirectEnabled = false;
-    private boolean shouldRestorePlayerToPreviousState = false;
 
     private int playerWindow;
     private long playerPosition = Consts.TIME_UNSET;
@@ -152,7 +153,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         player = ExoPlayerFactory.newSimpleInstance(rendererFactory, trackSelector);
         window = new Timeline.Window();
         setPlayerListeners();
-        exoPlayerView.setPlayer(player);
+        exoPlayerView.setPlayer(player, isSecure);
         player.setPlayWhenReady(false);
     }
 
@@ -441,18 +442,19 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             initializePlayer();
         }
 
-        maybeChangePlayerRenderView(mediaSourceConfig.playerSettings.useTextureView());
+        maybeChangePlayerRenderView(mediaSourceConfig.playerSettings);
 
         preparePlayer(mediaSourceConfig);
     }
 
-    private void maybeChangePlayerRenderView(boolean useTextureView) {
-        if (this.useTextureView == useTextureView) {
+    private void maybeChangePlayerRenderView(PlayerSettings playerSettings) {
+        if (this.useTextureView == playerSettings.useTextureView() && isSecure == playerSettings.isSecure()) {
             return;
         }
 
-        this.useTextureView = useTextureView;
-        exoPlayerView.swapVideoSurface(useTextureView);
+        this.useTextureView = playerSettings.useTextureView();
+        this.isSecure = playerSettings.isSecure();
+        exoPlayerView.swapVideoSurface(playerSettings.useTextureView(), playerSettings.isSecure());
     }
 
     @Override
