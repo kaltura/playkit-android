@@ -18,8 +18,8 @@ import com.kaltura.playkit.Player;
 
 public class PlayerSettings implements Player.Settings {
 
-    private boolean isSecure;
     private boolean useTextureView;
+    private boolean isSurfaceSecured;
     private boolean cea608CaptionsEnabled;
     private boolean crossProtocolRedirectEnabled;
 
@@ -47,8 +47,8 @@ public class PlayerSettings implements Player.Settings {
         return cea608CaptionsEnabled;
     }
 
-    public boolean isSecure() {
-        return isSecure;
+    public boolean isSurfaceSecured() {
+        return isSurfaceSecured;
     }
 
     @Override
@@ -76,8 +76,8 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public PlayerSettings setSecure(boolean isSecure) {
-        this.isSecure = isSecure;
+    public PlayerSettings setSecureSurface(boolean isSurfaceSecured) {
+        this.isSurfaceSecured = isSurfaceSecured;
         return this;
     }
 

@@ -97,9 +97,9 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
      * Swap the video surface view that player should render.
      *
      * @param useTextureView - if should use {@link TextureView}
-     * @param isSecure       - should allow secure rendering of the surface
+     * @param isSurfaceSecured       - should allow secure rendering of the surface
      */
-    void swapVideoSurface(boolean useTextureView, boolean isSecure) {
+    void swapVideoSurface(boolean useTextureView, boolean isSurfaceSecured) {
 
         if (useTextureView) {
             videoSurface = new TextureView(getContext());
@@ -125,7 +125,7 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
 
         //Apply videoSurface to the player(if exist).
         if (player != null) {
-            applyVideoSurface(isSecure);
+            applyVideoSurface(isSurfaceSecured);
         }
     }
 
@@ -136,7 +136,7 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
      *
      * @param player The {@link SimpleExoPlayer} to use.
      */
-    void setPlayer(SimpleExoPlayer player, boolean isSecure) {
+    void setPlayer(SimpleExoPlayer player, boolean isSurfaceSecured) {
         if (this.player == player) {
             return;
         }
@@ -150,7 +150,7 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
         this.player = player;
 
         if (player != null) {
-            applyVideoSurface(isSecure);
+            applyVideoSurface(isSurfaceSecured);
         } else {
             posterView.setVisibility(VISIBLE);
         }
@@ -160,7 +160,7 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
      * Will set videoSurface to player, and reset all the related listeners.
      */
     @TargetApi(17)
-    private void applyVideoSurface(boolean isSecure) {
+    private void applyVideoSurface(boolean isSurfaceSecured) {
 
         removeVideoSurface();
 
@@ -168,7 +168,7 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
         if (videoSurface instanceof TextureView) {
             player.setVideoTextureView((TextureView) videoSurface);
         } else {
-            ((SurfaceView) videoSurface).setSecure(isSecure);
+            ((SurfaceView) videoSurface).setSecure(isSurfaceSecured);
             player.setVideoSurfaceView((SurfaceView) videoSurface);
         }
 

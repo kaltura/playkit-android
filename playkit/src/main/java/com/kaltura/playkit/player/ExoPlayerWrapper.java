@@ -19,7 +19,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.TextUtils;
 
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -108,9 +107,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private Handler mainHandler = new Handler(Looper.getMainLooper());
     private PKError currentError = null;
 
-    private boolean isSecure;
     private boolean isSeeking;
     private boolean useTextureView;
+    private boolean isSurfaceSecured;
     private boolean crossProtocolRedirectEnabled;
     private boolean shouldRestorePlayerToPreviousState;
     private PKRequestParams httpDataSourceRequestParams;
@@ -153,7 +152,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         player = ExoPlayerFactory.newSimpleInstance(rendererFactory, trackSelector);
         window = new Timeline.Window();
         setPlayerListeners();
-        exoPlayerView.setPlayer(player, isSecure);
+        exoPlayerView.setPlayer(player, isSurfaceSecured);
         player.setPlayWhenReady(false);
     }
 
@@ -448,13 +447,13 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private void maybeChangePlayerRenderView(PlayerSettings playerSettings) {
-        if (this.useTextureView == playerSettings.useTextureView() && isSecure == playerSettings.isSecure()) {
+        if (this.useTextureView == playerSettings.useTextureView() && isSurfaceSecured == playerSettings.isSurfaceSecured()) {
             return;
         }
 
         this.useTextureView = playerSettings.useTextureView();
-        this.isSecure = playerSettings.isSecure();
-        exoPlayerView.swapVideoSurface(playerSettings.useTextureView(), playerSettings.isSecure());
+        this.isSurfaceSecured = playerSettings.isSurfaceSecured();
+        exoPlayerView.swapVideoSurface(playerSettings.useTextureView(), playerSettings.isSurfaceSecured());
     }
 
     @Override
