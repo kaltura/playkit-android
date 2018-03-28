@@ -7,7 +7,7 @@ import com.google.android.exoplayer2.upstream.TransferListener;
 import com.kaltura.playkit.PKRequestParams;
 import java.util.Map;
 
-/** A {@link HttpDataSource.Factory} that produces {@link DefaultHttpDataSource} instances. */
+/** A {@link HttpDataSource.Factory} that produces {@link CustomHttpDataSourceFactory} instances. */
 public final class CustomHttpDataSourceFactory extends HttpDataSource.BaseFactory {
 
     private final String userAgent;
