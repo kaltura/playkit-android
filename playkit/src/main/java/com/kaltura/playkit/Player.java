@@ -36,6 +36,13 @@ public interface Player {
         Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter);
 
         /**
+         * Set the Player's licenseRequestAdapter.
+         * @param licenseRequestAdapter - request adapter.
+         * @return - Player Settings.
+         */
+        Settings setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
+
+        /**
          * Enable/disable cea-608 text tracks.
          * By default they are disabled.
          * Note! Once set, this value will be applied to all mediaSources for that instance of Player.
