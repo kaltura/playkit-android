@@ -28,12 +28,20 @@ public interface Player {
      * Interface used for setting optional Player settings. 
      */
     interface Settings {
-        /**
+         /**
          * Set the Player's contentRequestAdapter.
          * @param contentRequestAdapter - request adapter.
          * @return - Player Settings.
          */
         Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter);
+
+        /**
+         * Set the Player's licenseRequestAdapter.
+         * @param licenseRequestAdapter - request adapter.
+         * @return - Player Settings.
+         */
+        Settings setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
+
 
         /**
          * Enable/disable cea-608 text tracks.
