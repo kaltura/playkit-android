@@ -439,19 +439,21 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         if (player == null) {
             initializePlayer();
+        } else {
+            // for change media case need to verify if surface swap is needed
+            maybeChangePlayerRenderView(mediaSourceConfig.playerSettings);
         }
-
-        maybeChangePlayerRenderView(mediaSourceConfig.playerSettings);
 
         preparePlayer(mediaSourceConfig);
     }
 
     private void maybeChangePlayerRenderView(PlayerSettings playerSettings) {
-        if (this.useTextureView == playerSettings.useTextureView() && isSurfaceSecured == playerSettings.isSurfaceSecured()) {
+        // no need to swap video surface if no cahnge was done in surface settings
+        if (this.useTextureView == playerSettings.useTextureView() && this.isSurfaceSecured == playerSettings.isSurfaceSecured()) {
             return;
         }
 
-        this.useTextureView = playerSettings.useTextureView();
+        this.useTextureView   = playerSettings.useTextureView();
         this.isSurfaceSecured = playerSettings.isSurfaceSecured();
         exoPlayerView.swapVideoSurface(playerSettings.useTextureView(), playerSettings.isSurfaceSecured());
     }
