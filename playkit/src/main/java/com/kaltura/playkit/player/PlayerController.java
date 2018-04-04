@@ -325,11 +325,10 @@ public class PlayerController implements Player {
             player = new ExoPlayerWrapper(context);
         } else {
             player = new MediaPlayerWrapper(context);
-            addPlayerView();
         }
 
         togglePlayerListeners(true);
-
+        addPlayerView();
     }
 
     private void addPlayerView() {
@@ -425,7 +424,6 @@ public class PlayerController implements Player {
             log.w("Attempt to invoke 'play()' on null instance of the player engine");
             return;
         }
-        addPlayerView();
         player.play();
     }
 
