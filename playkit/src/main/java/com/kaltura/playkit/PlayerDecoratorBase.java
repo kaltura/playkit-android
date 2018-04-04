@@ -141,6 +141,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public void onConfigurationChanged() {
+        player.onConfigurationChanged();
+    }
+
+    @Override
     public void changeTrack(String uniqueId) {
         player.changeTrack(uniqueId);
     }

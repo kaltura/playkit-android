@@ -437,6 +437,11 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void onConfigurationChanged() {
+        player.onConfigurationChanged();
+    }
+
+    @Override
     public void changeTrack(String uniqueId) {
         if (player == null) {
             log.w("Attempt to invoke 'changeTrack()' on null instance of the player engine");

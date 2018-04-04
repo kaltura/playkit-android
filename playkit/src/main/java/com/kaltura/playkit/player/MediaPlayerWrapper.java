@@ -579,6 +579,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         return false;
     }
 
+    @Override
+    public void onConfigurationChanged() {
+        //Do nothing.
+    }
+
     @NonNull
     private Map<String, String> getHeadersMap() {
         Map<String, String> headersMap = new HashMap();

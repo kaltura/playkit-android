@@ -108,6 +108,11 @@ public interface Player {
     void onApplicationResumed();
 
     /**
+     * Player lifecycle method. Must be called when Activity onConfigurationChanged(Configuration newConfig) called.
+     */
+    void onConfigurationChanged();
+
+    /**
      * Should be called when you want to destroy the player.
      */
     void destroy();

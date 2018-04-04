@@ -201,6 +201,8 @@ interface PlayerEngine {
 
     boolean isLiveStream();
 
+    void onConfigurationChanged();
+
     interface EventListener {
         void onEvent(PlayerEvent.Type event);
     }
