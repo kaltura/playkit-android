@@ -25,7 +25,6 @@ import android.widget.FrameLayout;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.TextOutput;
-import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SubtitleView;
 
@@ -200,12 +199,14 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
 
     @Override
     public void hideVideoSurface() {
+        videoSurface.setClickable(false);
         videoSurface.setVisibility(GONE);
         subtitleLayout.setVisibility(GONE);
     }
 
     @Override
     public void showVideoSurface() {
+        videoSurface.setClickable(true);
         videoSurface.setVisibility(VISIBLE);
         subtitleLayout.setVisibility(VISIBLE);
     }
