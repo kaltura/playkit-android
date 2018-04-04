@@ -199,14 +199,12 @@ class ExoPlayerView extends PlayerView implements SimpleExoPlayer.VideoListener,
 
     @Override
     public void hideVideoSurface() {
-        videoSurface.setClickable(false);
         videoSurface.setVisibility(GONE);
         subtitleLayout.setVisibility(GONE);
     }
 
     @Override
     public void showVideoSurface() {
-        videoSurface.setClickable(true);
         videoSurface.setVisibility(VISIBLE);
         subtitleLayout.setVisibility(VISIBLE);
     }
