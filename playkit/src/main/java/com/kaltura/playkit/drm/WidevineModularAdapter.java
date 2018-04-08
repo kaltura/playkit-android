@@ -229,8 +229,6 @@ class WidevineModularAdapter extends DrmAdapter {
             log.e("DRM State Error", e);
             return false;
         }
-
-
         return true;
     }
 
