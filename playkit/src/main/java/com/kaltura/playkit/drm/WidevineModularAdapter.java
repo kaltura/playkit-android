@@ -222,7 +222,14 @@ class WidevineModularAdapter extends DrmAdapter {
                 listener.onStatus(localAssetPath, 0, 0, false);
             }
             return false;
+        } catch (IllegalStateException e) { // FEM-1986 in case MediaDrm.MediaDrmStateException is thrown (wrong date on device for example) need to catch this exception and inform that status is expired
+            if (listener != null) {
+                listener.onStatus(localAssetPath, 0, 0, true);
+            }
+            log.e("DRM State Error", e);
+            return false;
         }
+
 
         return true;
     }
