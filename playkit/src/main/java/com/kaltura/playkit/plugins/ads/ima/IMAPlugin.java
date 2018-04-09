@@ -241,6 +241,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         isAdDisplayed = false;
         isAllAdsCompleted = false;
         isContentEndedBeforeMidroll = false;
+        lastEventReceived = null;
         if (adsManager != null) {
             adsManager.destroy();
         }
@@ -324,7 +325,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             preparePlayer(false);
         }
 
-        if (lastEventReceived == com.google.ads.interactivemedia.v3.api.AdEvent.AdEventType.CONTENT_RESUME_REQUESTED && player != null) {
+        if (player != null && !isAdDisplayed) {
             player.play();
         }
     }
