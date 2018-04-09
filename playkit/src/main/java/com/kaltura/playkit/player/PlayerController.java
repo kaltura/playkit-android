@@ -24,7 +24,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
@@ -425,7 +424,6 @@ public class PlayerController implements Player {
             log.w("Attempt to invoke 'play()' on null instance of the player engine");
             return;
         }
-
         player.play();
     }
 
