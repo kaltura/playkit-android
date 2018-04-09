@@ -152,7 +152,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         player = ExoPlayerFactory.newSimpleInstance(rendererFactory, trackSelector);
         window = new Timeline.Window();
         setPlayerListeners();
-        exoPlayerView.setPlayer(player, isSurfaceSecured);
+        exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
         player.setPlayWhenReady(false);
     }
 
@@ -160,8 +160,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (player != null) {
             player.addListener(this);
             player.addListener(eventLogger);
-            player.setVideoDebugListener(eventLogger);
-            player.setAudioDebugListener(eventLogger);
+            player.addVideoDebugListener(eventLogger);
+            player.addAudioDebugListener(eventLogger);
             player.addMetadataOutput(this);
         }
     }
@@ -422,9 +422,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void onMetadata(Metadata metadata) {
-
         this.metadataList = MetadataConverter.convert(metadata);
-
         sendEvent(PlayerEvent.Type.METADATA_AVAILABLE);
     }
 
@@ -438,6 +436,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         if (player == null) {
+            this.useTextureView = mediaSourceConfig.playerSettings.useTextureView();
+            this.isSurfaceSecured = mediaSourceConfig.playerSettings.isSurfaceSecured();
             initializePlayer();
         } else {
             // for change media case need to verify if surface swap is needed
@@ -448,9 +448,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private void maybeChangePlayerRenderView(PlayerSettings playerSettings) {
-        // no need to swap video surface if no cahnge was done in surface settings
+        // no need to swap video surface if no change was done in surface settings
         if (this.useTextureView == playerSettings.useTextureView() && this.isSurfaceSecured == playerSettings.isSurfaceSecured()) {
             return;
+        }
+        if(playerSettings.useTextureView() && playerSettings.isSurfaceSecured()) {
+            log.w("Using TextureView with secured surface is not allowed. Secured surface request will be ignored.");
         }
 
         this.useTextureView   = playerSettings.useTextureView();
