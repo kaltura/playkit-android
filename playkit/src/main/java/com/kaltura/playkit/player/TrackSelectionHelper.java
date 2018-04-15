@@ -376,16 +376,14 @@ class TrackSelectionHelper {
      */
 
     void changeTrack(String uniqueId) {
-
-        validateUniqueId(uniqueId);
-
-        log.i("change track to uniqueID -> " + uniqueId);
+        log.i("Request change track to uniqueID -> " + uniqueId);
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
             log.w("Trying to get current MappedTrackInfo returns null. Do not change track with id - " + uniqueId);
             return;
         }
-        int[] uniqueTrackId = parseUniqueId(uniqueId);
+
+        int[] uniqueTrackId = validateUniqueId(uniqueId);
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
         requestedChangeTrackIds[rendererIndex] = uniqueId;
@@ -589,7 +587,13 @@ class TrackSelectionHelper {
                 && trackGroupArray.get(groupIndex).length > 1;
     }
 
-    private void validateUniqueId(String uniqueId) throws IllegalArgumentException {
+    /**
+     * Validate and return parsed uniqueId.
+     * @param uniqueId - uniqueId to validate
+     * @return - parsed uniqueId in case of success.
+     * @throws IllegalArgumentException when uniqueId is illegal.
+     */
+    private int[] validateUniqueId(String uniqueId) throws IllegalArgumentException {
 
         if (uniqueId == null) {
             throw new IllegalArgumentException("uniqueId is null");
@@ -599,14 +603,56 @@ class TrackSelectionHelper {
                 || uniqueId.contains(AUDIO_PREFIX)
                 || uniqueId.contains(TEXT_PREFIX)
                 && uniqueId.contains(",")) {
-            return;
+
+            int[] parsedUniqueId = parseUniqueId(uniqueId);
+            if (!isRendererTypeValid(parsedUniqueId[RENDERER_INDEX])) {
+                throw new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid renderer index. " + parsedUniqueId[RENDERER_INDEX]);
+            }
+
+            if (!isGroupIndexValid(parsedUniqueId)) {
+                throw new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid group index. " + parsedUniqueId[GROUP_INDEX]);
+            }
+
+            if (!isTrackIndexValid(parsedUniqueId)) {
+                throw new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid track index. " + parsedUniqueId[TRACK_INDEX]);
+            }
+
+            return parsedUniqueId;
         }
 
-        throw new IllegalArgumentException("invalid structure of uniqueId " + uniqueId);
+        throw new IllegalArgumentException("Invalid structure of uniqueId " + uniqueId);
+    }
+
+    private boolean isTrackIndexValid(int[] parsedUniqueId) {
+        int rendererIndex = parsedUniqueId[RENDERER_INDEX];
+        int groupIndex = parsedUniqueId[GROUP_INDEX];
+        int trackIndex = parsedUniqueId[TRACK_INDEX];
+
+        if (rendererIndex == Consts.TRACK_TYPE_TEXT) {
+            if (trackIndex == TRACK_ADAPTIVE
+                    || trackIndex < TRACK_DISABLED) {
+                return false;
+            }
+
+            return trackIndex >= TRACK_DISABLED
+                    && trackIndex < mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex).length;
+        }
+
+        return trackIndex >= TRACK_ADAPTIVE
+                && trackIndex < mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex).length;
+    }
+
+    private boolean isGroupIndexValid(int[] parsedUniqueId) {
+        return parsedUniqueId[GROUP_INDEX] >= 0
+                && parsedUniqueId[GROUP_INDEX] < mappedTrackInfo.getTrackGroups(parsedUniqueId[RENDERER_INDEX]).length;
+    }
+
+    private boolean isRendererTypeValid(int rendererIndex) {
+        return rendererIndex >= Consts.TRACK_TYPE_VIDEO && rendererIndex <= Consts.TRACK_TYPE_TEXT;
     }
 
     /**
-     * Notify to log, that video/audio renderer have only unsupported tracks.
+     * Notify to log, that video/audio renderer has only unsupported tracks.
      */
     private void warnAboutUnsupportedRenderTypes() {
         if (mappedTrackInfo.getTrackTypeRendererSupport(TRACK_TYPE_VIDEO)
