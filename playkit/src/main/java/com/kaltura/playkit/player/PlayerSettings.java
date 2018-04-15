@@ -18,13 +18,14 @@ import com.kaltura.playkit.Player;
 
 public class PlayerSettings implements Player.Settings {
 
+    private boolean useTextureView;
+    private boolean isSurfaceSecured;
+    private boolean cea608CaptionsEnabled;
+    private boolean crossProtocolRedirectEnabled;
+
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
-    private boolean useTextureView = false;
-    private boolean crossProtocolRedirectEnabled = false;
-    private boolean cea608CaptionsEnabled = false;
-    //private PKTrackConfig preferredTextTrackConfig;
-    //private PKTrackConfig preferredAudioTrackConfig;
+
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
@@ -44,6 +45,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean cea608CaptionsEnabled() {
         return cea608CaptionsEnabled;
+    }
+
+    public boolean isSurfaceSecured() {
+        return isSurfaceSecured;
     }
 
     @Override
@@ -70,25 +75,11 @@ public class PlayerSettings implements Player.Settings {
         return this;
     }
 
-    //public PKTrackConfig getPreferredTextTrackConfig() {
-    //    return preferredTextTrackConfig;
-    //}
-
-    //public PKTrackConfig getPreferredAudioTrackConfig() {
-    //    return preferredAudioTrackConfig;
-    //}
-
-    //    @Override
-    //    public PlayerSettings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
-    //        this.preferredAudioTrackConfig = preferredAudioTrackConfig;
-    //        return this;
-    //    }
-    //
-    //    @Override
-    //    public PlayerSettings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
-    //        this.preferredTextTrackConfig = preferredTextTrackConfig;
-    //        return this;
-    //    }
+    @Override
+    public PlayerSettings setSecureSurface(boolean isSurfaceSecured) {
+        this.isSurfaceSecured = isSurfaceSecured;
+        return this;
+    }
 
     @Override
     public PlayerSettings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
