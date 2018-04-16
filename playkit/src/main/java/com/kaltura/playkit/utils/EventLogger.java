@@ -38,8 +38,7 @@ import java.io.IOException;
  */
 
 public class EventLogger implements Player.EventListener, AudioRendererEventListener, VideoRendererEventListener, MetadataOutput,
-        MediaSourceEventListener, ExtractorMediaSource.EventListener, DefaultDrmSessionManager.EventListener {
-
+        MediaSourceEventListener, DefaultDrmSessionManager.EventListener {
 
 
     @Override
@@ -54,16 +53,16 @@ public class EventLogger implements Player.EventListener, AudioRendererEventList
 
     @Override
     public void onRepeatModeChanged(int repeatMode) {
-        
+
     }
 
     @Override
     public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
-        
+
     }
 
     @Override
-    public void onTimelineChanged(Timeline timeline, Object manifest) {
+    public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
 
     }
 
@@ -169,11 +168,6 @@ public class EventLogger implements Player.EventListener, AudioRendererEventList
 
     @Override
     public void onDownstreamFormatChanged(int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaTimeMs) {
-
-    }
-
-    @Override
-    public void onLoadError(IOException error) {
 
     }
 

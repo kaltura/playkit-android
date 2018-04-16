@@ -589,6 +589,7 @@ class TrackSelectionHelper {
 
     /**
      * Validate and return parsed uniqueId.
+     *
      * @param uniqueId - uniqueId to validate
      * @return - parsed uniqueId in case of success.
      * @throws IllegalArgumentException when uniqueId is illegal.
