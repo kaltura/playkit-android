@@ -16,41 +16,48 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
 
-public class PlayerSettings implements Player.Settings {
+class PlayerSettings implements Player.Settings {
 
-    private PKRequestParams.Adapter contentRequestAdapter;
-    private PKRequestParams.Adapter licenseRequestAdapter;
-    private boolean useTextureView = false;
-    private boolean crossProtocolRedirectEnabled = false;
-    private boolean cea608CaptionsEnabled = false;
+    private boolean useTextureView;
+    private boolean isSurfaceSecured;
+    private boolean cea608CaptionsEnabled;
+    private boolean crossProtocolRedirectEnabled;
+
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
 
-    public PKRequestParams.Adapter getContentRequestAdapter() {
+    private PKRequestParams.Adapter licenseRequestAdapter;
+    private PKRequestParams.Adapter contentRequestAdapter;
+
+    PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
     }
 
-    public PKRequestParams.Adapter getLicenseRequestAdapter() {
+    PKRequestParams.Adapter getLicenseRequestAdapter() {
         return licenseRequestAdapter;
     }
 
-    public boolean useTextureView() {
+    boolean useTextureView() {
         return useTextureView;
     }
 
-    public boolean crossProtocolRedirectEnabled() {
+    boolean isSurfaceSecured() {
+        return isSurfaceSecured;
+    }
+
+    boolean crossProtocolRedirectEnabled() {
         return crossProtocolRedirectEnabled;
     }
 
-    public boolean cea608CaptionsEnabled() {
+    boolean cea608CaptionsEnabled() {
         return cea608CaptionsEnabled;
     }
 
-    public PKTrackConfig getPreferredTextTrackConfig() {
+    PKTrackConfig getPreferredTextTrackConfig() {
         return preferredTextTrackConfig;
     }
 
-    public PKTrackConfig getPreferredAudioTrackConfig() {
+    PKTrackConfig getPreferredAudioTrackConfig() {
         return preferredAudioTrackConfig;
     }
 
@@ -68,13 +75,19 @@ public class PlayerSettings implements Player.Settings {
 
     @Override
     public PlayerSettings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
-         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
-         return this;
+        this.cea608CaptionsEnabled = cea608CaptionsEnabled;
+        return this;
     }
 
     @Override
     public PlayerSettings useTextureView(boolean useTextureView) {
         this.useTextureView = useTextureView;
+        return this;
+    }
+
+    @Override
+    public PlayerSettings setSecureSurface(boolean isSurfaceSecured) {
+        this.isSurfaceSecured = isSurfaceSecured;
         return this;
     }
 
