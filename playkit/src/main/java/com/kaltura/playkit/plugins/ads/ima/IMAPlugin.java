@@ -807,11 +807,6 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                             contentCompleted();
                             return;
                         }
-//                        else if ((mediaConfig != null && mediaConfig.getMediaEntry() != null && player != null && player.getCurrentPosition() >= mediaConfig.getMediaEntry().getDuration())) {
-//                            log.d("xxx AD REQUEST AD_CONTENT_RESUME_REQUESTED - adsManager.resume");
-//                            adsManager.resume();
-//                            return;
-//                        }
                     }
                 }
                 if (!isContentPrepared) {
