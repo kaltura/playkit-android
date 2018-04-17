@@ -147,7 +147,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     }
 
     @Override
-    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
+    protected void onLoad(final Player player, Object config, final MessageBus messageBus, Context context) {
         this.player = player;
         this.context = context;
         this.isAllAdsCompleted = false;
@@ -172,9 +172,15 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 //                            log.d("xxx contentCompleted delayed");
 //                            isContentEndedBeforeMidroll = true;
 //                        }
+                    } else if(event.eventType() == PlayerEvent.Type.PLAYING) {
+                        if (mediaConfig != null && mediaConfig.getMediaEntry() != null) {
+                            log.d("xxx PlayerDuration = " + player.getDuration());
+                            log.d("xxx PlayerDuration Metadata = " + mediaConfig.getMediaEntry().getDuration());
+                            mediaConfig.getMediaEntry().setDuration(player.getDuration());
+                        }
                     }
                 }
-            }, PlayerEvent.Type.ENDED);
+            }, PlayerEvent.Type.ENDED, PlayerEvent.Type.PLAYING);
         }
 
         adConfig = parseConfig(config);
