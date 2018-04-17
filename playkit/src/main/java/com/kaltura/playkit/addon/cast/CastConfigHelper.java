@@ -31,7 +31,6 @@ abstract class CastConfigHelper {
 
     JSONObject getCustomData(CastInfo castInfo) {
 
-
         String uiConf = castInfo.getUiConfId();
         String fileFormat = castInfo.getFormat();
         String entryId = castInfo.getMediaEntryId();
@@ -39,14 +38,14 @@ abstract class CastConfigHelper {
         String adTagUrl = castInfo.getAdTagUrl();
         String sessionInfo = getSessionInfo(castInfo);
         String mwEmbedUrl = castInfo.getMwEmbedUrl();
+        String textLangaugeLabel = castInfo.getDefaultTextLangaugeLabel();
 
 
         JSONObject customData = new JSONObject();
         JSONObject embedConfig = new JSONObject();
 
 
-        setEmbedConfig(customData, embedConfig, uiConf, fileFormat, entryId, partnerId, adTagUrl, sessionInfo, mwEmbedUrl);
-
+        setEmbedConfig(customData, embedConfig, uiConf, fileFormat, entryId, partnerId, adTagUrl, sessionInfo, mwEmbedUrl, textLangaugeLabel);
 
         return customData;
     }
@@ -55,9 +54,9 @@ abstract class CastConfigHelper {
 
 
     private void setEmbedConfig(JSONObject customData, JSONObject embedConfig, String uiConf,
-                                        String fileFormat, String entryId,
-                                        String partnerId, String adTagUrl, String sessionInfo,
-                                        String mwEmbedUrl) {
+                                String fileFormat, String entryId,
+                                String partnerId, String adTagUrl, String sessionInfo,
+                                String mwEmbedUrl, String textLangaugeLabel) {
 
         try {
 
@@ -73,6 +72,12 @@ abstract class CastConfigHelper {
 
             customData.put("embedConfig", embedConfig);
 
+            //Add default captions language in cast
+            if (!TextUtils.isEmpty(textLangaugeLabel)) {
+                JSONObject receiverConfig = new JSONObject();
+                receiverConfig.put("defaultLanguageKey", textLangaugeLabel);
+                customData.put("receiverConfig", receiverConfig);
+            }
         } catch (JSONException e) {
             log.e(e.getMessage());
         }
@@ -84,7 +89,7 @@ abstract class CastConfigHelper {
 
 
     private void setFlashVars(JSONObject embedConfig, String sessionInfo, String adTagUrl,
-                                           String fileFormat, String entryId) {
+                              String fileFormat, String entryId) {
 
         try {
 
@@ -104,7 +109,7 @@ abstract class CastConfigHelper {
 
 
     private JSONObject getFlashVars(String sessionInfo, String adTagUrl,
-                                           String fileFormat, String entryId) {
+                                    String fileFormat, String entryId) {
 
         JSONObject flashVars = new JSONObject();
 
