@@ -43,7 +43,9 @@ public class BasePlaybackContext extends BaseResult {
 
         if (hasBlockedAction() && messages != null) {
             // in case we'll want to gather errors or priorities message, loop over messages. Currently returns the first error
-
+            if (messages.isEmpty()) {
+                return createBlockedErrorMessage();
+            }
             for (BasePlaybackContext.KalturaAccessControlMessage message : messages) {
                 error = getErrorElement(message);
                 if (error != null) {
@@ -52,6 +54,13 @@ public class BasePlaybackContext extends BaseResult {
             }
         }
         return error;
+    }
+
+    private ErrorElement createBlockedErrorMessage() {
+        KalturaAccessControlMessage kalturaBlockedAccessControlMessage = new KalturaAccessControlMessage();
+        kalturaBlockedAccessControlMessage.code = "AccessControlRestriction";
+        kalturaBlockedAccessControlMessage.message = "Content is Blocked";
+        return getErrorElement(kalturaBlockedAccessControlMessage);
     }
 
     protected ErrorElement getErrorElement(KalturaAccessControlMessage message) {

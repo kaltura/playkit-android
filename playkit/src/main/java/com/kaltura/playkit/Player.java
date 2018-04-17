@@ -37,6 +37,13 @@ public interface Player {
         Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter);
 
         /**
+         * Set the Player's licenseRequestAdapter.
+         * @param licenseRequestAdapter - request adapter.
+         * @return - Player Settings.
+         */
+        Settings setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
+
+        /**
          * Enable/disable cea-608 text tracks.
          * By default they are disabled.
          * Note! Once set, this value will be applied to all mediaSources for that instance of Player.
@@ -68,6 +75,15 @@ public interface Player {
          * @return - Player Settings.
          */
         Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled);
+
+        /**
+         * Decide if player should use secure rendering on the surface.
+         * Known limitation - when useTextureView set to true and isSurfaceSecured set to true -
+         * secure rendering will have no effect.
+         * @param isSurfaceSecured - should enable/disable secure rendering
+         * @return - Player Settings.
+         */
+        Settings setSecureSurface(boolean isSurfaceSecured);
     }
 
     /**
