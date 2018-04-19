@@ -121,7 +121,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     private boolean isContentEndedBeforeMidroll;
     private boolean isAdError;
     private PlayerEvent.Type lastPlaybackPlayerState;
-    private com.google.ads.interactivemedia.v3.api.AdEvent.AdEventType lastEventReceived;
+    private com.google.ads.interactivemedia.v3.api.AdEvent.AdEventType lastAdEventReceived;
 
     public static final Factory factory = new Factory() {
         @Override
@@ -157,26 +157,29 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             this.messageBus.listen(new PKEvent.Listener() {
                 @Override
                 public void onEvent(PKEvent event) {
-                    log.d("Received:PlayerEvent:" + event.eventType().name() + " lastEventReceived = " + lastEventReceived);
+                    log.d("Received:PlayerEvent:" + event.eventType().name() + " lastAdEventReceived = " + lastAdEventReceived);
                     AdCuePoints adCuePoints = new AdCuePoints(getAdCuePoints());
                     if (event.eventType() == PlayerEvent.Type.ENDED) {
                         lastPlaybackPlayerState = PlayerEvent.Type.ENDED;
-                        contentCompleted();
-//                        if (adInfo != null) {
-//                            log.d("xxx ENDED adInfo.getAdIndexInPod() = " + adInfo.getAdIndexInPod() + " -  adInfo.getTotalAdsInPod() = " + adInfo.getTotalAdsInPod());
-//                        }
-//                        if (lastEventReceived == com.google.ads.interactivemedia.v3.api.AdEvent.AdEventType.CONTENT_RESUME_REQUESTED && !isAdIsPaused && (isAllAdsCompleted || !adCuePoints.hasPostRoll() || adInfo == null || (adInfo.getAdIndexInPod() == adInfo.getTotalAdsInPod()))) {
-//                            log.d("xxx contentCompleted on ended");
-//                            contentCompleted();
-//                        } else {
-//                            log.d("xxx contentCompleted delayed");
-//                            isContentEndedBeforeMidroll = true;
-//                        }
+                        if (adInfo != null) {
+                            log.d("xxx ENDED adInfo.getAdIndexInPod() = " + adInfo.getAdIndexInPod() + " -  adInfo.getTotalAdsInPod() = " + adInfo.getTotalAdsInPod());
+                        }
+                        boolean isLastMidrollPlayed = (adCuePoints .getAdCuePoints().size() >= 2 && adCuePoints.hasPostRoll() && adInfo != null && adInfo.getAdPodTimeOffset() == adCuePoints.getAdCuePoints().get(adCuePoints.getAdCuePoints().size()-2));
+                        log.d("xxx contentCompleted isLastMidrollPlayed = " + isLastMidrollPlayed);
+
+                        if (!isAdDisplayed && (!adCuePoints.hasPostRoll() || isAllAdsCompleted || isLastMidrollPlayed)) {
+                            log.d("xxx contentCompleted on ended");
+                            contentCompleted();
+                        } else {
+                            log.d("xxx contentCompleted delayed");
+                            isContentEndedBeforeMidroll = true;
+                        }
                     } else if(event.eventType() == PlayerEvent.Type.PLAYING) {
                         if (mediaConfig != null && mediaConfig.getMediaEntry() != null) {
                             log.d("xxx PlayerDuration = " + player.getDuration());
                             log.d("xxx PlayerDuration Metadata = " + mediaConfig.getMediaEntry().getDuration());
                             mediaConfig.getMediaEntry().setDuration(player.getDuration());
+                            lastAdEventReceived = null;
                         }
                     }
                 }
@@ -254,7 +257,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         isAllAdsCompleted = false;
         isContentEndedBeforeMidroll = false;
         lastPlaybackPlayerState = null;
-        lastEventReceived = null;
+        lastAdEventReceived = null;
         if (adsManager != null) {
             adsManager.destroy();
         }
@@ -309,14 +312,14 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
     protected void onApplicationResumed() {
         log.d("xxx onApplicationResumed");
 
-        if (lastEventReceived == null) {
+        if (lastAdEventReceived == null) {
             if (isContentPrepared) {
 
-               player.play();
-               clearOnApplicationPausedData();
-               return;
+                player.play();
+                clearOnApplicationPausedData();
+                return;
             }
-            log.d("xxx onApplicationResumed lastEventReceived => " + lastEventReceived);
+            log.d("xxx onApplicationResumed lastAdEventReceived => " + lastAdEventReceived);
             isInitWaiting = false;
             appIsInBackground = false;
             adManagerInitDuringBackground = false;
@@ -327,7 +330,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             return;
         }
 
-        log.d("xxx onApplicationResumed lastEventReceived = " + lastEventReceived);
+        log.d("xxx onApplicationResumed lastAdEventReceived = " + lastAdEventReceived);
         //for resuming before preroll played
         if (adsManager != null && adManagerInitDuringBackground) {
             log.d("xxx onApplicationResumed adsManager.init");
@@ -340,7 +343,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
         if (adsManager != null) {
             log.d("xxx onApplicationResumed - adsManager != null");
-            switch (lastEventReceived) {
+            switch (lastAdEventReceived) {
                 case PAUSED:
                     player.getView().hideVideoSurface();
                     adsManager.resume();
@@ -370,10 +373,11 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                         log.d("xxx CONTENT_RESUME_REQUESTED onApplicationResumed - player.getCurrentPosition() = " + player.getCurrentPosition());
                         if(isContentEndedBeforeMidroll || player.getCurrentPosition() >= mediaConfig.getMediaEntry().getDuration()) {
                             log.d("xxx CONTENT_RESUME_REQUESTED onApplicationResumed - contentCompleted");
-                            contentCompleted();
+                            //contentCompleted();
+                            adsManager.resume();
                         } else {
                             log.d("xxx CONTENT_RESUME_REQUESTED onApplicationResumed - play lastPlayerState = " +  lastPlaybackPlayerState);
-                            if (isAdDisplayed || lastPlaybackPlayerState == PlayerEvent.Type.PLAYING) {
+                            if (!isAdDisplayed || lastPlaybackPlayerState == PlayerEvent.Type.PLAYING) {
                                 player.play();
                             }
                         }
@@ -415,7 +419,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 //                        }
                     } else {
                         //if ad is not displayed so play
-                        log.d("xxx onApplicationResumed: lastEventReceived = " + lastEventReceived + " isAdDisplayed = " + isAdDisplayed);
+                        log.d("xxx onApplicationResumed: lastAdEventReceived = " + lastAdEventReceived + " isAdDisplayed = " + isAdDisplayed);
                         if (player != null && lastPlaybackPlayerState == PlayerEvent.Type.PLAYING) {
                             player.play();
                         }
@@ -484,7 +488,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         isAdRequested = false;
         isAdDisplayed = false;
         lastPlaybackPlayerState = null;
-        lastEventReceived = null;
+        lastAdEventReceived = null;
 
         cancelAdDisplayedCheckTimer();
         cancelAdManagerTimer();
@@ -726,8 +730,8 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
     @Override
     public void onAdEvent(com.google.ads.interactivemedia.v3.api.AdEvent adEvent) {
-        lastEventReceived = adEvent.getType();
-        log.d("xxx Event Name: " + lastEventReceived.name());
+        lastAdEventReceived = adEvent.getType();
+        log.d("xxx Event Name: " + lastAdEventReceived.name());
         if (adEvent.getAdData() != null) {
             log.d("Event: " + adEvent.getAdData().toString());
         }
@@ -735,7 +739,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
         if (adsManager == null) {
             return;
         }
-        switch (lastEventReceived) {
+        switch (lastAdEventReceived) {
 
             case LOADED:
                 log.d("LOADED appIsInBackground = " + appIsInBackground);
@@ -790,25 +794,23 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     }
                 }
                 initAdDisplayedCheckTimer();
+                isAdDisplayed = true;
                 break;
             case CONTENT_RESUME_REQUESTED:
+                log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED");
+
                 // AdEventType.CONTENT_RESUME_REQUESTED is fired when the ad is completed
                 // and you should start playing your content.
-                log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED");
+                if (isContentEndedBeforeMidroll && !isAllAdsCompleted && player.getCurrentPosition() >= player.getDuration()) {
+                    log.d("xxx AD REQUEST AD_CONTENT_RESUME_REQUESTED - contentCompleted");
+                    contentCompleted();
+                    return;
+                }
+                player.getView().showVideoSurface();
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_RESUME_REQUESTED));
                 isAdDisplayed = false;
                 cancelAdDisplayedCheckTimer();
 
-                if (adInfo != null) {
-                    log.d("should call content completed " + (adInfo.getPodIndex() + 1) + " == " + adInfo.getPodCount());
-                    if (adInfo.getPodIndex() + 1 == adInfo.getPodCount()) {
-                        if (isContentEndedBeforeMidroll) {
-                            log.d("xxx AD REQUEST AD_CONTENT_RESUME_REQUESTED - contentCompleted");
-                            contentCompleted();
-                            return;
-                        }
-                    }
-                }
                 if (!isContentPrepared) {
                     log.d("Content not prepared.. Preparing and calling play.");
                     if (pkAdProviderListener != null && !appIsInBackground) {
