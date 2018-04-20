@@ -79,6 +79,10 @@ public abstract class BasicCastBuilder<T extends BasicCastBuilder> {
         return (T) this;
     }
 
+    public T setDefaultTextLanguageLabel(String label) {
+        castInfo.setDefaultTextLangaugeLabel(label);
+        return (T) this;
+    }
 
     public T setMwEmbedUrl(@NonNull String mwEmbedUrl) {
         castInfo.setMwEmbedUrl(mwEmbedUrl);
