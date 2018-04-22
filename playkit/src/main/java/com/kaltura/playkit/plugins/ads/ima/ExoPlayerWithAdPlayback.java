@@ -61,6 +61,7 @@ import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.player.CustomHttpDataSourceFactory;
 import com.kaltura.playkit.player.CustomRendererFactory;
@@ -87,6 +88,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     private DataSource.Factory mediaDataSourceFactory;
     private Context mContext;
+    private com.kaltura.playkit.Player contentPlayer;
 
     @Override
     public void preparePlayback() {
@@ -95,52 +97,105 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
-
+        Log.d("xxx", "onTimelineChanged");
     }
 
     @Override
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-
+        Log.d("xxx", "onLoadingChanged");
     }
 
     @Override
     public void onLoadingChanged(boolean isLoading) {
-
+        Log.d("xxx", "onTracksChanged");
     }
 
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+        Log.d("xxx XXXX ", "onPlayerStateChanged " + playbackState);
+        switch (playbackState) {
+            case Player.STATE_IDLE:
+                Log.d("xxx XXXX ","onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
+
+                break;
+            case Player.STATE_BUFFERING:
+                Log.d("xxx XXXX ","onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
+
+                break;
+            case Player.STATE_READY:
+                Log.d("xxx XXXX ","onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
+                if (playWhenReady) {
+                    if (mVideoPlayer.getPlayer().getDuration() > 0) {
+                        for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+                            callback.onResume();
+                        }
+                    } else {
+                        for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+                            callback.onPlay();
+                        }
+                    }
+                }
+                else {
+                    for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+                        callback.onResume();
+                    }
+                }
+                break;
+            case Player.STATE_ENDED:
+                Log.d("xxx XXXX ","onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
+                if (mIsAdDisplayed) {
+                    for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+                        callback.onEnded();
+                        mIsAdDisplayed = false;
+                    }
+                } else {
+                    // Alert an external listener that our content video is complete.
+                    if (mOnContentCompleteListener != null) {
+                        mOnContentCompleteListener.onContentComplete();
+                    }
+                }
+                break;
+            default:
+                break;
+
+        }
+
 
     }
 
     @Override
     public void onRepeatModeChanged(int repeatMode) {
-
+        Log.d("xxx", "onRepeatModeChanged");
     }
 
     @Override
     public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
-
+        Log.d("xxx", "onShuffleModeEnabledChanged");
     }
 
     @Override
     public void onPlayerError(ExoPlaybackException error) {
+        Log.d("xxx", "onPlayerError " + error.getMessage());
+        for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+            callback.onError();
+        }
 
     }
 
     @Override
     public void onPositionDiscontinuity(int reason) {
-
+        Log.d("xxx", "onPositionDiscontinuity");
     }
 
     @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+        Log.d("xxx", "onPlaybackParametersChanged");
 
     }
 
     @Override
     public void onSeekProcessed() {
-
+        Log.d("xxx", "onSeekProcessed");
     }
 
     /**
@@ -220,14 +275,27 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         mVideoPlayer.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         mVideoPlayer.setId(new Integer(123456789));
         mVideoPlayer.setUseController(false);
-        DeferredDrmSessionManager drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildHttpDataSourceFactory(false), initDrmSessionListener());
+        if (player == null) {
 
-        renderersFactory = new DefaultRenderersFactory(mContext,
-                drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
+            mediaDataSourceFactory = buildDataSourceFactory(true);
+            DeferredDrmSessionManager drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildHttpDataSourceFactory(false), initDrmSessionListener());
 
-        player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
-        mVideoPlayer.setPlayer(player);
+            renderersFactory = new DefaultRenderersFactory(mContext,
+                    drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
 
+            TrackSelection.Factory adaptiveTrackSelectionFactory =
+                    new AdaptiveTrackSelection.Factory(BANDWIDTH_METER);
+            trackSelector = new DefaultTrackSelector(adaptiveTrackSelectionFactory);
+            trackSelectionHelper = new TrackSelectionHelper(trackSelector, adaptiveTrackSelectionFactory);
+            lastSeenTrackGroupArray = null;
+            eventLogger = new EventLogger(trackSelector);
+            player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
+            player.addListener(eventLogger);
+            player.addMetadataOutput(eventLogger);
+            player.addAudioDebugListener(eventLogger);
+            player.addVideoDebugListener(eventLogger);
+            mVideoPlayer.setPlayer(player);
+        }
 
         FrameLayout adFrameLayout = new FrameLayout(getContext());
         adFrameLayout.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -237,12 +305,17 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         mVideoAdPlayer = new VideoAdPlayer() {
             @Override
             public void playAd() {
+                Log.d("xxx", "playAd");
                 mIsAdDisplayed = true;
                 mVideoPlayer.getPlayer().setPlayWhenReady(true);
+                for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+                    callback.onPlay();
+                }
             }
 
             @Override
             public void loadAd(String url) {
+                Log.d("xxx", "loadAd");
                 mIsAdDisplayed = true;
                 //mVideoPlayer.getPlayer().prepare(buildMediaSource(Uri.parse(mContentVideoUrl), "mp4"));
                 initializePlayer(Uri.parse(url));
@@ -250,17 +323,27 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
             @Override
             public void stopAd() {
+                Log.d("xxx", "stopAd");
                 mVideoPlayer.getPlayer().stop();
             }
 
             @Override
             public void pauseAd() {
+                Log.d("xxx", "pauseAd");
+                for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+                    callback.onPause();
+                }
                 mVideoPlayer.getPlayer().setPlayWhenReady(false);
             }
 
             @Override
             public void resumeAd() {
+                Log.d("xxx", "resumeAd");
+                for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+                    callback.onResume();
+                }
                 playAd();
+
             }
 
             @Override
@@ -278,23 +361,87 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 if (!mIsAdDisplayed || mVideoPlayer.getPlayer().getDuration() <= 0) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
-                return new VideoProgressUpdate(mVideoPlayer.getPlayer().getCurrentPosition(),
-                        mVideoPlayer.getPlayer().getDuration());
+                long duration = mVideoPlayer.getPlayer().getDuration();
+                long position = mVideoPlayer.getPlayer().getCurrentPosition();
+                Log.d("YYY", "getDuration " +  duration);
+                Log.d("YYY", "getCurrentPosition " +  position);
+                return new VideoProgressUpdate(position, duration);
             }
         };
 
+
+//        // Set player callbacks for delegating major video events.
+//        mVideoPlayer.addPlayerCallback(new VideoPlayer.PlayerCallback() {
+//            @Override
+//            public void onPlay() {
+//                if (mIsAdDisplayed) {
+//                    for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+//                        callback.onPlay();
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onPause() {
+//                if (mIsAdDisplayed) {
+//                    for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+//                        callback.onPause();
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onResume() {
+//                if (mIsAdDisplayed) {
+//                    for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+//                        callback.onResume();
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onError() {
+//                if (mIsAdDisplayed) {
+//                    for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+//                        callback.onError();
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onCompleted() {
+//                if (mIsAdDisplayed) {
+//                    for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+//                        callback.onEnded();
+//                    }
+//                } else {
+//                    // Alert an external listener that our content video is complete.
+//                    if (mOnContentCompleteListener != null) {
+//                        mOnContentCompleteListener.onContentComplete();
+//                    }
+//                }
+//            }
+//        });
+//
+
+        mVideoPlayer.getPlayer().addListener(this);
+    }
+
+    public void setContentProgressProvider(final com.kaltura.playkit.Player contentPlayer) {
+        this.contentPlayer = contentPlayer;
         mContentProgressProvider = new ContentProgressProvider() {
             @Override
             public VideoProgressUpdate getContentProgress() {
-                if (mIsAdDisplayed || mVideoPlayer.getPlayer().getDuration() <= 0) {
+
+                if (mVideoPlayer.getPlayer().getDuration() <= 0) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
-                return new VideoProgressUpdate(mVideoPlayer.getPlayer().getCurrentPosition(),
-                        mVideoPlayer.getPlayer().getDuration());
+                Log.d("XXX", "getDuration " +  contentPlayer.getDuration());
+                Log.d("XXX", "getCurrentPosition " +  contentPlayer.getCurrentPosition());
+                return new VideoProgressUpdate(contentPlayer.getCurrentPosition(),
+                        contentPlayer.getDuration());
             }
         };
-
-        mVideoPlayer.getPlayer().addListener(this);
     }
 
 
@@ -385,27 +532,6 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     }
 
     /**
-     * Resume the content video from its previous playback progress position after
-     * an ad finishes playing. Re-enables the media controller.
-     */
-    public void resumeContentAfterAdPlayback() {
-//        if (mContentVideoUrl == null || mContentVideoUrl.isEmpty()) {
-//            Log.w("ImaExample", "No content URL specified.");
-//            return;
-//        }
-////        mIsAdDisplayed = false;
-//        mVideoPlayer.setVideoPath(mContentVideoUrl);
-//        mVideoPlayer.getPlayer().enablePlaybackControls();
-//        mVideoPlayer.seekTo(mSavedContentPosition);
-//        mVideoPlayer.play();
-//        mIsAdDisplayed = false;
-//        mVideoPlayer.getPlayer().setPlaybackPrepare(this);
-//        //mVideoPlayer.getPlayer().setPlayWhenReady(true);//.prepare(buildMediaSource(Uri.parse(mContentVideoUrl), "mp4"));
-//        restorePosition();
-//        play();
-    }
-
-    /**
      * Returns the UI element for rendering video ad elements.
      */
     public ViewGroup getAdUiContainer() {
@@ -439,6 +565,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
         mVideoPlayer.getPlayer().setPlayWhenReady(true);
         MediaSource mediaSource =  buildMediaSource(currentSourceUri, null, mainHandler, eventLogger);
+        mVideoPlayer.getPlayer().stop();
         player.prepare(mediaSource);
     }
 
@@ -478,7 +605,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             return;
         }
 //        mIsAdDisplayed = false;
-//        player.prepare(mContentVideoUrl);
+//        mVideoPlayer.setVideoPath(mContentVideoUrl);
 //        mVideoPlayer.enablePlaybackControls();
 //        mVideoPlayer.seekTo(mSavedContentPosition);
 //        mVideoPlayer.play();
