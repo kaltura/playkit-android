@@ -137,7 +137,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 }
                 else {
                     for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
-                        callback.onResume();
+                        callback.onPause();
                     }
                 }
                 break;
@@ -306,8 +306,19 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             @Override
             public void playAd() {
                 Log.d("xxx", "playAd");
-                mIsAdDisplayed = true;
                 mVideoPlayer.getPlayer().setPlayWhenReady(true);
+                if (mIsAdDisplayed) {
+                    for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+                        callback.onResume();
+                    }
+                } else {
+                    mIsAdDisplayed = true;
+                    for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+                        callback.onPlay();
+                    }
+                }
+
+                //Make sure events will be fired ater pause
                 for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                     callback.onPlay();
                 }
