@@ -265,6 +265,9 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
         }
         // Tell the SDK we want to control ad break playback.
         //imaSdkSettings.setAutoPlayAdBreaks(true);
+        if (adConfig.getMaxRedirects() > 0) {
+            imaSdkSettings.setMaxRedirects(adConfig.getMaxRedirects());
+        }
         imaSdkSettings.setLanguage(adConfig.getLanguage());
         imaSdkSettings.setDebugMode(adConfig.isDebugMode());
     }
@@ -355,6 +358,9 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
         // Create the ads request.
         final AdsRequest request = sdkFactory.createAdsRequest();
         request.setAdTagUrl(adTagUrl);
+        if (adConfig.getAdLoadTimeOut() > 0 && adConfig.getAdLoadTimeOut() < Consts.MILLISECONDS_MULTIPLIER && adConfig.getAdLoadTimeOut() != IMAConfig.DEFAULT_AD_LOAD_TIMEOUT) {
+            request.setVastLoadTimeout(adConfig.getAdLoadTimeOut() * Consts.MILLISECONDS_MULTIPLIER);
+        }
         request.setAdDisplayContainer(mAdDisplayContainer);
         request.setContentProgressProvider(videoPlayerWithAdPlayback.getContentProgressProvider());
 
