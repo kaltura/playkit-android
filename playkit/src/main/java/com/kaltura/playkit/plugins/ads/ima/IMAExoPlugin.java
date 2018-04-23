@@ -880,6 +880,11 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                     renderingSettings.setUiElements(Collections.<UiElement>emptySet());
                 }
 
+
+                if (adConfig.getVideoBitrate() != -1) {
+                    renderingSettings.setBitrateKbps(adConfig.getVideoBitrate());
+                }
+
                 if (isInitWaiting) {
                     adsManager.init(renderingSettings);
                     sendCuePointsUpdate();
