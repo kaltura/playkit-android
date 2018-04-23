@@ -323,12 +323,12 @@ public class PlayerController implements Player {
         //Decide which player wrapper should be initialized.
         if (mediaFormat != wvm) {
             player = new ExoPlayerWrapper(context);
+            togglePlayerListeners(true);
         } else {
             player = new MediaPlayerWrapper(context);
+            togglePlayerListeners(true);
+            addPlayerView();
         }
-
-        togglePlayerListeners(true);
-        addPlayerView();
     }
 
     private void addPlayerView() {
@@ -424,6 +424,7 @@ public class PlayerController implements Player {
             log.w("Attempt to invoke 'play()' on null instance of the player engine");
             return;
         }
+        addPlayerView();
         player.play();
     }
 
