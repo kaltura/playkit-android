@@ -9,6 +9,7 @@ import com.google.ads.interactivemedia.v3.api.Ad;
 import com.google.ads.interactivemedia.v3.api.AdDisplayContainer;
 import com.google.ads.interactivemedia.v3.api.AdError;
 import com.google.ads.interactivemedia.v3.api.AdErrorEvent;
+import com.google.ads.interactivemedia.v3.api.AdPodInfo;
 import com.google.ads.interactivemedia.v3.api.AdsLoader;
 import com.google.ads.interactivemedia.v3.api.AdsManager;
 import com.google.ads.interactivemedia.v3.api.AdsManagerLoadedEvent;
@@ -30,6 +31,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerDecorator;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdEnabledPlayerController;
+import com.kaltura.playkit.ads.AdTagType;
 import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.ads.PKAdProviderListener;
@@ -120,6 +122,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     private boolean appIsInBackground;
     private boolean isContentPrepared;
     private boolean isAutoPlay;
+    private boolean appInBackgroundDuringAdLoad;
     private PlayerEvent.Type lastPlaybackPlayerState;
     private com.google.ads.interactivemedia.v3.api.AdEvent.AdEventType lastAdEventReceived;
     private boolean adManagerInitDuringBackground;
@@ -271,6 +274,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     @Override
     protected void onApplicationPaused() {
         log.d("xxx onApplicationPaused");
+        appIsInBackground = true;
         if (player != null) {
             if (!isAdDisplayed) {
                 if (player.isPlaying()) {
@@ -288,7 +292,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     @Override
     protected void onApplicationResumed() {
         log.d("xxx onApplicationResumed");
-
+        appIsInBackground = false;
         if (isAdDisplayed) {
             videoPlayerWithAdPlayback.getVideoAdPlayer().playAd();
         } else if (player != null && lastPlaybackPlayerState == PlayerEvent.Type.PLAYING) {
@@ -451,6 +455,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     public long getCurrentPosition() {
         long currPos = (long) Math.ceil(videoPlayerWithAdPlayback.getVideoAdPlayer().getAdProgress().getCurrentTime());
         //log.d("xxx getCurrentPosition: " + currPos);
+        messageBus.post(new AdEvent.AdPlayHeadEvent(currPos));
         return currPos;
     }
 
@@ -675,26 +680,38 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
 
         switch (lastAdEventReceived) {
             case LOADED:
-                // AdEventType.LOADED will be fired when ads are ready to be played.
-                // AdsManager.start() begins ad playback. This method is ignored for VMAP or
-                // ad rules playlists, as the SDK will automatically start executing the
-                // playlist.
-                messageBus.post(new AdEvent(AdEvent.Type.LOADED));
-                adsManager.start();
+                if (appIsInBackground) {
+                    appInBackgroundDuringAdLoad = true;
+                    if (adsManager != null) {
+                        log.d("LOADED call   adsManager.pause()");
+                        adsManager.pause();
+                    }
+                } else {
+                    if (adPlaybackCancelled) {
+                        log.d("discarding ad break");
+                        adsManager.discardAdBreak();
+                    } else {
+                        messageBus.post(new AdEvent.AdLoadedEvent(adInfo));
+                        if (AdTagType.VMAP != adConfig.getAdTagType()) {
+                            adsManager.start();
+                        }
+                    }
+                }
                 break;
             case CONTENT_PAUSE_REQUESTED:
-                // AdEventType.CONTENT_PAUSE_REQUESTED is fired immediately before a video
-                // ad is played.
-                log.d("AD_CONTENT_PAUSE_REQUESTED");
-                displayAd();
+                log.d("CONTENT_PAUSE_REQUESTED appIsInBackground = " + appIsInBackground);
+                if (appIsInBackground) {
+                    appInBackgroundDuringAdLoad = true;
+                    if (adsManager != null) {
+                        adsManager.pause();
+                    }
+                }
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_PAUSE_REQUESTED));
+                displayAd();
                 isAdDisplayed = true;
                 if (player != null) {
                     player.pause();
                 }
-//                if (adEvent.getAd().getAdPodInfo().getTotalAds() > 1) {
-//                    displayAd();
-//                }
                 break;
             case CONTENT_RESUME_REQUESTED:
                 // AdEventType.CONTENT_RESUME_REQUESTED is fired when the ad is completed
@@ -746,12 +763,14 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             case PAUSED:
                 log.d("AD PAUSED");
                 isAdIsPaused = true;
-                messageBus.post(new AdEvent(PAUSED));
+                adInfo.setAdPlayHead(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER);
+                messageBus.post(new AdEvent.AdPausedEvent(adInfo));
                 break;
             case RESUMED:
                 log.d("AD RESUMED");
                 isAdIsPaused = false;
-                messageBus.post(new AdEvent(RESUMED));
+                adInfo.setAdPlayHead(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER);
+                messageBus.post(new AdEvent.AdResumedEvent(adInfo));
                 break;
             case COMPLETED:
                 log.d("AD COMPLETED");
@@ -798,6 +817,31 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             case  CUEPOINTS_CHANGED:
                 sendCuePointsUpdate();
                 break;
+            case LOG:
+                isAdRequested = true;
+                //for this case no AD ERROR is fired need to show view {type=adLoadError, errorCode=1009, errorMessage=The response does not contain any valid ads.}
+                preparePlayer(false);
+                Ad adInfo = adEvent.getAd();
+                if (adInfo != null) {
+                    //incase one ad in the pod fails to play we want next one to be played
+                    AdPodInfo adPodInfo = adInfo.getAdPodInfo();
+                    log.d("adPodInfo.getAdPosition() = " + adPodInfo.getAdPosition() + " adPodInfo.getTotalAds() = " + adPodInfo.getTotalAds());
+                    if (adPodInfo.getTotalAds() > 1 && adPodInfo.getAdPosition() < adPodInfo.getTotalAds()) {
+                        log.d("LOG Error but continue to next ad in pod");
+                        return;
+                    } else {
+                        adsManager.discardAdBreak();
+                    }
+                }
+
+                String error = "Non-fatal Error";
+                if (adEvent.getAdData() != null) {
+                    if (adEvent.getAdData().containsKey("errorMessage")) {
+                        error = adEvent.getAdData().get("errorMessage");
+                    }
+                }
+
+                sendError(PKAdErrorType.QUIET_LOG_ERROR, error, null);
             default:
                 break;
         }
