@@ -871,7 +871,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                 adsManager.addAdEventListener(IMAExoPlugin.this);
                 sendCuePointsUpdateEvent();
                 renderingSettings = ImaSdkFactory.getInstance().createAdsRenderingSettings();
-                if (adConfig.getVideoMimeTypes().size() > 0) {
+                if (adConfig.getVideoMimeTypes() != null && adConfig.getVideoMimeTypes().size() > 0) {
                     renderingSettings.setMimeTypes(adConfig.getVideoMimeTypes());
                 }
 
