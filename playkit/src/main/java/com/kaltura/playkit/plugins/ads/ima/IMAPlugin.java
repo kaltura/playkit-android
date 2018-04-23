@@ -741,7 +741,7 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                     log.d("getTotalAds() = " + adInfo.getTotalAdsInPod());
 
                     if (adInfo.getAdIndexInPod() == 1) {
-                        player.getView().hideVideoSubtitles();
+                        player.getView().hideVideoSurface();
                     }
 
                     if (adPlaybackCancelled) {
