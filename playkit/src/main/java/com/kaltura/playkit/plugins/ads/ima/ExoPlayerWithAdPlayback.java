@@ -297,9 +297,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             mVideoPlayer.setPlayer(player);
         }
 
-        FrameLayout adFrameLayout = new FrameLayout(getContext());
-        adFrameLayout.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        mAdUiContainer = adFrameLayout;
+        mAdUiContainer = mVideoPlayer;
 
         // Define VideoAdPlayer connector.
         mVideoAdPlayer = new VideoAdPlayer() {
