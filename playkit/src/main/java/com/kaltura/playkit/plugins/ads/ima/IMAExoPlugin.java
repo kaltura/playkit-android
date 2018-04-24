@@ -286,7 +286,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             renderingSettings.setMimeTypes(adConfig.getVideoMimeTypes());
         } else {
             List<String> defaultMimeType = new ArrayList<>();
-            defaultMimeType.add(PKMediaFormat.hls.mimeType);
+            defaultMimeType.add(PKMediaFormat.mp4.mimeType);
             renderingSettings.setMimeTypes(defaultMimeType);
         }
 
@@ -444,6 +444,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             return;
         }
         log.d("IMA Start destroyAdsManager");
+        videoPlayerWithAdPlayback.stop();
         contentCompleted();
         adsManager.destroy();
         adsManager = null;
@@ -794,7 +795,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                 player.getView().showVideoSurface();
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_RESUME_REQUESTED));
                 isAdDisplayed = false;
-
+                videoPlayerWithAdPlayback.resumeContentAfterAdPlayback();
                 if (!isContentPrepared) {
                     log.d("Content not prepared.. Preparing and calling play.");
                     if (pkAdProviderListener != null && !appIsInBackground) {

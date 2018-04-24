@@ -173,15 +173,17 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         mVideoAdPlayer = new VideoAdPlayer() {
             @Override
             public void playAd() {
-                log.d("playAd");
+                log.d("playAd mIsAdDisplayed = " + mIsAdDisplayed);
                 mVideoPlayer.getPlayer().setPlayWhenReady(true);
                 if (mIsAdDisplayed) {
                     for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+                        log.d("playAd->onResume");
                         callback.onResume();
                     }
                 } else {
                     mIsAdDisplayed = true;
                     for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
+                        log.d("playAd->onPlay");
                         callback.onPlay();
                     }
                 }
@@ -195,13 +197,14 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             @Override
             public void loadAd(String url) {
                 log.d("loadAd = " + url);
-                mIsAdDisplayed = true;
+                mIsAdDisplayed = false;
                 initializePlayer(Uri.parse(url));
             }
 
             @Override
             public void stopAd() {
                 log.d("stopAd");
+                mVideoPlayer.getPlayer().setPlayWhenReady(false);
                 mVideoPlayer.getPlayer().stop();
             }
 
@@ -217,9 +220,6 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             @Override
             public void resumeAd() {
                 log.d("resumeAd");
-                for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
-                    callback.onResume();
-                }
                 playAd();
 
             }
@@ -251,7 +251,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     @Override
     public void preparePlayback() {
-
+        log.d("preparePlayback");
     }
 
     @Override
@@ -305,7 +305,6 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 if (mIsAdDisplayed) {
                     for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                         callback.onEnded();
-                        mIsAdDisplayed = false;
                     }
                 }
                 break;
@@ -401,6 +400,11 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
      */
     public void pause() {
         mVideoPlayer.getPlayer().setPlayWhenReady(false);
+    }
+
+    public void stop() {
+        mVideoPlayer.getPlayer().setPlayWhenReady(false);
+        mVideoPlayer.getPlayer().stop();
     }
 
     /**
@@ -520,6 +524,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             log.d("No content URL specified.");
             return;
         }
+        mIsAdDisplayed = false;
     }
 
     private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
