@@ -437,7 +437,16 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
 
     @Override
     public void destroyAdsManager() {
-
+        if (adsManager == null) {
+            return;
+        }
+        log.d("IMA Start destroyAdsManager");
+        contentCompleted();
+        adsManager.destroy();
+        adsManager = null;
+        isAdRequested = false;
+        isAdDisplayed = false;
+        adPlaybackCancelled = false;
     }
 
     @Override
