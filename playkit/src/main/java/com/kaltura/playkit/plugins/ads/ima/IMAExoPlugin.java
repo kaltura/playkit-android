@@ -177,10 +177,10 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                 if (event.eventType() == PlayerEvent.Type.SEEKED) {
                     if(!adCuePoints.hasPostRoll() && player.getCurrentPosition() > 0 && player.getDuration() > 0 &&  player.getCurrentPosition() >= player.getDuration()) {
                         log.d("XXXX controller contentCompleted");
+                        adsManager.discardAdBreak();
                         contentCompleted();
                     }
-                }
-                if (event.eventType() == PlayerEvent.Type.ENDED) {
+                } else if (event.eventType() == PlayerEvent.Type.ENDED) {
                     lastPlaybackPlayerState = PlayerEvent.Type.ENDED;
                     if (adInfo != null) {
                         log.d("ENDED adInfo.getAdIndexInPod() = " + adInfo.getAdIndexInPod() + " -  adInfo.getTotalAdsInPod() = " + adInfo.getTotalAdsInPod());
