@@ -174,16 +174,14 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             public void onEvent(PKEvent event) {
                 log.d("Received:PlayerEvent:" + event.eventType().name() + " lastAdEventReceived = " + lastAdEventReceived);
                 AdCuePoints adCuePoints = new AdCuePoints(getAdCuePoints());
-                if (event.eventType() == PlayerEvent.Type.SEEKED) {
-                    if(!adCuePoints.hasPostRoll() && player.getCurrentPosition() > 0 && player.getDuration() > 0 &&  player.getCurrentPosition() >= player.getDuration()) {
-                        log.d("XXXX controller contentCompleted");
-                        adsManager.discardAdBreak();
-                        contentCompleted();
+                if (event.eventType() == PlayerEvent.Type.ENDED) {
+                    if (!isContentPrepared) {
+                        log.d("Event: ENDED ignored content is not prepared");
+                        return;
                     }
-                } else if (event.eventType() == PlayerEvent.Type.ENDED) {
                     lastPlaybackPlayerState = PlayerEvent.Type.ENDED;
                     if (adInfo != null) {
-                        log.d("ENDED adInfo.getAdIndexInPod() = " + adInfo.getAdIndexInPod() + " -  adInfo.getTotalAdsInPod() = " + adInfo.getTotalAdsInPod());
+                        log.d("Event: ENDED adInfo.getAdIndexInPod() = " + adInfo.getAdIndexInPod() + " -  adInfo.getTotalAdsInPod() = " + adInfo.getTotalAdsInPod());
                     }
                     boolean isLastMidrollPlayed = !adCuePoints.hasMidRoll() || (adCuePoints.getAdCuePoints().size() >= 2 && adCuePoints.hasPostRoll() && adInfo != null && adInfo.getAdPodTimeOffset() == adCuePoints.getAdCuePoints().get(adCuePoints.getAdCuePoints().size()-2));
                     log.d("contentCompleted isLastMidrollPlayed = " + isLastMidrollPlayed);
@@ -204,7 +202,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                     }
                 }
             }
-        }, PlayerEvent.Type.ENDED, PlayerEvent.Type.PLAYING, PlayerEvent.Type.SEEKED);
+        }, PlayerEvent.Type.ENDED, PlayerEvent.Type.PLAYING);
 
 
         adConfig = parseConfig(config);
@@ -340,6 +338,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             player.play();
         } else {
             log.d("xxx onApplicationPaused Default..... lastAdEventReceived = " + lastAdEventReceived);
+
         }
     }
 
@@ -800,10 +799,11 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                         preparePlayer(true);
                     }
                 } else if (player != null) {
-                    log.d("Content prepared..");
                     displayContent();
                     long duration = player.getDuration();
-                    if (lastPlaybackPlayerState != PlayerEvent.Type.ENDED && (duration < 0 || player.getCurrentPosition() <= duration)) {
+                    long position = player.getCurrentPosition();
+                    log.d("Content prepared.. lastPlaybackPlayerState = " + lastPlaybackPlayerState + ", time = " + position + "/" + duration);
+                    if (lastPlaybackPlayerState != PlayerEvent.Type.ENDED && (duration < 0 || position <= duration)) {
                         if (adInfo == null || (adInfo != null && adInfo.getAdPositionType() != AdPositionType.POST_ROLL)) {
                             log.d("Content prepared.. Play called.");
                             player.play();
@@ -937,6 +937,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
 
     private void sendCuePointsUpdateEvent() {
         adTagCuePoints = new AdCuePoints(getAdCuePoints());
+        videoPlayerWithAdPlayback.setAdCuePoints(adTagCuePoints);
         messageBus.post(new AdEvent.AdCuePointsUpdateEvent(adTagCuePoints));
     }
 
