@@ -223,6 +223,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         log.d("Start onUpdateMedia");
         this.mediaConfig = mediaConfig;
+        log.d("mediaConfig start pos  = " + mediaConfig.getStartPosition());
         isContentPrepared = false;
         isAutoPlay = false;
         isAdRequested = false;
@@ -270,29 +271,34 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             // Add listeners for when ads are loaded and for errors.
             adsLoader.addAdErrorListener(this);
             adsLoader.addAdsLoadedListener(getAdsLoadedListener());
-
-            renderingSettings = sdkFactory.createAdsRenderingSettings();
-            if (mediaConfig != null && mediaConfig.getStartPosition() > 0) {
-                renderingSettings.setPlayAdsAfterTime(mediaConfig.getStartPosition());
-            }
-
-            if (adConfig.getVideoMimeTypes() != null && adConfig.getVideoMimeTypes().size() > 0) {
-                renderingSettings.setMimeTypes(adConfig.getVideoMimeTypes());
-            } else {
-                List<String> defaultMimeType = new ArrayList<>();
-                defaultMimeType.add(PKMediaFormat.mp4.mimeType);
-                renderingSettings.setMimeTypes(defaultMimeType);
-            }
-
-            //if both are false we remove the support int ad count down in ad
-            if (!adConfig.getAdAttribution() && !adConfig.getAdCountDown()) {
-                renderingSettings.setUiElements(Collections.<UiElement>emptySet());
-            }
-
-            if (adConfig.getVideoBitrate() != -1) {
-                renderingSettings.setBitrateKbps(adConfig.getVideoBitrate());
-            }
         }
+    }
+
+    private AdsRenderingSettings getRenderingSettings() {
+
+        renderingSettings = ImaSdkFactory.getInstance().createAdsRenderingSettings();
+
+        if (mediaConfig != null && mediaConfig.getStartPosition() > 0) {
+            renderingSettings.setPlayAdsAfterTime(mediaConfig.getStartPosition());
+        }
+
+        if (adConfig.getVideoMimeTypes() != null && adConfig.getVideoMimeTypes().size() > 0) {
+            renderingSettings.setMimeTypes(adConfig.getVideoMimeTypes());
+        } else {
+            List<String> defaultMimeType = new ArrayList<>();
+            defaultMimeType.add(PKMediaFormat.hls.mimeType);
+            renderingSettings.setMimeTypes(defaultMimeType);
+        }
+
+        //if both are false we remove the support int ad count down in ad
+        if (!adConfig.getAdAttribution() && !adConfig.getAdCountDown()) {
+            renderingSettings.setUiElements(Collections.<UiElement>emptySet());
+        }
+
+        if (adConfig.getVideoBitrate() != -1) {
+            renderingSettings.setBitrateKbps(adConfig.getVideoBitrate());
+        }
+        return renderingSettings;
     }
 
     private void imaSettingSetup() {
@@ -305,14 +311,12 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             imaSdkSettings.setMaxRedirects(adConfig.getMaxRedirects());
         }
         imaSdkSettings.setLanguage(adConfig.getLanguage());
-        imaSdkSettings.setDebugMode(adConfig.isDebugMode());
+        imaSdkSettings.setDebugMode(true);
     }
-
-
 
     @Override
     protected void onApplicationPaused() {
-        log.d("xxx onApplicationPaused");
+        log.d("onApplicationPaused");
         appIsInBackground = true;
         if (player != null) {
             if (!isAdDisplayed) {
@@ -330,14 +334,14 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
 
     @Override
     protected void onApplicationResumed() {
-        log.d("xxx onApplicationResumed");
+        log.d("onApplicationResumed");
         appIsInBackground = false;
         if (isAdDisplayed) {
             videoPlayerWithAdPlayback.getVideoAdPlayer().playAd();
         } else if (player != null && lastPlaybackPlayerState == PlayerEvent.Type.PLAYING) {
             player.play();
         } else {
-            log.d("xxx onApplicationPaused Default..... lastAdEventReceived = " + lastAdEventReceived);
+            log.d("onApplicationResumed Default..... lastAdEventReceived = " + lastAdEventReceived);
 
         }
     }
@@ -426,7 +430,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                 log.d("Start: Ad Manager Init : " + adManagerInitDuringBackground);
                 adManagerInitDuringBackground = true;
             } else {
-                adsManager.init(renderingSettings);
+                adsManager.init(getRenderingSettings());
             }
         } else {
             isInitWaiting = true;
@@ -510,14 +514,14 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     @Override
     public long getDuration() {
         long duration = (long) videoPlayerWithAdPlayback.getVideoAdPlayer().getAdProgress().getDuration();
-        //log.d("xxx getDuration: " + duration);
+        //log.d("getDuration: " + duration);
         return duration;
     }
 
     @Override
     public long getCurrentPosition() {
         long currPos = (long) Math.ceil(videoPlayerWithAdPlayback.getVideoAdPlayer().getAdProgress().getCurrentTime());
-        //log.d("xxx getCurrentPosition: " + currPos);
+        //log.d("getCurrentPosition: " + currPos);
         messageBus.post(new AdEvent.AdPlayHeadEvent(currPos));
         return currPos;
     }
@@ -957,23 +961,9 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                 adsManager.addAdErrorListener(IMAExoPlugin.this);
                 adsManager.addAdEventListener(IMAExoPlugin.this);
                 sendCuePointsUpdateEvent();
-                renderingSettings = ImaSdkFactory.getInstance().createAdsRenderingSettings();
-                if (adConfig.getVideoMimeTypes() != null && adConfig.getVideoMimeTypes().size() > 0) {
-                    renderingSettings.setMimeTypes(adConfig.getVideoMimeTypes());
-                }
-
-                //if both are false we remove the support int ad count down in ad
-                if (!adConfig.getAdAttribution() && !adConfig.getAdCountDown()) {
-                    renderingSettings.setUiElements(Collections.<UiElement>emptySet());
-                }
-
-
-                if (adConfig.getVideoBitrate() != -1) {
-                    renderingSettings.setBitrateKbps(adConfig.getVideoBitrate());
-                }
 
                 if (isInitWaiting) {
-                    adsManager.init(renderingSettings);
+                    adsManager.init(getRenderingSettings());
                     sendCuePointsUpdate();
                     isInitWaiting = false;
                 }

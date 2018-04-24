@@ -194,7 +194,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
             @Override
             public void loadAd(String url) {
-                log.d("loadAd");
+                log.d("loadAd = " + url);
                 mIsAdDisplayed = true;
                 initializePlayer(Uri.parse(url));
             }
@@ -355,14 +355,14 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             @Override
             public VideoProgressUpdate getContentProgress() {
 
-                if (mVideoPlayer.getPlayer().getDuration() <= 0) {
+                if (contentPlayer.getDuration() <= 0) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
                 long duration = contentPlayer.getDuration();
                 long position = contentPlayer.getCurrentPosition();
-                //log.d("getContentProgress getDuration " +  duration);
-                //log.d("getContentProgress getCurrentPosition " + position);
-                if (position >= duration && adCuePoints != null && !adCuePoints.hasPostRoll()) {
+                //log.d("xxx getContentProgress getDuration " +  duration);
+                //log.d("xxx getContentProgress getCurrentPosition " + position);
+                if (position > 0 && duration > 0 && position >= duration && adCuePoints != null && !adCuePoints.hasPostRoll()) {
                     mContentProgressProvider = null;
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
