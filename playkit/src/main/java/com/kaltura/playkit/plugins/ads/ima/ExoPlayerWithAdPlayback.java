@@ -59,6 +59,7 @@ import com.google.android.exoplayer2.util.EventLogger;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import com.kaltura.playkit.PKError;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
@@ -76,6 +77,8 @@ import static android.content.ContentValues.TAG;
  * Video player that can play content video and ads.
  */
 public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackPreparer, Player.EventListener {
+    private static final PKLog log = PKLog.get("ExoPlayerWithAdPlayback");
+
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
     private DefaultTrackSelector trackSelector;
     private TrackSelectionHelper trackSelectionHelper;
@@ -97,33 +100,33 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
-        Log.d("xxx", "onTimelineChanged");
+        log.d("onTimelineChanged");
     }
 
     @Override
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-        Log.d("xxx", "onLoadingChanged");
+        log.d("onLoadingChanged");
     }
 
     @Override
     public void onLoadingChanged(boolean isLoading) {
-        Log.d("xxx", "onTracksChanged");
+        log.d("onTracksChanged");
     }
 
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-        Log.d("xxx XXXX ", "onPlayerStateChanged " + playbackState);
+        log.d("onPlayerStateChanged " + playbackState);
         switch (playbackState) {
             case Player.STATE_IDLE:
-                Log.d("xxx XXXX ","onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
+                log.d("onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
 
                 break;
             case Player.STATE_BUFFERING:
-                Log.d("xxx XXXX ","onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
+                log.d("onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
 
                 break;
             case Player.STATE_READY:
-                Log.d("xxx XXXX ","onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
+                log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
                 if (playWhenReady) {
                     if (mVideoPlayer.getPlayer().getDuration() > 0) {
                         for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
@@ -142,7 +145,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 }
                 break;
             case Player.STATE_ENDED:
-                Log.d("xxx XXXX ","onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
+                log.d("onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
                 if (mIsAdDisplayed) {
                     for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                         callback.onEnded();
@@ -165,17 +168,17 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     @Override
     public void onRepeatModeChanged(int repeatMode) {
-        Log.d("xxx", "onRepeatModeChanged");
+        log.d("onRepeatModeChanged");
     }
 
     @Override
     public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
-        Log.d("xxx", "onShuffleModeEnabledChanged");
+        log.d("onShuffleModeEnabledChanged");
     }
 
     @Override
     public void onPlayerError(ExoPlaybackException error) {
-        Log.d("xxx", "onPlayerError " + error.getMessage());
+        log.d("onPlayerError " + error.getMessage());
         for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
             callback.onError();
         }
@@ -184,18 +187,18 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     @Override
     public void onPositionDiscontinuity(int reason) {
-        Log.d("xxx", "onPositionDiscontinuity");
+        log.d("onPositionDiscontinuity");
     }
 
     @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-        Log.d("xxx", "onPlaybackParametersChanged");
+        log.d("onPlaybackParametersChanged");
 
     }
 
     @Override
     public void onSeekProcessed() {
-        Log.d("xxx", "onSeekProcessed");
+        log.d("onSeekProcessed");
     }
 
     /**
@@ -303,7 +306,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         mVideoAdPlayer = new VideoAdPlayer() {
             @Override
             public void playAd() {
-                Log.d("xxx", "playAd");
+                log.d("playAd");
                 mVideoPlayer.getPlayer().setPlayWhenReady(true);
                 if (mIsAdDisplayed) {
                     for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
@@ -324,7 +327,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
             @Override
             public void loadAd(String url) {
-                Log.d("xxx", "loadAd");
+                log.d("loadAd");
                 mIsAdDisplayed = true;
                 //mVideoPlayer.getPlayer().prepare(buildMediaSource(Uri.parse(mContentVideoUrl), "mp4"));
                 initializePlayer(Uri.parse(url));
@@ -332,13 +335,13 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
             @Override
             public void stopAd() {
-                Log.d("xxx", "stopAd");
+                log.d("stopAd");
                 mVideoPlayer.getPlayer().stop();
             }
 
             @Override
             public void pauseAd() {
-                Log.d("xxx", "pauseAd");
+                log.d("pauseAd");
                 for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                     callback.onPause();
                 }
@@ -347,7 +350,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
             @Override
             public void resumeAd() {
-                Log.d("xxx", "resumeAd");
+                log.d("resumeAd");
                 for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                     callback.onResume();
                 }
@@ -372,8 +375,8 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 }
                 long duration = mVideoPlayer.getPlayer().getDuration();
                 long position = mVideoPlayer.getPlayer().getCurrentPosition();
-                Log.d("YYY", "getDuration " +  duration);
-                Log.d("YYY", "getCurrentPosition " +  position);
+                log.d("getAdProgress getDuration " +  duration);
+                log.d("getAdProgress getCurrentPosition " +  position);
                 return new VideoProgressUpdate(position, duration);
             }
         };
@@ -445,10 +448,15 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 if (mVideoPlayer.getPlayer().getDuration() <= 0) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
-                Log.d("XXX", "getDuration " +  contentPlayer.getDuration());
-                Log.d("XXX", "getCurrentPosition " +  contentPlayer.getCurrentPosition());
+                long duration = contentPlayer.getDuration();
+                long position = contentPlayer.getCurrentPosition();
+                log.d("getContentProgress getDuration " +  duration);
+                log.d("getContentProgress getCurrentPosition " + position);
+                if (position >= duration) {
+                    return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
+                }
                 return new VideoProgressUpdate(contentPlayer.getCurrentPosition(),
-                        contentPlayer.getDuration());
+                        duration);
             }
         };
     }
@@ -610,7 +618,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     public void resumeContentAfterAdPlayback() {
         if (mContentVideoUrl == null || mContentVideoUrl.isEmpty()) {
-            Log.w("ImaExample", "No content URL specified.");
+            log.d("No content URL specified.");
             return;
         }
 //        mIsAdDisplayed = false;
