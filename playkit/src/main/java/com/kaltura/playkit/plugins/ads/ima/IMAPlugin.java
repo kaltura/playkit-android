@@ -40,6 +40,7 @@ import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerDecorator;
@@ -223,6 +224,10 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
 
             if (adConfig.getVideoMimeTypes() != null && adConfig.getVideoMimeTypes().size() > 0) {
                 renderingSettings.setMimeTypes(adConfig.getVideoMimeTypes());
+            } else {
+                List<String> defaultMimeType = new ArrayList<>();
+                defaultMimeType.add(PKMediaFormat.mp4.mimeType);
+                renderingSettings.setMimeTypes(defaultMimeType);
             }
 
             //if both are false we remove the support int ad count down in ad
