@@ -148,7 +148,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         if (player == null) {
 
             mediaDataSourceFactory = buildDataSourceFactory(true);
-            DeferredDrmSessionManager drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildHttpDataSourceFactory(false), initDrmSessionListener());
+            drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildHttpDataSourceFactory(false), initDrmSessionListener());
 
             renderersFactory = new DefaultRenderersFactory(mContext,
                     drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);

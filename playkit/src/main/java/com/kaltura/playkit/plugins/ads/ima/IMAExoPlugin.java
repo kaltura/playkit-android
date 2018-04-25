@@ -514,7 +514,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
 
     @Override
     public long getDuration() {
-        long duration = (long) videoPlayerWithAdPlayback.getVideoAdPlayer().getAdProgress().getDuration();
+        long duration = (long) Math.ceil(videoPlayerWithAdPlayback.getVideoAdPlayer().getAdProgress().getDuration());
         //log.d("getDuration: " + duration);
         return duration;
     }
