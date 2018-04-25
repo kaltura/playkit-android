@@ -334,15 +334,20 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
 
     @Override
     protected void onApplicationResumed() {
-        log.d("onApplicationResumed");
+        log.d("onApplicationResumed isAdDisplayed = " + ", lastPlaybackPlayerState = " + lastPlaybackPlayerState);
         appIsInBackground = false;
         if (isAdDisplayed) {
             videoPlayerWithAdPlayback.getVideoAdPlayer().playAd();
         } else if (player != null && lastPlaybackPlayerState == PlayerEvent.Type.PLAYING) {
+            log.d("onApplicationResumed lastPlaybackPlayerState == PlayerEvent.Type.PLAYING");
             player.play();
+        } else if (player != null && lastPlaybackPlayerState == PlayerEvent.Type.PAUSE) {
+            log.d("onApplicationResumed lastPlaybackPlayerState == PlayerEvent.Type.PAUSE");
         } else {
             log.d("onApplicationResumed Default..... lastAdEventReceived = " + lastAdEventReceived);
-
+            if (adsManager != null) {
+                adsManager.resume();
+            }
         }
     }
 
@@ -515,7 +520,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     @Override
     public long getDuration() {
         long duration = (long) Math.ceil(videoPlayerWithAdPlayback.getVideoAdPlayer().getAdProgress().getDuration());
-        log.d("XXXXXXXXXX getDuration: " + duration);
+        //log.d("getDuration: " + duration);
         return duration;
     }
 
