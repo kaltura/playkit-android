@@ -163,12 +163,12 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             log.e("Error, player instance is null.");
             return;
         }
-        videoPlayerWithAdPlayback = new ExoPlayerWithAdPlayback(context);
-        videoPlayerWithAdPlayback.setContentProgressProvider(player);
 
+        videoPlayerWithAdPlayback = new ExoPlayerWithAdPlayback(context);
         player.getView().addView(videoPlayerWithAdPlayback.getExoPlayerView());
         this.context = context;
         this.messageBus = messageBus;
+
         this.messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
@@ -203,8 +203,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                 }
             }
         }, PlayerEvent.Type.ENDED, PlayerEvent.Type.PLAYING);
-
-
+        
         adConfig = parseConfig(config);
     }
 
@@ -235,6 +234,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
         if (adsManager != null) {
             adsManager.destroy();
         }
+        videoPlayerWithAdPlayback.setContentProgressProvider(player);
         clearAdsLoader();
         imaSetup();
         log.d("adtag = " + adConfig.getAdTagURL());
@@ -551,6 +551,12 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
 
     private void sendCuePointsUpdate() {
         List<Long> cuePoints = getAdCuePoints();
+        StringBuilder cuePointBuilder = new StringBuilder();
+        for (Long cuePoint: cuePoints) {
+            cuePointBuilder.append(cuePoint).append("|");
+        }
+        log.d("sendCuePointsUpdate cuePoints = " + cuePointBuilder.toString());
+
         if (cuePoints.size() > 0) {
             messageBus.post(new AdEvent.AdCuePointsUpdateEvent(new AdCuePoints(cuePoints)));
         }
@@ -608,7 +614,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
 
     @Override
     public void onAdError(AdErrorEvent adErrorEvent) {
-        log.d("Event: onAdError" + adErrorEvent.getError().getErrorCode());
+        log.e("Event: onAdError" + adErrorEvent.getError().getErrorCode());
         resetFlagsOnError();
 
         AdError adException = adErrorEvent.getError();
