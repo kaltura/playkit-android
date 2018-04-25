@@ -27,6 +27,7 @@ import com.npaw.youbora.plugins.PluginGeneric;
 import com.npaw.youbora.youboralib.BuildConfig;
 import com.npaw.youbora.youboralib.utils.YBLog;
 
+import static com.kaltura.playkit.PlayerEvent.Type.PLAYHEAD_UPDATED;
 import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
 
 /**
@@ -80,10 +81,11 @@ class YouboraAdManager extends AdnalyzerGeneric {
         @Override
         public void onEvent(PKEvent event) {
 
-            log.d("on event " + event.eventType());
+            if (event.eventType() != AdEvent.Type.PLAY_HEAD_CHANGED && event.eventType() != PLAYHEAD_UPDATED) {
+                log.d("YouboraAdLibraryManager on event " + event.eventType());
+            }
 
             if (event instanceof AdEvent) {
-                log.d("AdManager: " + ((AdEvent) event).type.toString());
                 switch (((AdEvent) event).type) {
                     case AD_REQUESTED:
                         lastReportedAdResource = ((AdEvent.AdRequestedEvent) event).adTagUrl;
@@ -165,7 +167,6 @@ class YouboraAdManager extends AdnalyzerGeneric {
                     default:
                         break;
                 }
-
                 messageBus.post(new YouboraEvent.YouboraReport(event.eventType().name()));
             }
         }
