@@ -311,7 +311,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             imaSdkSettings.setMaxRedirects(adConfig.getMaxRedirects());
         }
         imaSdkSettings.setLanguage(adConfig.getLanguage());
-        imaSdkSettings.setDebugMode(true);
+        imaSdkSettings.setDebugMode(adConfig.isDebugMode());
     }
 
     @Override
@@ -515,7 +515,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     @Override
     public long getDuration() {
         long duration = (long) Math.ceil(videoPlayerWithAdPlayback.getVideoAdPlayer().getAdProgress().getDuration());
-        //log.d("getDuration: " + duration);
+        log.d("XXXXXXXXXX getDuration: " + duration);
         return duration;
     }
 
