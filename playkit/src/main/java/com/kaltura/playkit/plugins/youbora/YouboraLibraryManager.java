@@ -321,8 +321,11 @@ class YouboraLibraryManager extends PluginGeneric {
     }
 
     private void sendReportEvent(PKEvent event) {
-        String reportedEventName = event.eventType().name();
-        messageBus.post(new YouboraEvent.YouboraReport(reportedEventName));
+        if (event.eventType() != PLAYHEAD_UPDATED) {
+            String reportedEventName = event.eventType().name();
+            log.d("SEND REPORT = " + event.eventType());
+            messageBus.post(new YouboraEvent.YouboraReport(reportedEventName));
+        }
     }
 
     public String generateRendition(double bitrate, int width, int height) {
