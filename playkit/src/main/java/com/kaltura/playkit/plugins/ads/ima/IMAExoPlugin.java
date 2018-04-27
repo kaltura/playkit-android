@@ -336,6 +336,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
         appIsInBackground = false;
         if (isAdDisplayed) {
             displayAd();
+            adsManager.resume();
             videoPlayerWithAdPlayback.getVideoAdPlayer().playAd();
         } else if (player != null && lastPlaybackPlayerState == PlayerEvent.Type.PLAYING) {
             log.d("onApplicationResumed lastPlaybackPlayerState == PlayerEvent.Type.PLAYING");
@@ -470,6 +471,9 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
         log.d("AD Event pause mIsAdDisplayed = " + isAdDisplayed);
         if (isAdDisplayed) {
             videoPlayerWithAdPlayback.getVideoAdPlayer().pauseAd();
+        }
+        if (adsManager != null && !isAllAdsCompleted) {
+            adsManager.pause();
         }
         if (player.isPlaying()) {
             player.pause();
