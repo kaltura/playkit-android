@@ -332,7 +332,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
 
     @Override
     protected void onApplicationResumed() {
-        log.d("onApplicationResumed isAdDisplayed = " + ", lastPlaybackPlayerState = " + lastPlaybackPlayerState);
+        log.d("onApplicationResumed isAdDisplayed = " + isAdDisplayed + ", lastPlaybackPlayerState = " + lastPlaybackPlayerState);
         appIsInBackground = false;
         if (isAdDisplayed) {
             displayAd();
