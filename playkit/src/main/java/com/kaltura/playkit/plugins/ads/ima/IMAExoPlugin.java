@@ -461,7 +461,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     @Override
     public void resume() {
         log.d("AD Event resume mIsAdDisplayed = " + isAdDisplayed);
-        if (isAdDisplayed) {
+        if (isAdDisplayed || lastAdEventReceived == com.google.ads.interactivemedia.v3.api.AdEvent.AdEventType.PAUSED) {
             videoPlayerWithAdPlayback.getVideoAdPlayer().playAd();
         }
     }
@@ -788,10 +788,10 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                     if (adsManager != null) {
                         adsManager.pause();
                     }
+                } else {
+                    displayAd();
                 }
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_PAUSE_REQUESTED));
-                displayAd();
-                isAdDisplayed = true;
                 if (player != null) {
                     player.pause();
                 }
@@ -871,6 +871,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             case PAUSED:
                 log.d("AD PAUSED");
                 isAdIsPaused = true;
+                isAdDisplayed = true;
                 adInfo.setAdPlayHead(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER);
                 messageBus.post(new AdEvent.AdPausedEvent(adInfo));
                 break;
