@@ -103,8 +103,11 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     // ContentProgressProvider interface implementation for the SDK to check content progress.
     private ContentProgressProvider mContentProgressProvider;
 
+    private boolean adShouldPAutolay = true;
+
     private final List<VideoAdPlayer.VideoAdPlayerCallback> mAdCallbacks =
             new ArrayList<VideoAdPlayer.VideoAdPlayerCallback>(1);
+
 
     public ExoPlayerWithAdPlayback(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -174,7 +177,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             @Override
             public void playAd() {
                 log.d("playAd mIsAdDisplayed = " + mIsAdDisplayed);
-                mVideoPlayer.getPlayer().setPlayWhenReady(true);
+                mVideoPlayer.getPlayer().setPlayWhenReady(adShouldPAutolay);
                 if (mIsAdDisplayed) {
                     for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                         log.d("playAd->onResume");
@@ -482,10 +485,11 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             mVideoPlayer.setPlayer(player);
         }
 
-        mVideoPlayer.getPlayer().setPlayWhenReady(true);
+
         MediaSource mediaSource =  buildMediaSource(currentSourceUri, null, mainHandler, eventLogger);
         mVideoPlayer.getPlayer().stop();
         player.prepare(mediaSource);
+        mVideoPlayer.getPlayer().setPlayWhenReady(adShouldPAutolay);
     }
 
     private MediaSource buildMediaSource(
@@ -518,6 +522,9 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         }
     }
 
+    public void setIsAppInBackground(boolean isAppInBackground) {
+        adShouldPAutolay = !isAppInBackground;
+    }
     public void resumeContentAfterAdPlayback() {
         if (mContentVideoUrl == null || mContentVideoUrl.isEmpty()) {
             log.d("No content URL specified.");
