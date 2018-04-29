@@ -109,8 +109,9 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
 
     @Override
     public void pause() {
-        log.d("PAUSE IMA decorator isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
-        if (adsProvider.isAdDisplayed() && !adsProvider.isAdError()) {
+        boolean isAdDisplayed = adsProvider.isAdDisplayed();
+        log.d("PAUSE IMA decorator isAdDisplayed = " + isAdDisplayed + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
+        if (isAdDisplayed && !adsProvider.isAdError()) {
             adsProvider.pause();
         }
         if (super.isPlaying()) {
