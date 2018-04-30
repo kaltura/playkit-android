@@ -194,6 +194,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                         isContentEndedBeforeMidroll = true;
                     }
                 } else if(event.eventType() == PlayerEvent.Type.PLAYING) {
+                    displayContent();
                     if (mediaConfig != null && mediaConfig.getMediaEntry() != null) {
                         //log.d("PlayerDuration = " + player.getDuration());
                         //log.d("PlayerDuration Metadata = " + mediaConfig.getMediaEntry().getDuration());

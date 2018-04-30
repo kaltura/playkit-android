@@ -76,6 +76,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     private DataSource.Factory mediaDataSourceFactory;
     private Context mContext;
     private com.kaltura.playkit.Player contentPlayer;
+    private boolean isPlayerReady = false;
     private AdCuePoints adCuePoints;
 
     // The wrapped video player.
@@ -178,7 +179,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             public void playAd() {
                 log.d("playAd mIsAdDisplayed = " + mIsAdDisplayed);
                 mVideoPlayer.getPlayer().setPlayWhenReady(adShouldPAutolay);
-                if (mIsAdDisplayed) {
+                if (mIsAdDisplayed && isPlayerReady) {
                     for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                         log.d("playAd->onResume");
                         callback.onResume();
@@ -207,6 +208,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             @Override
             public void stopAd() {
                 log.d("stopAd");
+                isPlayerReady = false;
                 mVideoPlayer.getPlayer().stop();
             }
 
@@ -238,11 +240,12 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
             @Override
             public VideoProgressUpdate getAdProgress() {
-                if (!mIsAdDisplayed || mVideoPlayer.getPlayer().getDuration() <= 0) {
-                    return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
-                }
                 long duration = mVideoPlayer.getPlayer().getDuration();
                 long position = mVideoPlayer.getPlayer().getCurrentPosition();
+                if (!isPlayerReady || !mIsAdDisplayed || duration < 0 || position < 0) {
+                    return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
+                }
+
                 //log.d("getAdProgress getDuration " +  duration);
                 //log.d("getAdProgress getCurrentPosition " +  position);
                 return new VideoProgressUpdate(position, duration);
@@ -284,6 +287,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 break;
             case Player.STATE_READY:
                 log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
+                isPlayerReady = true;
                 if (playWhenReady) {
                     if (mVideoPlayer.getPlayer().getDuration() > 0) {
                         for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
@@ -303,6 +307,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 break;
             case Player.STATE_ENDED:
                 log.d("onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
+                isPlayerReady = false;
                 if (mIsAdDisplayed) {
                     for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                         callback.onEnded();
@@ -404,6 +409,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     }
 
     public void stop() {
+        isPlayerReady = false;
         mVideoPlayer.getPlayer().setPlayWhenReady(false);
         mVideoPlayer.getPlayer().stop();
     }
