@@ -277,7 +277,6 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         switch (playbackState) {
             case Player.STATE_IDLE:
                 log.d("onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
-
                 break;
             case Player.STATE_BUFFERING:
                 log.d("onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
@@ -525,12 +524,13 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     public void setIsAppInBackground(boolean isAppInBackground) {
         adShouldPAutolay = !isAppInBackground;
     }
+
     public void resumeContentAfterAdPlayback() {
+        mIsAdDisplayed = false;
         if (mContentVideoUrl == null || mContentVideoUrl.isEmpty()) {
             log.d("No content URL specified.");
             return;
         }
-        mIsAdDisplayed = false;
     }
 
     private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
