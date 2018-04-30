@@ -533,10 +533,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     public void resumeContentAfterAdPlayback() {
         mIsAdDisplayed = false;
-        if (mContentVideoUrl == null || mContentVideoUrl.isEmpty()) {
-            log.d("No content URL specified.");
-            return;
-        }
+        isPlayerReady = false;
     }
 
     private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {

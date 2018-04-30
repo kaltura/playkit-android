@@ -817,7 +817,6 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                     log.d("Content not prepared.. Preparing and calling play.");
                     if (pkAdProviderListener != null && !appIsInBackground) {
                         log.d("preparePlayer and play");
-                        displayContent();
                         preparePlayer(true);
                     }
                 } else if (player != null) {
