@@ -342,6 +342,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             videoPlayerWithAdPlayback.getVideoAdPlayer().playAd();
         } else if (player != null && lastPlaybackPlayerState == PlayerEvent.Type.PLAYING) {
             log.d("onApplicationResumed lastPlaybackPlayerState == PlayerEvent.Type.PLAYING");
+            displayContent();
             player.play();
         } else if (player != null && lastPlaybackPlayerState == PlayerEvent.Type.PAUSE) {
             log.d("onApplicationResumed lastPlaybackPlayerState == PlayerEvent.Type.PAUSE");
@@ -442,7 +443,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
         } else {
             isInitWaiting = true;
         }
-        videoPlayerWithAdPlayback.getVideoAdPlayer().playAd();
+        //videoPlayerWithAdPlayback.getVideoAdPlayer().playAd();
     }
 
     @Override
@@ -471,12 +472,10 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     @Override
     public void pause() {
         log.d("AD Event pause mIsAdDisplayed = " + isAdDisplayed);
-        if (isAdDisplayed) {
+        if (isAdDisplayed || (adsManager != null && !isAllAdsCompleted /*&& !player.isPlaying()*/)) {
             videoPlayerWithAdPlayback.getVideoAdPlayer().pauseAd();
         }
-        if (adsManager != null && !isAllAdsCompleted) {
-            videoPlayerWithAdPlayback.getVideoAdPlayer().pauseAd();
-        }
+
         if (player.isPlaying()) {
             player.pause();
         }
@@ -809,7 +808,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                     contentCompleted();
                     return;
                 }
-                player.getView().showVideoSurface();
+                displayContent();
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_RESUME_REQUESTED));
                 isAdDisplayed = false;
                 videoPlayerWithAdPlayback.resumeContentAfterAdPlayback();
