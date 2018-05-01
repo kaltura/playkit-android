@@ -474,10 +474,13 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     public void pause() {
         log.d("AD Event pause mIsAdDisplayed = " + isAdDisplayed);
         if (isAdDisplayed || (adsManager != null && !isAllAdsCompleted /*&& !player.isPlaying()*/)) {
+            log.d("AD Manager pause");
             videoPlayerWithAdPlayback.getVideoAdPlayer().pauseAd();
+            adsManager.pause();
         }
 
         if (player.isPlaying()) {
+            log.d("Content player pause");
             player.pause();
         }
     }
