@@ -51,6 +51,7 @@ import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
+import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +70,6 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     private TrackGroupArray lastSeenTrackGroupArray;
     private EventLogger eventLogger;
     private android.os.Handler mainHandler = new Handler();
-    private DeferredDrmSessionManager drmSessionManager;
     private DefaultRenderersFactory renderersFactory;
     private SimpleExoPlayer player;
 
@@ -78,6 +78,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     private com.kaltura.playkit.Player contentPlayer;
     private boolean isPlayerReady = false;
     private AdCuePoints adCuePoints;
+    private int adLoadTimeout = 8000; // mili sec
 
     // The wrapped video player.
     private PlayerView mVideoPlayer;
@@ -119,9 +120,12 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         super(context, attrs, 0);
     }
 
-    public ExoPlayerWithAdPlayback(Context context) {
+    public ExoPlayerWithAdPlayback(Context context, int adLoadTimeout) {
         super(context,null);
         this.mContext = context;
+        if (adLoadTimeout < Consts.MILLISECONDS_MULTIPLIER) {
+            this.adLoadTimeout = adLoadTimeout * 1000;
+        }
         init();
     }
 
@@ -152,10 +156,9 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         if (player == null) {
 
             mediaDataSourceFactory = buildDataSourceFactory(true);
-            drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildHttpDataSourceFactory(false), initDrmSessionListener());
 
             renderersFactory = new DefaultRenderersFactory(mContext,
-                    drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
+                    null, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
 
             TrackSelection.Factory adaptiveTrackSelectionFactory =
                     new AdaptiveTrackSelection.Factory(BANDWIDTH_METER);
@@ -542,7 +545,9 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     }
 
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
-        return new DefaultHttpDataSourceFactory(Util.getUserAgent(getContext(), "AdPlayKit"), useBandwidthMeter ? BANDWIDTH_METER : null);
+        return new DefaultHttpDataSourceFactory(Util.getUserAgent(getContext(), "AdPlayKit"), useBandwidthMeter ? BANDWIDTH_METER : null,
+                adLoadTimeout,
+                adLoadTimeout, true);
     }
 
 }

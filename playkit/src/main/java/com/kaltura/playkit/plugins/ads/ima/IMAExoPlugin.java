@@ -164,7 +164,13 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             return;
         }
 
-        videoPlayerWithAdPlayback = new ExoPlayerWithAdPlayback(context);
+        adConfig = parseConfig(config);
+        if (adConfig == null) {
+            log.e("Error, adConfig instance is null.");
+            return;
+        }
+
+        videoPlayerWithAdPlayback = new ExoPlayerWithAdPlayback(context, adConfig.getAdLoadTimeOut());
         player.getView().addView(videoPlayerWithAdPlayback.getExoPlayerView());
         this.context = context;
         this.messageBus = messageBus;
@@ -204,8 +210,6 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                 }
             }
         }, PlayerEvent.Type.ENDED, PlayerEvent.Type.PLAYING);
-        
-        adConfig = parseConfig(config);
     }
 
     private static IMAConfig parseConfig(Object config) {

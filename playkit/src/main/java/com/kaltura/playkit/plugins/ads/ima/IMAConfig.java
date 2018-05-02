@@ -28,7 +28,7 @@ import java.util.List;
 
 public class IMAConfig {
 
-    public static final int DEFAULT_AD_LOAD_TIMEOUT = 5;
+    public static final int DEFAULT_AD_LOAD_TIMEOUT = 8;
     public static final int DEFAULT_CUE_POINTS_CHANGED_DELAY = 2000;
     public static final int DEFAULT_AD_LOAD_COUNT_DOWN_TICK = 250;
 
