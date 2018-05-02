@@ -775,8 +775,8 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                 if (appIsInBackground) {
                     appInBackgroundDuringAdLoad = true;
                     if (adsManager != null) {
-                        log.d("LOADED call   adsManager.pause()");
-                        adsManager.pause();
+                        log.d("LOADED call adsManager.pause()");
+                        pause();
                     }
                 } else {
                     if (adPlaybackCancelled) {
@@ -796,7 +796,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                     isAdDisplayed = true;
                     appInBackgroundDuringAdLoad = true;
                     if (adsManager != null) {
-                        adsManager.pause();
+                        pause();
                     }
                 } else {
                     displayAd();
@@ -855,13 +855,13 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                 log.d("AD STARTED");
                 isAdDisplayed = true;
                 isAdIsPaused = false;
-                if (adsManager != null && appIsInBackground) {
-                    log.d("AD STARTED and pause");
-                    adsManager.pause();
-                }
-
                 adInfo = createAdInfo(adEvent.getAd());
                 messageBus.post(new AdEvent.AdStartedEvent(adInfo));
+                if (adsManager != null && appIsInBackground) {
+                    log.d("AD STARTED and pause");
+                    pause();
+                    return;
+                }
 
                 preparePlayer(false);
 
