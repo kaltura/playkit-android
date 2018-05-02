@@ -15,6 +15,8 @@ package com.kaltura.playkit;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.kaltura.playkit.player.vr.VRParams;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;

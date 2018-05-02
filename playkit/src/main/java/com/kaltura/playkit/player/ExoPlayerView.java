@@ -42,7 +42,7 @@ import java.util.List;
  * @hide
  */
 
-class ExoPlayerView extends PlayerView {
+class ExoPlayerView extends BaseExoplayerView {
 
     private View shutterView;
     private View videoSurface;
@@ -78,7 +78,8 @@ class ExoPlayerView extends PlayerView {
      * @param player           - The {@link SimpleExoPlayer} to use.
      * @param isSurfaceSecured - should allow secure rendering of the surface
      */
-    void setPlayer(SimpleExoPlayer player, boolean useTextureView, boolean isSurfaceSecured) {
+    @Override
+    public void setPlayer(SimpleExoPlayer player, boolean useTextureView, boolean isSurfaceSecured) {
         if (this.player == player) {
             return;
         }
@@ -96,7 +97,8 @@ class ExoPlayerView extends PlayerView {
      * @param useTextureView   - if should use {@link TextureView} for rendering
      * @param isSurfaceSecured - should allow secure rendering of the surface
      */
-    void swapVideoSurface(boolean useTextureView, boolean isSurfaceSecured) {
+    @Override
+    public void swapVideoSurface(boolean useTextureView, boolean isSurfaceSecured) {
         if (player != null) {
             removeVideoSurface();
             addVideoSurface(useTextureView, isSurfaceSecured);

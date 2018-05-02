@@ -47,8 +47,7 @@ public class PlayerController implements Player {
     private Context context;
     private PKMediaConfig mediaConfig;
     private PKMediaSourceConfig sourceConfig;
-    private Settings settings = new Settings();
-    private PKRequestParams.Adapter contentRequestAdapter;
+    private PlayerSettings playerSettings = new PlayerSettings();
     private final Runnable updateProgressAction = initProgressAction();
 
     private PlayerEngine player;
@@ -58,13 +57,10 @@ public class PlayerController implements Player {
     private PlayerView playerEngineView;
 
     private String sessionId;
-    private long targetSeekPosition;
     private UUID playerSessionId = UUID.randomUUID();
 
+    private long targetSeekPosition;
     private boolean isNewEntry = true;
-    private boolean useTextureView = false;
-    private boolean cea608CaptionsEnabled = false;
-    private boolean crossProtocolRedirectEnabled = false;
 
 
     private PKEvent.Listener eventListener;
@@ -153,7 +149,7 @@ public class PlayerController implements Player {
 
     @Override
     public Player.Settings getSettings() {
-        return settings;
+        return playerSettings;
     }
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
@@ -183,19 +179,18 @@ public class PlayerController implements Player {
         isNewEntry = true;
 
         sessionId = generateSessionId();
-        if (contentRequestAdapter != null) {
-            contentRequestAdapter.updateParams(this);
+        if (playerSettings.getContentRequestAdapter() != null) {
+            playerSettings.getContentRequestAdapter().updateParams(this);
         }
 
         this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
-
         if (source == null) {
             sendErrorMessage(PKPlayerErrorType.SOURCE_SELECTION_FAILED, "No playable source found for entry", null);
             return false;
         }
 
-        this.sourceConfig = new PKMediaSourceConfig(source, contentRequestAdapter, cea608CaptionsEnabled, useTextureView, crossProtocolRedirectEnabled);
+        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
         return true;
     }
@@ -284,16 +279,12 @@ public class PlayerController implements Player {
 
     @Override
     public <T extends PKController> T getController(Class<T> type) {
-        if (type == VRController.class && currentPlayerType == PlayerEngineType.VRPlayer) {
-            return (T) new VRController() {
-                @Override
-                public void enableVRMode(boolean shouldEnable) {
-                    log.e("Should enable VR Mode");
-                }
-            };
+        if (player == null) {
+            log.w("Attempt to invoke 'getController()' on null instance of the player engine");
+            return null;
         }
 
-        return null;
+        return player.getController(type);
     }
 
     public long getDuration() {
@@ -477,7 +468,7 @@ public class PlayerController implements Player {
 
     private void sendErrorMessage(Enum errorType, String errorMessage, @Nullable Exception exception) {
         log.e(errorMessage);
-        PlayerEvent errorEvent = new PlayerEvent.Error(new PKError(errorType, errorMessage, exception));
+        PlayerEvent errorEvent = new PlayerEvent.Error(new PKError(errorType, errorMessage, null));
         eventListener.onEvent(errorEvent);
     }
 
@@ -605,32 +596,5 @@ public class PlayerController implements Player {
                 }
             }
         };
-    }
-
-    private class Settings implements Player.Settings {
-
-        @Override
-        public Player.Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
-            PlayerController.this.contentRequestAdapter = contentRequestAdapter;
-            return this;
-        }
-
-        @Override
-        public Player.Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
-            PlayerController.this.cea608CaptionsEnabled = cea608CaptionsEnabled;
-            return this;
-        }
-
-        @Override
-        public Player.Settings useTextureView(boolean useTextureView) {
-            PlayerController.this.useTextureView = useTextureView;
-            return this;
-        }
-
-        @Override
-        public Player.Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
-            PlayerController.this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
-            return this;
-        }
     }
 }

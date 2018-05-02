@@ -13,22 +13,26 @@
 package com.kaltura.playkit.player;
 
 import android.net.Uri;
+import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.player.vr.VRParams;
 
-class PKMediaSourceConfig {
+public class PKMediaSourceConfig {
 
     PKMediaSource mediaSource;
     PKMediaEntry.MediaEntryType mediaEntryType;
     PlayerSettings playerSettings;
+    private VRParams vrParams;
 
     PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
         this.mediaSource = source;
         this.mediaEntryType = mediaConfig.getMediaEntry().getMediaType();
         this.playerSettings = playerSettings;
+        this.vrParams = mediaConfig.getMediaEntry().getVrParams();
     }
 
     Uri getUrl() {
@@ -38,6 +42,11 @@ class PKMediaSourceConfig {
         } else {
             return playerSettings.getContentRequestAdapter().adapt(new PKRequestParams(uri, null)).url;
         }
+    }
+
+    @Nullable
+    public VRParams getVrParams() {
+        return this.vrParams;
     }
 
     @Override

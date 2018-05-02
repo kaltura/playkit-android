@@ -3,6 +3,7 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 
 import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.player.vr.VRPlayerFactory;
 
 /**
  * Created by anton.afanasiev on 25/03/2018.
@@ -44,7 +45,8 @@ class PlayerEngineFactory {
                     throw new PlayerInitializationException("Illegal package access to VRPlayerFactory. Failed to create.", e);
                 }
 
-                ExoPlayerWrapper exoWrapper = new ExoPlayerWrapper(context);
+                //Initialize ExoplayerWrapper for video playback which will use VRView for render purpose.
+                ExoPlayerWrapper exoWrapper = new ExoPlayerWrapper(context, vrPlayerFactory.newVRViewInstance(context));
                 return vrPlayerFactory.newInstance(context, exoWrapper);
 
             default:

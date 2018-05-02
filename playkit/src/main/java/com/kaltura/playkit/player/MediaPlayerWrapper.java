@@ -25,6 +25,7 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.view.SurfaceHolder;
 
+import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -577,6 +578,12 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     @Override
     public boolean isLiveStream() {
         return false;
+    }
+
+    @Override
+    public <T extends PKController> T getController(Class<T> type) {
+        //Currently no controller for MediaPlayerWrapper. So always return null.
+        return null;
     }
 
     @Override

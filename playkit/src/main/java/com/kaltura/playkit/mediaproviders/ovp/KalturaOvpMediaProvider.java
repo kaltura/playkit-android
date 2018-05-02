@@ -31,7 +31,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.VRParams;
+import com.kaltura.playkit.player.vr.VRParams;
 import com.kaltura.playkit.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.api.ovp.KalturaOvpErrorHelper;
 import com.kaltura.playkit.api.ovp.KalturaOvpParser;
