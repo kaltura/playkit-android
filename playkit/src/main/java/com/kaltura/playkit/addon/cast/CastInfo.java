@@ -35,6 +35,7 @@ class CastInfo {
     private TextTrackStyle textTrackStyle;
     private String mwEmbedUrl;
     private StreamType streamType;
+    private String defaultTextLangaugeLabel;
 
 
     CastInfo() {
@@ -81,6 +82,10 @@ class CastInfo {
         this.mwEmbedUrl = mwEmbedUrl;
     }
 
+    void setDefaultTextLangaugeLabel(String defaultTextLangaugeLabel) {
+        this.defaultTextLangaugeLabel = defaultTextLangaugeLabel;
+    }
+
     void setStreamType(StreamType streamType) {
         this.streamType = streamType;
     }
@@ -123,6 +128,10 @@ class CastInfo {
 
     String getMwEmbedUrl() {
         return mwEmbedUrl;
+    }
+
+    String getDefaultTextLangaugeLabel() {
+        return defaultTextLangaugeLabel;
     }
 
     StreamType getStreamType() {
