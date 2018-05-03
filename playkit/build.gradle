@@ -38,7 +38,7 @@ dependencies {
     //compile ('com.kaltura.netkit-android:netkit-core:b6175662cfae258e98a5b028363fbf0962d9c5a8')
 
     // ExoPlayer
-    implementation 'com.google.android.exoplayer:exoplayer:2.7.0'
+    api 'com.google.android.exoplayer:exoplayer:2.7.0'
 
     // Google Ads
     implementation 'com.google.ads.interactivemedia.v3:interactivemedia:3.8.5'
