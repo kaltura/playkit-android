@@ -82,7 +82,7 @@ class YouboraAdManager extends AdnalyzerGeneric {
         public void onEvent(PKEvent event) {
 
             if (event.eventType() != AdEvent.Type.PLAY_HEAD_CHANGED && event.eventType() != PLAYHEAD_UPDATED) {
-                log.d("YouboraAdLibraryManager on event " + event.eventType());
+                log.d("YouboraAdManager on event " + event.eventType());
             }
 
             if (event instanceof AdEvent) {
