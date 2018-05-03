@@ -151,7 +151,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         mSavedContentPosition = 0;
         mVideoPlayer = new PlayerView(getContext());
         mVideoPlayer.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        mVideoPlayer.setId(new Integer(123456789));
+        mVideoPlayer.setId(Integer.valueOf(123456789));
         mVideoPlayer.setUseController(false);
         if (player == null) {
 
