@@ -30,9 +30,9 @@ repositories {
 }
 
 dependencies {
-    compile project(path: ':playkit')
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'com.android.support:design:26.1.0'
-    compile 'com.github.kaltura:playkit-dtg-android:v2.3.0'
+    implementation project(path: ':playkit')
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support:design:26.1.0'
+    implementation 'com.github.kaltura:playkit-dtg-android:v2.3.0'
 
 }
