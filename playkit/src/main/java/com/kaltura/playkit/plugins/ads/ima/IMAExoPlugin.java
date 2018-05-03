@@ -706,13 +706,13 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     }
 
     private void displayAd() {
-        log.d("ZZZ  displayAd");
+        log.d("displayAd");
         videoPlayerWithAdPlayback.getExoPlayerView().setVisibility(View.VISIBLE);
         player.getView().hideVideoSurface();
     }
 
     private void displayContent() {
-        log.d("ZZZ displayContent");
+        log.d("displayContent");
         videoPlayerWithAdPlayback.getExoPlayerView().setVisibility(View.GONE);
         player.getView().showVideoSurface();
     }
@@ -758,11 +758,11 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     @Override
     public void onAdEvent(com.google.ads.interactivemedia.v3.api.AdEvent adEvent) {
         lastAdEventReceived = adEvent.getType();
-        log.d("ZZZ Event Name: " + lastAdEventReceived.name());
+        log.d("EventName: " + lastAdEventReceived.name());
 
 
         if (adEvent.getAdData() != null) {
-            log.i("Event Data: " + adEvent.getAdData().toString());
+            log.i("EventData: " + adEvent.getAdData().toString());
         }
 
         if (adsManager == null) {
