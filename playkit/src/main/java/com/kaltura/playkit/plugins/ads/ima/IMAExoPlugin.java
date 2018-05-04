@@ -350,12 +350,31 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             displayContent();
             player.play();
         } else if (player != null && lastPlaybackPlayerState == PlayerEvent.Type.PAUSE) {
-            log.d("onApplicationResumed lastPlaybackPlayerState == PlayerEvent.Type.PAUSE");
+            log.d("onApplicationResumed lastPlaybackPlayerState == PlayerEvent.Type.PAUSE pos = "  + player.getCurrentPosition());
+            if (player.getCurrentPosition() == 0) {
+                if (isContentPrepared) {
+                    player.play();
+                } else {
+                    preparePlayer(true);
+                }
+                return;
+            }
         } else {
             log.d("onApplicationResumed Default..... lastAdEventReceived = " + lastAdEventReceived);
             if (adsManager != null) {
                 adsManager.resume();
+                if (lastAdEventReceived != com.google.ads.interactivemedia.v3.api.AdEvent.AdEventType.ALL_ADS_COMPLETED) {
+                    log.d("onApplicationResumed Default..... adsManager.resume()");
+                    adsManager.resume();
+                    return;
+                }
             }
+            log.d("onApplicationResumed Default..... request Ad");
+            adManagerInitDuringBackground = false;
+            appInBackgroundDuringAdLoad = false;
+
+            onUpdateMedia(mediaConfig);
+            start();
         }
     }
 
@@ -521,6 +540,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
 
     @Override
     public boolean isAllAdsCompleted() {
+        log.d("isAllAdsCompleted: " + isAllAdsCompleted);
         return isAllAdsCompleted;
     }
 
@@ -788,10 +808,14 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                             adsManager.start();
                         }
                     }
+
                 }
                 break;
             case CONTENT_PAUSE_REQUESTED:
                 log.d("CONTENT_PAUSE_REQUESTED appIsInBackground = " + appIsInBackground);
+                if (player != null) {
+                    player.pause();
+                }
                 if (appIsInBackground) {
                     isAdDisplayed = true;
                     appInBackgroundDuringAdLoad = true;
@@ -802,9 +826,6 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                     displayAd();
                 }
                 messageBus.post(new AdEvent(AdEvent.Type.CONTENT_PAUSE_REQUESTED));
-                if (player != null) {
-                    player.pause();
-                }
                 break;
             case CONTENT_RESUME_REQUESTED:
                 log.d("AD REQUEST AD_CONTENT_RESUME_REQUESTED");
