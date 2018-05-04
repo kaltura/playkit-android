@@ -172,7 +172,10 @@ public class YouboraPlugin extends PKPlugin {
                 return ;
             }
 
-            Map<String, Object> opt  = YouboraConfig.updateMediaConfig(pluginConfig, key, value);
+            Map<String, Object> opt = YouboraConfig.updateMediaConfig(pluginConfig, key, value);
+            if (opt == null) {
+                return;
+            }
             pluginManager.setOptions(opt);
         }
     };

@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -370,6 +371,7 @@ public class PKDeviceCapabilities {
 
     private static String chipset() {
         try {
+            @SuppressLint("PrivateApi")
             Class<?> aClass = Class.forName("android.os.SystemProperties");
             Method method = aClass.getMethod("get", String.class);
             Object platform = method.invoke(null, "ro.board.platform");

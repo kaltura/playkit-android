@@ -28,7 +28,7 @@ import java.util.List;
 
 public class IMAConfig {
 
-    public static final int DEFAULT_AD_LOAD_TIMEOUT = 5;
+    public static final int DEFAULT_AD_LOAD_TIMEOUT = 8;
     public static final int DEFAULT_CUE_POINTS_CHANGED_DELAY = 2000;
     public static final int DEFAULT_AD_LOAD_COUNT_DOWN_TICK = 250;
 
@@ -42,6 +42,7 @@ public class IMAConfig {
     public static final String AD_ATTRIBUTION_UIELEMENT = "adAttribution";
     public static final String AD_COUNTDOWN_UIELEMENT   = "adCountDown";
     public static final String AD_LOAD_TIMEOUT          = "adLoadTimeOut";
+    public static final String AD_MAX_REDIRECTS         = "adMaxRedirects";
     public static final String AD_ENABLE_DEBUG_MODE     = "enableDebugMode";
 
     private String language;
@@ -52,7 +53,8 @@ public class IMAConfig {
     private boolean adAttribution;
     private boolean adCountDown;
     private boolean enableDebugMode;
-    private int  adLoadTimeOut;
+    private int adLoadTimeOut; // in sec
+    private int maxRedirects;
     private List<String> videoMimeTypes;
     //private Map<Double,String> tagsTimes; // <AdTime,URL_to_execute>
 
@@ -119,6 +121,10 @@ public class IMAConfig {
         return videoMimeTypes;
     }
 
+    public int getMaxRedirects() {
+        return maxRedirects;
+    }
+
     // select the MIME TYPE that IMA will play instead of letting it select it by itself
     // default selected MIME TYPE by plugin is MP4
     // if null or empty list is set then it will be selected automatically
@@ -174,6 +180,11 @@ public class IMAConfig {
         return this;
     }
 
+    public IMAConfig setMaxRedirects(int maxRedirects) {
+        this.maxRedirects = maxRedirects;
+        return this;
+    }
+
     public IMAConfig enableDebugMode(boolean enableDebugMode) {
         this.enableDebugMode = enableDebugMode;
         return this;
@@ -211,6 +222,8 @@ public class IMAConfig {
         jsonObject.addProperty(AD_COUNTDOWN_UIELEMENT, adCountDown);
         jsonObject.addProperty(AD_LOAD_TIMEOUT, adLoadTimeOut);
         jsonObject.addProperty(AD_ENABLE_DEBUG_MODE, enableDebugMode);
+        jsonObject.addProperty(AD_MAX_REDIRECTS, maxRedirects);
+
 
         Gson gson = new Gson();
         JsonArray jArray = new JsonArray();
