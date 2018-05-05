@@ -109,7 +109,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private boolean isSeeking;
     private boolean useTextureView;
-    private boolean isSurfaceSecured;
     private boolean crossProtocolRedirectEnabled;
     private boolean shouldRestorePlayerToPreviousState;
     private PKRequestParams httpDataSourceRequestParams;
@@ -152,7 +151,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         player = ExoPlayerFactory.newSimpleInstance(rendererFactory, trackSelector);
         window = new Timeline.Window();
         setPlayerListeners();
-        exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
+        exoPlayerView.setPlayer(player);
         player.setPlayWhenReady(false);
     }
 
@@ -436,29 +435,21 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         if (player == null) {
-            this.useTextureView = mediaSourceConfig.playerSettings.useTextureView();
-            this.isSurfaceSecured = mediaSourceConfig.playerSettings.isSurfaceSecured();
             initializePlayer();
-        } else {
-            // for change media case need to verify if surface swap is needed
-            maybeChangePlayerRenderView(mediaSourceConfig.playerSettings);
         }
+
+        maybeChangePlayerRenderView(mediaSourceConfig.playerSettings.useTextureView());
 
         preparePlayer(mediaSourceConfig);
     }
 
-    private void maybeChangePlayerRenderView(PlayerSettings playerSettings) {
-        // no need to swap video surface if no change was done in surface settings
-        if (this.useTextureView == playerSettings.useTextureView() && this.isSurfaceSecured == playerSettings.isSurfaceSecured()) {
+    private void maybeChangePlayerRenderView(boolean useTextureView) {
+        if (this.useTextureView == useTextureView) {
             return;
         }
-        if(playerSettings.useTextureView() && playerSettings.isSurfaceSecured()) {
-            log.w("Using TextureView with secured surface is not allowed. Secured surface request will be ignored.");
-        }
 
-        this.useTextureView   = playerSettings.useTextureView();
-        this.isSurfaceSecured = playerSettings.isSurfaceSecured();
-        exoPlayerView.swapVideoSurface(playerSettings.useTextureView(), playerSettings.isSurfaceSecured());
+        this.useTextureView = useTextureView;
+        exoPlayerView.swapVideoSurface(useTextureView);
     }
 
     @Override

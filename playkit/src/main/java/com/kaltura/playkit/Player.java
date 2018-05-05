@@ -72,14 +72,6 @@ public interface Player {
          */
         Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled);
 
-        /**
-         * Decide if player should use secure rendering on the surface.
-         * Known limitation - when useTextureView set to true and isSurfaceSecured set to true -
-         * secure rendering will have no effect.
-         * @param isSurfaceSecured - should enable/disable secure rendering
-         * @return - Player Settings.
-         */
-        Settings setSecureSurface(boolean isSurfaceSecured);
     }
 
     /**
