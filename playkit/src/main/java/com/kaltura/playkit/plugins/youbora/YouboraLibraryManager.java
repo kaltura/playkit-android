@@ -271,7 +271,7 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
     @Override
     public String getVersion() {
         //getPluginVeriosn
-        return com.npaw.youbora.lib6.BuildConfig.VERSION_NAME + "-" +BuildConfig.VERSION_NAME + "-" + getPlayerVersion();
+        return com.npaw.youbora.lib6.BuildConfig.VERSION_NAME + "-" + BuildConfig.VERSION_NAME + "-" + getPlayerVersion();
     }
 
     @Override
