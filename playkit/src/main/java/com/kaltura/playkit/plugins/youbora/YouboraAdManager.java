@@ -42,22 +42,7 @@ class YouboraAdManager extends PlayerAdapter<Player> {
     private MessageBus messageBus;
     private Long adBitrate = -1L;
 
-    @Override
-    public void registerListeners() {
-        super.registerListeners();
-        messageBus.listen(mEventListener, (PlayerEvent.Type.ERROR));
-        messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
-    }
-
-    @Override
-    public void unregisterListeners() {
-        messageBus.remove(mEventListener, (Enum[]) AdEvent.Type.values());
-        messageBus.remove(mEventListener, (PlayerEvent.Type.ERROR));
-        super.unregisterListeners();
-    }
-
     private AdInfo currentAdInfo;
-
     private String lastReportedAdResource;
     private String lastReportedAdTitle;
     private Double lastReportedAdPlayhead;
@@ -85,7 +70,6 @@ class YouboraAdManager extends PlayerAdapter<Player> {
             default:
                 break;
         }
-
         messageBus.post(new YouboraEvent.YouboraReport(event.eventType().name()));
     }
 
@@ -186,6 +170,20 @@ class YouboraAdManager extends PlayerAdapter<Player> {
         }
     };
 
+    @Override
+    public void registerListeners() {
+        super.registerListeners();
+        messageBus.listen(mEventListener, (PlayerEvent.Type.ERROR));
+        messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
+    }
+
+    @Override
+    public void unregisterListeners() {
+        messageBus.remove(mEventListener, (Enum[]) AdEvent.Type.values());
+        messageBus.remove(mEventListener, (PlayerEvent.Type.ERROR));
+        super.unregisterListeners();
+    }
+
     public void setAdBitrate(Long bitrate) {
         this.adBitrate = bitrate;
     }
@@ -203,7 +201,7 @@ class YouboraAdManager extends PlayerAdapter<Player> {
 
     @Override
     public Double getDuration() {
-        return currentAdInfo != null ? (Long.valueOf(currentAdInfo.getAdDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue()) : 0.0D;
+        return currentAdInfo != null ? (Long.valueOf(currentAdInfo.getAdDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue()) : 0D;
     }
 
     @Override

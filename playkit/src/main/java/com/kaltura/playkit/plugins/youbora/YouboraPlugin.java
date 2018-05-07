@@ -132,29 +132,22 @@ public class YouboraPlugin extends PKPlugin {
         public void onEvent(PKEvent event) {
 
             PlayerEvent playerEvent = (PlayerEvent) event;
-            String key = "";
-            Object value = null;
-
             switch (playerEvent.type) {
                 case DURATION_CHANGE:
-
-                    key = "duration";
-                    value = Long.valueOf(player.getDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
+                    if (player != null && player.getDuration() > 0) {
+                        pluginConfig.getMedia().setDuration(Double.valueOf(player.getDuration() / Consts.MILLISECONDS_MULTIPLIER));
+                        npawPlugin.setOptions(pluginConfig.getYouboraOptions());
+                    }
                     break;
 
                 case SOURCE_SELECTED:
-                    key = "resource";
                     PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) playerEvent;
-                    value = sourceSelected.source.getUrl();
+                    pluginConfig.getMedia().setResource(sourceSelected.source.getUrl());
+                    npawPlugin.setOptions(pluginConfig.getYouboraOptions());
                     break;
+                default:
+                    return;
             }
-
-            if(key.isEmpty() ) {
-                return ;
-            }
-
-
-            npawPlugin.setOptions(pluginConfig.getYouboraOptions());
         }
     };
 
