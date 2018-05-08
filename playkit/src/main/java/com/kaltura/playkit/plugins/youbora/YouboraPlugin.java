@@ -61,7 +61,7 @@ public class YouboraPlugin extends PKPlugin {
         npawPlugin.setOptions(pluginConfig.getYouboraOptions());
         if (!isMonitoring) {
             isMonitoring = true;
-            pluginManager = new YouboraLibraryManager(player, messageBus, mediaConfig);
+            pluginManager = new YouboraLibraryManager(player, messageBus, mediaConfig, pluginConfig);
             npawPlugin.setAdapter(pluginManager);
         }
         if (!isAdsMonitoring){
@@ -116,7 +116,7 @@ public class YouboraPlugin extends PKPlugin {
         this.messageBus = messageBus;
 
         this.pluginConfig = parseConfig(config);
-        pluginManager = new YouboraLibraryManager(player, messageBus, mediaConfig);
+        pluginManager = new YouboraLibraryManager(player, messageBus, mediaConfig, pluginConfig);
         npawPlugin = new NPAWPlugin(pluginConfig.getYouboraOptions());
         npawPlugin.setAdapter(pluginManager);
         loadPlugin();

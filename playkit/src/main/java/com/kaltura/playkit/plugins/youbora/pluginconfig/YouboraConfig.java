@@ -16,6 +16,8 @@ public class YouboraConfig {
 
     private String userType;
 
+    private String houseHoldId;
+
     private boolean obfuscateIP;
 
     private Media media;
@@ -52,6 +54,14 @@ public class YouboraConfig {
 
     public boolean isObfuscateIP() {
         return obfuscateIP;
+    }
+
+    public String getHouseHoldId() {
+        return houseHoldId;
+    }
+
+    public void setHouseHoldId(String houseHoldId) {
+        this.houseHoldId = houseHoldId;
     }
 
     public void setObfuscateIP(boolean obfuscateIP) {

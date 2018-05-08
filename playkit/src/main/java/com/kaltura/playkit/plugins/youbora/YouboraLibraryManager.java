@@ -27,6 +27,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
+import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
 import com.kaltura.playkit.utils.Consts;
 import com.npaw.youbora.lib6.YouboraUtil;
 import com.npaw.youbora.lib6.adapter.PlayerAdapter;
@@ -56,12 +57,14 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
     private Long lastReportedBitrate = -1L;
     private Long lastReportedThroughput;
     private String lastReportedRendition;
+    private String houseHoldId;
     private AdCuePoints adCuePoints;
 
-    YouboraLibraryManager(Player player, MessageBus messageBus, PKMediaConfig mediaConfig) {
+    YouboraLibraryManager(Player player, MessageBus messageBus, PKMediaConfig mediaConfig, YouboraConfig pluginConfig) {
         super(player);
         this.messageBus = messageBus;
         this.mediaConfig = mediaConfig;
+        this.houseHoldId = pluginConfig.getHouseHoldId();
         registerListeners();
 
     }
@@ -282,6 +285,11 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
     @Override
     public String getPlayerName() {
         return KALTURA_ANDROID;
+    }
+
+    @Override
+    public String getHouseholdId() {
+        return houseHoldId;
     }
 
     public Double getPlayhead() {
