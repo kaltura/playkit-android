@@ -291,8 +291,7 @@ class YouboraAdManager extends PlayerAdapter<Player> {
                 if (error.exception instanceof  Exception) {
                     adException = (Exception) error.exception;
                 }
-                fireError(error.message, adErrorType.name(), null, adException);
-                fireStop();
+                fireFatalError(error.message, adErrorType.name(), null, adException);
         }
 
         messageBus.post(new YouboraEvent.YouboraReport(adErrorType.name()));

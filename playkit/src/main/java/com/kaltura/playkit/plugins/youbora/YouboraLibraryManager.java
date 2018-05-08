@@ -227,6 +227,9 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
             case STARTED:
                 isAdPlaying = true;
                 break;
+            case ERROR:
+                isAdPlaying = false;
+                break;
             case CONTENT_RESUME_REQUESTED:
                 isAdPlaying = false;
                 break;
