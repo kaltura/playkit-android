@@ -346,8 +346,8 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
     }
 
     public void onUpdateConfig() {
+        log.d("onUpdateConfig");
         resetValues();
         adCuePoints = null;
-        lastReportedResource = "unknown";
     }
 }
