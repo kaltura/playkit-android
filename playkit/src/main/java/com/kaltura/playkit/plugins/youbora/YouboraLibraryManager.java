@@ -304,6 +304,10 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
         return lastReportedMediaDuration;
     }
 
+//    public Double getPlayrate() {
+//        return lastPlayrate
+//    }
+
     public String getTitle() {
         if (mediaConfig == null || mediaConfig.getMediaEntry() == null) {
             return "unknown";

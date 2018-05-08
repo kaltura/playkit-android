@@ -14,6 +14,10 @@ public class YouboraConfig {
 
     private String username;
 
+    private String userType;
+
+    private boolean obfuscateIP;
+
     private Media media;
 
     private Ads ads;
@@ -36,6 +40,22 @@ public class YouboraConfig {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
+    }
+
+    public boolean isObfuscateIP() {
+        return obfuscateIP;
+    }
+
+    public void setObfuscateIP(boolean obfuscateIP) {
+        this.obfuscateIP = obfuscateIP;
     }
 
     public Media getMedia() {
@@ -76,10 +96,11 @@ public class YouboraConfig {
 
         youboraLocalConfig.setAccountCode(accountCode);
         youboraLocalConfig.setUsername(username);
+        youboraLocalConfig.setUserType(userType);
+        youboraLocalConfig.setNetworkObfuscateIp(obfuscateIP);
         youboraLocalConfig.setParseHls(false);
         youboraLocalConfig.setParseCdnNode(false);
         youboraLocalConfig.setHttpSecure(false);
-        youboraLocalConfig.setContentTransactionCode("");
 
         youboraLocalConfig.setDeviceCode(null); //TODO  // List of device codes http://mapi.youbora.com:8081/devices
         youboraLocalConfig.setContentCdn(null);
@@ -87,8 +108,11 @@ public class YouboraConfig {
 
 
         youboraLocalConfig.setContentIsLive(media.getIsLive());
+        youboraLocalConfig.setContentIsLiveNoSeek(!media.getIsDVR());
         youboraLocalConfig.setContentDuration(media.getDuration());
         youboraLocalConfig.setContentTitle(media.getTitle());
+        youboraLocalConfig.setContentTitle2(media.getTitle2());
+        youboraLocalConfig.setContentTransactionCode(media.getTransactionCode());
 
 
         youboraLocalConfig.setAdResource(null);
