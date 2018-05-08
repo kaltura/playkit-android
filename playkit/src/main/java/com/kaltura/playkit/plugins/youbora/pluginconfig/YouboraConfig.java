@@ -118,7 +118,7 @@ public class YouboraConfig {
 
 
         youboraLocalConfig.setContentIsLive(media.getIsLive());
-        youboraLocalConfig.setContentIsLiveNoSeek(!media.getIsDVR());
+        youboraLocalConfig.setContentIsLiveNoSeek((media.getIsDVR() != null) ? !media.getIsDVR() : null);
         youboraLocalConfig.setContentDuration(media.getDuration());
         youboraLocalConfig.setContentTitle(media.getTitle());
         youboraLocalConfig.setContentTitle2(media.getTitle2());
