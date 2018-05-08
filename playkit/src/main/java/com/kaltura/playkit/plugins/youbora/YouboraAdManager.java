@@ -117,6 +117,9 @@ class YouboraAdManager extends PlayerAdapter<Player> {
                         currentAdInfo = ((AdEvent.AdResumedEvent) event).adInfo;
                         if (isFirstPlay) {
                             isFirstPlay = false;
+                            if (getPlugin().getAdapter() != null && !getPlugin().getAdapter().getFlags().isStarted()) {
+                                getPlugin().getAdapter().fireStart();
+                            }
                             fireStart();
                             fireJoin();
                             populateAdValues();
