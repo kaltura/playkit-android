@@ -57,7 +57,9 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
     private Long lastReportedBitrate = -1L;
     private Long lastReportedThroughput;
     private String lastReportedRendition;
+    Double lastReportedMediaPosition;
     private String houseHoldId;
+    private boolean isAdPlaying;
     private AdCuePoints adCuePoints;
 
     YouboraLibraryManager(Player player, MessageBus messageBus, PKMediaConfig mediaConfig, YouboraConfig pluginConfig) {
@@ -219,9 +221,14 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
         }
 
         switch (event.type) {
+            case CONTENT_PAUSE_REQUESTED:
+                isAdPlaying = true;
+                break;
             case STARTED:
+                isAdPlaying = true;
                 break;
             case CONTENT_RESUME_REQUESTED:
+                isAdPlaying = false;
                 break;
             case CUEPOINTS_CHANGED:
                 AdEvent.AdCuePointsUpdateEvent cuePointsList = (AdEvent.AdCuePointsUpdateEvent) event;
@@ -293,7 +300,11 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
     }
 
     public Double getPlayhead() {
+        if (isAdPlaying) {
+            return lastReportedMediaPosition;
+        }
         double currPos = Long.valueOf(player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
+        lastReportedMediaPosition = currPos;
         return (currPos >= 0) ? currPos : 0;
     }
 
