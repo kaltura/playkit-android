@@ -132,7 +132,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         init();
     }
 
-    public ViewGroup getmAdUiContainer() {
+    public ViewGroup getAdUiContainer() {
         return mAdUiContainer;
     }
 
@@ -402,18 +402,6 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         }
     }
 
-    /**
-     * Restore the currently loaded video to its previously saved playback progress state. This is
-     * called when content is resumed after ad playback or when focus has returned to the app.
-     */
-    public void restorePosition() {
-        if (mIsAdDisplayed) {
-            mVideoPlayer.getPlayer().seekTo(mSavedAdPosition);
-        } else {
-            mVideoPlayer.getPlayer().seekTo(mSavedContentPosition);
-        }
-    }
-
     public void addAdBufferEventListener(OnAdBufferListener onAdBufferListener) {
         this.onAdBufferListener = onAdBufferListener;
     }
@@ -453,15 +441,22 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         }
     }
 
-    /**
-     * Returns current content video play time.
-     */
-    public long getCurrentContentTime() {
-        if (mIsAdDisplayed) {
-            return mSavedContentPosition;
-        } else {
-            return mVideoPlayer.getPlayer().getCurrentPosition();
+    public long getAdPosition() {
+        if (mVideoPlayer != null && mVideoPlayer.getPlayer() != null) {
+            if (mVideoPlayer.getPlayer().getContentPosition() > 0) {
+                return mVideoPlayer.getPlayer().getContentPosition();
+            }
         }
+        return Consts.POSITION_UNSET;
+    }
+
+    public long getAdDuration() {
+        if (mVideoPlayer != null && mVideoPlayer.getPlayer() != null) {
+            if (mVideoPlayer.getPlayer().getDuration() > 0) {
+                return mVideoPlayer.getPlayer().getDuration();
+            }
+        }
+        return Consts.TIME_UNSET;
     }
 
     /**
@@ -472,13 +467,6 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         //mVideoPlayer.getPlayer().disablePlaybackControls();
         savePosition();
         mVideoPlayer.getPlayer().stop();
-    }
-
-    /**
-     * Returns the UI element for rendering video ad elements.
-     */
-    public ViewGroup getAdUiContainer() {
-        return mAdUiContainer;
     }
 
     /**

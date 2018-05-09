@@ -124,7 +124,6 @@ class PKYouboraAdsAdapter extends PlayerAdapter<Player> {
                             fireJoin();
                             populateAdValues();
                         }
-
                         lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
                         fireResume();
@@ -163,8 +162,16 @@ class PKYouboraAdsAdapter extends PlayerAdapter<Player> {
                         return;
                     case AD_PROGRESS:
                         //We are not sending this event to youbora,
-                        //so prevent it from dispatching through YouboraEvent.YouboraReport.
+                        //so prevent it from dispatching through YouboraEvent.YouboraReport by return.
                         return;
+                    case AD_BUFFER_START:
+                        log.d("AD_BUFFER_START lastReportedAdPlayhead = " + lastReportedAdPlayhead);
+                        fireBufferBegin();
+                        break;
+                    case AD_BUFFER_END:
+                        log.d("AD_BUFFER_END lastReportedAdPlayhead = " + lastReportedAdPlayhead);
+                        fireBufferEnd();
+                        break;
                     default:
                         break;
                 }
