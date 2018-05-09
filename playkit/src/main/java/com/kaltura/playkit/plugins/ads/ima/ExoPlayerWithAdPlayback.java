@@ -14,12 +14,9 @@ import com.google.ads.interactivemedia.v3.api.player.ContentProgressProvider;
 import com.google.ads.interactivemedia.v3.api.player.VideoAdPlayer;
 import com.google.ads.interactivemedia.v3.api.player.VideoProgressUpdate;
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.PlaybackPreparer;
 import com.google.android.exoplayer2.Player;
@@ -42,21 +39,19 @@ import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.EventLogger;
 import com.google.android.exoplayer2.util.Util;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Video player that can play content video and ads.
@@ -72,6 +67,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     private android.os.Handler mainHandler = new Handler();
     private DefaultRenderersFactory renderersFactory;
     private SimpleExoPlayer player;
+    private PlayerState lastPlayerState;
 
     private DataSource.Factory mediaDataSourceFactory;
     private Context mContext;
@@ -110,6 +106,13 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     private final List<VideoAdPlayer.VideoAdPlayerCallback> mAdCallbacks =
             new ArrayList<VideoAdPlayer.VideoAdPlayerCallback>(1);
 
+
+    public interface OnAdBufferListener {
+        void onBufferStart();
+        void onBufferEnd();
+    }
+
+    private OnAdBufferListener onAdBufferListener;
 
     public ExoPlayerWithAdPlayback(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -280,17 +283,23 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-        log.d("onPlayerStateChanged " + playbackState);
+        log.d("onPlayerStateChanged " + playbackState + " lastPlayerState = " + lastPlayerState);
         switch (playbackState) {
             case Player.STATE_IDLE:
                 log.d("onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
+                lastPlayerState = PlayerState.IDLE;
                 break;
             case Player.STATE_BUFFERING:
                 log.d("onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
-
+                lastPlayerState = PlayerState.BUFFERING;
+                onAdBufferListener.onBufferStart();
                 break;
             case Player.STATE_READY:
                 log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
+                if (lastPlayerState == PlayerState.BUFFERING) {
+                    onAdBufferListener.onBufferEnd();
+                }
+                lastPlayerState = PlayerState.READY;
                 isPlayerReady = true;
                 if (playWhenReady) {
                     if (mVideoPlayer.getPlayer().getDuration() > 0) {
@@ -405,6 +414,13 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         }
     }
 
+    public void addAdBufferEventListener(OnAdBufferListener onAdBufferListener) {
+        this.onAdBufferListener = onAdBufferListener;
+    }
+
+    public void removeAdBufferEventListener() {
+        onAdBufferListener = null;
+    }
     /**
      * Pauses the content video.
      */
@@ -540,6 +556,17 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         isPlayerReady = false;
     }
 
+    public void releasePlayer() {
+        if (player != null) {
+            player.clearVideoSurface();
+            player.release();
+            player = null;
+            trackSelector = null;
+            trackSelectionHelper = null;
+            eventLogger = null;
+        }
+    }
+    
     private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
         return new DefaultDataSourceFactory(getContext(), useBandwidthMeter ? BANDWIDTH_METER : null,
                 buildHttpDataSourceFactory(useBandwidthMeter));

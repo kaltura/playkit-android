@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private static final PKLog log = PKLog.get("MainActivity");
 
     private Player player;
+    PKMediaEntry mediaEntry;
     private MediaEntryProvider mediaProvider;
     private PlaybackControlsView controlsView;
     private boolean nowPlaying;
@@ -207,13 +208,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 .setId(id);
     }
 
-    private void startSimpleOvpMediaLoading(OnMediaLoadCompletion completion) {
+    private void startSimpleOvpMediaLoading1(OnMediaLoadCompletion completion) {
         new KalturaOvpMediaProvider()
                 .setSessionProvider(new SimpleOvpSessionProvider("https://cdnapisec.kaltura.com", 2222401, null))
                 .setEntryId("1_f93tepsn")
                 .load(completion);
     }
 
+    private void startSimpleOvpMediaLoading(OnMediaLoadCompletion completion) {
+        new KalturaOvpMediaProvider()
+                .setSessionProvider(new SimpleOvpSessionProvider("http://qa-apache-php7.dev.kaltura.com", 1091, null))
+                .setEntryId("0_qq9jh1i3")
+                .load(completion);
+    }
     private void startMockMediaLoading(OnMediaLoadCompletion completion) {
 
         mediaProvider = new MockMediaProvider("mock/entries.playkit.json", getApplicationContext(), "hls");
@@ -277,6 +284,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void onMediaLoaded(PKMediaEntry mediaEntry) {
 
         PKMediaConfig mediaConfig = new PKMediaConfig().setMediaEntry(mediaEntry).setStartPosition(0);
+        this.mediaEntry = mediaEntry;
         PKPluginConfigs pluginConfig = new PKPluginConfigs();
         if (player == null) {
 
@@ -374,7 +382,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //Map<Double, String> tagTimesMap = new HashMap<>();
         //tagTimesMap.put(2.0,"ADTAG");
         //adTagUrl = "http://dfkdslkf;dk;dlkk;s";
-        IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
+        //IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
+        IMAConfig adsConfig = new IMAConfig().setAdTagURL("https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpost&cmsid=496&vid=short_onecue&correlator=");
         config.setPluginConfig(IMAExoPlugin.factory.getName(), adsConfig.toJSONObject());
 
     }
@@ -664,11 +673,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public PKPluginConfigs createYouboraPlugin(PKPluginConfigs pluginConfigs) {
         //Youbora analytics Constants
-        String ACCOUNT_CODE = "your_account_code";
-        String UNIQUE_USER_NAME = "your_app_logged_in_user_email_or_userId";
-        String MEDIA_TITLE = "your_media_title";
-        boolean IS_LIVE = false;
-        boolean ENABLE_SMART_ADS = true;
+
+        //boolean ENABLE_SMART_ADS = true;
+        String ACCOUNT_CODE = "kalturatest";
+        String UNIQUE_USER_NAME = "123456789";
+        String MEDIA_TITLE = mediaEntry.getName();
+        boolean IS_LIVE = (PKMediaEntry.MediaEntryType.Live.equals(mediaEntry.getMediaType())) ? true : false;
         String CAMPAIGN = "your_campaign_name";
         String EXTRA_PARAM_1 = "playKitPlayer";
         String EXTRA_PARAM_2 = "";
@@ -694,13 +704,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         youboraConfigJson.addProperty("username", UNIQUE_USER_NAME);
         youboraConfigJson.addProperty("haltOnError", true);
         youboraConfigJson.addProperty("enableAnalytics", true);
-        youboraConfigJson.addProperty("enableSmartAds", ENABLE_SMART_ADS);
+        //youboraConfigJson.addProperty("enableSmartAds", true);
 
 
         //Media entry json.
         JsonObject mediaEntryJson = new JsonObject();
         mediaEntryJson.addProperty("isLive", IS_LIVE);
         mediaEntryJson.addProperty("title", MEDIA_TITLE);
+        mediaEntryJson.addProperty("duration", mediaEntry.getDuration() / Consts.MILLISECONDS_MULTIPLIER);
 
         //Youbora ads configuration json.
         JsonObject adsJson = new JsonObject();
@@ -740,6 +751,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Gson gson = new Gson();
         YouboraConfig youboraPluginConfig = gson.fromJson(youboraConfigJson, YouboraConfig.class);
         pluginConfigs.setPluginConfig(YouboraPlugin.factory.getName(), youboraPluginConfig);
+        //YouboraConfig youboraPluginConfig = gson.fromJson(youboraConfigJson, YouboraConfig.class);
+//        pluginConfigs.setPluginConfig(YouboraPlugin.factory.getName(), youboraConfigJson);
+
         return pluginConfigs;
 
     }
