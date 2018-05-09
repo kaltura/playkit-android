@@ -317,6 +317,7 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
         return lastReportedResource;
     }
 
+    @Override
     public Double getDuration() {
         if (isAdPlaying) {
             log.d("lastReportedMediaDuration = " + lastReportedMediaDuration);
