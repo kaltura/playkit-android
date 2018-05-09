@@ -51,15 +51,13 @@ import java.util.List;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_ENDED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_STARTED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_PROGRESS;
-import static com.kaltura.playkit.plugins.ads.AdEvent.Type.PAUSED;
-import static com.kaltura.playkit.plugins.ads.AdEvent.Type.RESUMED;
 
 
 /**
  * Created by gilad.nadav on 17/11/2016.
  */
 
-public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.ads.interactivemedia.v3.api.AdEvent.AdEventListener, AdErrorEvent.AdErrorListener {
+public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.ads.interactivemedia.v3.api.AdEvent.AdEventListener, AdErrorEvent.AdErrorListener, ExoPlayerWithAdPlayback.OnAdBufferListener {
     private static final PKLog log = PKLog.get("IMAExoPlugin");
 
 
@@ -171,6 +169,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
         }
 
         videoPlayerWithAdPlayback = new ExoPlayerWithAdPlayback(context, adConfig.getAdLoadTimeOut());
+        videoPlayerWithAdPlayback.addAdBufferEventListener(this);
         player.getView().addView(videoPlayerWithAdPlayback.getExoPlayerView());
         this.context = context;
         this.messageBus = messageBus;
@@ -381,7 +380,9 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     @Override
     protected void onDestroy() {
         log.d("IMA Start onDestroy");
-
+        if (videoPlayerWithAdPlayback != null) {
+            videoPlayerWithAdPlayback.removeAdBufferEventListener();
+        }
         resetIMA();
         if (adsLoader != null) {
             adsLoader.removeAdsLoadedListener(adsLoadedListener);
@@ -1018,4 +1019,15 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
         return adsLoadedListener;
     }
 
+    @Override
+    public void onBufferStart() {
+        log.d("XXXXX AD onBufferStart");
+        messageBus.post(new AdEvent(AdEvent.Type.AD_BUFFER_START));
+    }
+
+    @Override
+    public void onBufferEnd() {
+        log.d("XXXXX AD onBufferEnd");
+        messageBus.post(new AdEvent(AdEvent.Type.AD_BUFFER_END));
+    }
 }
