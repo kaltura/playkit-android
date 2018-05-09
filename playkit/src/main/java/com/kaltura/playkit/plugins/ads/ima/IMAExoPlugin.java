@@ -238,6 +238,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
         if (adsManager != null) {
             adsManager.destroy();
         }
+
         videoPlayerWithAdPlayback.setContentProgressProvider(player);
         clearAdsLoader();
         imaSetup();
@@ -394,8 +395,8 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
         if (videoPlayerWithAdPlayback != null) {
             videoPlayerWithAdPlayback.removeAdBufferEventListener();
         }
-        videoPlayerWithAdPlayback.releasePlayer();
-        videoPlayerWithAdPlayback = null;
+        //videoPlayerWithAdPlayback.releasePlayer();
+        //videoPlayerWithAdPlayback = null;
     }
 
     protected void resetIMA() {
