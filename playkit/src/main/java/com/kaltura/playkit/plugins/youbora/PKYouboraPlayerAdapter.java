@@ -41,9 +41,9 @@ import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
  * @hide
  */
 
-class YouboraLibraryManager extends PlayerAdapter<Player> {
+class PKYouboraPlayerAdapter extends PlayerAdapter<Player> {
 
-    private static final PKLog log = PKLog.get("YouboraLibraryManager");
+    private static final PKLog log = PKLog.get("PKYouboraPlayerAdapter");
     private static final String KALTURA_ANDROID = "Kaltura-Android";
     private static final String PLAYER_ERROR_STR = "Player error occurred";
 
@@ -63,7 +63,7 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
     private boolean isAdPlaying;
     private AdCuePoints adCuePoints;
 
-    YouboraLibraryManager(Player player, MessageBus messageBus, PKMediaConfig mediaConfig, YouboraConfig pluginConfig) {
+    PKYouboraPlayerAdapter(Player player, MessageBus messageBus, PKMediaConfig mediaConfig, YouboraConfig pluginConfig) {
         super(player);
         this.messageBus = messageBus;
         this.mediaConfig = mediaConfig;
@@ -117,7 +117,7 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
                         log.d("new duration = " + ((PlayerEvent.DurationChanged) event).duration);
                         break;
                     case STATE_CHANGED:
-                        YouboraLibraryManager.this.onEvent((PlayerEvent.StateChanged) event);
+                        PKYouboraPlayerAdapter.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
                     case ENDED:
                         if (!isFirstPlay && ((adCuePoints == null) || !adCuePoints.hasPostRoll())) {
@@ -370,6 +370,11 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
         }
     }
 
+    public void onUpdateConfig() {
+        log.d("onUpdateConfig");
+        resetValues();
+    }
+
     public void resetValues() {
         lastReportedBitrate = super.getBitrate();
         lastReportedRendition = super.getRendition();
@@ -377,9 +382,10 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
         isFirstPlay = true;
     }
 
-    public void onUpdateConfig() {
-        log.d("onUpdateConfig");
-        resetValues();
+    public void resetPlaybackValues() {
+        lastReportedMediaDuration = super.getDuration();
+        lastReportedMediaPosition =  super.getPlayhead();
         adCuePoints = null;
+        resetValues();
     }
 }

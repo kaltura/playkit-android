@@ -20,8 +20,8 @@ import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
 public class YouboraPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("YouboraPlugin");
 
-    private static YouboraLibraryManager pluginManager;
-    private static YouboraAdManager adsManager;
+    private static PKYouboraPlayerAdapter pluginManager;
+    private static PKYouboraAdsAdapter adsManager;
 
     private PKMediaConfig mediaConfig;
     private YouboraConfig pluginConfig;
@@ -53,18 +53,20 @@ public class YouboraPlugin extends PKPlugin {
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         stopMonitoring();
         log.d("youbora - onUpdateMedia");
+
+        if (pluginManager != null) {
+            pluginManager.resetPlaybackValues();
+        }
         this.mediaConfig = mediaConfig;
-
-
         // Refresh options with updated media
         npawPlugin.setOptions(pluginConfig.getYouboraOptions());
         if (!isMonitoring) {
             isMonitoring = true;
-            pluginManager = new YouboraLibraryManager(player, messageBus, mediaConfig, pluginConfig);
+            pluginManager = new PKYouboraPlayerAdapter(player, messageBus, mediaConfig, pluginConfig);
             npawPlugin.setAdapter(pluginManager);
         }
         if (!isAdsMonitoring){
-            adsManager = new YouboraAdManager(player, messageBus);
+            adsManager = new PKYouboraAdsAdapter(player, messageBus);
             npawPlugin.setAdsAdapter(adsManager);
             isAdsMonitoring = true;
         }
@@ -115,7 +117,7 @@ public class YouboraPlugin extends PKPlugin {
         this.messageBus = messageBus;
 
         this.pluginConfig = parseConfig(config);
-        pluginManager = new YouboraLibraryManager(player, messageBus, mediaConfig, pluginConfig);
+        pluginManager = new PKYouboraPlayerAdapter(player, messageBus, mediaConfig, pluginConfig);
         npawPlugin = new NPAWPlugin(pluginConfig.getYouboraOptions());
         npawPlugin.setAdapter(pluginManager);
         loadPlugin();

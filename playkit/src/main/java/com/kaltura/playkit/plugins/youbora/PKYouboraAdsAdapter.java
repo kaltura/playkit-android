@@ -34,8 +34,8 @@ import static com.kaltura.playkit.PlayerEvent.Type.PLAYHEAD_UPDATED;
  * @hide
  */
 
-class YouboraAdManager extends PlayerAdapter<Player> {
-    private static final PKLog log = PKLog.get("YouboraAdManager");
+class PKYouboraAdsAdapter extends PlayerAdapter<Player> {
+    private static final PKLog log = PKLog.get("PKYouboraAdsAdapter");
 
     private boolean isFirstPlay = true;
     private boolean isBuffering = false;
@@ -48,7 +48,7 @@ class YouboraAdManager extends PlayerAdapter<Player> {
     private Double lastReportedAdPlayhead;
     private Double lastReportedAdDuration;
 
-    YouboraAdManager(Player player, MessageBus messageBus) {
+    PKYouboraAdsAdapter(Player player, MessageBus messageBus) {
         super(player);
         this.messageBus = messageBus;
         registerListeners();
@@ -78,7 +78,7 @@ class YouboraAdManager extends PlayerAdapter<Player> {
         public void onEvent(PKEvent event) {
 
             if (event.eventType() != AdEvent.Type.PLAY_HEAD_CHANGED && event.eventType() != PLAYHEAD_UPDATED) {
-                log.d("YouboraAdManager on event " + event.eventType());
+                log.d("PKYouboraAdsAdapter on event " + event.eventType());
             }
 
             if (event instanceof AdEvent) {
