@@ -380,16 +380,18 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     @Override
     protected void onDestroy() {
         log.d("IMA Start onDestroy");
-        if (videoPlayerWithAdPlayback != null) {
-            videoPlayerWithAdPlayback.removeAdBufferEventListener();
-        }
+
         resetIMA();
         if (adsLoader != null) {
             adsLoader.removeAdsLoadedListener(adsLoadedListener);
             adsLoadedListener = null;
             adsLoader = null;
         }
-
+        if (videoPlayerWithAdPlayback != null) {
+            videoPlayerWithAdPlayback.removeAdBufferEventListener();
+        }
+        videoPlayerWithAdPlayback.releasePlayer();
+        videoPlayerWithAdPlayback = null;
     }
 
     protected void resetIMA() {

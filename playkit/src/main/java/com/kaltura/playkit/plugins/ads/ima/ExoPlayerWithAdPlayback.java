@@ -556,6 +556,17 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         isPlayerReady = false;
     }
 
+    public void releasePlayer() {
+        if (player != null) {
+            player.clearVideoSurface();
+            player.release();
+            player = null;
+            trackSelector = null;
+            trackSelectionHelper = null;
+            eventLogger = null;
+        }
+    }
+    
     private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
         return new DefaultDataSourceFactory(getContext(), useBandwidthMeter ? BANDWIDTH_METER : null,
                 buildHttpDataSourceFactory(useBandwidthMeter));
