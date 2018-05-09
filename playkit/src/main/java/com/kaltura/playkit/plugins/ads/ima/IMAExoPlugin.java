@@ -392,9 +392,9 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             adsLoadedListener = null;
             adsLoader = null;
         }
-        if (videoPlayerWithAdPlayback != null) {
-            videoPlayerWithAdPlayback.removeAdBufferEventListener();
-        }
+        //if (videoPlayerWithAdPlayback != null) {
+        //    videoPlayerWithAdPlayback.removeAdBufferEventListener();
+        //}
         //videoPlayerWithAdPlayback.releasePlayer();
         //videoPlayerWithAdPlayback = null;
     }
