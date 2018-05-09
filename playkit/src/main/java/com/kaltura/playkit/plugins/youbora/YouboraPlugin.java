@@ -12,7 +12,6 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
-import com.kaltura.playkit.utils.Consts;
 
 /**
  * Created by zivilan on 02/11/2016.
@@ -133,13 +132,6 @@ public class YouboraPlugin extends PKPlugin {
 
             PlayerEvent playerEvent = (PlayerEvent) event;
             switch (playerEvent.type) {
-                case DURATION_CHANGE:
-                    if (player != null && player.getDuration() > 0) {
-                        pluginConfig.getMedia().setDuration(Double.valueOf(player.getDuration() / Consts.MILLISECONDS_MULTIPLIER));
-                        npawPlugin.setOptions(pluginConfig.getYouboraOptions());
-                    }
-                    break;
-
                 case SOURCE_SELECTED:
                     PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) playerEvent;
                     pluginConfig.getMedia().setResource(sourceSelected.source.getUrl());

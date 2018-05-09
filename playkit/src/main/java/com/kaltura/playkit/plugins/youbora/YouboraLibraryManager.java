@@ -58,6 +58,7 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
     private Long lastReportedThroughput;
     private String lastReportedRendition;
     Double lastReportedMediaPosition;
+    Double lastReportedMediaDuration;
     private String houseHoldId;
     private boolean isAdPlaying;
     private AdCuePoints adCuePoints;
@@ -303,6 +304,7 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
     }
 
     public Double getPlayhead() {
+
         if (isAdPlaying) {
             return lastReportedMediaPosition;
         }
@@ -316,7 +318,10 @@ class YouboraLibraryManager extends PlayerAdapter<Player> {
     }
 
     public Double getDuration() {
-        Double lastReportedMediaDuration = null;
+        if (isAdPlaying) {
+            log.d("lastReportedMediaDuration = " + lastReportedMediaDuration);
+            return lastReportedMediaDuration;
+        }
         if (mediaConfig != null && (player == null || (player!= null && player.getDuration() <= 0))) {
             lastReportedMediaDuration =  Double.valueOf(mediaConfig.getMediaEntry().getDuration() / Consts.MILLISECONDS_MULTIPLIER);
         } else if (player != null) {

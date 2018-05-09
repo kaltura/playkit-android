@@ -204,7 +204,8 @@ class YouboraAdManager extends PlayerAdapter<Player> {
 
     @Override
     public Double getDuration() {
-        return currentAdInfo != null ? (Long.valueOf(currentAdInfo.getAdDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue()) : 0D;
+        double adDuration = currentAdInfo != null ? currentAdInfo.getAdDuration() / Consts.MILLISECONDS_MULTIPLIER : 0D;
+        return adDuration;
     }
 
     @Override
