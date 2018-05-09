@@ -210,8 +210,7 @@ class YouboraAdManager extends PlayerAdapter<Player> {
 
     @Override
     public String getPlayerVersion() {
-        log.d("getAdPlayerVersion " + PlayKitManager.CLIENT_TAG);
-
+        //log.d("getAdPlayerVersion " + PlayKitManager.CLIENT_TAG);
         return Consts.KALTURA + "-" + PlayKitManager.CLIENT_TAG;
     }
 
