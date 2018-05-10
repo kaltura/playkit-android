@@ -117,6 +117,7 @@ public class YouboraPlugin extends PKPlugin {
         this.messageBus = messageBus;
 
         this.pluginConfig = parseConfig(config);
+        //YouboraLog.setDebugLevel(YouboraLog.Level.VERBOSE);
         pluginManager = new PKYouboraPlayerAdapter(player, messageBus, mediaConfig, pluginConfig);
         npawPlugin = new NPAWPlugin(pluginConfig.getYouboraOptions());
         npawPlugin.setAdapter(pluginManager);
