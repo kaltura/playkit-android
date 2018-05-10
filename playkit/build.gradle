@@ -37,10 +37,10 @@ dependencies {
     api 'com.kaltura.netkit:netkit-core:1.0.7'
 
     // ExoPlayer
-    implementation 'com.google.android.exoplayer:exoplayer-core:2.6.1'
-    implementation 'com.google.android.exoplayer:exoplayer-dash:2.6.1'
-    implementation 'com.google.android.exoplayer:exoplayer-hls:2.6.1'
-    implementation 'com.google.android.exoplayer:exoplayer-ui:2.6.1'
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.7.0'
+    implementation 'com.google.android.exoplayer:exoplayer-dash:2.7.0'
+    implementation 'com.google.android.exoplayer:exoplayer-hls:2.7.0'
+    implementation 'com.google.android.exoplayer:exoplayer-ui:2.7.0'
 
     // Tests
     testImplementation 'junit:junit:4.12'

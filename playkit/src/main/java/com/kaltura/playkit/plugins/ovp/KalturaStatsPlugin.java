@@ -479,9 +479,10 @@ public class KalturaStatsPlugin extends PKPlugin {
         String sessionId = (player.getSessionId() != null) ? player.getSessionId() : "";
 
         long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration() / Consts.MILLISECONDS_MULTIPLIER;
+        long currentPosition = player.getCurrentPosition() == Consts.POSITION_UNSET ? -1 : player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
 
         final RequestBuilder requestBuilder = StatsService.sendStatsEvent(pluginConfig.getBaseUrl(), pluginConfig.getPartnerId(), eventType.getValue(), PlayKitManager.CLIENT_TAG, duration,
-                sessionId, player.getCurrentPosition(), pluginConfig.getUiconfId(), pluginConfig.getEntryId(), "_" + pluginConfig.getPartnerId(), hasSeeked,
+                sessionId, currentPosition, pluginConfig.getUiconfId(), pluginConfig.getEntryId(), "_" + pluginConfig.getPartnerId(), hasSeeked,
                 pluginConfig.getContextId(), context.getPackageName(), pluginConfig.getUserId(), pluginConfig.getHasKanalony());
 
         requestBuilder.completion(new OnRequestCompletion() {
