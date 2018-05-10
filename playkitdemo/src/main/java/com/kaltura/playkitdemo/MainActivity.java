@@ -21,6 +21,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.response.PrimitiveResult;
 import com.kaltura.netkit.connect.response.ResultElement;
@@ -53,9 +54,11 @@ import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
-import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
+import com.kaltura.playkit.plugins.ads.ima.IMAExoPlugin;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
+import com.kaltura.playkit.plugins.youbora.YouboraPlugin;
+import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
@@ -97,8 +100,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void registerPlugins() {
 
         PlayKitManager.registerPlugins(this, SamplePlugin.factory);
-        PlayKitManager.registerPlugins(this, IMAPlugin.factory);
+        PlayKitManager.registerPlugins(this, IMAExoPlugin.factory);
         PlayKitManager.registerPlugins(this, KalturaStatsPlugin.factory);
+        PlayKitManager.registerPlugins(this, YouboraPlugin.factory);
+
         //PlayKitManager.registerPlugins(this, TVPAPIAnalyticsPlugin.factory);
         //PlayKitManager.registerPlugins(this, PhoenixAnalyticsPlugin.factory);
     }
@@ -146,19 +151,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //        startMockMediaLoading(playLoadedEntry);
 //      startOvpMediaLoading(playLoadedEntry);
 //      startOttMediaLoading(playLoadedEntry);
-      startSimpleOvpMediaLoading(playLoadedEntry);
+        startSimpleOvpMediaLoading(playLoadedEntry);
 //      LocalAssets.start(this, playLoadedEntry);
-        playerContainer = (RelativeLayout)findViewById(R.id.player_container);
-        spinerContainer = (RelativeLayout)findViewById(R.id.spiner_container);
-        fullScreenBtn = (AppCompatImageView)findViewById(R.id.full_screen_switcher);
+        playerContainer = (RelativeLayout) findViewById(R.id.player_container);
+        spinerContainer = (RelativeLayout) findViewById(R.id.spiner_container);
+        fullScreenBtn = (AppCompatImageView) findViewById(R.id.full_screen_switcher);
         fullScreenBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 int orient;
                 if (isFullScreen) {
                     orient = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-                }
-                else {
+                } else {
                     orient = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
                 }
                 setRequestedOrientation(orient);
@@ -178,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     }
                 }
                 log.d("DRM initialized; supported: " + supportedDrmSchemes);
-                
+
                 // Now it's safe to look at `supportedDrmSchemes`
             }
         });
@@ -186,13 +190,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private PKMediaEntry simpleMediaEntry(String id, String contentUrl, String licenseUrl, PKDrmParams.Scheme scheme) {
         return new PKMediaEntry()
-                    .setSources(Collections.singletonList(new PKMediaSource()
-                            .setUrl(contentUrl)
-                            .setDrmData(Collections.singletonList(
-                                    new PKDrmParams(licenseUrl, scheme)
-                            )
+                .setSources(Collections.singletonList(new PKMediaSource()
+                        .setUrl(contentUrl)
+                        .setDrmData(Collections.singletonList(
+                                new PKDrmParams(licenseUrl, scheme)
+                                )
                         )))
-                    .setId(id);
+                .setId(id);
     }
 
     private PKMediaEntry simpleMediaEntry(String id, String contentUrl) {
@@ -216,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         mediaProvider.load(completion);
     }
-    
+
     private void startOttMediaLoading(final OnMediaLoadCompletion completion) {
         SessionProvider ksSessionProvider = new SessionProvider() {
             @Override
@@ -271,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void onMediaLoaded(PKMediaEntry mediaEntry) {
-        
+
         PKMediaConfig mediaConfig = new PKMediaConfig().setMediaEntry(mediaEntry).setStartPosition(0);
         PKPluginConfigs pluginConfig = new PKPluginConfigs();
         if (player == null) {
@@ -280,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             player = PlayKitManager.loadPlayer(this, pluginConfig);
             KalturaPlaybackRequestAdapter.install(player, "myApp"); // in case app developer wants to give customized referrer instead the default referrer in the playmanifest
-                    
+
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
 
@@ -312,6 +316,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         jsonObject.addProperty("delay", 1200);
         config.setPluginConfig("Sample", jsonObject);
         addIMAPluginConfig(config);
+        createYouboraPlugin(config);
         //addKaluraStatsPluginConfig(config);
         //addPhoenixAnalyticsPluginConfig(config);
         //addTVPAPIAnalyticsPluginConfig(config);
@@ -360,7 +365,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void addIMAPluginConfig(PKPluginConfigs config) {
         String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";
-                //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
+        //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
         List<String> videoMimeTypes = new ArrayList<>();
@@ -368,11 +373,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //videoMimeTypes.add(MimeTypes.APPLICATION_M3U8);
         //Map<Double, String> tagTimesMap = new HashMap<>();
         //tagTimesMap.put(2.0,"ADTAG");
-
+        //adTagUrl = "http://dfkdslkf;dk;dlkk;s";
         IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
-        config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
+        config.setPluginConfig(IMAExoPlugin.factory.getName(), adsConfig.toJSONObject());
 
     }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -459,7 +465,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
                     log.d("State changed from " + stateChanged.oldState + " to " + stateChanged.newState);
 
-                    if(controlsView != null){
+                    if (controlsView != null) {
                         controlsView.setPlayerState(stateChanged.newState);
                     }
                 }
@@ -505,12 +511,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onConfigurationChanged(Configuration newConfig) {
         setFullScreen(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE);
         super.onConfigurationChanged(newConfig);
-        Log.v("orientation", "state = "+newConfig.orientation);
+        Log.v("orientation", "state = " + newConfig.orientation);
     }
 
 
     private void setFullScreen(boolean isFullScreen) {
-        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)playerContainer.getLayoutParams();
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) playerContainer.getLayoutParams();
         // Checks the orientation of the screen
         this.isFullScreen = isFullScreen;
         if (isFullScreen) {
@@ -524,7 +530,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             fullScreenBtn.setImageResource(R.drawable.ic_fullscreen);
             spinerContainer.setVisibility(View.VISIBLE);
-            params.height = (int)getResources().getDimension(R.dimen.player_height);
+            params.height = (int) getResources().getDimension(R.dimen.player_height);
             params.width = RelativeLayout.LayoutParams.MATCH_PARENT;
         }
         playerContainer.requestLayout();
@@ -568,9 +574,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 for (int i = 0; i < trackInfos.size(); i++) {
                     VideoTrack videoTrackInfo = (VideoTrack) trackInfos.get(i);
-                    if(videoTrackInfo.isAdaptive()){
+                    if (videoTrackInfo.isAdaptive()) {
                         trackItems[i] = new TrackItem("Auto", videoTrackInfo.getUniqueId());
-                    }else{
+                    } else {
                         trackItems[i] = new TrackItem(String.valueOf(videoTrackInfo.getBitrate()), videoTrackInfo.getUniqueId());
                     }
                 }
@@ -582,11 +588,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 for (int i = 0; i < trackInfos.size(); i++) {
                     AudioTrack audioTrackInfo = (AudioTrack) trackInfos.get(i);
-                    if(audioTrackInfo.isAdaptive()){
+                    if (audioTrackInfo.isAdaptive()) {
                         trackItems[i] = new TrackItem("Auto", audioTrackInfo.getUniqueId());
-                    }else{
+                    } else {
                         String label = audioTrackInfo.getLanguage() != null ? audioTrackInfo.getLanguage() : audioTrackInfo.getLabel();
-                        String bitrate = (audioTrackInfo.getBitrate() >  0)? "" + audioTrackInfo.getBitrate() : "";
+                        String bitrate = (audioTrackInfo.getBitrate() > 0) ? "" + audioTrackInfo.getBitrate() : "";
                         trackItems[i] = new TrackItem(label + " " + bitrate, audioTrackInfo.getUniqueId());
                     }
                 }
@@ -637,7 +643,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void onOrientationChange(OrientationManager.ScreenOrientation screenOrientation) {
-        switch(screenOrientation){
+        switch (screenOrientation) {
             case PORTRAIT:
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 break;
@@ -655,4 +661,87 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 break;
         }
     }
+
+    public PKPluginConfigs createYouboraPlugin(PKPluginConfigs pluginConfigs) {
+        //Youbora analytics Constants
+        String ACCOUNT_CODE = "your_account_code";
+        String UNIQUE_USER_NAME = "your_app_logged_in_user_email_or_userId";
+        String MEDIA_TITLE = "your_media_title";
+        boolean IS_LIVE = false;
+        boolean ENABLE_SMART_ADS = true;
+        String CAMPAIGN = "your_campaign_name";
+        String EXTRA_PARAM_1 = "playKitPlayer";
+        String EXTRA_PARAM_2 = "";
+        String GENRE = "your_genre";
+        String TYPE = "your_type";
+        String TRANSACTION_TYPE = "your_trasnsaction_type";
+        String YEAR = "your_year";
+        String CAST = "your_cast";
+        String DIRECTOR = "your_director";
+        String OWNER = "your_owner";
+        String PARENTAL = "your_parental";
+        String PRICE = "your_price";
+        String RATING = "your_rating";
+        String AUDIO_TYPE = "your_audio_type";
+        String AUDIO_CHANNELS = "your_audoi_channels";
+        String DEVICE = "your_device";
+        String QUALITY = "your_quality";
+
+
+        //Youbora config json. Main config goes here.
+        JsonObject youboraConfigJson = new JsonObject();
+        youboraConfigJson.addProperty("accountCode", ACCOUNT_CODE);
+        youboraConfigJson.addProperty("username", UNIQUE_USER_NAME);
+        youboraConfigJson.addProperty("haltOnError", true);
+        youboraConfigJson.addProperty("enableAnalytics", true);
+        youboraConfigJson.addProperty("enableSmartAds", ENABLE_SMART_ADS);
+
+
+        //Media entry json.
+        JsonObject mediaEntryJson = new JsonObject();
+        mediaEntryJson.addProperty("isLive", IS_LIVE);
+        mediaEntryJson.addProperty("title", MEDIA_TITLE);
+
+        //Youbora ads configuration json.
+        JsonObject adsJson = new JsonObject();
+        adsJson.addProperty("adsExpected", true);
+        adsJson.addProperty("campaign", CAMPAIGN);
+
+        //Configure custom properties here:
+        JsonObject propertiesJson = new JsonObject();
+        propertiesJson.addProperty("genre", GENRE);
+        propertiesJson.addProperty("type", TYPE);
+        propertiesJson.addProperty("transaction_type", TRANSACTION_TYPE);
+        propertiesJson.addProperty("year", YEAR);
+        propertiesJson.addProperty("cast", CAST);
+        propertiesJson.addProperty("director", DIRECTOR);
+        propertiesJson.addProperty("owner", OWNER);
+        propertiesJson.addProperty("parental", PARENTAL);
+        propertiesJson.addProperty("price", PRICE);
+        propertiesJson.addProperty("rating", RATING);
+        propertiesJson.addProperty("audioType", AUDIO_TYPE);
+        propertiesJson.addProperty("audioChannels", AUDIO_CHANNELS);
+        propertiesJson.addProperty("device", DEVICE);
+        propertiesJson.addProperty("quality", QUALITY);
+
+        //You can add some extra params here:
+        JsonObject extraParamJson = new JsonObject();
+        extraParamJson.addProperty("param1", EXTRA_PARAM_1);
+        extraParamJson.addProperty("param2", EXTRA_PARAM_2);
+
+        //Add all the json objects created before to the pluginEntry json.
+        youboraConfigJson.add("media", mediaEntryJson);
+        youboraConfigJson.add("ads", adsJson);
+        youboraConfigJson.add("properties", propertiesJson);
+        youboraConfigJson.add("extraParams", extraParamJson);
+
+
+        //Set plugin entry to the plugin configs.
+        Gson gson = new Gson();
+        YouboraConfig youboraPluginConfig = gson.fromJson(youboraConfigJson, YouboraConfig.class);
+        pluginConfigs.setPluginConfig(YouboraPlugin.factory.getName(), youboraPluginConfig);
+        return pluginConfigs;
+
+    }
 }
+

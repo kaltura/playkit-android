@@ -12,49 +12,46 @@
 
 package com.kaltura.playkit.plugins.youbora;
 
+import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayKitManager;
+import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.ads.PKAdErrorType;
-import com.kaltura.playkit.PKError;
-import com.npaw.youbora.adnalyzers.AdnalyzerGeneric;
-import com.npaw.youbora.plugins.PluginGeneric;
-import com.npaw.youbora.youboralib.BuildConfig;
-import com.npaw.youbora.youboralib.utils.YBLog;
+import com.npaw.youbora.lib6.adapter.PlayerAdapter;
+
+import java.util.HashMap;
 
 import static com.kaltura.playkit.PlayerEvent.Type.PLAYHEAD_UPDATED;
-import static com.kaltura.playkit.PlayerEvent.Type.STATE_CHANGED;
 
 /**
  * @hide
  */
 
-class YouboraAdManager extends AdnalyzerGeneric {
-    private static final PKLog log = PKLog.get("YouboraAdManager");
+class PKYouboraAdsAdapter extends PlayerAdapter<Player> {
+    private static final PKLog log = PKLog.get("PKYouboraAdsAdapter");
 
     private boolean isFirstPlay = true;
     private boolean isBuffering = false;
     private MessageBus messageBus;
-    private double adBitrate = -1;
-    private AdInfo currentAdInfo;
+    private Long adBitrate = -1L;
 
+    private AdInfo currentAdInfo;
     private String lastReportedAdResource;
     private String lastReportedAdTitle;
     private Double lastReportedAdPlayhead;
     private Double lastReportedAdDuration;
 
-    YouboraAdManager(PluginGeneric plugin, MessageBus messageBus) {
-        super(plugin);
-        this.adnalyzerVersion = BuildConfig.VERSION_NAME + "-" + getAdPlayerVersion();
+    PKYouboraAdsAdapter(Player player, MessageBus messageBus) {
+        super(player);
         this.messageBus = messageBus;
-
-        this.messageBus.listen(mEventListener, STATE_CHANGED);
-        this.messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
+        registerListeners();
     }
 
     private void onEvent(PlayerEvent.StateChanged event) {
@@ -63,17 +60,16 @@ class YouboraAdManager extends AdnalyzerGeneric {
             case READY:
                 if (isBuffering) {
                     isBuffering = false;
-                    bufferedAdHandler();
+                    fireBufferEnd();
                 }
                 break;
             case BUFFERING:
                 isBuffering = true;
-                bufferingAdHandler();
+                fireBufferBegin();
                 break;
             default:
                 break;
         }
-
         messageBus.post(new YouboraEvent.YouboraReport(event.eventType().name()));
     }
 
@@ -82,10 +78,15 @@ class YouboraAdManager extends AdnalyzerGeneric {
         public void onEvent(PKEvent event) {
 
             if (event.eventType() != AdEvent.Type.PLAY_HEAD_CHANGED && event.eventType() != PLAYHEAD_UPDATED) {
-                log.d("YouboraAdManager on event " + event.eventType());
+                log.d("PKYouboraAdsAdapter on event " + event.eventType());
             }
 
             if (event instanceof AdEvent) {
+                if (getPlugin() == null || getPlugin().getAdapter() == null) {
+                    log.e("Player Adapter is null return");
+                    return;
+                }
+
                 switch (((AdEvent) event).type) {
                     case AD_REQUESTED:
                         lastReportedAdResource = ((AdEvent.AdRequestedEvent) event).adTagUrl;
@@ -94,60 +95,60 @@ class YouboraAdManager extends AdnalyzerGeneric {
                     case LOADED:
                         if (isFirstPlay) {
                             isFirstPlay = false;
-                            plugin.playHandler();
+                            getPlugin().getAdapter().fireStart();
                         }
                         currentAdInfo = ((AdEvent.AdLoadedEvent) event).adInfo;
                         populateAdValues();
-
-                        playAdHandler();
+                        fireStart();
                         break;
                     case STARTED:
                         currentAdInfo = ((AdEvent.AdStartedEvent) event).adInfo;
                         lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
-
-                        joinAdHandler();
+                        fireJoin();
                         break;
                     case PAUSED:
                         currentAdInfo = ((AdEvent.AdPausedEvent) event).adInfo;
                         lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
-
-                        pauseAdHandler();
+                        firePause();
                         break;
                     case RESUMED:
                         currentAdInfo = ((AdEvent.AdResumedEvent) event).adInfo;
                         if (isFirstPlay) {
                             isFirstPlay = false;
-                            playAdHandler();
-                            joinAdHandler();
+                            if (getPlugin().getAdapter() != null && !getPlugin().getAdapter().getFlags().isStarted()) {
+                                getPlugin().getAdapter().fireStart();
+                            }
+                            fireStart();
+                            fireJoin();
                             populateAdValues();
                         }
 
                         lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
-
-                        resumeAdHandler();
+                        fireResume();
                         break;
                     case COMPLETED:
                         lastReportedAdPlayhead = lastReportedAdDuration;
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
-                        endedAdHandler();
+                        fireStop();
                         break;
                     case AD_BREAK_IGNORED:
-                        endedAdHandler();
+                        fireStop();
                         break;
                     case CONTENT_RESUME_REQUESTED:
-                        endedAdHandler();
+                        fireStop();
                         break;
                     case SKIPPED:
                         currentAdInfo = ((AdEvent.AdSkippedEvent) event).adInfo;
                         lastReportedAdPlayhead = Long.valueOf(currentAdInfo.getAdPlayHead() / Consts.MILLISECONDS_MULTIPLIER).doubleValue();
                         log.d("lastReportedAdPlayhead: " + lastReportedAdPlayhead);
-                        skipAdHandler();
+                        fireStop(new HashMap<String, String>(){{put("skipped","true");}});
                         break;
                     case ERROR:
                         AdEvent.Error errorEvent = (AdEvent.Error) event;
+                        log.e("ERROR " + errorEvent.error.errorType);
                         handleAdError(errorEvent.error);
                         break;
                     case CLICKED:
@@ -172,61 +173,61 @@ class YouboraAdManager extends AdnalyzerGeneric {
         }
     };
 
-    public void startMonitoring(Object player) {
-        log.d("startMonitoring");
-        super.startMonitoring(player);
-        isFirstPlay = true;
+    @Override
+    public void registerListeners() {
+        super.registerListeners();
+        messageBus.listen(mEventListener, (PlayerEvent.Type.ERROR));
+        messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
     }
 
-    public void stopMonitoring() {
-        log.d("stopMonitoring");
-
-        super.stopMonitoring();
-        if (plugin != null) {
-            plugin.endedHandler();
-        }
-        this.messageBus.remove(mEventListener, STATE_CHANGED);
+    @Override
+    public void unregisterListeners() {
         messageBus.remove(mEventListener, (Enum[]) AdEvent.Type.values());
         messageBus.remove(mEventListener, (PlayerEvent.Type.ERROR));
-
+        super.unregisterListeners();
     }
 
-    public void setAdBitrate(Double bitrate) {
+    public void setAdBitrate(Long bitrate) {
         this.adBitrate = bitrate;
     }
 
     @Override
-    public Double getAdBitrate() {
+    public Long getBitrate() {
         return this.adBitrate;
     }
 
     @Override
-    public String getAdTitle() {
+    public String getTitle() {
         log.d("getAdTitle ");
         return lastReportedAdTitle != null ? lastReportedAdTitle : "No Info";
     }
 
     @Override
-    public Double getAdDuration() {
-        return currentAdInfo != null ? (Long.valueOf(currentAdInfo.getAdDuration() / Consts.MILLISECONDS_MULTIPLIER).doubleValue()) : 0.0D;
+    public Double getDuration() {
+        double adDuration = currentAdInfo != null ? currentAdInfo.getAdDuration() / Consts.MILLISECONDS_MULTIPLIER : 0D;
+        return adDuration;
     }
 
     @Override
-    public String getAdPlayerVersion() {
-        log.d("getAdPlayerVersion " + PlayKitManager.CLIENT_TAG);
-
+    public String getPlayerVersion() {
+        //log.d("getAdPlayerVersion " + PlayKitManager.CLIENT_TAG);
         return Consts.KALTURA + "-" + PlayKitManager.CLIENT_TAG;
     }
 
     @Override
-    public Double getAdPlayhead() {
+    public String getVersion() {
+        return BuildConfig.VERSION_NAME + "-" + getPlayerVersion();
+    }
+
+    @Override
+    public Double getPlayhead() {
         log.d("getAdPlayhead = " + lastReportedAdPlayhead);
         return lastReportedAdPlayhead;
     }
 
     @Override
-    public String getAdPosition() {
-        String adPosition = "unknown";
+    public AdPosition getPosition() {
+        AdPosition adPosition = AdPosition.UNKNOWN;
 
         if (currentAdInfo == null) {
             return adPosition;
@@ -234,23 +235,23 @@ class YouboraAdManager extends AdnalyzerGeneric {
 
         switch (currentAdInfo.getAdPositionType()) {
             case PRE_ROLL:
-                adPosition = "pre";
+                adPosition = AdPosition.PRE;
                 break;
             case MID_ROLL:
-                adPosition = "mid";
+                adPosition = AdPosition.MID;
                 break;
             case POST_ROLL:
-                adPosition = "post";
+                adPosition = AdPosition.POST;
                 break;
             default:
-                adPosition = "unknown";
+                break;
         }
         log.d("adPosition = " + adPosition);
         return adPosition;
     }
 
     @Override
-    public String getAdResource() {
+    public String getResource() {
         log.d("getAdResource = " + lastReportedAdResource);
         return lastReportedAdResource;
     }
@@ -267,27 +268,33 @@ class YouboraAdManager extends AdnalyzerGeneric {
     void resetAdValues() {
         isFirstPlay = true;
         currentAdInfo = null;
-        lastReportedAdDuration = super.getAdDuration();
-        lastReportedAdTitle = super.getAdTitle();
-        lastReportedAdPlayhead = super.getAdPlayhead();
+        lastReportedAdDuration = super.getDuration();
+        lastReportedAdTitle = super.getTitle();
+        lastReportedAdPlayhead = super.getPlayhead();
     }
 
     public void onUpdateConfig() {
         resetAdValues();
-        adBitrate = -1;
-        lastReportedAdResource = super.getAdResource();
+        adBitrate = -1L;
+        lastReportedAdResource = super.getResource();
     }
 
     private void handleAdError(PKError error) {
 
         PKAdErrorType adErrorType = (PKAdErrorType) error.errorType;
+
         switch (adErrorType) {
             case QUIET_LOG_ERROR:
                 log.d("QUIET_LOG_ERROR. Avoid sending to Youbora.");
+                fireError(error.message, PKAdErrorType.QUIET_LOG_ERROR.name(), null, null);
                 return;
             default:
-                YBLog.debug("onAdError " + adErrorType.name());
-                endedAdHandler();
+                log.e("onAdError " + adErrorType.name());
+                Exception adException = null;
+                if (error.exception instanceof  Exception) {
+                    adException = (Exception) error.exception;
+                }
+                fireFatalError(error.message, adErrorType.name(), null, adException);
         }
 
         messageBus.post(new YouboraEvent.YouboraReport(adErrorType.name()));
