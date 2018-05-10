@@ -138,6 +138,7 @@ public class YouboraPlugin extends PKPlugin {
                 case SOURCE_SELECTED:
                     PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) playerEvent;
                     pluginConfig.getMedia().setResource(sourceSelected.source.getUrl());
+                    pluginConfig.getMedia().setDuration(null); // we can start getting real duration from player using adapter getDuration
                     npawPlugin.setOptions(pluginConfig.getYouboraOptions());
                     break;
                 default:
