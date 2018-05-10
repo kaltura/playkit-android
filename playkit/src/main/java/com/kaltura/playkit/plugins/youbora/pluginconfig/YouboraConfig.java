@@ -14,11 +14,13 @@ public class YouboraConfig {
 
     private String username;
 
-    private String userType;
+    private String userType;        // any string - free / paid etc.
 
-    private String houseHoldId;
+    private String houseHoldId;    // which device is used to play
 
-    private boolean obfuscateIP;
+    private boolean obfuscateIP;   // ip in dahsbord will be encrytpted
+
+    private boolean setHttpSecure; // youbora events will be sent via https
 
     private Media media;
 
@@ -54,6 +56,14 @@ public class YouboraConfig {
 
     public boolean isObfuscateIP() {
         return obfuscateIP;
+    }
+
+    public boolean isSetHttpSecure() {
+        return setHttpSecure;
+    }
+
+    public void setSetHttpSecure(boolean setHttpSecure) {
+        this.setHttpSecure = setHttpSecure;
     }
 
     public String getHouseHoldId() {
@@ -108,9 +118,11 @@ public class YouboraConfig {
         youboraLocalConfig.setUsername(username);
         youboraLocalConfig.setUserType(userType);
         youboraLocalConfig.setNetworkObfuscateIp(obfuscateIP);
+        youboraLocalConfig.setHttpSecure(setHttpSecure);
+
         youboraLocalConfig.setParseHls(false);
         youboraLocalConfig.setParseCdnNode(false);
-        youboraLocalConfig.setHttpSecure(false);
+
 
         youboraLocalConfig.setDeviceCode(null); //TODO  // List of device codes http://mapi.youbora.com:8081/devices
         youboraLocalConfig.setContentCdn(null);
@@ -190,13 +202,17 @@ public class YouboraConfig {
     public JsonObject toJson() {
         JsonPrimitive accountCode = new JsonPrimitive(getAccountCode() != null ? getAccountCode() : "");
         JsonPrimitive username = new JsonPrimitive(getUsername() != null ? getUsername() : "");
+        JsonPrimitive userType = new JsonPrimitive(getUserType() != null ? getUserType() : "");
+        JsonPrimitive houseHoldId = new JsonPrimitive(getHouseHoldId() != null ? getHouseHoldId() : "");
+        JsonPrimitive isObfuscateIP = new JsonPrimitive(isObfuscateIP() ? true : false);
+        JsonPrimitive isSetHttpSecure = new JsonPrimitive(isSetHttpSecure() ? true : false);
 
         JsonObject mediaEntry = getMediaJsonObject();
         JsonObject adsEntry = new JsonObject();
         adsEntry.addProperty("campaign", (getAds() != null && getAds().getCampaign() != null) ? getAds().getCampaign() : "");
         JsonObject propertiesEntry = getPropertiesJsonObject();
         JsonObject extraParamEntry = getExtraParamJsonObject();
-        JsonObject youboraConfig = getYouboraConfigJsonObject(accountCode, username, mediaEntry, adsEntry, propertiesEntry, extraParamEntry);
+        JsonObject youboraConfig = getYouboraConfigJsonObject(accountCode, username, userType, houseHoldId, isObfuscateIP, isSetHttpSecure, mediaEntry, adsEntry, propertiesEntry, extraParamEntry);
         return youboraConfig;
     }
 
@@ -217,10 +233,16 @@ public class YouboraConfig {
     }
 
     @NonNull
-    private JsonObject getYouboraConfigJsonObject(JsonPrimitive accountCode, JsonPrimitive username, JsonObject mediaEntry, JsonObject adsEntry, JsonObject propertiesEntry, JsonObject extraParamEntry) {
+    private JsonObject getYouboraConfigJsonObject(JsonPrimitive accountCode, JsonPrimitive username, JsonPrimitive userType, JsonPrimitive houseHoldId, JsonPrimitive obfuscateIP, JsonPrimitive setHttpSecure,
+                                                  JsonObject mediaEntry, JsonObject adsEntry, JsonObject propertiesEntry, JsonObject extraParamEntry) {
         JsonObject youboraConfig = new JsonObject();
         youboraConfig.add("accountCode", accountCode);
         youboraConfig.add("username", username);
+        youboraConfig.add("userType", userType);
+        youboraConfig.add("houseHoldId", houseHoldId);
+        youboraConfig.add("obfuscateIP", obfuscateIP);
+        youboraConfig.add("setHttpSecure", setHttpSecure);
+
         youboraConfig.add("media", mediaEntry);
         youboraConfig.add("ads", adsEntry);
         youboraConfig.add("properties", propertiesEntry);
