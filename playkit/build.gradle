@@ -30,12 +30,6 @@ tasks.withType(Javadoc) {
     options.addBooleanOption('Xdoclint:none', true)
 }
 
-repositories {
-    maven {
-        url "http://dl.bintray.com/npaw/youbora"
-    }
-}
-
 dependencies {
 
     // NetKit
