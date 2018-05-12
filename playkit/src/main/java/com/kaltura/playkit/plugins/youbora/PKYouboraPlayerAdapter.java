@@ -320,7 +320,7 @@ class PKYouboraPlayerAdapter extends PlayerAdapter<Player> {
     @Override
     public Double getDuration() {
         if (isAdPlaying) {
-            log.d("lastReportedMediaDuration = " + lastReportedMediaDuration);
+            //log.d("lastReportedMediaDuration = " + lastReportedMediaDuration);
             return lastReportedMediaDuration;
         }
         if (mediaConfig != null && (player == null || (player!= null && player.getDuration() <= 0))) {
@@ -328,7 +328,7 @@ class PKYouboraPlayerAdapter extends PlayerAdapter<Player> {
         } else if (player != null) {
             lastReportedMediaDuration =  Double.valueOf(player.getDuration() / Consts.MILLISECONDS_MULTIPLIER);
         }
-        log.d("lastReportedMediaDuration = " + lastReportedMediaDuration);
+        //log.d("lastReportedMediaDuration = " + lastReportedMediaDuration);
         return lastReportedMediaDuration;
     }
 
