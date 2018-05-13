@@ -25,6 +25,6 @@ public abstract class BaseExoplayerView extends PlayerView {
 
     public abstract void setPlayer(SimpleExoPlayer player, boolean useTextureView, boolean isSurfaceSecured);
 
-    public abstract void swapVideoSurface(boolean useTextureView, boolean isSurfaceSecured);
+    public abstract void setVideoSurfaceProperties(boolean useTextureView, boolean isSurfaceSecured);
 
 }

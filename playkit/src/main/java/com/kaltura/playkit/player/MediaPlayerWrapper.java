@@ -587,7 +587,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public void onConfigurationChanged() {
+    public void onOrientationChanged() {
         //Do nothing.
     }
 

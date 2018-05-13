@@ -126,7 +126,7 @@ public interface Player {
     /**
      * Player lifecycle method. Must be called when Activity onConfigurationChanged(Configuration newConfig) called.
      */
-    void onConfigurationChanged();
+    void onOrientationChanged();
 
     /**
      * Should be called when you want to destroy the player.

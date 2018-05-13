@@ -98,7 +98,7 @@ class ExoPlayerView extends BaseExoplayerView {
      * @param isSurfaceSecured - should allow secure rendering of the surface
      */
     @Override
-    public void swapVideoSurface(boolean useTextureView, boolean isSurfaceSecured) {
+    public void setVideoSurfaceProperties(boolean useTextureView, boolean isSurfaceSecured) {
         if (player != null) {
             removeVideoSurface();
             addVideoSurface(useTextureView, isSurfaceSecured);

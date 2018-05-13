@@ -428,8 +428,8 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void onConfigurationChanged() {
-        player.onConfigurationChanged();
+    public void onOrientationChanged() {
+        player.onOrientationChanged();
     }
 
     @Override

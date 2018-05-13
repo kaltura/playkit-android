@@ -460,7 +460,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         this.useTextureView = playerSettings.useTextureView();
         this.isSurfaceSecured = playerSettings.isSurfaceSecured();
-        exoPlayerView.swapVideoSurface(playerSettings.useTextureView(), playerSettings.isSurfaceSecured());
+        exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured());
     }
 
     @Override
@@ -761,7 +761,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @Override
-    public void onConfigurationChanged() {
+    public void onOrientationChanged() {
         //Do nothing.
     }
 }

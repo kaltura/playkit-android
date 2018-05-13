@@ -220,7 +220,10 @@ public interface PlayerEngine {
      */
     <T extends PKController> T getController(Class<T> type);
 
-    void onConfigurationChanged();
+    /**
+     * Must be called by application when Android onConfigurationChanged triggered by system.
+     */
+    void onOrientationChanged();
 
     interface EventListener {
         void onEvent(PlayerEvent.Type event);
