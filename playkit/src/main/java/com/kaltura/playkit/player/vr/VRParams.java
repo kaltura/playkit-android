@@ -6,7 +6,7 @@ package com.kaltura.playkit.player.vr;
 
 public class VRParams {
 
-    private VRInteractionMode interactionMode = VRInteractionMode.Motion_with_touch;
+    private VRInteractionMode interactionMode = VRInteractionMode.MotionWithTouch;
     private boolean vrModeEnabled; //false by default
     private boolean zoomWithPinchEnabled = true; // true by default.
     private boolean flingEnabled; //false by default.
