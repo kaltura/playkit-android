@@ -23,12 +23,13 @@ import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.UUID;
@@ -158,7 +159,7 @@ public class PlayerController implements Player {
             return;
         }
 
-        boolean is360Supported = mediaConfig.getMediaEntry().hasVRParams();
+        boolean is360Supported = mediaConfig.getMediaEntry() instanceof VRPKMediaEntry;
         PlayerEngineType incomingPlayerType = PlayerEngineFactory.selectPlayerType(sourceConfig.mediaSource.getMediaFormat(), is360Supported);
 
         switchPlayersIfRequired(incomingPlayerType);
@@ -190,9 +191,20 @@ public class PlayerController implements Player {
             return false;
         }
 
-        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
+        initSourceConfig(mediaConfig.getMediaEntry(), source);
+
+
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
         return true;
+    }
+
+    private void initSourceConfig(PKMediaEntry mediaEntry, PKMediaSource source) {
+        if(mediaEntry instanceof VRPKMediaEntry) {
+            VRPKMediaEntry vrEntry = (VRPKMediaEntry) mediaEntry;
+            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings, vrEntry.getVrSettings());
+        } else {
+            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
+        }
     }
 
     private String generateSessionId() {

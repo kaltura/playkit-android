@@ -4,7 +4,7 @@ package com.kaltura.playkit.player.vr;
  * Created by anton.afanasiev on 25/03/2018.
  */
 
-public class VRParams {
+public class VRSettings {
 
     private VRInteractionMode interactionMode = VRInteractionMode.MotionWithTouch;
     private boolean vrModeEnabled; //false by default
@@ -17,9 +17,9 @@ public class VRParams {
      * Default is false, which means content will be displayed in regular 360 mode.
      *
      * @param isEnabled - should enable.
-     * @return - {@link VRParams}
+     * @return - {@link VRSettings}
      */
-    public VRParams setVrModeEnabled(boolean isEnabled) {
+    public VRSettings setVrModeEnabled(boolean isEnabled) {
         this.vrModeEnabled = isEnabled;
         return this;
     }
@@ -29,9 +29,9 @@ public class VRParams {
      * Default is VRInteractionMode.Motion_with_touch which means that surface will react
      * both on device movement and user touch input.
      * @param mode - desired mode.
-     * @return - {@link VRParams}
+     * @return - {@link VRSettings}
      */
-    public VRParams setInteractionMode(VRInteractionMode mode) {
+    public VRSettings setInteractionMode(VRInteractionMode mode) {
         this.interactionMode = mode;
         return this;
     }
@@ -40,9 +40,9 @@ public class VRParams {
      * Allows to enable/disable zoom in/out with pinch.
      * Default is - true.
      * @param shouldEnable - should enable zoom in with pinch.
-     * @return - {@link VRParams}
+     * @return - {@link VRSettings}
      */
-    public VRParams setZoomWithPinchEnabled(boolean shouldEnable) {
+    public VRSettings setZoomWithPinchEnabled(boolean shouldEnable) {
         this.zoomWithPinchEnabled = shouldEnable;
         return this;
     }
@@ -52,9 +52,9 @@ public class VRParams {
      * surface will continue display motion animation depending on acceleration power of fling gesture.
      * Default is - false.
      * @param shouldEnable - should enable fling.
-     * @return - {@link VRParams}
+     * @return - {@link VRSettings}
      */
-    public VRParams setFlingEnabled(boolean shouldEnable) {
+    public VRSettings setFlingEnabled(boolean shouldEnable) {
         this.flingEnabled = shouldEnable;
         return this;
     }

@@ -15,8 +15,6 @@ package com.kaltura.playkit;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.kaltura.playkit.player.vr.VRParams;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +28,6 @@ public class PKMediaEntry implements Parcelable {
     private long duration; //in milliseconds
     private MediaEntryType mediaType;
     private Map<String,String> metadata;
-    private VRParams vrParams;
 
     public PKMediaEntry(){}
 
@@ -94,19 +91,6 @@ public class PKMediaEntry implements Parcelable {
         Unknown
     }
 
-    public PKMediaEntry setVRParams(VRParams vrParams) {
-        this.vrParams = vrParams;
-        return this;
-    }
-
-    public VRParams getVrParams() {
-        return this.vrParams;
-    }
-
-    public boolean hasVRParams() {
-        return vrParams != null;
-    }
-
     @Override
     public int describeContents() {
         return 0;
@@ -133,7 +117,6 @@ public class PKMediaEntry implements Parcelable {
             dest.writeInt(-1);
         }
 
-       //TODO add VRParams to Parcel
     }
     
     protected PKMediaEntry(Parcel in) {
@@ -154,8 +137,6 @@ public class PKMediaEntry implements Parcelable {
                 this.metadata.put(key, value);
             }
         }
-
-        //TODO add VRParams to Parcel
     }
 
     public static final Creator<PKMediaEntry> CREATOR = new Creator<PKMediaEntry>() {

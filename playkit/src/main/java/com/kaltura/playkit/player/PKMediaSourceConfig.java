@@ -19,20 +19,25 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
-import com.kaltura.playkit.player.vr.VRParams;
+import com.kaltura.playkit.player.vr.VRSettings;
 
 public class PKMediaSourceConfig {
 
     PKMediaSource mediaSource;
     PKMediaEntry.MediaEntryType mediaEntryType;
     PlayerSettings playerSettings;
-    private VRParams vrParams;
+    private VRSettings vrSettings;
 
-    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
+
+    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings, VRSettings vrSettings) {
         this.mediaSource = source;
         this.mediaEntryType = mediaConfig.getMediaEntry().getMediaType();
         this.playerSettings = playerSettings;
-        this.vrParams = mediaConfig.getMediaEntry().getVrParams();
+        this.vrSettings = vrSettings;
+    }
+
+    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
+        this(mediaConfig, source, playerSettings, null);
     }
 
     Uri getUrl() {
@@ -45,8 +50,8 @@ public class PKMediaSourceConfig {
     }
 
     @Nullable
-    public VRParams getVrParams() {
-        return this.vrParams;
+    public VRSettings getVrSettings() {
+        return this.vrSettings;
     }
 
     @Override

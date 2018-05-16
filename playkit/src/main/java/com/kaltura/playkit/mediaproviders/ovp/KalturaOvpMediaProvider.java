@@ -31,7 +31,8 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.player.vr.VRParams;
+import com.kaltura.playkit.player.vr.VRPKMediaEntry;
+import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.api.ovp.KalturaOvpErrorHelper;
 import com.kaltura.playkit.api.ovp.KalturaOvpParser;
@@ -347,7 +348,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         public static PKMediaEntry getMediaEntry(String baseUrl, String ks, String partnerId, String uiConfId, KalturaMediaEntry entry,
                                                  KalturaPlaybackContext playbackContext, KalturaMetadataListResponse metadataList) throws InvalidParameterException {
 
-            PKMediaEntry mediaEntry = new PKMediaEntry();
             ArrayList<KalturaPlaybackSource> kalturaSources = playbackContext.getSources();
             List<PKMediaSource> sources;
 
@@ -365,9 +365,12 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 sources = parseFromFlavors(ks, partnerId, uiConfId, entry, playbackContext);
             }*/
 
+            PKMediaEntry mediaEntry;
             Map<String, String> metadata = parseMetadata(metadataList);
-            if (checkIf360Enabled(entry.getTags())) {
-                mediaEntry.setVRParams(new VRParams());
+            if (is360Content(entry.getTags())) {
+                mediaEntry = new VRPKMediaEntry().setVRParams(new VRSettings());
+            } else {
+                mediaEntry = new PKMediaEntry();
             }
 
             return mediaEntry.setId(entry.getId()).setSources(sources)
@@ -376,7 +379,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                     .setMediaType(MediaTypeConverter.toMediaEntryType(entry.getType()));
         }
 
-        private static boolean checkIf360Enabled(String tags) {
+        private static boolean is360Content(String tags) {
             return !tags.isEmpty() && Pattern.compile("\\b360\\b").matcher(tags).find();
 
         }
