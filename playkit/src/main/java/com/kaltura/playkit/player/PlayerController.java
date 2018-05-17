@@ -338,6 +338,7 @@ public class PlayerController implements Player {
             return;
         }
 
+        addPlayerView();
         player.play();
     }
 
