@@ -192,8 +192,6 @@ public class PlayerController implements Player {
         }
 
         initSourceConfig(mediaConfig.getMediaEntry(), source);
-
-
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
         return true;
     }
@@ -231,7 +229,11 @@ public class PlayerController implements Player {
         //Initialize new PlayerEngine.
         try {
             player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType);
-            addPlayerView();
+            //IMA workaround. In order to prevent flickering of the first frame
+            //with ExoplayerEngine we should addPlayerView here for all playerEngines except Exoplayer.
+            if(incomingPlayerType != PlayerEngineType.Exoplayer) {
+                addPlayerView();
+            }
             togglePlayerListeners(true);
             currentPlayerType = incomingPlayerType;
         } catch (PlayerEngineFactory.PlayerInitializationException e) {
