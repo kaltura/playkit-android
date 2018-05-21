@@ -3,6 +3,7 @@ package com.kaltura.playkit.plugins;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKRequestParams;
@@ -35,6 +36,11 @@ public class MockPlayer implements Player {
 
             @Override
             public Settings useTextureView(boolean useTextureView) {
+                return this;
+            }
+
+            @Override
+            public Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
                 return this;
             }
         };
@@ -146,11 +152,6 @@ public class MockPlayer implements Player {
     }
 
     @Override
-    public AdController getAdController() {
-        return null;
-    }
-
-    @Override
     public String getSessionId() {
         return null;
     }
@@ -158,6 +159,11 @@ public class MockPlayer implements Player {
     @Override
     public boolean isLiveStream() {
         return false;
+    }
+
+    @Override
+    public <T extends PKController> T getController(Class<T> type) {
+        return null;
     }
 
     public void setDuration(int duration){

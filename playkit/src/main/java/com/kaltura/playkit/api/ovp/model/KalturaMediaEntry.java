@@ -24,12 +24,14 @@ public class KalturaMediaEntry {
     private String id;
     private String name;
 
-    /** indicate the media type: {@link KalturaEntryType} **/
+    /**
+     * indicate the media type: {@link KalturaEntryType}
+     **/
     private KalturaEntryType type;
-
     private String dataUrl;
     private String flavorParamsIds;
     private int msDuration;
+    private String tags;
 
     public KalturaEntryType getType() {
         return type;
@@ -43,7 +45,7 @@ public class KalturaMediaEntry {
         return dataUrl;
     }
 
-    public List<String> getFlavorParamsIdsList(){
+    public List<String> getFlavorParamsIdsList() {
         return Arrays.asList(flavorParamsIds.split(","));
     }
 
@@ -63,4 +65,11 @@ public class KalturaMediaEntry {
         return msDuration;
     }
 
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
 }
