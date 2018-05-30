@@ -579,6 +579,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         return false;
     }
 
+    @Override
+    public void setSessionId(String sessionId) {
+
+    }
+
     @NonNull
     private Map<String, String> getHeadersMap() {
         Map<String, String> headersMap = new HashMap();

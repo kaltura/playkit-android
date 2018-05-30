@@ -198,4 +198,6 @@ interface PlayerEngine {
     BaseTrack getLastSelectedTrack(int renderType);
 
     boolean isLiveStream();
+
+    void setSessionId(String sessionId);
 }

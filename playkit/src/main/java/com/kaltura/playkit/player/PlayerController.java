@@ -255,6 +255,7 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
+
         if (sourceConfig == null) {
             log.e("source config not found. Can not prepare source.");
             return;
@@ -287,6 +288,8 @@ public class PlayerController implements Player {
             playerSettings.getContentRequestAdapter().updateParams(this);
         }
 
+        Profiler.get(sessionId).onSetMedia(this, mediaConfig);
+
         this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
 
@@ -297,6 +300,7 @@ public class PlayerController implements Player {
 
         this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
+
         return true;
     }
 
@@ -323,6 +327,7 @@ public class PlayerController implements Player {
         //Decide which player wrapper should be initialized.
         if (mediaFormat != wvm) {
             player = new ExoPlayerWrapper(context);
+            player.setSessionId(sessionId);
             togglePlayerListeners(true);
         } else {
             player = new MediaPlayerWrapper(context);

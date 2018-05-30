@@ -24,6 +24,7 @@ import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -44,11 +45,13 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSource.Factory;
+import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
+import com.google.android.exoplayer2.upstream.TransferListener;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaFormat;
@@ -71,6 +74,8 @@ import java.net.CookiePolicy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by anton.afanasiev on 31/10/2016.
@@ -87,6 +92,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private DefaultBandwidthMeter bandwidthMeter;
+    private TransferListener<Object> transferListener;
 
     private EventLogger eventLogger;
     private EventListener eventListener;
@@ -125,10 +131,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
+    private String sessionId;
 
 
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
+        profiler().onBandwidthEstimation(this, bitrate);
         sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
     }
 
@@ -136,6 +144,55 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     ExoPlayerWrapper(Context context) {
         this.context = context;
         bandwidthMeter = new DefaultBandwidthMeter(mainHandler, this);
+        transferListener = bandwidthMeter;
+
+        if (Profiler.isStarted()) {
+            transferListener = new TransferListener<Object>() {
+
+                private WeakHashMap<Object, Uri> sourceToUriMap = new WeakHashMap<>();
+                private WeakHashMap<Object, AtomicInteger> sourceToBytesMap = new WeakHashMap<>();
+                private WeakHashMap<Object, Long> sourceToTimeMap = new WeakHashMap<>();
+
+                @Override
+                public void onTransferStart(Object source, DataSpec dataSpec) {
+                    bandwidthMeter.onTransferStart(source, dataSpec);
+
+                    log.d("START " + dataSpec.uri.getLastPathSegment());
+
+                    sourceToUriMap.put(source, dataSpec.uri);
+                    sourceToTimeMap.put(source, System.currentTimeMillis());
+//                    profiler().onTransferStarted(ExoPlayerWrapper.this, dataSpec.uri);
+                }
+
+                @Override
+                public void onBytesTransferred(Object source, int bytesTransferred) {
+                    bandwidthMeter.onBytesTransferred(source, bytesTransferred);
+
+                    AtomicInteger size = sourceToBytesMap.get(source);
+                    if (size != null) {
+                        size.addAndGet(bytesTransferred);
+                    } else {
+                        sourceToBytesMap.put(source, new AtomicInteger(bytesTransferred));
+                    }
+                }
+
+                @Override
+                public void onTransferEnd(Object source) {
+                    bandwidthMeter.onTransferEnd(source);
+
+
+                    Uri uri = sourceToUriMap.get(source);
+                    log.d("END " + uri.getLastPathSegment());
+                    AtomicInteger size = sourceToBytesMap.get(source);
+                    Long start = sourceToTimeMap.get(source);
+
+                    if (uri != null && size != null && start != null) {
+                        profiler().onTransferEnd(ExoPlayerWrapper.this, uri, size.get(), System.currentTimeMillis() - start);
+                    }
+                }
+            };
+        }
+
         exoPlayerView = new ExoPlayerView(context);
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
             CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
@@ -146,7 +203,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         eventLogger = new EventLogger();
 
         DefaultTrackSelector trackSelector = initializeTrackSelector();
-        drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildCustomHttpDataSourceFactory(false), drmSessionListener);
+        drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildLicenseRequestHttpDataSourceFactory(), drmSessionListener);
         CustomRendererFactory rendererFactory = new CustomRendererFactory(context,
                 drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
         player = ExoPlayerFactory.newSimpleInstance(rendererFactory, trackSelector);
@@ -192,6 +249,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.playerSettings.cea608CaptionsEnabled());
 
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
+
+        profiler().onPrepareStarted(this, sourceConfig);
+
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
     }
@@ -233,7 +293,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      * @return A new DataSource factory.
      */
     private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
-        return new DefaultDataSourceFactory(context, useBandwidthMeter ? bandwidthMeter : null,
+        return new DefaultDataSourceFactory(context, useBandwidthMeter ? transferListener : null,
                 buildHttpDataSourceFactory(useBandwidthMeter));
     }
 
@@ -245,12 +305,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      * @return A new HttpDataSource factory.
      */
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
-            return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+            return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? transferListener : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                     DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
     }
 
-    private HttpDataSource.Factory buildCustomHttpDataSourceFactory(boolean useBandwidthMeter) {
-            return new CustomHttpDataSourceFactory(getUserAgent(context), httpDataSourceRequestParams, useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+    private HttpDataSource.Factory buildLicenseRequestHttpDataSourceFactory() {
+            return new CustomHttpDataSourceFactory(getUserAgent(context), httpDataSourceRequestParams, null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
     }
 
@@ -308,22 +368,28 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         switch (playbackState) {
             case Player.STATE_IDLE:
+                profiler().onPlayerIdle(this, playWhenReady);
                 log.d("onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
                 if (isSeeking) {
                     isSeeking = false;
                 }
                 break;
+
             case Player.STATE_BUFFERING:
+                profiler().onPlayerBuffering(this, playWhenReady);
                 log.d("onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.BUFFERING);
                 break;
+
             case Player.STATE_READY:
+                profiler().onPlayerReady(this, playWhenReady);
                 log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.READY);
 
                 if (isSeeking) {
                     isSeeking = false;
+                    profiler().onSeekEnded(this);
                     sendDistinctEvent(PlayerEvent.Type.SEEKED);
                 }
 
@@ -336,14 +402,16 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 }
 
                 break;
+
             case Player.STATE_ENDED:
+                profiler().onPlayerEnded(this, playWhenReady);
                 log.d("onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
                 sendDistinctEvent(PlayerEvent.Type.ENDED);
                 break;
+
             default:
                 break;
-
         }
 
     }
@@ -385,6 +453,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         String errorStr = (errorMessage == null) ? "Player error: " + errorType.name() : errorMessage;
+        profiler().onPlayerError(this, errorStr);
         log.e(errorStr);
         currentError = new PKError(errorType, errorStr, error);
         eventListener.onEvent(PlayerEvent.Type.ERROR);
@@ -407,6 +476,18 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+
+        if (Profiler.isStarted()) {
+            if (trackSelections.length >= 2) {  // video and audio
+                Format selectedVideoFormat = trackSelections.get(Consts.TRACK_TYPE_VIDEO).getSelectedFormat();
+                Format selectedAudioFormat = trackSelections.get(Consts.TRACK_TYPE_AUDIO).getSelectedFormat();
+                profiler().onTracksChanged(this, selectedVideoFormat.id, selectedVideoFormat.bitrate, selectedVideoFormat.codecs, selectedAudioFormat.id, selectedAudioFormat.bitrate, selectedAudioFormat.codecs);
+            } else if (trackSelections.length == 1) {   // just video
+                Format selectedVideoFormat = trackSelections.get(Consts.TRACK_TYPE_VIDEO).getSelectedFormat();
+                profiler().onTracksChanged(this, selectedVideoFormat.id, selectedVideoFormat.bitrate, selectedVideoFormat.codecs, null, -1, null);
+            }
+        }
+
         log.d("onTracksChanged");
         //if onOnTracksChanged happened when application went background, do not update the tracks.
         if (trackSelectionHelper == null) {
@@ -429,6 +510,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void load(PKMediaSourceConfig mediaSourceConfig) {
         log.d("load");
+
         crossProtocolRedirectEnabled = mediaSourceConfig.playerSettings.crossProtocolRedirectEnabled();
         PKRequestParams.Adapter licenseRequestAdapter = mediaSourceConfig.playerSettings.getLicenseRequestAdapter();
         if  (licenseRequestAdapter != null) {
@@ -481,6 +563,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         sendDistinctEvent(PlayerEvent.Type.PLAY);
 
+        profiler().onPlayRequested(this);
         player.setPlayWhenReady(true);
     }
 
@@ -501,6 +584,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         sendDistinctEvent(PlayerEvent.Type.PAUSE);
+        profiler().onPauseRequested(this);
         player.setPlayWhenReady(false);
     }
 
@@ -520,7 +604,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
         isSeeking = true;
         sendDistinctEvent(PlayerEvent.Type.SEEKING);
+        profiler().onSeekRequested(this, position);
         player.seekTo(position);
+    }
+
+    private Profiler profiler() {
+        return Profiler.get(sessionId);
     }
 
     @Override
@@ -620,6 +709,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             return;
         }
         isSeeking = false;
+        profiler().onReplayRequested(this);
         player.seekTo(0);
         player.setPlayWhenReady(true);
         sendDistinctEvent(PlayerEvent.Type.REPLAY);
@@ -750,6 +840,11 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public boolean isLiveStream() {
         return player != null && player.isCurrentWindowDynamic();
+    }
+
+    @Override
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 }
 
