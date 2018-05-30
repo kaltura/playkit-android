@@ -116,6 +116,7 @@ public class PKMediaEntry implements Parcelable {
         } else {
             dest.writeInt(-1);
         }
+
     }
     
     protected PKMediaEntry(Parcel in) {
@@ -129,7 +130,7 @@ public class PKMediaEntry implements Parcelable {
         if (metadataSize == -1) {
             this.metadata = null;
         } else {
-            this.metadata = new HashMap<String, String>(metadataSize);
+            this.metadata = new HashMap<>(metadataSize);
             for (int i = 0; i < metadataSize; i++) {
                 String key = in.readString();
                 String value = in.readString();

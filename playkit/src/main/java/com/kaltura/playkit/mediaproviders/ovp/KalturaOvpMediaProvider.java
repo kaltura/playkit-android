@@ -31,6 +31,8 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.player.vr.VRPKMediaEntry;
+import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.api.ovp.KalturaOvpErrorHelper;
 import com.kaltura.playkit.api.ovp.KalturaOvpParser;
@@ -68,6 +70,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -101,8 +104,8 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     /**
      * MANDATORY! provides the baseUrl and the session token(ks) for the API calls.
      *
-     * @param sessionProvider
-     * @return
+     * @param sessionProvider - {@link SessionProvider}
+     * @return - instance of KalturaOvpMediaProvider
      */
     public KalturaOvpMediaProvider setSessionProvider(SessionProvider sessionProvider) {
         this.sessionProvider = sessionProvider;
@@ -110,10 +113,10 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     }
 
     /**
-     *  NOT MANDATORY! The referrer url, to fetch the data for.
+     * NOT MANDATORY! The referrer url, to fetch the data for.
      *
-     * @param referrer
-     * @return
+     * @param referrer - application referrer.
+     * @return - instance of KalturaOvpMediaProvider
      */
     public KalturaOvpMediaProvider setReferrer(String referrer) {
         this.referrer = referrer;
@@ -123,19 +126,20 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     /**
      * MANDATORY! the entry id, to fetch the data for.
      *
-     * @param entryId
-     * @return
+     * @param entryId - Kaltura entryID
+     * @return - instance of KalturaOvpMediaProvider
      */
     public KalturaOvpMediaProvider setEntryId(String entryId) {
         this.entryId = entryId;
         return this;
     }
+
     /**
      * optional parameter.
      * Defaults to {@link com.kaltura.netkit.connect.executor.APIOkRequestsExecutor} implementation.
      *
-     * @param executor
-     * @return
+     * @param executor - executor
+     * @return - instance of KalturaOvpMediaProvider
      */
     public KalturaOvpMediaProvider setRequestExecutor(RequestQueue executor) {
         this.requestsExecutor = executor;
@@ -146,8 +150,8 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
      * optional parameter
      * will be used in media sources url
      *
-     * @param uiConfId
-     * @return
+     * @param uiConfId - Kaltura uiConfID
+     * @return - instance of KalturaOvpMediaProvider
      */
     public KalturaOvpMediaProvider setUiConfId(String uiConfId) {
         this.uiConfId = uiConfId;
@@ -213,8 +217,8 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         /**
          * Builds and passes to the executor, the multirequest for entry info and playback info fetching.
          *
-         * @param ks
-         * @throws InterruptedException
+         * @param ks - Kaltura KS
+         * @throws InterruptedException - {@link InterruptedException} in case the load operation canceled.
          */
         @Override
         protected void requestRemote(final String ks) throws InterruptedException {
@@ -238,7 +242,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
 
-            if(!isCanceled()) {
+            if (!isCanceled()) {
                 waitCompletion();
             }
         }
@@ -251,8 +255,8 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         /**
          * Parse and create a {@link PKMediaEntry} object from the multirequest call sent to the BE.
          *
-         * @param ks
-         * @param response
+         * @param ks - Kaltura KS
+         * @param response - Server response
          * @param completion - A callback to pass the constructed {@link PKMediaEntry} object on.
          * @throws InterruptedException - in case the load operation canceled.
          */
@@ -335,16 +339,15 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         /**
          * creates {@link PKMediaEntry} from entry's data and contextData
          *
-         * @param baseUrl
-         * @param entry
-         * @param playbackContext
+         * @param baseUrl - base url
+         * @param entry - {@link KalturaMediaEntry}
+         * @param playbackContext - {@link KalturaPlaybackContext}
          * @return (in case of restriction on maxbitrate, filtering should be done by considering the flavors provided to the
-         *source- if none meets the restriction, source should not be added to the mediaEntrys sources.)
+         * source - if none meets the restriction, source should not be added to the mediaEntrys sources.)
          */
         public static PKMediaEntry getMediaEntry(String baseUrl, String ks, String partnerId, String uiConfId, KalturaMediaEntry entry,
                                                  KalturaPlaybackContext playbackContext, KalturaMetadataListResponse metadataList) throws InvalidParameterException {
 
-            PKMediaEntry mediaEntry = new PKMediaEntry();
             ArrayList<KalturaPlaybackSource> kalturaSources = playbackContext.getSources();
             List<PKMediaSource> sources;
 
@@ -362,12 +365,23 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 sources = parseFromFlavors(ks, partnerId, uiConfId, entry, playbackContext);
             }*/
 
+            PKMediaEntry mediaEntry;
             Map<String, String> metadata = parseMetadata(metadataList);
+            if (is360Content(entry.getTags())) {
+                mediaEntry = new VRPKMediaEntry().setVRParams(new VRSettings());
+            } else {
+                mediaEntry = new PKMediaEntry();
+            }
 
             return mediaEntry.setId(entry.getId()).setSources(sources)
                     .setDuration(entry.getMsDuration()).setMetadata(metadata)
                     .setName(entry.getName())
                     .setMediaType(MediaTypeConverter.toMediaEntryType(entry.getType()));
+        }
+
+        private static boolean is360Content(String tags) {
+            return tags != null && !tags.isEmpty() && Pattern.compile("\\b360\\b").matcher(tags).find();
+
         }
 
         private static Map<String, String> parseMetadata(KalturaMetadataListResponse metadataList) {
@@ -420,9 +434,9 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          *
          * @param baseUrl         - baseUrl for the playing source construction
          * @param ks              - if not empty, will be added to the playing url path
-         * @param partnerId
+         * @param partnerId       - partnerId
          * @param uiConfId        - if not empty, will be added to the playing url path
-         * @param entry
+         * @param entry           - {@link KalturaMediaEntry}
          * @param playbackContext - the response object of the "baseEntry/getPlaybackContext" API.
          * @return - list of PKMediaSource created from sources list
          */

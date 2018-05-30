@@ -25,6 +25,7 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.view.SurfaceHolder;
 
+import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -71,8 +72,8 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private PlayerState currentState = PlayerState.IDLE, previousState;
     private long playerDuration = Consts.TIME_UNSET;
     private long playerPosition;
-    private PlayerController.EventListener eventListener;
-    private PlayerController.StateChangedListener stateChangedListener;
+    private EventListener eventListener;
+    private StateChangedListener stateChangedListener;
     private boolean shouldRestorePlayerToPreviousState = false;
     private PrepareState prepareState = NOT_PREPARED;
     private boolean isPlayAfterPrepare = false;
@@ -324,12 +325,12 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public void setEventListener(PlayerController.EventListener eventTrigger) {
+    public void setEventListener(EventListener eventTrigger) {
         this.eventListener = eventTrigger;
     }
 
     @Override
-    public void setStateChangedListener(PlayerController.StateChangedListener stateChangedTrigger) {
+    public void setStateChangedListener(StateChangedListener stateChangedTrigger) {
         this.stateChangedListener = stateChangedTrigger;
     }
 
@@ -581,7 +582,17 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public void setSessionId(String sessionId) {
+      
+    }
 
+    public <T extends PKController> T getController(Class<T> type) {
+        //Currently no controller for MediaPlayerWrapper. So always return null.
+        return null;
+    }
+
+    @Override
+    public void onOrientationChanged() {
+        //Do nothing.
     }
 
     @NonNull

@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -52,6 +52,7 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.upstream.TransferListener;
+import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaFormat;
@@ -61,8 +62,6 @@ import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
-import com.kaltura.playkit.player.PlayerController.EventListener;
-import com.kaltura.playkit.player.PlayerController.StateChangedListener;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
@@ -100,7 +99,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private Context context;
     private SimpleExoPlayer player;
-    private ExoPlayerView exoPlayerView;
+    private BaseExoplayerView exoPlayerView;
 
     private PKTracks tracks;
     private TrackSelectionHelper trackSelectionHelper;
@@ -134,14 +133,11 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private String sessionId;
 
 
-    @Override
-    public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
-        profiler().onBandwidthEstimation(this, bitrate);
-        sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+    ExoPlayerWrapper(Context context) {
+        this(context, new ExoPlayerView(context));
     }
 
-
-    ExoPlayerWrapper(Context context) {
+    ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView) {
         this.context = context;
         bandwidthMeter = new DefaultBandwidthMeter(mainHandler, this);
         transferListener = bandwidthMeter;
@@ -193,10 +189,17 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             };
         }
 
-        exoPlayerView = new ExoPlayerView(context);
+        this.exoPlayerView = exoPlayerView;
+
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
             CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
         }
+    }
+
+    @Override
+    public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
+        profiler().onBandwidthEstimation(this, bitrate);
+        sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
     }
 
     private void initializePlayer() {
@@ -305,12 +308,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      * @return A new HttpDataSource factory.
      */
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
-            return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? transferListener : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                    DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
+        return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? transferListener : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
     }
 
     private HttpDataSource.Factory buildLicenseRequestHttpDataSourceFactory() {
-            return new CustomHttpDataSourceFactory(getUserAgent(context), httpDataSourceRequestParams, null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+        return new CustomHttpDataSourceFactory(getUserAgent(context), httpDataSourceRequestParams, null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
     }
 
@@ -427,7 +430,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @Override
-    public void onTimelineChanged(Timeline timeline, Object manifest,  int reason) {
+    public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
         log.d("onTimelineChanged");
         sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
         sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
@@ -513,7 +516,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         crossProtocolRedirectEnabled = mediaSourceConfig.playerSettings.crossProtocolRedirectEnabled();
         PKRequestParams.Adapter licenseRequestAdapter = mediaSourceConfig.playerSettings.getLicenseRequestAdapter();
-        if  (licenseRequestAdapter != null) {
+        if (licenseRequestAdapter != null) {
             httpDataSourceRequestParams = licenseRequestAdapter.adapt(new PKRequestParams(null, new HashMap<String, String>()));
         }
 
@@ -534,13 +537,13 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (this.useTextureView == playerSettings.useTextureView() && this.isSurfaceSecured == playerSettings.isSurfaceSecured()) {
             return;
         }
-        if(playerSettings.useTextureView() && playerSettings.isSurfaceSecured()) {
+        if (playerSettings.useTextureView() && playerSettings.isSurfaceSecured()) {
             log.w("Using TextureView with secured surface is not allowed. Secured surface request will be ignored.");
         }
 
-        this.useTextureView   = playerSettings.useTextureView();
+        this.useTextureView = playerSettings.useTextureView();
         this.isSurfaceSecured = playerSettings.isSurfaceSecured();
-        exoPlayerView.swapVideoSurface(playerSettings.useTextureView(), playerSettings.isSurfaceSecured());
+        exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured());
     }
 
     @Override
@@ -846,6 +849,15 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
     }
-}
 
+    public <T extends PKController> T getController(Class<T> type) {
+        //Currently no controller for ExoplayerWrapper. So always return null.
+        return null;
+    }
+
+    @Override
+    public void onOrientationChanged() {
+        //Do nothing.
+    }
+}
 
