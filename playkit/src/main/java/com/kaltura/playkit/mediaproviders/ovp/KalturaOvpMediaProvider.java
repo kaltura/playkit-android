@@ -380,7 +380,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
 
         private static boolean is360Content(String tags) {
-            return !tags.isEmpty() && Pattern.compile("\\b360\\b").matcher(tags).find();
+            return tags != null && !tags.isEmpty() && Pattern.compile("\\b360\\b").matcher(tags).find();
 
         }
 

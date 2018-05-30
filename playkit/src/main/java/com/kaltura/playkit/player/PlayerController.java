@@ -164,7 +164,9 @@ public class PlayerController implements Player {
 
         switchPlayersIfRequired(incomingPlayerType);
 
-        player.load(sourceConfig);
+        if (player != null) {
+            player.load(sourceConfig);
+        }
     }
 
     /**
