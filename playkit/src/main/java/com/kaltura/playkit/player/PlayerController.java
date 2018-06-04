@@ -166,6 +166,7 @@ public class PlayerController implements Player {
         switchPlayersIfRequired(incomingPlayerType);
 
         if (player != null) {
+            player.setSessionId(sessionId);
             player.load(sourceConfig);
         }
     }

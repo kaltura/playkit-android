@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Surface;
 
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -29,6 +30,7 @@ import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
@@ -52,6 +54,7 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.upstream.TransferListener;
+import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -223,6 +226,48 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player.addVideoDebugListener(eventLogger);
             player.addAudioDebugListener(eventLogger);
             player.addMetadataOutput(this);
+
+            if (Profiler.isStarted()) {
+                player.addVideoDebugListener(new VideoRendererEventListener() {
+
+                    private PlayerEngine playerEngine = ExoPlayerWrapper.this;
+
+                    @Override
+                    public void onVideoEnabled(DecoderCounters counters) {
+                        profiler().onVideoEnabled(playerEngine);
+                    }
+
+                    @Override
+                    public void onVideoDecoderInitialized(String decoderName, long initializedTimestampMs, long initializationDurationMs) {
+                        profiler().onVideoDecoderInitialized(playerEngine, decoderName, initializationDurationMs);
+                    }
+
+                    @Override
+                    public void onVideoInputFormatChanged(Format format) {
+                        profiler().onVideoInputFormatChanged(playerEngine, format.id, format.codecs, format.bitrate);
+                    }
+
+                    @Override
+                    public void onDroppedFrames(int count, long elapsedMs) {
+                        profiler().onDroppedFrames(playerEngine, count, elapsedMs);
+                    }
+
+                    @Override
+                    public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
+                        profiler().onVideoSizeChanged(playerEngine, width, height);
+                    }
+
+                    @Override
+                    public void onRenderedFirstFrame(Surface surface) {
+                        profiler().onRenderedFirstFrame(playerEngine);
+                    }
+
+                    @Override
+                    public void onVideoDisabled(DecoderCounters counters) {
+                        profiler().onVideoDisabled(playerEngine);
+                    }
+                });
+            }
         }
     }
 

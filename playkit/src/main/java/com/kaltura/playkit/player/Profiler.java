@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
 import android.util.DisplayMetrics;
-import android.util.Log;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -24,14 +23,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class Profiler {
 
     private static final String TAG = "Profiler";
     private static final String SEPARATOR = "\t";
-    private static final int FLUSH_INTERVAL_SEC = 2;
+    private static final int FLUSH_INTERVAL_SEC = 5;
     private static final int NO_ACTIVITY_LIMIT = 5*60/FLUSH_INTERVAL_SEC;   // 5 minutes
     private static final HashMap<String, Profiler> profilers = new HashMap<>();
 
@@ -41,8 +39,8 @@ public class Profiler {
     private static String currentExperimentId;
     private static DisplayMetrics metrics;
 
-    private ConcurrentLinkedQueue<String> log = new ConcurrentLinkedQueue<>();
-    private AtomicInteger logSize = new AtomicInteger(0);
+    private final ConcurrentLinkedQueue<String> logQueue;
+//    private AtomicInteger logSize = new AtomicInteger(0);
 
     private int noActivityCounter;
     private long startTime = System.currentTimeMillis();
@@ -71,6 +69,8 @@ public class Profiler {
 
     private Profiler(final String sessionId) {
 
+        logQueue = new ConcurrentLinkedQueue<>();
+
         if (sessionId == null) {
             return;
         }
@@ -83,38 +83,36 @@ public class Profiler {
             @Override
             public void run() {
 
-                int size = logSize.get();
-                if (size > 0) {
-                    noActivityCounter = 0;
-                    Log.d(TAG, "Flushing " + size + " messages to disk");
-                    BufferedOutputStream outputStream = null;
-                    try {
-                        outputStream = new BufferedOutputStream(new FileOutputStream(logFile, true));
-                        Iterator<String> iterator = log.iterator();
-                        while (size > 0 && iterator.hasNext()) {
-                            String entry = iterator.next();
-                            outputStream.write(entry.getBytes());
-                            outputStream.write('\n');
+                BufferedOutputStream outputStream = null;
+                try {
+                    outputStream = new BufferedOutputStream(new FileOutputStream(logFile, true));
+                    Iterator<String> iterator = logQueue.iterator();
+                    boolean hasNewData = false;
+                    while (iterator.hasNext()) {
+                        hasNewData = true;
+                        String entry = iterator.next();
+                        outputStream.write(entry.getBytes());
+                        outputStream.write('\n');
 
-                            iterator.remove();
-                            logSize.decrementAndGet();
-                            size--;
+                        iterator.remove();
+                    }
+                    if (!hasNewData) {
+                        noActivityCounter++;
+                    } else {
+                        noActivityCounter = 0;
+                    }
+                } catch (FileNotFoundException e) {
+                    // Unlikely
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        if (outputStream != null) {
+                            outputStream.close();
                         }
-                    } catch (FileNotFoundException e) {
-                        // Unlikely
                     } catch (IOException e) {
                         e.printStackTrace();
-                    } finally {
-                        try {
-                            if (outputStream != null) {
-                                outputStream.close();
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
                     }
-                } else {
-                    noActivityCounter++;
                 }
 
                 if (noActivityCounter > NO_ACTIVITY_LIMIT) {
@@ -129,10 +127,9 @@ public class Profiler {
 
     static Profiler get(String sessionId) {
 
-        if (!started) {
-            return nullProfiler;
+        if (!started || sessionId == null) {
+            return nullProfiler();
         }
-
 
         Profiler profiler = profilers.get(sessionId);
         if (profiler == null) {
@@ -154,33 +151,36 @@ public class Profiler {
 
     void log(String event, Object... strings) {
         StringBuilder sb = startLog(event);
-        logStrings(sb, strings);
+        logPayload(sb, strings);
         endLog(sb);
     }
 
     private StringBuilder startLog(String event) {
         StringBuilder sb = new StringBuilder(100);
-        logStrings(sb, System.currentTimeMillis() - startTime, event);
+        sb
+                .append(System.currentTimeMillis() - startTime)
+                .append(SEPARATOR)
+                .append(event);
+
         return sb;
     }
 
-    private void logStrings(StringBuilder sb, Object... strings) {
+    private void logPayload(StringBuilder sb, Object... strings) {
         for (Object s : strings) {
             sb.append(SEPARATOR).append(s);
         }
     }
 
     private void endLog(StringBuilder sb) {
-        log.add(sb.toString());
-        logSize.incrementAndGet();
+        logQueue.add(sb.toString());
     }
 
-    void log(String event, PlayerEngine playerEngine, Object... strings) {
+    void logWithPlaybackInfo(String event, PlayerEngine playerEngine, Object... strings) {
 
         StringBuilder sb = startLog(event);
 
-        logStrings(sb, playerEngine.getCurrentPosition() / 1000f, playerEngine.getBufferedPosition() / 1000f);
-        logStrings(sb, strings);
+        logPayload(sb, playerEngine.getCurrentPosition() / 1000f, playerEngine.getBufferedPosition() / 1000f);
+        logPayload(sb, strings);
 
         endLog(sb);
     }
@@ -237,122 +237,165 @@ public class Profiler {
         log("SetMedia", json.toString());
     }
 
-    public void onPrepareStarted(PlayerEngine playerEngine, PKMediaSourceConfig sourceConfig) {
+    public void onPrepareStarted(final PlayerEngine playerEngine, final PKMediaSourceConfig sourceConfig) {
         log("PrepareStarted", playerEngine.getClass().getSimpleName(), sourceConfig.getUrl(), sourceConfig.playerSettings.useTextureView());
     }
 
     public void onSeekRequested(PlayerEngine playerEngine, long position) {
-        log("SeekRequested", playerEngine, position/1000f);
+        logWithPlaybackInfo("SeekRequested", playerEngine, position/1000f);
     }
 
-    public void onSeekEnded(PlayerEngine playerEngine) {
-        log("SeekEnded", playerEngine);
+    public void onSeekEnded(final PlayerEngine playerEngine) {
+        logWithPlaybackInfo("SeekEnded", playerEngine);
     }
 
     public void onPauseRequested(PlayerEngine playerEngine) {
-        log("PauseRequested", playerEngine);
+        logWithPlaybackInfo("PauseRequested", playerEngine);
     }
 
     public void onReplayRequested(PlayerEngine playerEngine) {
-        log("ReplayRequested", playerEngine);
+        logWithPlaybackInfo("ReplayRequested", playerEngine);
     }
 
     public void onPlayRequested(PlayerEngine playerEngine) {
-        log("PlayRequested", playerEngine);
+        logWithPlaybackInfo("PlayRequested", playerEngine);
     }
 
     public void onPlayerError(PlayerEngine playerEngine, String errorStr) {
-        log("PlayerError", playerEngine, errorStr);
+        logWithPlaybackInfo("PlayerError", playerEngine, errorStr);
     }
 
     public void onPlayerIdle(PlayerEngine playerEngine, boolean shouldPlay) {
-        log("PlayerIdle", playerEngine);
+        logWithPlaybackInfo("PlayerIdle", playerEngine, shouldPlay);
     }
 
     public void onPlayerBuffering(PlayerEngine playerEngine, boolean shouldPlay) {
-        log("PlayerBuffering", playerEngine, shouldPlay, durationString(playerEngine.getDuration()));
+        logWithPlaybackInfo("PlayerBuffering", playerEngine, shouldPlay, durationString(playerEngine.getDuration()));
     }
 
     public void onPlayerReady(PlayerEngine playerEngine, boolean shouldPlay) {
-        log("PlayerReady", playerEngine, shouldPlay, durationString(playerEngine.getDuration()));
+        logWithPlaybackInfo("PlayerReady", playerEngine, shouldPlay, durationString(playerEngine.getDuration()));
     }
 
     public void onPlayerEnded(PlayerEngine playerEngine, boolean shouldPlay) {
-        log("PlayerEnded", playerEngine);
+        logWithPlaybackInfo("PlayerEnded", playerEngine, shouldPlay);
     }
 
     public void onBandwidthEstimation(PlayerEngine playerEngine, long bitrate) {
-        log("BandwidthEstimation", playerEngine, bitrate);
+        logWithPlaybackInfo("BandwidthEstimation", playerEngine, bitrate);
     }
 
     public void onTracksChanged(PlayerEngine playerEngine, String videoTrackId, int videoTrackBitrate, String videoTrackCodec, String audioTrackId, int audioTrackBitrate, String audioTrackCodec) {
         PlayerView view = playerEngine.getView();
-        log("TracksChanged", playerEngine, view.getWidth() + "x" + view.getHeight(), videoTrackId, videoTrackBitrate, videoTrackCodec, audioTrackId, audioTrackBitrate, audioTrackCodec);
+        logWithPlaybackInfo("TracksChanged", playerEngine, view.getWidth() + "x" + view.getHeight(), videoTrackId, videoTrackBitrate, videoTrackCodec, audioTrackId, audioTrackBitrate, audioTrackCodec);
     }
-
-    public void onTransferStarted(PlayerEngine playerEngine, Uri uri) {
-//        log("TransferStarted", playerEngine, uri, niceHash(uri));
-    }
-
-//    private String niceHash(Object uri) {
-//        return "[" + (uri.hashCode() + (long)Integer.MAX_VALUE + 1) + "]";
-//    }
 
     public void onTransferEnd(PlayerEngine playerEngine, Uri uri, int size, long time) {
         float sec = time / 1000f;
-        log("TransferEnd", playerEngine, size, sec, size * 8 / sec / 1024 / 1024, uri.getLastPathSegment(), uri);
+        logWithPlaybackInfo("TransferEnd", playerEngine, size, sec, size * 8 / sec / 1024 / 1024, uri.getLastPathSegment(), uri);
     }
 
-    private static Profiler nullProfiler = new Profiler(null) {
-        @Override
-        void log(String event, Object... strings) {}
+    public void onVideoEnabled(PlayerEngine playerEngine) {
+        logWithPlaybackInfo("VideoEnabled", playerEngine);
+    }
 
-        @Override
-        void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig) {}
+    public void onVideoDecoderInitialized(PlayerEngine playerEngine, String decoderName, long initializationDurationMs) {
+        logWithPlaybackInfo("VideoDecoderInitialized", playerEngine, decoderName, initializationDurationMs/1000f);
+    }
 
-        @Override
-        public void onPrepareStarted(PlayerEngine playerEngine, PKMediaSourceConfig sourceConfig) {}
+    public void onVideoInputFormatChanged(PlayerEngine playerEngine, String id, String codecs, int bitrate) {
+        logWithPlaybackInfo("VideoInputFormatChanged", playerEngine, id, codecs, bitrate);
+    }
 
-        @Override
-        public void onSeekRequested(PlayerEngine playerEngine, long position) {}
+    public void onDroppedFrames(PlayerEngine playerEngine, int count, long elapsedMs) {
+        logWithPlaybackInfo("DroppedFrames", playerEngine, count, elapsedMs/1000f);
+    }
 
-        @Override
-        public void onSeekEnded(PlayerEngine playerEngine) {}
+    public void onVideoSizeChanged(PlayerEngine playerEngine, int width, int height) {
+        logWithPlaybackInfo("VideoSizeChanged", playerEngine, width + "x" + height);
+    }
 
-        @Override
-        public void onPauseRequested(PlayerEngine playerEngine) {}
+    public void onRenderedFirstFrame(PlayerEngine playerEngine) {
+        logWithPlaybackInfo("RenderedFirstFrame", playerEngine);
+    }
 
-        @Override
-        public void onReplayRequested(PlayerEngine playerEngine) {}
+    public void onVideoDisabled(PlayerEngine playerEngine) {
+        logWithPlaybackInfo("VideoDisabled", playerEngine);
+    }
 
-        @Override
-        public void onPlayRequested(PlayerEngine playerEngine) {}
+    private static Profiler nullProfiler() {
+        return new Profiler(null) {
+            @Override
+            void log(String event, Object... strings) {}
 
-        @Override
-        public void onPlayerError(PlayerEngine playerEngine, String errorStr) {}
+            @Override
+            void logWithPlaybackInfo(String event, PlayerEngine playerEngine, Object... strings) {}
 
-        @Override
-        public void onPlayerIdle(PlayerEngine playerEngine, boolean shouldPlay) {}
+            @Override
+            void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig) {}
 
-        @Override
-        public void onPlayerBuffering(PlayerEngine playerEngine, boolean shouldPlay) {}
+            @Override
+            public void onPrepareStarted(PlayerEngine playerEngine, PKMediaSourceConfig sourceConfig) {}
 
-        @Override
-        public void onPlayerReady(PlayerEngine playerEngine, boolean shouldPlay) {}
+            @Override
+            public void onSeekRequested(PlayerEngine playerEngine, long position) {}
 
-        @Override
-        public void onPlayerEnded(PlayerEngine playerEngine, boolean shouldPlay) {}
+            @Override
+            public void onSeekEnded(PlayerEngine playerEngine) {}
 
-        @Override
-        public void onBandwidthEstimation(PlayerEngine playerEngine, long bitrate) {}
+            @Override
+            public void onPauseRequested(PlayerEngine playerEngine) {}
 
-        @Override
-        public void onTracksChanged(PlayerEngine playerEngine, String videoTrackId, int videoTrackBitrate, String videoTrackCodec, String audioTrackId, int audioTrackBitrate, String audioTrackCodec) {}
+            @Override
+            public void onReplayRequested(PlayerEngine playerEngine) {}
 
-        @Override
-        public void onTransferStarted(PlayerEngine playerEngine, Uri uri) {}
+            @Override
+            public void onPlayRequested(PlayerEngine playerEngine) {}
 
-        @Override
-        public void onTransferEnd(PlayerEngine playerEngine, Uri uri, int size, long time) {}
-    };
+            @Override
+            public void onPlayerError(PlayerEngine playerEngine, String errorStr) {}
+
+            @Override
+            public void onPlayerIdle(PlayerEngine playerEngine, boolean shouldPlay) {}
+
+            @Override
+            public void onPlayerBuffering(PlayerEngine playerEngine, boolean shouldPlay) {}
+
+            @Override
+            public void onPlayerReady(PlayerEngine playerEngine, boolean shouldPlay) {}
+
+            @Override
+            public void onPlayerEnded(PlayerEngine playerEngine, boolean shouldPlay) {}
+
+            @Override
+            public void onBandwidthEstimation(PlayerEngine playerEngine, long bitrate) {}
+
+            @Override
+            public void onTracksChanged(PlayerEngine playerEngine, String videoTrackId, int videoTrackBitrate, String videoTrackCodec, String audioTrackId, int audioTrackBitrate, String audioTrackCodec) {}
+
+            @Override
+            public void onTransferEnd(PlayerEngine playerEngine, Uri uri, int size, long time) {}
+
+            @Override
+            public void onVideoEnabled(PlayerEngine playerEngine) {}
+
+            @Override
+            public void onVideoDecoderInitialized(PlayerEngine playerEngine, String decoderName, long initializationDurationMs) {}
+
+            @Override
+            public void onVideoInputFormatChanged(PlayerEngine playerEngine, String id, String codecs, int bitrate) {}
+
+            @Override
+            public void onDroppedFrames(PlayerEngine playerEngine, int count, long elapsedMs) {}
+
+            @Override
+            public void onVideoSizeChanged(PlayerEngine playerEngine, int width, int height) {}
+
+            @Override
+            public void onRenderedFirstFrame(PlayerEngine playerEngine) {}
+
+            @Override
+            public void onVideoDisabled(PlayerEngine playerEngine) {}
+        };
+    }
 }
