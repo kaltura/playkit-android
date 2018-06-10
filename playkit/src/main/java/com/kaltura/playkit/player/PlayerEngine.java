@@ -198,4 +198,8 @@ interface PlayerEngine {
     BaseTrack getLastSelectedTrack(int renderType);
 
     boolean isLiveStream();
+
+    void setPlaybackRate(float rate);
+
+    float getPlaybackRate();
 }

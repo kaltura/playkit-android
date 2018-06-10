@@ -9,6 +9,7 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
+import com.kaltura.playkit.utils.Consts;
 
 /**
  * Created by zivilan on 11/12/2016.
@@ -29,6 +30,11 @@ public class MockPlayer implements Player {
             }
 
             @Override
+            public Settings setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
+                return null;
+            }
+
+            @Override
             public Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
                 return this;
             }
@@ -36,6 +42,16 @@ public class MockPlayer implements Player {
             @Override
             public Settings useTextureView(boolean useTextureView) {
                 return this;
+            }
+
+            @Override
+            public Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
+                return null;
+            }
+
+            @Override
+            public Settings setSecureSurface(boolean isSurfaceSecured) {
+                return null;
             }
         };
     }
@@ -158,6 +174,16 @@ public class MockPlayer implements Player {
     @Override
     public boolean isLiveStream() {
         return false;
+    }
+
+    @Override
+    public void setPlaybackRate(float rate) {
+
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        return Consts.DEFAULT_PLAYBACK_SPEED;
     }
 
     public void setDuration(int duration){

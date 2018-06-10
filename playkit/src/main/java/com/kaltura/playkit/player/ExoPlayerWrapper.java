@@ -72,6 +72,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
+
 /**
  * Created by anton.afanasiev on 31/10/2016.
  */
@@ -116,6 +118,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private int playerWindow;
     private long playerPosition = Consts.TIME_UNSET;
+
+    private float lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_SPEED;
+
     private Timeline.Window window;
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
@@ -556,6 +561,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         log.d("resume");
         if (player == null) {
             initializePlayer();
+            setPlaybackRate(lastKnownPlaybackRate);
         }
         if (playerPosition == Consts.TIME_UNSET) {
             player.seekToDefaultPosition(playerWindow);
@@ -673,6 +679,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void stop() {
+
+        lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_SPEED;
         if (player != null) {
             player.setPlayWhenReady(false);
             player.seekTo(0);
@@ -750,6 +758,23 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public boolean isLiveStream() {
         return player != null && player.isCurrentWindowDynamic();
+    }
+
+    @Override
+    public void setPlaybackRate(float rate) {
+        this.lastKnownPlaybackRate = rate;
+        if (player != null) {
+            PlaybackParameters playbackParameters = new PlaybackParameters(rate, DEFAULT_PITCH_RATE);
+            player.setPlaybackParameters(playbackParameters);
+        }
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        if (player != null) {
+            return player.getPlaybackParameters().speed;
+        }
+        return 0.0f;
     }
 }
 
