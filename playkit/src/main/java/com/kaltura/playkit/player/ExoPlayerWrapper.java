@@ -687,7 +687,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         log.d("stop");
         lastKnownVolume = Consts.DEFAULT_VOLUME;
         lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
-
+        lastSelectedTrackIds = new String[] {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+        if (trackSelectionHelper != null) {
+            trackSelectionHelper.stop();
+        }
         if (player != null) {
             player.setPlayWhenReady(false);
             player.seekTo(0);
