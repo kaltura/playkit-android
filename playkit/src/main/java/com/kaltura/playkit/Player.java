@@ -217,5 +217,13 @@ public interface Player {
     String getSessionId();
 
     boolean isLiveStream();
+
+    /**
+     * Change player speed (pitch = 1.0f by default)
+     * @param rate - desired rate (ex. 0.5f 1.0f 1.5f, 2.0f).
+     */
+    void setPlaybackRate(float rate);
+
+    float getPlaybackRate();
 }
 

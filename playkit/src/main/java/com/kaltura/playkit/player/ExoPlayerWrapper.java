@@ -72,6 +72,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
+
 /**
  * Created by anton.afanasiev on 31/10/2016.
  */
@@ -116,6 +118,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private int playerWindow;
     private long playerPosition = Consts.TIME_UNSET;
+
+    private float lastKnownVolume = Consts.DEFAULT_VOLUME;
+    private float lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_SPEED;
+
     private Timeline.Window window;
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
@@ -397,7 +403,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-        // TODO: if/when we start using ExoPlayer's speed and pitch settings, listen to this event.
+        sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
     }
 
     @Override
@@ -556,6 +562,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         log.d("resume");
         if (player == null) {
             initializePlayer();
+            setVolume(lastKnownVolume);
+            setPlaybackRate(lastKnownPlaybackRate);
         }
         if (playerPosition == Consts.TIME_UNSET) {
             player.seekToDefaultPosition(playerWindow);
@@ -631,22 +639,16 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             log.w("Attempt to invoke 'setVolume()' on null instance of the exoplayer");
             return;
         }
-
-        if (volume < 0) {
-            volume = 0;
-        } else if (volume > 1) {
-            volume = 1;
+        this.lastKnownVolume = volume;
+        if (lastKnownVolume < 0) {
+            lastKnownVolume = 0;
+        } else if (lastKnownVolume > 1) {
+            lastKnownVolume = 1;
         }
-
         if (volume != player.getVolume()) {
-            player.setVolume(volume);
+            player.setVolume(lastKnownVolume);
             sendEvent(PlayerEvent.Type.VOLUME_CHANGED);
         }
-    }
-
-    @Override
-    public boolean isPlaying() {
-        return player != null && player.getPlayWhenReady() && currentState == PlayerState.READY;
     }
 
     @Override
@@ -655,6 +657,11 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             return Consts.VOLUME_UNKNOWN;
         }
         return player.getVolume();
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return player != null && player.getPlayWhenReady() && currentState == PlayerState.READY;
     }
 
     @Override
@@ -673,6 +680,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void stop() {
+        lastKnownVolume = Consts.DEFAULT_VOLUME;
+        lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_SPEED;
         if (player != null) {
             player.setPlayWhenReady(false);
             player.seekTo(0);
@@ -750,6 +759,23 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public boolean isLiveStream() {
         return player != null && player.isCurrentWindowDynamic();
+    }
+
+    @Override
+    public void setPlaybackRate(float rate) {
+        this.lastKnownPlaybackRate = rate;
+        if (player != null) {
+            PlaybackParameters playbackParameters = new PlaybackParameters(rate, DEFAULT_PITCH_RATE);
+            player.setPlaybackParameters(playbackParameters);
+        }
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        if (player != null) {
+            return player.getPlaybackParameters().speed;
+        }
+        return lastKnownPlaybackRate;
     }
 }
 

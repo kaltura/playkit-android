@@ -61,6 +61,17 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public void setPlaybackRate(float rate) {
+        player.setPlaybackRate(rate);
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        return player.getPlaybackRate();
+    }
+
+
+    @Override
     public void play() {
         player.play();
     }
