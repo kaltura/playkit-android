@@ -587,7 +587,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public float getPlaybackRate() {
-        return Consts.DEFAULT_PLAYBACK_SPEED;
+        return Consts.DEFAULT_PLAYBACK_RATE_SPEED;
     }
 
     @Override

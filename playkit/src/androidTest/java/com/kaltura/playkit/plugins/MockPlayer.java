@@ -8,7 +8,6 @@ import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.utils.Consts;
 
@@ -190,7 +189,7 @@ public class MockPlayer implements Player {
 
     @Override
     public float getPlaybackRate() {
-        return Consts.DEFAULT_PLAYBACK_SPEED;
+        return Consts.DEFAULT_PLAYBACK_RATE_SPEED;
     }
 
     public void setDuration(int duration){

@@ -481,7 +481,7 @@ public class PlayerController implements Player {
         if (player != null) {
             return player.getPlaybackRate();
         }
-        return Consts.PLAYBACK_SPEED_UNKNOWN;
+        return Consts.PLAYBACK_SPEED_RATE_UNKNOWN;
     }
 
     private boolean shouldSwitchBetweenPlayers(PKMediaSource newSource) {

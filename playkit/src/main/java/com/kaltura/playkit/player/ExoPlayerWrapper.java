@@ -119,7 +119,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private long playerPosition = Consts.TIME_UNSET;
 
     private float lastKnownVolume = Consts.DEFAULT_VOLUME;
-    private float lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_SPEED;
+    private float lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
 
     private Timeline.Window window;
     private boolean shouldGetTracksInfo;
@@ -686,7 +686,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     public void stop() {
         log.d("stop");
         lastKnownVolume = Consts.DEFAULT_VOLUME;
-        lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_SPEED;
+        lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
 
         if (player != null) {
             player.setPlayWhenReady(false);

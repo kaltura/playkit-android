@@ -80,9 +80,9 @@ public class Consts {
 
     public static final long DISTANCE_FROM_LIVE_THRESHOLD = 120000; //2 Min;
 
-    public static final float DEFAULT_PLAYBACK_SPEED = 1.0f;
+    public static final float DEFAULT_PLAYBACK_RATE_SPEED = 1.0f;
 
-    public static final float PLAYBACK_SPEED_UNKNOWN = -1.0f;
+    public static final float PLAYBACK_SPEED_RATE_UNKNOWN = -1.0f;
 
     public static final float DEFAULT_VOLUME = 1.0f;
 
