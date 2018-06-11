@@ -92,7 +92,7 @@ public class PlayerController implements Player {
         if (player != null) {
             return player.getPlaybackRate();
         }
-        return Consts.DEFAULT_PLAYBACK_SPEED;
+        return 0.0f;
     }
     
     interface EventListener {
