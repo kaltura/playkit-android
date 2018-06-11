@@ -469,6 +469,21 @@ public class PlayerController implements Player {
         return player != null && player.isLiveStream();
     }
 
+    @Override
+    public void setPlaybackRate(float rate) {
+        if (player != null) {
+            player.setPlaybackRate(rate);
+        }
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        if (player != null) {
+            return player.getPlaybackRate();
+        }
+        return Consts.PLAYBACK_SPEED_RATE_UNKNOWN;
+    }
+
     private boolean shouldSwitchBetweenPlayers(PKMediaSource newSource) {
 
         PKMediaFormat currentMediaFormat = newSource.getMediaFormat();
@@ -593,6 +608,9 @@ public class PlayerController implements Player {
                             break;
                         case TEXT_TRACK_CHANGED:
                             event = new PlayerEvent.TextTrackChanged((TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT));
+                            break;
+                        case PLAYBACK_RATE_CHANGED:
+                            event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
                             break;
                         default:
                             event = new PlayerEvent.Generic(eventType);
