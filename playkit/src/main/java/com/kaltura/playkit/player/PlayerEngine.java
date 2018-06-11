@@ -211,6 +211,10 @@ public interface PlayerEngine {
 
     boolean isLiveStream();
 
+    void setPlaybackRate(float rate);
+
+    float getPlaybackRate();
+
     /**
      * Generic getters for playkit controllers.
      *

@@ -581,6 +581,16 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
+    public void setPlaybackRate(float rate) {
+        log.w("setPlaybackRate is not supported since RequiresApi(api = Build.VERSION_CODES.M");
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        return Consts.DEFAULT_PLAYBACK_SPEED;
+    }
+
+    @Override
     public <T extends PKController> T getController(Class<T> type) {
         //Currently no controller for MediaPlayerWrapper. So always return null.
         return null;

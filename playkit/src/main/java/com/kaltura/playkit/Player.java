@@ -236,6 +236,17 @@ public interface Player {
     boolean isLiveStream();
 
     /**
+     * Change player speed (pitch = 1.0f by default)
+     * @param rate - desired rate (ex. 0.5f 1.0f 1.5f, 2.0f).
+     */
+    void setPlaybackRate(float rate);
+
+    /**
+     * get current player speed
+     */
+    float getPlaybackRate();
+
+    /**
      * Generic getters for playkit controllers.
      *
      * @param type - type of the controller you want to obtain.
