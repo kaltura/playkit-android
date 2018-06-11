@@ -31,7 +31,7 @@ public class MockPlayer implements Player {
 
             @Override
             public Settings setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
-                return null;
+                return this;
             }
 
             @Override
@@ -46,12 +46,12 @@ public class MockPlayer implements Player {
 
             @Override
             public Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
-                return null;
+                return this;
             }
 
             @Override
             public Settings setSecureSurface(boolean isSurfaceSecured) {
-                return null;
+                return this;
             }
         };
     }
