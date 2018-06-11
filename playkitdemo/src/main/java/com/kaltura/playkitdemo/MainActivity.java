@@ -441,6 +441,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
+                nowPlaying = true;
+            }
+        }, PlayerEvent.Type.PLAYING);
+
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
                 nowPlaying = false;
             }
         }, PlayerEvent.Type.PAUSE);
@@ -451,6 +459,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 nowPlaying = true;
             }
         }, AdEvent.Type.SKIPPED);
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                PlayerEvent.PlaybackRateChanged playbackRateChanged = (PlayerEvent.PlaybackRateChanged) event;
+                log.d("playbackRateChanged event  rate = " + playbackRateChanged.rate);
+            }
+        }, PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
 
         player.addStateChangeListener(new PKEvent.Listener() {
             @Override
@@ -481,7 +497,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 //When the track data available, this event occurs. It brings the info object with it.
                 PlayerEvent.PlayheadUpdated playheadUpdated = (PlayerEvent.PlayheadUpdated) event;
                 log.d("playheadUpdated event  position = " + playheadUpdated.position + " duration = " + playheadUpdated.duration);
-
             }
         }, PlayerEvent.Type.PLAYHEAD_UPDATED);
     }
