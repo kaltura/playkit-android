@@ -92,7 +92,7 @@ public class PlayerController implements Player {
         if (player != null) {
             return player.getPlaybackRate();
         }
-        return 0.0f;
+        return Consts.PLAYBACK_SPEED_UNKNOWN;
     }
     
     interface EventListener {
@@ -173,7 +173,6 @@ public class PlayerController implements Player {
                     default:
                         event = new PlayerEvent.Generic(eventType);
                 }
-
                 eventListener.onEvent(event);
             }
         }
