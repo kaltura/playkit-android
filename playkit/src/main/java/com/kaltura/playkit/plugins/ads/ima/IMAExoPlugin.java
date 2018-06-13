@@ -792,6 +792,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
         switch (lastAdEventReceived) {
             case LOADED:
                 adInfo = createAdInfo(adEvent.getAd());
+                isAdDisplayed = true;
                 if (appIsInBackground) {
                     appInBackgroundDuringAdLoad = true;
                     if (adsManager != null) {
@@ -927,6 +928,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             case SKIPPED:
                 adInfo.setAdPlayHead(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER);
                 messageBus.post(new AdEvent.AdSkippedEvent(adInfo));
+                isAdDisplayed = false;
                 //cancelAdDisplayedCheckTimer();
                 //preparePlayer(false);
                 break;
