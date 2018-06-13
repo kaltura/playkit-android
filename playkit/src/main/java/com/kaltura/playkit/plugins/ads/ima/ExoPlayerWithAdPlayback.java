@@ -14,12 +14,9 @@ import com.google.ads.interactivemedia.v3.api.player.ContentProgressProvider;
 import com.google.ads.interactivemedia.v3.api.player.VideoAdPlayer;
 import com.google.ads.interactivemedia.v3.api.player.VideoProgressUpdate;
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.PlaybackPreparer;
 import com.google.android.exoplayer2.Player;
@@ -42,7 +39,6 @@ import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.EventLogger;
@@ -55,8 +51,6 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Video player that can play content video and ads.
@@ -186,12 +180,14 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                     for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                         log.d("playAd->onResume");
                         callback.onResume();
+                        return;
                     }
                 } else {
                     mIsAdDisplayed = true;
                     for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                         log.d("playAd->onPlay");
                         callback.onPlay();
+                        return;
                     }
                 }
 
@@ -213,12 +209,16 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             public void stopAd() {
                 log.d("stopAd");
                 isPlayerReady = false;
+                mIsAdDisplayed = false;
                 mVideoPlayer.getPlayer().stop();
             }
 
             @Override
             public void pauseAd() {
                 log.d("pauseAd");
+                if (!isAdPlayerPlaying()) {
+                    return;
+                }
                 for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                     callback.onPause();
                 }
@@ -258,6 +258,10 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         mVideoPlayer.getPlayer().addListener(this);
     }
 
+    private boolean isAdPlayerPlaying() {
+        return player != null && player.getPlayWhenReady() && isPlayerReady  == true;
+    }
+
     @Override
     public void preparePlayback() {
         log.d("preparePlayback");
@@ -287,7 +291,6 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 break;
             case Player.STATE_BUFFERING:
                 log.d("onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
-
                 break;
             case Player.STATE_READY:
                 log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
