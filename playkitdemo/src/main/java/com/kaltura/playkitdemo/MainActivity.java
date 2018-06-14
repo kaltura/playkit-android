@@ -53,6 +53,7 @@ import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
+import com.kaltura.playkit.plugins.ads.ima.IMAExoPlugin;
 import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void registerPlugins() {
 
         PlayKitManager.registerPlugins(this, SamplePlugin.factory);
-        PlayKitManager.registerPlugins(this, IMAPlugin.factory);
+        PlayKitManager.registerPlugins(this, IMAExoPlugin.factory);
         PlayKitManager.registerPlugins(this, KalturaStatsPlugin.factory);
         //PlayKitManager.registerPlugins(this, TVPAPIAnalyticsPlugin.factory);
         //PlayKitManager.registerPlugins(this, PhoenixAnalyticsPlugin.factory);
@@ -293,7 +294,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
 
         player.prepare(mediaConfig);
-
+        player.getSettings().setAdAutoPlayOnResume(true);
         player.play();
     }
 
@@ -370,7 +371,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //tagTimesMap.put(2.0,"ADTAG");
 
         IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
-        config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
+        config.setPluginConfig(IMAExoPlugin.factory.getName(), adsConfig.toJSONObject());
 
     }
     @Override
@@ -507,9 +508,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onResume();
         if (player != null) {
             player.onApplicationResumed();
-            if (nowPlaying && AUTO_PLAY_ON_RESUME) {
-                player.play();
-            }
         }
         if (controlsView != null) {
             controlsView.resume();
