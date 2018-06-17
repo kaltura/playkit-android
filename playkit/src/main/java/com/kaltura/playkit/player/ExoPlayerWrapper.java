@@ -549,7 +549,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         log.d("release");
         if (player != null) {
             savePlayerPosition();
-            this.eventLogger = null;
             player.release();
             player = null;
             trackSelectionHelper.release();

@@ -78,7 +78,7 @@
       {
         "id": "0_uka1msg4",
         "mimeType": "application/x-mpegURL",
-        "url": "http://api-preprod.ott.kaltura.com/v4_2/api_v3/service/assetFile/action/playManifest/partnerId/198/assetId/259295/assetType/media/assetFileId/516109/contextType/PLAYBACK/a.m3u8"
+        "url": "https://cdnapisec.kaltura.com/p/1982551/sp/198255100/playManifest/protocol/https/entryId/0_b49uc8t6/format/applehttp/tags/iphonenew/f/a.m3u8"
       }
     ]
   },
