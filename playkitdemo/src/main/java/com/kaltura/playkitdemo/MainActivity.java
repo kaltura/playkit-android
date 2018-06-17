@@ -366,9 +366,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
         List<String> videoMimeTypes = new ArrayList<>();
-        //videoMimeTypes.add("video/mp4");
-       // videoMimeTypes.add("application/dash+xml");
+        videoMimeTypes.add("video/mp4");
         videoMimeTypes.add("application/x-mpegURL");
+        // videoMimeTypes.add("application/dash+xml");
         //Map<Double, String> tagTimesMap = new HashMap<>();
         //tagTimesMap.put(2.0,"ADTAG");
 
