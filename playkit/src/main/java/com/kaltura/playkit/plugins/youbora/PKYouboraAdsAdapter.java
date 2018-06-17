@@ -47,6 +47,7 @@ class PKYouboraAdsAdapter extends PlayerAdapter<Player> {
     private String lastReportedAdTitle;
     private Double lastReportedAdPlayhead;
     private Double lastReportedAdDuration;
+    private boolean adIsBuffering;
 
     PKYouboraAdsAdapter(Player player, MessageBus messageBus) {
         super(player);
@@ -164,12 +165,18 @@ class PKYouboraAdsAdapter extends PlayerAdapter<Player> {
                         //so prevent it from dispatching through YouboraEvent.YouboraReport by return.
                         return;
                     case AD_BUFFER_START:
-                        log.d("AD_BUFFER_START lastReportedAdPlayhead = " + lastReportedAdPlayhead);
-                        fireBufferBegin();
+                        if(((AdEvent.AdBufferStart)event).adPosition > 0 && !adIsBuffering) {
+                            log.d("AD_BUFFER_START lastReportedAdPlayhead = " + lastReportedAdPlayhead);
+                            fireBufferBegin();
+                            adIsBuffering = true;
+                        }
                         break;
                     case AD_BUFFER_END:
-                        log.d("AD_BUFFER_END lastReportedAdPlayhead = " + lastReportedAdPlayhead);
-                        fireBufferEnd();
+                        if (adIsBuffering) {
+                            log.d("AD_BUFFER_END lastReportedAdPlayhead = " + lastReportedAdPlayhead);
+                            fireBufferEnd();
+                            adIsBuffering = false;
+                        }
                         break;
                     default:
                         break;

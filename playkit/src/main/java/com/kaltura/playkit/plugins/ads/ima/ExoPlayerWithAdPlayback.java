@@ -562,5 +562,4 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 adLoadTimeout,
                 adLoadTimeout, true);
     }
-
 }
