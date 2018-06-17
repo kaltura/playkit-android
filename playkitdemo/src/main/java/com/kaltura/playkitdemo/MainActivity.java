@@ -204,13 +204,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 .setId(id);
     }
 
-    private void startSimpleOvpMediaLoading1(OnMediaLoadCompletion completion) {
-        new KalturaOvpMediaProvider()
-                .setSessionProvider(new SimpleOvpSessionProvider("https://cdnapisec.kaltura.com", 2222401, "djJ8MjA5MzAzMXyGAnQyhkoBxPiY-25PL02NJmvslO7H2oQRMwSfsxJLLj74ShjY3R8LP6ryUfcpdS_T36vvN16Xtcg1fQDzhysbAgZISy9rl90S5Uqx8VFQFwOODnElDPO0h1YsRjVHRuUiMGZ_sGc1jDQMYnJ-dZ0SpEqa2BhsD9Sc9ZE1GCKn1Q=="))
-                .setEntryId("1_f93tepsn")
-                .load(completion);
-    }
-
     private void startSimpleOvpMediaLoading(OnMediaLoadCompletion completion) {
         new KalturaOvpMediaProvider()
                 .setSessionProvider(new SimpleOvpSessionProvider("https://cdnapisec.kaltura.com", 2093031, null))
@@ -368,21 +361,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void addIMAPluginConfig(PKPluginConfigs config) {
         String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpodbumper&cmsid=496&vid=short_onecue&correlator=";
-                String voot_bff_ad = "https://pubads.g.doubleclick.net/gampad/live/ads?sz=640x360&iu=%2F21633895671%2FQA%2FAndroid_Native_App%2FCOI&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=sample_ar%3Dskippablelinear%26Gender%3DU%26Age%3DNULL%26KidsPinEnabled%3DN%26AppVersion%3D0.1.41%26DeviceModel%3DNexus%206&cmsid=2467608&ppid=d21c022c-9963-45ad-9fb4-c20f6cbf3bca&vid=0_b49uc8t6&ad_rule=1&correlator=19919";
-                //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";
 
-
-                //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
+        //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
         List<String> videoMimeTypes = new ArrayList<>();
-        videoMimeTypes.add("video/mp4");
+        //videoMimeTypes.add("video/mp4");
        // videoMimeTypes.add("application/dash+xml");
-        //videoMimeTypes.add("application/x-mpegURL");
+        videoMimeTypes.add("application/x-mpegURL");
         //Map<Double, String> tagTimesMap = new HashMap<>();
         //tagTimesMap.put(2.0,"ADTAG");
 
-        IMAConfig adsConfig = new IMAConfig().setAdTagURL(voot_bff_ad).setVideoMimeTypes(videoMimeTypes).enableDebugMode(true);
+        IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl).setVideoMimeTypes(videoMimeTypes).enableDebugMode(true);
         config.setPluginConfig(IMAExoPlugin.factory.getName(), adsConfig.toJSONObject());
 
     }

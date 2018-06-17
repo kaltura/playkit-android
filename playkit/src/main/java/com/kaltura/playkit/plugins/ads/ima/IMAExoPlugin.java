@@ -1036,20 +1036,14 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     @Override
     public void onBufferStart() {
         long adPosition = videoPlayerWithAdPlayback.getAdPosition();
-        if (isAdDisplayed) {
-            log.d("XXX AD onBufferStart " + adPosition);
-            messageBus.post(new AdEvent.AdBufferStart(adPosition));
-        }
-
+        log.d("AD onBufferStart adPosition = " + adPosition);
+        messageBus.post(new AdEvent.AdBufferStart(adPosition));
     }
 
     @Override
     public void onBufferEnd() {
         long adPosition = videoPlayerWithAdPlayback.getAdPosition();
-        if (isAdDisplayed) {
-            log.d("XXX AD onBufferEnd + adPosition = " + adPosition);
-            messageBus.post(new AdEvent.AdBufferEnd(adPosition));
-        }
-
+        log.d("AD onBufferEnd adPosition = " + adPosition);
+        messageBus.post(new AdEvent.AdBufferEnd(adPosition));
     }
 }
