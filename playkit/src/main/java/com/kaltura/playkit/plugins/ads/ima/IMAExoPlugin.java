@@ -158,6 +158,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     ///////////END PKPlugin
     @Override
     protected void onLoad(final Player player, Object config, final MessageBus messageBus, Context context) {
+        log.d("onLoad");
         this.player = player;
         if (player == null) {
             log.e("Error, player instance is null.");

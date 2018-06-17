@@ -301,12 +301,16 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             case Player.STATE_BUFFERING:
                 log.d("onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
                 lastPlayerState = PlayerState.BUFFERING;
-                onAdBufferListener.onBufferStart();
+                if (onAdBufferListener != null) {
+                    onAdBufferListener.onBufferStart();
+                }
                 break;
             case Player.STATE_READY:
                 log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
                 if (lastPlayerState == PlayerState.BUFFERING) {
-                    onAdBufferListener.onBufferEnd();
+                    if (onAdBufferListener != null) {
+                        onAdBufferListener.onBufferEnd();
+                    }
                 }
                 lastPlayerState = PlayerState.READY;
                 isPlayerReady = true;
