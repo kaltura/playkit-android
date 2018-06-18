@@ -87,7 +87,7 @@ public interface Player {
 
         /**
          * Decide the Ad will be auto played when comes to foreground from background
-         * @param autoPlayOnResume true if it is autoplayed or else false
+         * @param autoPlayOnResume true if it is autoplayed or else false, default is TRUE
          * @return Player Settings
          */
         Settings setAdAutoPlayOnResume(boolean autoPlayOnResume);
