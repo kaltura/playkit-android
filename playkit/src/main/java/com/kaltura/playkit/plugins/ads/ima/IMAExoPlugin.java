@@ -391,17 +391,22 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     protected void onDestroy() {
         log.d("IMA Start onDestroy");
 
+        destroyIMA();
         if (videoPlayerWithAdPlayback != null) {
             videoPlayerWithAdPlayback.removeAdBufferEventListener();
         }
+
+        videoPlayerWithAdPlayback.releasePlayer();
+        videoPlayerWithAdPlayback = null;
+    }
+
+    private void destroyIMA() {
         resetIMA();
         if (adsLoader != null) {
             adsLoader.removeAdsLoadedListener(adsLoadedListener);
             adsLoadedListener = null;
             adsLoader = null;
         }
-        //videoPlayerWithAdPlayback.releasePlayer();
-        //videoPlayerWithAdPlayback = null;
     }
 
     protected void resetIMA() {
@@ -882,7 +887,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
                 displayContent();
                 if (adsManager != null) {
                     log.d("AD_ALL_ADS_COMPLETED onDestroy");
-                    onDestroy();
+                    destroyIMA();
                 }
                 break;
             case STARTED:
