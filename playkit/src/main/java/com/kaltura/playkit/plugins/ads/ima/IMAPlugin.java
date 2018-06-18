@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -50,6 +50,7 @@ import com.kaltura.playkit.ads.AdTagType;
 import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.ads.PKAdProviderListener;
+import com.kaltura.playkit.player.PlayerSettings;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
@@ -353,7 +354,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
             switch (lastAdEventReceived) {
                 case PAUSED:
                     player.getView().hideVideoSurface();
-                    adsManager.resume();
+                    if(player.getSettings() instanceof PlayerSettings && ((PlayerSettings)player.getSettings()).isAdAutoPlayOnResume()) {
+                        adsManager.resume();
+                    }
                     break;
                 case CONTENT_PAUSE_REQUESTED:
                     player.getView().hideVideoSurface();
@@ -406,7 +409,9 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 default:
                     log.d("onApplicationResumed - default");
                     if (isAdDisplayed) {
-                        adsManager.resume();
+                        if(player.getSettings() instanceof PlayerSettings && ((PlayerSettings)player.getSettings()).isAdAutoPlayOnResume()) {
+                            adsManager.resume();
+                        }
                     } else {
                         //if ad is not displayed so play
                         log.d("onApplicationResumed: lastAdEventReceived = " + lastAdEventReceived + " isAdDisplayed = " + isAdDisplayed);

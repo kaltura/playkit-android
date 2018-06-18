@@ -84,6 +84,14 @@ public interface Player {
          * @return - Player Settings.
          */
         Settings setSecureSurface(boolean isSurfaceSecured);
+
+        /**
+         * Decide the Ad will be auto played when comes to foreground from background
+         * @param autoPlayOnResume true if it is autoplayed or else false, default is TRUE
+         * @return Player Settings
+         */
+        Settings setAdAutoPlayOnResume(boolean autoPlayOnResume);
+
     }
 
     /**

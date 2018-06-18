@@ -37,6 +37,7 @@ import com.kaltura.playkit.ads.AdTagType;
 import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.ads.PKAdProviderListener;
+import com.kaltura.playkit.player.PlayerSettings;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
@@ -349,8 +350,10 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         appIsInBackground = false;
         if (isAdDisplayed) {
             displayAd();
-            adsManager.resume();
-            videoPlayerWithAdPlayback.getVideoAdPlayer().playAd();
+            if(player.getSettings() instanceof PlayerSettings && ((PlayerSettings)player.getSettings()).isAdAutoPlayOnResume()) {
+                adsManager.resume();
+                videoPlayerWithAdPlayback.getVideoAdPlayer().playAd();
+            }
         } else if (player != null && lastPlaybackPlayerState == PlayerEvent.Type.PLAYING) {
             log.d("onApplicationResumed lastPlaybackPlayerState == PlayerEvent.Type.PLAYING");
             displayContent();

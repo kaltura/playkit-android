@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //        startMockMediaLoading(playLoadedEntry);
 //      startOvpMediaLoading(playLoadedEntry);
 //      startOttMediaLoading(playLoadedEntry);
-      startSimpleOvpMediaLoading(playLoadedEntry);
+        startSimpleOvpMediaLoading(playLoadedEntry);
 //      LocalAssets.start(this, playLoadedEntry);
         playerContainer = (RelativeLayout)findViewById(R.id.player_container);
         spinerContainer = (RelativeLayout)findViewById(R.id.spiner_container);
@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     }
                 }
                 log.d("DRM initialized; supported: " + supportedDrmSchemes);
-                
+
                 // Now it's safe to look at `supportedDrmSchemes`
             }
         });
@@ -187,13 +187,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private PKMediaEntry simpleMediaEntry(String id, String contentUrl, String licenseUrl, PKDrmParams.Scheme scheme) {
         return new PKMediaEntry()
-                    .setSources(Collections.singletonList(new PKMediaSource()
-                            .setUrl(contentUrl)
-                            .setDrmData(Collections.singletonList(
-                                    new PKDrmParams(licenseUrl, scheme)
-                            )
+                .setSources(Collections.singletonList(new PKMediaSource()
+                        .setUrl(contentUrl)
+                        .setDrmData(Collections.singletonList(
+                                new PKDrmParams(licenseUrl, scheme)
+                                )
                         )))
-                    .setId(id);
+                .setId(id);
     }
 
     private PKMediaEntry simpleMediaEntry(String id, String contentUrl) {
@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         mediaProvider.load(completion);
     }
-    
+
     private void startOttMediaLoading(final OnMediaLoadCompletion completion) {
         SessionProvider ksSessionProvider = new SessionProvider() {
             @Override
@@ -272,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void onMediaLoaded(PKMediaEntry mediaEntry) {
-        
+
         PKMediaConfig mediaConfig = new PKMediaConfig().setMediaEntry(mediaEntry).setStartPosition(0);
         PKPluginConfigs pluginConfig = new PKPluginConfigs();
         if (player == null) {
@@ -282,6 +282,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             player = PlayKitManager.loadPlayer(this, pluginConfig);
             KalturaPlaybackRequestAdapter.install(player, "myApp"); // in case app developer wants to give customized referrer instead the default referrer in the playmanifest
             player.getSettings().setSecureSurface(true);
+
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
 
@@ -294,7 +295,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
 
         player.prepare(mediaConfig);
-
+        player.getSettings().setAdAutoPlayOnResume(false);
         player.play();
     }
 
@@ -510,9 +511,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onResume();
         if (player != null) {
             player.onApplicationResumed();
-            if (nowPlaying && AUTO_PLAY_ON_RESUME) {
-                player.play();
-            }
         }
         if (controlsView != null) {
             controlsView.resume();
