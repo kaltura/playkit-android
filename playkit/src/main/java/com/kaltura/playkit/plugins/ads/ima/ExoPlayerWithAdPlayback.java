@@ -439,20 +439,26 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
      * Pauses the content video.
      */
     public void pause() {
-        mVideoPlayer.getPlayer().setPlayWhenReady(false);
+        if (mVideoPlayer!= null && mVideoPlayer.getPlayer() != null) {
+            mVideoPlayer.getPlayer().setPlayWhenReady(false);
+        }
     }
 
     public void stop() {
         isPlayerReady = false;
-        mVideoPlayer.getPlayer().setPlayWhenReady(false);
-        mVideoPlayer.getPlayer().stop();
+        if (mVideoPlayer!= null && mVideoPlayer.getPlayer() != null) {
+            mVideoPlayer.getPlayer().setPlayWhenReady(false);
+            mVideoPlayer.getPlayer().stop();
+        }
     }
 
     /**
      * Plays the content video.
      */
     public void play() {
-        mVideoPlayer.getPlayer().setPlayWhenReady(true);
+        if (mVideoPlayer!= null && mVideoPlayer.getPlayer() != null) {
+            mVideoPlayer.getPlayer().setPlayWhenReady(true);
+        }
     }
 
     /**
@@ -577,6 +583,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     }
 
     public void resumeContentAfterAdPlayback() {
+        pause();
         mIsAdDisplayed = false;
         isPlayerReady = false;
     }
