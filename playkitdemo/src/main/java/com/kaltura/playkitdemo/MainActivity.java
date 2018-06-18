@@ -53,7 +53,7 @@ import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
-import com.kaltura.playkit.plugins.ads.ima.IMAPlugin;
+import com.kaltura.playkit.plugins.ads.ima.IMAExoPlugin;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 import com.kaltura.playkit.utils.Consts;
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void registerPlugins() {
 
         PlayKitManager.registerPlugins(this, SamplePlugin.factory);
-        PlayKitManager.registerPlugins(this, IMAPlugin.factory);
+        PlayKitManager.registerPlugins(this, IMAExoPlugin.factory);
         PlayKitManager.registerPlugins(this, KalturaStatsPlugin.factory);
         //PlayKitManager.registerPlugins(this, TVPAPIAnalyticsPlugin.factory);
         //PlayKitManager.registerPlugins(this, PhoenixAnalyticsPlugin.factory);
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //        startMockMediaLoading(playLoadedEntry);
 //      startOvpMediaLoading(playLoadedEntry);
 //      startOttMediaLoading(playLoadedEntry);
-      startSimpleOvpMediaLoading(playLoadedEntry);
+        startSimpleOvpMediaLoading(playLoadedEntry);
 //      LocalAssets.start(this, playLoadedEntry);
         playerContainer = (RelativeLayout)findViewById(R.id.player_container);
         spinerContainer = (RelativeLayout)findViewById(R.id.spiner_container);
@@ -178,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     }
                 }
                 log.d("DRM initialized; supported: " + supportedDrmSchemes);
-                
+
                 // Now it's safe to look at `supportedDrmSchemes`
             }
         });
@@ -186,13 +186,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private PKMediaEntry simpleMediaEntry(String id, String contentUrl, String licenseUrl, PKDrmParams.Scheme scheme) {
         return new PKMediaEntry()
-                    .setSources(Collections.singletonList(new PKMediaSource()
-                            .setUrl(contentUrl)
-                            .setDrmData(Collections.singletonList(
-                                    new PKDrmParams(licenseUrl, scheme)
-                            )
+                .setSources(Collections.singletonList(new PKMediaSource()
+                        .setUrl(contentUrl)
+                        .setDrmData(Collections.singletonList(
+                                new PKDrmParams(licenseUrl, scheme)
+                                )
                         )))
-                    .setId(id);
+                .setId(id);
     }
 
     private PKMediaEntry simpleMediaEntry(String id, String contentUrl) {
@@ -216,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         mediaProvider.load(completion);
     }
-    
+
     private void startOttMediaLoading(final OnMediaLoadCompletion completion) {
         SessionProvider ksSessionProvider = new SessionProvider() {
             @Override
@@ -271,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void onMediaLoaded(PKMediaEntry mediaEntry) {
-        
+
         PKMediaConfig mediaConfig = new PKMediaConfig().setMediaEntry(mediaEntry).setStartPosition(0);
         PKPluginConfigs pluginConfig = new PKPluginConfigs();
         if (player == null) {
@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             player = PlayKitManager.loadPlayer(this, pluginConfig);
             KalturaPlaybackRequestAdapter.install(player, "myApp"); // in case app developer wants to give customized referrer instead the default referrer in the playmanifest
-                    
+
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
 
@@ -293,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
 
         player.prepare(mediaConfig);
-
+        player.getSettings().setAdAutoPlayOnResume(false);
         player.play();
     }
 
@@ -359,8 +359,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //    }
 
     private void addIMAPluginConfig(PKPluginConfigs config) {
-        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";
-                //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
+        String adTagUrl = "https://pubads.g.doubleclick.net/gampad/live/ads?sz=640x360&iu=%2F21633895671%2FQA%2FAndroid_Native_App%2FCOI&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=sample_ar%3Dskippablelinear%26Gender%3DU%26Age%3DNULL%26KidsPinEnabled%3DN%26AppVersion%3D0.1.39%26DeviceModel%3DNexus%205&cmsid=2467608&ppid=ae78fbf8-5ab7-410b-b056-637bf7807007&vid=0_b49uc8t6&ad_rule=1&correlator=13901";
+        //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
         List<String> videoMimeTypes = new ArrayList<>();
@@ -370,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //tagTimesMap.put(2.0,"ADTAG");
 
         IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
-        config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
+        config.setPluginConfig(IMAExoPlugin.factory.getName(), adsConfig.toJSONObject());
 
     }
     @Override
@@ -507,9 +507,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onResume();
         if (player != null) {
             player.onApplicationResumed();
-            if (nowPlaying && AUTO_PLAY_ON_RESUME) {
-                player.play();
-            }
         }
         if (controlsView != null) {
             controlsView.resume();
