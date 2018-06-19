@@ -107,6 +107,26 @@ public class AdEvent implements PKEvent {
         }
     }
 
+    public static class AdBufferStart extends AdEvent {
+
+        public final long adPosition;
+
+        public AdBufferStart(long adPosition) {
+            super(Type.AD_BUFFER_START);
+            this.adPosition = adPosition;
+        }
+    }
+
+    public static class AdBufferEnd extends AdEvent {
+
+        public final long adPosition;
+
+        public AdBufferEnd(long adPosition) {
+            super(Type.AD_BUFFER_END);
+            this.adPosition = adPosition;
+        }
+    }
+
     public static class Error extends AdEvent {
 
         public final PKError error;
@@ -143,6 +163,8 @@ public class AdEvent implements PKEvent {
         CONTENT_RESUME_REQUESTED,
         ALL_ADS_COMPLETED,
         AD_LOAD_TIMEOUT_TIMER_STARTED,
+        AD_BUFFER_START,
+        AD_BUFFER_END,
         ERROR
     }
 

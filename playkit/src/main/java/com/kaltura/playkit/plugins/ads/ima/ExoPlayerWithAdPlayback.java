@@ -45,6 +45,7 @@ import com.google.android.exoplayer2.util.EventLogger;
 import com.google.android.exoplayer2.util.Util;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.utils.Consts;
@@ -60,12 +61,12 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
     private DefaultTrackSelector trackSelector;
-    private TrackSelectionHelper trackSelectionHelper;
     private TrackGroupArray lastSeenTrackGroupArray;
     private EventLogger eventLogger;
     private android.os.Handler mainHandler = new Handler();
     private DefaultRenderersFactory renderersFactory;
     private SimpleExoPlayer player;
+    private PlayerState lastPlayerState;
 
     private DataSource.Factory mediaDataSourceFactory;
     private Context mContext;
@@ -105,6 +106,14 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             new ArrayList<VideoAdPlayer.VideoAdPlayerCallback>(1);
 
 
+    public interface OnAdBufferListener {
+        void onBufferStart();
+        void onBufferEnd();
+    }
+
+    private OnAdBufferListener onAdBufferListener;
+
+
     public ExoPlayerWithAdPlayback(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         this.mContext = context;
@@ -123,7 +132,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         init();
     }
 
-    public ViewGroup getmAdUiContainer() {
+    public ViewGroup getAdUiContainer() {
         return mAdUiContainer;
     }
 
@@ -157,7 +166,6 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             TrackSelection.Factory adaptiveTrackSelectionFactory =
                     new AdaptiveTrackSelection.Factory(BANDWIDTH_METER);
             trackSelector = new DefaultTrackSelector(adaptiveTrackSelectionFactory);
-            trackSelectionHelper = new TrackSelectionHelper(trackSelector, adaptiveTrackSelectionFactory);
             lastSeenTrackGroupArray = null;
             eventLogger = new EventLogger(trackSelector);
             player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
@@ -284,16 +292,27 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-        log.d("onPlayerStateChanged " + playbackState);
+        log.d("onPlayerStateChanged " + playbackState + " lastPlayerState = " + lastPlayerState);
         switch (playbackState) {
             case Player.STATE_IDLE:
                 log.d("onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
+                lastPlayerState = PlayerState.IDLE;
                 break;
             case Player.STATE_BUFFERING:
                 log.d("onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
+                lastPlayerState = PlayerState.BUFFERING;
+                if (onAdBufferListener != null) {
+                    onAdBufferListener.onBufferStart();
+                }
                 break;
             case Player.STATE_READY:
                 log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
+                if (lastPlayerState == PlayerState.BUFFERING) {
+                    if (onAdBufferListener != null) {
+                        onAdBufferListener.onBufferEnd();
+                    }
+                }
+                lastPlayerState = PlayerState.READY;
                 isPlayerReady = true;
                 if (playWhenReady) {
                     if (mVideoPlayer.getPlayer().getDuration() > 0) {
@@ -408,24 +427,38 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         }
     }
 
+    public void addAdBufferEventListener(OnAdBufferListener onAdBufferListener) {
+        this.onAdBufferListener = onAdBufferListener;
+    }
+
+    public void removeAdBufferEventListener() {
+        onAdBufferListener = null;
+    }
+
     /**
      * Pauses the content video.
      */
     public void pause() {
-        mVideoPlayer.getPlayer().setPlayWhenReady(false);
+        if (mVideoPlayer!= null && mVideoPlayer.getPlayer() != null) {
+            mVideoPlayer.getPlayer().setPlayWhenReady(false);
+        }
     }
 
     public void stop() {
         isPlayerReady = false;
-        mVideoPlayer.getPlayer().setPlayWhenReady(false);
-        mVideoPlayer.getPlayer().stop();
+        if (mVideoPlayer!= null && mVideoPlayer.getPlayer() != null) {
+            mVideoPlayer.getPlayer().setPlayWhenReady(false);
+            mVideoPlayer.getPlayer().stop();
+        }
     }
 
     /**
      * Plays the content video.
      */
     public void play() {
-        mVideoPlayer.getPlayer().setPlayWhenReady(true);
+        if (mVideoPlayer!= null && mVideoPlayer.getPlayer() != null) {
+            mVideoPlayer.getPlayer().setPlayWhenReady(true);
+        }
     }
 
     /**
@@ -451,6 +484,24 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         }
     }
 
+    public long getAdPosition() {
+        if (mVideoPlayer != null && mVideoPlayer.getPlayer() != null) {
+            if (mVideoPlayer.getPlayer().getContentPosition() > 0) {
+                return mVideoPlayer.getPlayer().getContentPosition();
+            }
+        }
+        return Consts.POSITION_UNSET;
+    }
+
+    public long getAdDuration() {
+        if (mVideoPlayer != null && mVideoPlayer.getPlayer() != null) {
+            if (mVideoPlayer.getPlayer().getDuration() > 0) {
+                return mVideoPlayer.getPlayer().getDuration();
+            }
+        }
+        return Consts.TIME_UNSET;
+    }
+
     /**
      * Pause the currently playing content video in preparation for an ad to play, and disables
      * the media controller.
@@ -459,13 +510,6 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         //mVideoPlayer.getPlayer().disablePlaybackControls();
         savePosition();
         mVideoPlayer.getPlayer().stop();
-    }
-
-    /**
-     * Returns the UI element for rendering video ad elements.
-     */
-    public ViewGroup getAdUiContainer() {
-        return mAdUiContainer;
     }
 
     /**
@@ -539,8 +583,19 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     }
 
     public void resumeContentAfterAdPlayback() {
+        pause();
         mIsAdDisplayed = false;
         isPlayerReady = false;
+    }
+
+    public void releasePlayer() {
+        if (player != null) {
+            player.clearVideoSurface();
+            player.release();
+            player = null;
+            trackSelector = null;
+            eventLogger = null;
+        }
     }
 
     private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
@@ -553,5 +608,4 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 adLoadTimeout,
                 adLoadTimeout, true);
     }
-
 }

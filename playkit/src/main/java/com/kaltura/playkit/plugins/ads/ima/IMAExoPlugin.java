@@ -60,7 +60,7 @@ import static com.kaltura.playkit.plugins.ads.AdEvent.Type.RESUMED;
  * Created by gilad.nadav on 17/11/2016.
  */
 
-public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.ads.interactivemedia.v3.api.AdEvent.AdEventListener, AdErrorEvent.AdErrorListener {
+public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ads.interactivemedia.v3.api.AdEvent.AdEventListener, AdErrorEvent.AdErrorListener, ExoPlayerWithAdPlayback.OnAdBufferListener {
     private static final PKLog log = PKLog.get("IMAExoPlugin");
 
 
@@ -159,6 +159,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     ///////////END PKPlugin
     @Override
     protected void onLoad(final Player player, Object config, final MessageBus messageBus, Context context) {
+        log.d("onLoad");
         this.player = player;
         if (player == null) {
             log.e("Error, player instance is null.");
@@ -172,6 +173,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
         }
 
         videoPlayerWithAdPlayback = new ExoPlayerWithAdPlayback(context, adConfig.getAdLoadTimeOut());
+        videoPlayerWithAdPlayback.addAdBufferEventListener(this);
         player.getView().addView(videoPlayerWithAdPlayback.getExoPlayerView());
         this.context = context;
         this.messageBus = messageBus;
@@ -240,7 +242,14 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
         if (adsManager != null) {
             adsManager.destroy();
         }
+
+        if (videoPlayerWithAdPlayback == null) {
+            log.d("onUpdateMedia videoPlayerWithAdPlayback = null recreating it");
+            videoPlayerWithAdPlayback = new ExoPlayerWithAdPlayback(context, adConfig.getAdLoadTimeOut());
+            videoPlayerWithAdPlayback.addAdBufferEventListener(this);
+        }
         videoPlayerWithAdPlayback.setContentProgressProvider(player);
+
         clearAdsLoader();
         imaSetup();
         log.d("adtag = " + adConfig.getAdTagURL());
@@ -321,7 +330,9 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     @Override
     protected void onApplicationPaused() {
         log.d("onApplicationPaused");
-        videoPlayerWithAdPlayback.setIsAppInBackground(true);
+        if (videoPlayerWithAdPlayback != null) {
+            videoPlayerWithAdPlayback.setIsAppInBackground(true);
+        }
         appIsInBackground = true;
         if (player != null) {
             if (!isAdDisplayed) {
@@ -340,7 +351,9 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     @Override
     protected void onApplicationResumed() {
         log.d("onApplicationResumed isAdDisplayed = " + isAdDisplayed + ", lastPlaybackPlayerState = " + lastPlaybackPlayerState);
-        videoPlayerWithAdPlayback.setIsAppInBackground(false);
+        if (videoPlayerWithAdPlayback != null) {
+            videoPlayerWithAdPlayback.setIsAppInBackground(false);
+        }
         appIsInBackground = false;
         if (isAdDisplayed) {
             displayAd();
@@ -385,13 +398,21 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
     protected void onDestroy() {
         log.d("IMA Start onDestroy");
 
+        destroyIMA();
+        if (videoPlayerWithAdPlayback != null) {
+            videoPlayerWithAdPlayback.removeAdBufferEventListener();
+            videoPlayerWithAdPlayback.releasePlayer();
+            videoPlayerWithAdPlayback = null;
+        }
+    }
+
+    private void destroyIMA() {
         resetIMA();
         if (adsLoader != null) {
             adsLoader.removeAdsLoadedListener(adsLoadedListener);
             adsLoadedListener = null;
             adsLoader = null;
         }
-
     }
 
     protected void resetIMA() {
@@ -795,6 +816,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
         switch (lastAdEventReceived) {
             case LOADED:
                 adInfo = createAdInfo(adEvent.getAd());
+                isAdDisplayed = true;
                 if (appIsInBackground) {
                     appInBackgroundDuringAdLoad = true;
                     if (adsManager != null) {
@@ -871,9 +893,8 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
                 displayContent();
                 if (adsManager != null) {
                     log.d("AD_ALL_ADS_COMPLETED onDestroy");
-                    onDestroy();
+                    destroyIMA();
                 }
-
                 break;
             case STARTED:
                 log.d("AD STARTED");
@@ -930,6 +951,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
             case SKIPPED:
                 adInfo.setAdPlayHead(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER);
                 messageBus.post(new AdEvent.AdSkippedEvent(adInfo));
+                isAdDisplayed = false;
                 //cancelAdDisplayedCheckTimer();
                 //preparePlayer(false);
                 break;
@@ -1021,4 +1043,17 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider , com.google.a
         return adsLoadedListener;
     }
 
+    @Override
+    public void onBufferStart() {
+        long adPosition = videoPlayerWithAdPlayback != null ? videoPlayerWithAdPlayback.getAdPosition() : -1;
+        log.d("AD onBufferStart adPosition = " + adPosition);
+        messageBus.post(new AdEvent.AdBufferStart(adPosition));
+    }
+
+    @Override
+    public void onBufferEnd() {
+        long adPosition = videoPlayerWithAdPlayback != null ? videoPlayerWithAdPlayback.getAdPosition() : -1;
+        log.d("AD onBufferEnd adPosition = " + adPosition);
+        messageBus.post(new AdEvent.AdBufferEnd(adPosition));
+    }
 }
