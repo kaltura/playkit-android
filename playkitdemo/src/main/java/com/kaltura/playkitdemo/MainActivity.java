@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.response.PrimitiveResult;
 import com.kaltura.netkit.connect.response.ResultElement;
@@ -293,6 +294,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             player = PlayKitManager.loadPlayer(this, pluginConfig);
             KalturaPlaybackRequestAdapter.install(player, "myApp"); // in case app developer wants to give customized referrer instead the default referrer in the playmanifest
 
+            player.getSettings().setSecureSurface(true);
+
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
 
@@ -305,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
 
         player.prepare(mediaConfig);
-
+        player.getSettings().setAdAutoPlayOnResume(false);
         player.play();
     }
 
@@ -372,18 +375,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //    }
 
     private void addIMAPluginConfig(PKPluginConfigs config) {
+
         String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostoptimizedpodbumper&cmsid=496&vid=short_onecue&correlator=";
+
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
         List<String> videoMimeTypes = new ArrayList<>();
-        //videoMimeTypes.add(MimeTypes.APPLICATION_MP4);
-        //videoMimeTypes.add(MimeTypes.APPLICATION_M3U8);
+        videoMimeTypes.add("video/mp4");
+        videoMimeTypes.add("application/x-mpegURL");
+        // videoMimeTypes.add("application/dash+xml");
         //Map<Double, String> tagTimesMap = new HashMap<>();
         //tagTimesMap.put(2.0,"ADTAG");
-        //adTagUrl = "http://dfkdslkf;dk;dlkk;s";
-        //IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl);
-        IMAConfig adsConfig = new IMAConfig().setAdTagURL("https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpost&cmsid=496&vid=short_onecue&correlator=");
+
+        IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl).setVideoMimeTypes(videoMimeTypes).enableDebugMode(true);
         config.setPluginConfig(IMAExoPlugin.factory.getName(), adsConfig.toJSONObject());
 
     }
@@ -456,6 +461,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
+                nowPlaying = true;
+            }
+        }, PlayerEvent.Type.PLAYING);
+
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
                 nowPlaying = false;
             }
         }, PlayerEvent.Type.PAUSE);
@@ -466,6 +479,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 nowPlaying = true;
             }
         }, AdEvent.Type.SKIPPED);
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                PlayerEvent.PlaybackRateChanged playbackRateChanged = (PlayerEvent.PlaybackRateChanged) event;
+                log.d("playbackRateChanged event  rate = " + playbackRateChanged.rate);
+            }
+        }, PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
 
         player.addStateChangeListener(new PKEvent.Listener() {
             @Override
@@ -496,7 +517,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 //When the track data available, this event occurs. It brings the info object with it.
                 PlayerEvent.PlayheadUpdated playheadUpdated = (PlayerEvent.PlayheadUpdated) event;
                 log.d("playheadUpdated event  position = " + playheadUpdated.position + " duration = " + playheadUpdated.duration);
-
             }
         }, PlayerEvent.Type.PLAYHEAD_UPDATED);
     }
@@ -507,9 +527,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onResume();
         if (player != null) {
             player.onApplicationResumed();
-            if (nowPlaying && AUTO_PLAY_ON_RESUME) {
-                player.play();
-            }
         }
         if (controlsView != null) {
             controlsView.resume();

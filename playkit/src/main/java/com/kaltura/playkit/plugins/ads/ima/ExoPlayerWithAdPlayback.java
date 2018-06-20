@@ -187,12 +187,14 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                     for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                         log.d("playAd->onResume");
                         callback.onResume();
+                        return;
                     }
                 } else {
                     mIsAdDisplayed = true;
                     for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                         log.d("playAd->onPlay");
                         callback.onPlay();
+                        return;
                     }
                 }
 
@@ -214,12 +216,16 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             public void stopAd() {
                 log.d("stopAd");
                 isPlayerReady = false;
+                mIsAdDisplayed = false;
                 mVideoPlayer.getPlayer().stop();
             }
 
             @Override
             public void pauseAd() {
                 log.d("pauseAd");
+                if (!isAdPlayerPlaying()) {
+                    return;
+                }
                 for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                     callback.onPause();
                 }
@@ -257,6 +263,10 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             }
         };
         mVideoPlayer.getPlayer().addListener(this);
+    }
+
+    private boolean isAdPlayerPlaying() {
+        return player != null && player.getPlayWhenReady() && isPlayerReady == true;
     }
 
     @Override
@@ -411,24 +421,31 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     public void removeAdBufferEventListener() {
         onAdBufferListener = null;
     }
+
     /**
      * Pauses the content video.
      */
     public void pause() {
-        mVideoPlayer.getPlayer().setPlayWhenReady(false);
+        if (mVideoPlayer!= null && mVideoPlayer.getPlayer() != null) {
+            mVideoPlayer.getPlayer().setPlayWhenReady(false);
+        }
     }
 
     public void stop() {
         isPlayerReady = false;
-        mVideoPlayer.getPlayer().setPlayWhenReady(false);
-        mVideoPlayer.getPlayer().stop();
+        if (mVideoPlayer!= null && mVideoPlayer.getPlayer() != null) {
+            mVideoPlayer.getPlayer().setPlayWhenReady(false);
+            mVideoPlayer.getPlayer().stop();
+        }
     }
 
     /**
      * Plays the content video.
      */
     public void play() {
-        mVideoPlayer.getPlayer().setPlayWhenReady(true);
+        if (mVideoPlayer!= null && mVideoPlayer.getPlayer() != null) {
+            mVideoPlayer.getPlayer().setPlayWhenReady(true);
+        }
     }
 
     /**
@@ -542,6 +559,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     }
 
     public void resumeContentAfterAdPlayback() {
+        pause();
         mIsAdDisplayed = false;
         isPlayerReady = false;
     }
@@ -555,7 +573,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             eventLogger = null;
         }
     }
-    
+
     private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
         return new DefaultDataSourceFactory(getContext(), useBandwidthMeter ? BANDWIDTH_METER : null,
                 buildHttpDataSourceFactory(useBandwidthMeter));

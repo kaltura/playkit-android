@@ -49,6 +49,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaFormat;
@@ -58,8 +59,6 @@ import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
-import com.kaltura.playkit.player.PlayerController.EventListener;
-import com.kaltura.playkit.player.PlayerController.StateChangedListener;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
@@ -71,6 +70,8 @@ import java.net.CookiePolicy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
 
 /**
  * Created by anton.afanasiev on 31/10/2016.
@@ -94,7 +95,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private Context context;
     private SimpleExoPlayer player;
-    private ExoPlayerView exoPlayerView;
+    private BaseExoplayerView exoPlayerView;
 
     private PKTracks tracks;
     private TrackSelectionHelper trackSelectionHelper;
@@ -116,6 +117,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private int playerWindow;
     private long playerPosition = Consts.TIME_UNSET;
+
+    private float lastKnownVolume = Consts.DEFAULT_VOLUME;
+    private float lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
+
     private Timeline.Window window;
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
@@ -127,19 +132,22 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
 
 
-    @Override
-    public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
-        sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+    ExoPlayerWrapper(Context context) {
+        this(context, new ExoPlayerView(context));
     }
 
-
-    ExoPlayerWrapper(Context context) {
+    ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView) {
         this.context = context;
         bandwidthMeter = new DefaultBandwidthMeter(mainHandler, this);
-        exoPlayerView = new ExoPlayerView(context);
+        this.exoPlayerView = exoPlayerView;
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
             CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
         }
+    }
+
+    @Override
+    public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
+        sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
     }
 
     private void initializePlayer() {
@@ -245,12 +253,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      * @return A new HttpDataSource factory.
      */
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
-            return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                    DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
+        return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
     }
 
     private HttpDataSource.Factory buildCustomHttpDataSourceFactory(boolean useBandwidthMeter) {
-            return new CustomHttpDataSourceFactory(getUserAgent(context), httpDataSourceRequestParams, useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+        return new CustomHttpDataSourceFactory(getUserAgent(context), httpDataSourceRequestParams, useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
     }
 
@@ -359,7 +367,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @Override
-    public void onTimelineChanged(Timeline timeline, Object manifest,  int reason) {
+    public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
         log.d("onTimelineChanged");
         sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
         sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
@@ -397,7 +405,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-        // TODO: if/when we start using ExoPlayer's speed and pitch settings, listen to this event.
+        sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
     }
 
     @Override
@@ -431,7 +439,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         log.d("load");
         crossProtocolRedirectEnabled = mediaSourceConfig.playerSettings.crossProtocolRedirectEnabled();
         PKRequestParams.Adapter licenseRequestAdapter = mediaSourceConfig.playerSettings.getLicenseRequestAdapter();
-        if  (licenseRequestAdapter != null) {
+        if (licenseRequestAdapter != null) {
             httpDataSourceRequestParams = licenseRequestAdapter.adapt(new PKRequestParams(null, new HashMap<String, String>()));
         }
 
@@ -452,13 +460,13 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (this.useTextureView == playerSettings.useTextureView() && this.isSurfaceSecured == playerSettings.isSurfaceSecured()) {
             return;
         }
-        if(playerSettings.useTextureView() && playerSettings.isSurfaceSecured()) {
+        if (playerSettings.useTextureView() && playerSettings.isSurfaceSecured()) {
             log.w("Using TextureView with secured surface is not allowed. Secured surface request will be ignored.");
         }
 
-        this.useTextureView   = playerSettings.useTextureView();
+        this.useTextureView = playerSettings.useTextureView();
         this.isSurfaceSecured = playerSettings.isSurfaceSecured();
-        exoPlayerView.swapVideoSurface(playerSettings.useTextureView(), playerSettings.isSurfaceSecured());
+        exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured());
     }
 
     @Override
@@ -552,9 +560,11 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void restore() {
-        log.d("resume");
+        log.d("restore");
         if (player == null) {
             initializePlayer();
+            setVolume(lastKnownVolume);
+            setPlaybackRate(lastKnownPlaybackRate);
         }
         if (playerPosition == Consts.TIME_UNSET) {
             player.seekToDefaultPosition(playerWindow);
@@ -565,7 +575,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void destroy() {
-        log.d("release");
+        log.d("destroy");
         if (player != null) {
             player.release();
         }
@@ -631,21 +641,17 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             return;
         }
 
-        if (volume < 0) {
-            volume = 0;
-        } else if (volume > 1) {
-            volume = 1;
+        this.lastKnownVolume = volume;
+        if (lastKnownVolume < 0) {
+            lastKnownVolume = 0;
+        } else if (lastKnownVolume > 1) {
+            lastKnownVolume = 1;
         }
 
         if (volume != player.getVolume()) {
-            player.setVolume(volume);
+            player.setVolume(lastKnownVolume);
             sendEvent(PlayerEvent.Type.VOLUME_CHANGED);
         }
-    }
-
-    @Override
-    public boolean isPlaying() {
-        return player != null && player.getPlayWhenReady() && currentState == PlayerState.READY;
     }
 
     @Override
@@ -654,6 +660,11 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             return Consts.VOLUME_UNKNOWN;
         }
         return player.getVolume();
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return player != null && player.getPlayWhenReady() && currentState == PlayerState.READY;
     }
 
     @Override
@@ -672,6 +683,13 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void stop() {
+        log.d("stop");
+        lastKnownVolume = Consts.DEFAULT_VOLUME;
+        lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
+        lastSelectedTrackIds = new String[] {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+        if (trackSelectionHelper != null) {
+            trackSelectionHelper.stop();
+        }
         if (player != null) {
             player.setPlayWhenReady(false);
             player.seekTo(0);
@@ -749,6 +767,34 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public boolean isLiveStream() {
         return player != null && player.isCurrentWindowDynamic();
+    }
+
+    @Override
+    public void setPlaybackRate(float rate) {
+        this.lastKnownPlaybackRate = rate;
+        if (player != null) {
+            PlaybackParameters playbackParameters = new PlaybackParameters(rate, DEFAULT_PITCH_RATE);
+            player.setPlaybackParameters(playbackParameters);
+        }
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        if (player != null && player.getPlaybackParameters() != null) {
+            return player.getPlaybackParameters().speed;
+        }
+        return lastKnownPlaybackRate;
+    }
+
+    @Override
+    public <T extends PKController> T getController(Class<T> type) {
+        //Currently no controller for ExoplayerWrapper. So always return null.
+        return null;
+    }
+
+    @Override
+    public void onOrientationChanged() {
+        //Do nothing.
     }
 }
 

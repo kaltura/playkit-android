@@ -22,6 +22,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean isSurfaceSecured;
     private boolean cea608CaptionsEnabled;
     private boolean crossProtocolRedirectEnabled;
+    private boolean adAutoPlayOnResume = true;
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
@@ -49,6 +50,16 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isSurfaceSecured() {
         return isSurfaceSecured;
+    }
+
+    public boolean isAdAutoPlayOnResume() {
+        return adAutoPlayOnResume;
+    }
+
+    @Override
+    public Player.Settings setAdAutoPlayOnResume(boolean adAutoPlayOnResume) {
+        this.adAutoPlayOnResume = adAutoPlayOnResume;
+        return this;
     }
 
     @Override

@@ -83,6 +83,7 @@ class TrackSelectionHelper {
     private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
 
     private TracksInfoListener tracksInfoListener;
+
     interface TracksInfoListener {
 
         void onTracksInfoReady(PKTracks PKTracks);
@@ -769,6 +770,12 @@ class TrackSelectionHelper {
 
     void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
+    }
+
+    // clean previous selection
+    void stop() {
+        lastSelectedTrackIds = new String[]{NONE, NONE, NONE};
+        requestedChangeTrackIds = new String[]{NONE, NONE, NONE};
     }
 }
 

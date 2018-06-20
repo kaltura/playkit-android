@@ -46,8 +46,8 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public AdController getAdController() {
-        return player.getAdController();
+    public <T extends PKController> T getController(Class<T> type) {
+        return player.getController(type);
     }
 
     @Override
@@ -58,6 +58,16 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public boolean isLiveStream() {
         return player.isLiveStream();
+    }
+
+    @Override
+    public void setPlaybackRate(float rate) {
+        player.setPlaybackRate(rate);
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        return player.getPlaybackRate();
     }
 
     @Override
@@ -128,7 +138,7 @@ public class PlayerDecoratorBase implements Player {
     void setPlayer(Player player) {
         this.player = player;
     }
-    
+
     Player getPlayer() {
         return player;
     }
@@ -138,6 +148,11 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public void onApplicationResumed() {
         player.onApplicationResumed();
+    }
+
+    @Override
+    public void onOrientationChanged() {
+        player.onOrientationChanged();
     }
 
     @Override

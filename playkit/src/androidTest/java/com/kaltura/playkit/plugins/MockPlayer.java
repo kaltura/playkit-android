@@ -3,12 +3,14 @@ package com.kaltura.playkit.plugins;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
+import com.kaltura.playkit.utils.Consts;
+
 
 /**
  * Created by zivilan on 11/12/2016.
@@ -29,12 +31,27 @@ public class MockPlayer implements Player {
             }
 
             @Override
+            public Settings setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
+                return this;
+            }
+
+            @Override
             public Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
                 return this;
             }
 
             @Override
             public Settings useTextureView(boolean useTextureView) {
+                return this;
+            }
+
+            @Override
+            public Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
+                return this;
+            }
+
+            @Override
+            public Settings setSecureSurface(boolean isSurfaceSecured) {
                 return this;
             }
         };
@@ -71,13 +88,18 @@ public class MockPlayer implements Player {
     }
 
     @Override
+    public void onOrientationChanged() {
+
+    }
+
+    @Override
     public void destroy() {
 
     }
 
     @Override
     public void stop() {
-       // stop player
+        // stop player
     }
 
     @Override
@@ -146,11 +168,6 @@ public class MockPlayer implements Player {
     }
 
     @Override
-    public AdController getAdController() {
-        return null;
-    }
-
-    @Override
     public String getSessionId() {
         return null;
     }
@@ -158,6 +175,21 @@ public class MockPlayer implements Player {
     @Override
     public boolean isLiveStream() {
         return false;
+    }
+
+    @Override
+    public <T extends PKController> T getController(Class<T> type) {
+        return null;
+    }
+
+    @Override
+    public void setPlaybackRate(float rate) {
+
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        return Consts.DEFAULT_PLAYBACK_RATE_SPEED;
     }
 
     public void setDuration(int duration){
