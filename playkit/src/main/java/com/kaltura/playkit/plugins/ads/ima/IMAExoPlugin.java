@@ -429,7 +429,6 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         lastPlaybackPlayerState = null;
         lastAdEventReceived = null;
 
-//      cancelAdDisplayedCheckTimer();
         cancelAdManagerTimer();
         adTagCuePoints = null;
         adPlaybackCancelled = false;
@@ -837,7 +836,6 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         adPlaybackCancelled = true;
         isAdRequested = true;
         isAdDisplayed = false;
-        //cancelAdDisplayedCheckTimer();
         cancelAdManagerTimer();
     }
 
