@@ -480,6 +480,9 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
             public void onFinish() {
                 log.d("adManagerTimer.onFinish, adsManager=" + adsManager);
                 if (adsManager == null) {
+                    if (adConfig.getAdLoadTimeOut() == 0) {
+                        isAdRequested = true;
+                    }
                     log.d("adsManager is null, will play content");
                     preparePlayer(false);
                     player.play();
@@ -487,7 +490,6 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
                     if (isAdRequested) {
                         adPlaybackCancelled = true;
                     }
-
                 }
             }
         };
