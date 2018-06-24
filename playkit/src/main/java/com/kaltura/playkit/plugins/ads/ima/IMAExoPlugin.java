@@ -53,8 +53,6 @@ import java.util.List;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_ENDED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_STARTED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_PROGRESS;
-import static com.kaltura.playkit.plugins.ads.AdEvent.Type.PAUSED;
-import static com.kaltura.playkit.plugins.ads.AdEvent.Type.RESUMED;
 
 
 /**
@@ -73,15 +71,14 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     /////////////////////
     private Player player;
     private Context context;
+    private MessageBus messageBus;
     private AdInfo adInfo;
     private IMAConfig adConfig;
     private PKMediaConfig mediaConfig;
     //////////////////////
 
-
     // Container with references to video player and ad UI ViewGroup.
-    private AdDisplayContainer mAdDisplayContainer;
-
+    private AdDisplayContainer adDisplayContainer;
 
     // AdsManager exposes methods to control ad playback and listen to ad events.
     private AdsManager adsManager;
@@ -92,27 +89,13 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     // Ad-enabled video player.
     private ExoPlayerWithAdPlayback videoPlayerWithAdPlayback;
 
-    // Button the user taps to begin video playback and ad request.
-    private View mPlayButton;
-
-    // VAST ad tag URL to use when requesting ads during video playback.
-    private String mCurrentAdTagUrl;
-
-    // URL of content video.
-    private String mContentVideoUrl;
-
     // ViewGroup to render an associated companion ad into.
     private ViewGroup mCompanionViewGroup;
-
-    // Tracks if the SDK is playing an ad, since the SDK might not necessarily use the video
-    // player provided to play the video ad.
-    private boolean mIsAdPlaying;
 
     // The AdsLoader instance exposes the requestAds method.
     private AdsLoader adsLoader;
     private AdsLoader.AdsLoadedListener adsLoadedListener;
 
-    // AdsManager exposes methods to control ad playback and listen to ad events.
     private ImaSdkSettings imaSdkSettings;
     private AdsRenderingSettings renderingSettings;
     private AdCuePoints adTagCuePoints;
@@ -134,7 +117,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     private boolean adManagerInitDuringBackground;
     private PKAdProviderListener pkAdProviderListener;
     ////////////////////
-    private MessageBus messageBus;
+
     private CountDownTimer adManagerTimer;
 
     public static final Factory factory = new Factory() {
@@ -459,9 +442,9 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         resetIMA();
 
         log.d("Do requestAdsFromIMA");
-        mAdDisplayContainer = sdkFactory.createAdDisplayContainer();
-        mAdDisplayContainer.setPlayer(videoPlayerWithAdPlayback.getVideoAdPlayer());
-        mAdDisplayContainer.setAdContainer(videoPlayerWithAdPlayback.getAdUiContainer());
+        adDisplayContainer = sdkFactory.createAdDisplayContainer();
+        adDisplayContainer.setPlayer(videoPlayerWithAdPlayback.getVideoAdPlayer());
+        adDisplayContainer.setAdContainer(videoPlayerWithAdPlayback.getAdUiContainer());
 
         // Set up spots for companions.
 
@@ -472,7 +455,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
             companionAdSlot.setSize(728, 90);
             ArrayList<CompanionAdSlot> companionAdSlots = new ArrayList<CompanionAdSlot>();
             companionAdSlots.add(companionAdSlot);
-            mAdDisplayContainer.setCompanionSlots(companionAdSlots);
+            adDisplayContainer.setCompanionSlots(companionAdSlots);
         }
 
         // Create the ads request.
@@ -481,7 +464,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         if (adConfig.getAdLoadTimeOut() > 0 && adConfig.getAdLoadTimeOut() < Consts.MILLISECONDS_MULTIPLIER && adConfig.getAdLoadTimeOut() != IMAConfig.DEFAULT_AD_LOAD_TIMEOUT) {
             request.setVastLoadTimeout(adConfig.getAdLoadTimeOut() * Consts.MILLISECONDS_MULTIPLIER);
         }
-        request.setAdDisplayContainer(mAdDisplayContainer);
+        request.setAdDisplayContainer(adDisplayContainer);
         request.setContentProgressProvider(videoPlayerWithAdPlayback.getContentProgressProvider());
         messageBus.post(new AdEvent.AdRequestedEvent(adTagUrl));
         // Request the ad. After the ad is loaded, onAdsManagerLoaded() will be called.
