@@ -62,13 +62,6 @@ import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_PROGRESS;
 public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ads.interactivemedia.v3.api.AdEvent.AdEventListener, AdErrorEvent.AdErrorListener, ExoPlayerWithAdPlayback.OnAdBufferListener {
     private static final PKLog log = PKLog.get("IMAExoPlugin");
 
-
-    @Override
-    protected PlayerDecorator getPlayerDecorator() {
-        return new AdEnabledPlayerController(this);
-    }
-
-    /////////////////////
     private Player player;
     private Context context;
     private MessageBus messageBus;
@@ -82,6 +75,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
 
     // AdsManager exposes methods to control ad playback and listen to ad events.
     private AdsManager adsManager;
+    private CountDownTimer adManagerTimer;
 
     // Factory class for creating SDK objects.
     private ImaSdkFactory sdkFactory;
@@ -116,9 +110,12 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     private com.google.ads.interactivemedia.v3.api.AdEvent.AdEventType lastAdEventReceived;
     private boolean adManagerInitDuringBackground;
     private PKAdProviderListener pkAdProviderListener;
-    ////////////////////
 
-    private CountDownTimer adManagerTimer;
+    @Override
+    protected PlayerDecorator getPlayerDecorator() {
+        return new AdEnabledPlayerController(this);
+    }
+
 
     public static final Factory factory = new Factory() {
         @Override
