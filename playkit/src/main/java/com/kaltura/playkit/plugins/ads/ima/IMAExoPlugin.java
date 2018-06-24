@@ -151,7 +151,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         @Override
         public void warmUp(Context context) {
             log.d("warmUp started");
-            //ImaSdkFactory.getInstance().createAdsLoader(context);
+            ImaSdkFactory.getInstance().createAdsLoader(context);
         }
     };
 
