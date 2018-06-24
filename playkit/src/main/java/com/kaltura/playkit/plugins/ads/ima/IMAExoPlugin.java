@@ -481,12 +481,13 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
                 log.d("adManagerTimer.onFinish, adsManager=" + adsManager);
                 if (adsManager == null) {
                     log.d("adsManager is null, will play content");
-                    preparePlayer(true);
-
+                    preparePlayer(false);
+                    player.play();
                     messageBus.post(new AdEvent(AdEvent.Type.AD_BREAK_IGNORED));
                     if (isAdRequested) {
                         adPlaybackCancelled = true;
                     }
+
                 }
             }
         };
@@ -790,23 +791,17 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
             isContentPrepared = true;
             pkAdProviderListener.onAdLoadingFinished();
             if (doPlay) {
-                log.d("Event preparePlayer true");
-                if (player != null && player.getView() != null && !isAdDisplayed()) {
-                    displayContent();
-                    player.play();
-                }
-//                messageBus.listen(new PKEvent.Listener() {
-//                    @Override
-//                    public void onEvent(PKEvent event) {
-//                        log.d("Event preparePlayer true");
-//                        if (player != null && player.getView() != null && !isAdDisplayed()) {
-//                            displayContent();
-//                            player.play();
-//                        }
-//
-//                        messageBus.remove(this);
-//                    }
-//                }, PlayerEvent.Type.DURATION_CHANGE);
+                messageBus.listen(new PKEvent.Listener() {
+                    @Override
+                    public void onEvent(PKEvent event) {
+                        log.d("IMA DURATION_CHANGE received calling play");
+                        if (player != null && player.getView() != null && !isAdDisplayed()) {
+                            displayContent();
+                            player.play();
+                        }
+                        messageBus.remove(this, PlayerEvent.Type.DURATION_CHANGE);
+                    }
+                }, PlayerEvent.Type.DURATION_CHANGE);
             }
         }
     }
