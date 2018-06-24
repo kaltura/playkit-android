@@ -977,7 +977,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
             case SKIPPED:
                 adInfo.setAdPlayHead(getCurrentPosition() * Consts.MILLISECONDS_MULTIPLIER);
                 messageBus.post(new AdEvent.AdSkippedEvent(adInfo));
-                isAdDisplayed = false;;
+                isAdDisplayed = false;
                 break;
             case CLICKED:
                 isAdIsPaused = true;
