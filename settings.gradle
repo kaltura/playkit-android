@@ -1,1 +1,5 @@
 include ':playkit', ':playkitdemo'
+
+//include ':kava'
+//https://github.com/kaltura/playkit-android-kava.git
+//project(':kava').projectDir = new File('../playkit-android-kava/kavaplugin')
