@@ -53,6 +53,7 @@ import java.util.List;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_ENDED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_BREAK_STARTED;
 import static com.kaltura.playkit.plugins.ads.AdEvent.Type.AD_PROGRESS;
+import static com.kaltura.playkit.plugins.ads.AdEvent.Type.LOADED;
 
 
 /**
@@ -343,9 +344,18 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         appIsInBackground = false;
         if (isAdDisplayed) {
             displayAd();
-            if(player.getSettings() instanceof PlayerSettings && ((PlayerSettings)player.getSettings()).isAdAutoPlayOnResume()) {
-                adsManager.resume();
-                videoPlayerWithAdPlayback.getVideoAdPlayer().playAd();
+            log.d("onApplicationResumed ad state = " + lastAdEventReceived);
+            if (appInBackgroundDuringAdLoad == true && lastAdEventReceived == com.google.ads.interactivemedia.v3.api.AdEvent.AdEventType.LOADED) {
+                log.d("onApplicationResumed - appInBackgroundDuringAdLoad so start adManager");
+                clearAdLoadingInBackground();
+                adsManager.start();
+            } else {
+                if (player.getSettings() instanceof PlayerSettings && ((PlayerSettings) player.getSettings()).isAdAutoPlayOnResume()) {
+                    log.d("onApplicationResumed resume ad playback");
+                    clearAdLoadingInBackground();
+                    adsManager.resume();
+                    videoPlayerWithAdPlayback.getVideoAdPlayer().playAd();
+                }
             }
         } else if (player != null && lastPlaybackPlayerState == PlayerEvent.Type.PLAYING) {
             log.d("onApplicationResumed lastPlaybackPlayerState == PlayerEvent.Type.PLAYING");
@@ -372,12 +382,15 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
                 }
             }
             log.d("onApplicationResumed Default..... request Ad");
-            adManagerInitDuringBackground = false;
-            appInBackgroundDuringAdLoad = false;
-
+            clearAdLoadingInBackground();
             onUpdateMedia(mediaConfig);
             start();
         }
+    }
+
+    private void clearAdLoadingInBackground() {
+        appInBackgroundDuringAdLoad = false;
+        adManagerInitDuringBackground = false;
     }
 
     @Override
@@ -844,6 +857,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
                     appInBackgroundDuringAdLoad = true;
                     if (adsManager != null) {
                         log.d("LOADED call adsManager.pause()");
+                        messageBus.post(new AdEvent.AdLoadedEvent(adInfo));
                         pause();
                     }
                 } else {
@@ -851,12 +865,11 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
                         log.d("discarding ad break");
                         adsManager.discardAdBreak();
                     } else {
-                        messageBus.post(new AdEvent.AdLoadedEvent(adInfo));
                         if (AdTagType.VMAP != adConfig.getAdTagType()) {
+                            messageBus.post(new AdEvent.AdLoadedEvent(adInfo));
                             adsManager.start();
                         }
                     }
-
                 }
                 break;
             case CONTENT_PAUSE_REQUESTED:
@@ -1076,7 +1089,11 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     @Override
     public void onBufferEnd() {
         long adPosition = videoPlayerWithAdPlayback != null ? videoPlayerWithAdPlayback.getAdPosition() : -1;
-        log.d("AD onBufferEnd adPosition = " + adPosition);
+        log.d("AD onBufferEnd adPosition = " + adPosition + " appIsInBackground = " + appIsInBackground);
         messageBus.post(new AdEvent.AdBufferEnd(adPosition));
+        if (appIsInBackground) {
+            log.d("AD onBufferEnd pausing adManager");
+            adsManager.pause();
+        }
     }
 }
