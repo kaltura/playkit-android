@@ -233,7 +233,7 @@ public class PlayerController implements Player {
             player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType);
             //IMA workaround. In order to prevent flickering of the first frame
             //with ExoplayerEngine we should addPlayerView here for all playerEngines except Exoplayer.
-            if(incomingPlayerType != PlayerEngineType.Exoplayer) {
+            if(incomingPlayerType == PlayerEngineType.MediaPlayer) {
                 addPlayerView();
             }
             togglePlayerListeners(true);
