@@ -857,7 +857,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         if (adEvent.getAdData() != null) {
             log.i("EventData: " + adEvent.getAdData().toString());
         }
-        
+
         switch (adEvent.getType()) {
             case LOADED:
                 adInfo = createAdInfo(adEvent.getAd());
@@ -1101,6 +1101,9 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
 
     @Override
     public void onBufferEnd() {
+        if (lastAdEventReceived == AdEvent.Type.AD_BUFFER_END) {
+            return;
+        }
         lastAdEventReceived = AdEvent.Type.AD_BUFFER_END;
         long adPosition = videoPlayerWithAdPlayback != null ? videoPlayerWithAdPlayback.getAdPosition() : -1;
         log.d("AD onBufferEnd adPosition = " + adPosition + " appIsInBackground = " + appIsInBackground);
