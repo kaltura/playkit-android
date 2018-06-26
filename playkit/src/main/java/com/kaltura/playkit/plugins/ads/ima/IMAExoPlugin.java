@@ -846,17 +846,18 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
 
     @Override
     public void onAdEvent(com.google.ads.interactivemedia.v3.api.AdEvent adEvent) {
-        log.d("EventName: " + adEvent.getType().name());
+        if (adsManager == null || adEventsMap == null) {
+            log.e("ERROR, adsManager == null || adEventsMap == null");
+            return;
+        }
 
+        lastAdEventReceived = adEventsMap.get(adEvent.getType());
+        log.d("EventName: " + lastAdEventReceived);
 
         if (adEvent.getAdData() != null) {
             log.i("EventData: " + adEvent.getAdData().toString());
         }
-
-        if (adsManager == null || adEventsMap == null) {
-            return;
-        }
-        lastAdEventReceived = adEventsMap.get(adEvent.getType());
+        
         switch (adEvent.getType()) {
             case LOADED:
                 adInfo = createAdInfo(adEvent.getAd());
