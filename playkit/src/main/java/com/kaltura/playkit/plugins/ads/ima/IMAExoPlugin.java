@@ -349,7 +349,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         if (isAdDisplayed) {
             displayAd();
             log.d("onApplicationResumed ad state = " + lastAdEventReceived);
-            if (appInBackgroundDuringAdLoad == true && lastAdEventReceived == AdEvent.Type.LOADED) {
+            if (appInBackgroundDuringAdLoad && lastAdEventReceived == AdEvent.Type.LOADED) {
                 log.d("onApplicationResumed - appInBackgroundDuringAdLoad so start adManager");
                 clearAdLoadingInBackground();
                 adsManager.start();
