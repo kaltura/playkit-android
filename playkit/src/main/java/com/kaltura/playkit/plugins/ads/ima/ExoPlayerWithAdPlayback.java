@@ -580,6 +580,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     public void setIsAppInBackground(boolean isAppInBackground) {
         adShouldPAutolay = !isAppInBackground;
+        pause();
     }
 
     public void resumeContentAfterAdPlayback() {
