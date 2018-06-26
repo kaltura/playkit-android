@@ -3,6 +3,7 @@ package com.kaltura.playkit.plugins.ads.ima;
 import android.content.Context;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -479,7 +480,14 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         messageBus.post(new AdEvent.AdRequestedEvent(adTagUrl));
         // Request the ad. After the ad is loaded, onAdsManagerLoaded() will be called.
 
-        adManagerTimer = new CountDownTimer(adConfig.getAdLoadTimeOut() * Consts.MILLISECONDS_MULTIPLIER, IMAConfig.DEFAULT_AD_LOAD_COUNT_DOWN_TICK) {
+        adManagerTimer = getCountDownTimer();
+        adsLoader.requestAds(request);
+        adManagerTimer.start();
+    }
+
+    @NonNull
+    private CountDownTimer getCountDownTimer() {
+        return new CountDownTimer(adConfig.getAdLoadTimeOut() * Consts.MILLISECONDS_MULTIPLIER, IMAConfig.DEFAULT_AD_LOAD_COUNT_DOWN_TICK) {
             @Override
             public void onTick(long millisUntilFinished) {
                 log.d("adManagerTimer.onTick, adsManager=" + adsManager);
@@ -506,8 +514,6 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
                 }
             }
         };
-        adsLoader.requestAds(request);
-        adManagerTimer.start();
     }
 
     @Override
