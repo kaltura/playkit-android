@@ -1099,7 +1099,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         messageBus.post(new AdEvent.AdBufferEnd(adPosition));
         if (appIsInBackground) {
             log.d("AD onBufferEnd pausing adManager");
-            adsManager.pause();
+            pause();
         }
     }
 }
