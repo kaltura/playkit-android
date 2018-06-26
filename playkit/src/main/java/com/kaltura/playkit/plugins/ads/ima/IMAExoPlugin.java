@@ -865,8 +865,8 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
                         log.d("discarding ad break");
                         adsManager.discardAdBreak();
                     } else {
+                        messageBus.post(new AdEvent.AdLoadedEvent(adInfo));
                         if (AdTagType.VMAP != adConfig.getAdTagType()) {
-                            messageBus.post(new AdEvent.AdLoadedEvent(adInfo));
                             adsManager.start();
                         }
                     }
