@@ -852,7 +852,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         }
 
         lastAdEventReceived = adEventsMap.get(adEvent.getType());
-        log.d("EventName: " + lastAdEventReceived);
+        log.d("onAdEvent EventName: " + lastAdEventReceived);
 
         if (adEvent.getAdData() != null) {
             log.i("EventData: " + adEvent.getAdData().toString());
