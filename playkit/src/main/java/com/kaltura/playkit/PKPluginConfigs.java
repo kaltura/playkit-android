@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit;
 
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -25,6 +26,10 @@ public class PKPluginConfigs implements Iterable<Map.Entry<String, Object>> {
 
     public Object getPluginConfig(String pluginName) {
         return configs.get(pluginName);
+    }
+
+    public boolean hasConfig(String pluginName) {
+        return configs.containsKey(pluginName);
     }
 
     public void setPluginConfig(String pluginName, Object settings) {

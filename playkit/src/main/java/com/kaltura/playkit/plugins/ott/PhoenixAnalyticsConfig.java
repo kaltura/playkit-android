@@ -76,7 +76,7 @@ public class PhoenixAnalyticsConfig {
         return timerInterval;
     }
 
-    public JsonObject toJSONObject() {
+    public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(PARTNER_ID, partnerId);
         jsonObject.addProperty(BASE_URL, baseUrl);
