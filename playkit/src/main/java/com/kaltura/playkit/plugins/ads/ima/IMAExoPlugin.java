@@ -1115,6 +1115,10 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     @Override
     public void onSourceError(Exception exoPlayerException) {
         log.d(" onSourceError " + ", message = " + exoPlayerException.getMessage());
+        if (lastAdEventReceived == AdEvent.Type.AD_BUFFER_START) { // incase there is ad playback error need to remove the buffer started since buffer end is not fired
+            onBufferEnd();
+        }
+
         isAdDisplayed = false;
         isAdError = true;
 
