@@ -979,12 +979,13 @@ public class IMAPlugin extends PKPlugin implements AdsProvider, com.google.ads.i
                 messageBus.listen(new PKEvent.Listener() {
                     @Override
                     public void onEvent(PKEvent event) {
+                        log.d("IMA DURATION_CHANGE received calling play");
                         if (player != null && player.getView() != null && !isAdDisplayed()) {
                             player.getView().showVideoSurface();
                             player.play();
                         }
 
-                        messageBus.remove(this);
+                        messageBus.remove(this, PlayerEvent.Type.DURATION_CHANGE);
                     }
                 }, PlayerEvent.Type.DURATION_CHANGE);
             }

@@ -21,7 +21,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.response.PrimitiveResult;
 import com.kaltura.netkit.connect.response.ResultElement;
@@ -55,8 +54,11 @@ import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
 import com.kaltura.playkit.plugins.ads.ima.IMAExoPlugin;
+
+import com.kaltura.playkit.plugins.ovp.KalturaStatsConfig;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
+import com.kaltura.playkit.plugins.youbora.YouboraPlugin;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
@@ -64,6 +66,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static com.kaltura.playkit.utils.Consts.DISTANCE_FROM_LIVE_THRESHOLD;
 import static com.kaltura.playkitdemo.MockParams.Format;
 import static com.kaltura.playkitdemo.MockParams.Format2;
 import static com.kaltura.playkitdemo.MockParams.Format_HD_Dash;
@@ -100,8 +103,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         PlayKitManager.registerPlugins(this, SamplePlugin.factory);
         PlayKitManager.registerPlugins(this, IMAExoPlugin.factory);
         PlayKitManager.registerPlugins(this, KalturaStatsPlugin.factory);
+
+        PlayKitManager.registerPlugins(this, YouboraPlugin.factory);
         //PlayKitManager.registerPlugins(this, TVPAPIAnalyticsPlugin.factory);
         //PlayKitManager.registerPlugins(this, PhoenixAnalyticsPlugin.factory);
+        //PlayKitManager.registerPlugins(this, KavaAnalyticsPlugin.factory);
     }
 
     @Override
@@ -309,42 +315,99 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         videoSpinner.setOnItemSelectedListener(this);
     }
 
-    private void configurePlugins(PKPluginConfigs config) {
+    private void configurePlugins(PKPluginConfigs pluginConfigs) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("delay", 1200);
-        config.setPluginConfig("Sample", jsonObject);
-        addIMAPluginConfig(config);
-        //addKaluraStatsPluginConfig(config);
-        //addPhoenixAnalyticsPluginConfig(config);
-        //addTVPAPIAnalyticsPluginConfig(config);
-        //config.setPluginConfig("IMASimplePlugin", jsonObject);
-        //config.setPluginConfig("KalturaStatistics", jsonObject);
-        //config.setPluginConfig("PhoenixAnalytics", jsonObject);
-        //config.setPluginConfig("Youbora", jsonObject);
+        pluginConfigs.setPluginConfig("Sample", jsonObject);
+        addIMAPluginConfig(pluginConfigs);
+        addKaluraStatsPluginConfig(pluginConfigs);
+
+        addYouboraPluginConfig(pluginConfigs);
+        //addKavaPluginConfig(pluginConfigs);
+        //addPhoenixAnalyticsPluginConfig(pluginConfigs);
+        //addTVPAPIAnalyticsPluginConfig(pluginConfigs);
+
+        //pluginConfigs.setPluginConfig("IMASimplePlugin", jsonObject);
+        //pluginConfigs.setPluginConfig("KalturaStatistics", jsonObject);
+        //pluginConfigs.setPluginConfig("PhoenixAnalytics", jsonObject);
+        //pluginConfigs.setPluginConfig("Youbora", jsonObject);
 
     }
 
-    private void addKaluraStatsPluginConfig(PKPluginConfigs config) {
+    private void addKaluraStatsPluginConfig(PKPluginConfigs pluginConfigs) {
         String KALTURA_STATS_URL = "https://stats.kaltura.com/api_v3/index.php";
+        KalturaStatsConfig kalturaStatsConfig = new KalturaStatsConfig(true)
+                .setBaseUrl(KALTURA_STATS_URL)
+                .setPartnerId(2222401)
+                .setEntryId("1_f93tepsn")
+                .setTimerInterval(30);
+        //Set plugin entry to the plugin configs.
+        pluginConfigs.setPluginConfig(KalturaStatsPlugin.factory.getName(), kalturaStatsConfig);
+    }
+
+
+//    private void addKavaPluginConfig(PKPluginConfigs pluginConfigs) {
+//        KavaAnalyticsConfig kavaAnalyticsConfig = new KavaAnalyticsConfig()
+//                .setApplicationVersion(BuildConfig.VERSION_NAME)
+//                .setPartnerId(Integer.valueOf(2222401))
+//                .setEntryId("1_f93tepsn")
+//                .setDvrThreshold(DISTANCE_FROM_LIVE_THRESHOLD);
+//        //Set plugin entry to the plugin configs.
+//        pluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), kavaAnalyticsConfig);
+//    }
+
+    private void addYouboraPluginConfig(PKPluginConfigs pluginConfigs) {
         JsonObject pluginEntry = new JsonObject();
 
-        //Put url to the kaltura stats server.
-        pluginEntry.addProperty("baseUrl", KALTURA_STATS_URL);
+        //Youbora config json. Main config goes here.
+        JsonObject youboraConfigJson = new JsonObject();
+        youboraConfigJson.addProperty("accountCode", "KALTURA_TEST");
+        youboraConfigJson.addProperty("username", "a@a.com");
+        youboraConfigJson.addProperty("haltOnError", true);
+        youboraConfigJson.addProperty("enableAnalytics", true);
+        youboraConfigJson.addProperty("enableSmartAds", true);
 
-        //Put the partner id.
-        pluginEntry.addProperty("partnerId", "2222401");
 
-        //Put ui conf id.
-        pluginEntry.addProperty("uiconfId", "38713161");
+        //Media entry json.
+        JsonObject mediaEntryJson = new JsonObject();
+        mediaEntryJson.addProperty("isLive", false);
+        mediaEntryJson.addProperty("title", "the media title");
 
-        //Put entry id.
-        pluginEntry.addProperty("entryId", "1_f93tepsn");
+        //Youbora ads configuration json.
+        JsonObject adsJson = new JsonObject();
+        adsJson.addProperty("adsExpected", true);
+        adsJson.addProperty("campaign", "zzz");
 
-        //Put interval with which analitcs reports would be triggered.
-        pluginEntry.addProperty("timerInterval", 30);
+        //Configure custom properties here:
+        JsonObject propertiesJson = new JsonObject();
+        propertiesJson.addProperty("genre", "");
+        propertiesJson.addProperty("type", "");
+        propertiesJson.addProperty("transaction_type", "");
+        propertiesJson.addProperty("year", "");
+        propertiesJson.addProperty("cast", "");
+        propertiesJson.addProperty("director", "");
+        propertiesJson.addProperty("owner", "");
+        propertiesJson.addProperty("parental", "");
+        propertiesJson.addProperty("price", "");
+        propertiesJson.addProperty("rating", "");
+        propertiesJson.addProperty("audioType", "");
+        propertiesJson.addProperty("audioChannels", "");
+        propertiesJson.addProperty("device", "");
+        propertiesJson.addProperty("quality", "");
+
+        //You can add some extra params here:
+        JsonObject extraParamJson = new JsonObject();
+        extraParamJson.addProperty("param1", "param1");
+        extraParamJson.addProperty("param2", "param2");
+
+        //Add all the json objects created before to the pluginEntry json.
+        pluginEntry.add("media", mediaEntryJson);
+        pluginEntry.add("ads", adsJson);
+        pluginEntry.add("properties", propertiesJson);
+        pluginEntry.add("extraParams", extraParamJson);
+
         //Set plugin entry to the plugin configs.
-        config.setPluginConfig(KalturaStatsPlugin.factory.getName(), pluginEntry);
-
+        pluginConfigs.setPluginConfig(YouboraPlugin.factory.getName(), pluginEntry);
     }
 
 //    private void addPhoenixAnalyticsPluginConfig(PKPluginConfigs config) {
@@ -362,7 +425,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void addIMAPluginConfig(PKPluginConfigs config) {
         String adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpodbumper&cmsid=496&vid=short_onecue&correlator=";
-
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/3274935/preroll&impl=s&gdfp_req=1&env=vp&output=xml_vast2&unviewed_position_start=1&url=[referrer_url]&description_url=[description_url]&correlator=[timestamp]";
         //"https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_onecue&correlator=";
@@ -373,7 +435,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //Map<Double, String> tagTimesMap = new HashMap<>();
         //tagTimesMap.put(2.0,"ADTAG");
 
-        IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl).setVideoMimeTypes(videoMimeTypes).enableDebugMode(true);
+        IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl).setVideoMimeTypes(videoMimeTypes).enableDebugMode(true).setAdLoadTimeOut(8);
         config.setPluginConfig(IMAExoPlugin.factory.getName(), adsConfig.toJSONObject());
 
     }
@@ -449,6 +511,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         }, PlayerEvent.Type.PLAYING);
 
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                AdEvent.Error adErrorEvent = (AdEvent.Error) event;
+                if (adErrorEvent != null && adErrorEvent.error != null) {
+                    log.e("ERROR: " + adErrorEvent.error.errorType + ", " + adErrorEvent.error.message);
+                }
+            }
+        }, AdEvent.Type.ERROR);
 
         player.addEventListener(new PKEvent.Listener() {
             @Override
