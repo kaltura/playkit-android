@@ -301,7 +301,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
 
         player.prepare(mediaConfig);
-        player.getSettings().setAdAutoPlayOnResume(false);
+        player.getSettings().setAdAutoPlayOnResume(true);
         player.play();
     }
 
