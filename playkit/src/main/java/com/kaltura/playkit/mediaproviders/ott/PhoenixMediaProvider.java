@@ -88,7 +88,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     private static final String TAG = "PhoenixMediaProvider";
 
-    private static String LIVE_ASSET_OBJECT_TYPE = "KalturaLinearMediaAsset";
+    private static String LIVE_ASSET_OBJECT_TYPE = "KalturaLinearMediaAsset"; //Might be changed to: "KalturaLiveAsset".
 
     private static final boolean EnableEmptyKs = true;
 
@@ -123,8 +123,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             return mediaFileIds != null && mediaFileIds.size() > 0;
         }
     }
-
-    //!! add parameter for streamType - catchup/startOver/...
 
     public PhoenixMediaProvider() {
         super(PhoenixMediaProvider.TAG);
@@ -338,7 +336,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     mediaAsset.assetType, contextOptions);
         }
 
-        private RequestBuilder getMediaAssetRequest(String baseUrl, String ks, String referrer, MediaAsset mediaAsset) {
+        private RequestBuilder getMediaAssetRequest(String baseUrl, String ks, MediaAsset mediaAsset) {
             return AssetService.get(baseUrl, ks, mediaAsset.assetId, APIDefines.AssetReferenceType.Media);
         }
 
@@ -349,12 +347,12 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                         .tag("asset-play-data-multireq");
                 String multiReqKs = "{1:result:ks}";
                 return multiRequestBuilder.add(OttUserService.anonymousLogin(baseUrl, sessionProvider.partnerId(), null),
-                        getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset)).add(getMediaAssetRequest(baseUrl, multiReqKs, referrer, mediaAsset));
+                        getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset)).add(getMediaAssetRequest(baseUrl, multiReqKs, mediaAsset));
             } else {
                 MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) PhoenixService.getMultirequest(baseUrl, ks)
                         .tag("asset-play-data-multireq");
                 String multiReqKs = ks;
-                return multiRequestBuilder.add(getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset)).add(getMediaAssetRequest(baseUrl, multiReqKs, referrer, mediaAsset));
+                return multiRequestBuilder.add(getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset)).add(getMediaAssetRequest(baseUrl, multiReqKs, mediaAsset));
             }
         }
 
