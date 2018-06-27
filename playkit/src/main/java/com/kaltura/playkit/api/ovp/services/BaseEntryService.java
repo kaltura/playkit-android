@@ -26,22 +26,6 @@ import com.kaltura.playkit.api.ovp.OvpRequestBuilder;
 
 public class BaseEntryService extends OvpService {
 
-    /*public static RequestBuilder entryInfo(String baseUrl, String ks, int partnerId, String entryId) {
-
-        MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks, partnerId)
-                .tag("mediaAsset-multi-get");
-
-        if(TextUtils.isEmpty(ks)){
-            multiRequestBuilder.add(OvpSessionService.anonymousSession(baseUrl, partnerId));
-
-            ks = "{1:result:ks}";
-        }
-
-        return multiRequestBuilder.add(list(baseUrl, ks, entryId),
-                getPlaybackContext(baseUrl, ks, entryId),
-                MetaDataService.list(baseUrl,ks,entryId));
-    }
-*/
     public static OvpRequestBuilder list(String baseUrl, String ks, String entryId) {
         return new OvpRequestBuilder()
                 .service("baseEntry")
@@ -56,7 +40,7 @@ public class BaseEntryService extends OvpService {
 
         BaseEntryListParams baseEntryListParams = new BaseEntryListParams(ks);
         baseEntryListParams.filter.redirectFromEntryId = entryId;
-        baseEntryListParams.responseProfile.fields = "id,name,dataUrl,duration,msDuration,flavorParamsIds,mediaType,type,tags";
+        baseEntryListParams.responseProfile.fields = "id,name,description,thumbnailUrl,dataUrl,duration,msDuration,flavorParamsIds,mediaType,type,tags,dvrStatus";
         baseEntryListParams.responseProfile.type = APIDefines.ResponseProfileType.IncludeFields;
 
         return new Gson().toJsonTree(baseEntryListParams).getAsJsonObject();

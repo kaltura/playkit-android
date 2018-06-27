@@ -68,7 +68,7 @@ public class KalturaLiveStatsConfig {
         return baseUrl;
     }
 
-    public JsonObject toJSONObject() {
+    public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(PARTNER_ID, partnerId);
         jsonObject.addProperty(ENTRY_ID, entryId);

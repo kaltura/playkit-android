@@ -85,6 +85,10 @@ public class PKMediaEntry implements Parcelable {
         return mediaType;
     }
 
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
+
     public enum MediaEntryType {
         Vod,
         Live,

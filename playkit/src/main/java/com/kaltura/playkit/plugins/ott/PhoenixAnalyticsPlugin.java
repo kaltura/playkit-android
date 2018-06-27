@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -123,7 +123,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onUpdateConfig(Object config) {
         setConfigMembers(config);
-        if (baseUrl == null || baseUrl.isEmpty() || partnerId >= 0) {
+        if (baseUrl == null || baseUrl.isEmpty() || partnerId <= 0) {
             cancelTimer();
             messageBus.remove(mEventListener, (Enum[]) PlayerEvent.Type.values());
         }
@@ -268,10 +268,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             public void onComplete(ResponseElement response) {
                 if (response.isSuccess() && response.getError() != null && response.getError().getCode().equals("4001")) {
                     messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
-                    messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString()));
                 }
-
-                log.d("onComplete send event: " + eventType);
+                messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString()));
+                log.d("onComplete send event: " + eventType + " Response:" + response.getResponse());
             }
         });
         requestsExecutor.queue(requestBuilder.build());
