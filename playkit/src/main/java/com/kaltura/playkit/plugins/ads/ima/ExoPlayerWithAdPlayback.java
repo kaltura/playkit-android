@@ -105,6 +105,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     private final List<VideoAdPlayer.VideoAdPlayerCallback> mAdCallbacks =
             new ArrayList<VideoAdPlayer.VideoAdPlayerCallback>(1);
 
+    private OnAdPlayBackListener onAdPlayBackListener;
 
     public interface OnAdPlayBackListener {
         void onBufferStart();
@@ -116,9 +117,6 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
          */
         void onSourceError(int errorType, String errorMessage, Exception exoPlayerException);
     }
-
-    private OnAdPlayBackListener onAdPlayBackListener;
-
 
     public ExoPlayerWithAdPlayback(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -313,10 +311,8 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 break;
             case Player.STATE_READY:
                 log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
-                if (lastPlayerState == PlayerState.BUFFERING) {
-                    if (onAdPlayBackListener != null) {
+                if (lastPlayerState == PlayerState.BUFFERING && onAdPlayBackListener != null) {
                         onAdPlayBackListener.onBufferEnd();
-                    }
                 }
                 lastPlayerState = PlayerState.READY;
                 isPlayerReady = true;
