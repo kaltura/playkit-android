@@ -376,15 +376,9 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             } else {
                 sources = new ArrayList<>();
             }
-            /*
-            in case we need default sources creation:
-            else {
-                PKLog.e(TAG, "failed to receive sources to play");
-                //throw new InvalidParameterException("Could not create sources for media entry");
-                sources = parseFromFlavors(ks, partnerId, uiConfId, entry, playbackContext);
-            }*/
 
-            Map<String, String> metadata = parseMetadata(metadataList, entry);
+            Map<String, String> metadata = parseMetadata(metadataList);
+            populateMetadata(metadata, entry);
             PKMediaEntry mediaEntry = initPKMediaEntry(entry.getTags());
 
             return mediaEntry.setId(entry.getId()).setSources(sources)
@@ -392,6 +386,24 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                     .setMetadata(metadata)
                     .setName(entry.getName())
                     .setMediaType(MediaTypeConverter.toMediaEntryType(entry.getType()));
+        }
+
+        private static void populateMetadata(Map<String, String> metadata, KalturaMediaEntry entry) {
+            if (entry.hasId()) {
+                metadata.put("entryId", entry.getId());
+            }
+            if (entry.hasName()) {
+                metadata.put("name", entry.getName());
+            }
+            if (entry.hasDescription()) {
+                metadata.put("description", entry.getDescription());
+            }
+            if (entry.hasThumbnail()) {
+                metadata.put("thumbnailUrl", entry.getThumbnailUrl());
+            }
+            if (entry.hasDvrStatus()) {
+                metadata.put("dvrStatus", String.valueOf(entry.getDvrStatus()));
+            }
         }
 
         private static PKMediaEntry initPKMediaEntry(String tags) {
@@ -408,7 +420,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
         }
 
-        private static Map<String, String> parseMetadata(KalturaMetadataListResponse metadataList, KalturaMediaEntry entry) {
+        private static Map<String, String> parseMetadata(KalturaMetadataListResponse metadataList) {
             Map<String, String> metadata = new HashMap<>();
 
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -423,22 +435,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 for (KalturaMetadata metadataItem : metadataList.objects) {
                     extractMetadata(builder, metadataItem.xml, metadata);
                 }
-            }
-
-            if (entry.hasId()) {
-                metadata.put("entryId", entry.getId());
-            }
-            if (entry.hasName()) {
-                metadata.put("name", entry.getName());
-            }
-            if (entry.hasDescription()) {
-                metadata.put("description", entry.getDescription());
-            }
-            if (entry.hasThumbnail()) {
-                metadata.put("thumbnailUrl", entry.getThumbnailUrl());
-            }
-            if (entry.hasDvrStatus()) {
-                metadata.put("dvrStatus", String.valueOf(entry.getDvrStatus()));
             }
 
             return metadata;

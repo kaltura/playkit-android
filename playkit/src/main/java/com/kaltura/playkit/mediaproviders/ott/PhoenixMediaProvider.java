@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -73,22 +73,22 @@ import java.util.Map;
  */
 
 /*
-* usages:
-*
-* by formats - request will fetch all available source, filter sources response according to requested formats list
-*
-* by mediaFile ids - request include the requests file ids and will fetch sources for those files only.
-*
-* mandatory fields: assetId, assetType, contextType
-*
-*
-* */
+ * usages:
+ *
+ * by formats - request will fetch all available source, filter sources response according to requested formats list
+ *
+ * by mediaFile ids - request include the requests file ids and will fetch sources for those files only.
+ *
+ * mandatory fields: assetId, assetType, contextType
+ *
+ *
+ * */
 
 public class PhoenixMediaProvider extends BEMediaProvider {
 
     private static final String TAG = "PhoenixMediaProvider";
 
-    private static String  LIVE_ASSET_OBJECT_TYPE = "KalturaLinearMediaAsset";
+    private static String LIVE_ASSET_OBJECT_TYPE = "KalturaLinearMediaAsset";
 
     private static final boolean EnableEmptyKs = true;
 
@@ -112,7 +112,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         public String protocol;
 
-        public MediaAsset(){
+        public MediaAsset() {
         }
 
         public boolean hasFormats() {
@@ -152,7 +152,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
     /**
-     *  NOT MANDATORY! The referrer url, to fetch the data for.
+     * NOT MANDATORY! The referrer url, to fetch the data for.
      *
      * @param referrer - application referrer.
      * @return - instance of PhoenixMediaProvider
@@ -212,7 +212,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
      * OPTIONAL
      *
      * @param protocol - the desired protocol (http/https) for the playback sources
-     * The default is null, which makes the provider filter by server protocol.
+     *                 The default is null, which makes the provider filter by server protocol.
      * @return - instance of PhoenixMediaProvider
      */
     public PhoenixMediaProvider setProtocol(@NonNull @HttpProtocol String protocol) {
@@ -231,7 +231,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         this.mediaAsset.formats = new ArrayList<>(Arrays.asList(formats));
         return this;
     }
-
 
 
     /**
@@ -350,12 +349,12 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                         .tag("asset-play-data-multireq");
                 String multiReqKs = "{1:result:ks}";
                 return multiRequestBuilder.add(OttUserService.anonymousLogin(baseUrl, sessionProvider.partnerId(), null),
-                        getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset)).add(getMediaAssetRequest(baseUrl, multiReqKs, referrer,mediaAsset));
+                        getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset)).add(getMediaAssetRequest(baseUrl, multiReqKs, referrer, mediaAsset));
             } else {
                 MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) PhoenixService.getMultirequest(baseUrl, ks)
                         .tag("asset-play-data-multireq");
                 String multiReqKs = ks;
-                return multiRequestBuilder.add(getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset)).add(getMediaAssetRequest(baseUrl, multiReqKs, referrer,mediaAsset));
+                return multiRequestBuilder.add(getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset)).add(getMediaAssetRequest(baseUrl, multiReqKs, referrer, mediaAsset));
             }
         }
 
@@ -388,7 +387,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
 
-            if(!isCanceled()) {
+            if (!isCanceled()) {
                 PKLog.v(TAG, loadId + " set waitCompletion");
                 waitCompletion();
             } else {
@@ -416,7 +415,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 return;
             }
 
-            if(responseListener != null){
+            if (responseListener != null) {
                 responseListener.onResponse(response);
             }
 
@@ -469,7 +468,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                                     kalturaPlaybackContext.getSources(), is360Content);
                             mediaEntry.setMetadata(metadata);
                             mediaEntry.setName(kalturaMediaAsset.getName());
-                            if (isLiveMediaEntry(kalturaMediaAsset))  {
+                            if (isLiveMediaEntry(kalturaMediaAsset)) {
                                 mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Live);
                             } else {
                                 mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Vod);
@@ -502,7 +501,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
     private boolean is360Supported(Map<String, String> metadata) {
-        if(!metadata.containsKey("360")) {
+        if (!metadata.containsKey("360")) {
             return false;
         }
 
@@ -513,8 +512,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     private Map<String, String> createOttMetadata(KalturaMediaAsset kalturaMediaAsset) {
         Map<String, String> metadata = new HashMap<>();
         JsonObject tags = kalturaMediaAsset.getTags();
-        for (Map.Entry<String,JsonElement> entry : tags.entrySet()) {
-            for (Map.Entry<String,JsonElement> object : entry.getValue().getAsJsonObject().entrySet()) {
+        for (Map.Entry<String, JsonElement> entry : tags.entrySet()) {
+            for (Map.Entry<String, JsonElement> object : entry.getValue().getAsJsonObject().entrySet()) {
                 if (object.getValue().isJsonArray()) {
                     JsonArray objectsArray = object.getValue().getAsJsonArray();
                     for (int i = 0; i < objectsArray.size(); i++) {
@@ -525,8 +524,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
         JsonObject metas = kalturaMediaAsset.getMetas();
-        for (Map.Entry<String,JsonElement> entry : metas.entrySet()) {
-                metadata.put(entry.getKey(), entry.getValue().getAsJsonObject().get("value").getAsString());
+        for (Map.Entry<String, JsonElement> entry : metas.entrySet()) {
+            metadata.put(entry.getKey(), entry.getValue().getAsJsonObject().get("value").getAsString());
         }
 
         for (KalturaThumbnail image : kalturaMediaAsset.getImages()) {
@@ -588,7 +587,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                     boolean inSourceFilter = sourcesFilter != null &&
                             (sourcesFilter.contains(playbackSource.getType()) ||
-                                    sourcesFilter.contains(playbackSource.getId()+""));
+                                    sourcesFilter.contains(playbackSource.getId() + ""));
 
                     if (sourcesFilter != null && !inSourceFilter) { // if specific formats/fileIds were requested, only those will be added to the sources.
                         continue;
@@ -607,7 +606,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                     List<KalturaDrmPlaybackPluginData> drmData = playbackSource.getDrmData();
                     if (drmData != null && !drmData.isEmpty()) {
-                        if (!MediaProvidersUtils.isDRMSchemeValid(pkMediaSource, drmData)){
+                        if (!MediaProvidersUtils.isDRMSchemeValid(pkMediaSource, drmData)) {
                             continue;
                         }
                         MediaProvidersUtils.updateDrmParams(pkMediaSource, drmData);
@@ -630,7 +629,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                     int valueIndex1 = -1;
                     int valueIndex2 = -1;
-                    if(sourcesFilter != null) {
+                    if (sourcesFilter != null) {
                         valueIndex1 = sourcesFilter.indexOf(o1.getType());
                         if (valueIndex1 == -1) {
                             valueIndex1 = sourcesFilter.indexOf(o1.getId() + "");

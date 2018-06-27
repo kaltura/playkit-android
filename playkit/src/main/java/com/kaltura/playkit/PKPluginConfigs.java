@@ -12,7 +12,6 @@
 
 package com.kaltura.playkit;
 
-import android.support.annotation.NonNull;
 
 import java.util.HashMap;
 import java.util.Iterator;
