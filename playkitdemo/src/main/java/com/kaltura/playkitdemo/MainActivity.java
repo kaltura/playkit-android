@@ -37,6 +37,7 @@ import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.api.ovp.SimpleOvpSessionProvider;
 import com.kaltura.playkit.api.phoenix.APIDefines;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
@@ -93,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private RelativeLayout playerContainer;
     private RelativeLayout spinerContainer;
     private AppCompatImageView fullScreenBtn;
-
+    private AdCuePoints adCuePoints;
     private Spinner videoSpinner, audioSpinner, textSpinner;
 
     private OrientationManager mOrientationManager;
@@ -451,6 +452,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void addPlayerListeners(final ProgressBar appProgressBar) {
+
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
@@ -463,13 +465,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onEvent(PKEvent event) {
                 log.d("AD_CONTENT_PAUSE_REQUESTED");
                 appProgressBar.setVisibility(View.VISIBLE);
+                controlsView.setPlayerState(PlayerState.READY);
             }
+
         }, AdEvent.Type.CONTENT_PAUSE_REQUESTED);
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
                 AdEvent.AdCuePointsUpdateEvent cuePointsList = (AdEvent.AdCuePointsUpdateEvent) event;
-                AdCuePoints adCuePoints = cuePointsList.cuePoints;
+                adCuePoints = cuePointsList.cuePoints;
                 if (adCuePoints != null) {
                     log.d("Has Postroll = " + adCuePoints.hasPostRoll());
                 }
@@ -490,11 +494,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 appProgressBar.setVisibility(View.INVISIBLE);
             }
         }, AdEvent.Type.RESUMED);
+
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
                 log.d("Ad Event AD_ALL_ADS_COMPLETED");
                 appProgressBar.setVisibility(View.INVISIBLE);
+                if (adCuePoints != null && adCuePoints.hasPostRoll()) {
+                    controlsView.setPlayerState(PlayerState.IDLE);
+                }
             }
         }, AdEvent.Type.ALL_ADS_COMPLETED);
         player.addEventListener(new PKEvent.Listener() {
@@ -550,7 +558,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (event instanceof PlayerEvent.StateChanged) {
                     PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
                     log.d("State changed from " + stateChanged.oldState + " to " + stateChanged.newState);
-
                     if(controlsView != null){
                         controlsView.setPlayerState(stateChanged.newState);
                     }
