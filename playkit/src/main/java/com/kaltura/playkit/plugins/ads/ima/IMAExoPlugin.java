@@ -22,6 +22,7 @@ import com.google.ads.interactivemedia.v3.api.CompanionAdSlot;
 import com.google.ads.interactivemedia.v3.api.ImaSdkFactory;
 import com.google.ads.interactivemedia.v3.api.ImaSdkSettings;
 import com.google.ads.interactivemedia.v3.api.UiElement;
+import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.MessageBus;
@@ -1104,9 +1105,10 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     }
 
     @Override
-    public void onSourceError(int errorType, String errorMessage, Exception exoPlayerException) {
-        log.d(" onSourceError, "+" errorType = "+errorType+" ,errorMessage = "+errorMessage);
+    public void onSourceError(Exception exoPlayerException) {
+        log.d(" onSourceError " + ", message = " + exoPlayerException.getMessage());
         isAdDisplayed = false;
         isAdError = true;
+        sendError(PKAdErrorType.VIDEO_PLAY_ERROR, exoPlayerException.getMessage(), exoPlayerException);
     }
 }
