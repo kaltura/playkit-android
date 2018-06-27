@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.api.phoenix.model;
 
+import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.response.BaseResult;
 
 import java.util.List;
@@ -20,10 +21,23 @@ import java.util.List;
  */
 
 public class KalturaMediaAsset extends BaseResult {
-    int id;
-    int type;
-    String name;
-    List<KalturaMediaFile> mediaFiles;
+
+    private int id;
+    private int type;
+
+    private long endDate;
+    private long startDate;
+    private Long externalIds;
+
+    private String name;
+    private JsonObject tags;
+    private JsonObject metas;
+    private String objectType;
+    private String description;
+
+    private List<KalturaThumbnail> images;
+    private List<KalturaMediaFile> mediaFiles;
+
 
     public int getId() {
         return id;
@@ -33,8 +47,43 @@ public class KalturaMediaAsset extends BaseResult {
         return type;
     }
 
-    public List<KalturaMediaFile> getFiles() {
-        return mediaFiles;
+    public long getEndDate() {
+        return endDate;
     }
 
+    public long getStartDate() {
+        return startDate;
+    }
+
+    public Long getExternalIds() {
+        return externalIds;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public JsonObject getTags() {
+        return tags;
+    }
+
+    public JsonObject getMetas() {
+        return metas;
+    }
+
+    public String getObjectType() {
+        return objectType;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public List<KalturaThumbnail> getImages() {
+        return images;
+    }
+
+    public List<KalturaMediaFile> getMediaFiles() {
+        return mediaFiles;
+    }
 }

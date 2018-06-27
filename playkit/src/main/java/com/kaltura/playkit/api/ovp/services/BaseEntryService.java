@@ -40,8 +40,8 @@ public class BaseEntryService extends OvpService {
         return multiRequestBuilder.add(list(baseUrl, ks, entryId),
                 getPlaybackContext(baseUrl, ks, entryId),
                 MetaDataService.list(baseUrl,ks,entryId));
-    }
-*/
+    }*/
+
     public static OvpRequestBuilder list(String baseUrl, String ks, String entryId) {
         return new OvpRequestBuilder()
                 .service("baseEntry")
@@ -56,7 +56,7 @@ public class BaseEntryService extends OvpService {
 
         BaseEntryListParams baseEntryListParams = new BaseEntryListParams(ks);
         baseEntryListParams.filter.redirectFromEntryId = entryId;
-        baseEntryListParams.responseProfile.fields = "id,name,dataUrl,duration,msDuration,flavorParamsIds,mediaType,type,tags";
+        baseEntryListParams.responseProfile.fields = "id,name,description,thumbnailUrl,dataUrl,duration,msDuration,flavorParamsIds,mediaType,type,tags,dvrStatus";
         baseEntryListParams.responseProfile.type = APIDefines.ResponseProfileType.IncludeFields;
 
         return new Gson().toJsonTree(baseEntryListParams).getAsJsonObject();
