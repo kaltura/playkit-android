@@ -109,9 +109,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     public interface OnAdPlayBackListener {
         void onBufferStart();
         void onBufferEnd();
-
         /**
-         *
          * @param errorType TYPE_SOURCE = 0, TYPE_RENDERER = 1, TYPE_UNEXPECTED = 2
          * @param errorMessage Error Message
          * @param exoPlayerException Source Exception
