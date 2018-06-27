@@ -338,7 +338,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
 
     @Override
     protected void onApplicationResumed() {
-        log.d("onApplicationResumed isAdDisplayed = " + isAdDisplayed + ", lastPlaybackPlayerState = " + lastPlaybackPlayerState + " , lastAdEventReceived = "+lastAdEventReceived);
+        log.d("onApplicationResumed isAdDisplayed = " + isAdDisplayed + ", lastPlaybackPlayerState = " + lastPlaybackPlayerState + " ,lastAdEventReceived = " + lastAdEventReceived);
         if (videoPlayerWithAdPlayback != null) {
             videoPlayerWithAdPlayback.setIsAppInBackground(false);
         }
@@ -1109,6 +1109,13 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         log.d(" onSourceError " + ", message = " + exoPlayerException.getMessage());
         isAdDisplayed = false;
         isAdError = true;
-        sendError(PKAdErrorType.VIDEO_PLAY_ERROR, exoPlayerException.getMessage(), exoPlayerException);
+
+        String errorMsg = "Unknown Error";
+        if (exoPlayerException.getMessage() != null) {
+            errorMsg = exoPlayerException.getMessage();
+        } else if (exoPlayerException.getCause() != null && exoPlayerException.getCause().getMessage() != null) {
+            errorMsg = exoPlayerException.getCause().getMessage();
+        }
+        sendError(PKAdErrorType.VIDEO_PLAY_ERROR, errorMsg, exoPlayerException);
     }
 }

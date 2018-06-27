@@ -21,7 +21,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.response.PrimitiveResult;
 import com.kaltura.netkit.connect.response.ResultElement;
@@ -512,6 +511,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         }, PlayerEvent.Type.PLAYING);
 
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                AdEvent.Error adErrorEvent = (AdEvent.Error) event;
+                if (adErrorEvent != null && adErrorEvent.error != null) {
+                    log.e("ERROR: " + adErrorEvent.error.errorType + ", " + adErrorEvent.error.message);
+                }
+            }
+        }, AdEvent.Type.ERROR);
 
         player.addEventListener(new PKEvent.Listener() {
             @Override
