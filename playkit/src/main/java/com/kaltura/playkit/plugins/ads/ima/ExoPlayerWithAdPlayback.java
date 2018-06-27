@@ -61,7 +61,6 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
     private DefaultTrackSelector trackSelector;
-    private TrackGroupArray lastSeenTrackGroupArray;
     private EventLogger eventLogger;
     private android.os.Handler mainHandler = new Handler();
     private DefaultRenderersFactory renderersFactory;
@@ -165,7 +164,6 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             TrackSelection.Factory adaptiveTrackSelectionFactory =
                     new AdaptiveTrackSelection.Factory(BANDWIDTH_METER);
             trackSelector = new DefaultTrackSelector(adaptiveTrackSelectionFactory);
-            lastSeenTrackGroupArray = null;
             eventLogger = new EventLogger(trackSelector);
             player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
             player.addListener(eventLogger);
