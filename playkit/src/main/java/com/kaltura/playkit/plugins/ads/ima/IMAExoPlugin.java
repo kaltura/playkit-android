@@ -1110,8 +1110,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
             pause();
         }
     }
-
-
+    
     @Override
     public void onSourceError(Exception exoPlayerException) {
         log.d(" onSourceError " + ", message = " + exoPlayerException.getMessage());
