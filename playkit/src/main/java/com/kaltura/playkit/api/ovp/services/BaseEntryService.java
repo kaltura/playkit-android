@@ -26,6 +26,22 @@ import com.kaltura.playkit.api.ovp.OvpRequestBuilder;
 
 public class BaseEntryService extends OvpService {
 
+    /*public static RequestBuilder entryInfo(String baseUrl, String ks, int partnerId, String entryId) {
+
+        MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks, partnerId)
+                .tag("mediaAsset-multi-get");
+
+        if(TextUtils.isEmpty(ks)){
+            multiRequestBuilder.add(OvpSessionService.anonymousSession(baseUrl, partnerId));
+
+            ks = "{1:result:ks}";
+        }
+
+        return multiRequestBuilder.add(list(baseUrl, ks, entryId),
+                getPlaybackContext(baseUrl, ks, entryId),
+                MetaDataService.list(baseUrl,ks,entryId));
+    }*/
+
     public static OvpRequestBuilder list(String baseUrl, String ks, String entryId) {
         return new OvpRequestBuilder()
                 .service("baseEntry")
