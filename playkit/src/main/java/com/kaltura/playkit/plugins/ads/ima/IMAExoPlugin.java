@@ -1104,8 +1104,8 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     }
 
     @Override
-    public void onSourceError(Exception exoPlayerException) {
-        log.d(" onSourceError");
+    public void onSourceError(int errorType, String errorMessage, Exception exoPlayerException) {
+        log.d(" onSourceError, "+" errorType = "+errorType+" ,errorMessage = "+errorMessage);
         isAdDisplayed = false;
         isAdError = true;
     }

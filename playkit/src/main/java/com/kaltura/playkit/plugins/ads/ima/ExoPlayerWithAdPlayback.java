@@ -109,7 +109,14 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     public interface OnAdPlayBackListener {
         void onBufferStart();
         void onBufferEnd();
-        void onSourceError(Exception exoPlayerException);
+
+        /**
+         *
+         * @param errorType TYPE_SOURCE = 0, TYPE_RENDERER = 1, TYPE_UNEXPECTED = 2
+         * @param errorMessage Error Message
+         * @param exoPlayerException Source Exception
+         */
+        void onSourceError(int errorType, String errorMessage, Exception exoPlayerException);
     }
 
     private OnAdPlayBackListener onAdPlayBackListener;
@@ -360,7 +367,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError " + error.getMessage());
         for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
-            onAdPlayBackListener.onSourceError(error);
+            onAdPlayBackListener.onSourceError(error.type, error.getMessage(), error);
             callback.onError();
         }
 
