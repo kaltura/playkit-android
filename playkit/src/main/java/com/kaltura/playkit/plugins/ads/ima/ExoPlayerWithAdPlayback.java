@@ -101,6 +101,8 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     private boolean adShouldPAutolay = true;
 
+    private boolean isAdFirstPlay;
+
     private final List<VideoAdPlayer.VideoAdPlayerCallback> mAdCallbacks =
             new ArrayList<VideoAdPlayer.VideoAdPlayerCallback>(1);
 
@@ -110,6 +112,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         void onBufferStart();
         void onBufferEnd();
         void onSourceError(Exception exoPlayerException);
+        void adFirstPlayStarted();
     }
 
     public ExoPlayerWithAdPlayback(Context context, AttributeSet attrs, int defStyle) {
@@ -192,6 +195,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                     for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                         log.d("playAd->onPlay");
                         callback.onPlay();
+                        isAdFirstPlay = true;
                         return;
                     }
                 }
@@ -306,6 +310,10 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
                 if (lastPlayerState == PlayerState.BUFFERING && onAdPlayBackListener != null) {
                         onAdPlayBackListener.onBufferEnd();
+                    if(isAdFirstPlay && onAdPlayBackListener != null ){
+                        onAdPlayBackListener.adFirstPlayStarted();
+                        isAdFirstPlay = false;
+                    }
                 }
                 lastPlayerState = PlayerState.READY;
                 isPlayerReady = true;
@@ -541,6 +549,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
         MediaSource mediaSource =  buildMediaSource(currentSourceUri, null, mainHandler, eventLogger);
         mVideoPlayer.getPlayer().stop();
+        isAdFirstPlay = false;
         player.prepare(mediaSource);
         mVideoPlayer.getPlayer().setPlayWhenReady(adShouldPAutolay);
     }
@@ -593,6 +602,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             player = null;
             trackSelector = null;
             eventLogger = null;
+            isAdFirstPlay = false;
         }
     }
 
