@@ -67,7 +67,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static com.kaltura.playkit.utils.Consts.DISTANCE_FROM_LIVE_THRESHOLD;
 import static com.kaltura.playkitdemo.MockParams.Format;
 import static com.kaltura.playkitdemo.MockParams.Format2;
 import static com.kaltura.playkitdemo.MockParams.Format_HD_Dash;
@@ -479,6 +478,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
             }
         }, AdEvent.Type.CUEPOINTS_CHANGED);
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                log.d("AD_FIRST_PLAY");
+                appProgressBar.setVisibility(View.INVISIBLE);
+            }
+        }, AdEvent.Type.AD_FIRST_PLAY);
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {

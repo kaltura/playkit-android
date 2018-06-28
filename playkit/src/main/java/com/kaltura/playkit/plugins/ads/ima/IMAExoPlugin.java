@@ -843,8 +843,13 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
 
     @Override
     public void onAdEvent(com.google.ads.interactivemedia.v3.api.AdEvent adEvent) {
-        if (adsManager == null || adEventsMap == null) {
-            log.e("ERROR, adsManager == null || adEventsMap == null");
+        if (adsManager == null) {
+            log.w("WARNING, adsManager == null");
+            return;
+        }
+
+        if(adEventsMap == null){
+            log.e("ERROR, adEventsMap == null");
             return;
         }
 
@@ -1128,6 +1133,12 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
             errorMsg = exoPlayerException.getCause().getMessage();
         }
         sendError(PKAdErrorType.VIDEO_PLAY_ERROR, errorMsg, exoPlayerException);
+    }
+
+    @Override
+    public void adFirstPlayStarted() {
+        log.d("AD adFirstPlayStarted");
+        messageBus.post(new AdEvent(AdEvent.Type.AD_FIRST_PLAY));
     }
 
     private Map<com.google.ads.interactivemedia.v3.api.AdEvent.AdEventType, AdEvent.Type> buildAdsEventMap() {

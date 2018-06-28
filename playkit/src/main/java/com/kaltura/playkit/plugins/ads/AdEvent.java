@@ -139,6 +139,7 @@ public class AdEvent implements PKEvent {
 
     public enum Type {
         AD_REQUESTED,
+        AD_FIRST_PLAY,
         STARTED,
         AD_DISPLAYED_AFTER_CONTENT_PAUSE,
         PAUSED,
