@@ -1027,7 +1027,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
                 preparePlayer(false);
                 Ad adInfo = adEvent.getAd();
                 if (adInfo != null) {
-                    //incase one ad in the pod fails to play we want next one to be played
+                    //in case one ad in the pod fails to play we want next one to be played
                     AdPodInfo adPodInfo = adInfo.getAdPodInfo();
                     log.d("adPodInfo.getAdPosition() = " + adPodInfo.getAdPosition() + " adPodInfo.getTotalAds() = " + adPodInfo.getTotalAds());
                     if (adPodInfo.getTotalAds() > 1 && adPodInfo.getAdPosition() < adPodInfo.getTotalAds()) {
@@ -1114,7 +1114,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     @Override
     public void onSourceError(Exception exoPlayerException) {
         log.d(" onSourceError " + ", message = " + exoPlayerException.getMessage());
-        if (lastAdEventReceived == AdEvent.Type.AD_BUFFER_START) { // incase there is ad playback error need to remove the buffer started since buffer end is not fired
+        if (lastAdEventReceived == AdEvent.Type.AD_BUFFER_START) { // in case there is ad playback error need to remove the buffer started since buffer end is not fired
             onBufferEnd();
         }
 
