@@ -352,9 +352,10 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     @Override
     public void onPlayerError(ExoPlaybackException error) {
-        log.d("onPlayerError " + error.getMessage());
+        log.d("onPlayerError error = " + error.getMessage());
+        onAdPlayBackListener.onSourceError(error);
         for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
-            onAdPlayBackListener.onSourceError(error);
+            log.d("onPlayerError calling callback.onError()");
             callback.onError();
         }
 
@@ -423,11 +424,11 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         }
     }
 
-    public void addAdBufferEventListener(OnAdPlayBackListener onAdPlayBackListener) {
+    public void addAdPlaybackEventListener(OnAdPlayBackListener onAdPlayBackListener) {
         this.onAdPlayBackListener = onAdPlayBackListener;
     }
 
-    public void removeAdBufferEventListener() {
+    public void removeAdPlaybackEventListener() {
         onAdPlayBackListener = null;
     }
 
