@@ -15,31 +15,31 @@
         android:paddingTop="4dp"
         android:orientation="horizontal">
 
-        <ImageButton android:id="@+id/prev"
-            android:contentDescription="@string/exo_controls_previous_description"
-            style="@style/ExoMediaButton.Previous"/>
+        <!--<ImageButton android:id="@+id/prev"-->
+            <!--android:contentDescription="@string/exo_controls_previous_description"-->
+            <!--style="@style/ExoMediaButton.Previous"/>-->
 
-        <ImageButton android:id="@+id/rew"
-            android:contentDescription="@string/exo_controls_rewind_description"
-            style="@style/ExoMediaButton.Rewind"
-            android:visibility="gone"/>
+        <!--<ImageButton android:id="@+id/rew"-->
+            <!--android:contentDescription="@string/exo_controls_rewind_description"-->
+            <!--style="@style/ExoMediaButton.Rewind"-->
+            <!--android:visibility="gone"/>-->
 
-        <ImageButton android:id="@+id/play"
-            style="@style/ExoMediaButton"
-            android:src="@drawable/exo_controls_play"/>
+        <!--<ImageButton android:id="@+id/play"-->
+            <!--style="@style/ExoMediaButton"-->
+            <!--android:src="@drawable/exo_controls_play"/>-->
 
-        <ImageButton android:id="@+id/pause"
-            style="@style/ExoMediaButton"
-            android:src="@drawable/exo_controls_pause"/>
+        <!--<ImageButton android:id="@+id/pause"-->
+            <!--style="@style/ExoMediaButton"-->
+            <!--android:src="@drawable/exo_controls_pause"/>-->
 
-        <ImageButton android:id="@+id/ffwd"
-            android:contentDescription="@string/exo_controls_fastforward_description"
-            style="@style/ExoMediaButton.FastForward"
-            android:visibility="gone"/>
+        <!--<ImageButton android:id="@+id/ffwd"-->
+            <!--android:contentDescription="@string/exo_controls_fastforward_description"-->
+            <!--style="@style/ExoMediaButton.FastForward"-->
+            <!--android:visibility="gone"/>-->
 
-        <ImageButton android:id="@+id/next"
-            android:contentDescription="@string/exo_controls_previous_description"
-            style="@style/ExoMediaButton.Next"/>
+        <!--<ImageButton android:id="@+id/next"-->
+            <!--android:contentDescription="@string/exo_controls_previous_description"-->
+            <!--style="@style/ExoMediaButton.Next"/>-->
 
     </LinearLayout>
 
