@@ -32,8 +32,10 @@ repositories {
 dependencies {
     implementation project(path: ':playkit')
 
-    compile project(":ima");
+    //compile project(":ima");
+    api 'com.kaltura:playkit-android-ima:master-SNAPSHOT'
     //compile project(":kava");
+    //implementation 'com.kaltura.playkit:kavaplugin:1.0.10'
     //compile project(":youbora");
     //compile project(":googlecast");
 
