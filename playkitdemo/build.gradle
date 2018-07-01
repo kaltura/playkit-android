@@ -31,7 +31,12 @@ repositories {
 
 dependencies {
     implementation project(path: ':playkit')
-    //implementation project(":kava")
+
+    compile project(":ima");
+    //compile project(":kava");
+    //compile project(":youbora");
+    //compile project(":googlecast");
+
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support:design:26.1.0'
     implementation 'com.github.kaltura:playkit-dtg-android:v2.3.0'
