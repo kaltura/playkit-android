@@ -30,8 +30,8 @@ repositories {
 }
 
 dependencies {
-    implementation project(path: ':playkit')
-
+    //implementation project(path: ':playkit')
+    implementation 'com.kaltura:playkit-android:dev-SNAPSHOT'
     //compile project(":ima");
     api 'com.kaltura:playkit-android-ima:master-SNAPSHOT'
     //compile project(":kava");
