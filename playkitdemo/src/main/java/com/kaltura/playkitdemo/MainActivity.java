@@ -53,9 +53,9 @@ import com.kaltura.playkit.player.VideoTrack;
 import com.kaltura.playkit.plugins.SamplePlugin;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
-import com.kaltura.playkit.plugins.ads.ima.IMAConfig;
-import com.kaltura.playkit.plugins.ads.ima.IMAExoPlugin;
 
+import com.kaltura.playkit.plugins.ima.IMAConfig;
+import com.kaltura.playkit.plugins.ima.IMAPlugin;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsConfig;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void registerPlugins() {
 
         PlayKitManager.registerPlugins(this, SamplePlugin.factory);
-        PlayKitManager.registerPlugins(this, IMAExoPlugin.factory);
+        PlayKitManager.registerPlugins(this, IMAPlugin.factory);
         PlayKitManager.registerPlugins(this, KalturaStatsPlugin.factory);
 
         PlayKitManager.registerPlugins(this, YouboraPlugin.factory);
@@ -436,7 +436,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //tagTimesMap.put(2.0,"ADTAG");
 
         IMAConfig adsConfig = new IMAConfig().setAdTagURL(adTagUrl).setVideoMimeTypes(videoMimeTypes).enableDebugMode(true).setAdLoadTimeOut(8);
-        config.setPluginConfig(IMAExoPlugin.factory.getName(), adsConfig.toJSONObject());
+        config.setPluginConfig(IMAPlugin.factory.getName(), adsConfig.toJSONObject());
 
     }
     @Override
