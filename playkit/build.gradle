@@ -34,11 +34,13 @@ tasks.withType(Javadoc) {
 dependencies {
 
     // NetKit
-    api 'com.kaltura.netkit:netkit-core:1.0.5'
-    //compile ('com.kaltura.netkit-android:netkit-core:b6175662cfae258e98a5b028363fbf0962d9c5a8')
+    api 'com.kaltura.netkit:netkit-core:1.0.7'
 
     // ExoPlayer
-    api 'com.google.android.exoplayer:exoplayer:2.7.0'
+    api 'com.google.android.exoplayer:exoplayer-core:2.7.0'
+    api 'com.google.android.exoplayer:exoplayer-dash:2.7.0'
+    api 'com.google.android.exoplayer:exoplayer-hls:2.7.0'
+    api 'com.google.android.exoplayer:exoplayer-ui:2.7.0'
 
     // Google Ads
     api 'com.google.ads.interactivemedia.v3:interactivemedia:3.8.5'
