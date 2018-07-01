@@ -44,6 +44,7 @@ public class IMAConfig {
     public static final String AD_LOAD_TIMEOUT          = "adLoadTimeOut";
     public static final String AD_MAX_REDIRECTS         = "adMaxRedirects";
     public static final String AD_ENABLE_DEBUG_MODE     = "enableDebugMode";
+    public static final String AD_OMID_ENABLED          = "isOMIDExperimentalEnabled";
 
     private String language;
     private String adTagURL;
@@ -55,6 +56,7 @@ public class IMAConfig {
     private boolean enableDebugMode;
     private int adLoadTimeOut; // in sec
     private int maxRedirects;
+    private boolean isOMIDExperimentalEnabled;
     private List<String> videoMimeTypes;
     //private Map<Double,String> tagsTimes; // <AdTime,URL_to_execute>
 
@@ -72,6 +74,7 @@ public class IMAConfig {
         this.videoMimeTypes           = new ArrayList<>();
         this.videoMimeTypes.add(PKMediaFormat.mp4.mimeType);
         this.adTagURL = null;         //=> must be set via setter
+        this.isOMIDExperimentalEnabled = false;
 
         //if (tagTimes == null) {
         //    tagTimes = new HashMap<>();
@@ -194,6 +197,15 @@ public class IMAConfig {
         return enableDebugMode;
     }
 
+    public IMAConfig setEnableOMIDExperimental(boolean enableOMIDExperimental) {
+        this.isOMIDExperimentalEnabled = enableOMIDExperimental;
+        return this;
+    }
+
+    public boolean isOMIDExperimentalEnabled() {
+        return isOMIDExperimentalEnabled;
+    }
+
     //    public Map<Double, String> getTagsTimes() {
 //        return tagsTimes;
 //    }
@@ -223,6 +235,7 @@ public class IMAConfig {
         jsonObject.addProperty(AD_LOAD_TIMEOUT, adLoadTimeOut);
         jsonObject.addProperty(AD_ENABLE_DEBUG_MODE, enableDebugMode);
         jsonObject.addProperty(AD_MAX_REDIRECTS, maxRedirects);
+        jsonObject.addProperty(AD_OMID_ENABLED, isOMIDExperimentalEnabled);
 
 
         Gson gson = new Gson();

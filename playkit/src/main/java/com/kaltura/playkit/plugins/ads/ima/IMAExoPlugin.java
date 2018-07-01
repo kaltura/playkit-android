@@ -307,6 +307,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         }
         imaSdkSettings.setLanguage(adConfig.getLanguage());
         imaSdkSettings.setDebugMode(adConfig.isDebugMode());
+        imaSdkSettings.setEnableOmidExperimentally(adConfig.isOMIDExperimentalEnabled());
     }
 
     @Override
