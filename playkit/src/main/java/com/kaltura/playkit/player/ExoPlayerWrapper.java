@@ -673,6 +673,13 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void stop() {
+        log.d("stop");
+
+        lastSelectedTrackIds = new String[] {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+        if (trackSelectionHelper != null) {
+            trackSelectionHelper.stop();
+        }
+
         if (player != null) {
             player.setPlayWhenReady(false);
             player.seekTo(0);

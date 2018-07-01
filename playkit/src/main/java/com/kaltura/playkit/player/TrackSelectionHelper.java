@@ -770,5 +770,11 @@ class TrackSelectionHelper {
     void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
     }
+
+    // clean previous selection
+    void stop() {
+        lastSelectedTrackIds = new String[]{NONE, NONE, NONE};
+        requestedChangeTrackIds = new String[]{NONE, NONE, NONE};
+    }
 }
 
