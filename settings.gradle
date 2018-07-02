@@ -1,12 +1,1 @@
-include ':playkit', ':playkitdemo'
-
-//include ':kava'
-//https://github.com/kaltura/playkit-android-kava.git
-//project(':kava').projectDir = new File('../playkit-android-kava/kavaplugin')
-//include ':ima'
-//project(':ima').projectDir = new File(settingsDir,'../playkit-android-ima/imaplugin')
-
-//include ':youbora'
-//project(':youbora').projectDir = new File(settingsDir,'../playkit-android-youbora/youboraplugin')
-//include ':googlecast'
-//project(':googlecast').projectDir = new File(settingsDir,'../playkit-android-googlecast/googlecast')
+include ':playkit'
