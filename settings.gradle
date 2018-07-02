@@ -1,4 +1,4 @@
-include ':playkit', ':playkitdemo'
+include ':playkit'
 
 //include ':kava'
 //https://github.com/kaltura/playkit-android-kava.git
