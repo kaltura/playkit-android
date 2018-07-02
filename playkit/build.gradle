@@ -42,9 +42,6 @@ dependencies {
     api 'com.google.android.exoplayer:exoplayer-hls:2.7.0'
     api 'com.google.android.exoplayer:exoplayer-ui:2.7.0'
 
-    // Youbora Analytics
-    api files('lib/YouboraLib-5.3.10.jar')
-
     // Tests
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.hamcrest:hamcrest-library:1.3'
