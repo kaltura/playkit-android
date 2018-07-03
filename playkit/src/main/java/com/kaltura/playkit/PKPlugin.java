@@ -25,6 +25,7 @@ public abstract class PKPlugin {
     public interface Factory {
         String getName();
         PKPlugin newInstance();
+        String getVersion();
         void warmUp(Context context);
     }
 

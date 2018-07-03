@@ -15,6 +15,7 @@ package com.kaltura.playkit.plugins;
 import android.content.Context;
 
 import com.google.gson.JsonObject;
+import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -45,6 +46,11 @@ public class SamplePlugin extends PKPlugin {
         @Override
         public PKPlugin newInstance() {
             return new SamplePlugin();
+        }
+
+        @Override
+        public String getVersion() {
+            return BuildConfig.VERSION_NAME;
         }
 
         @Override

@@ -19,6 +19,7 @@ import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
+import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
@@ -43,6 +44,11 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         @Override
         public PKPlugin newInstance() {
             return new TVPAPIAnalyticsPlugin();
+        }
+
+        @Override
+        public String getVersion() {
+            return BuildConfig.VERSION_NAME;
         }
 
         @Override
