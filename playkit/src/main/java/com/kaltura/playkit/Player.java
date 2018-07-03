@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -15,7 +15,6 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.utils.Consts;
 
@@ -38,6 +37,7 @@ public interface Player {
 
         /**
          * Set the Player's licenseRequestAdapter.
+         *
          * @param licenseRequestAdapter - request adapter.
          * @return - Player Settings.
          */
@@ -80,6 +80,7 @@ public interface Player {
          * Decide if player should use secure rendering on the surface.
          * Known limitation - when useTextureView set to true and isSurfaceSecured set to true -
          * secure rendering will have no effect.
+         *
          * @param isSurfaceSecured - should enable/disable secure rendering
          * @return - Player Settings.
          */
@@ -87,10 +88,27 @@ public interface Player {
 
         /**
          * Decide the Ad will be auto played when comes to foreground from background
+         *
          * @param autoPlayOnResume true if it is autoplayed or else false, default is TRUE
          * @return Player Settings
          */
         Settings setAdAutoPlayOnResume(boolean autoPlayOnResume);
+
+        /**
+         * Set the Player's preferredAudioTrackConfig.
+         *
+         * @param preferredAudioTrackConfig - AudioTrackConfig.
+         * @return - Player Settings.
+         */
+        Settings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig);
+
+        /**
+         * Set the Player's preferredTextTrackConfig.
+         *
+         * @param preferredTextTrackConfig - TextTrackConfig.
+         * @return - Player Settings.
+         */
+        Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig);
 
     }
 
@@ -245,6 +263,7 @@ public interface Player {
 
     /**
      * Change player speed (pitch = 1.0f by default)
+     *
      * @param rate - desired rate (ex. 0.5f 1.0f 1.5f, 2.0f).
      */
     void setPlaybackRate(float rate);

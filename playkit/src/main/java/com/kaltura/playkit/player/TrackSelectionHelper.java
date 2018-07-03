@@ -24,11 +24,14 @@ import com.google.android.exoplayer2.trackselection.MappingTrackSelector.Selecti
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.MissingResourceException;
 
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
@@ -44,7 +47,6 @@ class TrackSelectionHelper {
     private static final PKLog log = PKLog.get("TrackSelectionHelper");
 
     private static final TrackSelection.Factory FIXED_FACTORY = new FixedTrackSelection.Factory();
-
 
     private static final int TRACK_ADAPTIVE = -1;
     private static final int TRACK_DISABLED = -2;
@@ -78,12 +80,14 @@ class TrackSelectionHelper {
     private List<TextTrack> textTracks = new ArrayList<>();
 
     private String[] lastSelectedTrackIds;
-    private String[] requestedChangeTrackIds = {NONE, NONE, NONE};
+    private String[] requestedChangeTrackIds;
+
+    private PKTrackConfig preferredAudioLanguageConfig;
+    private PKTrackConfig preferredTextLanguageConfig;
 
     private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
 
     private TracksInfoListener tracksInfoListener;
-
     interface TracksInfoListener {
 
         void onTracksInfoReady(PKTracks PKTracks);
@@ -119,14 +123,14 @@ class TrackSelectionHelper {
      *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
-    boolean prepareTracks() {
+    boolean prepareTracks(boolean isDashManifest) {
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
             log.w("Trying to get current MappedTrackInfo returns null");
             return false;
         }
         warnAboutUnsupportedRenderTypes();
-        PKTracks tracksInfo = buildTracks();
+        PKTracks tracksInfo = buildTracks(isDashManifest);
 
         if (tracksInfoListener != null) {
             tracksInfoListener.onTracksInfoReady(tracksInfo);
@@ -139,7 +143,7 @@ class TrackSelectionHelper {
      * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
      */
-    private PKTracks buildTracks() {
+    private PKTracks buildTracks(boolean isDashManifest) {
 
         clearTracksLists();
 
@@ -173,16 +177,23 @@ class TrackSelectionHelper {
                                 videoTracks.add(new VideoTrack(uniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false));
                                 break;
                             case TRACK_TYPE_AUDIO:
-
-                                audioTracks.add(new AudioTrack(uniqueId, format.language, format.id, format.bitrate, format.selectionFlags, false));
+                                String audioTrackLabel = null;
+                                if (!isDashManifest) {
+                                    audioTrackLabel = format.id;
+                                }
+                                audioTracks.add(new AudioTrack(uniqueId, format.language, audioTrackLabel, format.bitrate, format.selectionFlags, false));
                                 break;
                             case TRACK_TYPE_TEXT:
+                                String textTrackLabel = null;
+                                if (!isDashManifest) {
+                                    textTrackLabel = format.id;
+                                }
                                 if (CEA_608.equals(format.sampleMimeType)) {
                                     if (cea608CaptionsEnabled) {
                                         textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
                                     }
                                 } else {
-                                    textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
+                                    textTracks.add(new TextTrack(uniqueId, format.language, textTrackLabel, format.selectionFlags));
                                 }
                                 break;
                         }
@@ -576,6 +587,7 @@ class TrackSelectionHelper {
 
     /**
      * Validate and return parsed uniqueId.
+     *
      * @param uniqueId - uniqueId to validate
      * @return - parsed uniqueId in case of success.
      * @throws IllegalArgumentException when uniqueId is illegal.
@@ -768,14 +780,111 @@ class TrackSelectionHelper {
         return null;
     }
 
-    void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
-        this.cea608CaptionsEnabled = cea608CaptionsEnabled;
-    }
-
     // clean previous selection
     void stop() {
         lastSelectedTrackIds = new String[]{NONE, NONE, NONE};
         requestedChangeTrackIds = new String[]{NONE, NONE, NONE};
+    }
+
+    /**
+     * Helper method which return the uniqueId of the preferred audio/text track. Base on user selection and/or
+     * predefined requirements.
+     *
+     * @param trackType - the type of the track we are looking for (audio/text).
+     * @return - uniqueId of the preferred track.
+     * If no preferred AudioTrack exist or user defined to use OFF mode, will return null.
+     * In case of TextTrack if no preferred track exist will return null.
+     * Otherwise will return uniqueId that is corresponded to the selected {@link PKTrackConfig.Mode}.
+     */
+    String getPreferredTrackId(int trackType) {
+
+        switch (trackType) {
+            case TRACK_TYPE_AUDIO:
+                if (!isValidPreferredAudioConfig()) {
+                    return null;
+                }
+
+                String preferredAudioISO3Lang = preferredAudioLanguageConfig.getTrackLanguage();
+                for (AudioTrack track : audioTracks) {
+                    String trackLang = track.getLanguage();
+                    if (trackLang == null) {
+                        continue;
+                    }
+                    Locale streamLang = new Locale(trackLang);
+                    try {
+                        if (streamLang.getISO3Language().equals(preferredAudioISO3Lang)) {
+                            log.d("changing track type " + trackType + " to " + preferredAudioLanguageConfig.getTrackLanguage());
+                            return track.getUniqueId();
+                        }
+                    } catch (MissingResourceException ex) {
+                        log.e(ex.getMessage());
+                    }
+                }
+                break;
+            case TRACK_TYPE_TEXT:
+                if (!isValidPreferredTextConfig()) {
+                    return null;
+                }
+
+                String preferredTextISO3Lang = preferredTextLanguageConfig.getTrackLanguage();
+                if (preferredTextISO3Lang != null) {
+                    for (TextTrack track : textTracks) {
+                        String trackLang = track.getLanguage();
+                        if (trackLang == null) {
+                            continue;
+                        }
+
+                        if (NONE.equals(preferredTextLanguageConfig.getTrackLanguage()) && NONE.equals(trackLang)) {
+                            return track.getUniqueId();
+                        } else if (NONE.equals(trackLang)) {
+                            continue;
+                        }
+
+                        Locale streamLang = new Locale(trackLang);
+                        try {
+
+                            if (streamLang.getISO3Language().equals(preferredTextISO3Lang)) {
+                                log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
+                                return track.getUniqueId();
+                            }
+                        } catch (MissingResourceException ex) {
+                            log.e(ex.getMessage());
+                        }
+                    }
+                    //if user set mode to AUTO and the locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
+                    if (preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null && textTracks.size() > 1) {
+                        for (TextTrack track : textTracks) {
+                            if (track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
+                                return track.getUniqueId();
+                            }
+                        }
+                        return textTracks.get(1).getUniqueId();
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+        return null;
+    }
+
+    private boolean isValidPreferredAudioConfig() {
+        return !(preferredAudioLanguageConfig == null ||
+                preferredAudioLanguageConfig.getPreferredMode() == null ||
+                preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.OFF ||
+                (preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredAudioLanguageConfig.getTrackLanguage() == null));
+    }
+
+    private boolean isValidPreferredTextConfig() {
+        return !(preferredTextLanguageConfig == null ||
+                preferredTextLanguageConfig.getPreferredMode() == null ||
+                (preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredTextLanguageConfig.getTrackLanguage() == null));
+    }
+
+    void applyPlayerSettings(PlayerSettings settings) {
+        this.cea608CaptionsEnabled = settings.cea608CaptionsEnabled();
+        this.preferredAudioLanguageConfig = settings.getPreferredAudioTrackConfig();
+        this.preferredTextLanguageConfig = settings.getPreferredTextTrackConfig();
     }
 }
 

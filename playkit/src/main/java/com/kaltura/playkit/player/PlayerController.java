@@ -500,7 +500,7 @@ public class PlayerController implements Player {
 
     private void sendErrorMessage(Enum errorType, String errorMessage, @Nullable Exception exception) {
         log.e(errorMessage);
-        PlayerEvent errorEvent = new PlayerEvent.Error(new PKError(errorType, errorMessage, null));
+        PlayerEvent errorEvent = new PlayerEvent.Error(new PKError(errorType, errorMessage, exception));
         eventListener.onEvent(errorEvent);
     }
 

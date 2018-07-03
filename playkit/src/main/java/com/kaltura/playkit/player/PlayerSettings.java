@@ -13,6 +13,7 @@
 package com.kaltura.playkit.player;
 
 import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
 
 
@@ -23,6 +24,9 @@ public class PlayerSettings implements Player.Settings {
     private boolean cea608CaptionsEnabled;
     private boolean crossProtocolRedirectEnabled;
     private boolean adAutoPlayOnResume = true;
+
+    private PKTrackConfig preferredTextTrackConfig;
+    private PKTrackConfig preferredAudioTrackConfig;
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
@@ -54,6 +58,14 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isAdAutoPlayOnResume() {
         return adAutoPlayOnResume;
+    }
+
+    public PKTrackConfig getPreferredTextTrackConfig() {
+        return preferredTextTrackConfig;
+    }
+
+    public PKTrackConfig getPreferredAudioTrackConfig() {
+        return preferredAudioTrackConfig;
     }
 
     @Override
@@ -89,6 +101,18 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public PlayerSettings setSecureSurface(boolean isSurfaceSecured) {
         this.isSurfaceSecured = isSurfaceSecured;
+        return this;
+    }
+
+    @Override
+    public PlayerSettings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
+        this.preferredAudioTrackConfig = preferredAudioTrackConfig;
+        return this;
+    }
+
+    @Override
+    public PlayerSettings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
+        this.preferredTextTrackConfig = preferredTextTrackConfig;
         return this;
     }
 

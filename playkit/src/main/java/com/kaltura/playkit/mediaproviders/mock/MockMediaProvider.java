@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -13,6 +13,7 @@
 package com.kaltura.playkit.mediaproviders.mock;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -29,6 +30,10 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -104,7 +109,7 @@ public class MockMediaProvider implements MediaEntryProvider {
     private PKMediaEntry getFromFile() throws IOException {
         JsonParser parser = new JsonParser();
 
-        if(context != null){
+        if (context != null) {
             JsonReader jsonReader = new JsonReader(new InputStreamReader(context.getAssets().open(inputFile)));
             inputJson = parser.parse(jsonReader).getAsJsonObject();
         } else {
@@ -114,7 +119,7 @@ public class MockMediaProvider implements MediaEntryProvider {
         return getFromJson(inputJson);
     }
 
-    private PKMediaEntry getFromJson(JsonObject data)  throws JsonSyntaxException{
+    private PKMediaEntry getFromJson(JsonObject data) throws JsonSyntaxException {
         if (data.has(id)) { // data holds multiple entry objects
             return MockMediaParser.parseMedia(data.getAsJsonObject(id));
 
@@ -128,19 +133,52 @@ public class MockMediaProvider implements MediaEntryProvider {
     static class MockMediaParser {
 
         static PKMediaEntry parseMedia(JsonObject mediaObject) throws JsonSyntaxException {
-            PKMediaEntry mediaEntry =  new Gson().fromJson(mediaObject, PKMediaEntry.class);
+
+            PKMediaEntry mediaEntry = new Gson().fromJson(mediaObject, PKMediaEntry.class);
             if (mediaEntry.getMediaType() == null) {
                 mediaEntry.setMediaType(Unknown);
             }
             List<PKMediaSource> mediaSources = mediaEntry.getSources();
             for (PKMediaSource mediaSource : mediaSources) {
-                mediaSource.setMediaFormat(PKMediaFormat.valueOfUrl(mediaSource.getUrl()));
+                PKMediaFormat format = PKMediaFormat.valueOfUrl(mediaSource.getUrl());
+                if (format == null) {
+                    String mimeType = getMimeTypeFromJson(mediaObject);
+                    if (mimeType != null) {
+                        if (mimeType.equals(PKMediaFormat.dash.mimeType)) {
+                            format = PKMediaFormat.dash;
+                        } else if (mimeType.equals(PKMediaFormat.hls.mimeType)) {
+                            format = PKMediaFormat.hls;
+                        } else if (mimeType.equals(PKMediaFormat.wvm.mimeType)) {
+                            format = PKMediaFormat.wvm;
+                        } else if (mimeType.equals(PKMediaFormat.mp4.mimeType)) {
+                            format = PKMediaFormat.mp4;
+                        } else if (mimeType.equals(PKMediaFormat.mp3.mimeType)) {
+                            format = PKMediaFormat.mp3;
+                        }
+                    }
+                }
+                mediaSource.setMediaFormat(format);
             }
             return mediaEntry;
         }
+    }
 
-
-
+    @Nullable
+    private static String getMimeTypeFromJson(JsonObject mediaObject) {
+        String mimeType = null;
+        try {
+            JSONObject jsonObj = new JSONObject(mediaObject.toString());
+            JSONArray sources = jsonObj.getJSONArray("sources");
+            if (sources != null && sources.length() > 0) {
+                JSONObject sourcesJson = sources.getJSONObject(0);
+                mimeType = sourcesJson.getString("mimeType");
+                return mimeType;
+            }
+        } catch (JSONException e) {
+            //e.printStackTrace();
+            PKLog.w(TAG, "Sources does not contain mime type in it - hope url extention is valid...");
+        }
+        return mimeType;
     }
 
 

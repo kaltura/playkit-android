@@ -21,6 +21,9 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.player.vr.VRSettings;
 
+/**
+ * Created by Noam Tamim @ Kaltura on 29/03/2017.
+ */
 public class PKMediaSourceConfig {
 
     PKMediaSource mediaSource;
