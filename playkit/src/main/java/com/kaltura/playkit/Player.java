@@ -95,6 +95,14 @@ public interface Player {
         Settings setAdAutoPlayOnResume(boolean autoPlayOnResume);
 
         /**
+         * Set the Player's VR/360 support
+         *
+         * @param vrPlayerEnabled - If 360 media should be played on VR player on default player - default == true.
+         * @return - Player Settings.
+         */
+        Settings setVRPlayerEnabled(boolean vrPlayerEnabled);
+
+        /**
          * Set the Player's preferredAudioTrackConfig.
          *
          * @param preferredAudioTrackConfig - AudioTrackConfig.
