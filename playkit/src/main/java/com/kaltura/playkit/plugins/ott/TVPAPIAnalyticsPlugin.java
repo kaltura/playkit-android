@@ -125,8 +125,8 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
                 if (response.isSuccess() && response.getResponse().toLowerCase(Locale.ENGLISH).contains("concurrent")){
                     messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
                     messageBus.post(new TVPAPIAnalyticsEvent.TVPAPIAnalyticsReport(eventType.toString()));
+                    log.d("onComplete send event: " + eventType);
                 }
-                log.d("onComplete send event: " + eventType);
             }
         });
         requestsExecutor.queue(requestBuilder.build());

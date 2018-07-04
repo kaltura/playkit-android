@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -24,8 +24,7 @@ import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
-import com.google.android.exoplayer2.source.AdaptiveMediaSourceEventListener;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSourceEventListener;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSpec;
@@ -38,8 +37,7 @@ import java.io.IOException;
  */
 
 public class EventLogger implements Player.EventListener, AudioRendererEventListener, VideoRendererEventListener, MetadataOutput,
-        AdaptiveMediaSourceEventListener, ExtractorMediaSource.EventListener, DefaultDrmSessionManager.EventListener {
-
+        MediaSourceEventListener, DefaultDrmSessionManager.EventListener {
 
 
     @Override
@@ -54,12 +52,12 @@ public class EventLogger implements Player.EventListener, AudioRendererEventList
 
     @Override
     public void onRepeatModeChanged(int repeatMode) {
-        
+
     }
 
     @Override
     public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
-        
+
     }
 
     @Override
@@ -169,11 +167,6 @@ public class EventLogger implements Player.EventListener, AudioRendererEventList
 
     @Override
     public void onDownstreamFormatChanged(int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaTimeMs) {
-
-    }
-
-    @Override
-    public void onLoadError(IOException error) {
 
     }
 

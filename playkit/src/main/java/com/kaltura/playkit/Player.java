@@ -267,7 +267,13 @@ public interface Player {
      */
     String getSessionId();
 
-    boolean isLiveStream();
+    boolean isLive();
+
+    /**
+     * @return - Getter for the current mediaFormat
+     * or {@link null} if the media format is not set yet
+     */
+    PKMediaFormat getMediaFormat();
 
     /**
      * Change player speed (pitch = 1.0f by default)

@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -48,10 +48,10 @@ import java.util.UUID;
 
 public class PKDeviceCapabilities {
     private static final PKLog log = PKLog.get("PKDeviceCapabilities");
-    
+
     private static final UUID WIDEVINE_UUID = new UUID(0xEDEF8BA979D64ACEL, 0xA3C827DCD51D21EDL);
     private static final UUID PLAYREADY_UUID = new UUID(0x9A04F07998404286L, 0xAB92E65BE0885F95L);
-    
+
     public static final String SHARED_PREFS_NAME = "PKDeviceCapabilities";
     private static final String PREFS_ENTRY_FINGERPRINT = "Build.FINGERPRINT";
     private static final String DEVICE_CAPABILITIES_URL = "https://cdnapisec.kaltura.com/api_v3/index.php?service=stats&action=reportDeviceCapabilities";
@@ -80,7 +80,7 @@ public class PKDeviceCapabilities {
 
         final SharedPreferences sharedPrefs = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
         String savedFingerprint = sharedPrefs.getString(PREFS_ENTRY_FINGERPRINT, null);
-        
+
         // If we already sent capabilities for this Android build, don't send again.
         if (FINGERPRINT.equals(savedFingerprint)) {
             reportSent = true;
@@ -97,7 +97,7 @@ public class PKDeviceCapabilities {
     }
 
     public static String getErrorReport(Exception e) {
-        
+
         try {
             return new JSONObject()
                     .put("system", systemInfo())
@@ -158,7 +158,7 @@ public class PKDeviceCapabilities {
         } catch (JSONException e) {
             log.e("Error", e);
         }
-        
+
         return root;
     }
 
@@ -167,14 +167,15 @@ public class PKDeviceCapabilities {
         String packageName = context.getPackageName();
         try {
             PackageInfo packageInfo = context.getPackageManager().getPackageInfo(packageName, 0);
-            
+
             result
                     .put("packageName", packageName)
                     .put("versionCode", packageInfo.versionCode)
                     .put("versionName", packageInfo.versionName)
                     .put("firstInstallTime", packageInfo.firstInstallTime)
-                    .put("lastUpdateTime", packageInfo.lastUpdateTime);
-            
+                    .put("lastUpdateTime", packageInfo.lastUpdateTime)
+                    .put("playkitVersion", PlayKitManager.VERSION_STRING);
+
         } catch (PackageManager.NameNotFoundException e) {
             log.e("Failed to get package info", e);
             result.put("error", "Failed to get package info");
@@ -253,7 +254,7 @@ public class PKDeviceCapabilities {
 
             Collections.addAll(mediaCodecs, codecInfos);
         } else {
-            for (int i=0, n=MediaCodecList.getCodecCount(); i<n; i++) {
+            for (int i = 0, n = MediaCodecList.getCodecCount(); i < n; i++) {
                 mediaCodecs.add(MediaCodecList.getCodecInfoAt(i));
             }
         }
@@ -290,9 +291,9 @@ public class PKDeviceCapabilities {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private JSONObject playreadyDrmInfo() throws JSONException {
         if (!MediaDrm.isCryptoSchemeSupported(PLAYREADY_UUID)) {
-            return null; 
+            return null;
         }
-        
+
         // No information other than "supported".
         return new JSONObject().put("supported", true);
     }
@@ -343,7 +344,7 @@ public class PKDeviceCapabilities {
             String value;
             try {
                 value = mediaDrm.getPropertyString(prop);
-                
+
             } catch (RuntimeException e) {
                 value = "<" + e + ">";
             }
@@ -365,7 +366,7 @@ public class PKDeviceCapabilities {
         response.put("events", mediaDrmEvents);
 
         mediaDrm.release();
-        
+
         return response;
     }
 

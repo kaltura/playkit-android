@@ -155,7 +155,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                     case PLAYBACK_INFO_UPDATED:
                         PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).playbackInfo;
                         lastReportedBitrate = currentPlaybackInfo.getVideoBitrate();
-                        log.d("lastReportedBitrate = " + lastReportedBitrate + ", isLiveStream = " + player.isLiveStream());
+                        log.d("lastReportedBitrate = " + lastReportedBitrate + ", isLiveStream = " + player.isLive());
                         break;
                     case SOURCE_SELECTED:
                         PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;

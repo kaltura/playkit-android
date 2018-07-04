@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -199,7 +199,7 @@ public class PlayerController implements Player {
     }
 
     private void initSourceConfig(PKMediaEntry mediaEntry, PKMediaSource source) {
-        if(mediaEntry instanceof VRPKMediaEntry) {
+        if (mediaEntry instanceof VRPKMediaEntry) {
             VRPKMediaEntry vrEntry = (VRPKMediaEntry) mediaEntry;
             this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings, vrEntry.getVrSettings());
         } else {
@@ -233,7 +233,7 @@ public class PlayerController implements Player {
             player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType);
             //IMA workaround. In order to prevent flickering of the first frame
             //with ExoplayerEngine we should addPlayerView here for all playerEngines except Exoplayer.
-            if(incomingPlayerType == PlayerEngineType.MediaPlayer) {
+            if (incomingPlayerType == PlayerEngineType.MediaPlayer) {
                 addPlayerView();
             }
             togglePlayerListeners(true);
@@ -465,8 +465,16 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public boolean isLiveStream() {
-        return player != null && player.isLiveStream();
+    public boolean isLive() {
+        return player != null && player.isLive();
+    }
+
+    @Override
+    public PKMediaFormat getMediaFormat() {
+        if (sourceConfig != null) {
+            return sourceConfig.mediaSource.getMediaFormat();
+        }
+        return null;
     }
 
     @Override
@@ -566,7 +574,13 @@ public class PlayerController implements Player {
                         case DURATION_CHANGE:
                             event = new PlayerEvent.DurationChanged(getDuration());
                             if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
-                                startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+                                //For live entry it is possible to configure mediaConfig to start with an offset from live edge.
+                                //In this case startPosition in PKMediaConfig must be negative value which describes the amount of desired offset.
+                                if (PKMediaEntry.MediaEntryType.Live.equals(sourceConfig.mediaEntryType) && mediaConfig.getStartPosition() < 0) {
+                                    startPlaybackFrom(getDuration() + (mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER));
+                                } else {
+                                    startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+                                }
                                 isNewEntry = false;
                             }
                             break;

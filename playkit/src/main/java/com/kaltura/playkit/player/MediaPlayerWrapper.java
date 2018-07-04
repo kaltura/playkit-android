@@ -574,7 +574,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public boolean isLiveStream() {
+    public boolean isLive() {
         return false;
     }
 

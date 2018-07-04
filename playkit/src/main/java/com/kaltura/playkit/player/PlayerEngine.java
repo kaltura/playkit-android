@@ -209,7 +209,7 @@ public interface PlayerEngine {
 
     BaseTrack getLastSelectedTrack(int renderType);
 
-    boolean isLiveStream();
+    boolean isLive();
 
     void setPlaybackRate(float rate);
 
