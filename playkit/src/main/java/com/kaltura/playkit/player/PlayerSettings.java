@@ -24,6 +24,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean cea608CaptionsEnabled;
     private boolean crossProtocolRedirectEnabled;
     private boolean adAutoPlayOnResume = true;
+    private boolean vrPlayerEnabled    = true;
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -60,6 +61,10 @@ public class PlayerSettings implements Player.Settings {
         return adAutoPlayOnResume;
     }
 
+    public boolean isVRPlayerEnabled() {
+        return vrPlayerEnabled;
+    }
+
     public PKTrackConfig getPreferredTextTrackConfig() {
         return preferredTextTrackConfig;
     }
@@ -69,8 +74,8 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setAdAutoPlayOnResume(boolean adAutoPlayOnResume) {
-        this.adAutoPlayOnResume = adAutoPlayOnResume;
+    public Player.Settings setVRPlayerEnabled(boolean vrPlayerEnabled) {
+        this.vrPlayerEnabled = vrPlayerEnabled;
         return this;
     }
 
@@ -101,6 +106,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public PlayerSettings setSecureSurface(boolean isSurfaceSecured) {
         this.isSurfaceSecured = isSurfaceSecured;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setAdAutoPlayOnResume(boolean adAutoPlayOnResume) {
+        this.adAutoPlayOnResume = adAutoPlayOnResume;
         return this;
     }
 
