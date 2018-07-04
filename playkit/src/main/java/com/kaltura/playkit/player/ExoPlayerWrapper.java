@@ -28,7 +28,6 @@ import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
@@ -36,6 +35,7 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
+import com.google.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -52,6 +52,7 @@ import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PlayKitManager;
@@ -72,6 +73,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
+
 
 /**
  * Created by anton.afanasiev on 31/10/2016.
@@ -98,6 +102,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private BaseExoplayerView exoPlayerView;
 
     private PKTracks tracks;
+    private Timeline.Window window;
     private TrackSelectionHelper trackSelectionHelper;
     private DeferredDrmSessionManager drmSessionManager;
 
@@ -105,15 +110,19 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private PlayerState currentState = PlayerState.IDLE;
     private PlayerState previousState;
 
+    private Factory mediaDataSourceFactory;
+    private Factory manifestDataSourceFactory;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
     private PKError currentError = null;
 
     private boolean isSeeking;
     private boolean useTextureView;
     private boolean isSurfaceSecured;
+    private boolean shouldGetTracksInfo;
+    private boolean shouldResetPlayerPosition;
     private boolean crossProtocolRedirectEnabled;
+    private boolean preferredLanguageWasSelected;
     private boolean shouldRestorePlayerToPreviousState;
-    private PKRequestParams httpDataSourceRequestParams;
 
     private int playerWindow;
     private long playerPosition = Consts.TIME_UNSET;
@@ -121,11 +130,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private float lastKnownVolume = Consts.DEFAULT_VOLUME;
     private float lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
 
-    private Timeline.Window window;
-    private boolean shouldGetTracksInfo;
-    private boolean shouldResetPlayerPosition;
+    private PKRequestParams httpDataSourceRequestParams;
     private List<PKMetadata> metadataList = new ArrayList<>();
-
     private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
@@ -145,19 +151,14 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 
-    @Override
-    public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
-        sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
-    }
-
     private void initializePlayer() {
         eventLogger = new EventLogger();
 
         DefaultTrackSelector trackSelector = initializeTrackSelector();
-        drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildCustomHttpDataSourceFactory(false), drmSessionListener);
-        CustomRendererFactory rendererFactory = new CustomRendererFactory(context,
+        drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildCustomHttpDataSourceFactory(), drmSessionListener);
+        CustomRendererFactory renderersFactory = new CustomRendererFactory(context,
                 drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
-        player = ExoPlayerFactory.newSimpleInstance(rendererFactory, trackSelector);
+        player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
@@ -179,10 +180,11 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         TrackSelection.Factory trackSelectionFactory =
                 new AdaptiveTrackSelection.Factory(bandwidthMeter);
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(trackSelectionFactory);
-        trackSelectionHelper = new TrackSelectionHelper(trackSelector, trackSelectionFactory, lastSelectedTrackIds);
         DefaultTrackSelector.ParametersBuilder parametersBuilder = new DefaultTrackSelector.ParametersBuilder();
         parametersBuilder.setViewportSizeToPhysicalDisplaySize(context, true);
         trackSelector.setParameters(parametersBuilder.build());
+
+        trackSelectionHelper = new TrackSelectionHelper(trackSelector, trackSelectionFactory, lastSelectedTrackIds);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
         return trackSelector;
@@ -197,7 +199,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         shouldGetTracksInfo = true;
-        trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.playerSettings.cea608CaptionsEnabled());
+        trackSelectionHelper.applyPlayerSettings(sourceConfig.playerSettings);
+        if (PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) {
+            player.seekToDefaultPosition();
+        }
 
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
@@ -212,21 +217,27 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         Uri uri = sourceConfig.getUrl();
-
-        Factory mediaDataSourceFactory = buildDataSourceFactory(true);
+        if (mediaDataSourceFactory == null) {
+            mediaDataSourceFactory = buildDataSourceFactory(true);
+        }
         switch (format) {
+
+            case dash:
+                if (manifestDataSourceFactory == null) {
+                    manifestDataSourceFactory = buildDataSourceFactory(false);
+                }
+                return new DashMediaSource.Factory(
+                        new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
+                        manifestDataSourceFactory)
+                        .createMediaSource(uri, mainHandler, eventLogger);
+            case hls:
+                return new HlsMediaSource.Factory(mediaDataSourceFactory)
+                        .createMediaSource(uri, mainHandler, eventLogger);
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
-                return new ExtractorMediaSource(uri, mediaDataSourceFactory, new DefaultExtractorsFactory(),
-                        mainHandler, eventLogger);
-
-            case dash:
-                return new DashMediaSource(uri, buildDataSourceFactory(false),
-                        new DefaultDashChunkSource.Factory(mediaDataSourceFactory), mainHandler, eventLogger);
-
-            case hls:
-                return new HlsMediaSource(uri, mediaDataSourceFactory, mainHandler, eventLogger);
+                return new ExtractorMediaSource.Factory(mediaDataSourceFactory)
+                        .createMediaSource(uri, mainHandler, eventLogger);
 
             default:
                 throw new IllegalStateException("Unsupported type: " + format);
@@ -257,8 +268,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
     }
 
-    private HttpDataSource.Factory buildCustomHttpDataSourceFactory(boolean useBandwidthMeter) {
-        return new CustomHttpDataSourceFactory(getUserAgent(context), httpDataSourceRequestParams, useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+    private HttpDataSource.Factory buildCustomHttpDataSourceFactory() {
+        return new CustomHttpDataSourceFactory(getUserAgent(context), httpDataSourceRequestParams, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
     }
 
@@ -371,7 +382,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         log.d("onTimelineChanged");
         sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
         sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
-        shouldResetPlayerPosition = (reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC);
+        shouldResetPlayerPosition = reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC;
     }
 
     @Override
@@ -399,13 +410,13 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @Override
-    public void onPositionDiscontinuity(int reason) {
-        log.d("onPositionDiscontinuity");
+    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+        sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
     }
 
     @Override
-    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-        sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
+    public void onPositionDiscontinuity(int reason) {
+        log.d("onPositionDiscontinuity");
     }
 
     @Override
@@ -422,7 +433,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
         //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
         if (shouldGetTracksInfo) {
-            shouldGetTracksInfo = !trackSelectionHelper.prepareTracks();
+            shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(player.getCurrentManifest() instanceof DashManifest);
         }
 
         trackSelectionHelper.notifyAboutTrackChange(trackSelections);
@@ -684,6 +695,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void stop() {
         log.d("stop");
+        preferredLanguageWasSelected = false;
         lastKnownVolume = Consts.DEFAULT_VOLUME;
         lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
         lastSelectedTrackIds = new String[] {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
@@ -723,6 +735,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 tracks = tracksReady;
                 shouldRestorePlayerToPreviousState = false;
                 sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+                if (!preferredLanguageWasSelected) {
+                    selectPreferredTracksLanguage();
+                    preferredLanguageWasSelected = true;
+                }
             }
 
             @Override
@@ -787,6 +803,11 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @Override
+    public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
+        sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+    }
+
+    @Override
     public <T extends PKController> T getController(Class<T> type) {
         //Currently no controller for ExoplayerWrapper. So always return null.
         return null;
@@ -795,6 +816,17 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void onOrientationChanged() {
         //Do nothing.
+    }
+
+    private void selectPreferredTracksLanguage() {
+
+        for (int trackType : new int[]{TRACK_TYPE_AUDIO, TRACK_TYPE_TEXT}) {
+            String preferredLanguageId = trackSelectionHelper.getPreferredTrackId(trackType);
+            if (preferredLanguageId != null) {
+                changeTrack(preferredLanguageId);
+                log.d("preferred language selected for track type = " + trackType);
+            }
+        }
     }
 }
 

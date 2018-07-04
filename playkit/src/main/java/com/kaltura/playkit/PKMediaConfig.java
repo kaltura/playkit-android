@@ -20,16 +20,6 @@ public class PKMediaConfig {
     private PKMediaEntry mediaEntry;
 
     /**
-     * Getter for start position. Default is 0.
-     * Note, that start position is in seconds.
-     *
-     * @return - the start position
-     */
-    public long getStartPosition() {
-        return startPosition;
-    }
-
-    /**
      * Setter for start position.
      * Note, that start position is in seconds.
      *
@@ -41,13 +31,24 @@ public class PKMediaConfig {
         return this;
     }
 
-    public PKMediaEntry getMediaEntry() {
-        return mediaEntry;
-    }
-
     public PKMediaConfig setMediaEntry(PKMediaEntry mediaEntry) {
         this.mediaEntry = mediaEntry;
         return this;
+    }
+
+
+    /**
+     * Getter for start position. Default is 0.
+     * Note, that start position is in seconds.
+     *
+     * @return - the start position
+     */
+    public long getStartPosition() {
+        return startPosition;
+    }
+
+    public PKMediaEntry getMediaEntry() {
+        return mediaEntry;
     }
 }
 
