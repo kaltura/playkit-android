@@ -244,7 +244,7 @@ public interface Player {
     void addStateChangeListener(@NonNull PKEvent.Listener listener);
 
     /**
-     * Change current track, with specified one.
+     * Change current track, with specified one by uniqueId.
      * If uniqueId is not valid or null, this will throw {@link IllegalArgumentException}.
      * Example of the valid uniqueId for regular video track: Video:0,0,1.
      * Example of the valid uniqueId for adaptive video track: Video:0,0,adaptive.
