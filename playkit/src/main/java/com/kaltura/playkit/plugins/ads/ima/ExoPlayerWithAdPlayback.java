@@ -593,6 +593,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         pause();
         mIsAdDisplayed = false;
         isPlayerReady = false;
+        isAdFirstPlay = false;
     }
 
     public void releasePlayer() {
