@@ -441,7 +441,14 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                        type defined by the value of "objectType" property provided in the response objects, if type wasn't found or in
                        case of error object in the response, will be parsed to BaseResult object (error if occurred will be accessible from this object)*/
 
-                    List<BaseResult> parsedResponses = PhoenixParser.parse(response.getResponse());
+                    Object phenixObjectParsed = PhoenixParser.parse(response.getResponse());
+                    List<BaseResult> parsedResponses = new ArrayList<>();
+                    if (phenixObjectParsed instanceof List) {
+                        parsedResponses = PhoenixParser.parse(response.getResponse());
+                    } else {
+                        parsedResponses.add((BaseResult)phenixObjectParsed);
+                    }
+
                     BaseResult playbackContextResult = null;
                     BaseResult assetGetResult = null;
 
