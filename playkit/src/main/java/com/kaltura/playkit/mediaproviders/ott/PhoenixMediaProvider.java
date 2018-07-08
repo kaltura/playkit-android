@@ -455,18 +455,18 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                         loginResult = (BaseResult) parsedResponsesObject;
                     }
 
-                    if (parsedResponses != null && parsedResponses.size() > 2) {
+                    if (parsedResponses.size() > 2) {
                         // position size -1 is asset get result size - 2 is playbackContext size - 3 is the login data
                         loginResult = parsedResponses.get(parsedResponses.size() - 3);
                     }
 
-                    if (parsedResponses != null && parsedResponses.size() > 1) {
+                    if (parsedResponses.size() > 1) {
                         // position size -1 is asset get result size - 2 is playbackContext size - 3 is the login data
                         playbackContextResult = parsedResponses.get(parsedResponses.size() - 2);
                         assetGetResult = parsedResponses.get(parsedResponses.size() - 1);
                     }
 
-                    if ((parsedResponses != null && parsedResponses.size() > 2 && (loginResult == null || loginResult.error != null)) || playbackContextResult == null || assetGetResult == null || playbackContextResult.error != null || assetGetResult.error != null) {
+                    if ((parsedResponses.size() > 2 && (loginResult == null || loginResult.error != null)) || playbackContextResult == null || assetGetResult == null || playbackContextResult.error != null || assetGetResult.error != null) {
                         error = updateErrorElement(response, loginResult, playbackContextResult, assetGetResult);
                     } else {
                         KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) playbackContextResult;
