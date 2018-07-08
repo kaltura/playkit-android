@@ -441,6 +441,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                        type defined by the value of "objectType" property provided in the response objects, if type wasn't found or in
                        case of error object in the response, will be parsed to BaseResult object (error if occurred will be accessible from this object)*/
 
+                    BaseResult loginResult = null;
+                    BaseResult playbackContextResult = null;
+                    BaseResult assetGetResult = null;
+
                     Object parsedResponsesObject = PhoenixParser.parse(response.getResponse());
                     List<BaseResult> parsedResponses = new ArrayList<>();
                     if (parsedResponsesObject instanceof List) {
@@ -448,11 +452,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     } else if (parsedResponsesObject instanceof BaseResult){
                         // Fix potential bug in BE that response will come in single object and not as List
                         parsedResponses.add((BaseResult) parsedResponsesObject);
+                        loginResult = (BaseResult) parsedResponsesObject;
                     }
-
-                    BaseResult loginResult = null;
-                    BaseResult playbackContextResult = null;
-                    BaseResult assetGetResult = null;
 
                     if (parsedResponses != null && parsedResponses.size() > 2) {
                         // position size -1 is asset get result size - 2 is playbackContext size - 3 is the login data
