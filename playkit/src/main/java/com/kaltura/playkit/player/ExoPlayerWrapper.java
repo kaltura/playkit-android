@@ -19,26 +19,24 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.Surface;
 
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.decoder.DecoderCounters;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.MediaSourceEventListener;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
+import com.google.android.exoplayer2.source.hls.DefaultHlsDataSourceFactory;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -46,15 +44,11 @@ import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DataSource.Factory;
-import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
-import com.google.android.exoplayer2.upstream.TransferListener;
-import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -76,8 +70,6 @@ import java.net.CookiePolicy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.WeakHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by anton.afanasiev on 31/10/2016.
@@ -94,7 +86,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private DefaultBandwidthMeter bandwidthMeter;
-    private TransferListener<Object> transferListener;
 
     private EventLogger eventLogger;
     private EventListener eventListener;
@@ -135,7 +126,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
     private String sessionId;
 
-
     ExoPlayerWrapper(Context context) {
         this(context, new ExoPlayerView(context));
     }
@@ -143,54 +133,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView) {
         this.context = context;
         bandwidthMeter = new DefaultBandwidthMeter(mainHandler, this);
-        transferListener = bandwidthMeter;
-
-        if (Profiler.isStarted()) {
-            transferListener = new TransferListener<Object>() {
-
-                private WeakHashMap<Object, Uri> sourceToUriMap = new WeakHashMap<>();
-                private WeakHashMap<Object, AtomicInteger> sourceToBytesMap = new WeakHashMap<>();
-                private WeakHashMap<Object, Long> sourceToTimeMap = new WeakHashMap<>();
-
-                @Override
-                public void onTransferStart(Object source, DataSpec dataSpec) {
-                    bandwidthMeter.onTransferStart(source, dataSpec);
-
-                    log.d("START " + dataSpec.uri.getLastPathSegment());
-
-                    sourceToUriMap.put(source, dataSpec.uri);
-                    sourceToTimeMap.put(source, System.currentTimeMillis());
-//                    profiler().onTransferStarted(ExoPlayerWrapper.this, dataSpec.uri);
-                }
-
-                @Override
-                public void onBytesTransferred(Object source, int bytesTransferred) {
-                    bandwidthMeter.onBytesTransferred(source, bytesTransferred);
-
-                    AtomicInteger size = sourceToBytesMap.get(source);
-                    if (size != null) {
-                        size.addAndGet(bytesTransferred);
-                    } else {
-                        sourceToBytesMap.put(source, new AtomicInteger(bytesTransferred));
-                    }
-                }
-
-                @Override
-                public void onTransferEnd(Object source) {
-                    bandwidthMeter.onTransferEnd(source);
-
-
-                    Uri uri = sourceToUriMap.get(source);
-                    log.d("END " + uri.getLastPathSegment());
-                    AtomicInteger size = sourceToBytesMap.get(source);
-                    Long start = sourceToTimeMap.get(source);
-
-                    if (uri != null && size != null && start != null) {
-                        profiler().onTransferEnd(ExoPlayerWrapper.this, uri, size.get(), System.currentTimeMillis() - start);
-                    }
-                }
-            };
-        }
 
         this.exoPlayerView = exoPlayerView;
 
@@ -201,7 +143,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
-        profiler().onBandwidthEstimation(this, bitrate);
+        if (bitrate != BandwidthMeter.NO_ESTIMATE) {
+            profiler().onBandwidthSample(this, bitrate);
+        }
         sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
     }
 
@@ -227,46 +171,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player.addAudioDebugListener(eventLogger);
             player.addMetadataOutput(this);
 
-            if (Profiler.isStarted()) {
-                player.addVideoDebugListener(new VideoRendererEventListener() {
 
-                    private PlayerEngine playerEngine = ExoPlayerWrapper.this;
-
-                    @Override
-                    public void onVideoEnabled(DecoderCounters counters) {
-                        profiler().onVideoEnabled(playerEngine);
-                    }
-
-                    @Override
-                    public void onVideoDecoderInitialized(String decoderName, long initializedTimestampMs, long initializationDurationMs) {
-                        profiler().onVideoDecoderInitialized(playerEngine, decoderName, initializationDurationMs);
-                    }
-
-                    @Override
-                    public void onVideoInputFormatChanged(Format format) {
-                        profiler().onVideoInputFormatChanged(playerEngine, format.id, format.codecs, format.bitrate);
-                    }
-
-                    @Override
-                    public void onDroppedFrames(int count, long elapsedMs) {
-                        profiler().onDroppedFrames(playerEngine, count, elapsedMs);
-                    }
-
-                    @Override
-                    public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
-                        profiler().onVideoSizeChanged(playerEngine, width, height);
-                    }
-
-                    @Override
-                    public void onRenderedFirstFrame(Surface surface) {
-                        profiler().onRenderedFirstFrame(playerEngine);
-                    }
-
-                    @Override
-                    public void onVideoDisabled(DecoderCounters counters) {
-                        profiler().onVideoDisabled(playerEngine);
-                    }
-                });
+            Profiler profiler = profiler();
+            if (profiler.active) {
+                ExoPlayerProfilingListener exoPlayerListener = profiler.getExoPlayerListener(this);
+                player.addVideoDebugListener(exoPlayerListener);
+                player.addListener(exoPlayerListener);
             }
         }
     }
@@ -296,7 +206,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         shouldGetTracksInfo = true;
         trackSelectionHelper.setCea608CaptionsEnabled(sourceConfig.playerSettings.cea608CaptionsEnabled());
 
-        MediaSource mediaSource = buildExoMediaSource(sourceConfig);
+        MediaSource mediaSource = buildExoMediaSource(sourceConfig, profiler().getExoPlayerListener(this));
 
         profiler().onPrepareStarted(this, sourceConfig);
 
@@ -304,7 +214,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         changeState(PlayerState.LOADING);
     }
 
-    private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig) {
+    private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig, MediaSourceEventListener listener) {
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
         if (format == null) {
             // TODO: error?
@@ -313,20 +223,18 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         Uri uri = sourceConfig.getUrl();
 
-        Factory mediaDataSourceFactory = buildDataSourceFactory(true);
+        DataSource.Factory mediaDataSourceFactory = buildDataSourceFactory(true);
         switch (format) {
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
-                return new ExtractorMediaSource(uri, mediaDataSourceFactory, new DefaultExtractorsFactory(),
-                        mainHandler, eventLogger);
+                return new ExtractorMediaSource.Factory(mediaDataSourceFactory).createMediaSource(uri, mainHandler, listener);
 
             case dash:
-                return new DashMediaSource(uri, buildDataSourceFactory(false),
-                        new DefaultDashChunkSource.Factory(mediaDataSourceFactory), mainHandler, eventLogger);
+                return new DashMediaSource.Factory(new DefaultDashChunkSource.Factory(mediaDataSourceFactory), mediaDataSourceFactory).createMediaSource(uri, mainHandler, listener);
 
             case hls:
-                return new HlsMediaSource(uri, mediaDataSourceFactory, mainHandler, eventLogger);
+                return new HlsMediaSource.Factory(new DefaultHlsDataSourceFactory(buildDataSourceFactory(false))).createMediaSource(uri, mainHandler, listener);
 
             default:
                 throw new IllegalStateException("Unsupported type: " + format);
@@ -341,7 +249,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      * @return A new DataSource factory.
      */
     private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
-        return new DefaultDataSourceFactory(context, useBandwidthMeter ? transferListener : null,
+        return new DefaultDataSourceFactory(context, useBandwidthMeter ? bandwidthMeter : null,
                 buildHttpDataSourceFactory(useBandwidthMeter));
     }
 
@@ -353,7 +261,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      * @return A new HttpDataSource factory.
      */
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
-        return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? transferListener : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+        return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
     }
 
@@ -416,7 +324,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         switch (playbackState) {
             case Player.STATE_IDLE:
-                profiler().onPlayerIdle(this, playWhenReady);
+//                profiler().onPlayerIdle(this, playWhenReady);
                 log.d("onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
                 if (isSeeking) {
@@ -425,19 +333,19 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 break;
 
             case Player.STATE_BUFFERING:
-                profiler().onPlayerBuffering(this, playWhenReady);
+//                profiler().onPlayerBuffering(this, playWhenReady);
                 log.d("onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.BUFFERING);
                 break;
 
             case Player.STATE_READY:
-                profiler().onPlayerReady(this, playWhenReady);
+//                profiler().onPlayerReady(this, playWhenReady);
                 log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.READY);
 
                 if (isSeeking) {
                     isSeeking = false;
-                    profiler().onSeekEnded(this);
+//                    profiler().onSeekEnded(this);
                     sendDistinctEvent(PlayerEvent.Type.SEEKED);
                 }
 
@@ -452,7 +360,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 break;
 
             case Player.STATE_ENDED:
-                profiler().onPlayerEnded(this, playWhenReady);
+//                profiler().onPlayerEnded(this, playWhenReady);
                 log.d("onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
                 sendDistinctEvent(PlayerEvent.Type.ENDED);
@@ -501,7 +409,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         String errorStr = (errorMessage == null) ? "Player error: " + errorType.name() : errorMessage;
-        profiler().onPlayerError(this, errorStr);
+//        profiler().onPlayerError(this, errorStr);
         log.e(errorStr);
         currentError = new PKError(errorType, errorStr, error);
         eventListener.onEvent(PlayerEvent.Type.ERROR);
@@ -525,16 +433,16 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
 
-        if (Profiler.isStarted()) {
-            if (trackSelections.length >= 2) {  // video and audio
-                Format selectedVideoFormat = trackSelections.get(Consts.TRACK_TYPE_VIDEO).getSelectedFormat();
-                Format selectedAudioFormat = trackSelections.get(Consts.TRACK_TYPE_AUDIO).getSelectedFormat();
-                profiler().onTracksChanged(this, selectedVideoFormat.id, selectedVideoFormat.bitrate, selectedVideoFormat.codecs, selectedAudioFormat.id, selectedAudioFormat.bitrate, selectedAudioFormat.codecs);
-            } else if (trackSelections.length == 1) {   // just video
-                Format selectedVideoFormat = trackSelections.get(Consts.TRACK_TYPE_VIDEO).getSelectedFormat();
-                profiler().onTracksChanged(this, selectedVideoFormat.id, selectedVideoFormat.bitrate, selectedVideoFormat.codecs, null, -1, null);
-            }
-        }
+//        if (profiler().active) {
+//            if (trackSelections.length >= 2) {  // video and audio
+//                Format selectedVideoFormat = trackSelections.get(Consts.TRACK_TYPE_VIDEO).getSelectedFormat();
+//                Format selectedAudioFormat = trackSelections.get(Consts.TRACK_TYPE_AUDIO).getSelectedFormat();
+//                profiler().onTracksChanged(this, selectedVideoFormat.id, selectedVideoFormat.bitrate, selectedVideoFormat.codecs, selectedAudioFormat.id, selectedAudioFormat.bitrate, selectedAudioFormat.codecs);
+//            } else if (trackSelections.length == 1) {   // just video
+//                Format selectedVideoFormat = trackSelections.get(Consts.TRACK_TYPE_VIDEO).getSelectedFormat();
+//                profiler().onTracksChanged(this, selectedVideoFormat.id, selectedVideoFormat.bitrate, selectedVideoFormat.codecs, null, -1, null);
+//            }
+//        }
 
         log.d("onTracksChanged");
         //if onOnTracksChanged happened when application went background, do not update the tracks.
@@ -632,7 +540,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         sendDistinctEvent(PlayerEvent.Type.PAUSE);
-        profiler().onPauseRequested(this);
+//        profiler().onPauseRequested(this);
         player.setPlayWhenReady(false);
     }
 

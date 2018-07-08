@@ -1,11 +1,12 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
+import android.os.SystemClock;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -13,7 +14,6 @@ import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.utils.Consts;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -24,11 +24,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-
 public class Profiler {
 
     private static final String TAG = "Profiler";
-    private static final String SEPARATOR = "\t";
+    static final String SEPARATOR = "\t";
     private static final int FLUSH_INTERVAL_SEC = 5;
     private static final int NO_ACTIVITY_LIMIT = 5*60/FLUSH_INTERVAL_SEC;   // 5 minutes
     private static final HashMap<String, Profiler> profilers = new HashMap<>();
@@ -40,10 +39,13 @@ public class Profiler {
     private static DisplayMetrics metrics;
 
     private final ConcurrentLinkedQueue<String> logQueue;
-//    private AtomicInteger logSize = new AtomicInteger(0);
 
     private int noActivityCounter;
-    private long startTime = System.currentTimeMillis();
+    long startTime = SystemClock.elapsedRealtime();
+    final boolean active;
+
+    private ExoPlayerProfilingListener playerEngineListener;
+    Long lastBandwidthSample;
 
     public static boolean isStarted() {
         return started;
@@ -67,22 +69,26 @@ public class Profiler {
         started = true;
     }
 
-    private Profiler(final String sessionId) {
+    Profiler(final String sessionId) {
 
         logQueue = new ConcurrentLinkedQueue<>();
 
         if (sessionId == null) {
+            active = false;
             return;
         }
 
+        active = true;
+
         final File logFile = new File(logDir, sessionId.replace(':','_') + ".txt");
 
-        log("StartSession", startTime, metrics.widthPixels + "x" + metrics.heightPixels, metrics.xdpi + "x" + metrics.ydpi);
+        log("StartSession", "time=" + System.currentTimeMillis(), "screenSize=" + metrics.widthPixels + "x" + metrics.heightPixels, "screenDpi=" + metrics.xdpi + "x" + metrics.ydpi);
 
         flushHandler.post(new Runnable() {
             @Override
             public void run() {
 
+                Log.d(TAG, "run: size=" + logQueue.size());
                 BufferedOutputStream outputStream = null;
                 try {
                     outputStream = new BufferedOutputStream(new FileOutputStream(logFile, true));
@@ -125,10 +131,14 @@ public class Profiler {
         });
     }
 
+    ExoPlayerProfilingListener getExoPlayerListener(PlayerEngine playerEngine) {
+        return new ExoPlayerProfilingListener(this, playerEngine);
+    }
+
     static Profiler get(String sessionId) {
 
         if (!started || sessionId == null) {
-            return nullProfiler();
+            return null;//nullProfiler();
         }
 
         Profiler profiler = profilers.get(sessionId);
@@ -158,7 +168,7 @@ public class Profiler {
     private StringBuilder startLog(String event) {
         StringBuilder sb = new StringBuilder(100);
         sb
-                .append(System.currentTimeMillis() - startTime)
+                .append(SystemClock.elapsedRealtime() - startTime)
                 .append(SEPARATOR)
                 .append(event);
 
@@ -167,30 +177,49 @@ public class Profiler {
 
     private void logPayload(StringBuilder sb, Object... strings) {
         for (Object s : strings) {
+            if (s instanceof Opt) {
+                if (((Opt) s).obj == null) {
+                    continue;
+                }
+            }
             sb.append(SEPARATOR).append(s);
         }
     }
 
-    private void endLog(StringBuilder sb) {
-        logQueue.add(sb.toString());
+    private void endLog(final StringBuilder sb) {
+        flushHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                logQueue.add(sb.toString());
+                Log.d(TAG, "endLog: size=" + logQueue.size());
+            }
+        });
+
     }
 
     void logWithPlaybackInfo(String event, PlayerEngine playerEngine, Object... strings) {
 
         StringBuilder sb = startLog(event);
 
-        logPayload(sb, playerEngine.getCurrentPosition() / 1000f, playerEngine.getBufferedPosition() / 1000f);
+        logPayload(sb, "pos=" + playerEngine.getCurrentPosition(), "buf=" + playerEngine.getBufferedPosition());
         logPayload(sb, strings);
 
         endLog(sb);
+    }
+
+    private static String toString(Enum e) {
+        if (e == null) {
+            return "null";
+        }
+        return e.name();
     }
 
     private static JsonObject toJSON(PKMediaEntry entry) {
         JsonObject json = new JsonObject();
 
         json.addProperty("id", entry.getId());
-        json.addProperty("duration", entry.getDuration()/1000f);
-        json.addProperty("type", entry.getMediaType().name());
+        json.addProperty("duration", entry.getDuration());
+        json.addProperty("type", toString(entry.getMediaType()));
 
         if (entry.hasSources()) {
             JsonArray array = new JsonArray();
@@ -213,7 +242,10 @@ public class Profiler {
         if (source.hasDrmParams()) {
             JsonArray array = new JsonArray();
             for (PKDrmParams params : source.getDrmData()) {
-                array.add(params.getScheme().name());
+                PKDrmParams.Scheme scheme = params.getScheme();
+                if (scheme != null) {
+                    array.add(scheme.name());
+                }
             }
             json.add("drm", array);
         }
@@ -221,32 +253,20 @@ public class Profiler {
         return json;
     }
 
-    private static String durationString(long duration) {
-        if (duration == Consts.TIME_UNSET) {
-            return null;
-        } else {
-            return String.valueOf(duration / 1000f);
-        }
-    }
-
     void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig) {
         JsonObject json = new JsonObject();
         json.add("entry", toJSON(mediaConfig.getMediaEntry()));
-        json.addProperty("startPosition", mediaConfig.getStartPosition()/1000f);
+        json.addProperty("startPosition", mediaConfig.getStartPosition());
 
-        log("SetMedia", json.toString());
+        log("SetMedia", "config=" + json);
     }
 
     public void onPrepareStarted(final PlayerEngine playerEngine, final PKMediaSourceConfig sourceConfig) {
-        log("PrepareStarted", playerEngine.getClass().getSimpleName(), sourceConfig.getUrl(), sourceConfig.playerSettings.useTextureView());
+        log("PrepareStarted", "engine=" + playerEngine.getClass().getSimpleName(), "source=" + sourceConfig.getUrl(), "useTextureView=" + sourceConfig.playerSettings.useTextureView());
     }
 
     public void onSeekRequested(PlayerEngine playerEngine, long position) {
-        logWithPlaybackInfo("SeekRequested", playerEngine, position/1000f);
-    }
-
-    public void onSeekEnded(final PlayerEngine playerEngine) {
-        logWithPlaybackInfo("SeekEnded", playerEngine);
+        logWithPlaybackInfo("SeekRequested", playerEngine, position);
     }
 
     public void onPauseRequested(PlayerEngine playerEngine) {
@@ -261,66 +281,9 @@ public class Profiler {
         logWithPlaybackInfo("PlayRequested", playerEngine);
     }
 
-    public void onPlayerError(PlayerEngine playerEngine, String errorStr) {
-        logWithPlaybackInfo("PlayerError", playerEngine, errorStr);
-    }
-
-    public void onPlayerIdle(PlayerEngine playerEngine, boolean shouldPlay) {
-        logWithPlaybackInfo("PlayerIdle", playerEngine, shouldPlay);
-    }
-
-    public void onPlayerBuffering(PlayerEngine playerEngine, boolean shouldPlay) {
-        logWithPlaybackInfo("PlayerBuffering", playerEngine, shouldPlay, durationString(playerEngine.getDuration()));
-    }
-
-    public void onPlayerReady(PlayerEngine playerEngine, boolean shouldPlay) {
-        logWithPlaybackInfo("PlayerReady", playerEngine, shouldPlay, durationString(playerEngine.getDuration()));
-    }
-
-    public void onPlayerEnded(PlayerEngine playerEngine, boolean shouldPlay) {
-        logWithPlaybackInfo("PlayerEnded", playerEngine, shouldPlay);
-    }
-
-    public void onBandwidthEstimation(PlayerEngine playerEngine, long bitrate) {
-        logWithPlaybackInfo("BandwidthEstimation", playerEngine, bitrate);
-    }
-
-    public void onTracksChanged(PlayerEngine playerEngine, String videoTrackId, int videoTrackBitrate, String videoTrackCodec, String audioTrackId, int audioTrackBitrate, String audioTrackCodec) {
-        PlayerView view = playerEngine.getView();
-        logWithPlaybackInfo("TracksChanged", playerEngine, view.getWidth() + "x" + view.getHeight(), videoTrackId, videoTrackBitrate, videoTrackCodec, audioTrackId, audioTrackBitrate, audioTrackCodec);
-    }
-
-    public void onTransferEnd(PlayerEngine playerEngine, Uri uri, int size, long time) {
-        float sec = time / 1000f;
-        logWithPlaybackInfo("TransferEnd", playerEngine, size, sec, size * 8 / sec / 1024 / 1024, uri.getLastPathSegment(), uri);
-    }
-
-    public void onVideoEnabled(PlayerEngine playerEngine) {
-        logWithPlaybackInfo("VideoEnabled", playerEngine);
-    }
-
-    public void onVideoDecoderInitialized(PlayerEngine playerEngine, String decoderName, long initializationDurationMs) {
-        logWithPlaybackInfo("VideoDecoderInitialized", playerEngine, decoderName, initializationDurationMs/1000f);
-    }
-
-    public void onVideoInputFormatChanged(PlayerEngine playerEngine, String id, String codecs, int bitrate) {
-        logWithPlaybackInfo("VideoInputFormatChanged", playerEngine, id, codecs, bitrate);
-    }
-
-    public void onDroppedFrames(PlayerEngine playerEngine, int count, long elapsedMs) {
-        logWithPlaybackInfo("DroppedFrames", playerEngine, count, elapsedMs/1000f);
-    }
-
-    public void onVideoSizeChanged(PlayerEngine playerEngine, int width, int height) {
-        logWithPlaybackInfo("VideoSizeChanged", playerEngine, width + "x" + height);
-    }
-
-    public void onRenderedFirstFrame(PlayerEngine playerEngine) {
-        logWithPlaybackInfo("RenderedFirstFrame", playerEngine);
-    }
-
-    public void onVideoDisabled(PlayerEngine playerEngine) {
-        logWithPlaybackInfo("VideoDisabled", playerEngine);
+    public void onBandwidthSample(PlayerEngine playerEngine, long bitrate) {
+        log("BandwidthSample", "bandwidth=" + bitrate);
+        this.lastBandwidthSample = bitrate;
     }
 
     private static Profiler nullProfiler() {
@@ -341,9 +304,6 @@ public class Profiler {
             public void onSeekRequested(PlayerEngine playerEngine, long position) {}
 
             @Override
-            public void onSeekEnded(PlayerEngine playerEngine) {}
-
-            @Override
             public void onPauseRequested(PlayerEngine playerEngine) {}
 
             @Override
@@ -353,49 +313,20 @@ public class Profiler {
             public void onPlayRequested(PlayerEngine playerEngine) {}
 
             @Override
-            public void onPlayerError(PlayerEngine playerEngine, String errorStr) {}
-
-            @Override
-            public void onPlayerIdle(PlayerEngine playerEngine, boolean shouldPlay) {}
-
-            @Override
-            public void onPlayerBuffering(PlayerEngine playerEngine, boolean shouldPlay) {}
-
-            @Override
-            public void onPlayerReady(PlayerEngine playerEngine, boolean shouldPlay) {}
-
-            @Override
-            public void onPlayerEnded(PlayerEngine playerEngine, boolean shouldPlay) {}
-
-            @Override
-            public void onBandwidthEstimation(PlayerEngine playerEngine, long bitrate) {}
-
-            @Override
-            public void onTracksChanged(PlayerEngine playerEngine, String videoTrackId, int videoTrackBitrate, String videoTrackCodec, String audioTrackId, int audioTrackBitrate, String audioTrackCodec) {}
-
-            @Override
-            public void onTransferEnd(PlayerEngine playerEngine, Uri uri, int size, long time) {}
-
-            @Override
-            public void onVideoEnabled(PlayerEngine playerEngine) {}
-
-            @Override
-            public void onVideoDecoderInitialized(PlayerEngine playerEngine, String decoderName, long initializationDurationMs) {}
-
-            @Override
-            public void onVideoInputFormatChanged(PlayerEngine playerEngine, String id, String codecs, int bitrate) {}
-
-            @Override
-            public void onDroppedFrames(PlayerEngine playerEngine, int count, long elapsedMs) {}
-
-            @Override
-            public void onVideoSizeChanged(PlayerEngine playerEngine, int width, int height) {}
-
-            @Override
-            public void onRenderedFirstFrame(PlayerEngine playerEngine) {}
-
-            @Override
-            public void onVideoDisabled(PlayerEngine playerEngine) {}
+            public void onBandwidthSample(PlayerEngine playerEngine, long bitrate) {}
         };
+    }
+
+    static class Opt {
+        Object obj;
+
+        Opt(Object o) {
+            obj = o;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(obj);
+        }
     }
 }
