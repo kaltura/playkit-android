@@ -441,16 +441,23 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                        type defined by the value of "objectType" property provided in the response objects, if type wasn't found or in
                        case of error object in the response, will be parsed to BaseResult object (error if occurred will be accessible from this object)*/
 
-                    Object phenixObjectParsed = PhoenixParser.parse(response.getResponse());
+                    Object parsedResponsesObject = PhoenixParser.parse(response.getResponse());
                     List<BaseResult> parsedResponses = new ArrayList<>();
-                    if (phenixObjectParsed instanceof List) {
-                        parsedResponses = PhoenixParser.parse(response.getResponse());
-                    } else {
-                        parsedResponses.add((BaseResult)phenixObjectParsed);
+                    if (parsedResponsesObject instanceof List) {
+                        parsedResponses = (List<BaseResult>) parsedResponsesObject;
+                    } else if (parsedResponsesObject instanceof BaseResult){
+                        // Fix potential bug in BE that response will come in single object and not as List
+                        parsedResponses.add((BaseResult) parsedResponsesObject);
                     }
 
+                    BaseResult loginResult = null;
                     BaseResult playbackContextResult = null;
                     BaseResult assetGetResult = null;
+
+                    if (parsedResponses != null && parsedResponses.size() > 2) {
+                        // position size -1 is asset get result size - 2 is playbackContext size - 3 is the login data
+                        loginResult = parsedResponses.get(parsedResponses.size() - 3);
+                    }
 
                     if (parsedResponses != null && parsedResponses.size() > 1) {
                         // position size -1 is asset get result size - 2 is playbackContext size - 3 is the login data
@@ -458,8 +465,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                         assetGetResult = parsedResponses.get(parsedResponses.size() - 1);
                     }
 
-                    if (playbackContextResult == null || assetGetResult == null || playbackContextResult.error != null || assetGetResult.error != null) {
-                        error = updateErrorElement(response, playbackContextResult, assetGetResult);
+                    if ((parsedResponses != null && parsedResponses.size() > 2 && (loginResult == null || loginResult.error != null)) || playbackContextResult == null || assetGetResult == null || playbackContextResult.error != null || assetGetResult.error != null) {
+                        error = updateErrorElement(response, loginResult, playbackContextResult, assetGetResult);
                     } else {
                         KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) playbackContextResult;
                         KalturaMediaAsset kalturaMediaAsset = (KalturaMediaAsset) assetGetResult;
@@ -547,10 +554,12 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return metadata;
     }
 
-    private ErrorElement updateErrorElement(ResponseElement response, BaseResult playbackContextResult, BaseResult assetGetResult) {
+    private ErrorElement updateErrorElement(ResponseElement response, BaseResult loginResult, BaseResult playbackContextResult, BaseResult assetGetResult) {
         //error = ErrorElement.LoadError.message("failed to get multirequest responses on load request for asset "+mediaAsset.assetId);
         ErrorElement error;
-        if (playbackContextResult != null && playbackContextResult.error != null) {
+        if (loginResult != null && loginResult.error != null) {
+            error = PhoenixErrorHelper.getErrorElement(loginResult.error); // get predefined error if exists for this error code
+        } else if (playbackContextResult != null && playbackContextResult.error != null) {
             error = PhoenixErrorHelper.getErrorElement(playbackContextResult.error); // get predefined error if exists for this error code
         } else if (assetGetResult != null && assetGetResult.error != null) {
             error = PhoenixErrorHelper.getErrorElement(assetGetResult.error); // get predefined error if exists for this error code
