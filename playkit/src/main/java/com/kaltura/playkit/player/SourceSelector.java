@@ -23,7 +23,6 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
