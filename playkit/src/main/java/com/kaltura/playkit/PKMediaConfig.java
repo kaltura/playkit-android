@@ -16,8 +16,10 @@ package com.kaltura.playkit;
  * Created by Noam Tamim @ Kaltura on 22/02/2017.
  */
 public class PKMediaConfig {
+
     private long startPosition = 0;
     private PKMediaEntry mediaEntry;
+    private PKMediaFormat preferredMediaFormat = PKMediaFormat.dash;
 
     /**
      * Setter for start position.
@@ -36,6 +38,10 @@ public class PKMediaConfig {
         return this;
     }
 
+    public PKMediaConfig setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
+        this.preferredMediaFormat = preferredMediaFormat;
+        return this;
+    }
 
     /**
      * Getter for start position. Default is 0.
@@ -49,6 +55,10 @@ public class PKMediaConfig {
 
     public PKMediaEntry getMediaEntry() {
         return mediaEntry;
+    }
+
+    public PKMediaFormat getPreferredMediaFormat() {
+        return preferredMediaFormat;
     }
 }
 

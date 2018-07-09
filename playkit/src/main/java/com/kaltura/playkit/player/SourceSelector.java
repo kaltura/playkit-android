@@ -12,15 +12,18 @@
 
 package com.kaltura.playkit.player;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,17 +33,19 @@ import java.util.List;
 class SourceSelector {
     
     private static final PKLog log = PKLog.get("SourceSelector");
-    private final PKMediaEntry mediaEntry;
-    
-    SourceSelector(PKMediaEntry mediaEntry) {
-        this.mediaEntry = mediaEntry;
+    private final PKMediaConfig mediaConfig;
+
+    public SourceSelector(PKMediaConfig mediaConfig) {
+        this.mediaConfig = mediaConfig;
     }
     
     @Nullable
     private PKMediaSource sourceByFormat(PKMediaFormat format) {
-        for (PKMediaSource source : mediaEntry.getSources()) {
-            if (source.getMediaFormat() == format) {
-                return source;
+        if (mediaConfig != null && mediaConfig.getMediaEntry()!= null && mediaConfig.getMediaEntry().getSources() != null) {
+            for (PKMediaSource source : mediaConfig.getMediaEntry().getSources()) {
+                if (source.getMediaFormat() == format) {
+                    return source;
+                }
             }
         }
         return null;
@@ -58,9 +63,9 @@ class SourceSelector {
 
         // Default preference: DASH, HLS, WVM, MP4, MP3
 
-        PKMediaFormat[] pref = {PKMediaFormat.dash, PKMediaFormat.hls, PKMediaFormat.wvm, PKMediaFormat.mp4, PKMediaFormat.mp3};
+        List<PKMediaFormat> formatsPriorityList = getFormatsPriorityList();
         
-        for (PKMediaFormat format : pref) {
+        for (PKMediaFormat format : formatsPriorityList) {
             PKMediaSource source = sourceByFormat(format);
             if (source == null) {
                 continue;
@@ -81,14 +86,34 @@ class SourceSelector {
         return null;
     }
 
-    static PKMediaSource selectSource(PKMediaEntry mediaEntry) {
-        return new SourceSelector(mediaEntry).getPreferredSource();
+    @NonNull
+    private List<PKMediaFormat> getFormatsPriorityList() {
+        List<PKMediaFormat> formatsPriorityList = new ArrayList<>();
+
+        formatsPriorityList.add(PKMediaFormat.dash);
+        formatsPriorityList.add(PKMediaFormat.hls);
+        formatsPriorityList.add(PKMediaFormat.wvm);
+        formatsPriorityList.add(PKMediaFormat.mp4);
+        formatsPriorityList.add(PKMediaFormat.mp3);
+
+        int firstIndex = formatsPriorityList.indexOf(PKMediaFormat.dash);
+        int secondIndex = formatsPriorityList.indexOf(mediaConfig.getPreferredMediaFormat());
+        if (secondIndex > 0) {
+            Collections.swap(formatsPriorityList, firstIndex, secondIndex);
+        }
+        return formatsPriorityList;
+    }
+
+    public static PKMediaSource selectSource(PKMediaConfig mediaConfig) {
+        return new SourceSelector(mediaConfig).getPreferredSource();
     }
 
     private PKMediaSource getLocalSource(){
-        for (PKMediaSource source : mediaEntry.getSources()) {
-            if (source instanceof LocalAssetsManager.LocalMediaSource) {
-                return source;
+        if (mediaConfig != null && mediaConfig.getMediaEntry()!= null && mediaConfig.getMediaEntry().getSources() != null) {
+            for (PKMediaSource source : mediaConfig.getMediaEntry().getSources()) {
+                if (source instanceof LocalAssetsManager.LocalMediaSource) {
+                    return source;
+                }
             }
         }
         return null;
