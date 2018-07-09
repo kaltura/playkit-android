@@ -109,9 +109,9 @@ class SimpleDashParser {
         } catch (InterruptedException e) {
             log.e("Interrupted! " + e.getMessage());
         }
-        if (!chunk.isLoadCanceled()) {
+        //if (!chunk.isLoadCanceled()) {
             drmInitData = extractorWrapper.getSampleFormats()[0].drmInitData;
-        }
+        //}
 
         if (drmInitData != null) {
             DrmInitData.SchemeData schemeInitData = getWidevineInitData(drmInitData);

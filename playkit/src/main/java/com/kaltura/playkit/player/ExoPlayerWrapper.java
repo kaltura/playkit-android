@@ -168,9 +168,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private void setPlayerListeners() {
         if (player != null) {
             player.addListener(this);
-            player.addListener(eventLogger);
-            player.addVideoDebugListener(eventLogger);
-            player.addAudioDebugListener(eventLogger);
+            player.addAnalyticsListener(new EventLogger());
             player.addMetadataOutput(this);
         }
     }
@@ -229,15 +227,15 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 return new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
                         manifestDataSourceFactory)
-                        .createMediaSource(uri, mainHandler, eventLogger);
+                        .createMediaSource(uri);
             case hls:
                 return new HlsMediaSource.Factory(mediaDataSourceFactory)
-                        .createMediaSource(uri, mainHandler, eventLogger);
+                        .createMediaSource(uri);
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
                 return new ExtractorMediaSource.Factory(mediaDataSourceFactory)
-                        .createMediaSource(uri, mainHandler, eventLogger);
+                        .createMediaSource(uri);
 
             default:
                 throw new IllegalStateException("Unsupported type: " + format);

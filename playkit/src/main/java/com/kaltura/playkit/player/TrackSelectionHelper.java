@@ -20,7 +20,7 @@ import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
-import com.google.android.exoplayer2.trackselection.MappingTrackSelector.SelectionOverride;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.playkit.PKLog;
@@ -489,9 +489,9 @@ class TrackSelectionHelper {
             }
 
             adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-            override = new SelectionOverride(adaptiveTrackSelectionFactory, groupIndex, adaptiveTrackIndexes);
+            override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
         } else {
-            override = new SelectionOverride(FIXED_FACTORY, groupIndex, trackIndex);
+            override = new SelectionOverride(groupIndex, trackIndex);
         }
 
         return override;
