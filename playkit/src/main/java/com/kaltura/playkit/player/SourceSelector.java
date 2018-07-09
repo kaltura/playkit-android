@@ -96,10 +96,14 @@ class SourceSelector {
         formatsPriorityList.add(PKMediaFormat.mp4);
         formatsPriorityList.add(PKMediaFormat.mp3);
 
-        int firstIndex = formatsPriorityList.indexOf(PKMediaFormat.dash);
-        int secondIndex = formatsPriorityList.indexOf(mediaConfig.getPreferredMediaFormat());
-        if (secondIndex > 0) {
-            Collections.swap(formatsPriorityList, firstIndex, secondIndex);
+        if (mediaConfig.getPreferredMediaFormat() == PKMediaFormat.dash) {
+            return formatsPriorityList;
+        }
+
+        int preferredMediaFormat = formatsPriorityList.indexOf(mediaConfig.getPreferredMediaFormat());
+        if (preferredMediaFormat > 0) {
+            formatsPriorityList.remove(preferredMediaFormat);
+            formatsPriorityList.add(0, mediaConfig.getPreferredMediaFormat());
         }
         return formatsPriorityList;
     }
