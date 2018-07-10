@@ -118,6 +118,13 @@ public interface Player {
          */
         Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig);
 
+        /**
+         * Set the Player's setPreferredMediaFormat.
+         *
+         * @param preferredMediaFormat - PKMediaFormat.
+         * @return - Player Settings.
+         */
+        Settings setPreferredMediaFormat(PKMediaFormat preferredMediaFormat);
     }
 
     /**

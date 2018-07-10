@@ -18,7 +18,7 @@ import android.support.annotation.Nullable;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaConfig;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 
@@ -32,16 +32,18 @@ import java.util.List;
 class SourceSelector {
     
     private static final PKLog log = PKLog.get("SourceSelector");
-    private final PKMediaConfig mediaConfig;
+    private final PKMediaEntry mediaEntry;
+    private final PKMediaFormat preferredMediaFormat;
 
-    public SourceSelector(PKMediaConfig mediaConfig) {
-        this.mediaConfig = mediaConfig;
+    public SourceSelector(PKMediaEntry mediaEntry, PKMediaFormat preferredMdieaFormat) {
+        this.mediaEntry = mediaEntry;
+        this.preferredMediaFormat = preferredMdieaFormat;
     }
     
     @Nullable
     private PKMediaSource sourceByFormat(PKMediaFormat format) {
-        if (mediaConfig != null && mediaConfig.getMediaEntry()!= null && mediaConfig.getMediaEntry().getSources() != null) {
-            for (PKMediaSource source : mediaConfig.getMediaEntry().getSources()) {
+        if (mediaEntry != null && mediaEntry.getSources() != null) {
+            for (PKMediaSource source : mediaEntry.getSources()) {
                 if (source.getMediaFormat() == format) {
                     return source;
                 }
@@ -95,25 +97,25 @@ class SourceSelector {
         formatsPriorityList.add(PKMediaFormat.mp4);
         formatsPriorityList.add(PKMediaFormat.mp3);
 
-        if (mediaConfig.getPreferredMediaFormat() == PKMediaFormat.dash) {
+        if (preferredMediaFormat == PKMediaFormat.dash) {
             return formatsPriorityList;
         }
 
-        int preferredMediaFormat = formatsPriorityList.indexOf(mediaConfig.getPreferredMediaFormat());
-        if (preferredMediaFormat > 0) {
-            formatsPriorityList.remove(preferredMediaFormat);
-            formatsPriorityList.add(0, mediaConfig.getPreferredMediaFormat());
+        int preferredMediaFormatIndex = formatsPriorityList.indexOf(preferredMediaFormat);
+        if (preferredMediaFormatIndex > 0) {
+            formatsPriorityList.remove(preferredMediaFormatIndex);
+            formatsPriorityList.add(0, preferredMediaFormat);
         }
         return formatsPriorityList;
     }
 
-    public static PKMediaSource selectSource(PKMediaConfig mediaConfig) {
-        return new SourceSelector(mediaConfig).getPreferredSource();
+    public static PKMediaSource selectSource(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat) {
+        return new SourceSelector(mediaEntry, preferredMediaFormat).getPreferredSource();
     }
 
     private PKMediaSource getLocalSource(){
-        if (mediaConfig != null && mediaConfig.getMediaEntry()!= null && mediaConfig.getMediaEntry().getSources() != null) {
-            for (PKMediaSource source : mediaConfig.getMediaEntry().getSources()) {
+        if (mediaEntry != null && mediaEntry.getSources() != null) {
+            for (PKMediaSource source : mediaEntry.getSources()) {
                 if (source instanceof LocalAssetsManager.LocalMediaSource) {
                     return source;
                 }
