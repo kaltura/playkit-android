@@ -181,6 +181,9 @@ class TrackSelectionHelper {
                                 if (!isDashManifest) {
                                     audioTrackLabel = format.id;
                                 }
+                                if(format.language == null) {
+                                    continue;
+                                }
                                 audioTracks.add(new AudioTrack(uniqueId, format.language, audioTrackLabel, format.bitrate, format.selectionFlags, false));
                                 break;
                             case TRACK_TYPE_TEXT:
@@ -193,6 +196,9 @@ class TrackSelectionHelper {
                                         textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
                                     }
                                 } else {
+                                    if(format.language == null) {
+                                        continue;
+                                    }
                                     textTracks.add(new TextTrack(uniqueId, format.language, textTrackLabel, format.selectionFlags));
                                 }
                                 break;

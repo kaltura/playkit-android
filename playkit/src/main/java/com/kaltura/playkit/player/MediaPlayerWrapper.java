@@ -1,15 +1,14 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
  */
-
 
 
 package com.kaltura.playkit.player;
@@ -49,6 +48,7 @@ import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARI
 
 /**
  * Created by gilad.nadav on 30/12/2016.
+ *
  * @hide
  */
 
@@ -135,7 +135,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         assetUri = mediaSourceConfig.getUrl().toString();
 
         String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
-        String playbackUri     = getWidevineAssetPlaybackUri(assetUri);
+        String playbackUri = getWidevineAssetPlaybackUri(assetUri);
         log.d("playback uri = " + playbackUri);
         try {
             mediaPlayerView.getSurfaceHolder().addCallback(this);
@@ -215,7 +215,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
 
-
     @Override
     public void pause() {
         log.d("pause");
@@ -227,7 +226,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             }
             return;
         }
-        if(player.isPlaying()) {
+        if (player.isPlaying()) {
             player.pause();
         }
         sendDistinctEvent(PlayerEvent.Type.PAUSE);
@@ -294,7 +293,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             return;
         }
 
-        player.seekTo((int)position);
+        player.seekTo((int) position);
         changeState(PlayerState.BUFFERING);
         sendDistinctEvent(PlayerEvent.Type.SEEKING);
         sendDistinctEvent(PlayerEvent.Type.SEEKED);
@@ -321,7 +320,8 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public boolean isPlaying() {
-        return player.isPlaying();
+        return player != null
+                && player.isPlaying();
     }
 
     @Override
@@ -480,7 +480,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             sendDistinctEvent(PlayerEvent.Type.PLAY);
             play();
             isPlayAfterPrepare = false;
-        } else if (isPauseAfterPrepare){
+        } else if (isPauseAfterPrepare) {
             pause();
             isPauseAfterPrepare = false;
         }

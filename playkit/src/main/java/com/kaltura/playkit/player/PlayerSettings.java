@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.player;
 
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
@@ -28,6 +29,8 @@ public class PlayerSettings implements Player.Settings {
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
+
+    private PKMediaFormat preferredMediaFormat = PKMediaFormat.dash;
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
@@ -71,6 +74,10 @@ public class PlayerSettings implements Player.Settings {
 
     public PKTrackConfig getPreferredAudioTrackConfig() {
         return preferredAudioTrackConfig;
+    }
+
+    public PKMediaFormat getPreferredMediaFormat() {
+        return preferredMediaFormat;
     }
 
     @Override
@@ -124,6 +131,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public PlayerSettings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
         this.preferredTextTrackConfig = preferredTextTrackConfig;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
+        this.preferredMediaFormat = preferredMediaFormat;
         return this;
     }
 
