@@ -474,7 +474,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         this.adCuePoints = adCuePoints;
     }
 
-    private void initializePlayer(String adUrl, boolean adShouldPAutolay) {
+    private void initializePlayer(String adUrl, boolean adShouldPAutoPlay) {
         Uri currentSourceUri = Uri.parse(adUrl);
         if (player == null) {
             player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
@@ -489,7 +489,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         MediaSource mediaSource =  buildMediaSource(currentSourceUri, null, mainHandler, eventLogger);
         mVideoPlayer.getPlayer().stop();
         player.prepare(mediaSource);
-        mVideoPlayer.getPlayer().setPlayWhenReady(adShouldPAutolay);
+        mVideoPlayer.getPlayer().setPlayWhenReady(adShouldPAutoPlay);
     }
 
     private MediaSource buildMediaSource(
