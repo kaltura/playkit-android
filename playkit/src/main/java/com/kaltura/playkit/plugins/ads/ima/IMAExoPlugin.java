@@ -234,7 +234,6 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         clearAdsLoader();
         imaSetup();
         log.d("adtag = " + adConfig.getAdTagURL());
-
         requestAdsFromIMA(adConfig.getAdTagURL());
     }
 
@@ -314,7 +313,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     protected void onApplicationPaused() {
         log.d("onApplicationPaused");
         if (videoPlayerWithAdPlayback != null) {
-            videoPlayerWithAdPlayback.setIsAppInBackground(true);
+            videoPlayerWithAdPlayback.setIsAppInBackground(true, isAdShouldAutoPlayOnResume());
         }
         appIsInBackground = true;
         if (adsManager == null) {
@@ -339,7 +338,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     protected void onApplicationResumed() {
         log.d("onApplicationResumed isAdDisplayed = " + isAdDisplayed + ", lastPlaybackPlayerState = " + lastPlaybackPlayerState + " ,lastAdEventReceived = " + lastAdEventReceived);
         if (videoPlayerWithAdPlayback != null) {
-            videoPlayerWithAdPlayback.setIsAppInBackground(false);
+            videoPlayerWithAdPlayback.setIsAppInBackground(false, isAdShouldAutoPlayOnResume());
         }
         appIsInBackground = false;
         if (isAdDisplayed) {
@@ -351,7 +350,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
                 clearAdLoadingInBackground();
                 adsManager.start();
             } else {
-                if (player.getSettings() instanceof PlayerSettings && ((PlayerSettings) player.getSettings()).isAdAutoPlayOnResume()) {
+                if (isAdShouldAutoPlayOnResume()) {
                     log.d("onApplicationResumed resume ad playback");
                     clearAdLoadingInBackground();
                     adsManager.resume();
@@ -388,6 +387,10 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
             onUpdateMedia(mediaConfig);
             start();
         }
+    }
+
+    private boolean isAdShouldAutoPlayOnResume() {
+        return player.getSettings() instanceof PlayerSettings && ((PlayerSettings) player.getSettings()).isAdAutoPlayOnResume();
     }
 
     private void clearAdLoadingInBackground() {
