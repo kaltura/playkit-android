@@ -16,6 +16,7 @@ package com.kaltura.playkit;
  * Created by Noam Tamim @ Kaltura on 22/02/2017.
  */
 public class PKMediaConfig {
+
     private long startPosition = 0;
     private PKMediaEntry mediaEntry;
 
@@ -35,7 +36,6 @@ public class PKMediaConfig {
         this.mediaEntry = mediaEntry;
         return this;
     }
-
 
     /**
      * Getter for start position. Default is 0.
