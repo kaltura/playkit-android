@@ -198,6 +198,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             @Override
             public void loadAd(String url) {
                 log.d("loadAd = " + url);
+                lastKnownAdPosition = 0;
                 lastKnownAdURL = url;
                 isPlayerReady = false;
                 isAdFirstPlay = false;
