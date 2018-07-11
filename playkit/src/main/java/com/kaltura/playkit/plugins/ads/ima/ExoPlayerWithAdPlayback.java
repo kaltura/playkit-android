@@ -86,12 +86,12 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     // Used to track the current content video URL to resume content playback.
     private String mContentVideoUrl;
 
-    // The saved position in the ad to resume if app is backgrounded during ad playback.
-    private long mSavedAdPosition;
-
-    // The saved position in the content to resume to after ad playback or if app is backgrounded
-    // during content playback.
-    private long mSavedContentPosition;
+//    // The saved position in the ad to resume if app is backgrounded during ad playback.
+//    private long mSavedAdPosition;
+//
+//    // The saved position in the content to resume to after ad playback or if app is backgrounded
+//    // during content playback.
+//    private long mSavedContentPosition;
 
     // VideoAdPlayer interface implementation for the SDK to send ad play/pause type events.
     private VideoAdPlayer mVideoAdPlayer;
@@ -107,6 +107,9 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             new ArrayList<VideoAdPlayer.VideoAdPlayerCallback>(1);
 
     private OnAdPlayBackListener onAdPlayBackListener;
+
+    private String lastKnownAdURL;
+    private long lastKnownAdPosition;
 
     public interface OnAdPlayBackListener {
         void onBufferStart();
@@ -151,8 +154,9 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     private void init() {
         mIsAdDisplayed = false;
-        mSavedAdPosition = 0;
-        mSavedContentPosition = 0;
+        lastKnownAdPosition = 0;
+        //mSavedAdPosition = 0;
+        //mSavedContentPosition = 0;
         mVideoPlayer = new PlayerView(getContext());
         mVideoPlayer.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         mVideoPlayer.setId(Integer.valueOf(123456789));
@@ -209,9 +213,10 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             @Override
             public void loadAd(String url) {
                 log.d("loadAd = " + url);
+                lastKnownAdURL = url;
                 isPlayerReady = false;
                 mIsAdDisplayed = true;
-                initializePlayer(Uri.parse(url));
+                initializePlayer(lastKnownAdURL);
             }
 
             @Override
@@ -253,14 +258,22 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
             @Override
             public VideoProgressUpdate getAdProgress() {
+                if (mVideoPlayer == null || mVideoPlayer.getPlayer() == null) {
+                    return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
+                }
+
                 long duration = mVideoPlayer.getPlayer().getDuration();
                 long position = mVideoPlayer.getPlayer().getCurrentPosition();
                 if (!isPlayerReady || !mIsAdDisplayed || duration < 0 || position < 0) {
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
 
-                //log.d("getAdProgress getDuration " +  duration);
-                //log.d("getAdProgress getCurrentPosition " +  position);
+
+                log.d("xxx getAdProgress getDuration = " +  duration);
+                log.d("xxx getAdProgress getCurrentPosition = " +  position);
+                if (position > duration) {
+                    position = duration;
+                }
                 return new VideoProgressUpdate(position, duration);
             }
         };
@@ -396,8 +409,8 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 }
                 long duration = contentPlayer.getDuration();
                 long position = contentPlayer.getCurrentPosition();
-                //log.d("xxx getContentProgress getDuration " +  duration);
-                //log.d("xxx getContentProgress getCurrentPosition " + position);
+                log.d("xxx getContentProgress getDuration " +  duration);
+                log.d("xxx getContentProgress getCurrentPosition " + position);
                 if (position > 0 && duration > 0 && position >= duration && adCuePoints != null && !adCuePoints.hasPostRoll()) {
                     mContentProgressProvider = null;
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
@@ -408,29 +421,29 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         };
     }
 
-    /**
-     * Save the playback progress state of the currently playing video. This is called when content
-     * is paused to prepare for ad playback or when app is backgrounded.
-     */
-    public void savePosition() {
-        if (mIsAdDisplayed) {
-            mSavedAdPosition = mVideoPlayer.getPlayer().getCurrentPosition();
-        } else {
-            mSavedContentPosition = mVideoPlayer.getPlayer().getCurrentPosition();
-        }
-    }
-
-    /**
-     * Restore the currently loaded video to its previously saved playback progress state. This is
-     * called when content is resumed after ad playback or when focus has returned to the app.
-     */
-    public void restorePosition() {
-        if (mIsAdDisplayed) {
-            mVideoPlayer.getPlayer().seekTo(mSavedAdPosition);
-        } else {
-            mVideoPlayer.getPlayer().seekTo(mSavedContentPosition);
-        }
-    }
+//    /**
+//     * Save the playback progress state of the currently playing video. This is called when content
+//     * is paused to prepare for ad playback or when app is backgrounded.
+//     */
+//    public void savePosition() {
+//        if (mIsAdDisplayed) {
+//            mSavedAdPosition = mVideoPlayer.getPlayer().getCurrentPosition();
+//        } else {
+//            mSavedContentPosition = mVideoPlayer.getPlayer().getCurrentPosition();
+//        }
+//    }
+//
+//    /**
+//     * Restore the currently loaded video to its previously saved playback progress state. This is
+//     * called when content is resumed after ad playback or when focus has returned to the app.
+//     */
+//    public void restorePosition() {
+//        if (mIsAdDisplayed) {
+//            mVideoPlayer.getPlayer().seekTo(mSavedAdPosition);
+//        } else {
+//            mVideoPlayer.getPlayer().seekTo(mSavedContentPosition);
+//        }
+//    }
 
     public void addAdPlaybackEventListener(OnAdPlayBackListener onAdPlayBackListener) {
         this.onAdPlayBackListener = onAdPlayBackListener;
@@ -440,9 +453,6 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         onAdPlayBackListener = null;
     }
 
-    /**
-     * Pauses the content video.
-     */
     public void pause() {
         if (mVideoPlayer!= null && mVideoPlayer.getPlayer() != null) {
             mVideoPlayer.getPlayer().setPlayWhenReady(false);
@@ -457,37 +467,34 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         }
     }
 
-    /**
-     * Plays the content video.
-     */
     public void play() {
         if (mVideoPlayer!= null && mVideoPlayer.getPlayer() != null) {
             mVideoPlayer.getPlayer().setPlayWhenReady(true);
         }
     }
 
-    /**
-     * Seeks the content video.
-     */
-    public void seek(int time) {
-        if (mIsAdDisplayed) {
-            // When ad is playing, set the content video position to seek to when ad finishes.
-            mSavedContentPosition = time;
-        } else {
-            mVideoPlayer.getPlayer().seekTo(time);
-        }
-    }
+//    /**
+//     * Seeks the content video.
+//     */
+//    public void seek(int time) {
+//        if (mIsAdDisplayed) {
+//            // When ad is playing, set the content video position to seek to when ad finishes.
+//            mSavedContentPosition = time;
+//        } else {
+//            mVideoPlayer.getPlayer().seekTo(time);
+//        }
+//    }
 
-    /**
-     * Returns current content video play time.
-     */
-    public long getCurrentContentTime() {
-        if (mIsAdDisplayed) {
-            return mSavedContentPosition;
-        } else {
-            return mVideoPlayer.getPlayer().getCurrentPosition();
-        }
-    }
+//    /**
+//     * Returns current content video play time.
+//     */
+//    public long getCurrentContentTime() {
+//        if (mIsAdDisplayed) {
+//            return mSavedContentPosition;
+//        } else {
+//            return mVideoPlayer.getPlayer().getCurrentPosition();
+//        }
+//    }
 
     public long getAdPosition() {
         if (mVideoPlayer != null && mVideoPlayer.getPlayer() != null) {
@@ -507,15 +514,15 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         return Consts.TIME_UNSET;
     }
 
-    /**
-     * Pause the currently playing content video in preparation for an ad to play, and disables
-     * the media controller.
-     */
-    public void pauseContentForAdPlayback() {
-        //mVideoPlayer.getPlayer().disablePlaybackControls();
-        savePosition();
-        mVideoPlayer.getPlayer().stop();
-    }
+//    /**
+//     * Pause the currently playing content video in preparation for an ad to play, and disables
+//     * the media controller.
+//     */
+//    public void pauseContentForAdPlayback() {
+//        //mVideoPlayer.getPlayer().disablePlaybackControls();
+//        savePosition();
+//        mVideoPlayer.getPlayer().stop();
+//    }
 
     /**
      * Returns an implementation of the SDK's VideoAdPlayer interface.
@@ -539,10 +546,14 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         this.adCuePoints = adCuePoints;
     }
 
-    private void initializePlayer(Uri currentSourceUri) {
-
+    private void initializePlayer(String adUrl) {
+        Uri currentSourceUri = Uri.parse(adUrl);
         if (player == null) {
             player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
+            player.addListener(eventLogger);
+            player.addMetadataOutput(eventLogger);
+            player.addAudioDebugListener(eventLogger);
+            player.addVideoDebugListener(eventLogger);
             mVideoPlayer.setPlayer(player);
         }
 
@@ -586,7 +597,21 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
 
     public void setIsAppInBackground(boolean isAppInBackground) {
         adShouldPAutolay = !isAppInBackground;
-        pause();
+        if (isAppInBackground) {
+            lastKnownAdPosition = getAdPosition();
+            pause();
+            player.stop();
+            //lastPlayerState = null;
+        } else {
+
+            mIsAdDisplayed = true;
+            //lastKnownAdPosition = 0;
+            //mSavedAdPosition = 0;
+            //mSavedContentPosition = 0;
+            initializePlayer(lastKnownAdURL);
+            player.seekTo(lastKnownAdPosition);
+            //pause(); ???
+        }
     }
 
     public void resumeContentAfterAdPlayback() {
