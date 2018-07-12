@@ -180,6 +180,9 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                     for (VideoAdPlayer.VideoAdPlayerCallback callback : mAdCallbacks) {
                         log.d("playAd->onResume");
                         callback.onResume();
+                        if (!isAdPlayerPlaying()) {
+                            play();
+                        }
                         return;
                     }
                 } else {
@@ -526,7 +529,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         }
     }
 
-    public void setIsAppInBackground(boolean isAppInBackground, boolean adShouldAutoPlayOnResume) {
+    public void setIsAppInBackground(boolean isAppInBackground) {
         if (isAppInBackground) {
             lastKnownAdPosition = getAdPosition();
             if(CustomVideoCodecRenderer.isSurfaceWorkaroundNeeded) {
@@ -536,13 +539,8 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
             }
         } else {
             if (CustomVideoCodecRenderer.isSurfaceWorkaroundNeeded) {
-                isPlayerReady = false;
-                initializePlayer(lastKnownAdURL, adShouldAutoPlayOnResume);
+                initializePlayer(lastKnownAdURL, false);
                 player.seekTo(lastKnownAdPosition);
-            }else{
-               if(adShouldAutoPlayOnResume){
-                   play();
-               }
             }
         }
     }
