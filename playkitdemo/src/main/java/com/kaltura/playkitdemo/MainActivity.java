@@ -288,6 +288,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             player = PlayKitManager.loadPlayer(this, pluginConfig);
             KalturaPlaybackRequestAdapter.install(player, "myApp"); // in case app developer wants to give customized referrer instead the default referrer in the playmanifest
             player.getSettings().setSecureSurface(true);
+            player.getSettings().setAdAutoPlayOnResume(false);
 
             log.d("Player: " + player.getClass());
             addPlayerListeners(progressBar);
@@ -301,7 +302,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
 
         player.prepare(mediaConfig);
-        player.getSettings().setAdAutoPlayOnResume(true);
         player.play();
     }
 
@@ -573,7 +573,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                //When the track data available, this event occurs. It brings the info object with it.
+                //sWhen the track data available, this event occurs. It brings the info object with it.
                 PlayerEvent.TracksAvailable tracksAvailable = (PlayerEvent.TracksAvailable) event;
                 populateSpinnersWithTrackInfo(tracksAvailable.tracksInfo);
 

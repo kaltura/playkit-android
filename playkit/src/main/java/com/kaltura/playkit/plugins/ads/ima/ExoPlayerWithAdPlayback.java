@@ -22,6 +22,7 @@ import com.google.android.exoplayer2.PlaybackPreparer;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.mediacodec.MediaCodecInfo;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.MediaSourceEventListener;
@@ -43,10 +44,12 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.EventLogger;
 import com.google.android.exoplayer2.util.Util;
+import com.google.android.exoplayer2.video.CustomVideoCodecRenderer;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
+import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.utils.Consts;
 
@@ -526,11 +529,21 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     public void setIsAppInBackground(boolean isAppInBackground, boolean adShouldAutoPlayOnResume) {
         if (isAppInBackground) {
             lastKnownAdPosition = getAdPosition();
-            stop();
+            if(CustomVideoCodecRenderer.isSurfaceWorkaroundNeeded) {
+                stop();
+            }else{
+                pause();
+            }
         } else {
-            isPlayerReady = false;
-            initializePlayer(lastKnownAdURL, adShouldAutoPlayOnResume);
-            player.seekTo(lastKnownAdPosition);
+            if (CustomVideoCodecRenderer.isSurfaceWorkaroundNeeded) {
+                isPlayerReady = false;
+                initializePlayer(lastKnownAdURL, adShouldAutoPlayOnResume);
+                player.seekTo(lastKnownAdPosition);
+            }else{
+               if(adShouldAutoPlayOnResume){
+                   play();
+               }
+            }
         }
     }
 
@@ -562,4 +575,9 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 adLoadTimeout,
                 adLoadTimeout, true);
     }
+
+
+   /* private boolean is(){
+        MediaCodecInfo codecInfo = getCodecInfo();
+    }*/
 }
