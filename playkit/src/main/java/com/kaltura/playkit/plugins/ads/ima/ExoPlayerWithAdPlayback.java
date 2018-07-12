@@ -548,7 +548,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     }
 
     private boolean deviceRequiresDecoderRelease() {
-        return MediaSupport.DEVICE_CHIPSET == "xxx";
+        return ("mt6735").equals(MediaSupport.DEVICE_CHIPSET); // LYF (LS-5017) device chipset
     }
 
     public void resumeContentAfterAdPlayback() {
