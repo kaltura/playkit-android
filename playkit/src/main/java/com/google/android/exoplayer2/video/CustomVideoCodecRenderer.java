@@ -71,7 +71,7 @@ import java.nio.ByteBuffer;
  * </ul>
  */
 @TargetApi(16)
-public class CustomVideoCodecRenderer extends MediaCodecRenderer {
+public class CustomVideoCodecRenderer extends CustomMediaCodecRenderer {
 
     private static final String TAG = "MediaCodecVideoRenderer";
     private static final String KEY_CROP_LEFT = "crop-left";
@@ -457,7 +457,8 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
     }
 
     @Override
-    protected int canKeepCodec(
+    protected @com.google.android.exoplayer2.video.CustomMediaCodecRenderer.KeepCodecResult
+    int canKeepCodec(
             MediaCodec codec, MediaCodecInfo codecInfo, Format oldFormat, Format newFormat) {
         if (areAdaptationCompatible(codecInfo.adaptive, oldFormat, newFormat)
                 && newFormat.width <= codecMaxValues.width
