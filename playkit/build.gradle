@@ -2,11 +2,11 @@ apply plugin: 'com.android.library'
 apply from: 'version.gradle'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 27
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 26
+        targetSdkVersion 27
         versionName playkitVersion  // defined in version.gradle
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -37,10 +37,11 @@ dependencies {
     api 'com.kaltura.netkit:netkit-core:1.0.7'
 
     // ExoPlayer
-    api 'com.google.android.exoplayer:exoplayer-core:2.7.0'
-    api 'com.google.android.exoplayer:exoplayer-dash:2.7.0'
-    api 'com.google.android.exoplayer:exoplayer-hls:2.7.0'
-    api 'com.google.android.exoplayer:exoplayer-ui:2.7.0'
+    api 'com.google.android.exoplayer:exoplayer-core:2.8.2'
+    api 'com.google.android.exoplayer:exoplayer-dash:2.8.2'
+    api 'com.google.android.exoplayer:exoplayer-hls:2.8.2'
+    api 'com.google.android.exoplayer:exoplayer-ui:2.8.2'
+
 
     // Tests
     testImplementation 'junit:junit:4.12'

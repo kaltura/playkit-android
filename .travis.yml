@@ -21,8 +21,7 @@ before_script:
 script:
   - ./gradlew playkit:build
 after_failure:
-  - cat playkit/build/outputs/lint-results-debug.xml
-  - cat playkitdemo/build/outputs/lint-results-debug.xml
+  - cat playkit/build/reports/lint-results.xml
 after_success:
   - ./travis-push-to-bintray.sh
 notifications:
@@ -31,5 +30,5 @@ notifications:
       - noam.tamim@kaltura.com
       - gilad.nadav@kaltura.com
       - Anton.Afanasiev@kaltura.com
-    on_success: always
+    on_success: change
     on_failure: always
