@@ -796,8 +796,12 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
 
     private void displayAd() {
         log.d("displayAd");
-        videoPlayerWithAdPlayback.getExoPlayerView().setVisibility(View.VISIBLE);
-        player.getView().hideVideoSurface();
+        if (videoPlayerWithAdPlayback != null && videoPlayerWithAdPlayback.getExoPlayerView() != null) {
+            videoPlayerWithAdPlayback.getExoPlayerView().setVisibility(View.VISIBLE);
+        }
+        if (player != null && player.getView() != null) {
+            player.getView().hideVideoSurface();
+        }
     }
 
     private void displayContent() {
