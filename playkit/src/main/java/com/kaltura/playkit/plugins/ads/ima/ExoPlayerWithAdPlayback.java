@@ -539,6 +539,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         } else {
             if (CustomVideoCodecRenderer.isSurfaceWorkaroundNeeded) {
                 initializePlayer(lastKnownAdURL, false);
+                isPlayerReady = true;
                 player.seekTo(lastKnownAdPosition);
             }
         }
