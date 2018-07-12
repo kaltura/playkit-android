@@ -45,10 +45,12 @@ import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.EventLogger;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.CustomVideoCodecRenderer;
+import com.kaltura.playkit.PKDeviceCapabilities;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
+import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.utils.Consts;
 
@@ -531,18 +533,22 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     public void setIsAppInBackground(boolean isAppInBackground) {
         if (isAppInBackground) {
             lastKnownAdPosition = getAdPosition();
-            if(CustomVideoCodecRenderer.isSurfaceWorkaroundNeeded) {
+            if(deviceRequiresDecoderRelease()) {
                 stop();
             }else{
                 pause();
             }
         } else {
-            if (CustomVideoCodecRenderer.isSurfaceWorkaroundNeeded) {
+            if(deviceRequiresDecoderRelease()) {
                 initializePlayer(lastKnownAdURL, false);
                 isPlayerReady = true;
                 player.seekTo(lastKnownAdPosition);
             }
         }
+    }
+
+    private boolean deviceRequiresDecoderRelease() {
+        return MediaSupport.DEVICE_CHIPSET == "xxx";
     }
 
     public void resumeContentAfterAdPlayback() {

@@ -113,7 +113,6 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
     private long outputStreamOffsetUs;
     private int pendingOutputStreamOffsetCount;
 
-    public static boolean isSurfaceWorkaroundNeeded;
 
     /**
      * @param context A context.
@@ -722,11 +721,9 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
     }
 
     private boolean shouldUseDummySurface(MediaCodecInfo codecInfo) {
-        isSurfaceWorkaroundNeeded = codecNeedsSetOutputSurfaceWorkaround(codecInfo.name);
-
         return Util.SDK_INT >= 23
                 && !tunneling
-                && !isSurfaceWorkaroundNeeded
+                && !codecNeedsSetOutputSurfaceWorkaround(codecInfo.name)
                 && (!codecInfo.secure || DummySurface.isSecureSupported(context));
     }
 
