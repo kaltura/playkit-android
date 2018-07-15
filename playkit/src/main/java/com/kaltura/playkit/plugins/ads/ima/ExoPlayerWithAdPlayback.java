@@ -258,9 +258,8 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
                 }
 
-
-                //log.d("xxx getAdProgress getDuration = " +  duration);
-                //log.d("xxx getAdProgress getCurrentPosition = " +  position);
+                //log.d("getAdProgress getDuration = " +  duration);
+                //log.d("getAdProgress getCurrentPosition = " +  position);
                 if (position > duration) {
                     position = duration;
                 }
@@ -399,8 +398,8 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 }
                 long duration = contentPlayer.getDuration();
                 long position = contentPlayer.getCurrentPosition();
-                //log.d("xxx getContentProgress getDuration " +  duration);
-                //log.d("xxx getContentProgress getCurrentPosition " + position);
+                //log.d("getContentProgress getDuration " +  duration);
+                //log.d("getContentProgress getCurrentPosition " + position);
                 if (position > 0 && duration > 0 && position >= duration && adCuePoints != null && !adCuePoints.hasPostRoll()) {
                     mContentProgressProvider = null;
                     return VideoProgressUpdate.VIDEO_TIME_NOT_READY;
