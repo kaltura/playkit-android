@@ -34,7 +34,7 @@ tasks.withType(Javadoc) {
 dependencies {
 
     // NetKit
-    api 'com.kaltura.netkit:netkit-core:1.0.7'
+    api 'com.kaltura.netkit:netkit-core:1.0.8'
 
     // ExoPlayer
     api 'com.google.android.exoplayer:exoplayer-core:2.8.2'
@@ -47,5 +47,5 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.hamcrest:hamcrest-library:1.3'
     testImplementation "org.mockito:mockito-core:2.15.0"
-    androidTestDebugImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
 }
