@@ -274,7 +274,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
     }
 
     private boolean isAdPlayerPlaying() {
-        return player != null && player.getPlayWhenReady() && isPlayerReady  == true;
+        return player != null && player.getPlayWhenReady() && isPlayerReady == true;
     }
 
     @Override
@@ -494,7 +494,7 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
         }
 
 
-        MediaSource mediaSource =  buildMediaSource(currentSourceUri, null, mainHandler, eventLogger);
+        MediaSource mediaSource = buildMediaSource(currentSourceUri, null, mainHandler, eventLogger);
         mVideoPlayer.getPlayer().stop();
         player.prepare(mediaSource);
         mVideoPlayer.getPlayer().setPlayWhenReady(adShouldPAutoPlay);
@@ -579,9 +579,4 @@ public class ExoPlayerWithAdPlayback extends RelativeLayout implements PlaybackP
                 adLoadTimeout,
                 adLoadTimeout, true);
     }
-
-
-   /* private boolean is(){
-        MediaCodecInfo codecInfo = getCodecInfo();
-    }*/
 }

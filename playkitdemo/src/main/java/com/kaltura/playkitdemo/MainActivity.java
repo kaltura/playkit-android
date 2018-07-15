@@ -573,7 +573,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                //sWhen the track data available, this event occurs. It brings the info object with it.
+                //When the track data available, this event occurs. It brings the info object with it.
                 PlayerEvent.TracksAvailable tracksAvailable = (PlayerEvent.TracksAvailable) event;
                 populateSpinnersWithTrackInfo(tracksAvailable.tracksInfo);
 

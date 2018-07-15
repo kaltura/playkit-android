@@ -211,7 +211,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         log.d("Start onUpdateMedia");
         this.mediaConfig = mediaConfig;
-        log.d("mediaConfig start pos  = " + mediaConfig.getStartPosition());
+        log.d("mediaConfig start pos = " + mediaConfig.getStartPosition());
         isContentPrepared = false;
         isAutoPlay = false;
         isAdRequested = false;
