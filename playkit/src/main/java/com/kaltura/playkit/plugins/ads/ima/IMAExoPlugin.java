@@ -211,7 +211,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         log.d("Start onUpdateMedia");
         this.mediaConfig = mediaConfig;
-        log.d("mediaConfig start pos  = " + mediaConfig.getStartPosition());
+        log.d("mediaConfig start pos = " + mediaConfig.getStartPosition());
         isContentPrepared = false;
         isAutoPlay = false;
         isAdRequested = false;
@@ -234,7 +234,6 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
         clearAdsLoader();
         imaSetup();
         log.d("adtag = " + adConfig.getAdTagURL());
-
         requestAdsFromIMA(adConfig.getAdTagURL());
     }
 
@@ -351,7 +350,7 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
                 clearAdLoadingInBackground();
                 adsManager.start();
             } else {
-                if (player.getSettings() instanceof PlayerSettings && ((PlayerSettings) player.getSettings()).isAdAutoPlayOnResume()) {
+                if (isAdShouldAutoPlayOnResume()) {
                     log.d("onApplicationResumed resume ad playback");
                     clearAdLoadingInBackground();
                     adsManager.resume();
@@ -388,6 +387,10 @@ public class IMAExoPlugin extends PKPlugin implements AdsProvider, com.google.ad
             onUpdateMedia(mediaConfig);
             start();
         }
+    }
+
+    private boolean isAdShouldAutoPlayOnResume() {
+        return player.getSettings() instanceof PlayerSettings && ((PlayerSettings) player.getSettings()).isAdAutoPlayOnResume();
     }
 
     private void clearAdLoadingInBackground() {

@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.player;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.drm.DrmManagerClient;
 import android.media.MediaDrm;
@@ -26,6 +27,7 @@ import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Utils;
 
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -37,6 +39,22 @@ public class MediaSupport {
 
     private static final PKLog log = PKLog.get("MediaSupport");
     private static boolean initSucceeded;
+    public static final String DEVICE_CHIPSET = getDeviceChipset();
+
+
+    private static String getDeviceChipset() {
+        try {
+            @SuppressLint("PrivateApi")
+            Class<?> aClass = Class.forName("android.os.SystemProperties");
+            Method method = aClass.getMethod("get", String.class);
+            Object platform = method.invoke(null, "ro.board.platform");
+
+            return platform instanceof String ? (String) platform : "<" + platform + ">";
+
+        } catch (Exception e) {
+            return "<" + e + ">";
+        }
+    }
 
     // Should be called by applications that use DRM, to make sure they can handle provision issues.
     public static void checkDrm(Context context) throws DrmNotProvisionedException {
