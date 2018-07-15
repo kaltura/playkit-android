@@ -112,8 +112,7 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
 
     private long outputStreamOffsetUs;
     private int pendingOutputStreamOffsetCount;
-
-
+    
     /**
      * @param context A context.
      * @param mediaCodecSelector A decoder selector.
