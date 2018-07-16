@@ -39,7 +39,6 @@ import com.google.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
@@ -63,7 +62,6 @@ import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.utils.EventLogger;
 
 import java.net.CookieHandler;
 import java.net.CookieManager;
@@ -93,7 +91,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private DefaultBandwidthMeter bandwidthMeter;
 
-    private EventLogger eventLogger;
     private EventListener eventListener;
     private StateChangedListener stateChangedListener;
 
@@ -154,8 +151,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private void initializePlayer() {
-        eventLogger = new EventLogger();
-
         DefaultTrackSelector trackSelector = initializeTrackSelector();
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildCustomHttpDataSourceFactory(), drmSessionListener);
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context,
@@ -170,7 +165,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private void setPlayerListeners() {
         if (player != null) {
             player.addListener(this);
-            player.addAnalyticsListener(eventLogger);
             player.addMetadataOutput(this);
         }
     }
@@ -562,7 +556,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player = null;
             trackSelectionHelper.release();
             trackSelectionHelper = null;
-            eventLogger = null;
         }
         shouldRestorePlayerToPreviousState = true;
     }
@@ -590,7 +583,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
         window = null;
         player = null;
-        eventLogger = null;
         exoPlayerView = null;
         playerPosition = Consts.TIME_UNSET;
     }
