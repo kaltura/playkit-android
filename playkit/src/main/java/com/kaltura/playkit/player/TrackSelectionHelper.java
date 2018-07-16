@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -68,6 +68,7 @@ class TrackSelectionHelper {
     private static final String TEXT_PREFIX = "Text:";
 
     private static final String CEA_608 = "application/cea-608";
+    private static final String LANGUAGE_UNKNOWN = "Unknown";
 
 
     private final DefaultTrackSelector selector;
@@ -88,6 +89,7 @@ class TrackSelectionHelper {
     private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
 
     private TracksInfoListener tracksInfoListener;
+
     interface TracksInfoListener {
 
         void onTracksInfoReady(PKTracks PKTracks);
@@ -181,10 +183,7 @@ class TrackSelectionHelper {
                                 if (!isDashManifest) {
                                     audioTrackLabel = format.id;
                                 }
-                                if(format.language == null) {
-                                    continue;
-                                }
-                                audioTracks.add(new AudioTrack(uniqueId, format.language, audioTrackLabel, format.bitrate, format.selectionFlags, false));
+                                audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), audioTrackLabel, format.bitrate, format.selectionFlags, false));
                                 break;
                             case TRACK_TYPE_TEXT:
                                 String textTrackLabel = null;
@@ -196,10 +195,7 @@ class TrackSelectionHelper {
                                         textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
                                     }
                                 } else {
-                                    if(format.language == null) {
-                                        continue;
-                                    }
-                                    textTracks.add(new TextTrack(uniqueId, format.language, textTrackLabel, format.selectionFlags));
+                                    textTracks.add(new TextTrack(uniqueId, getLanguageFromFormat(format), textTrackLabel, format.selectionFlags));
                                 }
                                 break;
                         }
@@ -220,6 +216,14 @@ class TrackSelectionHelper {
         int defaultTextTrackIndex = getDefaultTrackIndex(textTracks, lastSelectedTrackIds[TRACK_TYPE_TEXT]);
 
         return new PKTracks(videoTracks, filteredAudioTracks, textTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex);
+    }
+
+    private String getLanguageFromFormat(Format format) {
+        if (format.language == null) {
+            return LANGUAGE_UNKNOWN;
+        }
+
+        return format.language;
     }
 
     /**
