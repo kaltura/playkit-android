@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -43,7 +43,7 @@ import java.util.UUID;
 
 /**
  * Created by anton.afanasiev on 13/12/2016.
- *
+ * <p>
  * A simple (limited) dash parser. Extracts Format and DrmInitData from the manifest and/or initialization chink.
  * Currently only reads the first Representation of the video AdaptationSet of the first Period.
  */
@@ -88,7 +88,7 @@ class SimpleDashParser {
         hasContentProtection = drmInitData.schemeDataCount > 0;
         if (hasContentProtection) {
             loadDrmInitData(representation);
-        }else{
+        } else {
             log.i("no content protection found");
         }
 
@@ -109,10 +109,8 @@ class SimpleDashParser {
         } catch (InterruptedException e) {
             log.e("Interrupted! " + e.getMessage());
         }
-        if (!chunk.isLoadCanceled()) {
-            drmInitData = extractorWrapper.getSampleFormats()[0].drmInitData;
-        }
 
+        drmInitData = extractorWrapper.getSampleFormats()[0].drmInitData;
         if (drmInitData != null) {
             DrmInitData.SchemeData schemeInitData = getWidevineInitData(drmInitData);
             if (schemeInitData != null) {

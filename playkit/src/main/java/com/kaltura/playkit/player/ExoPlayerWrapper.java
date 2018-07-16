@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -39,7 +39,6 @@ import com.google.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
@@ -63,7 +62,6 @@ import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.utils.EventLogger;
 
 import java.net.CookieHandler;
 import java.net.CookieManager;
@@ -93,7 +91,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private DefaultBandwidthMeter bandwidthMeter;
 
-    private EventLogger eventLogger;
     private EventListener eventListener;
     private StateChangedListener stateChangedListener;
 
@@ -144,7 +141,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView) {
         this.context = context;
-        bandwidthMeter = new DefaultBandwidthMeter(mainHandler, this);
+        bandwidthMeter = new DefaultBandwidthMeter.Builder()
+                .setEventListener(mainHandler, this)
+                .build();
         this.exoPlayerView = exoPlayerView;
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
             CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
@@ -152,8 +151,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private void initializePlayer() {
-        eventLogger = new EventLogger();
-
         DefaultTrackSelector trackSelector = initializeTrackSelector();
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildCustomHttpDataSourceFactory(), drmSessionListener);
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context,
@@ -168,23 +165,18 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private void setPlayerListeners() {
         if (player != null) {
             player.addListener(this);
-            player.addListener(eventLogger);
-            player.addVideoDebugListener(eventLogger);
-            player.addAudioDebugListener(eventLogger);
             player.addMetadataOutput(this);
         }
     }
 
     private DefaultTrackSelector initializeTrackSelector() {
 
-        TrackSelection.Factory trackSelectionFactory =
-                new AdaptiveTrackSelection.Factory(bandwidthMeter);
-        DefaultTrackSelector trackSelector = new DefaultTrackSelector(trackSelectionFactory);
+        DefaultTrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory(bandwidthMeter));
         DefaultTrackSelector.ParametersBuilder parametersBuilder = new DefaultTrackSelector.ParametersBuilder();
         parametersBuilder.setViewportSizeToPhysicalDisplaySize(context, true);
         trackSelector.setParameters(parametersBuilder.build());
 
-        trackSelectionHelper = new TrackSelectionHelper(trackSelector, trackSelectionFactory, lastSelectedTrackIds);
+        trackSelectionHelper = new TrackSelectionHelper(trackSelector, lastSelectedTrackIds);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
 
         return trackSelector;
@@ -229,15 +221,15 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 return new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
                         manifestDataSourceFactory)
-                        .createMediaSource(uri, mainHandler, eventLogger);
+                        .createMediaSource(uri);
             case hls:
                 return new HlsMediaSource.Factory(mediaDataSourceFactory)
-                        .createMediaSource(uri, mainHandler, eventLogger);
+                        .createMediaSource(uri);
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
                 return new ExtractorMediaSource.Factory(mediaDataSourceFactory)
-                        .createMediaSource(uri, mainHandler, eventLogger);
+                        .createMediaSource(uri);
 
             default:
                 throw new IllegalStateException("Unsupported type: " + format);
@@ -564,7 +556,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player = null;
             trackSelectionHelper.release();
             trackSelectionHelper = null;
-            eventLogger = null;
         }
         shouldRestorePlayerToPreviousState = true;
     }
@@ -592,7 +583,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
         window = null;
         player = null;
-        eventLogger = null;
         exoPlayerView = null;
         playerPosition = Consts.TIME_UNSET;
     }
@@ -698,7 +688,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         preferredLanguageWasSelected = false;
         lastKnownVolume = Consts.DEFAULT_VOLUME;
         lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
-        lastSelectedTrackIds = new String[] {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+        lastSelectedTrackIds = new String[]{TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
         if (trackSelectionHelper != null) {
             trackSelectionHelper.stop();
         }

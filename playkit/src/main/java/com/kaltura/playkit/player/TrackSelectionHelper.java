@@ -18,9 +18,8 @@ import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
-import com.google.android.exoplayer2.trackselection.MappingTrackSelector.SelectionOverride;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.playkit.PKLog;
@@ -46,8 +45,6 @@ class TrackSelectionHelper {
 
     private static final PKLog log = PKLog.get("TrackSelectionHelper");
 
-    private static final TrackSelection.Factory FIXED_FACTORY = new FixedTrackSelection.Factory();
-
     private static final int TRACK_ADAPTIVE = -1;
     private static final int TRACK_DISABLED = -2;
 
@@ -59,12 +56,8 @@ class TrackSelectionHelper {
     static final String NONE = "none";
     private static final String ADAPTIVE = "adaptive";
 
-    private static final String VIDEO = "video";
     private static final String VIDEO_PREFIX = "Video:";
-
-    private static final String AUDIO = "audio";
     private static final String AUDIO_PREFIX = "Audio:";
-
     private static final String TEXT_PREFIX = "Text:";
 
     private static final String CEA_608 = "application/cea-608";
@@ -74,7 +67,6 @@ class TrackSelectionHelper {
     private final DefaultTrackSelector selector;
     private TrackSelectionArray trackSelectionArray;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
-    private final TrackSelection.Factory adaptiveTrackSelectionFactory;
 
     private List<VideoTrack> videoTracks = new ArrayList<>();
     private List<AudioTrack> audioTracks = new ArrayList<>();
@@ -105,15 +97,12 @@ class TrackSelectionHelper {
 
 
     /**
-     * @param selector                      The track selector.
-     * @param adaptiveTrackSelectionFactory A factory for adaptive video {@link TrackSelection}s,
-     *                                      or null if the selection helper should not support adaptive video.
+     * @param selector             The track selector.
+     * @param lastSelectedTrackIds - last selected track id`s.
      */
     TrackSelectionHelper(DefaultTrackSelector selector,
-                         TrackSelection.Factory adaptiveTrackSelectionFactory,
                          String[] lastSelectedTrackIds) {
         this.selector = selector;
-        this.adaptiveTrackSelectionFactory = adaptiveTrackSelectionFactory;
         this.lastSelectedTrackIds = lastSelectedTrackIds;
         this.requestedChangeTrackIds = Arrays.copyOf(lastSelectedTrackIds, lastSelectedTrackIds.length);
     }
@@ -350,31 +339,36 @@ class TrackSelectionHelper {
      * @return - uniqueId that represent current track.
      */
     private String getUniqueId(int rendererIndex, int groupIndex, int trackIndex) {
-        String rendererPrefix = "";
+        return getUniqueIdPrefix(rendererIndex)
+                + rendererIndex
+                + ","
+                + groupIndex
+                + ","
+                + getUniqueIdPostfix(rendererIndex, trackIndex);
+    }
+
+    private String getUniqueIdPrefix(int rendererIndex) {
         switch (rendererIndex) {
             case TRACK_TYPE_VIDEO:
-                rendererPrefix = VIDEO_PREFIX;
-                break;
+                return VIDEO_PREFIX;
             case TRACK_TYPE_AUDIO:
-                rendererPrefix = AUDIO_PREFIX;
-                break;
+                return AUDIO_PREFIX;
             case TRACK_TYPE_TEXT:
-                rendererPrefix = TEXT_PREFIX;
-                break;
+                return TEXT_PREFIX;
+            default:
+                return "";
         }
-        StringBuilder uniqueStringBuilder = new StringBuilder(rendererPrefix);
-        uniqueStringBuilder.append(rendererIndex);
-        uniqueStringBuilder.append(",");
-        uniqueStringBuilder.append(groupIndex);
-        uniqueStringBuilder.append(",");
-        if (trackIndex == TRACK_ADAPTIVE) {
-            uniqueStringBuilder.append(ADAPTIVE);
-        } else if (trackIndex == TRACK_DISABLED) {
-            uniqueStringBuilder.append(NONE);
-        } else {
-            uniqueStringBuilder.append(trackIndex);
+    }
+
+    private String getUniqueIdPostfix(int rendererIndex, int trackIndex) {
+        switch (rendererIndex) {
+            case TRACK_ADAPTIVE:
+                return ADAPTIVE;
+            case TRACK_DISABLED:
+                return NONE;
+            default:
+                return String.valueOf(trackIndex);
         }
-        return uniqueStringBuilder.toString();
     }
 
     /**
@@ -396,21 +390,15 @@ class TrackSelectionHelper {
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
         requestedChangeTrackIds[rendererIndex] = uniqueId;
-        if (shouldDisableTextTrack(uniqueTrackId)) {
-            //disable text track
-            selector.setRendererDisabled(TRACK_TYPE_TEXT, true);
-            return;
-        } else if (rendererIndex == TRACK_TYPE_TEXT) {
-            selector.setRendererDisabled(TRACK_TYPE_TEXT, false);
+
+        DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
+        if (rendererIndex == TRACK_TYPE_TEXT) {
+            //Disable text track renderer if needed.
+            parametersBuilder.setRendererDisabled(TRACK_TYPE_TEXT, uniqueTrackId[TRACK_INDEX] == TRACK_DISABLED);
         }
 
         SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
-        overrideTrack(rendererIndex, override);
-
-    }
-
-    private boolean shouldDisableTextTrack(int[] uniqueId) {
-        return uniqueId[TRACK_INDEX] == TRACK_DISABLED;
+        overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
     /**
@@ -440,7 +428,7 @@ class TrackSelectionHelper {
 
     /**
      * Build the the {@link SelectionOverride} object, based on the uniqueId. This {@link SelectionOverride}
-     * will be feeded later to the Exoplayer in order to switch to the new track.
+     * will fed later to the Exoplayer in order to switch to the new track.
      * This method decide if it should create adaptive override or fixed.
      *
      * @param uniqueId - the unique id of the track that will override the existing one.
@@ -499,9 +487,9 @@ class TrackSelectionHelper {
             }
 
             adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-            override = new SelectionOverride(adaptiveTrackSelectionFactory, groupIndex, adaptiveTrackIndexes);
+            override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
         } else {
-            override = new SelectionOverride(FIXED_FACTORY, groupIndex, trackIndex);
+            override = new SelectionOverride(groupIndex, trackIndex);
         }
 
         return override;
@@ -513,18 +501,16 @@ class TrackSelectionHelper {
      * @param rendererIndex - renderer index on which we want to apply the change.
      * @param override      - the new selection with which we want to override the currently active track.
      */
-    private void overrideTrack(int rendererIndex, SelectionOverride override) {
-        //if renderer is disabled we will hide it.
-        boolean isRendererDisabled = selector.getRendererDisabled(rendererIndex);
-        selector.setRendererDisabled(rendererIndex, isRendererDisabled);
+    private void overrideTrack(int rendererIndex, SelectionOverride override, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
         if (override != null) {
             //actually change track.
             TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(rendererIndex);
-            selector.setSelectionOverride(rendererIndex, trackGroups, override);
+            parametersBuilder.setSelectionOverride(rendererIndex, trackGroups, override);
         } else {
             //clear all the selections if the override is null.
-            selector.clearSelectionOverrides(rendererIndex);
+            parametersBuilder.clearSelectionOverrides(rendererIndex);
         }
+        selector.setParameters(parametersBuilder);
     }
 
     /**
@@ -583,14 +569,13 @@ class TrackSelectionHelper {
     }
 
     private boolean isFormatSupported(int rendererCount, int groupIndex, int trackIndex) {
-        return mappedTrackInfo.getTrackFormatSupport(rendererCount, groupIndex, trackIndex)
+        return mappedTrackInfo.getTrackSupport(rendererCount, groupIndex, trackIndex)
                 == RendererCapabilities.FORMAT_HANDLED;
     }
 
     private boolean isAdaptive(int rendererIndex, int groupIndex) {
         TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
-        return adaptiveTrackSelectionFactory != null
-                && mappedTrackInfo.getAdaptiveSupport(rendererIndex, groupIndex, false)
+        return mappedTrackInfo.getAdaptiveSupport(rendererIndex, groupIndex, false)
                 != RendererCapabilities.ADAPTIVE_NOT_SUPPORTED
                 && trackGroupArray.get(groupIndex).length > 1;
     }
@@ -638,12 +623,8 @@ class TrackSelectionHelper {
         int trackIndex = parsedUniqueId[TRACK_INDEX];
 
         if (rendererIndex == TRACK_TYPE_TEXT) {
-            if (trackIndex == TRACK_ADAPTIVE
-                    || trackIndex < TRACK_DISABLED) {
-                return false;
-            }
-
-            return trackIndex >= TRACK_DISABLED
+            return trackIndex != TRACK_ADAPTIVE
+                    && trackIndex >= TRACK_DISABLED
                     && trackIndex < mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex).length;
         }
 
@@ -664,11 +645,11 @@ class TrackSelectionHelper {
      * Notify to log, that video/audio renderer has only unsupported tracks.
      */
     private void warnAboutUnsupportedRenderTypes() {
-        if (mappedTrackInfo.getTrackTypeRendererSupport(TRACK_TYPE_VIDEO)
+        if (mappedTrackInfo.getTypeSupport(TRACK_TYPE_VIDEO)
                 == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
             log.w("Warning! All the video tracks are unsupported by this device.");
         }
-        if (mappedTrackInfo.getTrackTypeRendererSupport(TRACK_TYPE_AUDIO)
+        if (mappedTrackInfo.getTypeSupport(TRACK_TYPE_AUDIO)
                 == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
             log.w("Warning! All the audio tracks are unsupported by this device.");
         }

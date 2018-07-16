@@ -102,7 +102,7 @@ public class DummySurfaceWorkaroundTest {
         MediaSource mediaSource = new DashMediaSource.Factory(
                 new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
                 mediaDataSourceFactory)
-                .createMediaSource(Uri.parse(URL), mainHandler, null);
+                .createMediaSource(Uri.parse(URL));
 
         player.prepare(mediaSource);
     }
