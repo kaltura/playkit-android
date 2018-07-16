@@ -34,7 +34,7 @@ tasks.withType(Javadoc) {
 dependencies {
 
     // NetKit
-    api 'com.kaltura.netkit:netkit-core:1.0.8'
+    api 'com.kaltura.netkit:netkit-core:1.0.9'
 
     // ExoPlayer
     api 'com.google.android.exoplayer:exoplayer-core:2.8.2'

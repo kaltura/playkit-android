@@ -97,7 +97,7 @@ class TrackSelectionHelper {
 
 
     /**
-     * @param selector The track selector.
+     * @param selector             The track selector.
      * @param lastSelectedTrackIds - last selected track id`s.
      */
     TrackSelectionHelper(DefaultTrackSelector selector,
@@ -354,8 +354,9 @@ class TrackSelectionHelper {
             case TRACK_TYPE_AUDIO:
                 return AUDIO_PREFIX;
             case TRACK_TYPE_TEXT:
-                return  TEXT_PREFIX;
-                default:return "";
+                return TEXT_PREFIX;
+            default:
+                return "";
         }
     }
 

@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -170,7 +170,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private void setPlayerListeners() {
         if (player != null) {
             player.addListener(this);
-            player.addAnalyticsListener(new EventLogger());
+            player.addAnalyticsListener(eventLogger);
             player.addMetadataOutput(this);
         }
     }
@@ -696,7 +696,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         preferredLanguageWasSelected = false;
         lastKnownVolume = Consts.DEFAULT_VOLUME;
         lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
-        lastSelectedTrackIds = new String[] {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
+        lastSelectedTrackIds = new String[]{TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
         if (trackSelectionHelper != null) {
             trackSelectionHelper.stop();
         }
