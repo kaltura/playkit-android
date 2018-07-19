@@ -13,6 +13,7 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
@@ -160,6 +161,11 @@ public class PlayerController implements Player {
         }
 
         boolean is360Supported = mediaConfig.getMediaEntry() instanceof VRPKMediaEntry && playerSettings.isVRPlayerEnabled();
+        //If device not capable to play 360 content with DRM -> send error message.
+        if(is360Supported && !MediaSupport.is360WithDrmSupported() && sourceConfig.hasDrm()) {
+            sendErrorMessage(PKPlayerErrorType.SOURCE_SELECTION_FAILED, "Playback of 360/vr content with DRM is not supported for devices with Android.Version older then 26. Current Android.Version is: " + Build.VERSION.SDK_INT, null);
+            return;
+        }
         PlayerEngineType incomingPlayerType = PlayerEngineFactory.selectPlayerType(sourceConfig.mediaSource.getMediaFormat(), is360Supported);
 
         switchPlayersIfRequired(incomingPlayerType);

@@ -73,7 +73,7 @@ public class MediaSupport {
      * Initialize the DRM subsystem, performing provisioning if required. The callback is called
      * when done. If provisioning was required, it is performed before the callback is called.
      *
-     * @param context
+     * @param context - Context
      * @param drmInitCallback callback object that will get the result. See {@link DrmInitCallback}.
      */
     public static void initializeDrm(Context context, final DrmInitCallback drmInitCallback) {
@@ -245,6 +245,16 @@ public class MediaSupport {
 
     public static boolean playReady() {
         return Boolean.FALSE;   // Not yet.
+    }
+
+    /**
+     * Check if current device support playback of 360 content with DRM.
+     * Note, that only starting from Android.Version 26 this is allowed.
+     * We suggest to do this check if you want to play 360 content + DRM.
+     * @return - true if Android.Version above 26(include), false otherwise.
+     */
+    public static boolean is360WithDrmSupported() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)

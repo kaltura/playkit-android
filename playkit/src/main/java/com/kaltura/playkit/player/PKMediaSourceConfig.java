@@ -57,6 +57,14 @@ public class PKMediaSourceConfig {
         return this.vrSettings;
     }
 
+    /**
+     * Check if current {@link PKMediaSource} has {@link com.kaltura.playkit.PKDrmParams}.
+     * @return - return true if has drm params, false otherwise.
+     */
+    public boolean hasDrm() {
+        return mediaSource.getDrmData() != null && !mediaSource.getDrmData().isEmpty();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
