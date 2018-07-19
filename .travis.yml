@@ -5,19 +5,9 @@ jdk:
   - oraclejdk8
 android:
   components:
-  - tools
-  - platform-tools
-  - extra-android-m2repository
-  - extra-google-m2repository
-cache:
-  directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
-before_cache:
-  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+    - tools
 before_script:
-  - mkdir -p $ANDROID_HOME/licenses
-  - echo $android_sdk_license > $ANDROID_HOME/licenses/android-sdk-license
+  - curl https://kaltura.github.io/fe-tools/android/license.sh | sh
 script:
   - ./gradlew playkit:build
 after_failure:
