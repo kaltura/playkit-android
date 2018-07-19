@@ -118,7 +118,8 @@ public class PKDeviceCapabilities {
             reportString = getErrorReport(e);
         }
 
-        if (!sendReport(reportString)) return;
+        if (!sendReport(reportString))
+            return;
 
         // If we got here, save the fingerprint so we don't send again until the OS updates.
         sharedPrefs.edit().putString(PREFS_ENTRY_FINGERPRINT, FINGERPRINT).apply();

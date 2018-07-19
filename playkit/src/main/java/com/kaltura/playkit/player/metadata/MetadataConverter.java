@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -39,9 +39,9 @@ public class MetadataConverter {
         PKMetadata pkMetadataEntry;
         List<PKMetadata> convertedMetadata = new ArrayList<>();
 
-        for (int i = 0; i < metadata.length(); i++ ) {
+        for (int i = 0; i < metadata.length(); i++) {
             pkMetadataEntry = convert(metadata.get(i));
-            if(pkMetadataEntry != null) {
+            if (pkMetadataEntry != null) {
                 convertedMetadata.add(pkMetadataEntry);
             }
         }
@@ -61,15 +61,15 @@ public class MetadataConverter {
             return convert((ChapterTocFrame) entry);
         } else if (entry instanceof CommentFrame) {
             return convert((CommentFrame) entry);
-        } else if(entry instanceof GeobFrame) {
+        } else if (entry instanceof GeobFrame) {
             return convert((GeobFrame) entry);
-        } else if(entry instanceof PrivFrame) {
+        } else if (entry instanceof PrivFrame) {
             return convert((PrivFrame) entry);
-        } else if(entry instanceof TextInformationFrame) {
+        } else if (entry instanceof TextInformationFrame) {
             return convert((TextInformationFrame) entry);
-        } else if(entry instanceof UrlLinkFrame) {
+        } else if (entry instanceof UrlLinkFrame) {
             return convert((UrlLinkFrame) entry);
-        } else if(entry instanceof EventMessage) {
+        } else if (entry instanceof EventMessage) {
             return convert((EventMessage) entry);
         }
 

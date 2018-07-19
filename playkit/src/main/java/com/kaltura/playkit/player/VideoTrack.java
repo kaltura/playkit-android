@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -23,7 +23,7 @@ public class VideoTrack extends BaseTrack {
     private long bitrate;
 
 
-     VideoTrack(String uniqueId, long bitrate, int width, int height, int selectionFlag, boolean isAdaptive) {
+    VideoTrack(String uniqueId, long bitrate, int width, int height, int selectionFlag, boolean isAdaptive) {
         super(uniqueId, selectionFlag, isAdaptive);
         this.bitrate = bitrate;
         this.width = width;
@@ -33,6 +33,7 @@ public class VideoTrack extends BaseTrack {
     /**
      * Getter for the track bitrate.
      * Can be -1 if unknown or not applicable.
+     *
      * @return - the bitrate of the track.
      */
     public long getBitrate() {
@@ -42,6 +43,7 @@ public class VideoTrack extends BaseTrack {
     /**
      * Getter for the track width.
      * Can be -1 if unknown or not applicable.
+     *
      * @return - the width of the track.
      */
     public int getWidth() {
@@ -51,6 +53,7 @@ public class VideoTrack extends BaseTrack {
     /**
      * Getter for the track height.
      * Can be -1 if unknown or not applicable.
+     *
      * @return - the height of the track.
      */
     public int getHeight() {

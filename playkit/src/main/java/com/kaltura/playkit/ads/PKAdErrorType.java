@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -38,7 +38,7 @@ public enum PKAdErrorType {
     ADS_REQUEST_NETWORK_ERROR(2016),
     INVALID_ARGUMENTS(2017),
     PLAYLIST_NO_CONTENT_TRACKING(2018),
-    QUIET_LOG_ERROR(2019), ;
+    QUIET_LOG_ERROR(2019),;
 
     public final int errorCode;
 

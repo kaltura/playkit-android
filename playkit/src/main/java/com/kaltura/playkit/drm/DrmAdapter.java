@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -27,9 +27,9 @@ import java.io.IOException;
  */
 
 public abstract class DrmAdapter {
-    
+
     private static final PKLog log = PKLog.get("DrmAdapter");
-    
+
 
     @NonNull
     public static DrmAdapter getDrmAdapter(PKDrmParams.Scheme scheme, Context context, LocalDataStore localDataStore) {
@@ -37,7 +37,7 @@ public abstract class DrmAdapter {
         if (scheme == null) {
             return new NullDrmAdapter();
         }
-        
+
         switch (scheme) {
             case WidevineCENC:
                 return new WidevineModularAdapter(context, localDataStore);
@@ -51,7 +51,7 @@ public abstract class DrmAdapter {
         return new NullDrmAdapter();
     }
 
-    public abstract boolean registerAsset(final String localAssetPath, final String assetId,final String licenseUri, final LocalAssetsManager.AssetRegistrationListener listener) throws IOException;
+    public abstract boolean registerAsset(final String localAssetPath, final String assetId, final String licenseUri, final LocalAssetsManager.AssetRegistrationListener listener) throws IOException;
 
     public abstract boolean refreshAsset(final String localAssetPath, final String assetId, final String licenseUri, final LocalAssetsManager.AssetRegistrationListener listener);
 

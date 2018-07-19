@@ -27,7 +27,6 @@ public class SourceSelectorAndroidTest {
     public static final String MP3_EXAMPLE = "http://example.com/a.mp3";
 
 
-
     PKMediaSource dashWidevine = new PKMediaSource()
             .setMediaFormat(PKMediaFormat.dash)
             .setUrl("http://example.com/a.mpd")
@@ -56,12 +55,12 @@ public class SourceSelectorAndroidTest {
         assertEquals(PKMediaFormat.mp4, PKMediaFormat.valueOfUrl(mp4.getUrl()));
         assertEquals(PKMediaFormat.hls, PKMediaFormat.valueOfUrl(hls.getUrl()));
         assertEquals(PKMediaFormat.wvm, PKMediaFormat.valueOfUrl(wvm.getUrl()));
-        
+
     }
 
     @Test
     public void sourceSelector() {
-        
+
         assertTrue(SourceSelector.selectSource(entry(mp4, dashClear)) == dashClear);
         assertTrue(SourceSelector.selectSource(entry(mp4, hls)) == hls);
         assertTrue(SourceSelector.selectSource(entry(hls, mp4, dashClear)) == dashClear);
