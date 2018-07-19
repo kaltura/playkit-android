@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -27,9 +27,9 @@ public enum PKMediaFormat {
 
     public final String mimeType;
     public final String pathExt;
-    
-    private static Map<String, PKMediaFormat> extensionLookup = new HashMap<>(); 
-    
+
+    private static Map<String, PKMediaFormat> extensionLookup = new HashMap<>();
+
     static {
         for (PKMediaFormat format : values()) {
             if (extensionLookup.get(format.pathExt) == null) {

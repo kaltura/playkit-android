@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -117,6 +117,7 @@ public class WidevineClassicDrm {
 
     public interface EventListener {
         void onError(DrmErrorEvent event);
+
         void onEvent(DrmEvent event);
     }
 
@@ -137,7 +138,7 @@ public class WidevineClassicDrm {
         };
 
         // Detect if this device can play widevine classic
-        if (! mDrmManager.canHandle("", WIDEVINE_MIME_TYPE)) {
+        if (!mDrmManager.canHandle("", WIDEVINE_MIME_TYPE)) {
             throw new UnsupportedOperationException("Widevine Classic is not supported");
         }
 
@@ -189,30 +190,62 @@ public class WidevineClassicDrm {
         if (event instanceof DrmInfoEvent) {
             eventClass = "info";
             switch (eventType) {
-                case DrmInfoEvent.TYPE_ALREADY_REGISTERED_BY_ANOTHER_ACCOUNT: eventTypeString="TYPE_ALREADY_REGISTERED_BY_ANOTHER_ACCOUNT"; break;
-                case DrmInfoEvent.TYPE_REMOVE_RIGHTS: eventTypeString="TYPE_REMOVE_RIGHTS"; break;
-                case DrmInfoEvent.TYPE_RIGHTS_INSTALLED: eventTypeString="TYPE_RIGHTS_INSTALLED"; break;
-                case DrmInfoEvent.TYPE_WAIT_FOR_RIGHTS: eventTypeString="TYPE_WAIT_FOR_RIGHTS"; break;
-                case DrmInfoEvent.TYPE_ACCOUNT_ALREADY_REGISTERED: eventTypeString="TYPE_ACCOUNT_ALREADY_REGISTERED"; break;
-                case DrmInfoEvent.TYPE_RIGHTS_REMOVED: eventTypeString="TYPE_RIGHTS_REMOVED"; break;
+                case DrmInfoEvent.TYPE_ALREADY_REGISTERED_BY_ANOTHER_ACCOUNT:
+                    eventTypeString = "TYPE_ALREADY_REGISTERED_BY_ANOTHER_ACCOUNT";
+                    break;
+                case DrmInfoEvent.TYPE_REMOVE_RIGHTS:
+                    eventTypeString = "TYPE_REMOVE_RIGHTS";
+                    break;
+                case DrmInfoEvent.TYPE_RIGHTS_INSTALLED:
+                    eventTypeString = "TYPE_RIGHTS_INSTALLED";
+                    break;
+                case DrmInfoEvent.TYPE_WAIT_FOR_RIGHTS:
+                    eventTypeString = "TYPE_WAIT_FOR_RIGHTS";
+                    break;
+                case DrmInfoEvent.TYPE_ACCOUNT_ALREADY_REGISTERED:
+                    eventTypeString = "TYPE_ACCOUNT_ALREADY_REGISTERED";
+                    break;
+                case DrmInfoEvent.TYPE_RIGHTS_REMOVED:
+                    eventTypeString = "TYPE_RIGHTS_REMOVED";
+                    break;
             }
         } else if (event instanceof DrmErrorEvent) {
             eventClass = "error";
             switch (eventType) {
-                case DrmErrorEvent.TYPE_RIGHTS_NOT_INSTALLED: eventTypeString="TYPE_RIGHTS_NOT_INSTALLED"; break;
-                case DrmErrorEvent.TYPE_RIGHTS_RENEWAL_NOT_ALLOWED: eventTypeString="TYPE_RIGHTS_RENEWAL_NOT_ALLOWED"; break;
-                case DrmErrorEvent.TYPE_NOT_SUPPORTED: eventTypeString="TYPE_NOT_SUPPORTED"; break;
-                case DrmErrorEvent.TYPE_OUT_OF_MEMORY: eventTypeString="TYPE_OUT_OF_MEMORY"; break;
-                case DrmErrorEvent.TYPE_NO_INTERNET_CONNECTION: eventTypeString="TYPE_NO_INTERNET_CONNECTION"; break;
-                case DrmErrorEvent.TYPE_PROCESS_DRM_INFO_FAILED: eventTypeString="TYPE_PROCESS_DRM_INFO_FAILED"; break;
-                case DrmErrorEvent.TYPE_REMOVE_ALL_RIGHTS_FAILED: eventTypeString="TYPE_REMOVE_ALL_RIGHTS_FAILED"; break;
-                case DrmErrorEvent.TYPE_ACQUIRE_DRM_INFO_FAILED: eventTypeString="TYPE_ACQUIRE_DRM_INFO_FAILED"; break;
+                case DrmErrorEvent.TYPE_RIGHTS_NOT_INSTALLED:
+                    eventTypeString = "TYPE_RIGHTS_NOT_INSTALLED";
+                    break;
+                case DrmErrorEvent.TYPE_RIGHTS_RENEWAL_NOT_ALLOWED:
+                    eventTypeString = "TYPE_RIGHTS_RENEWAL_NOT_ALLOWED";
+                    break;
+                case DrmErrorEvent.TYPE_NOT_SUPPORTED:
+                    eventTypeString = "TYPE_NOT_SUPPORTED";
+                    break;
+                case DrmErrorEvent.TYPE_OUT_OF_MEMORY:
+                    eventTypeString = "TYPE_OUT_OF_MEMORY";
+                    break;
+                case DrmErrorEvent.TYPE_NO_INTERNET_CONNECTION:
+                    eventTypeString = "TYPE_NO_INTERNET_CONNECTION";
+                    break;
+                case DrmErrorEvent.TYPE_PROCESS_DRM_INFO_FAILED:
+                    eventTypeString = "TYPE_PROCESS_DRM_INFO_FAILED";
+                    break;
+                case DrmErrorEvent.TYPE_REMOVE_ALL_RIGHTS_FAILED:
+                    eventTypeString = "TYPE_REMOVE_ALL_RIGHTS_FAILED";
+                    break;
+                case DrmErrorEvent.TYPE_ACQUIRE_DRM_INFO_FAILED:
+                    eventTypeString = "TYPE_ACQUIRE_DRM_INFO_FAILED";
+                    break;
             }
         } else {
             eventClass = "generic";
             switch (eventType) {
-                case DrmEvent.TYPE_ALL_RIGHTS_REMOVED: eventTypeString="TYPE_ALL_RIGHTS_REMOVED"; break;
-                case DrmEvent.TYPE_DRM_INFO_PROCESSED: eventTypeString="TYPE_DRM_INFO_PROCESSED"; break;
+                case DrmEvent.TYPE_ALL_RIGHTS_REMOVED:
+                    eventTypeString = "TYPE_ALL_RIGHTS_REMOVED";
+                    break;
+                case DrmEvent.TYPE_DRM_INFO_PROCESSED:
+                    eventTypeString = "TYPE_DRM_INFO_PROCESSED";
+                    break;
             }
         }
 
@@ -222,7 +255,7 @@ public class WidevineClassicDrm {
 
         DrmInfoStatus drmStatus = (DrmInfoStatus) event.getAttribute(DrmEvent.DRM_INFO_STATUS_OBJECT);
         if (drmStatus != null) {
-            logString.append(" status=").append(drmStatus.statusCode==DrmInfoStatus.STATUS_OK ? "OK" : "ERROR");
+            logString.append(" status=").append(drmStatus.statusCode == DrmInfoStatus.STATUS_OK ? "OK" : "ERROR");
         }
 
         DrmInfo drmInfo = (DrmInfo) event.getAttribute(DrmEvent.DRM_INFO_OBJECT);
@@ -235,7 +268,7 @@ public class WidevineClassicDrm {
         StringBuilder sb = new StringBuilder();
         if (drmInfo != null) {
             sb.append("{");
-            for (Iterator<String> it = drmInfo.keyIterator(); it.hasNext();) {
+            for (Iterator<String> it = drmInfo.keyIterator(); it.hasNext(); ) {
                 String key = it.next();
                 Object value = drmInfo.get(key);
                 sb.append("{").append(key).append("=").append(value).append("}");
@@ -277,7 +310,7 @@ public class WidevineClassicDrm {
 
         log.i("Widevine Plugin Info: " + extractDrmInfo(response));
 
-        String drmInfoRequestStatusKey = (String)response.get(WV_DRM_INFO_REQUEST_STATUS_KEY);
+        String drmInfoRequestStatusKey = (String) response.get(WV_DRM_INFO_REQUEST_STATUS_KEY);
         log.i("Widevine provision status: " + drmInfoRequestStatusKey);
     }
 
@@ -287,10 +320,10 @@ public class WidevineClassicDrm {
      * @param assetUri
      * @return
      */
-    public boolean needToAcquireRights(String assetUri){
+    public boolean needToAcquireRights(String assetUri) {
         mDrmManager.acquireDrmInfo(createDrmInfoRequest(assetUri));
         int rightsStatus = mDrmManager.checkRightsStatus(assetUri);
-        if(rightsStatus == DrmStore.RightsStatus.RIGHTS_INVALID){
+        if (rightsStatus == DrmStore.RightsStatus.RIGHTS_INVALID) {
             mDrmManager.removeRights(assetUri); // clear current invalid rights and re-acquire new rights
         }
         return rightsStatus != DrmStore.RightsStatus.RIGHTS_VALID;
@@ -314,7 +347,7 @@ public class WidevineClassicDrm {
 
         return rights;
     }
-    
+
     // On Android M and up, Widevine Classic is not officially supported.
     // On some devices it still works, but a small change in FileDescriptor class
     // has broke the offline ability: the specialized implementation of toString()

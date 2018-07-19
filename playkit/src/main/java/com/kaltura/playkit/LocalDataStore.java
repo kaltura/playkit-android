@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -23,13 +23,15 @@ public interface LocalDataStore {
 
     /**
      * Save the offline drm keySetId.
-     * @param key - the key to save the value.
+     *
+     * @param key   - the key to save the value.
      * @param value - the keySetId of the drm.
      */
     void save(String key, byte[] value);
 
     /**
      * Loads the keySetId.
+     *
      * @param key - key for the keySetId.
      * @return - the keySetId to the drm.
      * @throws FileNotFoundException - thrown when the keySetId could not be found with specified key.
@@ -38,6 +40,7 @@ public interface LocalDataStore {
 
     /**
      * Remove the keySetId from the storage.
+     *
      * @param key - key that should be removed.
      */
     void remove(String key);

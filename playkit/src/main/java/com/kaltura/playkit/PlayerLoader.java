@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -44,7 +44,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     private Context context;
     private MessageBus messageBus;
-    
+
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
     private PlayerController playerController;
 
@@ -52,14 +52,14 @@ class PlayerLoader extends PlayerDecoratorBase {
         this.context = context;
         this.messageBus = new MessageBus();
     }
-    
+
     public void load(@NonNull PKPluginConfigs pluginsConfig) {
 
         playerController = new PlayerController(context);
 
         // By default, set Kaltura decorator.
         KalturaPlaybackRequestAdapter.install(playerController, context.getPackageName());
-        
+
         playerController.setEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
@@ -77,7 +77,7 @@ class PlayerLoader extends PlayerDecoratorBase {
                 log.w("Plugin not found: " + name);
                 continue;
             }
-            
+
             // Check if the plugin provides a PlayerDecorator.
             PlayerDecorator decorator = plugin.getPlayerDecorator();
             if (decorator != null) {
@@ -132,12 +132,12 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         //If mediaConfig is not valid, playback is impossible, so return.
         //setMedia() is responsible to notify application with exact error that happened.
-        if(!playerController.setMedia(mediaConfig)){
+        if (!playerController.setMedia(mediaConfig)) {
             return;
         }
 
         super.prepare(mediaConfig);
-        
+
         for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
             loadedPluginEntry.getValue().plugin.onUpdateMedia(mediaConfig);
         }
@@ -147,13 +147,13 @@ class PlayerLoader extends PlayerDecoratorBase {
         // Unload in the reversed order they were loaded, peeling off the decorators.
         List<Map.Entry<String, LoadedPlugin>> plugins = new ArrayList<>(loadedPlugins.entrySet());
         ListIterator<Map.Entry<String, LoadedPlugin>> listIterator = plugins.listIterator(plugins.size());
-        
+
         Player currentLayer = getPlayer();
-        
+
         while (listIterator.hasPrevious()) {
             Map.Entry<String, LoadedPlugin> pluginEntry = listIterator.previous();
             LoadedPlugin loadedPlugin = pluginEntry.getValue();
-            
+
             // Peel off decorator, if this plugin added one
             if (loadedPlugin.decorator != null) {
                 Assert.checkState(loadedPlugin.decorator == currentLayer, "Decorator/layer mismatch");
@@ -161,12 +161,12 @@ class PlayerLoader extends PlayerDecoratorBase {
                     currentLayer = ((PlayerDecorator) currentLayer).getPlayer();
                 }
             }
-            
+
             // Release the plugin
             loadedPlugin.plugin.onDestroy();
             loadedPlugins.remove(pluginEntry.getKey());
         }
-        
+
         setPlayer(currentLayer);
     }
 

@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -30,7 +30,7 @@ import java.util.List;
  */
 
 class SourceSelector {
-    
+
     private static final PKLog log = PKLog.get("SourceSelector");
     private final PKMediaEntry mediaEntry;
     private final PKMediaFormat preferredMediaFormat;
@@ -39,7 +39,7 @@ class SourceSelector {
         this.mediaEntry = mediaEntry;
         this.preferredMediaFormat = preferredMdieaFormat;
     }
-    
+
     @Nullable
     private PKMediaSource sourceByFormat(PKMediaFormat format) {
         if (mediaEntry != null && mediaEntry.getSources() != null) {
@@ -51,21 +51,21 @@ class SourceSelector {
         }
         return null;
     }
-    
+
     @Nullable
     PKMediaSource getPreferredSource() {
 
         // If PKMediaSource is local, there is no need to look for the preferred source,
         // because it is only one.
         PKMediaSource localMediaSource = getLocalSource();
-        if(localMediaSource != null){
+        if (localMediaSource != null) {
             return localMediaSource;
         }
 
         // Default preference: DASH, HLS, WVM, MP4, MP3
 
         List<PKMediaFormat> formatsPriorityList = getFormatsPriorityList();
-        
+
         for (PKMediaFormat format : formatsPriorityList) {
             PKMediaSource source = sourceByFormat(format);
             if (source == null) {
@@ -113,7 +113,7 @@ class SourceSelector {
         return new SourceSelector(mediaEntry, preferredMediaFormat).getPreferredSource();
     }
 
-    private PKMediaSource getLocalSource(){
+    private PKMediaSource getLocalSource() {
         if (mediaEntry != null && mediaEntry.getSources() != null) {
             for (PKMediaSource source : mediaEntry.getSources()) {
                 if (source instanceof LocalAssetsManager.LocalMediaSource) {

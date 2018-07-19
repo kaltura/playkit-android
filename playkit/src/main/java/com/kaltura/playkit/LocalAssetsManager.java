@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -124,7 +124,7 @@ public class LocalAssetsManager {
         PKDrmParams drmParams = findSupportedDrmParams(mediaSource);
 
         PKMediaFormat mediaFormat = mediaSource.getMediaFormat();
-        if(mediaFormat == null){
+        if (mediaFormat == null) {
             listener.onFailed(localAssetPath,
                     new IllegalArgumentException("Can not register media, when PKMediaFormat and url of PKMediaSource not exist."));
         }
@@ -317,7 +317,7 @@ public class LocalAssetsManager {
             String mediaFormatValue = new String(localDataStore.load(buildAssetKey(assetId)));
             String[] splitFormatValue = mediaFormatValue.split(":");
             String schemeName = splitFormatValue[1];
-            if(schemeName.equals("null")) {
+            if (schemeName.equals("null")) {
                 return null;
             }
 
@@ -396,7 +396,7 @@ public class LocalAssetsManager {
     private byte[] buildMediaFormatValueAsByteArray(PKMediaFormat mediaFormat, PKDrmParams.Scheme scheme) {
         String mediaFormatName = mediaFormat.toString();
         String schemeName = "null";
-        if(scheme != null) {
+        if (scheme != null) {
             schemeName = scheme.toString();
         }
         String stringBuilder = mediaFormatName +

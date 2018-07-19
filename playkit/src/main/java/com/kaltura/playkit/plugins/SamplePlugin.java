@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -55,7 +55,7 @@ public class SamplePlugin extends PKPlugin {
 
         @Override
         public void warmUp(Context context) {
-            
+
         }
     };
 
@@ -66,7 +66,7 @@ public class SamplePlugin extends PKPlugin {
         this.context = context;
         delay = ((JsonObject) config).getAsJsonPrimitive("delay").getAsInt();
         log.v("delay=" + delay);
-        
+
         messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
@@ -77,12 +77,12 @@ public class SamplePlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-        
+
     }
 
     @Override
     protected void onUpdateConfig(Object config) {
-        
+
     }
 
     @Override

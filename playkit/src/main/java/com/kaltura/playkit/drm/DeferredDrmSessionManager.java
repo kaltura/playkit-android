@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -79,9 +79,9 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
                 licenseUrl = getLicenseUrl(mediaSource);
             }
             drmSessionManager = DefaultDrmSessionManager.newWidevineInstance(new HttpMediaDrmCallback(licenseUrl, dataSourceFactory), null, mainHandler, this);
-            
+
         } catch (UnsupportedDrmException exception) {
-            
+
             PKError error = new PKError(PKPlayerErrorType.DRM_ERROR, "This device doesn't support widevine modular", exception);
             drmSessionListener.onError(error);
         }

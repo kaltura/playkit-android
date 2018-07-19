@@ -32,7 +32,8 @@ public class PKTrackConfig {
             if (trackLanguage != null) {
                 return new Locale(trackLanguage).getISO3Language();
             }
-        } catch(MissingResourceException ex) {}
+        } catch (MissingResourceException ex) {
+        }
         return null;
     }
 

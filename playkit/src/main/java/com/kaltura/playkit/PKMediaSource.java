@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -24,7 +24,8 @@ public class PKMediaSource implements Parcelable {
     private PKMediaFormat mediaFormat;
     private List<PKDrmParams> drmData;
 
-    public PKMediaSource(){}
+    public PKMediaSource() {
+    }
 
     protected PKMediaSource(Parcel in) {
         id = in.readString();
@@ -87,7 +88,7 @@ public class PKMediaSource implements Parcelable {
         dest.writeString(id);
         dest.writeString(url);
         dest.writeString(mediaFormat.name());
-        if(drmData != null) {
+        if (drmData != null) {
             dest.writeTypedList(drmData);
         } else {
             dest.writeTypedList(Collections.EMPTY_LIST);
@@ -108,12 +109,15 @@ public class PKMediaSource implements Parcelable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         PKMediaSource that = (PKMediaSource) o;
 
-        if (!id.equals(that.id)) return false;
+        if (!id.equals(that.id))
+            return false;
         return url.equals(that.url);
 
     }

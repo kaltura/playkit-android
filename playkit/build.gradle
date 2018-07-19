@@ -42,7 +42,6 @@ dependencies {
     api 'com.google.android.exoplayer:exoplayer-hls:2.8.2'
     api 'com.google.android.exoplayer:exoplayer-ui:2.8.2'
 
-
     // Tests
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.hamcrest:hamcrest-library:1.3'

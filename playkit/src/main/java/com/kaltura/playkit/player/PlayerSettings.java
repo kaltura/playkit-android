@@ -25,7 +25,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean cea608CaptionsEnabled;
     private boolean crossProtocolRedirectEnabled;
     private boolean adAutoPlayOnResume = true;
-    private boolean vrPlayerEnabled    = true;
+    private boolean vrPlayerEnabled = true;
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;

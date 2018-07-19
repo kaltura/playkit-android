@@ -60,7 +60,7 @@ public class BaseTest {
     }
 
 
-    public interface TestBlock<T>{
+    public interface TestBlock<T> {
         void execute(T data) throws AssertionError;
     }
 }

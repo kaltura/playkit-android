@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -29,7 +29,7 @@ public abstract class BaseTrack {
     private int selectionFlag;
     private boolean isAdaptive;
 
-     BaseTrack(String uniqueId, int selectionFlag, boolean isAdaptive) {
+    BaseTrack(String uniqueId, int selectionFlag, boolean isAdaptive) {
         this.uniqueId = uniqueId;
         this.selectionFlag = selectionFlag;
         this.isAdaptive = isAdaptive;
@@ -37,6 +37,7 @@ public abstract class BaseTrack {
 
     /**
      * Getter for uniqueId
+     *
      * @return - the uniqueId of the current track.
      */
     public String getUniqueId() {
@@ -48,6 +49,7 @@ public abstract class BaseTrack {
      * If isAdaptive return true, that means that current track should be used as
      * "Auto" playback option. So the system will adjust the
      * bitrate of the playing track to the bandwidth  capabilities of the device.
+     *
      * @return - true if current track is adaptive, otherwise - false.
      */
     public boolean isAdaptive() {
