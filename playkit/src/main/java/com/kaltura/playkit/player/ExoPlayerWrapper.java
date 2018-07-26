@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -302,8 +302,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
         currentEvent = event;
         if (eventListener != null) {
-            log.i("Event sent: " + event.name());
+            log.d("Event sent: " + event.name());
             eventListener.onEvent(currentEvent);
+        } else {
+            log.e("eventListener is null cannot send Event: " + event.name());
         }
     }
 
@@ -395,7 +397,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         String errorStr = (errorMessage == null) ? "Player error: " + errorType.name() : errorMessage;
         log.e(errorStr);
         currentError = new PKError(errorType, errorStr, error);
-        eventListener.onEvent(PlayerEvent.Type.ERROR);
+        if (eventListener != null) {
+            log.e("Error-Event sent, type = " + error.type);
+            eventListener.onEvent(PlayerEvent.Type.ERROR);
+        } else {
+            log.e("eventListener is null cannot send Error-Event type = " + error.type);
+        }
     }
 
     @Override
