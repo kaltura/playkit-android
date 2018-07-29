@@ -41,7 +41,8 @@ dependencies {
     api 'com.google.android.exoplayer:exoplayer:2.7.0'
 
     // Google Ads
-    api 'com.google.ads.interactivemedia.v3:interactivemedia:3.8.5'
+    //api 'com.google.ads.interactivemedia.v3:interactivemedia:3.8.5'
+    api files('lib/ima_sdk_v3_omid.jar')
     api 'com.google.android.gms:play-services-ads:15.0.1'
 
 
