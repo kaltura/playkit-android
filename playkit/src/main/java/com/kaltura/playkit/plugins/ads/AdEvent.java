@@ -14,6 +14,8 @@ package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKMediaConfig;
+import com.kaltura.playkit.PKMediaSource;
 
 /**
  * Created by gilad.nadav on 22/11/2016.
@@ -137,6 +139,16 @@ public class AdEvent implements PKEvent {
         }
     }
 
+    public static class AdDAISourceSelected extends AdEvent {
+
+        public final PKMediaConfig mediaConfig;
+
+        public AdDAISourceSelected(PKMediaConfig mediaConfig) {
+            super(Type.DAI_SOURCE_SELECTED);
+            this.mediaConfig = mediaConfig;
+        }
+    }
+
     public enum Type {
         AD_REQUESTED,
         AD_FIRST_PLAY,
@@ -166,6 +178,7 @@ public class AdEvent implements PKEvent {
         AD_LOAD_TIMEOUT_TIMER_STARTED,
         AD_BUFFER_START,
         AD_BUFFER_END,
+        DAI_SOURCE_SELECTED,
         ERROR
     }
 
