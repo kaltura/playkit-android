@@ -305,7 +305,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
         currentEvent = event;
         if (eventListener != null) {
-            log.d("Event sent: " + event.name());
+            if (event != PlayerEvent.Type.PLAYBACK_INFO_UPDATED) {
+                log.d("Event sent: " + event.name());
+            }
             eventListener.onEvent(currentEvent);
         } else {
             log.e("eventListener is null cannot send Event: " + event.name());

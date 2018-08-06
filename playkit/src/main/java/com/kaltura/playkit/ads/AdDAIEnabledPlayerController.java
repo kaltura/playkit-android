@@ -48,11 +48,15 @@ public class AdDAIEnabledPlayerController extends AdEnabledPlayerController {
 
         if (adsProvider != null) {
             if (adsProvider.isAdRequested()) {
-                log.d("IMA calling super.prepare");
-                super.prepare(mediaConfig);
+                if (mediaConfig != null && mediaConfig.getMediaEntry() != null &&
+                        mediaConfig.getMediaEntry().hasSources() &&
+                        mediaConfig.getMediaEntry().getSources().get(0).getUrl().contains("dai.google.com")) {
+                    log.d("IMA calling super.prepare");
+                    super.prepare(mediaConfig);
+                }
             } else {
                 log.d("IMA setAdProviderListener");
-                adsProvider.setAdProviderListener(this);
+                adsProvider.setAdProviderListener(AdDAIEnabledPlayerController.this);
             }
         }
     }
@@ -81,8 +85,12 @@ public class AdDAIEnabledPlayerController extends AdEnabledPlayerController {
             log.d("seekTo is not enabled during AD playback");
             return;
         }
-
+        boolean isPlaying = isPlaying();
         adsProvider.seekTo(position);
+        if (!isPlaying) {
+            pause();
+        }
+
     }
 
     @Override
@@ -185,3 +193,4 @@ public class AdDAIEnabledPlayerController extends AdEnabledPlayerController {
         }
     }
 }
+
