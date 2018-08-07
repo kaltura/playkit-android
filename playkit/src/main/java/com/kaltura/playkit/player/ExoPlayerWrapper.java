@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -197,7 +198,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
-        player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
+        boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
+        player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
     }
 
