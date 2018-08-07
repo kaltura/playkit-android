@@ -46,7 +46,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
         this.mediaConfig = mediaConfig;
 
         if (adsProvider != null) {
-            if (adsProvider.isAdRequested()) {
+            if (adsProvider.isAdRequested() || adsProvider.isAdError()) {
                 log.d("IMA calling super.prepare");
                 super.prepare(mediaConfig);
             } else {

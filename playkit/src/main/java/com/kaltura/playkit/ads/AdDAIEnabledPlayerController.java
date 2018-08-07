@@ -47,8 +47,8 @@ public class AdDAIEnabledPlayerController extends AdEnabledPlayerController {
         this.mediaConfig = mediaConfig;
 
         if (adsProvider != null) {
-            if (adsProvider.isAdRequested()) {
-                if (mediaConfig != null && mediaConfig.getMediaEntry() != null &&
+            if (adsProvider.isAdRequested() || adsProvider.isAdError()) {
+                if (adsProvider.isAdError() || mediaConfig != null && mediaConfig.getMediaEntry() != null &&
                         mediaConfig.getMediaEntry().hasSources() &&
                         mediaConfig.getMediaEntry().getSources().get(0).getUrl().contains("dai.google.com")) {
                     log.d("IMA calling super.prepare");
