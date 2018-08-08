@@ -66,7 +66,6 @@ public class AdDAIEnabledPlayerController extends AdEnabledPlayerController {
         if (adsProvider.isAdDisplayed()) {
             return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
         }
-
         return adsProvider.getDuration();
     }
 
@@ -75,7 +74,6 @@ public class AdDAIEnabledPlayerController extends AdEnabledPlayerController {
         if (adsProvider.isAdDisplayed()) {
             return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
         }
-
         return adsProvider.getCurrentPosition();
     }
 
