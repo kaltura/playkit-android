@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -166,6 +166,16 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class PlaybackRateChanged extends PlayerEvent {
+
+        public final float rate;
+
+        public PlaybackRateChanged(float rate) {
+            super(Type.PLAYBACK_RATE_CHANGED);
+            this.rate = rate;
+        }
+    }
+
     public final Type type;
 
     public PlayerEvent(Type type) {
@@ -194,7 +204,8 @@ public class PlayerEvent implements PKEvent {
         PLAYHEAD_UPDATED, //Send player position every 100 Milisec
         VIDEO_TRACK_CHANGED,
         AUDIO_TRACK_CHANGED,
-        TEXT_TRACK_CHANGED
+        TEXT_TRACK_CHANGED,
+        PLAYBACK_RATE_CHANGED
     }
 
     @Override

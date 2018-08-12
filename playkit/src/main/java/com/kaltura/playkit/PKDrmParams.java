@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -29,6 +29,7 @@ public class PKDrmParams implements Parcelable {
         Unknown;
 
         private Boolean supported;
+
         public boolean isSupported() {
             if (supported == null) {
                 switch (this) {
@@ -52,14 +53,14 @@ public class PKDrmParams implements Parcelable {
                 }
             }
             return supported;
-            
+
         }
     }
 
     private String licenseUri;
     private Scheme scheme = Scheme.Unknown;
 
-    public PKDrmParams(String licenseUrl, Scheme scheme){
+    public PKDrmParams(String licenseUrl, Scheme scheme) {
         this.licenseUri = licenseUrl;
         this.scheme = scheme;
     }
@@ -68,7 +69,7 @@ public class PKDrmParams implements Parcelable {
         boolean isSchemeSupported = (scheme != null && scheme.isSupported());
         return isSchemeSupported;
     }
-    
+
     public String getLicenseUri() {
         return licenseUri;
     }

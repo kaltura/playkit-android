@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -15,7 +15,6 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.utils.Consts;
 
@@ -38,6 +37,7 @@ public interface Player {
 
         /**
          * Set the Player's licenseRequestAdapter.
+         *
          * @param licenseRequestAdapter - request adapter.
          * @return - Player Settings.
          */
@@ -80,10 +80,51 @@ public interface Player {
          * Decide if player should use secure rendering on the surface.
          * Known limitation - when useTextureView set to true and isSurfaceSecured set to true -
          * secure rendering will have no effect.
+         *
          * @param isSurfaceSecured - should enable/disable secure rendering
          * @return - Player Settings.
          */
         Settings setSecureSurface(boolean isSurfaceSecured);
+
+        /**
+         * Decide the Ad will be auto played when comes to foreground from background
+         *
+         * @param autoPlayOnResume true if it is autoplayed or else false, default is TRUE
+         * @return Player Settings
+         */
+        Settings setAdAutoPlayOnResume(boolean autoPlayOnResume);
+
+        /**
+         * Set the Player's VR/360 support
+         *
+         * @param vrPlayerEnabled - If 360 media should be played on VR player or default player - default == true.
+         * @return - Player Settings.
+         */
+        Settings setVRPlayerEnabled(boolean vrPlayerEnabled);
+
+        /**
+         * Set the Player's preferredAudioTrackConfig.
+         *
+         * @param preferredAudioTrackConfig - AudioTrackConfig.
+         * @return - Player Settings.
+         */
+        Settings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig);
+
+        /**
+         * Set the Player's preferredTextTrackConfig.
+         *
+         * @param preferredTextTrackConfig - TextTrackConfig.
+         * @return - Player Settings.
+         */
+        Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig);
+
+        /**
+         * Set the Player's setPreferredMediaFormat.
+         *
+         * @param preferredMediaFormat - PKMediaFormat.
+         * @return - Player Settings.
+         */
+        Settings setPreferredMediaFormat(PKMediaFormat preferredMediaFormat);
     }
 
     /**
@@ -210,7 +251,7 @@ public interface Player {
     void addStateChangeListener(@NonNull PKEvent.Listener listener);
 
     /**
-     * Change current track, with specified one.
+     * Change current track, with specified one by uniqueId.
      * If uniqueId is not valid or null, this will throw {@link IllegalArgumentException}.
      * Example of the valid uniqueId for regular video track: Video:0,0,1.
      * Example of the valid uniqueId for adaptive video track: Video:0,0,adaptive.
@@ -233,7 +274,25 @@ public interface Player {
      */
     String getSessionId();
 
-    boolean isLiveStream();
+    boolean isLive();
+
+    /**
+     * @return - Getter for the current mediaFormat
+     * or {@link null} if the media format is not set yet
+     */
+    PKMediaFormat getMediaFormat();
+
+    /**
+     * Change player speed (pitch = 1.0f by default)
+     *
+     * @param rate - desired rate (ex. 0.5f 1.0f 1.5f, 2.0f).
+     */
+    void setPlaybackRate(float rate);
+
+    /**
+     * get current player speed
+     */
+    float getPlaybackRate();
 
     /**
      * Generic getters for playkit controllers.

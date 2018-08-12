@@ -6,7 +6,7 @@ public class VRPKMediaEntry extends PKMediaEntry {
 
     private VRSettings vrSettings;
 
-    public VRPKMediaEntry(){
+    public VRPKMediaEntry() {
         super();
         //init with default settings.
         vrSettings = new VRSettings();

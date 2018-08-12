@@ -12,7 +12,9 @@
 
 package com.kaltura.playkit.player;
 
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
 
 
@@ -22,6 +24,13 @@ public class PlayerSettings implements Player.Settings {
     private boolean isSurfaceSecured;
     private boolean cea608CaptionsEnabled;
     private boolean crossProtocolRedirectEnabled;
+    private boolean adAutoPlayOnResume = true;
+    private boolean vrPlayerEnabled = true;
+
+    private PKTrackConfig preferredTextTrackConfig;
+    private PKTrackConfig preferredAudioTrackConfig;
+
+    private PKMediaFormat preferredMediaFormat = PKMediaFormat.dash;
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
@@ -51,6 +60,32 @@ public class PlayerSettings implements Player.Settings {
         return isSurfaceSecured;
     }
 
+    public boolean isAdAutoPlayOnResume() {
+        return adAutoPlayOnResume;
+    }
+
+    public boolean isVRPlayerEnabled() {
+        return vrPlayerEnabled;
+    }
+
+    public PKTrackConfig getPreferredTextTrackConfig() {
+        return preferredTextTrackConfig;
+    }
+
+    public PKTrackConfig getPreferredAudioTrackConfig() {
+        return preferredAudioTrackConfig;
+    }
+
+    public PKMediaFormat getPreferredMediaFormat() {
+        return preferredMediaFormat;
+    }
+
+    @Override
+    public Player.Settings setVRPlayerEnabled(boolean vrPlayerEnabled) {
+        this.vrPlayerEnabled = vrPlayerEnabled;
+        return this;
+    }
+
     @Override
     public PlayerSettings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
         this.contentRequestAdapter = contentRequestAdapter;
@@ -78,6 +113,30 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public PlayerSettings setSecureSurface(boolean isSurfaceSecured) {
         this.isSurfaceSecured = isSurfaceSecured;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setAdAutoPlayOnResume(boolean adAutoPlayOnResume) {
+        this.adAutoPlayOnResume = adAutoPlayOnResume;
+        return this;
+    }
+
+    @Override
+    public PlayerSettings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
+        this.preferredAudioTrackConfig = preferredAudioTrackConfig;
+        return this;
+    }
+
+    @Override
+    public PlayerSettings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
+        this.preferredTextTrackConfig = preferredTextTrackConfig;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
+        this.preferredMediaFormat = preferredMediaFormat;
         return this;
     }
 

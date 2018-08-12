@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -15,7 +15,6 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
 
 public class PlayerDecoratorBase implements Player {
@@ -56,8 +55,23 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public boolean isLiveStream() {
-        return player.isLiveStream();
+    public boolean isLive() {
+        return player.isLive();
+    }
+
+    @Override
+    public PKMediaFormat getMediaFormat() {
+        return player.getMediaFormat();
+    }
+
+    @Override
+    public void setPlaybackRate(float rate) {
+        player.setPlaybackRate(rate);
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        return player.getPlaybackRate();
     }
 
     @Override

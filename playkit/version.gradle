@@ -1,4 +1,3 @@
-
 // PlayKit Library Version
 ext.playkitVersion = 'dev'
 
@@ -9,7 +8,6 @@ if (playkitVersion == 'dev') {
     def commit = proc.text.trim()
     ext.playkitVersion = 'dev.' + commit
 }
-
 
 // Publish to Bintray
 try {

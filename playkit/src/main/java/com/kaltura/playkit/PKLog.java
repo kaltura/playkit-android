@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -23,10 +23,10 @@ import static android.util.Log.VERBOSE;
 import static android.util.Log.WARN;
 
 /**
- * Logger for PlayKit. 
- * 
+ * Logger for PlayKit.
+ * <p>
  * Usage:
- * 
+ *
  * <pre>
  * class MyClass {
  *      private static final PKLog log = PKLog.get("MyClass");
@@ -44,19 +44,17 @@ import static android.util.Log.WARN;
  *
  *          this.name = name;
  *      }
- *      
+ *
  *      ...
- *      
+ *
  *      log.setLevel(PKLog.Level.warn);
  *      PKLog.setGlobalLevel(PKLog.Level.debug);
  * }
  * </pre>
- * 
- * 
+ * <p>
+ * <p>
  * Created by Noam Tamim @ Kaltura on 11/11/2016.
  */
-
-
 
 
 @SuppressWarnings("WeakerAccess")
@@ -67,7 +65,7 @@ public class PKLog {
 
     public enum Level {
         verbose(VERBOSE), debug(DEBUG), info(INFO), warn(WARN), error(ERROR), off(Integer.MAX_VALUE);
-        
+
         final int value;
 
         Level(int value) {
@@ -89,11 +87,11 @@ public class PKLog {
     public static void setGlobalLevel(Level level) {
         PKLog.globalLevel = level.value;
     }
-    
+
     public void setLevel(Level level) {
         this.level = level.value;
     }
-    
+
     private PKLog(String tag) {
         this.tag = shortenTag(tag);
     }

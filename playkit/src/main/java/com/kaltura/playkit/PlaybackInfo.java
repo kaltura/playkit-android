@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -30,12 +30,11 @@ public class PlaybackInfo {
         this.videoBitrate = videoBitrate;
         this.audioBitrate = audioBitrate;
         this.videoThroughput = videoThroughput;
-        this.videoWidth   = videoWidth;
-        this.videoHeight  = videoHeight;
+        this.videoWidth = videoWidth;
+        this.videoHeight = videoHeight;
     }
 
     /**
-     *
      * @return - the current playing video track bitrate.
      */
     public long getVideoBitrate() {
@@ -43,7 +42,6 @@ public class PlaybackInfo {
     }
 
     /**
-     *
      * @return - the current playing audio track bitrate.
      */
     public long getAudioBitrate() {
@@ -51,7 +49,6 @@ public class PlaybackInfo {
     }
 
     /**
-     *
      * @return - the current playing video throughput.
      */
     public long getVideoThroughput() {
@@ -59,7 +56,6 @@ public class PlaybackInfo {
     }
 
     /**
-     *
      * @return - the current playing video width.
      */
     public long getVideoWidth() {
@@ -67,7 +63,6 @@ public class PlaybackInfo {
     }
 
     /**
-     *
      * @return - the current playing video height.
      */
     public long getVideoHeight() {

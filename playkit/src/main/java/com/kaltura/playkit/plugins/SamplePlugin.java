@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -15,6 +15,7 @@ package com.kaltura.playkit.plugins;
 import android.content.Context;
 
 import com.google.gson.JsonObject;
+import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -48,8 +49,13 @@ public class SamplePlugin extends PKPlugin {
         }
 
         @Override
+        public String getVersion() {
+            return BuildConfig.VERSION_NAME;
+        }
+
+        @Override
         public void warmUp(Context context) {
-            
+
         }
     };
 
@@ -60,7 +66,7 @@ public class SamplePlugin extends PKPlugin {
         this.context = context;
         delay = ((JsonObject) config).getAsJsonPrimitive("delay").getAsInt();
         log.v("delay=" + delay);
-        
+
         messageBus.listen(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
@@ -71,12 +77,12 @@ public class SamplePlugin extends PKPlugin {
 
     @Override
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
-        
+
     }
 
     @Override
     protected void onUpdateConfig(Object config) {
-        
+
     }
 
     @Override

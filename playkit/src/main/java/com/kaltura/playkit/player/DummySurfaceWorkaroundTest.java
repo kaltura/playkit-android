@@ -59,7 +59,7 @@ public class DummySurfaceWorkaroundTest {
     };
 
     static void executeTest(final Context context) {
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
             return;
         }
 
@@ -102,7 +102,7 @@ public class DummySurfaceWorkaroundTest {
         MediaSource mediaSource = new DashMediaSource.Factory(
                 new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
                 mediaDataSourceFactory)
-                .createMediaSource(Uri.parse(URL), mainHandler, null);
+                .createMediaSource(Uri.parse(URL));
 
         player.prepare(mediaSource);
     }
@@ -148,8 +148,7 @@ public class DummySurfaceWorkaroundTest {
                             .put("playkitVersion", PlayKitManager.VERSION_STRING)
                             .put("system", PKDeviceCapabilities.systemInfo())
                             .put("exoPlayerVersion", ExoPlayerLibraryInfo.VERSION)
-                            .put("dummySurfaceWorkaroundRequired", true)
-                            ;
+                            .put("dummySurfaceWorkaroundRequired", true);
 
                     reportString = jsonObject.toString();
                 } catch (Exception e) {
@@ -157,7 +156,8 @@ public class DummySurfaceWorkaroundTest {
                     reportString = PKDeviceCapabilities.getErrorReport(e);
                 }
 
-                if (!PKDeviceCapabilities.sendReport(reportString)) return;
+                if (!PKDeviceCapabilities.sendReport(reportString))
+                    return;
 
                 // If we got here, save the fingerprint so we don't send again until the OS updates.
                 sharedPrefs.edit().putString(PREFS_ENTRY_FINGERPRINT, Build.FINGERPRINT).apply();

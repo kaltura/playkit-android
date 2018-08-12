@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -18,17 +18,19 @@ import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
-import com.google.android.exoplayer2.trackselection.MappingTrackSelector.SelectionOverride;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.MissingResourceException;
 
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
@@ -43,9 +45,6 @@ class TrackSelectionHelper {
 
     private static final PKLog log = PKLog.get("TrackSelectionHelper");
 
-    private static final TrackSelection.Factory FIXED_FACTORY = new FixedTrackSelection.Factory();
-
-
     private static final int TRACK_ADAPTIVE = -1;
     private static final int TRACK_DISABLED = -2;
 
@@ -57,32 +56,32 @@ class TrackSelectionHelper {
     static final String NONE = "none";
     private static final String ADAPTIVE = "adaptive";
 
-    private static final String VIDEO = "video";
     private static final String VIDEO_PREFIX = "Video:";
-
-    private static final String AUDIO = "audio";
     private static final String AUDIO_PREFIX = "Audio:";
-
     private static final String TEXT_PREFIX = "Text:";
 
     private static final String CEA_608 = "application/cea-608";
+    private static final String LANGUAGE_UNKNOWN = "Unknown";
 
 
     private final DefaultTrackSelector selector;
     private TrackSelectionArray trackSelectionArray;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
-    private final TrackSelection.Factory adaptiveTrackSelectionFactory;
 
     private List<VideoTrack> videoTracks = new ArrayList<>();
     private List<AudioTrack> audioTracks = new ArrayList<>();
     private List<TextTrack> textTracks = new ArrayList<>();
 
     private String[] lastSelectedTrackIds;
-    private String[] requestedChangeTrackIds = {NONE, NONE, NONE};
+    private String[] requestedChangeTrackIds;
+
+    private PKTrackConfig preferredAudioLanguageConfig;
+    private PKTrackConfig preferredTextLanguageConfig;
 
     private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
 
     private TracksInfoListener tracksInfoListener;
+
     interface TracksInfoListener {
 
         void onTracksInfoReady(PKTracks PKTracks);
@@ -98,15 +97,12 @@ class TrackSelectionHelper {
 
 
     /**
-     * @param selector                      The track selector.
-     * @param adaptiveTrackSelectionFactory A factory for adaptive video {@link TrackSelection}s,
-     *                                      or null if the selection helper should not support adaptive video.
+     * @param selector             The track selector.
+     * @param lastSelectedTrackIds - last selected track id`s.
      */
     TrackSelectionHelper(DefaultTrackSelector selector,
-                         TrackSelection.Factory adaptiveTrackSelectionFactory,
                          String[] lastSelectedTrackIds) {
         this.selector = selector;
-        this.adaptiveTrackSelectionFactory = adaptiveTrackSelectionFactory;
         this.lastSelectedTrackIds = lastSelectedTrackIds;
         this.requestedChangeTrackIds = Arrays.copyOf(lastSelectedTrackIds, lastSelectedTrackIds.length);
     }
@@ -118,14 +114,14 @@ class TrackSelectionHelper {
      *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
-    boolean prepareTracks() {
+    boolean prepareTracks(boolean isDashManifest) {
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
             log.w("Trying to get current MappedTrackInfo returns null");
             return false;
         }
         warnAboutUnsupportedRenderTypes();
-        PKTracks tracksInfo = buildTracks();
+        PKTracks tracksInfo = buildTracks(isDashManifest);
 
         if (tracksInfoListener != null) {
             tracksInfoListener.onTracksInfoReady(tracksInfo);
@@ -138,7 +134,7 @@ class TrackSelectionHelper {
      * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
      */
-    private PKTracks buildTracks() {
+    private PKTracks buildTracks(boolean isDashManifest) {
 
         clearTracksLists();
 
@@ -172,16 +168,23 @@ class TrackSelectionHelper {
                                 videoTracks.add(new VideoTrack(uniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false));
                                 break;
                             case TRACK_TYPE_AUDIO:
-
-                                audioTracks.add(new AudioTrack(uniqueId, format.language, format.id, format.bitrate, format.selectionFlags, false));
+                                String audioTrackLabel = null;
+                                if (!isDashManifest) {
+                                    audioTrackLabel = format.id;
+                                }
+                                audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), audioTrackLabel, format.bitrate, format.selectionFlags, false));
                                 break;
                             case TRACK_TYPE_TEXT:
+                                String textTrackLabel = null;
+                                if (!isDashManifest) {
+                                    textTrackLabel = format.id;
+                                }
                                 if (CEA_608.equals(format.sampleMimeType)) {
                                     if (cea608CaptionsEnabled) {
                                         textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
                                     }
                                 } else {
-                                    textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
+                                    textTracks.add(new TextTrack(uniqueId, getLanguageFromFormat(format), textTrackLabel, format.selectionFlags));
                                 }
                                 break;
                         }
@@ -202,6 +205,14 @@ class TrackSelectionHelper {
         int defaultTextTrackIndex = getDefaultTrackIndex(textTracks, lastSelectedTrackIds[TRACK_TYPE_TEXT]);
 
         return new PKTracks(videoTracks, filteredAudioTracks, textTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex);
+    }
+
+    private String getLanguageFromFormat(Format format) {
+        if (format.language == null) {
+            return LANGUAGE_UNKNOWN;
+        }
+
+        return format.language;
     }
 
     /**
@@ -328,31 +339,36 @@ class TrackSelectionHelper {
      * @return - uniqueId that represent current track.
      */
     private String getUniqueId(int rendererIndex, int groupIndex, int trackIndex) {
-        String rendererPrefix = "";
+        return getUniqueIdPrefix(rendererIndex)
+                + rendererIndex
+                + ","
+                + groupIndex
+                + ","
+                + getUniqueIdPostfix(rendererIndex, trackIndex);
+    }
+
+    private String getUniqueIdPrefix(int rendererIndex) {
         switch (rendererIndex) {
             case TRACK_TYPE_VIDEO:
-                rendererPrefix = VIDEO_PREFIX;
-                break;
+                return VIDEO_PREFIX;
             case TRACK_TYPE_AUDIO:
-                rendererPrefix = AUDIO_PREFIX;
-                break;
+                return AUDIO_PREFIX;
             case TRACK_TYPE_TEXT:
-                rendererPrefix = TEXT_PREFIX;
-                break;
+                return TEXT_PREFIX;
+            default:
+                return "";
         }
-        StringBuilder uniqueStringBuilder = new StringBuilder(rendererPrefix);
-        uniqueStringBuilder.append(rendererIndex);
-        uniqueStringBuilder.append(",");
-        uniqueStringBuilder.append(groupIndex);
-        uniqueStringBuilder.append(",");
-        if (trackIndex == TRACK_ADAPTIVE) {
-            uniqueStringBuilder.append(ADAPTIVE);
-        } else if (trackIndex == TRACK_DISABLED) {
-            uniqueStringBuilder.append(NONE);
-        } else {
-            uniqueStringBuilder.append(trackIndex);
+    }
+
+    private String getUniqueIdPostfix(int rendererIndex, int trackIndex) {
+        switch (rendererIndex) {
+            case TRACK_ADAPTIVE:
+                return ADAPTIVE;
+            case TRACK_DISABLED:
+                return NONE;
+            default:
+                return String.valueOf(trackIndex);
         }
-        return uniqueStringBuilder.toString();
     }
 
     /**
@@ -374,21 +390,15 @@ class TrackSelectionHelper {
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
         requestedChangeTrackIds[rendererIndex] = uniqueId;
-        if (shouldDisableTextTrack(uniqueTrackId)) {
-            //disable text track
-            selector.setRendererDisabled(TRACK_TYPE_TEXT, true);
-            return;
-        } else if (rendererIndex == TRACK_TYPE_TEXT) {
-            selector.setRendererDisabled(TRACK_TYPE_TEXT, false);
+
+        DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
+        if (rendererIndex == TRACK_TYPE_TEXT) {
+            //Disable text track renderer if needed.
+            parametersBuilder.setRendererDisabled(TRACK_TYPE_TEXT, uniqueTrackId[TRACK_INDEX] == TRACK_DISABLED);
         }
 
         SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
-        overrideTrack(rendererIndex, override);
-
-    }
-
-    private boolean shouldDisableTextTrack(int[] uniqueId) {
-        return uniqueId[TRACK_INDEX] == TRACK_DISABLED;
+        overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
     /**
@@ -418,7 +428,7 @@ class TrackSelectionHelper {
 
     /**
      * Build the the {@link SelectionOverride} object, based on the uniqueId. This {@link SelectionOverride}
-     * will be feeded later to the Exoplayer in order to switch to the new track.
+     * will fed later to the Exoplayer in order to switch to the new track.
      * This method decide if it should create adaptive override or fixed.
      *
      * @param uniqueId - the unique id of the track that will override the existing one.
@@ -477,9 +487,9 @@ class TrackSelectionHelper {
             }
 
             adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-            override = new SelectionOverride(adaptiveTrackSelectionFactory, groupIndex, adaptiveTrackIndexes);
+            override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
         } else {
-            override = new SelectionOverride(FIXED_FACTORY, groupIndex, trackIndex);
+            override = new SelectionOverride(groupIndex, trackIndex);
         }
 
         return override;
@@ -491,18 +501,16 @@ class TrackSelectionHelper {
      * @param rendererIndex - renderer index on which we want to apply the change.
      * @param override      - the new selection with which we want to override the currently active track.
      */
-    private void overrideTrack(int rendererIndex, SelectionOverride override) {
-        //if renderer is disabled we will hide it.
-        boolean isRendererDisabled = selector.getRendererDisabled(rendererIndex);
-        selector.setRendererDisabled(rendererIndex, isRendererDisabled);
+    private void overrideTrack(int rendererIndex, SelectionOverride override, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
         if (override != null) {
             //actually change track.
             TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(rendererIndex);
-            selector.setSelectionOverride(rendererIndex, trackGroups, override);
+            parametersBuilder.setSelectionOverride(rendererIndex, trackGroups, override);
         } else {
             //clear all the selections if the override is null.
-            selector.clearSelectionOverrides(rendererIndex);
+            parametersBuilder.clearSelectionOverrides(rendererIndex);
         }
+        selector.setParameters(parametersBuilder);
     }
 
     /**
@@ -561,20 +569,20 @@ class TrackSelectionHelper {
     }
 
     private boolean isFormatSupported(int rendererCount, int groupIndex, int trackIndex) {
-        return mappedTrackInfo.getTrackFormatSupport(rendererCount, groupIndex, trackIndex)
+        return mappedTrackInfo.getTrackSupport(rendererCount, groupIndex, trackIndex)
                 == RendererCapabilities.FORMAT_HANDLED;
     }
 
     private boolean isAdaptive(int rendererIndex, int groupIndex) {
         TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
-        return adaptiveTrackSelectionFactory != null
-                && mappedTrackInfo.getAdaptiveSupport(rendererIndex, groupIndex, false)
+        return mappedTrackInfo.getAdaptiveSupport(rendererIndex, groupIndex, false)
                 != RendererCapabilities.ADAPTIVE_NOT_SUPPORTED
                 && trackGroupArray.get(groupIndex).length > 1;
     }
 
     /**
      * Validate and return parsed uniqueId.
+     *
      * @param uniqueId - uniqueId to validate
      * @return - parsed uniqueId in case of success.
      * @throws IllegalArgumentException when uniqueId is illegal.
@@ -615,12 +623,8 @@ class TrackSelectionHelper {
         int trackIndex = parsedUniqueId[TRACK_INDEX];
 
         if (rendererIndex == TRACK_TYPE_TEXT) {
-            if (trackIndex == TRACK_ADAPTIVE
-                    || trackIndex < TRACK_DISABLED) {
-                return false;
-            }
-
-            return trackIndex >= TRACK_DISABLED
+            return trackIndex != TRACK_ADAPTIVE
+                    && trackIndex >= TRACK_DISABLED
                     && trackIndex < mappedTrackInfo.getTrackGroups(rendererIndex).get(groupIndex).length;
         }
 
@@ -641,11 +645,11 @@ class TrackSelectionHelper {
      * Notify to log, that video/audio renderer has only unsupported tracks.
      */
     private void warnAboutUnsupportedRenderTypes() {
-        if (mappedTrackInfo.getTrackTypeRendererSupport(TRACK_TYPE_VIDEO)
+        if (mappedTrackInfo.getTypeSupport(TRACK_TYPE_VIDEO)
                 == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
             log.w("Warning! All the video tracks are unsupported by this device.");
         }
-        if (mappedTrackInfo.getTrackTypeRendererSupport(TRACK_TYPE_AUDIO)
+        if (mappedTrackInfo.getTypeSupport(TRACK_TYPE_AUDIO)
                 == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
             log.w("Warning! All the audio tracks are unsupported by this device.");
         }
@@ -767,8 +771,111 @@ class TrackSelectionHelper {
         return null;
     }
 
-    void setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
-        this.cea608CaptionsEnabled = cea608CaptionsEnabled;
+    // clean previous selection
+    void stop() {
+        lastSelectedTrackIds = new String[]{NONE, NONE, NONE};
+        requestedChangeTrackIds = new String[]{NONE, NONE, NONE};
+    }
+
+    /**
+     * Helper method which return the uniqueId of the preferred audio/text track. Base on user selection and/or
+     * predefined requirements.
+     *
+     * @param trackType - the type of the track we are looking for (audio/text).
+     * @return - uniqueId of the preferred track.
+     * If no preferred AudioTrack exist or user defined to use OFF mode, will return null.
+     * In case of TextTrack if no preferred track exist will return null.
+     * Otherwise will return uniqueId that is corresponded to the selected {@link PKTrackConfig.Mode}.
+     */
+    String getPreferredTrackId(int trackType) {
+
+        switch (trackType) {
+            case TRACK_TYPE_AUDIO:
+                if (!isValidPreferredAudioConfig()) {
+                    return null;
+                }
+
+                String preferredAudioISO3Lang = preferredAudioLanguageConfig.getTrackLanguage();
+                for (AudioTrack track : audioTracks) {
+                    String trackLang = track.getLanguage();
+                    if (trackLang == null) {
+                        continue;
+                    }
+                    Locale streamLang = new Locale(trackLang);
+                    try {
+                        if (streamLang.getISO3Language().equals(preferredAudioISO3Lang)) {
+                            log.d("changing track type " + trackType + " to " + preferredAudioLanguageConfig.getTrackLanguage());
+                            return track.getUniqueId();
+                        }
+                    } catch (MissingResourceException ex) {
+                        log.e(ex.getMessage());
+                    }
+                }
+                break;
+            case TRACK_TYPE_TEXT:
+                if (!isValidPreferredTextConfig()) {
+                    return null;
+                }
+
+                String preferredTextISO3Lang = preferredTextLanguageConfig.getTrackLanguage();
+                if (preferredTextISO3Lang != null) {
+                    for (TextTrack track : textTracks) {
+                        String trackLang = track.getLanguage();
+                        if (trackLang == null) {
+                            continue;
+                        }
+
+                        if (NONE.equals(preferredTextLanguageConfig.getTrackLanguage()) && NONE.equals(trackLang)) {
+                            return track.getUniqueId();
+                        } else if (NONE.equals(trackLang)) {
+                            continue;
+                        }
+
+                        Locale streamLang = new Locale(trackLang);
+                        try {
+
+                            if (streamLang.getISO3Language().equals(preferredTextISO3Lang)) {
+                                log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
+                                return track.getUniqueId();
+                            }
+                        } catch (MissingResourceException ex) {
+                            log.e(ex.getMessage());
+                        }
+                    }
+                    //if user set mode to AUTO and the locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
+                    if (preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null && textTracks.size() > 1) {
+                        for (TextTrack track : textTracks) {
+                            if (track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
+                                return track.getUniqueId();
+                            }
+                        }
+                        return textTracks.get(1).getUniqueId();
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+        return null;
+    }
+
+    private boolean isValidPreferredAudioConfig() {
+        return !(preferredAudioLanguageConfig == null ||
+                preferredAudioLanguageConfig.getPreferredMode() == null ||
+                preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.OFF ||
+                (preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredAudioLanguageConfig.getTrackLanguage() == null));
+    }
+
+    private boolean isValidPreferredTextConfig() {
+        return !(preferredTextLanguageConfig == null ||
+                preferredTextLanguageConfig.getPreferredMode() == null ||
+                (preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredTextLanguageConfig.getTrackLanguage() == null));
+    }
+
+    void applyPlayerSettings(PlayerSettings settings) {
+        this.cea608CaptionsEnabled = settings.cea608CaptionsEnabled();
+        this.preferredAudioLanguageConfig = settings.getPreferredAudioTrackConfig();
+        this.preferredTextLanguageConfig = settings.getPreferredTextTrackConfig();
     }
 }
 

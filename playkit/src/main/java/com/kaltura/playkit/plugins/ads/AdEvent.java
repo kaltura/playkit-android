@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -12,8 +12,8 @@
 
 package com.kaltura.playkit.plugins.ads;
 
-import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKError;
+import com.kaltura.playkit.PKEvent;
 
 /**
  * Created by gilad.nadav on 22/11/2016.
@@ -107,6 +107,26 @@ public class AdEvent implements PKEvent {
         }
     }
 
+    public static class AdBufferStart extends AdEvent {
+
+        public final long adPosition;
+
+        public AdBufferStart(long adPosition) {
+            super(Type.AD_BUFFER_START);
+            this.adPosition = adPosition;
+        }
+    }
+
+    public static class AdBufferEnd extends AdEvent {
+
+        public final long adPosition;
+
+        public AdBufferEnd(long adPosition) {
+            super(Type.AD_BUFFER_END);
+            this.adPosition = adPosition;
+        }
+    }
+
     public static class Error extends AdEvent {
 
         public final PKError error;
@@ -119,6 +139,7 @@ public class AdEvent implements PKEvent {
 
     public enum Type {
         AD_REQUESTED,
+        AD_FIRST_PLAY,
         STARTED,
         AD_DISPLAYED_AFTER_CONTENT_PAUSE,
         PAUSED,
@@ -143,6 +164,8 @@ public class AdEvent implements PKEvent {
         CONTENT_RESUME_REQUESTED,
         ALL_ADS_COMPLETED,
         AD_LOAD_TIMEOUT_TIMER_STARTED,
+        AD_BUFFER_START,
+        AD_BUFFER_END,
         ERROR
     }
 

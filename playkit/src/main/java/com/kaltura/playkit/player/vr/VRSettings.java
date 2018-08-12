@@ -6,7 +6,7 @@ package com.kaltura.playkit.player.vr;
 
 public class VRSettings {
 
-    private VRInteractionMode interactionMode = VRInteractionMode.MotionWithTouch;
+    private VRInteractionMode interactionMode = VRInteractionMode.Touch;
     private boolean vrModeEnabled; //false by default
     private boolean zoomWithPinchEnabled = true; // true by default.
     private boolean flingEnabled; //false by default.
@@ -28,6 +28,7 @@ public class VRSettings {
      * Configure user interaction with surface on which content is rendered.
      * Default is VRInteractionMode.Motion_with_touch which means that surface will react
      * both on device movement and user touch input.
+     *
      * @param mode - desired mode.
      * @return - {@link VRSettings}
      */
@@ -39,6 +40,7 @@ public class VRSettings {
     /**
      * Allows to enable/disable zoom in/out with pinch.
      * Default is - true.
+     *
      * @param shouldEnable - should enable zoom in with pinch.
      * @return - {@link VRSettings}
      */
@@ -51,6 +53,7 @@ public class VRSettings {
      * Allows to enable/disable fling gesture on surface. When set to true
      * surface will continue display motion animation depending on acceleration power of fling gesture.
      * Default is - false.
+     *
      * @param shouldEnable - should enable fling.
      * @return - {@link VRSettings}
      */

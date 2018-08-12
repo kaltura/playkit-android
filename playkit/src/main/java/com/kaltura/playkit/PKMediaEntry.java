@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -21,15 +21,16 @@ import java.util.List;
 import java.util.Map;
 
 public class PKMediaEntry implements Parcelable {
-    
+
     private String id;
     private String name;
     private List<PKMediaSource> sources;
     private long duration; //in milliseconds
     private MediaEntryType mediaType;
-    private Map<String,String> metadata;
+    private Map<String, String> metadata;
 
-    public PKMediaEntry(){}
+    public PKMediaEntry() {
+    }
 
 
     public PKMediaEntry setId(String id) {
@@ -42,10 +43,11 @@ public class PKMediaEntry implements Parcelable {
         return this;
     }
 
-    public PKMediaEntry setMetadata(Map<String,String> metadata){
+    public PKMediaEntry setMetadata(Map<String, String> metadata) {
         this.metadata = metadata;
         return this;
     }
+
     public String getId() {
         return id;
     }
@@ -63,7 +65,7 @@ public class PKMediaEntry implements Parcelable {
         return sources;
     }
 
-    public boolean hasSources(){
+    public boolean hasSources() {
         return sources != null && sources.size() > 0;
     }
 
@@ -83,6 +85,10 @@ public class PKMediaEntry implements Parcelable {
 
     public MediaEntryType getMediaType() {
         return mediaType;
+    }
+
+    public Map<String, String> getMetadata() {
+        return metadata;
     }
 
     public enum MediaEntryType {
@@ -118,7 +124,7 @@ public class PKMediaEntry implements Parcelable {
         }
 
     }
-    
+
     protected PKMediaEntry(Parcel in) {
         this.id = in.readString();
         this.name = in.readString();

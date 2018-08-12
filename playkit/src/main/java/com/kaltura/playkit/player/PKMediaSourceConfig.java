@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -21,6 +21,9 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.player.vr.VRSettings;
 
+/**
+ * Created by Noam Tamim @ Kaltura on 29/03/2017.
+ */
 public class PKMediaSourceConfig {
 
     PKMediaSource mediaSource;
@@ -56,8 +59,10 @@ public class PKMediaSourceConfig {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         PKMediaSourceConfig that = (PKMediaSourceConfig) o;
 
