@@ -29,11 +29,11 @@ import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.analytics.AnalyticsListener;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.MediaSourceEventListener;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
@@ -166,8 +166,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private void initializePlayer() {
         DefaultTrackSelector trackSelector = initializeTrackSelector();
-        // drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildLicenseRequestHttpDataSourceFactory(), drmSessionListener);
-        // CustomRendererFactory rendererFactory = new CustomRendererFactory(context,
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildDrmHttpDataSourceFactory(), drmSessionListener);
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context,
                 drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
@@ -184,12 +182,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player.addListener(this);
             player.addMetadataOutput(this);
 
-
             Profiler profiler = profiler();
             if (profiler.active) {
-                ExoPlayerProfilingListener exoPlayerListener = profiler.getExoPlayerListener(this);
-                player.addVideoDebugListener(exoPlayerListener);
-                player.addListener(exoPlayerListener);
+                player.addAnalyticsListener(profiler.getExoPlayerListener(this));
             }
         }
     }
@@ -221,7 +216,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player.seekToDefaultPosition();
         }
 
-        MediaSource mediaSource = buildExoMediaSource(sourceConfig, profiler().getExoPlayerListener(this));
+        MediaSource mediaSource = buildExoMediaSource(sourceConfig);
         profiler().onPrepareStarted(this, sourceConfig);
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
@@ -230,7 +225,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         changeState(PlayerState.LOADING);
     }
 
-    private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig, MediaSourceEventListener listener) {
+    private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig) {
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
         if (format == null) {
             // TODO: error?
@@ -239,29 +234,19 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         Uri uri = sourceConfig.getUrl();
 
-        MediaSource mediaSource = null;
-         DataSource.Factory mediaDataSourceFactory = buildDataSourceFactory(true);
-         switch (format) {
-             // mp4 and mp3 both use ExtractorMediaSource
-             case mp4:
-             case mp3:
-                 mediaSource = new ExtractorMediaSource.Factory(mediaDataSourceFactory).createMediaSource(uri);
-                 break;
+        switch (format) {
+            // mp4 and mp3 both use ExtractorMediaSource
+            case mp4:
+            case mp3:
+                return new ExtractorMediaSource.Factory(mediaDataSourceFactory).createMediaSource(uri);
 
-             case dash:
-                 mediaSource = new DashMediaSource.Factory(new DefaultDashChunkSource.Factory(mediaDataSourceFactory), dashManifestDataSourceFactory).createMediaSource(uri);
-                 break;
+            case dash:
+                return new DashMediaSource.Factory(new DefaultDashChunkSource.Factory(mediaDataSourceFactory), dashManifestDataSourceFactory).createMediaSource(uri);
 
-             case hls:
-                 mediaSource = new HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(uri);
-                 break;
-         }
-
-        if (mediaSource != null) {
-            mediaSource.addEventListener(mainHandler, listener);
+            case hls:
+                return new HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(uri);
         }
-
-        return mediaSource;
+        return null;
     }
 
     /**

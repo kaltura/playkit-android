@@ -8,6 +8,7 @@ import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
+import com.google.android.exoplayer2.analytics.AnalyticsListener;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKDrmParams;
@@ -45,7 +46,6 @@ public class Profiler {
     final boolean active;
 
     private ExoPlayerProfilingListener playerEngineListener;
-    Long lastBandwidthSample;
 
     public static boolean isStarted() {
         return started;
@@ -69,7 +69,7 @@ public class Profiler {
         started = true;
     }
 
-    Profiler(final String sessionId) {
+    private Profiler(final String sessionId) {
 
         logQueue = new ConcurrentLinkedQueue<>();
 
@@ -131,7 +131,7 @@ public class Profiler {
         });
     }
 
-    ExoPlayerProfilingListener getExoPlayerListener(PlayerEngine playerEngine) {
+    AnalyticsListener getExoPlayerListener(PlayerEngine playerEngine) {
         return new ExoPlayerProfilingListener(this, playerEngine);
     }
 
@@ -283,7 +283,6 @@ public class Profiler {
 
     public void onBandwidthSample(PlayerEngine playerEngine, long bitrate) {
         log("BandwidthSample", "bandwidth=" + bitrate);
-        this.lastBandwidthSample = bitrate;
     }
 
     private static Profiler nullProfiler() {
