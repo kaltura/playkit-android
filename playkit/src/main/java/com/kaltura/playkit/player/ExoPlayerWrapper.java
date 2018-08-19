@@ -696,6 +696,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void stop() {
         log.d("stop");
+        shouldResetPlayerPosition = true;
         preferredLanguageWasSelected = false;
         lastKnownVolume = Consts.DEFAULT_VOLUME;
         lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
@@ -704,7 +705,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             trackSelectionHelper.stop();
         }
         if (player != null) {
-            player.stop();
+            player.stop(true);
             sendDistinctEvent(PlayerEvent.Type.STOPPED);
         }
     }
