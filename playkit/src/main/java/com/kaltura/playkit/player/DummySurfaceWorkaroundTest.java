@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.android.exoplayer2.DefaultRenderersFactory;
@@ -52,7 +53,7 @@ public class DummySurfaceWorkaroundTest {
         }
 
         @Override
-        public byte[] executeKeyRequest(UUID uuid, ExoMediaDrm.KeyRequest request) throws Exception {
+        public byte[] executeKeyRequest(UUID uuid, ExoMediaDrm.KeyRequest request, @Nullable String mediaProvidedLicenseServerUrl) throws Exception {
             Thread.sleep(10000);
             return null;
         }
