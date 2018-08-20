@@ -111,7 +111,8 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         log(event, "time=" + (elapsedRealtimeMs - profiler.startTime), "uri=" + dataSpec.uri.getLastPathSegment(), "dataType=" + dataTypeString, "trackType=" + trackTypeString,
                 trackFormatString(trackFormat), "reason=" + trackSelectionReasonString(trackSelectionReason),
                 "rangeStart=" + mediaStartTimeMs, "rangeEnd=" + mediaEndTimeMs, //"bandwidth=" + profiler.lastBandwidthSample,
-                opt("loadTime", loadDurationMs), opt("bytes", bytesLoaded), opt("error", error), opt("cancelled", wasCanceled));
+                opt("loadTime", loadDurationMs), opt("bytes", bytesLoaded),
+                opt("error", error != null ? "{" + error.getMessage() + "}" : null), opt("cancelled", wasCanceled));
     }
 
     @Override
@@ -227,7 +228,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
                 break;
         }
 
-        log("PlayerError", "type=" + type, "cause=" + error.getCause());
+        log("PlayerError", "type=" + type, "cause={" + error.getCause() + "}");
     }
 
     @Override

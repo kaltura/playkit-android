@@ -88,7 +88,6 @@ public class Profiler {
             @Override
             public void run() {
 
-                Log.d(TAG, "run: size=" + logQueue.size());
                 BufferedOutputStream outputStream = null;
                 try {
                     outputStream = new BufferedOutputStream(new FileOutputStream(logFile, true));
@@ -191,7 +190,6 @@ public class Profiler {
             @Override
             public void run() {
                 logQueue.add(sb.toString());
-                Log.d(TAG, "endLog: size=" + logQueue.size());
             }
         });
 
