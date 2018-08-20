@@ -23,7 +23,6 @@ import android.media.MediaDrmException;
 import android.media.NotProvisionedException;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.util.Pair;
 
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.google.android.exoplayer2.drm.ExoMediaDrm;
@@ -111,7 +110,7 @@ class WidevineModularAdapter extends DrmAdapter {
             // Send request to server
             byte[] keyResponse;
             try {
-                keyResponse = executeKeyRequest(licenseUri, keyRequest, null);
+                keyResponse = executeKeyRequest(licenseUri, keyRequest);
                 log.d("registerAsset: response data (b64): " + toBase64(keyResponse));
             } catch (Exception e) {
                 throw new RegisterException("Can't send key request for registration", e);
@@ -316,9 +315,9 @@ class WidevineModularAdapter extends DrmAdapter {
         return session;
     }
 
-    private byte[] executeKeyRequest(String licenseUrl, ExoMediaDrm.KeyRequest keyRequest, String licenseServerUrl) throws Exception {
+    private byte[] executeKeyRequest(String licenseUrl, ExoMediaDrm.KeyRequest keyRequest) throws Exception {
         HttpMediaDrmCallback httpMediaDrmCallback = new HttpMediaDrmCallback(licenseUrl, buildDataSourceFactory());
-        return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest, licenseServerUrl);
+        return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest, null);
     }
 
     private HttpDataSource.Factory buildDataSourceFactory() {
