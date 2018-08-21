@@ -64,7 +64,8 @@ public class AdDAIEnabledPlayerController extends AdEnabledPlayerController {
     @Override
     public long getDuration() {
         if (adsProvider.isAdDisplayed()) {
-            return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
+            long adDuration =  (adsProvider.getDuration() >= 0) ? adsProvider.getDuration() : 0;
+            return Consts.MILLISECONDS_MULTIPLIER * adDuration;
         }
         return adsProvider.getDuration();
     }
