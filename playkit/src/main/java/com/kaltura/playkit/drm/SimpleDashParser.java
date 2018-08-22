@@ -110,7 +110,7 @@ class SimpleDashParser {
             log.e("Interrupted! " + e.getMessage());
         }
 
-        if (extractorWrapper.getSampleFormats().length >= 1) {
+        if (extractorWrapper.getSampleFormats() != null && extractorWrapper.getSampleFormats().length >= 1) {
             drmInitData = extractorWrapper.getSampleFormats()[0].drmInitData;
         }
 
