@@ -64,8 +64,9 @@ public class AdDAIEnabledPlayerController extends AdEnabledPlayerController {
     @Override
     public long getDuration() {
         if (adsProvider.isAdDisplayed()) {
-            long adDuration =  (adsProvider.getDuration() >= 0) ? adsProvider.getDuration() : 0;
-            return Consts.MILLISECONDS_MULTIPLIER * adDuration;
+            long adsProviderDuration = adsProvider.getDuration();
+            adsProviderDuration = (adsProviderDuration >= 0) ? adsProviderDuration : 0;
+            return Consts.MILLISECONDS_MULTIPLIER * adsProviderDuration;
         }
         return adsProvider.getDuration();
     }
@@ -73,7 +74,9 @@ public class AdDAIEnabledPlayerController extends AdEnabledPlayerController {
     @Override
     public long getCurrentPosition() {
         if (adsProvider.isAdDisplayed()) {
-            return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
+            long adsProviderPosition = adsProvider.getCurrentPosition();
+            adsProviderPosition = (adsProviderPosition >= 0) ? adsProviderPosition : 0;
+            return Consts.MILLISECONDS_MULTIPLIER * adsProviderPosition;
         }
         return adsProvider.getCurrentPosition();
     }
