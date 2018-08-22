@@ -77,10 +77,17 @@ class SimpleDashParser {
         if (representations == null || representations.isEmpty()) {
             throw new IOException("At least one video representation is required");
         }
+
         Representation representation = representations.get(0);
 
-        format = representation.format;
-        drmInitData = format.drmInitData;
+        if (representation != null) {
+            format = representation.format;
+        }
+
+        if (format != null) {
+            drmInitData = format.drmInitData;
+        }
+
         if (drmInitData == null) {
             throw new IOException("drmInitData is not initialized");
         }
@@ -112,12 +119,11 @@ class SimpleDashParser {
 
         if (extractorWrapper.getSampleFormats() != null && extractorWrapper.getSampleFormats().length >= 1) {
             drmInitData = extractorWrapper.getSampleFormats()[0].drmInitData;
-        }
-
-        if (drmInitData != null) {
-            DrmInitData.SchemeData schemeInitData = getWidevineInitData(drmInitData);
-            if (schemeInitData != null) {
-                widevineInitData = schemeInitData.data;
+            if (drmInitData != null) {
+                DrmInitData.SchemeData schemeInitData = getWidevineInitData(drmInitData);
+                if (schemeInitData != null) {
+                    widevineInitData = schemeInitData.data;
+                }
             }
         }
     }
