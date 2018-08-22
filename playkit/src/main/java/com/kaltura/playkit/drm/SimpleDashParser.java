@@ -82,14 +82,12 @@ class SimpleDashParser {
 
         if (representation != null) {
             format = representation.format;
-        }
-
-        if (format != null) {
-            drmInitData = format.drmInitData;
-        }
-
-        if (drmInitData == null) {
-            throw new IOException("drmInitData is not initialized");
+            if (format != null) {
+                drmInitData = format.drmInitData;
+            }
+            if (drmInitData == null) {
+                throw new IOException("drmInitData is not initialized");
+            }
         }
 
         hasContentProtection = drmInitData.schemeDataCount > 0;
