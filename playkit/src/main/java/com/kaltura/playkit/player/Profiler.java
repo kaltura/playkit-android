@@ -1,6 +1,7 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
@@ -82,7 +83,10 @@ public class Profiler {
 
         final File logFile = new File(logDir, sessionId.replace(':','_') + ".txt");
 
-        log("StartSession", "time=" + System.currentTimeMillis(), "screenSize=" + metrics.widthPixels + "x" + metrics.heightPixels, "screenDpi=" + metrics.xdpi + "x" + metrics.ydpi);
+        log("StartSession", "sessionId=" + sessionId, "time=" + System.currentTimeMillis(),
+                "screenSize=" + metrics.widthPixels + "x" + metrics.heightPixels,
+                "screenDpi=" + metrics.xdpi + "x" + metrics.ydpi,
+                "android:apiLevel=" + Build.VERSION.SDK_INT);
 
         flushHandler.post(new Runnable() {
             @Override
