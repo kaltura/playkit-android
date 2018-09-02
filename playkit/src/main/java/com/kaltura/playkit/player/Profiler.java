@@ -134,9 +134,11 @@ public class Profiler {
         });
     }
 
-    AnalyticsListener getExoPlayerListener(PlayerEngine playerEngine) {
+    AnalyticsListener getAnalyticsListener(PlayerEngine playerEngine) {
         return new ExoPlayerProfilingListener(this, playerEngine);
     }
+
+
 
     static Profiler get(String sessionId) {
 

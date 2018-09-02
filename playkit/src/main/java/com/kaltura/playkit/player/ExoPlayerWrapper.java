@@ -29,7 +29,6 @@ import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.analytics.AnalyticsListener;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
@@ -184,7 +183,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
             Profiler profiler = profiler();
             if (profiler.active) {
-                player.addAnalyticsListener(profiler.getExoPlayerListener(this));
+                player.addAnalyticsListener(profiler.getAnalyticsListener(this));
             }
         }
     }
