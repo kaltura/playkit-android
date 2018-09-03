@@ -182,7 +182,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player.addMetadataOutput(this);
 
             Profiler profiler = profiler();
-            if (profiler.active) {
+            if (profiler.isActive()) {
                 player.addAnalyticsListener(profiler.getAnalyticsListener(this));
             }
         }
@@ -635,6 +635,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         player = null;
         exoPlayerView = null;
         playerPosition = Consts.TIME_UNSET;
+        profiler().finish();
     }
 
     @Override

@@ -7,52 +7,84 @@ import android.os.HandlerThread;
 import android.os.Process;
 import android.os.SystemClock;
 import android.util.DisplayMetrics;
-import android.util.Log;
 
 import com.google.android.exoplayer2.analytics.AnalyticsListener;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.kaltura.playkit.PKDrmParams;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PlayKitManager;
+import com.kaltura.playkit.Utils;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+class ConfigFile {
+    String putLogURL;
+    float sendPercentage;
+}
+
 public class Profiler {
 
-    private static final String TAG = "Profiler";
+    private static PKLog pkLog = PKLog.get("Profiler");
+
+    private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler-pre/config/config.json";
+    private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/putLog?mode=addChunk";
+    private static final float DEFAULT_SEND_PERCENTAGE = 100; // FIXME: 03/09/2018
+
     static final String SEPARATOR = "\t";
-    private static final int FLUSH_INTERVAL_SEC = 5;
-    private static final int NO_ACTIVITY_LIMIT = 5*60/FLUSH_INTERVAL_SEC;   // 5 minutes
+    private static final int FLUSH_INTERVAL_SEC = 120;
+    private static final int NO_ACTIVITY_LIMIT = noActivityLimit(6);    // 6 minutes
     private static final HashMap<String, Profiler> profilers = new HashMap<>();
 
-    private static File logDir;
     private static boolean started;
-    private static Handler flushHandler;
-    private static String currentExperimentId;
+    private static Handler ioHandler;
+    private static String currentExperiment;
     private static DisplayMetrics metrics;
+    private static boolean configLoaded;
 
-    private final ConcurrentLinkedQueue<String> logQueue;
-
+    private Boolean active;
+    final long startTime = SystemClock.elapsedRealtime();
+    private final ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
     private int noActivityCounter;
-    long startTime = SystemClock.elapsedRealtime();
-    final boolean active;
+    private final String sessionId;
+    private int sequence = 0;
 
-    private ExoPlayerProfilingListener playerEngineListener;
+    // Config
+    private static String postURL;
+    private static float sendPercentage;
 
-    public static boolean isStarted() {
-        return started;
+    public boolean isActive() {
+        return active != null && active;
     }
 
-    public synchronized static void start(Context context) {
+    @SuppressWarnings("SameParameterValue")
+    private static int noActivityLimit(int minutes) {
+        return minutes * 60 / FLUSH_INTERVAL_SEC;
+    }
+
+    private static void loadConfigFile() {
+        try {
+            final byte[] bytes = Utils.executeGet(CONFIG_URL, null);
+            final ConfigFile configFile = new Gson().fromJson(new String(bytes), ConfigFile.class);
+            postURL = configFile.putLogURL;
+            sendPercentage = configFile.sendPercentage;
+            configLoaded = true;
+        } catch (JsonParseException e) {
+            pkLog.e("Failed to parse config file", e);
+        } catch (IOException e) {
+            pkLog.e("Failed to download config file", e);
+        }
+    }
+
+    public synchronized static void init(Context context) {
 
         if (started) {
             return;
@@ -60,90 +92,103 @@ public class Profiler {
 
         metrics = context.getResources().getDisplayMetrics();
 
-        logDir = new File(context.getExternalFilesDir(""), "ProfilerLogs");
-        logDir.mkdir();
-
-        HandlerThread handlerThread = new HandlerThread("ProfilerFlush", Process.THREAD_PRIORITY_BACKGROUND);
+        HandlerThread handlerThread = new HandlerThread("ProfilerIO", Process.THREAD_PRIORITY_BACKGROUND);
         handlerThread.start();
-        flushHandler = new Handler(handlerThread.getLooper());
+        ioHandler = new Handler(handlerThread.getLooper());
+
+        ioHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                loadConfigFile();
+            }
+        });
 
         started = true;
     }
 
     private Profiler(final String sessionId) {
 
-        logQueue = new ConcurrentLinkedQueue<>();
+        if (!configLoaded) {
+            pkLog.w("Config not yet ready, using defaults");
+            postURL = DEFAULT_POST_URL;
+            sendPercentage = DEFAULT_SEND_PERCENTAGE;
+        }
 
-        if (sessionId == null) {
+        this.sessionId = sessionId;
+
+        if (sendPercentage == 0 || sessionId == null || Math.random() > (sendPercentage / 100)) {
+            // initialize final fields and exit.
             active = false;
             return;
         }
 
         active = true;
 
-        final File logFile = new File(logDir, sessionId.replace(':','_') + ".txt");
-
         log("StartSession", "sessionId=" + sessionId, "time=" + System.currentTimeMillis(),
                 "screenSize=" + metrics.widthPixels + "x" + metrics.heightPixels,
                 "screenDpi=" + metrics.xdpi + "x" + metrics.ydpi,
+                "playkitVersion=" + PlayKitManager.VERSION_STRING,
+                "playkitClientTag=" + PlayKitManager.CLIENT_TAG,
                 "android:apiLevel=" + Build.VERSION.SDK_INT);
 
-        flushHandler.post(new Runnable() {
+        if (currentExperiment != null) {
+            log("Experiment", "info=" + currentExperiment);
+        }
+
+        ioHandler.post(new Runnable() {
             @Override
             public void run() {
 
-                BufferedOutputStream outputStream = null;
-                try {
-                    outputStream = new BufferedOutputStream(new FileOutputStream(logFile, true));
-                    Iterator<String> iterator = logQueue.iterator();
-                    boolean hasNewData = false;
-                    while (iterator.hasNext()) {
-                        hasNewData = true;
-                        String entry = iterator.next();
-                        outputStream.write(entry.getBytes());
-                        outputStream.write('\n');
+                // Send queue content to the server
 
-                        iterator.remove();
-                    }
-                    if (!hasNewData) {
-                        noActivityCounter++;
-                    } else {
-                        noActivityCounter = 0;
-                    }
-                } catch (FileNotFoundException e) {
-                    // Unlikely
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        if (outputStream != null) {
-                            outputStream.close();
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
+                sendLogChunk();
 
                 if (noActivityCounter > NO_ACTIVITY_LIMIT) {
                     log("ProfilerSessionReleased");
                     profilers.remove(sessionId);
                 } else {
-                    flushHandler.postDelayed(this, FLUSH_INTERVAL_SEC * 1000);
+                    ioHandler.postDelayed(this, FLUSH_INTERVAL_SEC * 1000);
                 }
             }
         });
+    }
+
+    private void sendLogChunk() {
+        StringBuilder sb = new StringBuilder();
+        Iterator<String> iterator = logQueue.iterator();
+        while (iterator.hasNext()) {
+            String entry = iterator.next();
+            sb.append(entry).append('\n');
+            iterator.remove();
+        }
+
+        if (sb.length() == 0) {
+            noActivityCounter++;
+            return;
+        }
+
+        noActivityCounter = 0;
+
+        final String string = sb.toString();
+
+        try {
+            Utils.executePost(postURL + "&sessionId=" + sessionId + "&seq=" + sequence, string.getBytes(), null);
+            sequence++;
+        } catch (IOException e) {
+            // FIXME: 03/09/2018 Is it bad that we lost this log chunk?
+            pkLog.e("Failed sending log", e);
+            pkLog.e(string);
+        }
     }
 
     AnalyticsListener getAnalyticsListener(PlayerEngine playerEngine) {
         return new ExoPlayerProfilingListener(this, playerEngine);
     }
 
-
-
     static Profiler get(String sessionId) {
 
         if (!started || sessionId == null) {
-            return null;//nullProfiler();
+            return nullProfiler();
         }
 
         Profiler profiler = profilers.get(sessionId);
@@ -160,8 +205,8 @@ public class Profiler {
         return profiler;
     }
 
-    public static void setCurrentExperimentId(String currentExperimentId) {
-        Profiler.currentExperimentId = currentExperimentId;
+    public static void setCurrentExperiment(String currentExperiment) {
+        Profiler.currentExperiment = currentExperiment;
     }
 
     void log(String event, Object... strings) {
@@ -192,13 +237,12 @@ public class Profiler {
     }
 
     private void endLog(final StringBuilder sb) {
-        flushHandler.post(new Runnable() {
+        ioHandler.post(new Runnable() {
             @Override
             public void run() {
                 logQueue.add(sb.toString());
             }
         });
-
     }
 
     void logWithPlaybackInfo(String event, PlayerEngine playerEngine, Object... strings) {
@@ -318,6 +362,19 @@ public class Profiler {
             @Override
             public void onBandwidthSample(PlayerEngine playerEngine, long bitrate) {}
         };
+    }
+
+    public void finish() {
+        log("ProfilerSessionReleased");
+        profilers.remove(sessionId);
+        if (Math.random() < (sendPercentage / 100)) {
+            ioHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    sendLogChunk();
+                }
+            });
+        }
     }
 
     static class Opt {
