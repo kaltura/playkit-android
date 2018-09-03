@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.util.DisplayMetrics;
 
 import com.google.android.exoplayer2.analytics.AnalyticsListener;
@@ -21,6 +22,9 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Utils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,12 +39,14 @@ public class Profiler {
 
     private static PKLog pkLog = PKLog.get("Profiler");
 
+    private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
     private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler-pre/config/config.json";
     private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/putLog?mode=addChunk";
     private static final float DEFAULT_SEND_PERCENTAGE = 100; // FIXME: 03/09/2018
+    private static final int MAX_CONFIG_SIZE = 10240;
 
     static final String SEPARATOR = "\t";
-    private static final int FLUSH_INTERVAL_SEC = 120;
+    private static final int FLUSH_INTERVAL_SEC = 60;
     private static final int NO_ACTIVITY_LIMIT = noActivityLimit(6);    // 6 minutes
     private static final HashMap<String, Profiler> profilers = new HashMap<>();
 
@@ -48,7 +54,6 @@ public class Profiler {
     private static Handler ioHandler;
     private static String currentExperiment;
     private static DisplayMetrics metrics;
-    private static boolean configLoaded;
 
     private Boolean active;
     final long startTime = SystemClock.elapsedRealtime();
@@ -58,8 +63,8 @@ public class Profiler {
     private int sequence = 0;
 
     // Config
-    private static String postURL;
-    private static float sendPercentage;
+    private static String postURL = DEFAULT_POST_URL;
+    private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
 
     public boolean isActive() {
         return active != null && active;
@@ -70,25 +75,77 @@ public class Profiler {
         return minutes * 60 / FLUSH_INTERVAL_SEC;
     }
 
-    private static void loadConfigFile() {
+    private static void downloadConfig(Context context) {
+        final byte[] bytes;
+
+        // Download
         try {
-            final byte[] bytes = Utils.executeGet(CONFIG_URL, null);
-            final ConfigFile configFile = new Gson().fromJson(new String(bytes), ConfigFile.class);
-            postURL = configFile.putLogURL;
-            sendPercentage = configFile.sendPercentage;
-            configLoaded = true;
-        } catch (JsonParseException e) {
-            pkLog.e("Failed to parse config file", e);
+            bytes = Utils.executeGet(CONFIG_URL, null);
+
+            parseConfig(bytes);
+
         } catch (IOException e) {
-            pkLog.e("Failed to download config file", e);
+            pkLog.e("Failed to download config", e);
+            return;
+        }
+
+        // Save to cache
+        final File cachedConfigFile = getCachedConfigFile(context);
+        if (cachedConfigFile.getParentFile().canWrite()) {
+            FileOutputStream outputStream = null;
+            try {
+                outputStream = new FileOutputStream(cachedConfigFile);
+                outputStream.write(bytes);
+            } catch (IOException e) {
+                pkLog.e("Failed to save config to cache", e);
+            } finally {
+                Utils.safeClose(outputStream);
+            }
         }
     }
 
-    public synchronized static void init(Context context) {
+    private static void loadCachedConfig(Context context) {
+        final File configFile = getCachedConfigFile(context);
+
+        if (configFile.canRead()) {
+            FileInputStream inputStream = null;
+            try {
+                inputStream = new FileInputStream(configFile);
+                parseConfig(Utils.fullyReadInputStream(inputStream, MAX_CONFIG_SIZE).toByteArray());
+
+            } catch (IOException e) {
+                pkLog.e("Failed to read cached config file", e);
+
+            } finally {
+                Utils.safeClose(inputStream);
+            }
+        }
+    }
+
+    @NonNull
+    private static File getCachedConfigFile(Context context) {
+        return new File(context.getFilesDir(), CONFIG_CACHE_FILENAME);
+    }
+
+    private static void parseConfig(byte[] bytes) {
+        try {
+            final ConfigFile configFile = new Gson().fromJson(new String(bytes), ConfigFile.class);
+            postURL = configFile.putLogURL;
+            sendPercentage = configFile.sendPercentage;
+        } catch (JsonParseException e) {
+            pkLog.e("Failed to parse config", e);
+        }
+    }
+
+
+    public synchronized static void init(final Context context) {
 
         if (started) {
             return;
         }
+
+        // Load cached config. Will load from network later, in a handler thread.
+        loadCachedConfig(context);
 
         metrics = context.getResources().getDisplayMetrics();
 
@@ -99,7 +156,7 @@ public class Profiler {
         ioHandler.post(new Runnable() {
             @Override
             public void run() {
-                loadConfigFile();
+                downloadConfig(context);
             }
         });
 
@@ -107,12 +164,6 @@ public class Profiler {
     }
 
     private Profiler(final String sessionId) {
-
-        if (!configLoaded) {
-            pkLog.w("Config not yet ready, using defaults");
-            postURL = DEFAULT_POST_URL;
-            sendPercentage = DEFAULT_SEND_PERCENTAGE;
-        }
 
         this.sessionId = sessionId;
 
@@ -123,6 +174,8 @@ public class Profiler {
         }
 
         active = true;
+
+        pkLog.d("New profiler with sessionId: " + sessionId);
 
         log("StartSession", "sessionId=" + sessionId, "time=" + System.currentTimeMillis(),
                 "screenSize=" + metrics.widthPixels + "x" + metrics.heightPixels,

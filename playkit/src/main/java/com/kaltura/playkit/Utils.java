@@ -23,6 +23,7 @@ import com.google.gson.JsonObject;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,15 +39,28 @@ import java.util.Map;
  */
 
 public class Utils {
-    private static final String TAG = "Utils";
+    private static final PKLog log = PKLog.get("Utils");
 
     public static String readAssetToString(Context context, String asset) {
+        InputStream assetStream = null;
         try {
-            InputStream assetStream = context.getAssets().open(asset);
+            assetStream = context.getAssets().open(asset);
             return fullyReadInputStream(assetStream, 1024 * 1024).toString();
         } catch (IOException e) {
-            Log.e(TAG, "Failed reading asset " + asset, e);
+            log.e("Failed reading asset " + asset, e);
             return null;
+        } finally {
+            safeClose(assetStream);
+        }
+    }
+
+    public static void safeClose(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                log.e("Failed to close closeable", e);
+            }
         }
     }
 
@@ -67,7 +81,6 @@ public class Utils {
         }
         bos.flush();
         bos.close();
-        inputStream.close();
         return bos;
     }
 
