@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
@@ -118,26 +117,43 @@ public class Utils {
         return Base64.encodeToString(data, Base64.NO_WRAP);
     }
 
-    public static byte[] executePost(String url, byte[] data, Map<String, String> requestProperties)
-            throws MalformedURLException, IOException {
+    public static byte[] executePost(String url, byte[] data, Map<String, String> headers) throws IOException {
+        return executeHttpRequest(true, url, data, headers);
+    }
+
+    public static byte[] executeGet(String url, Map<String, String> headers) throws IOException {
+        return executeHttpRequest(false, url, null, headers);
+    }
+
+    private static byte[] executeHttpRequest(boolean post, String url, byte[] data, Map<String, String> headers) throws IOException {
+
         HttpURLConnection urlConnection = null;
+
         try {
             urlConnection = (HttpURLConnection) new URL(url).openConnection();
-            urlConnection.setRequestMethod("POST");
-            urlConnection.setDoOutput(data != null);
+            urlConnection.setRequestMethod(post ? "POST" : "GET");
+
+            if (data != null) {
+                urlConnection.setDoOutput(true);
+                urlConnection.setChunkedStreamingMode(-1);
+            }
+
             urlConnection.setDoInput(true);
-            if (requestProperties != null) {
-                for (Map.Entry<String, String> requestProperty : requestProperties.entrySet()) {
+            if (headers != null) {
+                for (Map.Entry<String, String> requestProperty : headers.entrySet()) {
                     urlConnection.setRequestProperty(requestProperty.getKey(), requestProperty.getValue());
                 }
             }
+
             if (data != null) {
                 OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
                 out.write(data);
                 out.close();
             }
+
             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
             return convertInputStreamToByteArray(in);
+
         } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
