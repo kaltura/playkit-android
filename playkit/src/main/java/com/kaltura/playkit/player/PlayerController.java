@@ -566,7 +566,9 @@ public class PlayerController implements Player {
                         case DURATION_CHANGE:
                             event = new PlayerEvent.DurationChanged(getDuration());
                             if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
-                                startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+                                if (mediaConfig.getStartPosition() > 0) {
+                                    startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+                                }
                                 isNewEntry = false;
                             }
                             break;
