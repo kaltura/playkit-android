@@ -536,6 +536,13 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         if (kalturaMediaAsset.getDescription() != null) {
             metadata.put("description", kalturaMediaAsset.getDescription());
         }
+
+        if (mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver) {
+            metadata.put("dvrStatus", "1");
+        } else if (isLiveMediaEntry(kalturaMediaAsset)) {
+            metadata.put("dvrStatus", "0");
+        }
+
         return metadata;
     }
 
