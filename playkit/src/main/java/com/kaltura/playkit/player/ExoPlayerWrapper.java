@@ -19,12 +19,15 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 
 import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
+import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -32,6 +35,7 @@ import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
+import com.google.android.exoplayer2.source.BehindLiveWindowException;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
@@ -45,6 +49,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSource.Factory;
+import com.google.android.exoplayer2.upstream.DefaultAllocator;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
@@ -53,6 +58,7 @@ import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
@@ -73,6 +79,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS;
+import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS;
+import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_MAX_BUFFER_MS;
+import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_MIN_BUFFER_MS;
+import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS;
+import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_TARGET_BUFFER_BYTES;
 import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
 
 /**
@@ -132,6 +144,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
+    private PKMediaSourceConfig sourceConfig;
 
 
     ExoPlayerWrapper(Context context) {
@@ -159,7 +172,16 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildCustomHttpDataSourceFactory(false), drmSessionListener);
         CustomRendererFactory rendererFactory = new CustomRendererFactory(context,
                 drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
-        player = ExoPlayerFactory.newSimpleInstance(rendererFactory, trackSelector);
+        LoadControl loadControl = new DefaultLoadControl(
+                new DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
+                DEFAULT_MIN_BUFFER_MS,
+                DEFAULT_MAX_BUFFER_MS,
+                DEFAULT_BUFFER_FOR_PLAYBACK_MS,
+                DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS,
+                DEFAULT_TARGET_BUFFER_BYTES,
+                DEFAULT_PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS);
+
+        player = ExoPlayerFactory.newSimpleInstance(rendererFactory, trackSelector, loadControl);
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
@@ -190,7 +212,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         return trackSelector;
     }
 
-    private void preparePlayer(PKMediaSourceConfig sourceConfig) {
+    private void preparePlayer(@NonNull PKMediaSourceConfig sourceConfig) {
+        this.sourceConfig = sourceConfig;
         //reset metadata on prepare.
         metadataList.clear();
 
@@ -385,6 +408,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
+        if (isBehindLiveWindow(error) && sourceConfig != null) {
+            log.d("onPlayerError BehindLiveWindowException receivec repreparing player");
+            player.prepare(buildExoMediaSource(sourceConfig), true, false);
+            return;
+        }
+
         Enum errorType;
         String errorMessage = error.getMessage();
 
@@ -468,6 +497,20 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         preparePlayer(mediaSourceConfig);
     }
 
+    private boolean isBehindLiveWindow(ExoPlaybackException e) {
+        if (e.type != ExoPlaybackException.TYPE_SOURCE) {
+            return false;
+        }
+        Throwable cause = e.getSourceException();
+        while (cause != null) {
+            if (cause instanceof BehindLiveWindowException) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
+    }
+
     private void maybeChangePlayerRenderView(PlayerSettings playerSettings) {
         // no need to swap video surface if no change was done in surface settings
         if (this.useTextureView == playerSettings.useTextureView() && this.isSurfaceSecured == playerSettings.isSurfaceSecured()) {
@@ -501,7 +544,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         sendDistinctEvent(PlayerEvent.Type.PLAY);
-
+        if (sourceConfig != null && sourceConfig.dvrStatus != null && !sourceConfig.dvrStatus) {
+            player.seekToDefaultPosition();
+        }
         player.setPlayWhenReady(true);
     }
 
@@ -579,6 +624,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             setVolume(lastKnownVolume);
             setPlaybackRate(lastKnownPlaybackRate);
         }
+
         if (playerPosition == Consts.TIME_UNSET) {
             player.seekToDefaultPosition(playerWindow);
         } else {
