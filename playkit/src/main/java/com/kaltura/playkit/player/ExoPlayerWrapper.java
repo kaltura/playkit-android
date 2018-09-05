@@ -21,10 +21,12 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
+import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -168,7 +170,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildDrmHttpDataSourceFactory(), drmSessionListener);
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context,
                 drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
-        
+
         player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
         window = new Timeline.Window();
         setPlayerListeners();
@@ -635,7 +637,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         player = null;
         exoPlayerView = null;
         playerPosition = Consts.TIME_UNSET;
-        profiler().finish();
+        profiler().onSessionFinished();
     }
 
     @Override
@@ -749,6 +751,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player.stop(true);
             sendDistinctEvent(PlayerEvent.Type.STOPPED);
         }
+        profiler().onSessionFinished();
     }
 
     private void savePlayerPosition() {

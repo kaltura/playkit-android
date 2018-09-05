@@ -27,7 +27,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 class ConfigFile {
@@ -41,26 +43,26 @@ public class Profiler {
 
     private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
     private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler-pre/config/config.json";
-    private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/putLog?mode=addChunk";
+    private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
     private static final float DEFAULT_SEND_PERCENTAGE = 100; // FIXME: 03/09/2018
     private static final int MAX_CONFIG_SIZE = 10240;
 
     static final String SEPARATOR = "\t";
-    private static final int FLUSH_INTERVAL_SEC = 60;
-    private static final int NO_ACTIVITY_LIMIT = noActivityLimit(6);    // 6 minutes
+    private static final int SEND_INTERVAL_SEC = 300;   // Report every 5 minutes
+    private static final int NO_ACTIVITY_LIMIT = 2;     // Close profiler after 2 empty intervals
     private static final HashMap<String, Profiler> profilers = new HashMap<>();
 
     private static boolean started;
     private static Handler ioHandler;
     private static String currentExperiment;
     private static DisplayMetrics metrics;
+    private static Set<String> closedSessions = new HashSet<>();
 
     private Boolean active;
     final long startTime = SystemClock.elapsedRealtime();
     private final ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
     private int noActivityCounter;
     private final String sessionId;
-    private int sequence = 0;
 
     // Config
     private static String postURL = DEFAULT_POST_URL;
@@ -68,11 +70,6 @@ public class Profiler {
 
     public boolean isActive() {
         return active != null && active;
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private static int noActivityLimit(int minutes) {
-        return minutes * 60 / FLUSH_INTERVAL_SEC;
     }
 
     private static void downloadConfig(Context context) {
@@ -175,6 +172,7 @@ public class Profiler {
 
         active = true;
 
+
         pkLog.d("New profiler with sessionId: " + sessionId);
 
         log("StartSession", "sessionId=" + sessionId, "time=" + System.currentTimeMillis(),
@@ -193,14 +191,12 @@ public class Profiler {
             public void run() {
 
                 // Send queue content to the server
-
                 sendLogChunk();
 
                 if (noActivityCounter > NO_ACTIVITY_LIMIT) {
-                    log("ProfilerSessionReleased");
-                    profilers.remove(sessionId);
+                    closeSession();
                 } else {
-                    ioHandler.postDelayed(this, FLUSH_INTERVAL_SEC * 1000);
+                    ioHandler.postDelayed(this, SEND_INTERVAL_SEC * 1000);
                 }
             }
         });
@@ -225,8 +221,7 @@ public class Profiler {
         final String string = sb.toString();
 
         try {
-            Utils.executePost(postURL + "&sessionId=" + sessionId + "&seq=" + sequence, string.getBytes(), null);
-            sequence++;
+            Utils.executePost(postURL + "?mode=addChunk&sessionId=" + sessionId, string.getBytes(), null);
         } catch (IOException e) {
             // FIXME: 03/09/2018 Is it bad that we lost this log chunk?
             pkLog.e("Failed sending log", e);
@@ -240,7 +235,7 @@ public class Profiler {
 
     static Profiler get(String sessionId) {
 
-        if (!started || sessionId == null) {
+        if (!started || sessionId == null || closedSessions.contains(sessionId)) {
             return nullProfiler();
         }
 
@@ -417,16 +412,28 @@ public class Profiler {
         };
     }
 
-    public void finish() {
+    public void onSessionFinished() {
+        ioHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                closeSession();
+            }
+        });
+    }
+
+    private void closeSession() {
         log("ProfilerSessionReleased");
         profilers.remove(sessionId);
-        if (Math.random() < (sendPercentage / 100)) {
-            ioHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    sendLogChunk();
-                }
-            });
+        sendLogChunk();
+        sendSessionEnd();
+        closedSessions.add(sessionId);
+    }
+
+    private void sendSessionEnd() {
+        try {
+            Utils.executePost(postURL + "?mode=saveChunks&sessionId=" + sessionId, null, null);
+        } catch (IOException e) {
+            pkLog.e("Failed sending saveChunks for session " + sessionId);
         }
     }
 

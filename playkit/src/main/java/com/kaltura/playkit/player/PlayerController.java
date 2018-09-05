@@ -181,6 +181,10 @@ public class PlayerController implements Player {
     public boolean setMedia(PKMediaConfig mediaConfig) {
         log.d("setMedia");
 
+        if (sessionId != null) {
+            Profiler.get(sessionId).onSessionFinished();
+        }
+
         isNewEntry = true;
 
         sessionId = generateSessionId();
