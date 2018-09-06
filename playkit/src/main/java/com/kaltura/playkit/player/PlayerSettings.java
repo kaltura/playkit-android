@@ -17,6 +17,10 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
 
+import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS;
+import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_MAX_BUFFER_MS;
+import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_MIN_BUFFER_MS;
+
 
 public class PlayerSettings implements Player.Settings {
 
@@ -26,6 +30,10 @@ public class PlayerSettings implements Player.Settings {
     private boolean crossProtocolRedirectEnabled;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
+
+    private int minPlayerBufferMS = DEFAULT_MIN_BUFFER_MS;
+    private int maxPlayerBufferMS = DEFAULT_MAX_BUFFER_MS;
+    private int minBufferAfterInteractionMS = DEFAULT_BUFFER_FOR_PLAYBACK_MS;
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -80,8 +88,20 @@ public class PlayerSettings implements Player.Settings {
         return preferredMediaFormat;
     }
 
+    public int getMinPlayerBufferMS() {
+        return minPlayerBufferMS;
+    }
+
+    public int getMaxPlayerBufferMS() {
+        return maxPlayerBufferMS;
+    }
+
+    public int getMinBufferAfterInteractionMS() {
+        return minBufferAfterInteractionMS;
+    }
+
     @Override
-    public Player.Settings setVRPlayerEnabled(boolean vrPlayerEnabled) {
+    public PlayerSettings setVRPlayerEnabled(boolean vrPlayerEnabled) {
         this.vrPlayerEnabled = vrPlayerEnabled;
         return this;
     }
@@ -93,7 +113,7 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
+    public PlayerSettings setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
         this.licenseRequestAdapter = licenseRequestAdapter;
         return this;
     }
@@ -117,7 +137,7 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setAdAutoPlayOnResume(boolean adAutoPlayOnResume) {
+    public PlayerSettings setAdAutoPlayOnResume(boolean adAutoPlayOnResume) {
         this.adAutoPlayOnResume = adAutoPlayOnResume;
         return this;
     }
@@ -135,14 +155,23 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
+    public PlayerSettings setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
         this.preferredMediaFormat = preferredMediaFormat;
         return this;
     }
 
+
     @Override
     public PlayerSettings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
         this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
+        return this;
+    }
+
+    @Override
+    public PlayerSettings setPlayerBuffers(int minPlayerBufferMS, int maxPlayerBufferMS, int minBufferAfterInteractionMS) {
+        this.minPlayerBufferMS = minPlayerBufferMS;
+        this.maxPlayerBufferMS = maxPlayerBufferMS;
+        this.minBufferAfterInteractionMS = minBufferAfterInteractionMS;
         return this;
     }
 }

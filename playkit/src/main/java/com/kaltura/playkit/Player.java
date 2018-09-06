@@ -95,6 +95,16 @@ public interface Player {
         Settings setAdAutoPlayOnResume(boolean autoPlayOnResume);
 
         /**
+         * Set the player buffers size
+         *
+         * @param minPlayerBufferMS The default minimum duration of media that the player will attempt to ensure is buffered at all
+         * @param maxPlayerBufferMS The default maximum duration of media that the player will attempt to buffer
+         * @param minBufferAfterInteractionMS The default duration of media that must be buffered for playback to start or resume following a user action such as a seek
+         * @return Player Settings
+         */
+        Settings setPlayerBuffers(int minPlayerBufferMS, int maxPlayerBufferMS, int minBufferAfterInteractionMS);
+
+        /**
          * Set the Player's VR/360 support
          *
          * @param vrPlayerEnabled - If 360 media should be played on VR player or default player - default == true.

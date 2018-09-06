@@ -22,10 +22,12 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 
 import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
+import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -73,6 +75,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS;
 import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
@@ -153,12 +156,16 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 
-    private void initializePlayer() {
+    private void initializePlayer(PlayerSettings playerSettings) {
         DefaultTrackSelector trackSelector = initializeTrackSelector();
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildCustomHttpDataSourceFactory(), drmSessionListener);
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context,
                 drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
-        player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
+        LoadControl loadControl = new DefaultLoadControl.Builder().setBufferDurationsMs(playerSettings.getMinPlayerBufferMS(),
+                playerSettings.getMaxPlayerBufferMS(),
+                playerSettings.getMinBufferAfterInteractionMS(),
+                DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS).createDefaultLoadControl();
+        player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector, loadControl);
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
@@ -467,7 +474,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (player == null) {
             this.useTextureView = mediaSourceConfig.playerSettings.useTextureView();
             this.isSurfaceSecured = mediaSourceConfig.playerSettings.isSurfaceSecured();
-            initializePlayer();
+            initializePlayer(mediaSourceConfig.playerSettings);
         } else {
             // for change media case need to verify if surface swap is needed
             maybeChangePlayerRenderView(mediaSourceConfig.playerSettings);
@@ -599,7 +606,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     public void restore() {
         log.d("restore");
         if (player == null) {
-            initializePlayer();
+            initializePlayer(sourceConfig.playerSettings);
             setVolume(lastKnownVolume);
             setPlaybackRate(lastKnownPlaybackRate);
         }
