@@ -88,15 +88,13 @@ class SimpleDashParser {
             if (drmInitData == null) {
                 throw new IOException("drmInitData is not initialized");
             }
+            hasContentProtection = drmInitData.schemeDataCount > 0;
+            if (hasContentProtection) {
+                loadDrmInitData(representation);
+            } else {
+                log.i("no content protection found");
+            }
         }
-
-        hasContentProtection = drmInitData.schemeDataCount > 0;
-        if (hasContentProtection) {
-            loadDrmInitData(representation);
-        } else {
-            log.i("no content protection found");
-        }
-
         return this;
     }
 
