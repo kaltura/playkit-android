@@ -28,6 +28,7 @@ public class PKMediaSourceConfig {
 
     PKMediaSource mediaSource;
     PKMediaEntry.MediaEntryType mediaEntryType;
+    Boolean dvrStatus;
     PlayerSettings playerSettings;
     private VRSettings vrSettings;
 
@@ -35,6 +36,14 @@ public class PKMediaSourceConfig {
     PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings, VRSettings vrSettings) {
         this.mediaSource = source;
         this.mediaEntryType = mediaConfig.getMediaEntry().getMediaType();
+        if (mediaConfig.getMediaEntry().getMetadata() != null &&
+                mediaConfig.getMediaEntry().getMetadata().containsKey("dvrStatus")) {
+            if ("0".equals(mediaConfig.getMediaEntry().getMetadata().get("dvrStatus"))) {
+                this.dvrStatus = false;
+            } else {
+                this.dvrStatus = true;
+            }
+        }
         this.playerSettings = playerSettings;
         this.vrSettings = vrSettings;
     }
