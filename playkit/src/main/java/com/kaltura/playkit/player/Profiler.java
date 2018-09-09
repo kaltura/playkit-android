@@ -175,12 +175,29 @@ public class Profiler {
 
         pkLog.d("New profiler with sessionId: " + sessionId);
 
-        log("StartSession", "sessionId=" + sessionId, "time=" + System.currentTimeMillis(),
+        log("StartSession",
+                "sessionId=" + sessionId,
+                "time=" + System.currentTimeMillis(),
                 "screenSize=" + metrics.widthPixels + "x" + metrics.heightPixels,
-                "screenDpi=" + metrics.xdpi + "x" + metrics.ydpi,
-                "playkitVersion=" + PlayKitManager.VERSION_STRING,
-                "playkitClientTag=" + PlayKitManager.CLIENT_TAG,
-                "android:apiLevel=" + Build.VERSION.SDK_INT);
+                "screenDpi=" + metrics.xdpi + "x" + metrics.ydpi
+                );
+
+        log("PlayKit",
+                "version=" + PlayKitManager.VERSION_STRING,
+                "clientTag=" + PlayKitManager.CLIENT_TAG
+                );
+
+        log("AndroidInfo",
+                "apiLevel=" + Build.VERSION.SDK_INT,
+                "chipset=" + MediaSupport.DEVICE_CHIPSET,
+                "brand=" + Build.BRAND,
+                "model=" + Build.MODEL,
+                "manufacturer=" + Build.MANUFACTURER,
+                "device=" + Build.DEVICE,
+                "tags=" + Build.TAGS,
+                "fingerprint=" + Build.FINGERPRINT
+                );
+
 
         if (currentExperiment != null) {
             log("Experiment", "info=" + currentExperiment);
@@ -257,7 +274,7 @@ public class Profiler {
         Profiler.currentExperiment = currentExperiment;
     }
 
-    void log(String event, Object... strings) {
+    void log(String event, String... strings) {
         StringBuilder sb = startLog(event);
         logPayload(sb, strings);
         endLog(sb);
@@ -273,12 +290,10 @@ public class Profiler {
         return sb;
     }
 
-    private void logPayload(StringBuilder sb, Object... strings) {
-        for (Object s : strings) {
-            if (s instanceof Opt) {
-                if (((Opt) s).obj == null) {
-                    continue;
-                }
+    private void logPayload(StringBuilder sb, String... strings) {
+        for (String s : strings) {
+            if (s == null) {
+                continue;
             }
             sb.append(SEPARATOR).append(s);
         }
@@ -293,7 +308,7 @@ public class Profiler {
         });
     }
 
-    void logWithPlaybackInfo(String event, PlayerEngine playerEngine, Object... strings) {
+    void logWithPlaybackInfo(String event, PlayerEngine playerEngine, String... strings) {
 
         StringBuilder sb = startLog(event);
 
@@ -362,7 +377,7 @@ public class Profiler {
     }
 
     public void onSeekRequested(PlayerEngine playerEngine, long position) {
-        logWithPlaybackInfo("SeekRequested", playerEngine, position);
+        logWithPlaybackInfo("SeekRequested", playerEngine, "targetPosition=" + position);
     }
 
     public void onPauseRequested(PlayerEngine playerEngine) {
@@ -384,10 +399,10 @@ public class Profiler {
     private static Profiler nullProfiler() {
         return new Profiler(null) {
             @Override
-            void log(String event, Object... strings) {}
+            void log(String event, String... strings) {}
 
             @Override
-            void logWithPlaybackInfo(String event, PlayerEngine playerEngine, Object... strings) {}
+            void logWithPlaybackInfo(String event, PlayerEngine playerEngine, String... strings) {}
 
             @Override
             void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig) {}
@@ -434,19 +449,6 @@ public class Profiler {
             Utils.executePost(postURL + "?mode=saveChunks&sessionId=" + sessionId, null, null);
         } catch (IOException e) {
             pkLog.e("Failed sending saveChunks for session " + sessionId);
-        }
-    }
-
-    static class Opt {
-        Object obj;
-
-        Opt(Object o) {
-            obj = o;
-        }
-
-        @Override
-        public String toString() {
-            return String.valueOf(obj);
         }
     }
 }

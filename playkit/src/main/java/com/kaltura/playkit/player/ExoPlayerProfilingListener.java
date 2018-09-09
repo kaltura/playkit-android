@@ -15,7 +15,6 @@ import com.google.android.exoplayer2.source.MediaSourceEventListener;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSpec;
-import com.kaltura.playkit.player.Profiler.Opt;
 
 import java.io.IOException;
 
@@ -47,15 +46,19 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         this.playerEngine = playerEngine;
     }
 
-    private Opt opt(String name, Object value) {
+    private String opt(String name, Object value) {
         if (value == null) {
-            return new Opt(null);
+            return null;
         }
 
-        return new Opt(name + "=" + value);
+        return name + "=" + value;
     }
 
-    public void log(String event, Object... strings) {
+    private String field(String name, Object value) {
+        return name + "=" + value;
+    }
+
+    public void log(String event, String... strings) {
         profiler.logWithPlaybackInfo(event, playerEngine, strings);
     }
 
