@@ -46,7 +46,7 @@ public class Profiler {
     private static final boolean devMode = true;
 
     private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
-    private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler-pre/config/config.json";
+    private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json";
     private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
     private static final float DEFAULT_SEND_PERCENTAGE = 100; // FIXME: 03/09/2018
     private static final int MAX_CONFIG_SIZE = 10240;
