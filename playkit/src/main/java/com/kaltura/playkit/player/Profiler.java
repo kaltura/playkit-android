@@ -22,9 +22,11 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Utils;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,6 +42,8 @@ class ConfigFile {
 public class Profiler {
 
     private static PKLog pkLog = PKLog.get("Profiler");
+
+    private static final boolean devMode = true;
 
     private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
     private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler-pre/config/config.json";
@@ -57,8 +61,8 @@ public class Profiler {
     private static String currentExperiment;
     private static DisplayMetrics metrics;
     private static Set<String> closedSessions = new HashSet<>();
+    private static File externalFilesDir;   // for debug logs
 
-    private Boolean active;
     final long startTime = SystemClock.elapsedRealtime();
     private final ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
     private int noActivityCounter;
@@ -69,7 +73,7 @@ public class Profiler {
     private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
 
     public boolean isActive() {
-        return active != null && active;
+        return true;
     }
 
     private static void downloadConfig(Context context) {
@@ -157,21 +161,19 @@ public class Profiler {
             }
         });
 
+        if (devMode) {
+            externalFilesDir = context.getExternalFilesDir(null);
+        }
+
         started = true;
     }
 
     private Profiler(final String sessionId) {
 
         this.sessionId = sessionId;
-
-        if (sendPercentage == 0 || sessionId == null || Math.random() > (sendPercentage / 100)) {
-            // initialize final fields and exit.
-            active = false;
-            return;
+        if (sessionId == null) {
+            return;     // the null profiler
         }
-
-        active = true;
-
 
         pkLog.d("New profiler with sessionId: " + sessionId);
 
@@ -187,7 +189,8 @@ public class Profiler {
                 "clientTag=" + PlayKitManager.CLIENT_TAG
                 );
 
-        log("AndroidInfo",
+        log("Platform",
+                "name=Android",
                 "apiLevel=" + Build.VERSION.SDK_INT,
                 "chipset=" + MediaSupport.DEVICE_CHIPSET,
                 "brand=" + Build.BRAND,
@@ -219,6 +222,10 @@ public class Profiler {
         });
     }
 
+    private static boolean shouldEnable() {
+        return Math.random() < (sendPercentage / 100);
+    }
+
     private void sendLogChunk() {
         StringBuilder sb = new StringBuilder();
         Iterator<String> iterator = logQueue.iterator();
@@ -244,6 +251,22 @@ public class Profiler {
             pkLog.e("Failed sending log", e);
             pkLog.e(string);
         }
+
+        if (devMode && externalFilesDir != null) {
+            // also write to disk
+            BufferedWriter writer = null;
+            try {
+                writer = new BufferedWriter(new FileWriter(new File(externalFilesDir, sessionId + ".txt"), true));
+                writer.append(string);
+                writer.newLine();
+                writer.flush();
+
+            } catch (IOException e) {
+                pkLog.e("Failed saving local log", e);
+            } finally {
+                Utils.safeClose(writer);
+            }
+        }
     }
 
     AnalyticsListener getAnalyticsListener(PlayerEngine playerEngine) {
@@ -252,7 +275,7 @@ public class Profiler {
 
     static Profiler get(String sessionId) {
 
-        if (!started || sessionId == null || closedSessions.contains(sessionId)) {
+        if (!started || sessionId == null || closedSessions.contains(sessionId) || !shouldEnable()) {
             return nullProfiler();
         }
 
@@ -300,12 +323,7 @@ public class Profiler {
     }
 
     private void endLog(final StringBuilder sb) {
-        ioHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                logQueue.add(sb.toString());
-            }
-        });
+        logQueue.add(sb.toString());
     }
 
     void logWithPlaybackInfo(String event, PlayerEngine playerEngine, String... strings) {
@@ -396,8 +414,23 @@ public class Profiler {
         log("BandwidthSample", "bandwidth=" + bitrate);
     }
 
+    public void onSessionFinished() {
+        ioHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                closeSession();
+            }
+        });
+    }
+
     private static Profiler nullProfiler() {
         return new Profiler(null) {
+
+            @Override
+            public boolean isActive() {
+                return false;
+            }
+
             @Override
             void log(String event, String... strings) {}
 
@@ -424,31 +457,16 @@ public class Profiler {
 
             @Override
             public void onBandwidthSample(PlayerEngine playerEngine, long bitrate) {}
-        };
-    }
 
-    public void onSessionFinished() {
-        ioHandler.post(new Runnable() {
             @Override
-            public void run() {
-                closeSession();
-            }
-        });
+            public void onSessionFinished() {}
+        };
     }
 
     private void closeSession() {
         log("ProfilerSessionReleased");
         profilers.remove(sessionId);
         sendLogChunk();
-        sendSessionEnd();
         closedSessions.add(sessionId);
-    }
-
-    private void sendSessionEnd() {
-        try {
-            Utils.executePost(postURL + "?mode=saveChunks&sessionId=" + sessionId, null, null);
-        } catch (IOException e) {
-            pkLog.e("Failed sending saveChunks for session " + sessionId);
-        }
     }
 }
