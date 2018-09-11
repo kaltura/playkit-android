@@ -347,7 +347,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onVideoSizeChanged(EventTime eventTime, int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
-        log("VideoSizeChanged", "size=" + width + "x" + height);
+        log("VideoSizeChanged", "width=" + width, "height=" + height);
     }
 
     @Override

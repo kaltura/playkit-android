@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -175,6 +176,14 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
+        if (exoPlayerView instanceof ExoPlayerView) {
+            ((ExoPlayerView) exoPlayerView).addOnContentLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    profiler().onViewportSizeChange(ExoPlayerWrapper.this, v.getWidth(), v.getHeight());
+                }
+            });
+        }
         player.setPlayWhenReady(false);
     }
 

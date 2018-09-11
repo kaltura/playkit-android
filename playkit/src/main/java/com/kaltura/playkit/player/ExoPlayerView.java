@@ -105,6 +105,12 @@ class ExoPlayerView extends BaseExoplayerView {
         }
     }
 
+    void addOnContentLayoutChangeListener(OnLayoutChangeListener listener) {
+        if (contentFrame != null) {
+            contentFrame.addOnLayoutChangeListener(listener);
+        }
+    }
+
     /**
      * Create and set relevant surface and listeners to player and attach Surface to the view hierarchy.
      *

@@ -460,6 +460,9 @@ public class Profiler {
 
             @Override
             public void onSessionFinished() {}
+
+            @Override
+            public void onViewportSizeChange(PlayerEngine playerEngine, int width, int height) {}
         };
     }
 
@@ -468,5 +471,9 @@ public class Profiler {
         profilers.remove(sessionId);
         sendLogChunk();
         closedSessions.add(sessionId);
+    }
+
+    public void onViewportSizeChange(PlayerEngine playerEngine, int width, int height) {
+        log("ViewportSizeChange", "width=" + width, "height=" + height);
     }
 }
