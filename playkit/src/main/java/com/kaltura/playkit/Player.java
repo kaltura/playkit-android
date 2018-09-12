@@ -15,6 +15,7 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.utils.Consts;
 
@@ -97,12 +98,10 @@ public interface Player {
         /**
          * Set the player buffers size
          *
-         * @param minPlayerBufferMS The default minimum duration of media that the player will attempt to ensure is buffered at all
-         * @param maxPlayerBufferMS The default maximum duration of media that the player will attempt to buffer
-         * @param minBufferAfterInteractionMS The default duration of media that must be buffered for playback to start or resume following a user action such as a seek
+         * @param loadControlBuffers LoadControlsBuffers
          * @return Player Settings
          */
-        Settings setPlayerBuffers(int minPlayerBufferMS, int maxPlayerBufferMS, int minBufferAfterInteractionMS);
+        Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers);
 
         /**
          * Set the Player's VR/360 support

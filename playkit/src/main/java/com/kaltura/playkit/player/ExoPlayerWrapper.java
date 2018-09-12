@@ -161,10 +161,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildCustomHttpDataSourceFactory(), drmSessionListener);
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context,
                 drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
-        LoadControl loadControl = new DefaultLoadControl.Builder().setBufferDurationsMs(playerSettings.getMinPlayerBufferMS(),
-                playerSettings.getMaxPlayerBufferMS(),
-                playerSettings.getMinBufferAfterInteractionMS(),
-                DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS).createDefaultLoadControl();
+        LoadControl loadControl = new DefaultLoadControl.Builder().setBufferDurationsMs(playerSettings.getLoadControlBuffers().getMinPlayerBufferMS(),
+                playerSettings.getLoadControlBuffers().getMaxPlayerBufferMS(),
+                playerSettings.getLoadControlBuffers().getMinBufferAfterInteractionMS(),
+                playerSettings.getLoadControlBuffers().getMinBufferAfterReBufferMS()).createDefaultLoadControl();
         player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector, loadControl);
         window = new Timeline.Window();
         setPlayerListeners();

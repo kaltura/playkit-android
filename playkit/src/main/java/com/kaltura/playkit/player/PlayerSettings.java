@@ -17,6 +17,7 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
 
+import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS;
 import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS;
 import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_MAX_BUFFER_MS;
 import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_MIN_BUFFER_MS;
@@ -30,10 +31,8 @@ public class PlayerSettings implements Player.Settings {
     private boolean crossProtocolRedirectEnabled;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
+    private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
 
-    private int minPlayerBufferMS = DEFAULT_MIN_BUFFER_MS;
-    private int maxPlayerBufferMS = DEFAULT_MAX_BUFFER_MS;
-    private int minBufferAfterInteractionMS = DEFAULT_BUFFER_FOR_PLAYBACK_MS;
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -42,6 +41,7 @@ public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
+
 
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
@@ -88,16 +88,8 @@ public class PlayerSettings implements Player.Settings {
         return preferredMediaFormat;
     }
 
-    public int getMinPlayerBufferMS() {
-        return minPlayerBufferMS;
-    }
-
-    public int getMaxPlayerBufferMS() {
-        return maxPlayerBufferMS;
-    }
-
-    public int getMinBufferAfterInteractionMS() {
-        return minBufferAfterInteractionMS;
+    public LoadControlBuffers getLoadControlBuffers() {
+        return loadControlBuffers;
     }
 
     @Override
@@ -168,10 +160,8 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public PlayerSettings setPlayerBuffers(int minPlayerBufferMS, int maxPlayerBufferMS, int minBufferAfterInteractionMS) {
-        this.minPlayerBufferMS = minPlayerBufferMS;
-        this.maxPlayerBufferMS = maxPlayerBufferMS;
-        this.minBufferAfterInteractionMS = minBufferAfterInteractionMS;
+    public PlayerSettings setPlayerBuffers(LoadControlBuffers loadControlBuffers) {
+        this.loadControlBuffers = loadControlBuffers;
         return this;
     }
 }
