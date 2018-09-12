@@ -148,7 +148,6 @@ public class Utils {
 
             if (data != null) {
                 urlConnection.setDoOutput(true);
-                urlConnection.setChunkedStreamingMode(-1);
             }
 
             urlConnection.setDoInput(true);
