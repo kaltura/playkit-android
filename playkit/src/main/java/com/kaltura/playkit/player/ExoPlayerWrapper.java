@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
@@ -31,6 +32,7 @@ import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
+import com.google.android.exoplayer2.source.BehindLiveWindowException;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
@@ -134,7 +136,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
-
+    private PKMediaSourceConfig sourceConfig;
 
     ExoPlayerWrapper(Context context) {
         this(context, new ExoPlayerView(context));
@@ -183,7 +185,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         return trackSelector;
     }
 
-    private void preparePlayer(PKMediaSourceConfig sourceConfig) {
+    private void preparePlayer(@NonNull PKMediaSourceConfig sourceConfig) {
+        this.sourceConfig = sourceConfig;
         //reset metadata on prepare.
         metadataList.clear();
 
@@ -384,6 +387,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
+        if (isBehindLiveWindow(error) && sourceConfig != null) {
+            log.d("onPlayerError BehindLiveWindowException receivec repreparing player");
+            player.prepare(buildExoMediaSource(sourceConfig), true, false);
+            return;
+        }
+
         Enum errorType;
         String errorMessage = error.getMessage();
 
@@ -467,6 +476,20 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         preparePlayer(mediaSourceConfig);
     }
 
+    private boolean isBehindLiveWindow(ExoPlaybackException e) {
+        if (e.type != ExoPlaybackException.TYPE_SOURCE) {
+            return false;
+        }
+        Throwable cause = e.getSourceException();
+        while (cause != null) {
+            if (cause instanceof BehindLiveWindowException) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
+    }
+
     private void maybeChangePlayerRenderView(PlayerSettings playerSettings) {
         // no need to swap video surface if no change was done in surface settings
         if (this.useTextureView == playerSettings.useTextureView() && this.isSurfaceSecured == playerSettings.isSurfaceSecured()) {
@@ -500,6 +523,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         sendDistinctEvent(PlayerEvent.Type.PLAY);
+        if (sourceConfig != null && sourceConfig.dvrStatus != null && !sourceConfig.dvrStatus) {
+            player.seekToDefaultPosition();
+        }
 
         player.setPlayWhenReady(true);
     }

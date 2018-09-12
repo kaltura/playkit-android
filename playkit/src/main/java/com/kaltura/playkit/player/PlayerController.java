@@ -575,11 +575,7 @@ public class PlayerController implements Player {
                         case DURATION_CHANGE:
                             event = new PlayerEvent.DurationChanged(getDuration());
                             if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
-                                //For live entry it is possible to configure mediaConfig to start with an offset from live edge.
-                                //In this case startPosition in PKMediaConfig must be negative value which describes the amount of desired offset.
-                                if (PKMediaEntry.MediaEntryType.Live.equals(sourceConfig.mediaEntryType) && mediaConfig.getStartPosition() < 0) {
-                                    startPlaybackFrom(getDuration() + (mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER));
-                                } else {
+                                if (mediaConfig.getStartPosition() > 0) {
                                     startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                                 }
                                 isNewEntry = false;
