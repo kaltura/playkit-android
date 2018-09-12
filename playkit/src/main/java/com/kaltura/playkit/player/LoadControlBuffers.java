@@ -22,6 +22,9 @@ public class LoadControlBuffers {
     }
 
     public int getMaxPlayerBufferMS() {
+        if (maxPlayerBufferMS < minPlayerBufferMS) {
+            return minPlayerBufferMS;
+        }
         return maxPlayerBufferMS;
     }
 
