@@ -98,7 +98,7 @@ public interface Player {
         /**
          * Set the player buffers size
          *
-         * @param loadControlBuffers LoadControlBuffers 
+         * @param loadControlBuffers LoadControlBuffers
          * @return Player Settings
          */
         Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers);
