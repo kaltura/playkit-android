@@ -15,6 +15,7 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.utils.Consts;
 
@@ -93,6 +94,14 @@ public interface Player {
          * @return Player Settings
          */
         Settings setAdAutoPlayOnResume(boolean autoPlayOnResume);
+
+        /**
+         * Set the player buffers size
+         *
+         * @param loadControlBuffers LoadControlBuffers
+         * @return Player Settings
+         */
+        Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers);
 
         /**
          * Set the Player's VR/360 support
