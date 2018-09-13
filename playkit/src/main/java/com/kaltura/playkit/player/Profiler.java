@@ -44,6 +44,7 @@ public class Profiler {
     private static PKLog pkLog = PKLog.get("Profiler");
 
     private static final boolean devMode = true;
+    private static final boolean localMode = true;
 
     private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
     private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json";
@@ -52,8 +53,8 @@ public class Profiler {
     private static final int MAX_CONFIG_SIZE = 10240;
 
     static final String SEPARATOR = "\t";
-    private static final int SEND_INTERVAL_SEC = 300;   // Report every 5 minutes
-    private static final int NO_ACTIVITY_LIMIT = 2;     // Close profiler after 2 empty intervals
+    private static final int SEND_INTERVAL_SEC = localMode ? 10 : 300;   // Report every 5 minutes
+    private static final int NO_ACTIVITY_LIMIT = localMode ? 60 : 2;     // Close profiler after 2 empty intervals
     private static final HashMap<String, Profiler> profilers = new HashMap<>();
 
     private static boolean started;
@@ -244,16 +245,18 @@ public class Profiler {
 
         final String string = sb.toString();
 
-        try {
-            Utils.executePost(postURL + "?mode=addChunk&sessionId=" + sessionId, string.getBytes(), null);
-        } catch (IOException e) {
-            // FIXME: 03/09/2018 Is it bad that we lost this log chunk?
-            pkLog.e("Failed sending log", e);
-            pkLog.e(string);
+        if (!localMode) {
+            try {
+                Utils.executePost(postURL + "?mode=addChunk&sessionId=" + sessionId, string.getBytes(), null);
+            } catch (IOException e) {
+                // FIXME: 03/09/2018 Is it bad that we lost this log chunk?
+                pkLog.e("Failed sending log", e);
+                pkLog.e(string);
+            }
         }
 
         if (devMode && externalFilesDir != null) {
-            // also write to disk
+            // Write to disk
             BufferedWriter writer = null;
             try {
                 writer = new BufferedWriter(new FileWriter(new File(externalFilesDir, sessionId + ".txt"), true));
@@ -330,7 +333,7 @@ public class Profiler {
 
         StringBuilder sb = startLog(event);
 
-        logPayload(sb, "pos=" + playerEngine.getCurrentPosition(), "buf=" + playerEngine.getBufferedPosition());
+        logPayload(sb, "pos=" + playerEngine.getCurrentPosition() / 1000f, "buf=" + playerEngine.getBufferedPosition() / 1000f);
         logPayload(sb, strings);
 
         endLog(sb);
@@ -395,7 +398,7 @@ public class Profiler {
     }
 
     public void onSeekRequested(PlayerEngine playerEngine, long position) {
-        logWithPlaybackInfo("SeekRequested", playerEngine, "targetPosition=" + position);
+        logWithPlaybackInfo("SeekRequested", playerEngine, "targetPosition=" + position / 1000f);
     }
 
     public void onPauseRequested(PlayerEngine playerEngine) {

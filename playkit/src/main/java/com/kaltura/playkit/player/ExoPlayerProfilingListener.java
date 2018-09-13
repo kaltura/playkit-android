@@ -100,6 +100,10 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         }
     }
 
+    private static Float msecToSec(Long ms) {
+        return ms == null ? null : ms / 1000f;
+    }
+
     private void logLoadingEvent(String event, DataSpec dataSpec, int dataType, int trackType, Format trackFormat, int trackSelectionReason, long mediaStartTimeMs, long mediaEndTimeMs, long elapsedRealtimeMs, Long loadDurationMs, Long bytesLoaded, IOException error, Boolean wasCanceled) {
         String dataTypeString = dataTypeString(dataType);
         String trackTypeString = trackTypeString(trackType);
@@ -108,11 +112,11 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             return;
         }
 
-        log(event, "time=" + (elapsedRealtimeMs - profiler.startTime), "uri=" + dataSpec.uri.getLastPathSegment(), "dataType=" + dataTypeString, "trackType=" + trackTypeString,
+        log(event, "time=" + (elapsedRealtimeMs - profiler.startTime) / 1000f, "uri=" + dataSpec.uri.getLastPathSegment(), "dataType=" + dataTypeString, "trackType=" + trackTypeString,
                 trackFormatString(trackFormat), "reason=" + trackSelectionReasonString(trackSelectionReason),
-                "rangeStart=" + mediaStartTimeMs, "rangeEnd=" + mediaEndTimeMs, //"bandwidth=" + profiler.lastBandwidthSample,
-                opt("loadTime", loadDurationMs), opt("bytes", bytesLoaded),
-                opt("error", error != null ? "{" + error.getMessage() + "}" : null), opt("cancelled", wasCanceled));
+                "rangeStart=" + mediaStartTimeMs / 1000f, "rangeEnd=" + mediaEndTimeMs / 1000f, //"bandwidth=" + profiler.lastBandwidthSample,
+                opt("loadTime", msecToSec(loadDurationMs)), opt("bytes", bytesLoaded),
+                opt("error", error != null ? "{" + error.getMessage() + "}" : null), opt("canceled", wasCanceled));
     }
 
     @Override
@@ -272,7 +276,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         if (trackTypeString == null) {
             return;
         }
-        log("UpstreamDiscarded", "trackType=" + trackTypeString, "range=" + mediaLoadData.mediaStartTimeMs + ".." + mediaLoadData.mediaEndTimeMs);
+        log("UpstreamDiscarded", "trackType=" + trackTypeString, "start=" + mediaLoadData.mediaStartTimeMs / 1000f, "end=" + mediaLoadData.mediaEndTimeMs / 1000f);
     }
 
     @Override
@@ -317,7 +321,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onDecoderInitialized(EventTime eventTime, int trackType, String decoderName, long initializationDurationMs) {
-        log("DecoderInitialized", "name=" + decoderName, "duration=" + initializationDurationMs);
+        log("DecoderInitialized", "name=" + decoderName, "duration=" + initializationDurationMs / 1000f);
     }
 
     @Override
@@ -342,7 +346,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onDroppedVideoFrames(EventTime eventTime, int droppedFrames, long elapsedMs) {
-        log("DroppedFrames", "count=" + droppedFrames, "time=" + elapsedMs);
+        log("DroppedFrames", "count=" + droppedFrames, "time=" + elapsedMs / 1000f);
     }
 
     @Override
