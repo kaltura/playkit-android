@@ -572,7 +572,11 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
         isSeeking = true;
         sendDistinctEvent(PlayerEvent.Type.SEEKING);
-        player.seekTo(position);
+        if (isLiveStream() && position == player.getDuration()) {
+            player.seekToDefaultPosition();
+        } else {
+            player.seekTo(position);
+        }
     }
 
     @Override
