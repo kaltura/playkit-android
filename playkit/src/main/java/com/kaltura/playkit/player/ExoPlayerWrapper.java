@@ -530,7 +530,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         sendDistinctEvent(PlayerEvent.Type.PLAY);
-        if (isLiveMediaWithNoDvr()) {
+        if (isLiveMediaWithoutDvr()) {
             player.seekToDefaultPosition();
         }
 
@@ -611,14 +611,14 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             setPlaybackRate(lastKnownPlaybackRate);
         }
 
-        if (playerPosition == Consts.TIME_UNSET || isLiveMediaWithNoDvr()) {
+        if (playerPosition == Consts.TIME_UNSET || isLiveMediaWithoutDvr()) {
             player.seekToDefaultPosition();
         } else {
             player.seekTo(playerWindow, playerPosition);
         }
     }
 
-    private boolean isLiveMediaWithNoDvr() {
+    private boolean isLiveMediaWithoutDvr() {
         return sourceConfig != null && sourceConfig.dvrStatus != null && !sourceConfig.dvrStatus;
     }
 
