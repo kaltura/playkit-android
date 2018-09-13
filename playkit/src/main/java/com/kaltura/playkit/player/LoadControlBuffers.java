@@ -7,53 +7,53 @@ import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_MIN_BUFFE
 
 public class LoadControlBuffers {
 
-    private int minPlayerBufferMS = DEFAULT_MIN_BUFFER_MS; //The default minimum duration of media that the player will attempt to ensure is buffered at all
-    private int maxPlayerBufferMS = DEFAULT_MAX_BUFFER_MS; //The default maximum duration of media that the player will attempt to buffer
-    private int minBufferAfterInteractionMS = DEFAULT_BUFFER_FOR_PLAYBACK_MS; //The default duration of media that must be buffered for playback to start or resume following a user action such as a seek
-    private int minBufferAfterReBufferMS = DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS; //The default duration of media that must be buffered for playback after re-buffering
+    private int minPlayerBufferMs = DEFAULT_MIN_BUFFER_MS; //The default minimum duration of media that the player will attempt to ensure is buffered at all
+    private int maxPlayerBufferMs = DEFAULT_MAX_BUFFER_MS; //The default maximum duration of media that the player will attempt to buffer
+    private int minBufferAfterInteractionMs = DEFAULT_BUFFER_FOR_PLAYBACK_MS; //The default duration of media that must be buffered for playback to start or resume following a user action such as a seek
+    private int minBufferAfterReBufferMs = DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS; //The default duration of media that must be buffered for playback after re-buffering
 
-    public int getMinPlayerBufferMS() {
-        return minPlayerBufferMS;
+    public int getMinPlayerBufferMs() {
+        return minPlayerBufferMs;
     }
 
-    public LoadControlBuffers setMinPlayerBufferMS(int minPlayerBufferMS) {
-        this.minPlayerBufferMS = minPlayerBufferMS;
+    public LoadControlBuffers setMinPlayerBufferMs(int minPlayerBufferMs) {
+        this.minPlayerBufferMs = minPlayerBufferMs;
         return this;
     }
 
-    public int getMaxPlayerBufferMS() {
-        if (maxPlayerBufferMS < minPlayerBufferMS) {
-            return minPlayerBufferMS;
+    public int getMaxPlayerBufferMs() {
+        if (maxPlayerBufferMs < minPlayerBufferMs) {
+            return minPlayerBufferMs;
         }
-        return maxPlayerBufferMS;
+        return maxPlayerBufferMs;
     }
 
-    public LoadControlBuffers setMaxPlayerBufferMS(int maxPlayerBufferMS) {
-        this.maxPlayerBufferMS = maxPlayerBufferMS;
+    public LoadControlBuffers setMaxPlayerBufferMs(int maxPlayerBufferMs) {
+        this.maxPlayerBufferMs = maxPlayerBufferMs;
         return this;
     }
 
-    public int getMinBufferAfterInteractionMS() {
-        if (minPlayerBufferMS < minBufferAfterInteractionMS) {
-            return minPlayerBufferMS;
+    public int getMinBufferAfterInteractionMs() {
+        if (minPlayerBufferMs < minBufferAfterInteractionMs) {
+            return minPlayerBufferMs;
         }
-        return minBufferAfterInteractionMS;
+        return minBufferAfterInteractionMs;
     }
 
-    public LoadControlBuffers setMinBufferAfterInteractionMS(int minBufferAfterInteractionMS) {
-        this.minBufferAfterInteractionMS = minBufferAfterInteractionMS;
+    public LoadControlBuffers setMinBufferAfterInteractionMs(int minBufferAfterInteractionMs) {
+        this.minBufferAfterInteractionMs = minBufferAfterInteractionMs;
         return this;
     }
 
-    public int getMinBufferAfterReBufferMS() {
-        if (minPlayerBufferMS < minBufferAfterReBufferMS) {
-            return minPlayerBufferMS;
+    public int getMinBufferAfterReBufferMs() {
+        if (minPlayerBufferMs < minBufferAfterReBufferMs) {
+            return minPlayerBufferMs;
         }
-        return minBufferAfterReBufferMS;
+        return minBufferAfterReBufferMs;
     }
 
-    public LoadControlBuffers setMinBufferAfterReBufferMS(int minBufferAfterReBufferMS) {
-        this.minBufferAfterReBufferMS = minBufferAfterReBufferMS;
+    public LoadControlBuffers setMinBufferAfterReBufferMs(int minBufferAfterReBufferMs) {
+        this.minBufferAfterReBufferMs = minBufferAfterReBufferMs;
         return this;
     }
 }
