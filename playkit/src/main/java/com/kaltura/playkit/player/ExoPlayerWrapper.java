@@ -22,12 +22,10 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
-import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -49,7 +47,6 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSource.Factory;
-import com.google.android.exoplayer2.upstream.DefaultAllocator;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
@@ -58,7 +55,6 @@ import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
@@ -530,10 +526,14 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         sendDistinctEvent(PlayerEvent.Type.PLAY);
-        if (sourceConfig != null && sourceConfig.dvrStatus != null && !sourceConfig.dvrStatus) {
+        if (isLiveMediaWithoutDvr()) {
             player.seekToDefaultPosition();
         }
         player.setPlayWhenReady(true);
+    }
+
+    private boolean isLiveMediaWithoutDvr() {
+        return sourceConfig != null && sourceConfig.dvrStatus != null && !sourceConfig.dvrStatus;
     }
 
     @Override
@@ -611,7 +611,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             setPlaybackRate(lastKnownPlaybackRate);
         }
 
-        if (playerPosition == Consts.TIME_UNSET) {
+        if (playerPosition == Consts.TIME_UNSET || isLiveMediaWithoutDvr()) {
             player.seekToDefaultPosition(playerWindow);
         } else {
             player.seekTo(playerWindow, playerPosition);
