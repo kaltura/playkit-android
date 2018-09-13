@@ -28,9 +28,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -72,6 +74,29 @@ public class Profiler {
     // Config
     private static String postURL = DEFAULT_POST_URL;
     private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
+
+    static String field(String name, String value) {
+        if (value == null) {
+            return null;
+        }
+        return name + "={" + value + "}";
+    }
+
+    static String field(String name, long value) {
+        return name + "=" + value;
+    }
+
+    static String field(String name, boolean value) {
+        return name + "=" + value;
+    }
+
+    static String field(String name, float value) {
+        return String.format(Locale.US, "%s=%03f", name, value);
+    }
+
+    static String timeField(String name, long value) {
+        return field(name, value / 1000f);
+    }
 
     public boolean isActive() {
         return true;
@@ -179,32 +204,33 @@ public class Profiler {
         pkLog.d("New profiler with sessionId: " + sessionId);
 
         log("StartSession",
-                "sessionId=" + sessionId,
-                "time=" + System.currentTimeMillis(),
-                "screenSize=" + metrics.widthPixels + "x" + metrics.heightPixels,
-                "screenDpi=" + metrics.xdpi + "x" + metrics.ydpi
+                field("strNow", new Date().toString()),
+                field("sessionId", sessionId),
+                field("now", System.currentTimeMillis()),
+                field("screenSize", metrics.widthPixels + "x" + metrics.heightPixels),
+                field("screenDpi", metrics.xdpi + "x" + metrics.ydpi)
                 );
 
         log("PlayKit",
-                "version=" + PlayKitManager.VERSION_STRING,
-                "clientTag=" + PlayKitManager.CLIENT_TAG
+                field("version", PlayKitManager.VERSION_STRING),
+                field("clientTag", PlayKitManager.CLIENT_TAG)
                 );
 
         log("Platform",
-                "name=Android",
-                "apiLevel=" + Build.VERSION.SDK_INT,
-                "chipset=" + MediaSupport.DEVICE_CHIPSET,
-                "brand=" + Build.BRAND,
-                "model=" + Build.MODEL,
-                "manufacturer=" + Build.MANUFACTURER,
-                "device=" + Build.DEVICE,
-                "tags=" + Build.TAGS,
-                "fingerprint=" + Build.FINGERPRINT
+                field("name", "Android"),
+                field("apiLevel", Build.VERSION.SDK_INT),
+                field("chipset", MediaSupport.DEVICE_CHIPSET),
+                field("brand", Build.BRAND),
+                field("model", Build.MODEL),
+                field("manufacturer", Build.MANUFACTURER),
+                field("device", Build.DEVICE),
+                field("tags", Build.TAGS),
+                field("fingerprint", Build.FINGERPRINT)
                 );
 
 
         if (currentExperiment != null) {
-            log("Experiment", "info=" + currentExperiment);
+            log("Experiment", field("info", currentExperiment));
         }
 
         ioHandler.post(new Runnable() {
@@ -333,7 +359,7 @@ public class Profiler {
 
         StringBuilder sb = startLog(event);
 
-        logPayload(sb, "pos=" + playerEngine.getCurrentPosition() / 1000f, "buf=" + playerEngine.getBufferedPosition() / 1000f);
+        logPayload(sb, timeField("pos", playerEngine.getCurrentPosition()), timeField("buf", playerEngine.getBufferedPosition()));
         logPayload(sb, strings);
 
         endLog(sb);
@@ -390,15 +416,15 @@ public class Profiler {
         json.add("entry", toJSON(mediaConfig.getMediaEntry()));
         json.addProperty("startPosition", mediaConfig.getStartPosition());
 
-        log("SetMedia", "config=" + json);
+        log("SetMedia", field("config", json.toString()));
     }
 
     public void onPrepareStarted(final PlayerEngine playerEngine, final PKMediaSourceConfig sourceConfig) {
-        log("PrepareStarted", "engine=" + playerEngine.getClass().getSimpleName(), "source=" + sourceConfig.getUrl(), "useTextureView=" + sourceConfig.playerSettings.useTextureView());
+        log("PrepareStarted", field("engine", playerEngine.getClass().getSimpleName()), field("source", sourceConfig.getUrl().toString()), field("useTextureView", sourceConfig.playerSettings.useTextureView()));
     }
 
     public void onSeekRequested(PlayerEngine playerEngine, long position) {
-        logWithPlaybackInfo("SeekRequested", playerEngine, "targetPosition=" + position / 1000f);
+        logWithPlaybackInfo("SeekRequested", playerEngine, timeField("targetPosition", position));
     }
 
     public void onPauseRequested(PlayerEngine playerEngine) {
@@ -414,7 +440,7 @@ public class Profiler {
     }
 
     public void onBandwidthSample(PlayerEngine playerEngine, long bitrate) {
-        log("BandwidthSample", "bandwidth=" + bitrate);
+        log("BandwidthSample", field("bandwidth", bitrate));
     }
 
     public void onSessionFinished() {
@@ -477,6 +503,6 @@ public class Profiler {
     }
 
     public void onViewportSizeChange(PlayerEngine playerEngine, int width, int height) {
-        log("ViewportSizeChange", "width=" + width, "height=" + height);
+        log("ViewportSizeChange", field("width", width), field("height", height));
     }
 }
