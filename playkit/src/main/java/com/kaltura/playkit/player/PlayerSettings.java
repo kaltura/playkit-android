@@ -93,74 +93,74 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public PlayerSettings setVRPlayerEnabled(boolean vrPlayerEnabled) {
+    public Player.Settings setVRPlayerEnabled(boolean vrPlayerEnabled) {
         this.vrPlayerEnabled = vrPlayerEnabled;
         return this;
     }
 
     @Override
-    public PlayerSettings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
+    public Player.Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
         this.contentRequestAdapter = contentRequestAdapter;
         return this;
     }
 
     @Override
-    public PlayerSettings setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
+    public Player.Settings setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
         this.licenseRequestAdapter = licenseRequestAdapter;
         return this;
     }
 
     @Override
-    public PlayerSettings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
+    public Player.Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
         return this;
     }
 
     @Override
-    public PlayerSettings useTextureView(boolean useTextureView) {
+    public Player.Settings useTextureView(boolean useTextureView) {
         this.useTextureView = useTextureView;
         return this;
     }
 
     @Override
-    public PlayerSettings setSecureSurface(boolean isSurfaceSecured) {
+    public Player.Settings setSecureSurface(boolean isSurfaceSecured) {
         this.isSurfaceSecured = isSurfaceSecured;
         return this;
     }
 
     @Override
-    public PlayerSettings setAdAutoPlayOnResume(boolean adAutoPlayOnResume) {
+    public Player.Settings setAdAutoPlayOnResume(boolean adAutoPlayOnResume) {
         this.adAutoPlayOnResume = adAutoPlayOnResume;
         return this;
     }
 
     @Override
-    public PlayerSettings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
+    public Player.Settings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
         this.preferredAudioTrackConfig = preferredAudioTrackConfig;
         return this;
     }
 
     @Override
-    public PlayerSettings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
+    public Player.Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
         this.preferredTextTrackConfig = preferredTextTrackConfig;
         return this;
     }
 
     @Override
-    public PlayerSettings setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
+    public Player.Settings setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
         this.preferredMediaFormat = preferredMediaFormat;
         return this;
     }
 
 
     @Override
-    public PlayerSettings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
+    public Player.Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
         this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
         return this;
     }
 
     @Override
-    public PlayerSettings setPlayerBuffers(LoadControlBuffers loadControlBuffers) {
+    public Player.Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers) {
         this.loadControlBuffers = loadControlBuffers;
         return this;
     }
