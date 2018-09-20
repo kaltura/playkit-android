@@ -22,11 +22,13 @@ import java.util.Map;
 
 public class PlayKitManager {
 
+
     private static final PKLog log = PKLog.get("PlayKitManager");
 
 
     public static final String VERSION_STRING = BuildConfig.VERSION_NAME;
     public static final String CLIENT_TAG = "playkit/android-" + VERSION_STRING;
+    public static final String PLAYER_TYPE = "kaltura-player-android";
 
     private static boolean shouldSendDeviceCapabilitiesReport = true;
 
