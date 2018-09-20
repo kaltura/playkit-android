@@ -203,9 +203,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         shouldGetTracksInfo = true;
         trackSelectionHelper.applyPlayerSettings(playerSettings);
-        if (PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) {
-            player.seekToDefaultPosition();
-        }
 
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
         boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
@@ -603,7 +600,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             trackSelectionHelper.release();
             trackSelectionHelper = null;
         }
-        shouldRestorePlayerToPreviousState = true;
     }
 
     @Override
@@ -623,7 +619,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private boolean isLiveMediaWithoutDvr() {
-        return isLive() && sourceConfig != null && sourceConfig.dvrStatus != null && !sourceConfig.dvrStatus;
+        return (isLive() || PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) && sourceConfig != null && sourceConfig.dvrStatus != null && sourceConfig.dvrStatus == PKMediaSourceConfig.LiveStreamMode.LIVE;
     }
 
     @Override
@@ -869,5 +865,3 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 }
-
-

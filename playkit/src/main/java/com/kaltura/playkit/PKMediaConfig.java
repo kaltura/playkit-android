@@ -17,7 +17,7 @@ package com.kaltura.playkit;
  */
 public class PKMediaConfig {
 
-    private long startPosition = 0;
+    private Long startPosition;
     private PKMediaEntry mediaEntry;
 
     /**
@@ -27,7 +27,7 @@ public class PKMediaConfig {
      * @param startPosition - the position from which the media should start.
      * @return - the config object.
      */
-    public PKMediaConfig setStartPosition(long startPosition) {
+    public PKMediaConfig setStartPosition(Long startPosition) {
         this.startPosition = startPosition;
         return this;
     }
@@ -43,7 +43,7 @@ public class PKMediaConfig {
      *
      * @return - the start position
      */
-    public long getStartPosition() {
+    public Long getStartPosition() {
         return startPosition;
     }
 
