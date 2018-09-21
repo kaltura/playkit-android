@@ -600,6 +600,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             trackSelectionHelper.release();
             trackSelectionHelper = null;
         }
+        shouldRestorePlayerToPreviousState = true;
     }
 
     @Override
