@@ -574,7 +574,9 @@ public class PlayerController implements Player {
                         case DURATION_CHANGE:
                             event = new PlayerEvent.DurationChanged(getDuration());
                             if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
-                                if (mediaConfig.getStartPosition() > 0) {
+                                if (mediaConfig.getStartPosition() != null &&
+                                        ((isLiveMediaWithDvr() && mediaConfig.getStartPosition() == 0) ||
+                                                mediaConfig.getStartPosition() > 0)) {
                                     startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                                 }
                                 isNewEntry = false;
@@ -630,6 +632,10 @@ public class PlayerController implements Player {
                 }
             }
         };
+    }
+
+    private boolean isLiveMediaWithDvr() {
+        return (isLive() || PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) && sourceConfig != null && sourceConfig.dvrStatus != null && sourceConfig.dvrStatus == PKMediaSourceConfig.LiveStreamMode.LIVE_DVR;
     }
 
     private PlayerEngine.StateChangedListener initStateChangeListener() {
