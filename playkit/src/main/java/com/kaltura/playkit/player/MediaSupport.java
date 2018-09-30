@@ -19,6 +19,7 @@ import android.media.MediaDrm;
 import android.media.NotProvisionedException;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.util.Base64;
 import android.util.Log;
@@ -40,8 +41,8 @@ public class MediaSupport {
     public static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
     private static final PKLog log = PKLog.get("MediaSupport");
     private static boolean initSucceeded;
-    private static Boolean widevineClassic;
-    private static Boolean widevineModular;
+    @Nullable private static Boolean widevineClassic;
+    @Nullable private static Boolean widevineModular;
     public static final String DEVICE_CHIPSET = getDeviceChipset();
 
 
