@@ -179,8 +179,11 @@ public class PlayerController implements Player {
     public boolean setMedia(PKMediaConfig mediaConfig) {
         log.d("setMedia");
 
-        isNewEntry = true;
-
+        if (!isNewEntry) {
+            isNewEntry = true;
+            stop();
+        }
+        
         sessionId = generateSessionId();
         if (playerSettings.getContentRequestAdapter() != null) {
             playerSettings.getContentRequestAdapter().updateParams(this);
