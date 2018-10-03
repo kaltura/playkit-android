@@ -1,19 +1,13 @@
-
 // PlayKit Library Version
-ext.playkitVersion = '0.2.10'
-
-
-
-
+ext.playkitVersion = '3.6.0'
 
 // Append short commit hash to dev builds, i.e. "dev.a1b2c3d"
 if (playkitVersion == 'dev') {
-    def cmd = "git rev-parse --short HEAD"
+    def cmd = "git -C " + projectDir + " rev-parse --short HEAD"
     def proc = cmd.execute()
     def commit = proc.text.trim()
     ext.playkitVersion = 'dev.' + commit
 }
-
 
 // Publish to Bintray
 try {

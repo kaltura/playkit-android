@@ -1,15 +1,31 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ *
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ *
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.PlayerView;
 
 public class PlayerDecoratorBase implements Player {
-    
+
     @Override
-    public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
+    public Settings getSettings() {
+        return player.getSettings();
+    }
+
+    @Override
+    public void prepare(@NonNull PKMediaConfig mediaConfig) {
         player.prepare(mediaConfig);
     }
 
@@ -29,8 +45,33 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public AdController getAdController() {
-        return player.getAdController();
+    public <T extends PKController> T getController(Class<T> type) {
+        return player.getController(type);
+    }
+
+    @Override
+    public final String getSessionId() {
+        return player.getSessionId();
+    }
+
+    @Override
+    public boolean isLive() {
+        return player.isLive();
+    }
+
+    @Override
+    public PKMediaFormat getMediaFormat() {
+        return player.getMediaFormat();
+    }
+
+    @Override
+    public void setPlaybackRate(float rate) {
+        player.setPlaybackRate(rate);
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        return player.getPlaybackRate();
     }
 
     @Override
@@ -59,7 +100,7 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
+    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
         player.prepareNext(mediaConfig);
     }
 
@@ -71,6 +112,11 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public void destroy() {
         player.destroy();
+    }
+
+    @Override
+    public void stop() {
+        player.stop();
     }
 
     @Override
@@ -96,7 +142,7 @@ public class PlayerDecoratorBase implements Player {
     void setPlayer(Player player) {
         this.player = player;
     }
-    
+
     Player getPlayer() {
         return player;
     }
@@ -106,6 +152,11 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public void onApplicationResumed() {
         player.onApplicationResumed();
+    }
+
+    @Override
+    public void onOrientationChanged() {
+        player.onOrientationChanged();
     }
 
     @Override
@@ -119,7 +170,7 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
-        player.updatePluginConfig(pluginName, key, value);
+    public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
+        player.updatePluginConfig(pluginName, pluginConfig);
     }
 }

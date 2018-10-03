@@ -1,9 +1,26 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ *
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ *
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.player;
 
-import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.PlaybackParamsInfo;
+import com.kaltura.playkit.PKController;
+import com.kaltura.playkit.PKError;
+import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
+
+import java.util.List;
 
 
 /**
@@ -13,18 +30,20 @@ import com.kaltura.playkit.utils.Consts;
  * Created by anton.afanasiev on 01/11/2016.
  */
 
-interface PlayerEngine {
+public interface PlayerEngine {
 
     /**
      * Initialize player (if needed), and load the mediaSourceUri
      * that should be played.
-     * @param mediaSource - the source to be played.
+     *
+     * @param mediaSourceConfig - the source to be played.
      */
-    void load(PKMediaSource mediaSource);
+    void load(PKMediaSourceConfig mediaSourceConfig);
 
     /**
      * Getter for the View to which current
      * surface is attached to.
+     *
      * @return - {@link android.view.SurfaceView}
      */
     PlayerView getView();
@@ -50,6 +69,7 @@ interface PlayerEngine {
 
     /**
      * Getter for the current playback position.
+     *
      * @return - position of the player or {@link Consts#POSITION_UNSET} if position is unknown or player is null
      */
     long getCurrentPosition();
@@ -61,21 +81,18 @@ interface PlayerEngine {
     long getDuration();
 
     /**
-     *
      * @return - The buffered position of the current media,
      * or {@link Consts#POSITION_UNSET} if the position is unknown or player is null.
      */
     long getBufferedPosition();
 
     /**
-     *
      * @return - the volume of the current audio,
      * with 0 as total silence and 1 as maximum volume up.
      */
     float getVolume();
 
     /**
-     *
      * @return - the {@link PKTracks} object with all the available tracks info.
      */
     PKTracks getPKTracks();
@@ -85,12 +102,14 @@ interface PlayerEngine {
      * If uniqueId is not valid or null, this will throw {@link IllegalArgumentException}.
      * Example of the valid uniqueId for regular video track: Video:0,0,1.
      * Example of the valid uniqueId for adaptive video track: Video:0,0,adaptive.
+     *
      * @param uniqueId - the unique id of the new track that will play instead of the old one.
      */
     void changeTrack(String uniqueId);
 
     /**
      * Seek player to the specified position.
+     *
      * @param position - desired position.
      */
     void seekTo(long position);
@@ -98,6 +117,7 @@ interface PlayerEngine {
     /**
      * Start players playback from the specified position.
      * Note! The position is passed in seconds.
+     *
      * @param position - desired position.
      */
     void startFrom(long position);
@@ -107,6 +127,7 @@ interface PlayerEngine {
      * Accept values between 0 and 1. Where 0 is mute and 1 is maximum volume.
      * If the volume parameter is higher then 1, it will be converted to 1.
      * If the volume parameter is lower then 0, it be converted to 0.
+     *
      * @param volume - volume to set.
      */
     void setVolume(float volume);
@@ -122,15 +143,16 @@ interface PlayerEngine {
      *
      * @param eventTrigger - the event trigger.
      */
-    void setEventListener(PlayerController.EventListener eventTrigger);
+    void setEventListener(EventListener eventTrigger);
 
     /**
      * Set the StateChangeListener to the player, which will notify the
      * {@link PlayerController} about the players states changes.
      * Note! Same change that happens twice in a row will not be reported.
+     *
      * @param stateChangedTrigger - the state change listener.
      */
-    void setStateChangedListener(PlayerController.StateChangedListener stateChangedTrigger);
+    void setStateChangedListener(StateChangedListener stateChangedTrigger);
 
     /**
      * Release the current player.
@@ -155,16 +177,61 @@ interface PlayerEngine {
 
     /**
      * Holds current media url(as String), current playing video and audio bitrates.
-     * @return the playback params data object of the current media.
      *
+     * @return the playback params data object of the current media.
      */
-    PlaybackParamsInfo getPlaybackParamsInfo();
+    PlaybackInfo getPlaybackInfo();
 
     /**
      * Return the ExceptionInfo object, which holds the last error that happened,
      * and counter, which holds amount of the same exception that happened in a row.
      * This counter will help us to avoid the infinite loop, in case when we retry the playback, when handle the exception.
-     * @return - the last {@link PlayerEvent.ExceptionInfo} that happened.
+     *
+     * @return - the last {@link PKError} that happened.
      */
-    PlayerEvent.ExceptionInfo getCurrentException();
+    PKError getCurrentError();
+
+
+    /**
+     * Stop player executing the {@link PlayerEngine} implementation.
+     * stop the player and seek to start position.
+     */
+    void stop();
+
+    /**
+     * Will return list of metadata objects, for the loaded entry.
+     *
+     * @return - list of {@link PKMetadata}
+     */
+    List<PKMetadata> getMetadata();
+
+    BaseTrack getLastSelectedTrack(int renderType);
+
+    boolean isLive();
+
+    void setPlaybackRate(float rate);
+
+    float getPlaybackRate();
+
+    /**
+     * Generic getters for playkit controllers.
+     *
+     * @param type - type of the controller you want to obtain.
+     * @return - the {@link PKController} instance if specified controller type exist,
+     * otherwise return null.
+     */
+    <T extends PKController> T getController(Class<T> type);
+
+    /**
+     * Must be called by application when Android onConfigurationChanged triggered by system.
+     */
+    void onOrientationChanged();
+
+    interface EventListener {
+        void onEvent(PlayerEvent.Type event);
+    }
+
+    interface StateChangedListener {
+        void onStateChanged(PlayerState oldState, PlayerState newState);
+    }
 }

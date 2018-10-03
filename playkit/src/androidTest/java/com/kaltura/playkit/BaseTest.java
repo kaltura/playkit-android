@@ -6,7 +6,7 @@ import java.util.concurrent.CountDownLatch;
 
 
 /**
- * Created by tehilarozin on 13/11/2016.
+ * @hide
  */
 
 public class BaseTest {
@@ -60,7 +60,7 @@ public class BaseTest {
     }
 
 
-    public interface TestBlock<T>{
+    public interface TestBlock<T> {
         void execute(T data) throws AssertionError;
     }
 }
