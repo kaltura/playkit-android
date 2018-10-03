@@ -28,13 +28,36 @@ public class PKMediaSourceConfig {
 
     PKMediaSource mediaSource;
     PKMediaEntry.MediaEntryType mediaEntryType;
+    LiveStreamMode dvrStatus;
     PlayerSettings playerSettings;
     private VRSettings vrSettings;
 
+    public enum LiveStreamMode {
+        LIVE(0),
+        LIVE_DVR(1);
+
+        private final int value;
+
+        LiveStreamMode(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
 
     PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings, VRSettings vrSettings) {
         this.mediaSource = source;
         this.mediaEntryType = mediaConfig.getMediaEntry().getMediaType();
+        if (mediaConfig.getMediaEntry().getMetadata() != null &&
+                mediaConfig.getMediaEntry().getMetadata().containsKey("dvrStatus")) {
+            if ("0".equals(mediaConfig.getMediaEntry().getMetadata().get("dvrStatus"))) {
+                this.dvrStatus = LiveStreamMode.LIVE;
+            } else {
+                this.dvrStatus = LiveStreamMode.LIVE_DVR;
+            }
+        }
         this.playerSettings = playerSettings;
         this.vrSettings = vrSettings;
     }

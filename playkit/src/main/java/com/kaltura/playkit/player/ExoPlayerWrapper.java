@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.support.annotation.NonNull;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -34,6 +35,7 @@ import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
+import com.google.android.exoplayer2.source.BehindLiveWindowException;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
@@ -93,7 +95,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private DefaultBandwidthMeter bandwidthMeter;
-
+    private PlayerSettings playerSettings;
     private EventListener eventListener;
     private StateChangedListener stateChangedListener;
 
@@ -137,18 +139,22 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
-    private String sessionId;
 
-    ExoPlayerWrapper(Context context) {
-        this(context, new ExoPlayerView(context));
+    private String sessionId;
+    private PKMediaSourceConfig sourceConfig;
+
+    ExoPlayerWrapper(Context context, PlayerSettings playerSettings) {
+        this(context, new ExoPlayerView(context), playerSettings);
     }
 
-    ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView) {
+    ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView, PlayerSettings playerSettings) {
         this.context = context;
         bandwidthMeter = new DefaultBandwidthMeter.Builder()
                 .setEventListener(mainHandler, this)
                 .build();
         this.exoPlayerView = exoPlayerView;
+
+        this.playerSettings = playerSettings;
 
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
             CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
@@ -172,7 +178,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context,
                 drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
 
-        player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
+        LoadControl loadControl = new DefaultLoadControl.Builder().setBufferDurationsMs(playerSettings.getLoadControlBuffers().getMinPlayerBufferMs(),
+                playerSettings.getLoadControlBuffers().getMaxPlayerBufferMs(),
+                playerSettings.getLoadControlBuffers().getMinBufferAfterInteractionMs(),
+                playerSettings.getLoadControlBuffers().getMinBufferAfterReBufferMs()).createDefaultLoadControl();
+        player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector, loadControl);
+
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
@@ -212,7 +223,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         return trackSelector;
     }
 
-    private void preparePlayer(PKMediaSourceConfig sourceConfig) {
+    private void preparePlayer(@NonNull PKMediaSourceConfig sourceConfig) {
+        this.sourceConfig = sourceConfig;
         //reset metadata on prepare.
         metadataList.clear();
 
@@ -221,10 +233,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         shouldGetTracksInfo = true;
-        trackSelectionHelper.applyPlayerSettings(sourceConfig.playerSettings);
-        if (PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) {
-            player.seekToDefaultPosition();
-        }
+        trackSelectionHelper.applyPlayerSettings(playerSettings);
 
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
         profiler().onPrepareStarted(this, sourceConfig);
@@ -415,6 +424,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
+        if (isBehindLiveWindow(error) && sourceConfig != null) {
+            log.d("onPlayerError BehindLiveWindowException receivec repreparing player");
+            player.prepare(buildExoMediaSource(sourceConfig), true, false);
+            return;
+        }
+
         Enum errorType;
         String errorMessage = error.getMessage();
 
@@ -494,25 +509,40 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     public void load(PKMediaSourceConfig mediaSourceConfig) {
         log.d("load");
 
-        crossProtocolRedirectEnabled = mediaSourceConfig.playerSettings.crossProtocolRedirectEnabled();
-        PKRequestParams.Adapter licenseRequestAdapter = mediaSourceConfig.playerSettings.getLicenseRequestAdapter();
+        crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
+        PKRequestParams.Adapter licenseRequestAdapter = playerSettings.getLicenseRequestAdapter();
+
         if (licenseRequestAdapter != null) {
             httpDataSourceRequestParams = licenseRequestAdapter.adapt(new PKRequestParams(null, new HashMap<String, String>()));
         }
 
         if (player == null) {
-            this.useTextureView = mediaSourceConfig.playerSettings.useTextureView();
-            this.isSurfaceSecured = mediaSourceConfig.playerSettings.isSurfaceSecured();
+            this.useTextureView = playerSettings.useTextureView();
+            this.isSurfaceSecured = playerSettings.isSurfaceSecured();
             initializePlayer();
         } else {
             // for change media case need to verify if surface swap is needed
-            maybeChangePlayerRenderView(mediaSourceConfig.playerSettings);
+            maybeChangePlayerRenderView();
         }
 
         preparePlayer(mediaSourceConfig);
     }
 
-    private void maybeChangePlayerRenderView(PlayerSettings playerSettings) {
+    private boolean isBehindLiveWindow(ExoPlaybackException e) {
+        if (e.type != ExoPlaybackException.TYPE_SOURCE) {
+            return false;
+        }
+        Throwable cause = e.getSourceException();
+        while (cause != null) {
+            if (cause instanceof BehindLiveWindowException) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
+    }
+
+    private void maybeChangePlayerRenderView() {
         // no need to swap video surface if no change was done in surface settings
         if (this.useTextureView == playerSettings.useTextureView() && this.isSurfaceSecured == playerSettings.isSurfaceSecured()) {
             return;
@@ -545,6 +575,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         sendDistinctEvent(PlayerEvent.Type.PLAY);
+        if (isLiveMediaWithoutDvr()) {
+            player.seekToDefaultPosition();
+        }
 
         profiler().onPlayRequested(this);
         player.setPlayWhenReady(true);
@@ -587,8 +620,14 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
         isSeeking = true;
         sendDistinctEvent(PlayerEvent.Type.SEEKING);
+
         profiler().onSeekRequested(this, position);
-        player.seekTo(position);
+
+        if (isLive() && position == player.getDuration()) {
+            player.seekToDefaultPosition();
+        } else {
+            player.seekTo(position);
+        }
     }
 
     private Profiler profiler() {
@@ -629,11 +668,16 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             setVolume(lastKnownVolume);
             setPlaybackRate(lastKnownPlaybackRate);
         }
-        if (playerPosition == Consts.TIME_UNSET) {
-            player.seekToDefaultPosition(playerWindow);
+
+        if (playerPosition == Consts.TIME_UNSET || isLiveMediaWithoutDvr()) {
+            player.seekToDefaultPosition();
         } else {
             player.seekTo(playerWindow, playerPosition);
         }
+    }
+
+    private boolean isLiveMediaWithoutDvr() {
+        return (isLive() || PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) && sourceConfig != null && sourceConfig.dvrStatus != null && sourceConfig.dvrStatus == PKMediaSourceConfig.LiveStreamMode.LIVE;
     }
 
     @Override
@@ -881,4 +925,3 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 }
-
