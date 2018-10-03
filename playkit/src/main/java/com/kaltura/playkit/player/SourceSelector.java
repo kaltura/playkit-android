@@ -1,8 +1,22 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ *
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ *
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.player;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.LocalAssetsManager;
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
@@ -16,76 +30,95 @@ import java.util.List;
  */
 
 class SourceSelector {
-    
+
     private static final PKLog log = PKLog.get("SourceSelector");
     private final PKMediaEntry mediaEntry;
-    
-    SourceSelector(PKMediaEntry mediaEntry) {
+    private final PKMediaFormat preferredMediaFormat;
+
+    public SourceSelector(PKMediaEntry mediaEntry, PKMediaFormat preferredMdieaFormat) {
         this.mediaEntry = mediaEntry;
+        this.preferredMediaFormat = preferredMdieaFormat;
     }
-    
+
     @Nullable
     private PKMediaSource sourceByFormat(PKMediaFormat format) {
-        for (PKMediaSource source : mediaEntry.getSources()) {
-            if (source.getMediaFormat() == format) {
-                return source;
+        if (mediaEntry != null && mediaEntry.getSources() != null) {
+            for (PKMediaSource source : mediaEntry.getSources()) {
+                if (source.getMediaFormat() == format) {
+                    return source;
+                }
             }
         }
         return null;
     }
-    
+
     @Nullable
     PKMediaSource getPreferredSource() {
 
         // If PKMediaSource is local, there is no need to look for the preferred source,
         // because it is only one.
         PKMediaSource localMediaSource = getLocalSource();
-        if(localMediaSource != null){
+        if (localMediaSource != null) {
             return localMediaSource;
         }
 
-        // Default preference: DASH, HLS, WVM, MP4
+        // Default preference: DASH, HLS, WVM, MP4, MP3
 
-        List<PKMediaFormat> pref = new ArrayList<>(10);
+        List<PKMediaFormat> formatsPriorityList = getFormatsPriorityList();
 
-        // Dash is always available.
-        pref.add(PKMediaFormat.dash_clear);
-        
-        // Dash+Widevine is only available from Android 4.3 
-        if (MediaSupport.widevineModular()) {
-            pref.add(PKMediaFormat.dash_drm);
-        }
-        
-        // HLS clear is always available
-        pref.add(PKMediaFormat.hls_clear);
-        
-        // Widevine Classic is OPTIONAL from Android 6. 
-        if (MediaSupport.widevineClassic(null)) {
-            pref.add(PKMediaFormat.wvm_widevine);
-        }
-        
-        // MP4 is always available, but gives inferior performance.
-        pref.add(PKMediaFormat.mp4_clear);
-        
-        for (PKMediaFormat format : pref) {
+        for (PKMediaFormat format : formatsPriorityList) {
             PKMediaSource source = sourceByFormat(format);
-            if (source != null) {
-                return source;
+            if (source == null) {
+                continue;
             }
-        }
 
-        log.e("No playable sources found!");
+            List<PKDrmParams> drmParams = source.getDrmData();
+            if (drmParams != null && !drmParams.isEmpty()) {
+                for (PKDrmParams params : drmParams) {
+                    if (params.isSchemeSupported()) {
+                        return source;
+                    }
+                }
+                // This source doesn't have supported params
+                continue;
+            }
+            return source;
+        }
         return null;
     }
 
-    static PKMediaSource selectSource(PKMediaEntry mediaEntry) {
-        return new SourceSelector(mediaEntry).getPreferredSource();
+    @NonNull
+    private List<PKMediaFormat> getFormatsPriorityList() {
+        List<PKMediaFormat> formatsPriorityList = new ArrayList<>();
+
+        formatsPriorityList.add(PKMediaFormat.dash);
+        formatsPriorityList.add(PKMediaFormat.hls);
+        formatsPriorityList.add(PKMediaFormat.wvm);
+        formatsPriorityList.add(PKMediaFormat.mp4);
+        formatsPriorityList.add(PKMediaFormat.mp3);
+
+        if (preferredMediaFormat == PKMediaFormat.dash) {
+            return formatsPriorityList;
+        }
+
+        int preferredMediaFormatIndex = formatsPriorityList.indexOf(preferredMediaFormat);
+        if (preferredMediaFormatIndex > 0) {
+            formatsPriorityList.remove(preferredMediaFormatIndex);
+            formatsPriorityList.add(0, preferredMediaFormat);
+        }
+        return formatsPriorityList;
     }
 
-    private PKMediaSource getLocalSource(){
-        for (PKMediaSource source : mediaEntry.getSources()) {
-            if (source instanceof LocalAssetsManager.LocalMediaSource) {
-                return source;
+    public static PKMediaSource selectSource(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat) {
+        return new SourceSelector(mediaEntry, preferredMediaFormat).getPreferredSource();
+    }
+
+    private PKMediaSource getLocalSource() {
+        if (mediaEntry != null && mediaEntry.getSources() != null) {
+            for (PKMediaSource source : mediaEntry.getSources()) {
+                if (source instanceof LocalAssetsManager.LocalMediaSource) {
+                    return source;
+                }
             }
         }
         return null;

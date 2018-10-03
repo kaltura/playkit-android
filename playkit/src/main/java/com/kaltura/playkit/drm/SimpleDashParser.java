@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ *
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ *
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.drm;
 
 import android.net.Uri;
@@ -7,7 +19,6 @@ import android.support.annotation.Nullable;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.drm.DrmInitData;
-import com.google.android.exoplayer2.drm.DrmInitData.SchemeData;
 import com.google.android.exoplayer2.extractor.mp4.FragmentedMp4Extractor;
 import com.google.android.exoplayer2.extractor.mp4.PsshAtomUtil;
 import com.google.android.exoplayer2.source.chunk.ChunkExtractorWrapper;
@@ -32,7 +43,7 @@ import java.util.UUID;
 
 /**
  * Created by anton.afanasiev on 13/12/2016.
- *
+ * <p>
  * A simple (limited) dash parser. Extracts Format and DrmInitData from the manifest and/or initialization chink.
  * Currently only reads the first Representation of the video AdaptationSet of the first Period.
  */
@@ -66,17 +77,24 @@ class SimpleDashParser {
         if (representations == null || representations.isEmpty()) {
             throw new IOException("At least one video representation is required");
         }
+
         Representation representation = representations.get(0);
 
-        format = representation.format;
-        drmInitData = format.drmInitData;
-        hasContentProtection = drmInitData.schemeDataCount > 0;
-        if (hasContentProtection) {
-            loadDrmInitData(representation);
-        }else{
-            log.i("no content protection found");
+        if (representation != null) {
+            format = representation.format;
+            if (format != null) {
+                drmInitData = format.drmInitData;
+            }
+            if (drmInitData == null) {
+                throw new IOException("drmInitData is not initialized");
+            }
+            hasContentProtection = drmInitData.schemeDataCount > 0;
+            if (hasContentProtection) {
+                loadDrmInitData(representation);
+            } else {
+                log.i("no content protection found");
+            }
         }
-
         return this;
     }
 
@@ -87,21 +105,21 @@ class SimpleDashParser {
         FileDataSource initChunkSource = new FileDataSource();
         DataSpec initDataSpec = new DataSpec(initFile);
         int trigger = C.SELECTION_REASON_MANUAL;
-        ChunkExtractorWrapper extractorWrapper = new ChunkExtractorWrapper(new FragmentedMp4Extractor(), format, false ,false);
+        ChunkExtractorWrapper extractorWrapper = new ChunkExtractorWrapper(new FragmentedMp4Extractor(), C.TRACK_TYPE_DEFAULT, format);
         InitializationChunk chunk = new InitializationChunk(initChunkSource, initDataSpec, format, trigger, format, extractorWrapper); // TODO why do we need the 5 -fth argument
         try {
             chunk.load();
         } catch (InterruptedException e) {
             log.e("Interrupted! " + e.getMessage());
         }
-        if (!chunk.isLoadCanceled()) {
-            drmInitData = chunk.getSampleFormat().drmInitData;
-        }
 
-        if (drmInitData != null) {
-            SchemeData schemeInitData = getWidevineInitData(drmInitData);
-            if (schemeInitData != null) {
-                widevineInitData = schemeInitData.data;
+        if (extractorWrapper.getSampleFormats() != null && extractorWrapper.getSampleFormats().length >= 1) {
+            drmInitData = extractorWrapper.getSampleFormats()[0].drmInitData;
+            if (drmInitData != null) {
+                DrmInitData.SchemeData schemeInitData = getWidevineInitData(drmInitData);
+                if (schemeInitData != null) {
+                    widevineInitData = schemeInitData.data;
+                }
             }
         }
     }

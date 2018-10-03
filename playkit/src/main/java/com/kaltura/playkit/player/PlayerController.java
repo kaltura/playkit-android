@@ -1,117 +1,81 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ *
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ *
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.player;
 
 import android.content.Context;
-import android.media.MediaCodec;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.playkit.Assert;
+import com.kaltura.playkit.PKController;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
-import com.kaltura.playkit.ads.AdController;
+import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.UUID;
+
+import static com.kaltura.playkit.PKMediaFormat.wvm;
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 
 /**
- * Created by anton.afanasiev on 01/11/2016.
+ * @hide
  */
 
 public class PlayerController implements Player {
 
     private static final PKLog log = PKLog.get("PlayerController");
-    private static final int ALLOWED_ERROR_RETRIES = 3;
 
+    private Context context;
+    private PKMediaConfig mediaConfig;
+    private PKMediaSourceConfig sourceConfig;
+    private PlayerSettings playerSettings = new PlayerSettings();
+    private final Runnable updateProgressAction = initProgressAction();
 
     private PlayerEngine player;
-    private Context context;
-    private PlayerView wrapperView;
+    private PlayerEngineType currentPlayerType = PlayerEngineType.Unknown;
 
-    private PlayerConfig.Media mediaConfig = null;
+    private PlayerView rootPlayerView;
+    private PlayerView playerEngineView;
 
-    private PKEvent.Listener eventListener;
+    private String sessionId;
+    private UUID playerSessionId = UUID.randomUUID();
 
+    private long targetSeekPosition;
     private boolean isNewEntry = true;
 
-    public void setEventListener(PKEvent.Listener eventListener) {
-        this.eventListener = eventListener;
-    }
 
-    interface EventListener {
-        void onEvent(PlayerEvent.Type event);
-    }
+    private PKEvent.Listener eventListener;
+    private PlayerEngine.EventListener eventTrigger = initEventListener();
+    private PlayerEngine.StateChangedListener stateChangedTrigger = initStateChangeListener();
 
-    interface StateChangedListener {
-        void onStateChanged(PlayerState oldState, PlayerState newState);
-    }
 
-    private EventListener eventTrigger = new EventListener() {
-
-        @Override
-        public void onEvent(PlayerEvent.Type eventType) {
-            if (eventListener != null) {
-
-                PlayerEvent event;
-
-                // TODO: use specific event class
-                switch (eventType) {
-                    case DURATION_CHANGE:
-                        event = new PlayerEvent.DurationChanged(getDuration());
-                        if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
-                            startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
-                        }
-                        break;
-                    case TRACKS_AVAILABLE:
-                        event = new PlayerEvent.TracksAvailable(player.getPKTracks());
-                        break;
-                    case VOLUME_CHANGED:
-                        event = new PlayerEvent.VolumeChanged(player.getVolume());
-                        break;
-                    case PLAYBACK_PARAMS_UPDATED:
-                        event = new PlayerEvent.PlaybackParamsUpdated(player.getPlaybackParamsInfo());
-                        break;
-                    case ERROR:
-                        event = player.getCurrentException();
-                        PlayerEvent.ExceptionInfo exceptionInfo = (PlayerEvent.ExceptionInfo) event;
-                        if (exceptionInfo.getException() == null) {
-                            return;
-                        }
-
-                        //if exception should be handled locally, do not send it to message bus.
-                        if (maybeHandleExceptionLocally(exceptionInfo)) {
-                            return;
-                        }
-                        break;
-                    default:
-                        event = new PlayerEvent.Generic(eventType);
-                }
-
-                eventListener.onEvent(event);
-            }
-        }
-    };
-
-    private StateChangedListener stateChangedTrigger = new StateChangedListener() {
-        @Override
-        public void onStateChanged(PlayerState oldState, PlayerState newState) {
-            if (eventListener != null) {
-                eventListener.onEvent(new PlayerEvent.StateChanged(newState, oldState));
-            }
-        }
-    };
-
-    public PlayerController(Context context, PlayerConfig.Media mediaConfig) {
+    public PlayerController(Context context) {
         this.context = context;
-        this.wrapperView = new PlayerView(context) {
+        initializeRootPlayerView();
+    }
+
+    private void initializeRootPlayerView() {
+        this.rootPlayerView = new PlayerView(context) {
             @Override
             public void hideVideoSurface() {
                 setVideoSurfaceVisibility(false);
@@ -121,73 +85,201 @@ public class PlayerController implements Player {
             public void showVideoSurface() {
                 setVideoSurfaceVisibility(true);
             }
+
+            @Override
+            public void hideVideoSubtitles() {
+                setVideoSubtitlesVisibility(false);
+
+            }
+
+            @Override
+            public void showVideoSubtitles() {
+                setVideoSubtitlesVisibility(true);
+
+            }
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        this.wrapperView.setLayoutParams(lp);
+        this.rootPlayerView.setLayoutParams(lp);
     }
 
     private void setVideoSurfaceVisibility(boolean isVisible) {
-        View videoSurface = wrapperView.getChildAt(0);
-        if (videoSurface != null) {
-            if (videoSurface instanceof PlayerView) {
-                PlayerView playerView = (PlayerView) wrapperView.getChildAt(0);
-                if (playerView != null) {
-                    if (isVisible) {
-                        playerView.showVideoSurface();
-                    } else {
-                        playerView.hideVideoSurface();
-                    }
-                }
-            } else {
-                String visibilityFunction = "showVideoSurface";
-                if (!isVisible) {
-                    visibilityFunction = "hideVideoSurface";
-                }
-                log.e("Error in " + visibilityFunction + " cannot cast to PlayerView,  class = " + videoSurface.getClass().getName());
-            }
+        String visibilityFunction = "showVideoSurface";
+        if (!isVisible) {
+            visibilityFunction = "hideVideoSurface";
         }
-    }
 
-    public void prepare(@NonNull PlayerConfig.Media mediaConfig) {
-        isNewEntry = isNewEntry(mediaConfig);
-        this.mediaConfig = mediaConfig;
-        PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
-
-        if (source == null) {
-            log.e("No playable source found for entry");
+        if (player == null) {
+            log.w("Error in " + visibilityFunction + " player is null");
             return;
         }
 
-        if (source.getMediaFormat() != PKMediaFormat.wvm_widevine) {
-            if (player == null) {
-                player = new ExoPlayerWrapper(context);
-                wrapperView.addView(player.getView());
-                togglePlayerListeners(true);
+        PlayerView playerView = player.getView();
+        if (playerView != null) {
+            if (isVisible) {
+                playerView.showVideoSurface();
+            } else {
+                playerView.hideVideoSurface();
             }
         } else {
-            //WVM Player
+            log.w("Error in " + visibilityFunction + " playerView is null");
+        }
+    }
+
+    private void setVideoSubtitlesVisibility(boolean isVisible) {
+        String visibilityFunction = "showVideoSubtitles";
+        if (!isVisible) {
+            visibilityFunction = "hideVideoSubtitles";
+        }
+
+        if (player == null) {
+            log.w("Error in " + visibilityFunction + " player is null");
             return;
         }
 
-        player.load(source);
+        PlayerView playerView = player.getView();
+        if (playerView != null) {
+            if (isVisible) {
+                playerView.showVideoSubtitles();
+            } else {
+                playerView.hideVideoSubtitles();
+            }
+        } else {
+            log.w("Error in " + visibilityFunction + " playerView is null");
+        }
     }
 
+    @Override
+    public Player.Settings getSettings() {
+        return playerSettings;
+    }
+
+    public void prepare(@NonNull PKMediaConfig mediaConfig) {
+        if (sourceConfig == null) {
+            log.e("source config not found. Can not prepare source.");
+            return;
+        }
+
+        boolean is360Supported = mediaConfig.getMediaEntry() instanceof VRPKMediaEntry && playerSettings.isVRPlayerEnabled();
+        PlayerEngineType incomingPlayerType = PlayerEngineFactory.selectPlayerType(sourceConfig.mediaSource.getMediaFormat(), is360Supported);
+
+        switchPlayersIfRequired(incomingPlayerType);
+
+        if (player != null) {
+            player.load(sourceConfig);
+        }
+    }
+
+    /**
+     * Responsible for preparing source configurations before loading it to actual player.
+     *
+     * @param mediaConfig - the mediaConfig that holds necessary initial data.
+     * @return - true if managed to create valid sourceConfiguration object,
+     * otherwise will return false and notify user with the error that happened.
+     */
+    public boolean setMedia(PKMediaConfig mediaConfig) {
+        log.d("setMedia");
+
+        isNewEntry = true;
+
+        sessionId = generateSessionId();
+        if (playerSettings.getContentRequestAdapter() != null) {
+            playerSettings.getContentRequestAdapter().updateParams(this);
+        }
+
+        this.mediaConfig = mediaConfig;
+        PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry(), playerSettings.getPreferredMediaFormat());
+
+        if (source == null) {
+            sendErrorMessage(PKPlayerErrorType.SOURCE_SELECTION_FAILED, "No playable source found for entry", null);
+            return false;
+        }
+
+        initSourceConfig(mediaConfig.getMediaEntry(), source);
+        eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
+        return true;
+    }
+
+    private void initSourceConfig(PKMediaEntry mediaEntry, PKMediaSource source) {
+        if (mediaEntry instanceof VRPKMediaEntry) {
+            VRPKMediaEntry vrEntry = (VRPKMediaEntry) mediaEntry;
+            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings, vrEntry.getVrSettings());
+        } else {
+            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
+        }
+    }
+
+    private String generateSessionId() {
+        UUID mediaSessionId = UUID.randomUUID();
+        String newSessionId = playerSessionId.toString();
+        newSessionId += ":";
+        newSessionId += mediaSessionId.toString();
+        return newSessionId;
+    }
+
+    private void switchPlayersIfRequired(PlayerEngineType incomingPlayerType) {
+
+        //If incomingPlayerType of the same type as current - we are good, so do nothing.
+        if (currentPlayerType == incomingPlayerType) {
+            return;
+        }
+
+        //Clear previous PlayerEngine.
+        if (currentPlayerType != PlayerEngineType.Unknown) {
+            removePlayerView();
+            player.destroy();
+        }
+
+        //Initialize new PlayerEngine.
+        try {
+            player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType, playerSettings);
+            //IMA workaround. In order to prevent flickering of the first frame
+            //with ExoplayerEngine we should addPlayerView here for all playerEngines except Exoplayer.
+            if (incomingPlayerType == PlayerEngineType.MediaPlayer) {
+                addPlayerView();
+            }
+            togglePlayerListeners(true);
+            currentPlayerType = incomingPlayerType;
+        } catch (PlayerEngineFactory.PlayerInitializationException e) {
+            sendErrorMessage(PKPlayerErrorType.FAILED_TO_INITIALIZE_PLAYER, e.getMessage(), e);
+        }
+    }
+
+    private void addPlayerView() {
+        if (playerEngineView != null) {
+            return;
+        }
+
+        playerEngineView = player.getView();
+        //always place playerView as first layer in view hierarchy.
+        rootPlayerView.addView(playerEngineView, 0);
+    }
 
     @Override
     public void destroy() {
-        log.e("destroy");
+        log.d("destroy");
         if (player != null) {
+            if (playerEngineView != null) {
+                rootPlayerView.removeView(playerEngineView);
+            }
             player.destroy();
             togglePlayerListeners(false);
         }
         player = null;
         mediaConfig = null;
         eventListener = null;
+        currentPlayerType = PlayerEngineType.Unknown;
+    }
+
+    @Override
+    public void stop() {
+        if (player != null) {
+            player.stop();
+        }
     }
 
     private void startPlaybackFrom(long startPosition) {
         if (player == null) {
-            log.e("Attempt to invoke 'startPlaybackFrom()' on null instance of the player engine");
+            log.w("Attempt to invoke 'startPlaybackFrom()' on null instance of the player engine");
             return;
         }
 
@@ -199,7 +291,17 @@ public class PlayerController implements Player {
     }
 
     public PlayerView getView() {
-        return wrapperView;
+        return rootPlayerView;
+    }
+
+    @Override
+    public <T extends PKController> T getController(Class<T> type) {
+        if (player == null) {
+            log.w("Attempt to invoke 'getController()' on null instance of the player engine");
+            return null;
+        }
+
+        return player.getController(type);
     }
 
     public long getDuration() {
@@ -226,30 +328,29 @@ public class PlayerController implements Player {
     public void seekTo(long position) {
         log.d("seek to " + position);
         if (player == null) {
-            log.e("Attempt to invoke 'seekTo()' on null instance of the player engine");
+            log.w("Attempt to invoke 'seekTo()' on null instance of the player engine");
             return;
         }
+        targetSeekPosition = position;
         player.seekTo(position);
-    }
-
-    @Override
-    public AdController getAdController() {
-        return null;
     }
 
     public void play() {
         log.d("play");
+
         if (player == null) {
-            log.e("Attempt to invoke 'play()' on null instance of the player engine");
+            log.w("Attempt to invoke 'play()' on null instance of the player engine");
             return;
         }
+
+        addPlayerView();
         player.play();
     }
 
     public void pause() {
         log.d("pause");
         if (player == null) {
-            log.e("Attempt to invoke 'pause()' on null instance of the player engine");
+            log.w("Attempt to invoke 'pause()' on null instance of the player engine");
             return;
         }
         player.pause();
@@ -259,7 +360,7 @@ public class PlayerController implements Player {
     public void replay() {
         log.d("replay");
         if (player == null) {
-            log.e("Attempt to invoke 'replay()' on null instance of the player engine");
+            log.w("Attempt to invoke 'replay()' on null instance of the player engine");
             return;
         }
         player.replay();
@@ -268,7 +369,7 @@ public class PlayerController implements Player {
     @Override
     public void setVolume(float volume) {
         if (player == null) {
-            log.e("Attempt to invoke 'setVolume()' on null instance of the player engine");
+            log.w("Attempt to invoke 'setVolume()' on null instance of the player engine");
             return;
         }
         player.setVolume(volume);
@@ -280,6 +381,9 @@ public class PlayerController implements Player {
     }
 
     private void togglePlayerListeners(boolean enable) {
+        if (player == null) {
+            return;
+        }
         if (enable) {
             player.setEventListener(eventTrigger);
             player.setStateChangedListener(stateChangedTrigger);
@@ -290,7 +394,7 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void prepareNext(@NonNull PlayerConfig.Media mediaConfig) {
+    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
         Assert.failState("Not implemented");
     }
 
@@ -310,7 +414,7 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void updatePluginConfig(@NonNull String pluginName, @NonNull String key, @Nullable Object value) {
+    public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         Assert.shouldNeverHappen();
     }
 
@@ -318,10 +422,13 @@ public class PlayerController implements Player {
     public void onApplicationPaused() {
         log.d("onApplicationPaused");
         if (player == null) {
-            log.e("Attempt to invoke 'release()' on null instance of the player engine");
+            log.w("Attempt to invoke 'release()' on null instance of the player engine");
             return;
         }
-
+        if (player.isPlaying()) {
+            player.pause();
+        }
+        cancelUpdateProgress();
         player.release();
         togglePlayerListeners(false);
     }
@@ -329,60 +436,216 @@ public class PlayerController implements Player {
     @Override
     public void onApplicationResumed() {
         log.d("onApplicationResumed");
-        player.restore();
-        prepare(mediaConfig);
+        if (player != null) {
+            player.restore();
+            updateProgress();
+        }
         togglePlayerListeners(true);
+        prepare(mediaConfig);
+    }
+
+    @Override
+    public void onOrientationChanged() {
+        player.onOrientationChanged();
     }
 
     @Override
     public void changeTrack(String uniqueId) {
         if (player == null) {
-            log.e("Attempt to invoke 'changeTrack()' on null instance of the player engine");
+            log.w("Attempt to invoke 'changeTrack()' on null instance of the player engine");
             return;
         }
 
         player.changeTrack(uniqueId);
     }
 
-    private boolean isNewEntry(PlayerConfig.Media mediaConfig) {
-        if (this.mediaConfig == null) {
-            return true;
-        }
-
-        String oldEntryId = this.mediaConfig.getMediaEntry().getId();
-        if(oldEntryId == null){
-            return true;
-        }
-        String newEntryId = mediaConfig.getMediaEntry().getId();
-        return !oldEntryId.equals(newEntryId);
+    @Override
+    public String getSessionId() {
+        return sessionId;
     }
 
-    private boolean maybeHandleExceptionLocally(PlayerEvent.ExceptionInfo exceptionInfo) {
-        if (exceptionInfo.getErrorCounter() > ALLOWED_ERROR_RETRIES) {
-            log.w("Amount of the retries that happened on the same error are exceed the allowed amount of retries. Allowed amount of retries " + ALLOWED_ERROR_RETRIES + " actual amount " + exceptionInfo.getErrorCounter());
-            return false;
+    @Override
+    public boolean isLive() {
+        return player != null && player.isLive();
+    }
+
+    @Override
+    public PKMediaFormat getMediaFormat() {
+        if (sourceConfig != null) {
+            return sourceConfig.mediaSource.getMediaFormat();
+        }
+        return null;
+    }
+
+    @Override
+    public void setPlaybackRate(float rate) {
+        if (player != null) {
+            player.setPlaybackRate(rate);
+        }
+    }
+
+    @Override
+    public float getPlaybackRate() {
+        if (player != null) {
+            return player.getPlaybackRate();
+        }
+        return Consts.PLAYBACK_SPEED_RATE_UNKNOWN;
+    }
+
+    private boolean shouldSwitchBetweenPlayers(PKMediaSource newSource) {
+
+        PKMediaFormat currentMediaFormat = newSource.getMediaFormat();
+        return currentMediaFormat != wvm && player instanceof MediaPlayerWrapper ||
+                currentMediaFormat == wvm && player instanceof ExoPlayerWrapper;
+
+    }
+
+    private void removePlayerView() {
+        togglePlayerListeners(false);
+        rootPlayerView.removeView(playerEngineView);
+        playerEngineView = null;
+    }
+
+    private void sendErrorMessage(Enum errorType, String errorMessage, @Nullable Exception exception) {
+        log.e(errorMessage);
+        PlayerEvent errorEvent = new PlayerEvent.Error(new PKError(errorType, errorMessage, exception));
+        eventListener.onEvent(errorEvent);
+    }
+
+    private void updateProgress() {
+
+        long position;
+        long duration;
+
+        if (player == null || player.getView() == null) {
+            return;
         }
 
-        if (exceptionInfo.getException() instanceof ExoPlaybackException) {
-            ExoPlaybackException exoPlaybackException = (ExoPlaybackException) exceptionInfo.getException();
-            if (exoPlaybackException.type == ExoPlaybackException.TYPE_RENDERER) {
+        position = player.getCurrentPosition();
+        duration = player.getDuration();
+        if (position > 0 && duration > 0) {
+            eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
+        }
 
-                if (exoPlaybackException.getRendererException() instanceof MediaCodec.CryptoException) {
-                    ExoPlayerWrapper exoPlayerWrapper = (ExoPlayerWrapper) player;
-                    long currentPosition = player.getCurrentPosition();
-                    exoPlayerWrapper.savePlayerPosition();
-                    PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry());
+        // Cancel any pending updates and schedule a new one if necessary.
+        player.getView().removeCallbacks(updateProgressAction);
+        player.getView().postDelayed(updateProgressAction, Consts.DEFAULT_PLAYHEAD_UPDATE_MILI);
 
-                    if (source == null) {
-                        log.e("No playable source found for entry");
-                        return false;
+    }
+
+    private Runnable initProgressAction() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                updateProgress();
+            }
+        };
+    }
+
+    private void cancelUpdateProgress() {
+        if (player != null && player.getView() != null) {
+            player.getView().removeCallbacks(updateProgressAction);
+        }
+    }
+
+    public void setEventListener(PKEvent.Listener eventListener) {
+        this.eventListener = eventListener;
+    }
+
+    private PlayerEngine.EventListener initEventListener() {
+        return new PlayerEngine.EventListener() {
+
+            @Override
+            public void onEvent(PlayerEvent.Type eventType) {
+                if (eventListener != null) {
+
+                    PKEvent event;
+                    switch (eventType) {
+                        case PLAYING:
+                            updateProgress();
+                            event = new PlayerEvent.Generic(eventType);
+                            break;
+                        case PAUSE:
+                        case ENDED:
+                        case STOPPED:
+                            event = new PlayerEvent.Generic(eventType);
+                            cancelUpdateProgress();
+                            break;
+                        case DURATION_CHANGE:
+                            event = new PlayerEvent.DurationChanged(getDuration());
+                            if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
+                                if (mediaConfig.getStartPosition() != null &&
+                                        ((isLiveMediaWithDvr() && mediaConfig.getStartPosition() == 0) ||
+                                                mediaConfig.getStartPosition() > 0)) {
+                                    startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+                                }
+                                isNewEntry = false;
+                            }
+                            break;
+                        case TRACKS_AVAILABLE:
+                            event = new PlayerEvent.TracksAvailable(player.getPKTracks());
+                            break;
+                        case VOLUME_CHANGED:
+                            event = new PlayerEvent.VolumeChanged(player.getVolume());
+                            break;
+                        case PLAYBACK_INFO_UPDATED:
+                            event = new PlayerEvent.PlaybackInfoUpdated(player.getPlaybackInfo());
+                            break;
+                        case ERROR:
+                            if (player.getCurrentError() == null) {
+                                log.e("can not send error event");
+                                return;
+                            }
+                            event = new PlayerEvent.Error(player.getCurrentError());
+                            cancelUpdateProgress();
+                            break;
+                        case METADATA_AVAILABLE:
+                            if (player.getMetadata() == null || player.getMetadata().isEmpty()) {
+                                log.w("METADATA_AVAILABLE event received, but player engine have no metadata.");
+                                return;
+                            }
+                            event = new PlayerEvent.MetadataAvailable(player.getMetadata());
+                            break;
+                        case SOURCE_SELECTED:
+                            event = new PlayerEvent.SourceSelected(sourceConfig.mediaSource);
+                            break;
+                        case SEEKING:
+                            event = new PlayerEvent.Seeking(targetSeekPosition);
+                            break;
+                        case VIDEO_TRACK_CHANGED:
+                            event = new PlayerEvent.VideoTrackChanged((VideoTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_VIDEO));
+                            break;
+                        case AUDIO_TRACK_CHANGED:
+                            event = new PlayerEvent.AudioTrackChanged((AudioTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_AUDIO));
+                            break;
+                        case TEXT_TRACK_CHANGED:
+                            event = new PlayerEvent.TextTrackChanged((TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT));
+                            break;
+                        case PLAYBACK_RATE_CHANGED:
+                            event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
+                            break;
+                        default:
+                            event = new PlayerEvent.Generic(eventType);
                     }
-                    exoPlayerWrapper.load(source);
-                    exoPlayerWrapper.startFrom(currentPosition);
-                    return true;
+
+                    eventListener.onEvent(event);
                 }
             }
-        }
-        return false;
+        };
+    }
+
+    private boolean isLiveMediaWithDvr() {
+        return (isLive() || PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) && sourceConfig != null && sourceConfig.dvrStatus != null && sourceConfig.dvrStatus == PKMediaSourceConfig.LiveStreamMode.LIVE_DVR;
+    }
+
+    private PlayerEngine.StateChangedListener initStateChangeListener() {
+        return new PlayerEngine.StateChangedListener() {
+            @Override
+            public void onStateChanged(PlayerState oldState, PlayerState newState) {
+                if (eventListener != null) {
+                    eventListener.onEvent(new PlayerEvent.StateChanged(newState, oldState));
+                }
+            }
+        };
     }
 }
