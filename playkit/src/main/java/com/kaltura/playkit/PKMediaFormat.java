@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ *
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ *
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit;
 
 import android.net.Uri;
@@ -6,17 +18,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum PKMediaFormat {
-    mp4_clear("video/mp4", "mp4"),
-    dash_clear("application/dash+xml", "mpd"),
-    dash_drm("application/dash+xml", "mpd"),
-    wvm_widevine("video/wvm", "wvm"),
-    hls_clear("application/x-mpegURL", "m3u8");
+    dash("application/dash+xml", "mpd"),
+    hls("application/x-mpegURL", "m3u8"),
+    wvm("video/wvm", "wvm"),
+    mp4("video/mp4", "mp4"),
+    mp3("audio/mpeg", "mp3"),
+    unknown(null, null);
 
     public final String mimeType;
     public final String pathExt;
-    
-    private static Map<String, PKMediaFormat> extensionLookup = new HashMap<>(); 
-    
+
+    private static Map<String, PKMediaFormat> extensionLookup = new HashMap<>();
+
     static {
         for (PKMediaFormat format : values()) {
             if (extensionLookup.get(format.pathExt) == null) {

@@ -1,45 +1,63 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ *
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ *
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.drm;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.kaltura.playkit.LocalAssetsManager;
-import com.kaltura.playkit.LocalDrmStorage;
+import com.kaltura.playkit.LocalDataStore;
+import com.kaltura.playkit.PKDrmParams;
+import com.kaltura.playkit.PKLog;
 
 import java.io.IOException;
 
 /**
- * Created by anton.afanasiev on 13/12/2016.
+ * @hide
  */
 
 public abstract class DrmAdapter {
 
+    private static final PKLog log = PKLog.get("DrmAdapter");
+
+
     @NonNull
-    public static DrmAdapter getDrmAdapter(final Context context, LocalDrmStorage localDrmStorage, final String localAssetPath) {
-        if (localAssetPath.endsWith(".wvm")) {
-            return new WidevineClassicAdapter(context);
+    public static DrmAdapter getDrmAdapter(PKDrmParams.Scheme scheme, Context context, LocalDataStore localDataStore) {
+
+        if (scheme == null) {
+            return new NullDrmAdapter();
         }
 
-        if (localAssetPath.endsWith(".mpd")) {
-            return new WidevineModularAdapter(context, localDrmStorage);
+        switch (scheme) {
+            case WidevineCENC:
+                return new WidevineModularAdapter(context, localDataStore);
+            case WidevineClassic:
+                return new WidevineClassicAdapter(context);
+            case PlayReadyCENC:
+                log.d("Unsupported scheme PlayReady");
+                break;
         }
 
         return new NullDrmAdapter();
     }
 
-    public abstract boolean registerAsset(final String localAssetPath, final String assetId,final String licenseUri, final LocalAssetsManager.AssetRegistrationListener listener) throws IOException;
+    public abstract boolean registerAsset(final String localAssetPath, final String assetId, final String licenseUri, final LocalAssetsManager.AssetRegistrationListener listener) throws IOException;
 
     public abstract boolean refreshAsset(final String localAssetPath, final String assetId, final String licenseUri, final LocalAssetsManager.AssetRegistrationListener listener);
 
     public abstract boolean unregisterAsset(final String localAssetPath, final String assetId, final LocalAssetsManager.AssetRemovalListener listener);
 
     public abstract boolean checkAssetStatus(final String localAssetPath, final String assetId, final LocalAssetsManager.AssetStatusListener listener);
-
-    public abstract DRMScheme getScheme();
-
-    public enum DRMScheme {
-        Null, WidevineClassic, WidevineCENC
-    }
 
     private static class NullDrmAdapter extends DrmAdapter {
         @Override
@@ -48,11 +66,6 @@ public abstract class DrmAdapter {
                 listener.onStatus(localAssetPath, -1, -1, false);
             }
             return true;
-        }
-
-        @Override
-        public DRMScheme getScheme() {
-            return DRMScheme.Null;
         }
 
         @Override

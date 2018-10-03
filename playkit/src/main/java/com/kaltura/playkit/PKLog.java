@@ -1,14 +1,32 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ *
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ *
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit;
 
 import android.util.Log;
 
 import java.util.Locale;
 
+import static android.util.Log.DEBUG;
+import static android.util.Log.ERROR;
+import static android.util.Log.INFO;
+import static android.util.Log.VERBOSE;
+import static android.util.Log.WARN;
+
 /**
- * Logger for PlayKit. 
- * 
+ * Logger for PlayKit.
+ * <p>
  * Usage:
- * 
+ *
  * <pre>
  * class MyClass {
  *      private static final PKLog log = PKLog.get("MyClass");
@@ -26,35 +44,37 @@ import java.util.Locale;
  *
  *          this.name = name;
  *      }
- *      
+ *
  *      ...
- *      
- *      log.level = PKLog.WARN;
+ *
+ *      log.setLevel(PKLog.Level.warn);
+ *      PKLog.setGlobalLevel(PKLog.Level.debug);
  * }
  * </pre>
- * 
- * 
+ * <p>
+ * <p>
  * Created by Noam Tamim @ Kaltura on 11/11/2016.
  */
-
-
 
 
 @SuppressWarnings("WeakerAccess")
 public class PKLog {
 
-    public static final int VERBOSE = Log.VERBOSE;
-    public static final int DEBUG = Log.DEBUG;
-    public static final int INFO = Log.INFO;
-    public static final int WARN = Log.WARN;
-    public static final int ERROR = Log.ERROR;
-    public static final int ASSERT = Log.ASSERT;
-    public static final int NOLOG = Integer.MAX_VALUE;
-
     public final String tag;
-    public static int globalLevel = VERBOSE;
-    public int level = VERBOSE;
-    
+    private int level = VERBOSE;
+
+    public enum Level {
+        verbose(VERBOSE), debug(DEBUG), info(INFO), warn(WARN), error(ERROR), off(Integer.MAX_VALUE);
+
+        final int value;
+
+        Level(int value) {
+            this.value = value;
+        }
+    }
+
+    private static int globalLevel = DEBUG;
+
     private static String shortenTag(String tag) {
         if (tag.length() > 23) {
             String fixed = String.format(Locale.ENGLISH, "%s_%02x", tag.substring(0, 20), tag.hashCode() & 0xff);
@@ -62,6 +82,14 @@ public class PKLog {
             return fixed;
         }
         return tag;
+    }
+
+    public static void setGlobalLevel(Level level) {
+        PKLog.globalLevel = level.value;
+    }
+
+    public void setLevel(Level level) {
+        this.level = level.value;
     }
 
     private PKLog(String tag) {
@@ -76,8 +104,14 @@ public class PKLog {
     // VERBOSE
 
     public void v(String msg) {
-        if (level <= VERBOSE) {
-            PKLog.v(tag, msg);
+        if (level <= VERBOSE && globalLevel <= VERBOSE) {
+            Log.v(tag, msg);
+        }
+    }
+
+    public void v(String msg, Throwable tr) {
+        if (level <= VERBOSE && globalLevel <= VERBOSE) {
+            Log.v(tag, msg, tr);
         }
     }
 
@@ -87,25 +121,17 @@ public class PKLog {
         }
     }
 
-    public void v(String msg, Throwable tr) {
-        if (level <= VERBOSE) {
-            PKLog.v(tag, msg, tr);
-        }
-    }
-
-    public static void v(String tag, String msg, Throwable tr) {
-        if (globalLevel <= VERBOSE) {
-            Log.v(tag, msg, tr);
-        }
-    }
-
-
-
     // DEBUG
 
     public void d(String msg) {
-        if (level <= DEBUG) {
-            PKLog.d(tag, msg);
+        if (level <= DEBUG && globalLevel <= DEBUG) {
+            Log.d(tag, msg);
+        }
+    }
+
+    public void d(String msg, Throwable tr) {
+        if (level <= DEBUG && globalLevel <= DEBUG) {
+            Log.d(tag, msg, tr);
         }
     }
 
@@ -115,25 +141,17 @@ public class PKLog {
         }
     }
 
-    public void d(String msg, Throwable tr) {
-        if (level <= DEBUG) {
-            PKLog.d(tag, msg, tr);
-        }
-    }
-
-    public static void d(String tag, String msg, Throwable tr) {
-        if (globalLevel <= DEBUG) {
-            Log.d(tag, msg, tr);
-        }
-    }
-
-
-
     // INFO
 
     public void i(String msg) {
-        if (level <= INFO) {
-            PKLog.i(tag, msg);
+        if (level <= INFO && globalLevel <= INFO) {
+            Log.i(tag, msg);
+        }
+    }
+
+    public void i(String msg, Throwable tr) {
+        if (level <= INFO && globalLevel <= INFO) {
+            Log.i(tag, msg, tr);
         }
     }
 
@@ -143,25 +161,18 @@ public class PKLog {
         }
     }
 
-    public void i(String msg, Throwable tr) {
-        if (level <= INFO) {
-            PKLog.i(tag, msg, tr);
-        }
-    }
-
-    public static void i(String tag, String msg, Throwable tr) {
-        if (globalLevel <= INFO) {
-            Log.i(tag, msg, tr);
-        }
-    }
-
-
 
     // WARN
 
     public void w(String msg) {
-        if (level <= WARN) {
-            PKLog.w(tag, msg);
+        if (level <= WARN && globalLevel <= WARN) {
+            Log.w(tag, msg);
+        }
+    }
+
+    public void w(String msg, Throwable tr) {
+        if (level <= WARN && globalLevel <= WARN) {
+            Log.w(tag, msg, tr);
         }
     }
 
@@ -171,43 +182,23 @@ public class PKLog {
         }
     }
 
-    public void w(String msg, Throwable tr) {
-        if (level <= WARN) {
-            PKLog.w(tag, msg, tr);
-        }
-    }
-
-    public static void w(String tag, String msg, Throwable tr) {
-        if (globalLevel <= WARN) {
-            Log.w(tag, msg, tr);
-        }
-    }
-
-
 
     // ERROR
-
     public void e(String msg) {
-        if (level <= ERROR) {
-            PKLog.e(tag, msg);
+        if (level <= ERROR && globalLevel <= ERROR) {
+            Log.e(tag, msg);
+        }
+    }
+
+    public void e(String msg, Throwable tr) {
+        if (level <= ERROR && globalLevel <= ERROR) {
+            Log.e(tag, msg, tr);
         }
     }
 
     public static void e(String tag, String msg) {
         if (globalLevel <= ERROR) {
             Log.e(tag, msg);
-        }
-    }
-
-    public void e(String msg, Throwable tr) {
-        if (level <= ERROR) {
-            PKLog.e(tag, msg, tr);
-        }
-    }
-
-    public static void e(String tag, String msg, Throwable tr) {
-        if (globalLevel <= ERROR) {
-            Log.e(tag, msg, tr);
         }
     }
 }
