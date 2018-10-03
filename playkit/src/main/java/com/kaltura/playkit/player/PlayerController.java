@@ -185,8 +185,11 @@ public class PlayerController implements Player {
             Profiler.get(sessionId).onSessionFinished();
         }
 
-        isNewEntry = true;
-
+        if (!isNewEntry) {
+            isNewEntry = true;
+            stop();
+        }
+        
         sessionId = generateSessionId();
         if (playerSettings.getContentRequestAdapter() != null) {
             playerSettings.getContentRequestAdapter().updateParams(this);
