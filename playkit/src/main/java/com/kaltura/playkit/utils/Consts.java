@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ * Copyright (C) 2017 Kaltura Inc.
+ *
+ * Licensed under the AGPLv3 license, unless a different license for a
+ * particular library is specified in the applicable library path.
+ *
+ * You may obtain a copy of the License at
+ * https://www.gnu.org/licenses/agpl-3.0.html
+ * ============================================================================
+ */
+
 package com.kaltura.playkit.utils;
 
 /**
@@ -6,6 +18,7 @@ package com.kaltura.playkit.utils;
 
 public class Consts {
 
+    public static final String KALTURA = "Kaltura";
     /**
      * Special constant representing an unset or unknown time or duration. Suitable for use in any
      * time base.
@@ -43,15 +56,35 @@ public class Consts {
      */
     public static final long NO_VALUE = -1;
 
+    public static final int DEFAULT_PLAYHEAD_UPDATE_MILI = 100;
+
     /**
      * Flag that indicates, that this specified track will be
      * selected by the player as default track.
      */
     public static final int DEFAULT_TRACK_SELECTION_FLAG = 5;
 
+    public static final double PERCENT_FACTOR = 100.0;
+
     public static final long MILLISECONDS_MULTIPLIER = 1000L;
+
+    public static final float MILLISECONDS_MULTIPLIER_FLOAT = 1000F;
 
     public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW = 10000;
 
+    public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_LOW_SEC = 10;
+
     public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH = 30000;
+
+    public static final int DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC = 30;
+
+    public static final long DISTANCE_FROM_LIVE_THRESHOLD = 120000; //2 Min;
+
+    public static final float DEFAULT_PLAYBACK_RATE_SPEED = 1.0f;
+
+    public static final float PLAYBACK_SPEED_RATE_UNKNOWN = -1.0f;
+
+    public static final float DEFAULT_VOLUME = 1.0f;
+
+    public static float DEFAULT_PITCH_RATE = 1.0f;
 }

@@ -4,7 +4,6 @@
 ![Android](https://img.shields.io/badge/platform-android-green.svg)
 
 # Kaltura Player SDK
-## Note: The Kaltura SDK v3 is in beta
 
 *If you are a Kaltura customer, please contact your Kaltura Customer Success Manager to help facilitate use of this component.*
 
@@ -22,7 +21,7 @@ The **Kaltura Player SDK** is fully native and introduces significant performanc
 * Chromecast support
 
 ## Usage Guides
-Please see our [VPaaS Documentation site](https://vpaas.kaltura.com/documentation/Mobile-Video-Player-SDKs/Android-introduction.html).
+Please see our [VPaaS Documentation site](https://vpaas.kaltura.com/documentation/Mobile-Video-Player-SDKs/v3_Android_Introduction.html).
 
 ## License and Copyright Information
 All code in this project is released under the [AGPLv3 license](http://www.gnu.org/licenses/agpl-3.0.html) unless a different license for a particular library is specified in the applicable library path.   
