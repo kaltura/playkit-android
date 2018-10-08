@@ -419,6 +419,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
         sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         shouldResetPlayerPosition = reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC;
+
+        profiler().onDurationChanged(getDuration());
     }
 
     @Override

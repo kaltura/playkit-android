@@ -373,6 +373,11 @@ public class Profiler {
     }
 
     private static JsonObject toJSON(PKMediaEntry entry) {
+
+        if (entry == null) {
+            return null;
+        }
+
         JsonObject json = new JsonObject();
 
         json.addProperty("id", entry.getId());
@@ -492,11 +497,13 @@ public class Profiler {
 
             @Override
             public void onViewportSizeChange(PlayerEngine playerEngine, int width, int height) {}
+
+            @Override
+            public void onDurationChanged(long duration) {}
         };
     }
 
     private void closeSession() {
-        log("ProfilerSessionReleased");
         profilers.remove(sessionId);
         sendLogChunk();
         closedSessions.add(sessionId);
@@ -504,5 +511,9 @@ public class Profiler {
 
     public void onViewportSizeChange(PlayerEngine playerEngine, int width, int height) {
         log("ViewportSizeChange", field("width", width), field("height", height));
+    }
+
+    public void onDurationChanged(long duration) {
+        log("DurationChanged", timeField("duration", duration));
     }
 }
