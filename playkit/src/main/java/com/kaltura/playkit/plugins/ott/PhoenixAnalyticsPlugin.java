@@ -131,14 +131,14 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     @Override
     protected void onApplicationPaused() {
-        log.d("onApplicationPaused");
+        log.d("PhoenixAnalyticsPlugin onApplicationPaused");
         cancelTimer();
     }
 
     @Override
     protected void onApplicationResumed() {
-        log.d("onApplicationResumed");
-        timer = new Timer();
+        log.d("PhoenixAnalyticsPlugin onApplicationResumed");
+        startMediaHitInterval();
     }
 
     @Override
@@ -228,7 +228,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * Media Hit analytics event
      */
     private void startMediaHitInterval() {
-        log.d("timer interval");
+        log.d("startMediaHitInterval - Timer");
         if (timer == null) {
             timer = new Timer();
         }
@@ -237,8 +237,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             @Override
             public void run() {
                 sendAnalyticsEvent(PhoenixActionType.HIT);
-                lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
-                if ((float) lastKnownPlayerPosition / player.getDuration() > MEDIA_ENDED_THRESHOLD) {
+                if (player.getCurrentPosition() >= 0) {
+                    lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
+                }
+                if (player.getDuration() > 0 && ((float) lastKnownPlayerPosition / player.getDuration() > MEDIA_ENDED_THRESHOLD)) {
                     sendAnalyticsEvent(PhoenixActionType.FINISH);
                     isMediaFinished = true;
                 }
@@ -252,9 +254,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * @param eventType - Enum stating the event type to send
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
-
+        log.d("PhoenixAnalyticsPlugin sendAnalyticsEvent " + eventType);
         if (eventType != PhoenixActionType.STOP) {
-            lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
+            if (player.getCurrentPosition() > 0) {
+                lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
+            }
         }
         if (mediaConfig == null || mediaConfig.getMediaEntry() == null || mediaConfig.getMediaEntry().getId() == null) {
             log.e("Error mediaConfig is not valid");

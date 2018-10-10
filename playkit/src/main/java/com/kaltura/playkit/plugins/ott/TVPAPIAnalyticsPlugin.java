@@ -98,13 +98,16 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     protected void sendAnalyticsEvent(final PhoenixActionType eventType){
         String method = eventType == PhoenixActionType.HIT ? "MediaHit": "MediaMark";
         String action = eventType.name().toLowerCase(Locale.ENGLISH);
+        log.d("TVPAPIAnalyticsPlugin sendAnalyticsEvent" + eventType + " method = " + method + " action = " + action);
 
         if (initObject == null) {
             return;
         }
 
         if (eventType != PhoenixActionType.STOP) {
-            lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
+            if (player.getCurrentPosition() >= 0) {
+                lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
+            }
         }
         if (mediaConfig == null || mediaConfig.getMediaEntry() == null || mediaConfig.getMediaEntry().getId() == null) {
             log.e("Error mediaConfig is not valid");
