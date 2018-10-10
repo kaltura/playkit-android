@@ -742,9 +742,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (trackSelectionHelper != null) {
             trackSelectionHelper.stop();
         }
-        if (player != null && currentState != PlayerState.IDLE) {
+         PlayerState stateBeforeStop = currentState;
+        if (player != null) {
             player.stop(true);
-            sendDistinctEvent(PlayerEvent.Type.STOPPED);
+            if (stateBeforeStop != PlayerState.IDLE) {
+                sendDistinctEvent(PlayerEvent.Type.STOPPED);
+            }
         }
     }
 
