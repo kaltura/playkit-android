@@ -745,9 +745,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
          PlayerState stateBeforeStop = currentState;
         if (player != null) {
             player.stop(true);
-            if (stateBeforeStop != PlayerState.IDLE) {
-                sendDistinctEvent(PlayerEvent.Type.STOPPED);
-            }
         }
     }
 
