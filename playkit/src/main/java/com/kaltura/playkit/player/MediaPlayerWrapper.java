@@ -394,11 +394,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         if (player != null) {
             player.pause();
             player.seekTo(0);
-
-            if (currentState != PlayerState.IDLE) {
-                player.reset();
-                sendDistinctEvent(PlayerEvent.Type.STOPPED);
-            }
+            player.reset();
         }
     }
 
