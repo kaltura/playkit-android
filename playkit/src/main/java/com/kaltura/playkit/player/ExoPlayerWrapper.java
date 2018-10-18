@@ -620,7 +620,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private boolean isLiveMediaWithoutDvr() {
-        return (isLive() || PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType);
+        return (PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType);
     }
 
     @Override
