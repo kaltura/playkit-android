@@ -303,7 +303,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (newEvent.equals(currentEvent)) {
             return;
         }
-
         sendEvent(newEvent);
     }
 
@@ -314,7 +313,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
         currentEvent = event;
         if (eventListener != null) {
-            log.d("Event sent: " + event.name());
+            if (event != PlayerEvent.Type.PLAYBACK_INFO_UPDATED) {
+                log.d("Event sent: " + event.name());
+            }
             eventListener.onEvent(currentEvent);
         } else {
             log.e("eventListener is null cannot send Event: " + event.name());
@@ -525,7 +526,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (player.getPlayWhenReady()) {
             return;
         }
-
         sendDistinctEvent(PlayerEvent.Type.PLAY);
         if (isLiveMediaWithoutDvr()) {
             player.seekToDefaultPosition();
@@ -620,7 +620,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private boolean isLiveMediaWithoutDvr() {
-        return (isLive() || PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) && sourceConfig != null && sourceConfig.dvrStatus != null && sourceConfig.dvrStatus == PKMediaSourceConfig.LiveStreamMode.LIVE;
+        return (PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType);
     }
 
     @Override
@@ -743,6 +743,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             trackSelectionHelper.stop();
         }
         if (player != null) {
+            player.setPlayWhenReady(false);
             player.stop(true);
         }
     }
