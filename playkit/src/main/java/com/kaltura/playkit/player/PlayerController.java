@@ -636,7 +636,7 @@ public class PlayerController implements Player {
     }
 
     private boolean isLiveMediaWithDvr() {
-        return (isLive() || PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) && sourceConfig != null && sourceConfig.dvrStatus != null && sourceConfig.dvrStatus == PKMediaSourceConfig.LiveStreamMode.LIVE_DVR;
+        return (PKMediaEntry.MediaEntryType.DvrLive == sourceConfig.mediaEntryType);
     }
 
     private PlayerEngine.StateChangedListener initStateChangeListener() {
