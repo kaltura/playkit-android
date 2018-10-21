@@ -13,6 +13,8 @@
 package com.kaltura.playkit.player;
 
 
+import android.support.annotation.NonNull;
+
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.source.TrackGroup;
@@ -422,69 +424,40 @@ class TrackSelectionHelper {
     }
 
     private SelectionOverride retrieveOverrideSelectionList(int[][] uniqueIds) {
-        SelectionOverride override;
+        if (uniqueIds == null || uniqueIds[0] == null) {
+            throw new IllegalArgumentException("Track selection with uniqueId = null");
+        }
 
+        SelectionOverride override;
         int rendererIndex = uniqueIds[0][RENDERER_INDEX];
         int groupIndex = uniqueIds[0][GROUP_INDEX];
         int trackIndex = uniqueIds[0][TRACK_INDEX];
 
         boolean isAdaptive = trackIndex == TRACK_ADAPTIVE;
 
-        if (isAdaptive) {
-
-            List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
-            int[] adaptiveTrackIndexes;
-
-            switch (rendererIndex) {
-                case TRACK_TYPE_VIDEO:
-
-                    VideoTrack videoTrack;
-                    int videoGroupIndex;
-                    int videoTrackIndex;
-
-                    for (int i = 0; i < videoTracks.size(); i++) {
-
-                        videoTrack = videoTracks.get(i);
-                        videoGroupIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), GROUP_INDEX);
-                        videoTrackIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX);
-
-                        if (videoGroupIndex == groupIndex && videoTrackIndex != TRACK_ADAPTIVE) {
-                            adaptiveTrackIndexesList.add(getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX));
-                        }
-                    }
-                    break;
-                case TRACK_TYPE_AUDIO:
-
-                    AudioTrack audioTrack;
-                    int audioGroupIndex;
-                    int audioTrackIndex;
-
-                    for (int i = 0; i < audioTracks.size(); i++) {
-
-                        audioTrack = audioTracks.get(i);
-                        audioGroupIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), GROUP_INDEX);
-                        audioTrackIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX);
-
-                        if (audioGroupIndex == groupIndex && audioTrackIndex != TRACK_ADAPTIVE) {
-                            adaptiveTrackIndexesList.add(getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX));
-                        }
-                    }
-                    break;
-            }
-
-            adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-            override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
+        if (uniqueIds.length == 1 && isAdaptive) {
+            override = selectAutoMBRTracks(rendererIndex, groupIndex);
         } else if (uniqueIds.length > 1) {
-            List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
-            int[] adaptiveTrackIndexes;
+            override = selectSubsetMBRTracks(uniqueIds, rendererIndex, groupIndex);
+        } else {
+            override = new SelectionOverride(groupIndex, trackIndex);
+        }
 
-            switch (rendererIndex) {
-                case TRACK_TYPE_VIDEO:
-                    int videoGroupIndex;
-                    int videoTrackIndex;
+        return override;
+    }
 
-                    for (int i = 0; i < uniqueIds.length; i++) {
+    @NonNull
+    private SelectionOverride selectSubsetMBRTracks(int[][] uniqueIds, int rendererIndex, int groupIndex) {
+        SelectionOverride override;List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
+        int[] adaptiveTrackIndexes;
 
+        switch (rendererIndex) {
+            case TRACK_TYPE_VIDEO:
+                int videoGroupIndex;
+                int videoTrackIndex;
+
+                for (int i = 0; i < uniqueIds.length; i++) {
+                    if (uniqueIds[i] != null) {
                         videoGroupIndex = uniqueIds[i][GROUP_INDEX];
                         videoTrackIndex = uniqueIds[i][TRACK_INDEX];
 
@@ -492,14 +465,14 @@ class TrackSelectionHelper {
                             adaptiveTrackIndexesList.add(uniqueIds[i][TRACK_INDEX]);
                         }
                     }
-                    break;
-                case TRACK_TYPE_AUDIO:
-                    int audioGroupIndex;
-                    int audioTrackIndex;
+                }
+                break;
+            case TRACK_TYPE_AUDIO:
+                int audioGroupIndex;
+                int audioTrackIndex;
 
-                    for (int i = 0; i < uniqueIds.length; i++) {
-
-
+                for (int i = 0; i < uniqueIds.length; i++) {
+                    if (uniqueIds[i] != null) {
                         audioGroupIndex = uniqueIds[i][GROUP_INDEX];
                         audioTrackIndex = uniqueIds[i][TRACK_INDEX];
 
@@ -507,14 +480,11 @@ class TrackSelectionHelper {
                             adaptiveTrackIndexesList.add(uniqueIds[i][TRACK_INDEX]);
                         }
                     }
-                    break;
-            }
-            adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-            override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
-        } else {
-            override = new SelectionOverride(groupIndex, trackIndex);
+                }
+                break;
         }
-
+        adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
+        override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
         return override;
     }
 
@@ -571,53 +541,58 @@ class TrackSelectionHelper {
         boolean isAdaptive = trackIndex == TRACK_ADAPTIVE;
 
         if (isAdaptive) {
-
-            List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
-            int[] adaptiveTrackIndexes;
-
-            switch (rendererIndex) {
-                case TRACK_TYPE_VIDEO:
-
-                    VideoTrack videoTrack;
-                    int videoGroupIndex;
-                    int videoTrackIndex;
-
-                    for (int i = 0; i < videoTracks.size(); i++) {
-
-                        videoTrack = videoTracks.get(i);
-                        videoGroupIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), GROUP_INDEX);
-                        videoTrackIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX);
-
-                        if (videoGroupIndex == groupIndex && videoTrackIndex != TRACK_ADAPTIVE) {
-                            adaptiveTrackIndexesList.add(getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX));
-                        }
-                    }
-                    break;
-                case TRACK_TYPE_AUDIO:
-
-                    AudioTrack audioTrack;
-                    int audioGroupIndex;
-                    int audioTrackIndex;
-
-                    for (int i = 0; i < audioTracks.size(); i++) {
-
-                        audioTrack = audioTracks.get(i);
-                        audioGroupIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), GROUP_INDEX);
-                        audioTrackIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX);
-
-                        if (audioGroupIndex == groupIndex && audioTrackIndex != TRACK_ADAPTIVE) {
-                            adaptiveTrackIndexesList.add(getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX));
-                        }
-                    }
-                    break;
-            }
-
-            adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
-            override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
+            override = selectAutoMBRTracks(rendererIndex, groupIndex);
         } else {
             override = new SelectionOverride(groupIndex, trackIndex);
         }
 
+        return override;
+    }
+
+    @NonNull
+    private SelectionOverride selectAutoMBRTracks(int rendererIndex, int groupIndex) {
+        SelectionOverride override;List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
+        int[] adaptiveTrackIndexes;
+
+        switch (rendererIndex) {
+            case TRACK_TYPE_VIDEO:
+
+                VideoTrack videoTrack;
+                int videoGroupIndex;
+                int videoTrackIndex;
+
+                for (int i = 0; i < videoTracks.size(); i++) {
+
+                    videoTrack = videoTracks.get(i);
+                    videoGroupIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), GROUP_INDEX);
+                    videoTrackIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX);
+
+                    if (videoGroupIndex == groupIndex && videoTrackIndex != TRACK_ADAPTIVE) {
+                        adaptiveTrackIndexesList.add(getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX));
+                    }
+                }
+                break;
+            case TRACK_TYPE_AUDIO:
+
+                AudioTrack audioTrack;
+                int audioGroupIndex;
+                int audioTrackIndex;
+
+                for (int i = 0; i < audioTracks.size(); i++) {
+
+                    audioTrack = audioTracks.get(i);
+                    audioGroupIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), GROUP_INDEX);
+                    audioTrackIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX);
+
+                    if (audioGroupIndex == groupIndex && audioTrackIndex != TRACK_ADAPTIVE) {
+                        adaptiveTrackIndexesList.add(getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX));
+                    }
+                }
+                break;
+        }
+
+        adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
+        override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
         return override;
     }
 
