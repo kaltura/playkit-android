@@ -107,6 +107,9 @@ public interface PlayerEngine {
      */
     void changeTrack(String uniqueId);
 
+    void changeTrackMBRSubset(List<String> uniqueIds);
+
+
     /**
      * Seek player to the specified position.
      *

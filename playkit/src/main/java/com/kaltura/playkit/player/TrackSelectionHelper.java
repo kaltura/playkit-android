@@ -401,6 +401,132 @@ class TrackSelectionHelper {
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
+    public void changeTrackMBRSubset(List<String> uniqueIds) {
+        log.i("Request changeTrackMBRSubset");
+        mappedTrackInfo = selector.getCurrentMappedTrackInfo();
+        if (mappedTrackInfo == null) {
+            log.w("Trying to get current MappedTrackInfo returns null");
+            return;
+        }
+
+        int[] uniqueTrackId = validateUniqueId(uniqueIds.get(0));
+        int rendererIndex = uniqueTrackId[RENDERER_INDEX];
+
+        requestedChangeTrackIds[rendererIndex] = uniqueIds.get(0);
+
+        DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
+
+
+        SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
+        overrideTrack(rendererIndex, override, parametersBuilder);
+    }
+
+    private SelectionOverride retrieveOverrideSelectionList(int[][] uniqueIds) {
+        SelectionOverride override;
+
+        int rendererIndex = uniqueIds[0][RENDERER_INDEX];
+        int groupIndex = uniqueIds[0][GROUP_INDEX];
+        int trackIndex = uniqueIds[0][TRACK_INDEX];
+
+        boolean isAdaptive = trackIndex == TRACK_ADAPTIVE;
+
+        if (isAdaptive) {
+
+            List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
+            int[] adaptiveTrackIndexes;
+
+            switch (rendererIndex) {
+                case TRACK_TYPE_VIDEO:
+
+                    VideoTrack videoTrack;
+                    int videoGroupIndex;
+                    int videoTrackIndex;
+
+                    for (int i = 0; i < videoTracks.size(); i++) {
+
+                        videoTrack = videoTracks.get(i);
+                        videoGroupIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), GROUP_INDEX);
+                        videoTrackIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX);
+
+                        if (videoGroupIndex == groupIndex && videoTrackIndex != TRACK_ADAPTIVE) {
+                            adaptiveTrackIndexesList.add(getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX));
+                        }
+                    }
+                    break;
+                case TRACK_TYPE_AUDIO:
+
+                    AudioTrack audioTrack;
+                    int audioGroupIndex;
+                    int audioTrackIndex;
+
+                    for (int i = 0; i < audioTracks.size(); i++) {
+
+                        audioTrack = audioTracks.get(i);
+                        audioGroupIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), GROUP_INDEX);
+                        audioTrackIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX);
+
+                        if (audioGroupIndex == groupIndex && audioTrackIndex != TRACK_ADAPTIVE) {
+                            adaptiveTrackIndexesList.add(getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX));
+                        }
+                    }
+                    break;
+            }
+
+            adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
+            override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
+        } else if (uniqueIds.length > 1) {
+            List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
+            int[] adaptiveTrackIndexes;
+
+            switch (rendererIndex) {
+                case TRACK_TYPE_VIDEO:
+                    int videoGroupIndex;
+                    int videoTrackIndex;
+
+                    for (int i = 0; i < uniqueIds.length; i++) {
+
+                        videoGroupIndex = uniqueIds[i][GROUP_INDEX];
+                        videoTrackIndex = uniqueIds[i][TRACK_INDEX];
+
+                        if (videoGroupIndex == groupIndex && videoTrackIndex != TRACK_ADAPTIVE) {
+                            adaptiveTrackIndexesList.add(uniqueIds[i][TRACK_INDEX]);
+                        }
+                    }
+                    break;
+                case TRACK_TYPE_AUDIO:
+                    int audioGroupIndex;
+                    int audioTrackIndex;
+
+                    for (int i = 0; i < uniqueIds.length; i++) {
+
+
+                        audioGroupIndex = uniqueIds[i][GROUP_INDEX];
+                        audioTrackIndex = uniqueIds[i][TRACK_INDEX];
+
+                        if (audioGroupIndex == groupIndex && audioTrackIndex != TRACK_ADAPTIVE) {
+                            adaptiveTrackIndexesList.add(uniqueIds[i][TRACK_INDEX]);
+                        }
+                    }
+                    break;
+            }
+            adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
+            override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
+        } else {
+            override = new SelectionOverride(groupIndex, trackIndex);
+        }
+
+        return override;
+    }
+
+    private int[][] validateAndBuildUniqueIds(List<String> uniqueIds) {
+        int [][] idsList = new int [uniqueIds.size()][3];
+        for (int index = 0 ; index < idsList.length ; index++) {
+            int[] uniqueTrackId = validateUniqueId(uniqueIds.get(index));
+            idsList[index] = uniqueTrackId;
+        }
+        return idsList;
+    }
+
     /**
      * @param uniqueId - the uniqueId to convert.
      * @return - int[] that consist from indexes that are readable to Exoplayer.
