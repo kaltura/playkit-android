@@ -12,13 +12,15 @@
 
 package com.kaltura.playkit;
 
+import android.support.annotation.Nullable;
+
 /**
  * Created by Noam Tamim @ Kaltura on 22/02/2017.
  */
 public class PKMediaConfig {
 
-    private long startPosition = 0;
-    private PKMediaEntry mediaEntry;
+    @Nullable private Long startPosition;
+    @Nullable private PKMediaEntry mediaEntry;
 
     /**
      * Setter for start position.
@@ -27,12 +29,12 @@ public class PKMediaConfig {
      * @param startPosition - the position from which the media should start.
      * @return - the config object.
      */
-    public PKMediaConfig setStartPosition(long startPosition) {
+    public PKMediaConfig setStartPosition(@Nullable Long startPosition) {
         this.startPosition = startPosition;
         return this;
     }
 
-    public PKMediaConfig setMediaEntry(PKMediaEntry mediaEntry) {
+    public PKMediaConfig setMediaEntry(@Nullable PKMediaEntry mediaEntry) {
         this.mediaEntry = mediaEntry;
         return this;
     }
@@ -43,10 +45,12 @@ public class PKMediaConfig {
      *
      * @return - the start position
      */
-    public long getStartPosition() {
+    @Nullable
+    public Long getStartPosition() {
         return startPosition;
     }
 
+    @Nullable
     public PKMediaEntry getMediaEntry() {
         return mediaEntry;
     }

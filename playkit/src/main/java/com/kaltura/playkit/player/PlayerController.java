@@ -62,6 +62,7 @@ public class PlayerController implements Player {
 
     private long targetSeekPosition;
     private boolean isNewEntry = true;
+    private boolean isPlayerStopped;
 
 
     private PKEvent.Listener eventListener;
@@ -178,9 +179,11 @@ public class PlayerController implements Player {
      */
     public boolean setMedia(PKMediaConfig mediaConfig) {
         log.d("setMedia");
-
-        isNewEntry = true;
-
+        if (!isNewEntry) {
+            isNewEntry = true;
+            stop();
+        }
+        
         sessionId = generateSessionId();
         if (playerSettings.getContentRequestAdapter() != null) {
             playerSettings.getContentRequestAdapter().updateParams(this);
@@ -231,7 +234,7 @@ public class PlayerController implements Player {
 
         //Initialize new PlayerEngine.
         try {
-            player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType);
+            player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType, playerSettings);
             //IMA workaround. In order to prevent flickering of the first frame
             //with ExoplayerEngine we should addPlayerView here for all playerEngines except Exoplayer.
             if (incomingPlayerType == PlayerEngineType.MediaPlayer) {
@@ -272,8 +275,16 @@ public class PlayerController implements Player {
 
     @Override
     public void stop() {
-        if (player != null) {
-            player.stop();
+        log.d("stop");
+        if (eventListener != null && !isPlayerStopped) {
+            PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
+            cancelUpdateProgress();
+            isPlayerStopped = true;
+            log.d("sending STOPPED event ");
+            eventListener.onEvent(event);
+            if (player != null) {
+                player.stop();
+            }
         }
     }
 
@@ -394,16 +405,6 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
-        Assert.failState("Not implemented");
-    }
-
-    @Override
-    public void skip() {
-        Assert.failState("Not implemented");
-    }
-
-    @Override
     public void addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
         Assert.shouldNeverHappen();
     }
@@ -442,7 +443,6 @@ public class PlayerController implements Player {
         }
         togglePlayerListeners(true);
         prepare(mediaConfig);
-
     }
 
     @Override
@@ -568,21 +568,19 @@ public class PlayerController implements Player {
                             break;
                         case PAUSE:
                         case ENDED:
-                        case STOPPED:
                             event = new PlayerEvent.Generic(eventType);
                             cancelUpdateProgress();
                             break;
                         case DURATION_CHANGE:
                             event = new PlayerEvent.DurationChanged(getDuration());
                             if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
-                                //For live entry it is possible to configure mediaConfig to start with an offset from live edge.
-                                //In this case startPosition in PKMediaConfig must be negative value which describes the amount of desired offset.
-                                if (PKMediaEntry.MediaEntryType.Live.equals(sourceConfig.mediaEntryType) && mediaConfig.getStartPosition() < 0) {
-                                    startPlaybackFrom(getDuration() + (mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER));
-                                } else {
+                                if (mediaConfig.getStartPosition() != null &&
+                                        ((isLiveMediaWithDvr() && mediaConfig.getStartPosition() == 0) ||
+                                                mediaConfig.getStartPosition() > 0)) {
                                     startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                                 }
                                 isNewEntry = false;
+                                isPlayerStopped = false;
                             }
                             break;
                         case TRACKS_AVAILABLE:
@@ -635,6 +633,10 @@ public class PlayerController implements Player {
                 }
             }
         };
+    }
+
+    private boolean isLiveMediaWithDvr() {
+        return (PKMediaEntry.MediaEntryType.DvrLive == sourceConfig.mediaEntryType);
     }
 
     private PlayerEngine.StateChangedListener initStateChangeListener() {

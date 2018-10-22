@@ -17,7 +17,6 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
 
-
 public class PlayerSettings implements Player.Settings {
 
     private boolean useTextureView;
@@ -26,6 +25,8 @@ public class PlayerSettings implements Player.Settings {
     private boolean crossProtocolRedirectEnabled;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
+    private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
+
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -34,6 +35,7 @@ public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
+
 
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
@@ -80,6 +82,10 @@ public class PlayerSettings implements Player.Settings {
         return preferredMediaFormat;
     }
 
+    public LoadControlBuffers getLoadControlBuffers() {
+        return loadControlBuffers;
+    }
+
     @Override
     public Player.Settings setVRPlayerEnabled(boolean vrPlayerEnabled) {
         this.vrPlayerEnabled = vrPlayerEnabled;
@@ -87,7 +93,7 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public PlayerSettings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
+    public Player.Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
         this.contentRequestAdapter = contentRequestAdapter;
         return this;
     }
@@ -99,19 +105,19 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public PlayerSettings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
+    public Player.Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
         return this;
     }
 
     @Override
-    public PlayerSettings useTextureView(boolean useTextureView) {
+    public Player.Settings useTextureView(boolean useTextureView) {
         this.useTextureView = useTextureView;
         return this;
     }
 
     @Override
-    public PlayerSettings setSecureSurface(boolean isSurfaceSecured) {
+    public Player.Settings setSecureSurface(boolean isSurfaceSecured) {
         this.isSurfaceSecured = isSurfaceSecured;
         return this;
     }
@@ -123,13 +129,13 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public PlayerSettings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
+    public Player.Settings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
         this.preferredAudioTrackConfig = preferredAudioTrackConfig;
         return this;
     }
 
     @Override
-    public PlayerSettings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
+    public Player.Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
         this.preferredTextTrackConfig = preferredTextTrackConfig;
         return this;
     }
@@ -140,9 +146,16 @@ public class PlayerSettings implements Player.Settings {
         return this;
     }
 
+
     @Override
-    public PlayerSettings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
+    public Player.Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
         this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers) {
+        this.loadControlBuffers = loadControlBuffers;
         return this;
     }
 }

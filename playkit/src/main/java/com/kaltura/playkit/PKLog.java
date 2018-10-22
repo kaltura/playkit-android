@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.util.Locale;
@@ -60,6 +61,7 @@ import static android.util.Log.WARN;
 @SuppressWarnings("WeakerAccess")
 public class PKLog {
 
+    @NonNull
     public final String tag;
     private int level = VERBOSE;
 
@@ -75,6 +77,7 @@ public class PKLog {
 
     private static int globalLevel = DEBUG;
 
+    @NonNull
     private static String shortenTag(String tag) {
         if (tag.length() > 23) {
             String fixed = String.format(Locale.ENGLISH, "%s_%02x", tag.substring(0, 20), tag.hashCode() & 0xff);
@@ -88,15 +91,15 @@ public class PKLog {
         PKLog.globalLevel = level.value;
     }
 
-    public void setLevel(Level level) {
+    public void setLevel(@NonNull Level level) {
         this.level = level.value;
     }
 
-    private PKLog(String tag) {
+    private PKLog(@NonNull String tag) {
         this.tag = shortenTag(tag);
     }
 
-    public static PKLog get(String tag) {
+    @NonNull public static PKLog get(@NonNull String tag) {
         return new PKLog(tag);
     }
 

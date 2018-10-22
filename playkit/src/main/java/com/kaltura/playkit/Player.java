@@ -15,6 +15,7 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.utils.Consts;
 
@@ -95,6 +96,14 @@ public interface Player {
         Settings setAdAutoPlayOnResume(boolean autoPlayOnResume);
 
         /**
+         * Set the player buffers size
+         *
+         * @param loadControlBuffers LoadControlBuffers
+         * @return Player Settings
+         */
+        Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers);
+
+        /**
          * Set the Player's VR/360 support
          *
          * @param vrPlayerEnabled - If 360 media should be played on VR player or default player - default == true.
@@ -141,18 +150,7 @@ public interface Player {
      */
     void prepare(@NonNull PKMediaConfig playerConfig);
 
-    /**
-     * Prepare for playing the next entry. If config.shouldAutoPlay is true, the entry will automatically
-     * play when it's ready and the current entry is ended.
-     */
-    void prepareNext(@NonNull PKMediaConfig mediaConfig);
-
     void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
-
-    /**
-     * Load the entry that was prepared with {@link #prepareNext(PKMediaConfig)}.
-     */
-    void skip();
 
     /**
      * Player lifecycle method. Should be used when the application went to onPause();
