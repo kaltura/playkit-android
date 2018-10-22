@@ -21,6 +21,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.support.annotation.NonNull;
+import android.widget.Toast;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -203,10 +204,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player.addListener(this);
             player.addMetadataOutput(this);
 
-            Profiler profiler = profiler();
-            if (profiler.isActive()) {
-                player.addAnalyticsListener(profiler.getAnalyticsListener(this));
-            }
+            addAnalyticsListener();
         }
     }
 
@@ -692,7 +690,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         player = null;
         exoPlayerView = null;
         playerPosition = Consts.TIME_UNSET;
-        profiler().onSessionFinished();
+
+        closeProfilerSession();
     }
 
     @Override
@@ -807,7 +806,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player.stop(true);
             sendDistinctEvent(PlayerEvent.Type.STOPPED);
         }
-        profiler().onSessionFinished();
+
+        closeProfilerSession();
     }
 
     private void savePlayerPosition() {
@@ -885,9 +885,30 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         return player != null && player.isCurrentWindowDynamic();
     }
 
+    private void addAnalyticsListener() {
+        if (player != null) {
+            final Profiler profiler = profiler();
+            if (profiler.isActive()) {
+                player.addAnalyticsListener(profiler.getAnalyticsListener(this));
+            }
+        }
+    }
+
+    private void closeProfilerSession() {
+        // Remove old profiler's listener
+        final Profiler profiler = profiler();
+        if (profiler.isActive()) {
+            player.removeAnalyticsListener(profiler.getAnalyticsListener());
+        }
+        profiler.onSessionFinished();
+    }
+
     @Override
     public void setSessionId(String sessionId) {
+
         this.sessionId = sessionId;
+
+        addAnalyticsListener();
     }
 
     public void setPlaybackRate(float rate) {

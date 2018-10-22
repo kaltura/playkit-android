@@ -46,7 +46,6 @@ public class Profiler {
     private static PKLog pkLog = PKLog.get("Profiler");
 
     private static final boolean devMode = true;
-    private static final boolean localMode = true;
 
     private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
     private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json";
@@ -55,8 +54,8 @@ public class Profiler {
     private static final int MAX_CONFIG_SIZE = 10240;
 
     static final String SEPARATOR = "\t";
-    private static final int SEND_INTERVAL_SEC = localMode ? 10 : 300;   // Report every 5 minutes
-    private static final int NO_ACTIVITY_LIMIT = localMode ? 60 : 2;     // Close profiler after 2 empty intervals
+    private static final int SEND_INTERVAL_SEC = devMode ? 30 : 300;   // Report every 5 minutes
+    private static final int NO_ACTIVITY_LIMIT = devMode ? 30 : 2;     // Close profiler after 2 empty intervals
     private static final HashMap<String, Profiler> profilers = new HashMap<>();
 
     private static boolean started;
@@ -74,6 +73,7 @@ public class Profiler {
     // Config
     private static String postURL = DEFAULT_POST_URL;
     private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
+    private ExoPlayerProfilingListener analyticsListener;
 
     static String field(String name, String value) {
         if (value == null) {
@@ -271,7 +271,7 @@ public class Profiler {
 
         final String string = sb.toString();
 
-        if (!localMode) {
+//        if (!devMode) {
             try {
                 Utils.executePost(postURL + "?mode=addChunk&sessionId=" + sessionId, string.getBytes(), null);
             } catch (IOException e) {
@@ -279,7 +279,7 @@ public class Profiler {
                 pkLog.e("Failed sending log", e);
                 pkLog.e(string);
             }
-        }
+//        }
 
         if (devMode && externalFilesDir != null) {
             // Write to disk
@@ -299,7 +299,18 @@ public class Profiler {
     }
 
     AnalyticsListener getAnalyticsListener(PlayerEngine playerEngine) {
-        return new ExoPlayerProfilingListener(this, playerEngine);
+        if (analyticsListener == null) {
+            synchronized (this) {
+                if (analyticsListener == null) {
+                    analyticsListener = new ExoPlayerProfilingListener(this, playerEngine);
+                }
+            }
+        }
+        return analyticsListener;
+    }
+
+    AnalyticsListener getAnalyticsListener() {
+        return analyticsListener;
     }
 
     static Profiler get(String sessionId) {
@@ -333,6 +344,8 @@ public class Profiler {
     }
 
     private StringBuilder startLog(String event) {
+        pkLog.d("Profiler.startLog: " + sessionId + " " + event);
+
         StringBuilder sb = new StringBuilder(100);
         sb
                 .append(SystemClock.elapsedRealtime() - startTime)

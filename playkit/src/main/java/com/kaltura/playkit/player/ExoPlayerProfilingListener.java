@@ -1,6 +1,7 @@
 package com.kaltura.playkit.player;
 
 import android.net.NetworkInfo;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.Surface;
 
@@ -17,6 +18,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSpec;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 import static com.google.android.exoplayer2.C.DATA_TYPE_DRM;
 import static com.google.android.exoplayer2.C.DATA_TYPE_MANIFEST;
@@ -38,16 +40,19 @@ import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK_ADJ
 
 class ExoPlayerProfilingListener implements AnalyticsListener {
 
-    private final Profiler profiler;
-    private PlayerEngine playerEngine;
+    @NonNull private final Profiler profiler;
+    @NonNull private WeakReference<PlayerEngine> playerEngine;
 
-    ExoPlayerProfilingListener(Profiler profiler, PlayerEngine playerEngine) {
+    ExoPlayerProfilingListener(@NonNull Profiler profiler, @NonNull PlayerEngine playerEngine) {
         this.profiler = profiler;
-        this.playerEngine = playerEngine;
+        this.playerEngine = new WeakReference<>(playerEngine);
     }
 
     public void log(String event, String... strings) {
-        profiler.logWithPlaybackInfo(event, playerEngine, strings);
+        final PlayerEngine pe = this.playerEngine.get();
+        if (pe != null) {
+            profiler.logWithPlaybackInfo(event, pe, strings);
+        }
     }
 
     private String trackSelectionReasonString(int trackSelectionReason) {
