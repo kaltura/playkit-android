@@ -1,7 +1,7 @@
 
 # Playkit ProGuard HowTo
 
-## Suggested progaurd configuration for apps that use playkit SDK. 
+## Suggested ProGuard configuration for apps that use playkit SDK.
 ```
 -keep class com.kaltura.netkit.utils.** { *; }
 -keep class com.kaltura.playkit.api.ovp.** { *; }

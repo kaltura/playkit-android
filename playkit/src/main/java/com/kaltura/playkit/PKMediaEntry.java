@@ -94,6 +94,7 @@ public class PKMediaEntry implements Parcelable {
     public enum MediaEntryType {
         Vod,
         Live,
+        DvrLive,
         Unknown
     }
 

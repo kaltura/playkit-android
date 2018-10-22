@@ -62,6 +62,7 @@ public class PlayerController implements Player {
 
     private long targetSeekPosition;
     private boolean isNewEntry = true;
+    private boolean isPlayerStopped;
 
 
     private PKEvent.Listener eventListener;
@@ -180,7 +181,6 @@ public class PlayerController implements Player {
      */
     public boolean setMedia(PKMediaConfig mediaConfig) {
         log.d("setMedia");
-
         if (!isNewEntry) {
             isNewEntry = true;
             stop();
@@ -280,8 +280,16 @@ public class PlayerController implements Player {
 
     @Override
     public void stop() {
-        if (player != null) {
-            player.stop();
+        log.d("stop");
+        if (eventListener != null && !isPlayerStopped) {
+            PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
+            cancelUpdateProgress();
+            isPlayerStopped = true;
+            log.d("sending STOPPED event ");
+            eventListener.onEvent(event);
+            if (player != null) {
+                player.stop();
+            }
         }
     }
 
@@ -399,16 +407,6 @@ public class PlayerController implements Player {
             player.setEventListener(null);
             player.setStateChangedListener(null);
         }
-    }
-
-    @Override
-    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
-        Assert.failState("Not implemented");
-    }
-
-    @Override
-    public void skip() {
-        Assert.failState("Not implemented");
     }
 
     @Override
@@ -575,7 +573,6 @@ public class PlayerController implements Player {
                             break;
                         case PAUSE:
                         case ENDED:
-                        case STOPPED:
                             event = new PlayerEvent.Generic(eventType);
                             cancelUpdateProgress();
                             break;
@@ -588,6 +585,7 @@ public class PlayerController implements Player {
                                     startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                                 }
                                 isNewEntry = false;
+                                isPlayerStopped = false;
                             }
                             break;
                         case TRACKS_AVAILABLE:
@@ -643,7 +641,7 @@ public class PlayerController implements Player {
     }
 
     private boolean isLiveMediaWithDvr() {
-        return (isLive() || PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) && sourceConfig != null && sourceConfig.dvrStatus != null && sourceConfig.dvrStatus == PKMediaSourceConfig.LiveStreamMode.LIVE_DVR;
+        return (PKMediaEntry.MediaEntryType.DvrLive == sourceConfig.mediaEntryType);
     }
 
     private PlayerEngine.StateChangedListener initStateChangeListener() {
