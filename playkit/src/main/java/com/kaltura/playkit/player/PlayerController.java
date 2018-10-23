@@ -64,6 +64,7 @@ public class PlayerController implements Player {
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
 
+    private Profiler profiler = Profiler.create();
 
     private PKEvent.Listener eventListener;
     private PlayerEngine.EventListener eventTrigger = initEventListener();
@@ -167,7 +168,7 @@ public class PlayerController implements Player {
         switchPlayersIfRequired(incomingPlayerType);
 
         if (player != null) {
-            player.setSessionId(sessionId);
+            player.setProfiler(profiler);
             player.load(sourceConfig);
         }
     }
@@ -187,11 +188,13 @@ public class PlayerController implements Player {
         }
         
         sessionId = generateSessionId();
+
         if (playerSettings.getContentRequestAdapter() != null) {
             playerSettings.getContentRequestAdapter().updateParams(this);
         }
 
-        Profiler.get(sessionId).onSetMedia(this, mediaConfig);
+        profiler.newSession(sessionId);
+        profiler.onSetMedia(this, mediaConfig);
 
         this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry(), playerSettings.getPreferredMediaFormat());

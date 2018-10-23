@@ -21,7 +21,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.support.annotation.NonNull;
-import android.widget.Toast;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -34,6 +33,7 @@ import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.analytics.AnalyticsListener;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
 import com.google.android.exoplayer2.source.BehindLiveWindowException;
@@ -141,8 +141,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
 
-    private String sessionId;
     private PKMediaSourceConfig sourceConfig;
+    private Profiler profiler;
 
     ExoPlayerWrapper(Context context, PlayerSettings playerSettings) {
         this(context, new ExoPlayerView(context), playerSettings);
@@ -168,7 +168,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
         if (bitrate != DefaultBandwidthMeter.DEFAULT_INITIAL_BITRATE_ESTIMATE) {
-            profiler().onBandwidthSample(this, bitrate);
+            profiler.onBandwidthSample(this, bitrate);
         }
         sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
     }
@@ -192,7 +192,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             ((ExoPlayerView) exoPlayerView).addOnContentLayoutChangeListener(new View.OnLayoutChangeListener() {
                 @Override
                 public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                    profiler().onViewportSizeChange(ExoPlayerWrapper.this, v.getWidth(), v.getHeight());
+                    profiler.onViewportSizeChange(ExoPlayerWrapper.this, v.getWidth(), v.getHeight());
                 }
             });
         }
@@ -204,7 +204,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player.addListener(this);
             player.addMetadataOutput(this);
 
-            addAnalyticsListener();
+            profiler.startListener(this);
         }
     }
 
@@ -234,7 +234,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         trackSelectionHelper.applyPlayerSettings(playerSettings);
 
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
-        profiler().onPrepareStarted(this, sourceConfig);
+        profiler.onPrepareStarted(this, sourceConfig);
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
         player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
@@ -290,8 +290,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
     }
 
-    // private HttpDataSource.Factory buildLicenseRequestHttpDataSourceFactory() {
-    //     return new CustomHttpDataSourceFactory(getUserAgent(context), httpDataSourceRequestParams, null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
     private HttpDataSource.Factory buildDrmHttpDataSourceFactory() {
         return new CustomHttpDataSourceFactory(getUserAgent(context), httpDataSourceRequestParams, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
@@ -354,7 +352,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         switch (playbackState) {
             case Player.STATE_IDLE:
-//                profiler().onPlayerIdle(this, playWhenReady);
                 log.d("onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
                 if (isSeeking) {
@@ -363,19 +360,16 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 break;
 
             case Player.STATE_BUFFERING:
-//                profiler().onPlayerBuffering(this, playWhenReady);
                 log.d("onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.BUFFERING);
                 break;
 
             case Player.STATE_READY:
-//                profiler().onPlayerReady(this, playWhenReady);
                 log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.READY);
 
                 if (isSeeking) {
                     isSeeking = false;
-//                    profiler().onSeekEnded(this);
                     sendDistinctEvent(PlayerEvent.Type.SEEKED);
                 }
 
@@ -390,7 +384,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 break;
 
             case Player.STATE_ENDED:
-//                profiler().onPlayerEnded(this, playWhenReady);
                 log.d("onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
                 changeState(PlayerState.IDLE);
                 sendDistinctEvent(PlayerEvent.Type.ENDED);
@@ -419,7 +412,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         shouldResetPlayerPosition = reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC;
 
-        profiler().onDurationChanged(getDuration());
+        profiler.onDurationChanged(getDuration());
     }
 
     @Override
@@ -579,7 +572,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player.seekToDefaultPosition();
         }
 
-        profiler().onPlayRequested(this);
+        profiler.onPlayRequested(this);
         player.setPlayWhenReady(true);
     }
 
@@ -621,17 +614,13 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         isSeeking = true;
         sendDistinctEvent(PlayerEvent.Type.SEEKING);
 
-        profiler().onSeekRequested(this, position);
+        profiler.onSeekRequested(this, position);
 
         if (isLive() && position == player.getDuration()) {
             player.seekToDefaultPosition();
         } else {
             player.seekTo(position);
         }
-    }
-
-    private Profiler profiler() {
-        return Profiler.get(sessionId);
     }
 
     @Override
@@ -683,6 +672,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void destroy() {
         log.d("destroy");
+
+        closeProfilerSession();
+        profiler.stopListener(this);
+
         if (player != null) {
             player.release();
         }
@@ -690,8 +683,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         player = null;
         exoPlayerView = null;
         playerPosition = Consts.TIME_UNSET;
-
-        closeProfilerSession();
     }
 
     @Override
@@ -737,7 +728,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             return;
         }
         isSeeking = false;
-        profiler().onReplayRequested(this);
+        profiler.onReplayRequested(this);
         player.seekTo(0);
         player.setPlayWhenReady(true);
         sendDistinctEvent(PlayerEvent.Type.REPLAY);
@@ -885,30 +876,20 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         return player != null && player.isCurrentWindowDynamic();
     }
 
-    private void addAnalyticsListener() {
+    void addAnalyticsListener(AnalyticsListener listener) {
         if (player != null) {
-            final Profiler profiler = profiler();
-            if (profiler.isActive()) {
-                player.addAnalyticsListener(profiler.getAnalyticsListener(this));
-            }
+            player.addAnalyticsListener(listener);
+        }
+    }
+
+    void removeAnalyticsListener(AnalyticsListener listener) {
+        if (player != null) {
+            player.removeAnalyticsListener(listener);
         }
     }
 
     private void closeProfilerSession() {
-        // Remove old profiler's listener
-        final Profiler profiler = profiler();
-        if (profiler.isActive()) {
-            player.removeAnalyticsListener(profiler.getAnalyticsListener());
-        }
         profiler.onSessionFinished();
-    }
-
-    @Override
-    public void setSessionId(String sessionId) {
-
-        this.sessionId = sessionId;
-
-        addAnalyticsListener();
     }
 
     public void setPlaybackRate(float rate) {
@@ -947,5 +928,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 log.d("preferred language selected for track type = " + trackType);
             }
         }
+    }
+
+    public void setProfiler(Profiler profiler) {
+        this.profiler = profiler;
     }
 }

@@ -588,7 +588,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public void setSessionId(String sessionId) {
+    public void setProfiler(Profiler profiler) {
       
     }
 

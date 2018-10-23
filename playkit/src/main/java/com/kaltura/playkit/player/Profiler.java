@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.Process;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
@@ -29,11 +30,8 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 class ConfigFile {
@@ -55,25 +53,98 @@ public class Profiler {
 
     static final String SEPARATOR = "\t";
     private static final int SEND_INTERVAL_SEC = devMode ? 30 : 300;   // Report every 5 minutes
-    private static final int NO_ACTIVITY_LIMIT = devMode ? 30 : 2;     // Close profiler after 2 empty intervals
-    private static final HashMap<String, Profiler> profilers = new HashMap<>();
 
     private static boolean started;
     private static Handler ioHandler;
     private static String currentExperiment;
     private static DisplayMetrics metrics;
-    private static Set<String> closedSessions = new HashSet<>();
     private static File externalFilesDir;   // for debug logs
-
-    final long startTime = SystemClock.elapsedRealtime();
-    private final ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
-    private int noActivityCounter;
-    private final String sessionId;
 
     // Config
     private static String postURL = DEFAULT_POST_URL;
     private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
     private ExoPlayerProfilingListener analyticsListener;
+
+    private String sessionId;
+    long startTime;
+    private ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
+
+    private Profiler() {
+
+        ioHandler.post(new Runnable() {
+            @Override
+            public void run() {
+
+                // Send queue content to the server
+                sendLogChunk();
+
+                ioHandler.postDelayed(this, SEND_INTERVAL_SEC * 1000);
+            }
+        });
+
+    }
+
+    void newSession(final String sessionId) {
+
+        if (this.sessionId != null) {
+            // close current session
+            closeSession();
+        }
+
+        this.sessionId = sessionId;
+        if (sessionId == null) {
+            return;     // the null profiler
+        }
+
+        this.startTime = SystemClock.elapsedRealtime();
+        this.logQueue.clear();
+
+        pkLog.d("New profiler with sessionId: " + sessionId);
+
+        log("StartSession",
+                field("now", System.currentTimeMillis()),
+                field("strNow", new Date().toString()),
+                field("sessionId", sessionId),
+                // TODO: remove screenSize and screenDpi after backend is updated
+                field("screenSize", metrics.widthPixels + "x" + metrics.heightPixels),
+                field("screenDpi", metrics.xdpi + "x" + metrics.ydpi)
+        );
+
+        log("PlayKit",
+                field("version", PlayKitManager.VERSION_STRING),
+                field("clientTag", PlayKitManager.CLIENT_TAG)
+        );
+
+        log("Platform",
+                field("name", "Android"),
+                field("apiLevel", Build.VERSION.SDK_INT),
+                field("chipset", MediaSupport.DEVICE_CHIPSET),
+                field("brand", Build.BRAND),
+                field("model", Build.MODEL),
+                field("manufacturer", Build.MANUFACTURER),
+                field("device", Build.DEVICE),
+                field("tags", Build.TAGS),
+                field("fingerprint", Build.FINGERPRINT),
+                field("screenSize", metrics.widthPixels + "x" + metrics.heightPixels),
+                field("screenDpi", metrics.xdpi + "x" + metrics.ydpi)
+        );
+
+
+        if (currentExperiment != null) {
+            log("Experiment", field("info", currentExperiment));
+        }
+    }
+
+    void startListener(ExoPlayerWrapper playerEngine) {
+        if (analyticsListener == null) {
+            analyticsListener = new ExoPlayerProfilingListener(this, playerEngine);
+        }
+        playerEngine.addAnalyticsListener(analyticsListener);
+    }
+
+    void stopListener(ExoPlayerWrapper playerEngine) {
+        playerEngine.removeAnalyticsListener(analyticsListener);
+    }
 
     static String field(String name, String value) {
         if (value == null) {
@@ -194,66 +265,17 @@ public class Profiler {
         started = true;
     }
 
-    private Profiler(final String sessionId) {
-
-        this.sessionId = sessionId;
-        if (sessionId == null) {
-            return;     // the null profiler
-        }
-
-        pkLog.d("New profiler with sessionId: " + sessionId);
-
-        log("StartSession",
-                field("strNow", new Date().toString()),
-                field("sessionId", sessionId),
-                field("now", System.currentTimeMillis()),
-                field("screenSize", metrics.widthPixels + "x" + metrics.heightPixels),
-                field("screenDpi", metrics.xdpi + "x" + metrics.ydpi)
-                );
-
-        log("PlayKit",
-                field("version", PlayKitManager.VERSION_STRING),
-                field("clientTag", PlayKitManager.CLIENT_TAG)
-                );
-
-        log("Platform",
-                field("name", "Android"),
-                field("apiLevel", Build.VERSION.SDK_INT),
-                field("chipset", MediaSupport.DEVICE_CHIPSET),
-                field("brand", Build.BRAND),
-                field("model", Build.MODEL),
-                field("manufacturer", Build.MANUFACTURER),
-                field("device", Build.DEVICE),
-                field("tags", Build.TAGS),
-                field("fingerprint", Build.FINGERPRINT)
-                );
-
-
-        if (currentExperiment != null) {
-            log("Experiment", field("info", currentExperiment));
-        }
-
-        ioHandler.post(new Runnable() {
-            @Override
-            public void run() {
-
-                // Send queue content to the server
-                sendLogChunk();
-
-                if (noActivityCounter > NO_ACTIVITY_LIMIT) {
-                    closeSession();
-                } else {
-                    ioHandler.postDelayed(this, SEND_INTERVAL_SEC * 1000);
-                }
-            }
-        });
-    }
 
     private static boolean shouldEnable() {
         return Math.random() < (sendPercentage / 100);
     }
 
     private void sendLogChunk() {
+
+        if (sessionId == null) {
+            return;
+        }
+
         StringBuilder sb = new StringBuilder();
         Iterator<String> iterator = logQueue.iterator();
         while (iterator.hasNext()) {
@@ -263,29 +285,27 @@ public class Profiler {
         }
 
         if (sb.length() == 0) {
-            noActivityCounter++;
             return;
         }
 
-        noActivityCounter = 0;
-
         final String string = sb.toString();
 
-//        if (!devMode) {
-            try {
-                Utils.executePost(postURL + "?mode=addChunk&sessionId=" + sessionId, string.getBytes(), null);
-            } catch (IOException e) {
-                // FIXME: 03/09/2018 Is it bad that we lost this log chunk?
-                pkLog.e("Failed sending log", e);
-                pkLog.e(string);
-            }
-//        }
+        if (Looper.myLooper() == ioHandler.getLooper()) {
+            postChunk(string);
+        } else {
+            ioHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    postChunk(string);
+                }
+            });
+        }
 
         if (devMode && externalFilesDir != null) {
             // Write to disk
             BufferedWriter writer = null;
             try {
-                writer = new BufferedWriter(new FileWriter(new File(externalFilesDir, sessionId + ".txt"), true));
+                writer = new BufferedWriter(new FileWriter(new File(externalFilesDir, sessionId.replace(':', '_') + ".txt"), true));
                 writer.append(string);
                 writer.newLine();
                 writer.flush();
@@ -298,39 +318,26 @@ public class Profiler {
         }
     }
 
-    AnalyticsListener getAnalyticsListener(PlayerEngine playerEngine) {
-        if (analyticsListener == null) {
-            synchronized (this) {
-                if (analyticsListener == null) {
-                    analyticsListener = new ExoPlayerProfilingListener(this, playerEngine);
-                }
-            }
+    private void postChunk(String string) {
+        try {
+            Utils.executePost(postURL + "?mode=addChunk&sessionId=" + sessionId, string.getBytes(), null);
+        } catch (IOException e) {
+            // FIXME: 03/09/2018 Is it bad that we lost this log chunk?
+            pkLog.e("Failed sending log", e);
+            pkLog.e(string);
         }
-        return analyticsListener;
     }
 
     AnalyticsListener getAnalyticsListener() {
         return analyticsListener;
     }
 
-    static Profiler get(String sessionId) {
-
-        if (!started || sessionId == null || closedSessions.contains(sessionId) || !shouldEnable()) {
+    static Profiler create() {
+        if (!started || !shouldEnable()) {
             return nullProfiler();
         }
 
-        Profiler profiler = profilers.get(sessionId);
-        if (profiler == null) {
-            synchronized (profilers) {
-                profiler = profilers.get(sessionId);
-                if (profiler == null) {
-                    profiler = new Profiler(sessionId);
-                    profilers.put(sessionId, profiler);
-                }
-            }
-        }
-
-        return profiler;
+        return new Profiler();
     }
 
     public static void setCurrentExperiment(String currentExperiment) {
@@ -462,16 +469,11 @@ public class Profiler {
     }
 
     public void onSessionFinished() {
-        ioHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                closeSession();
-            }
-        });
+        closeSession();
     }
 
     private static Profiler nullProfiler() {
-        return new Profiler(null) {
+        return new Profiler() {
 
             @Override
             public boolean isActive() {
@@ -517,9 +519,7 @@ public class Profiler {
     }
 
     private void closeSession() {
-        profilers.remove(sessionId);
         sendLogChunk();
-        closedSessions.add(sessionId);
     }
 
     public void onViewportSizeChange(PlayerEngine playerEngine, int width, int height) {

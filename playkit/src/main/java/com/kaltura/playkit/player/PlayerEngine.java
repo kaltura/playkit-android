@@ -213,7 +213,7 @@ public interface PlayerEngine {
 
     float getPlaybackRate();
 
-    void setSessionId(String sessionId);
+    void setProfiler(Profiler profiler);
 
     /**
      * Generic getters for playkit controllers.

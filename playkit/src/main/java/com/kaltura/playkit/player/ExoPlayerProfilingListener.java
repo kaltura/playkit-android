@@ -41,9 +41,9 @@ import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK_ADJ
 class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @NonNull private final Profiler profiler;
-    @NonNull private WeakReference<PlayerEngine> playerEngine;
+    @NonNull private final WeakReference<PlayerEngine> playerEngine;
 
-    ExoPlayerProfilingListener(@NonNull Profiler profiler, @NonNull PlayerEngine playerEngine) {
+    ExoPlayerProfilingListener(@NonNull Profiler profiler, PlayerEngine playerEngine) {
         this.profiler = profiler;
         this.playerEngine = new WeakReference<>(playerEngine);
     }
