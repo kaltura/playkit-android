@@ -13,9 +13,16 @@ import com.google.android.exoplayer2.analytics.AnalyticsListener;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.source.MediaSourceEventListener;
+import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSpec;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -240,7 +247,43 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onTracksChanged(EventTime eventTime, TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+        JsonArray jTrackGroups = new JsonArray(trackGroups.length);
+        for (int i = 0; i < trackGroups.length; i++) {
+            final TrackGroup trackGroup = trackGroups.get(i);
+            JsonArray jTrackGroup = new JsonArray(trackGroup.length);
+            for (int j = 0; j < trackGroup.length; j++) {
+                final Format format = trackGroup.getFormat(j);
+                jTrackGroup.add(toJSON(format));
+            }
+            jTrackGroups.add(jTrackGroup);
+        }
 
+        JsonArray jTrackSelections = new JsonArray(trackSelections.length);
+        for (int i = 0; i < trackSelections.length; i++) {
+            final TrackSelection trackSelection = trackSelections.get(i);
+            final Format selectedFormat = trackSelection == null ? null : trackSelection.getSelectedFormat();
+            jTrackSelections.add(toJSON(selectedFormat));
+        }
+        
+        log("TracksChanged",
+                Profiler.field("available", jTrackGroups.toString()),
+                Profiler.field("selected", jTrackSelections.toString()));
+    }
+
+    private JsonObject toJSON(@Nullable Format format) {
+
+        if (format == null) {
+            return null;
+        }
+
+        final JsonObject jsonObject = new JsonObject();
+
+        jsonObject.addProperty("id", format.id);
+        jsonObject.addProperty("bitrate", format.bitrate);
+        jsonObject.addProperty("codecs", format.codecs);
+        jsonObject.addProperty("language", format.language);
+
+        return jsonObject;
     }
 
     @Override
