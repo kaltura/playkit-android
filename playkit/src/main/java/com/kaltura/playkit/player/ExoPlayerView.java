@@ -105,6 +105,7 @@ class ExoPlayerView extends BaseExoplayerView {
         }
     }
 
+    // FIXME: 24/10/2018 This is a workaround and should be removed when migrating to ExoPlayer 2.9
     void addOnContentLayoutChangeListener(OnLayoutChangeListener listener) {
         if (contentFrame != null) {
             contentFrame.addOnLayoutChangeListener(listener);

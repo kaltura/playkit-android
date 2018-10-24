@@ -187,6 +187,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
+
+
+        // FIXME: 24/10/2018 This is a workaround and should be removed when migrating to ExoPlayer 2.9
+        // ExoPlayer 2.8.x does not report viewport size changes, so we get it here.
         if (exoPlayerView instanceof ExoPlayerView) {
             ((ExoPlayerView) exoPlayerView).addOnContentLayoutChangeListener(new View.OnLayoutChangeListener() {
                 @Override
@@ -195,6 +199,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 }
             });
         }
+        
         player.setPlayWhenReady(false);
     }
 
