@@ -124,7 +124,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private boolean isSurfaceSecured;
     private boolean shouldGetTracksInfo;
     private boolean shouldResetPlayerPosition;
-    private boolean crossProtocolRedirectEnabled;
     private boolean preferredLanguageWasSelected;
     private boolean shouldRestorePlayerToPreviousState;
 
@@ -155,7 +154,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 .build();
         this.exoPlayerView = exoPlayerView;
 
-        this.playerSettings = playerSettings;
+        this.playerSettings = playerSettings != null ? playerSettings : new PlayerSettings();
 
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
             CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
@@ -287,12 +286,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      */
     private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
         return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
+                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, playerSettings.crossProtocolRedirectEnabled());
     }
 
     private HttpDataSource.Factory buildDrmHttpDataSourceFactory() {
         return new CustomHttpDataSourceFactory(getUserAgent(context), httpDataSourceRequestParams, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
+                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, playerSettings.crossProtocolRedirectEnabled());
     }
 
     private static String getUserAgent(Context context) {
@@ -503,7 +502,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     public void load(PKMediaSourceConfig mediaSourceConfig) {
         log.d("load");
 
-        crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
         PKRequestParams.Adapter licenseRequestAdapter = playerSettings.getLicenseRequestAdapter();
 
         if (licenseRequestAdapter != null) {
