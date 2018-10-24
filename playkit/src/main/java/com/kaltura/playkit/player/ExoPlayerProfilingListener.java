@@ -264,7 +264,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             final Format selectedFormat = trackSelection == null ? null : trackSelection.getSelectedFormat();
             jTrackSelections.add(toJSON(selectedFormat));
         }
-        
+
         log("TracksChanged",
                 Profiler.field("available", jTrackGroups.toString()),
                 Profiler.field("selected", jTrackSelections.toString()));
@@ -282,6 +282,8 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         jsonObject.addProperty("bitrate", format.bitrate);
         jsonObject.addProperty("codecs", format.codecs);
         jsonObject.addProperty("language", format.language);
+        jsonObject.addProperty("height", format.height);
+        jsonObject.addProperty("width", format.width);
 
         return jsonObject;
     }
