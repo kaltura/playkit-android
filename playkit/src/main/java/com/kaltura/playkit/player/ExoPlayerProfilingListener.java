@@ -267,6 +267,8 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         jsonObject.addProperty("language", format.language);
         jsonObject.addProperty("height", format.height);
         jsonObject.addProperty("width", format.width);
+        jsonObject.addProperty("containerMimeType", format.containerMimeType);
+        jsonObject.addProperty("sampleMimeType", format.sampleMimeType);
 
         return jsonObject;
     }
