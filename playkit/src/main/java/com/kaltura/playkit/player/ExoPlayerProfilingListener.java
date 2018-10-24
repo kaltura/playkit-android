@@ -112,23 +112,6 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         return ms == null ? null : ms / 1000f;
     }
 
-    private void logLoadingEvent(String event, DataSpec dataSpec, int dataType, int trackType, Format trackFormat, int trackSelectionReason, long mediaStartTimeMs, long mediaEndTimeMs, long elapsedRealtimeMs, Long loadDurationMs, Long bytesLoaded, IOException error, Boolean wasCanceled) {
-        String dataTypeString = dataTypeString(dataType);
-        String trackTypeString = trackTypeString(trackType);
-
-        if (dataTypeString == null || trackTypeString == null) {
-            return;
-        }
-
-        log(event,
-                Profiler.timeField("time", elapsedRealtimeMs - profiler.startTime), Profiler.field("uri", dataSpec.uri.getLastPathSegment()),
-                Profiler.field("dataType", dataTypeString), Profiler.field("trackType", trackTypeString),
-                trackFormatString(trackFormat), Profiler.field("reason", trackSelectionReasonString(trackSelectionReason)),
-                Profiler.timeField("rangeStart", mediaStartTimeMs), Profiler.timeField("rangeEnd", mediaEndTimeMs),
-                loadDurationMs == null ? null : Profiler.timeField("loadTime", loadDurationMs), bytesLoaded == null ? null : Profiler.field("bytes", bytesLoaded),
-                Profiler.field("error", error != null ? "{" + error.getMessage() + "}" : null), wasCanceled == null ? null : Profiler.field("canceled", wasCanceled));
-    }
-
     @Override
     public void onPlayerStateChanged(EventTime eventTime, boolean playWhenReady, int playbackState) {
         String state;
@@ -288,24 +271,41 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         return jsonObject;
     }
 
+    private void logLoadingEvent(String event, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData, IOException error, Boolean wasCanceled) {
+        String dataTypeString = dataTypeString(mediaLoadData.dataType);
+        String trackTypeString = trackTypeString(mediaLoadData.trackType);
+
+        if (dataTypeString == null || trackTypeString == null) {
+            return;
+        }
+
+        log(event,
+                Profiler.timeField("time", loadEventInfo.elapsedRealtimeMs - profiler.startTime), Profiler.field("uri", loadEventInfo.dataSpec.uri.getLastPathSegment()),
+                Profiler.field("dataType", dataTypeString), Profiler.field("trackType", trackTypeString),
+                trackFormatString(mediaLoadData.trackFormat), Profiler.field("reason", trackSelectionReasonString(mediaLoadData.trackSelectionReason)),
+                Profiler.timeField("rangeStart", mediaLoadData.mediaStartTimeMs), Profiler.timeField("rangeEnd", mediaLoadData.mediaEndTimeMs),
+                Profiler.timeField("loadTime", loadEventInfo.loadDurationMs), Profiler.field("bytes", loadEventInfo.bytesLoaded),
+                Profiler.field("error", error != null ? "{" + error.getMessage() + "}" : null), wasCanceled == null ? null : Profiler.field("canceled", wasCanceled));
+    }
+
     @Override
     public void onLoadStarted(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
-        logLoadingEvent("LoadStarted", loadEventInfo.dataSpec, mediaLoadData.dataType, mediaLoadData.trackType, mediaLoadData.trackFormat, mediaLoadData.trackSelectionReason, mediaLoadData.mediaStartTimeMs, mediaLoadData.mediaEndTimeMs, loadEventInfo.elapsedRealtimeMs, null, null, null, null);
+        logLoadingEvent("LoadStarted", loadEventInfo, mediaLoadData, null, null);
     }
 
     @Override
     public void onLoadCompleted(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
-        logLoadingEvent("LoadCompleted", loadEventInfo.dataSpec, mediaLoadData.dataType, mediaLoadData.trackType, mediaLoadData.trackFormat, mediaLoadData.trackSelectionReason, mediaLoadData.mediaStartTimeMs, mediaLoadData.mediaEndTimeMs, loadEventInfo.elapsedRealtimeMs, loadEventInfo.loadDurationMs, loadEventInfo.bytesLoaded, null, null);
+        logLoadingEvent("LoadCompleted", loadEventInfo, mediaLoadData, null, null);
     }
 
     @Override
     public void onLoadCanceled(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
-        logLoadingEvent("LoadCanceled", loadEventInfo.dataSpec, mediaLoadData.dataType, mediaLoadData.trackType, mediaLoadData.trackFormat, mediaLoadData.trackSelectionReason, mediaLoadData.mediaStartTimeMs, mediaLoadData.mediaEndTimeMs, loadEventInfo.elapsedRealtimeMs, loadEventInfo.loadDurationMs, loadEventInfo.bytesLoaded, null, null);
+        logLoadingEvent("LoadCanceled", loadEventInfo, mediaLoadData, null, null);
     }
 
     @Override
     public void onLoadError(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData, IOException error, boolean wasCanceled) {
-        logLoadingEvent("LoadError", loadEventInfo.dataSpec, mediaLoadData.dataType, mediaLoadData.trackType, mediaLoadData.trackFormat, mediaLoadData.trackSelectionReason, mediaLoadData.mediaStartTimeMs, mediaLoadData.mediaEndTimeMs, loadEventInfo.elapsedRealtimeMs, loadEventInfo.loadDurationMs, loadEventInfo.bytesLoaded, error, wasCanceled);
+        logLoadingEvent("LoadError", loadEventInfo, mediaLoadData, error, wasCanceled);
     }
 
     @Override
