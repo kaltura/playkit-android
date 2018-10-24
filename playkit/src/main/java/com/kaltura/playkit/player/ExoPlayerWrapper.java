@@ -439,7 +439,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         String errorStr = (errorMessage == null) ? "Player error: " + errorType.name() : errorMessage;
-//        profiler().onPlayerError(this, errorStr);
         log.e(errorStr);
         currentError = new PKError(errorType, errorStr, error);
         if (eventListener != null) {
@@ -467,17 +466,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-
-//        if (profiler().active) {
-//            if (trackSelections.length >= 2) {  // video and audio
-//                Format selectedVideoFormat = trackSelections.get(Consts.TRACK_TYPE_VIDEO).getSelectedFormat();
-//                Format selectedAudioFormat = trackSelections.get(Consts.TRACK_TYPE_AUDIO).getSelectedFormat();
-//                profiler().onTracksChanged(this, selectedVideoFormat.id, selectedVideoFormat.bitrate, selectedVideoFormat.codecs, selectedAudioFormat.id, selectedAudioFormat.bitrate, selectedAudioFormat.codecs);
-//            } else if (trackSelections.length == 1) {   // just video
-//                Format selectedVideoFormat = trackSelections.get(Consts.TRACK_TYPE_VIDEO).getSelectedFormat();
-//                profiler().onTracksChanged(this, selectedVideoFormat.id, selectedVideoFormat.bitrate, selectedVideoFormat.codecs, null, -1, null);
-//            }
-//        }
 
         log.d("onTracksChanged");
         //if onOnTracksChanged happened when application went background, do not update the tracks.
@@ -591,7 +579,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         sendDistinctEvent(PlayerEvent.Type.PAUSE);
-//        profiler().onPauseRequested(this);
+        profiler.onPauseRequested(this);
         player.setPlayWhenReady(false);
     }
 
