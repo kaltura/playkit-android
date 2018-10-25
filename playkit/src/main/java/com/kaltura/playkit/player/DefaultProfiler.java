@@ -2,20 +2,13 @@ package com.kaltura.playkit.player;
 
 import android.content.Context;
 import android.os.Build;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Looper;
-import android.os.Process;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
 import android.util.DisplayMetrics;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.kaltura.playkit.PKDrmParams;
-import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
@@ -24,13 +17,10 @@ import com.kaltura.playkit.Utils;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 class ConfigFile {
@@ -38,37 +28,24 @@ class ConfigFile {
     float sendPercentage;
 }
 
-public class DefaultProfiler implements Profiler {
-
-    private static PKLog pkLog = PKLog.get("Profiler");
+class DefaultProfiler extends Profiler {
 
     private static final boolean devMode = true;
-
-    private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
-    private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json";
-    private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
-    private static final float DEFAULT_SEND_PERCENTAGE = 100; // FIXME: 03/09/2018
-    private static final int MAX_CONFIG_SIZE = 10240;
 
     static final String SEPARATOR = "\t";
     private static final int SEND_INTERVAL_SEC = devMode ? 30 : 300;   // Report every 5 minutes
 
-    private static boolean started;
-    private static Handler ioHandler;
     private static String currentExperiment;
     private static DisplayMetrics metrics;
     private static File externalFilesDir;   // for debug logs
 
-    // Config
-    private static String postURL = DEFAULT_POST_URL;
-    private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
     private ExoPlayerProfilingListener analyticsListener;
 
     private String sessionId;
     long startTime;
-    private ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
 
-    private DefaultProfiler() {
+    DefaultProfiler() {
 
         ioHandler.post(new Runnable() {
             @Override
@@ -148,125 +125,16 @@ public class DefaultProfiler implements Profiler {
         playerEngine.removeAnalyticsListener(analyticsListener);
     }
 
-    static String field(String name, String value) {
-        if (value == null) {
-            return null;
-        }
-        return name + "={" + value + "}";
-    }
 
-    static String field(String name, long value) {
-        return name + "=" + value;
-    }
-
-    static String field(String name, boolean value) {
-        return name + "=" + value;
-    }
-
-    static String field(String name, float value) {
-        return String.format(Locale.US, "%s=%03f", name, value);
-    }
-
-    static String timeField(String name, long value) {
-        return field(name, value / 1000f);
-    }
-
-    private static void downloadConfig(Context context) {
-        final byte[] bytes;
-
-        // Download
-        try {
-            bytes = Utils.executeGet(CONFIG_URL, null);
-
-            parseConfig(bytes);
-
-        } catch (IOException e) {
-            pkLog.e("Failed to download config", e);
-            return;
-        }
-
-        // Save to cache
-        final File cachedConfigFile = getCachedConfigFile(context);
-        if (cachedConfigFile.getParentFile().canWrite()) {
-            FileOutputStream outputStream = null;
-            try {
-                outputStream = new FileOutputStream(cachedConfigFile);
-                outputStream.write(bytes);
-            } catch (IOException e) {
-                pkLog.e("Failed to save config to cache", e);
-            } finally {
-                Utils.safeClose(outputStream);
-            }
-        }
-    }
-
-    private static void loadCachedConfig(Context context) {
-        final File configFile = getCachedConfigFile(context);
-
-        if (configFile.canRead()) {
-            FileInputStream inputStream = null;
-            try {
-                inputStream = new FileInputStream(configFile);
-                parseConfig(Utils.fullyReadInputStream(inputStream, MAX_CONFIG_SIZE).toByteArray());
-
-            } catch (IOException e) {
-                pkLog.e("Failed to read cached config file", e);
-
-            } finally {
-                Utils.safeClose(inputStream);
-            }
-        }
-    }
-
-    @NonNull
-    private static File getCachedConfigFile(Context context) {
-        return new File(context.getFilesDir(), CONFIG_CACHE_FILENAME);
-    }
-
-    private static void parseConfig(byte[] bytes) {
-        try {
-            final ConfigFile configFile = new Gson().fromJson(new String(bytes), ConfigFile.class);
-            postURL = configFile.putLogURL;
-            sendPercentage = configFile.sendPercentage;
-        } catch (JsonParseException e) {
-            pkLog.e("Failed to parse config", e);
-        }
-    }
-
-
-    public synchronized static void init(final Context context) {
-
-        if (started) {
-            return;
-        }
-
-        // Load cached config. Will load from network later, in a handler thread.
-        loadCachedConfig(context);
+    static void initMembers(final Context context) {
 
         metrics = context.getResources().getDisplayMetrics();
-
-        HandlerThread handlerThread = new HandlerThread("ProfilerIO", Process.THREAD_PRIORITY_BACKGROUND);
-        handlerThread.start();
-        ioHandler = new Handler(handlerThread.getLooper());
-
-        ioHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                downloadConfig(context);
-            }
-        });
 
         if (devMode) {
             externalFilesDir = context.getExternalFilesDir(null);
         }
-
-        started = true;
     }
 
-
-    private static boolean shouldEnable() {
-        return Math.random() < (sendPercentage / 100);
-    }
 
     private void sendLogChunk() {
 
@@ -326,26 +194,19 @@ public class DefaultProfiler implements Profiler {
         }
     }
 
-    static Profiler create() {
-        if (!started || !shouldEnable()) {
-            return nullProfiler();
-        }
-
-        return new DefaultProfiler();
-    }
-
-    public static void setCurrentExperiment(String currentExperiment) {
+    @Override
+    public void setCurrentExperiment(String currentExperiment) {
         DefaultProfiler.currentExperiment = currentExperiment;
     }
 
-    void log(String event, String... strings) {
+    private void log(String event, String... strings) {
         StringBuilder sb = startLog(event);
         logPayload(sb, strings);
         endLog(sb);
     }
 
     private StringBuilder startLog(String event) {
-        pkLog.d("Profiler.startLog: " + sessionId + " " + event);
+//        pkLog.v("Profiler.startLog: " + sessionId + " " + event);
 
         StringBuilder sb = new StringBuilder(100);
         sb
@@ -472,50 +333,6 @@ public class DefaultProfiler implements Profiler {
     @Override
     public void onSessionFinished() {
         closeSession();
-    }
-
-    private static Profiler nullProfiler() {
-        return new Profiler() {
-
-            @Override
-            public void newSession(String sessionId) {}
-
-            @Override
-            public void startListener(ExoPlayerWrapper playerEngine) {}
-
-            @Override
-            public void stopListener(ExoPlayerWrapper playerEngine) {}
-
-            @Override
-            public void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig) {}
-
-            @Override
-            public void onPrepareStarted(PlayerEngine playerEngine, PKMediaSourceConfig sourceConfig) {}
-
-            @Override
-            public void onSeekRequested(PlayerEngine playerEngine, long position) {}
-
-            @Override
-            public void onPauseRequested(PlayerEngine playerEngine) {}
-
-            @Override
-            public void onReplayRequested(PlayerEngine playerEngine) {}
-
-            @Override
-            public void onPlayRequested(PlayerEngine playerEngine) {}
-
-            @Override
-            public void onBandwidthSample(PlayerEngine playerEngine, long bitrate) {}
-
-            @Override
-            public void onSessionFinished() {}
-
-            @Override
-            public void onViewportSizeChange(PlayerEngine playerEngine, int width, int height) {}
-
-            @Override
-            public void onDurationChanged(long duration) {}
-        };
     }
 
     private void closeSession() {
