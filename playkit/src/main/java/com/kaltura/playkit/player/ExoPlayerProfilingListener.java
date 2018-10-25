@@ -266,7 +266,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         }
 
         log(event,
-                Profiler.timeField("time", loadEventInfo.elapsedRealtimeMs - profiler.startTime), Profiler.field("uri", loadEventInfo.dataSpec.uri.getLastPathSegment()),
+                Profiler.timeField("time", loadEventInfo.elapsedRealtimeMs - profiler.startTime), Profiler.field("uri", loadEventInfo.dataSpec.uri.toString()),
                 Profiler.field("dataType", dataTypeString), Profiler.field("trackType", trackTypeString),
                 trackFormatString(mediaLoadData.trackFormat), Profiler.field("reason", trackSelectionReasonString(mediaLoadData.trackSelectionReason)),
                 Profiler.timeField("rangeStart", mediaLoadData.mediaStartTimeMs), Profiler.timeField("rangeEnd", mediaLoadData.mediaEndTimeMs),
