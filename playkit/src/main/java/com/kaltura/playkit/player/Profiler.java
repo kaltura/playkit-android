@@ -20,63 +20,61 @@ import java.util.Locale;
 
 public abstract class Profiler {
 
-
     private static final float DEFAULT_SEND_PERCENTAGE = 100; // FIXME: 03/09/2018
     private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
     private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json";
     private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
-    // Config
-    static String postURL = DEFAULT_POST_URL;
     private static final int MAX_CONFIG_SIZE = 10240;
     private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
-    static boolean started;
+    private static boolean started;
 
+    static String postURL = DEFAULT_POST_URL;
     static Handler ioHandler;
     static PKLog pkLog = PKLog.get("Profiler");
 
     private static Profiler NULL = new Profiler() {
 
         @Override
-        public void newSession(String sessionId) {}
+        void newSession(String sessionId) {}
 
         @Override
-        public void startListener(ExoPlayerWrapper playerEngine) {}
+        void startListener(ExoPlayerWrapper playerEngine) {}
 
         @Override
-        public void stopListener(ExoPlayerWrapper playerEngine) {}
+        void stopListener(ExoPlayerWrapper playerEngine) {}
 
         @Override
-        public void setCurrentExperiment(String currentExperiment) {}
+        void setCurrentExperiment(String currentExperiment) {}
 
         @Override
-        public void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig) {}
+        void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig) {}
 
         @Override
-        public void onPrepareStarted(PlayerEngine playerEngine, PKMediaSourceConfig sourceConfig) {}
+        void onPrepareStarted(PlayerEngine playerEngine, PKMediaSourceConfig sourceConfig) {}
 
         @Override
-        public void onSeekRequested(PlayerEngine playerEngine, long position) {}
+        void onSeekRequested(PlayerEngine playerEngine, long position) {}
 
         @Override
-        public void onPauseRequested(PlayerEngine playerEngine) {}
+        void onPauseRequested(PlayerEngine playerEngine) {}
 
         @Override
-        public void onReplayRequested(PlayerEngine playerEngine) {}
+        void onReplayRequested(PlayerEngine playerEngine) {}
 
         @Override
-        public void onPlayRequested(PlayerEngine playerEngine) {}
+        void onPlayRequested(PlayerEngine playerEngine) {}
 
         @Override
-        public void onBandwidthSample(PlayerEngine playerEngine, long bitrate) {}
+        void onBandwidthSample(PlayerEngine playerEngine, long bitrate) {}
 
         @Override
-        public void onSessionFinished() {}
+        void onSessionFinished() {}
 
         @Override
-        public void onViewportSizeChange(PlayerEngine playerEngine, int width, int height) {}
+        void onViewportSizeChange(PlayerEngine playerEngine, int width, int height) {}
 
         @Override
-        public void onDurationChanged(long duration) {}
+        void onDurationChanged(long duration) {}
     };
 
     public static void init(Context context) {
@@ -86,7 +84,7 @@ public abstract class Profiler {
 
         final Context appContext = context.getApplicationContext();
 
-        synchronized (DefaultProfiler.class) {
+        synchronized (Profiler.class) {
 
             // Load cached config. Will load from network later, in a handler thread.
             loadCachedConfig(appContext);
@@ -132,7 +130,7 @@ public abstract class Profiler {
     }
 
     static Profiler create() {
-        if (!DefaultProfiler.started || !Profiler.shouldEnable()) {
+        if (!Profiler.started || !Profiler.shouldEnable()) {
             return NULL;
         }
 
@@ -153,7 +151,7 @@ public abstract class Profiler {
             parseConfig(bytes);
 
         } catch (IOException e) {
-            DefaultProfiler.pkLog.e("Failed to download config", e);
+            pkLog.e("Failed to download config", e);
             return;
         }
 
@@ -165,7 +163,7 @@ public abstract class Profiler {
                 outputStream = new FileOutputStream(cachedConfigFile);
                 outputStream.write(bytes);
             } catch (IOException e) {
-                DefaultProfiler.pkLog.e("Failed to save config to cache", e);
+                pkLog.e("Failed to save config to cache", e);
             } finally {
                 Utils.safeClose(outputStream);
             }
@@ -182,7 +180,7 @@ public abstract class Profiler {
                 parseConfig(Utils.fullyReadInputStream(inputStream, MAX_CONFIG_SIZE).toByteArray());
 
             } catch (IOException e) {
-                DefaultProfiler.pkLog.e("Failed to read cached config file", e);
+                pkLog.e("Failed to read cached config file", e);
 
             } finally {
                 Utils.safeClose(inputStream);
@@ -201,7 +199,7 @@ public abstract class Profiler {
             postURL = configFile.putLogURL;
             sendPercentage = configFile.sendPercentage;
         } catch (JsonParseException e) {
-            DefaultProfiler.pkLog.e("Failed to parse config", e);
+            pkLog.e("Failed to parse config", e);
         }
     }
 

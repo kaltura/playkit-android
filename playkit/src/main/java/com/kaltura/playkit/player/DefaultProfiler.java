@@ -61,7 +61,7 @@ class DefaultProfiler extends Profiler {
     }
 
     @Override
-    public void newSession(final String sessionId) {
+    void newSession(final String sessionId) {
 
         if (this.sessionId != null) {
             // close current session
@@ -113,7 +113,7 @@ class DefaultProfiler extends Profiler {
     }
 
     @Override
-    public void startListener(ExoPlayerWrapper playerEngine) {
+    void startListener(ExoPlayerWrapper playerEngine) {
         if (analyticsListener == null) {
             analyticsListener = new ExoPlayerProfilingListener(this, playerEngine);
         }
@@ -121,7 +121,7 @@ class DefaultProfiler extends Profiler {
     }
 
     @Override
-    public void stopListener(ExoPlayerWrapper playerEngine) {
+    void stopListener(ExoPlayerWrapper playerEngine) {
         playerEngine.removeAnalyticsListener(analyticsListener);
     }
 
@@ -195,7 +195,7 @@ class DefaultProfiler extends Profiler {
     }
 
     @Override
-    public void setCurrentExperiment(String currentExperiment) {
+    void setCurrentExperiment(String currentExperiment) {
         DefaultProfiler.currentExperiment = currentExperiment;
     }
 
@@ -292,7 +292,7 @@ class DefaultProfiler extends Profiler {
     }
 
     @Override
-    public void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig) {
+    void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig) {
         JsonObject json = new JsonObject();
         json.add("entry", toJSON(mediaConfig.getMediaEntry()));
         json.addProperty("startPosition", mediaConfig.getStartPosition());
@@ -301,37 +301,37 @@ class DefaultProfiler extends Profiler {
     }
 
     @Override
-    public void onPrepareStarted(final PlayerEngine playerEngine, final PKMediaSourceConfig sourceConfig) {
+    void onPrepareStarted(final PlayerEngine playerEngine, final PKMediaSourceConfig sourceConfig) {
         log("PrepareStarted", field("engine", playerEngine.getClass().getSimpleName()), field("source", sourceConfig.getUrl().toString()), field("useTextureView", sourceConfig.playerSettings.useTextureView()));
     }
 
     @Override
-    public void onSeekRequested(PlayerEngine playerEngine, long position) {
+    void onSeekRequested(PlayerEngine playerEngine, long position) {
         logWithPlaybackInfo("SeekRequested", playerEngine, timeField("targetPosition", position));
     }
 
     @Override
-    public void onPauseRequested(PlayerEngine playerEngine) {
+    void onPauseRequested(PlayerEngine playerEngine) {
         logWithPlaybackInfo("PauseRequested", playerEngine);
     }
 
     @Override
-    public void onReplayRequested(PlayerEngine playerEngine) {
+    void onReplayRequested(PlayerEngine playerEngine) {
         logWithPlaybackInfo("ReplayRequested", playerEngine);
     }
 
     @Override
-    public void onPlayRequested(PlayerEngine playerEngine) {
+    void onPlayRequested(PlayerEngine playerEngine) {
         logWithPlaybackInfo("PlayRequested", playerEngine);
     }
 
     @Override
-    public void onBandwidthSample(PlayerEngine playerEngine, long bitrate) {
+    void onBandwidthSample(PlayerEngine playerEngine, long bitrate) {
         log("BandwidthSample", field("bandwidth", bitrate));
     }
 
     @Override
-    public void onSessionFinished() {
+    void onSessionFinished() {
         closeSession();
     }
 
@@ -340,12 +340,12 @@ class DefaultProfiler extends Profiler {
     }
 
     @Override
-    public void onViewportSizeChange(PlayerEngine playerEngine, int width, int height) {
+    void onViewportSizeChange(PlayerEngine playerEngine, int width, int height) {
         log("ViewportSizeChange", field("width", width), field("height", height));
     }
 
     @Override
-    public void onDurationChanged(long duration) {
+    void onDurationChanged(long duration) {
         log("DurationChanged", timeField("duration", duration));
     }
 }
