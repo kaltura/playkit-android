@@ -30,20 +30,17 @@ class ConfigFile {
 
 class DefaultProfiler extends Profiler {
 
-    private static final boolean devMode = true;
-
     static final String SEPARATOR = "\t";
+    private static final boolean devMode = true;
     private static final int SEND_INTERVAL_SEC = devMode ? 30 : 300;   // Report every 5 minutes
 
     private static String currentExperiment;
     private static DisplayMetrics metrics;
     private static File externalFilesDir;   // for debug logs
-
-    private ExoPlayerProfilingListener analyticsListener;
-
-    private String sessionId;
-    long startTime;
     private final ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
+    long startTime;
+    private ExoPlayerProfilingListener analyticsListener;
+    private String sessionId;
 
     DefaultProfiler() {
 
@@ -58,6 +55,66 @@ class DefaultProfiler extends Profiler {
             }
         });
 
+    }
+
+    static void initMembers(final Context context) {
+
+        metrics = context.getResources().getDisplayMetrics();
+
+        if (devMode) {
+            externalFilesDir = context.getExternalFilesDir(null);
+        }
+    }
+
+    private static String toString(Enum e) {
+        if (e == null) {
+            return "null";
+        }
+        return e.name();
+    }
+
+    private static JsonObject toJSON(PKMediaEntry entry) {
+
+        if (entry == null) {
+            return null;
+        }
+
+        JsonObject json = new JsonObject();
+
+        json.addProperty("id", entry.getId());
+        json.addProperty("duration", entry.getDuration());
+        json.addProperty("type", toString(entry.getMediaType()));
+
+        if (entry.hasSources()) {
+            JsonArray array = new JsonArray();
+            for (PKMediaSource source : entry.getSources()) {
+                array.add(toJSON(source));
+            }
+            json.add("sources", array);
+        }
+
+        return json;
+    }
+
+    private static JsonObject toJSON(PKMediaSource source) {
+        JsonObject json = new JsonObject();
+
+        json.addProperty("id", source.getId());
+        json.addProperty("format", source.getMediaFormat().name());
+        json.addProperty("url", source.getUrl());
+
+        if (source.hasDrmParams()) {
+            JsonArray array = new JsonArray();
+            for (PKDrmParams params : source.getDrmData()) {
+                PKDrmParams.Scheme scheme = params.getScheme();
+                if (scheme != null) {
+                    array.add(scheme.name());
+                }
+            }
+            json.add("drm", array);
+        }
+
+        return json;
     }
 
     @Override
@@ -124,17 +181,6 @@ class DefaultProfiler extends Profiler {
     void stopListener(ExoPlayerWrapper playerEngine) {
         playerEngine.removeAnalyticsListener(analyticsListener);
     }
-
-
-    static void initMembers(final Context context) {
-
-        metrics = context.getResources().getDisplayMetrics();
-
-        if (devMode) {
-            externalFilesDir = context.getExternalFilesDir(null);
-        }
-    }
-
 
     private void sendLogChunk() {
 
@@ -238,57 +284,6 @@ class DefaultProfiler extends Profiler {
         logPayload(sb, strings);
 
         endLog(sb);
-    }
-
-    private static String toString(Enum e) {
-        if (e == null) {
-            return "null";
-        }
-        return e.name();
-    }
-
-    private static JsonObject toJSON(PKMediaEntry entry) {
-
-        if (entry == null) {
-            return null;
-        }
-
-        JsonObject json = new JsonObject();
-
-        json.addProperty("id", entry.getId());
-        json.addProperty("duration", entry.getDuration());
-        json.addProperty("type", toString(entry.getMediaType()));
-
-        if (entry.hasSources()) {
-            JsonArray array = new JsonArray();
-            for (PKMediaSource source : entry.getSources()) {
-                array.add(toJSON(source));
-            }
-            json.add("sources", array);
-        }
-
-        return json;
-    }
-
-    private static JsonObject toJSON(PKMediaSource source) {
-        JsonObject json = new JsonObject();
-
-        json.addProperty("id", source.getId());
-        json.addProperty("format", source.getMediaFormat().name());
-        json.addProperty("url", source.getUrl());
-
-        if (source.hasDrmParams()) {
-            JsonArray array = new JsonArray();
-            for (PKDrmParams params : source.getDrmData()) {
-                PKDrmParams.Scheme scheme = params.getScheme();
-                if (scheme != null) {
-                    array.add(scheme.name());
-                }
-            }
-            json.add("drm", array);
-        }
-
-        return json;
     }
 
     @Override

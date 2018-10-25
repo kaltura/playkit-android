@@ -25,13 +25,11 @@ public abstract class Profiler {
     private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json";
     private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
     private static final int MAX_CONFIG_SIZE = 10240;
-    private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
-    private static boolean started;
-
     static String postURL = DEFAULT_POST_URL;
     static Handler ioHandler;
     static PKLog pkLog = PKLog.get("Profiler");
-
+    private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
+    private static boolean started;
     private static Profiler NULL = new Profiler() {
 
         @Override
