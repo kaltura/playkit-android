@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.LinkedHashSet;
 
 import static com.google.android.exoplayer2.C.DATA_TYPE_DRM;
 import static com.google.android.exoplayer2.C.DATA_TYPE_MANIFEST;
@@ -214,9 +215,22 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onTracksChanged(EventTime eventTime, TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-        JsonArray jTrackGroups = new JsonArray(trackGroups.length);
+        LinkedHashSet<TrackGroup> trackGroupSet = new LinkedHashSet<>(trackGroups.length);
+        for (int i = 0; i < trackSelections.length; i++) {
+            final TrackSelection trackSelection = trackSelections.get(i);
+            if (trackSelection != null) {
+                trackGroupSet.add(trackSelection.getTrackGroup());
+            }
+        }
+
+        // Add the rest
         for (int i = 0; i < trackGroups.length; i++) {
             final TrackGroup trackGroup = trackGroups.get(i);
+            trackGroupSet.add(trackGroup);
+        }
+
+        JsonArray jTrackGroups = new JsonArray(trackGroups.length);
+        for (TrackGroup trackGroup : trackGroupSet) {
             JsonArray jTrackGroup = new JsonArray(trackGroup.length);
             for (int j = 0; j < trackGroup.length; j++) {
                 final Format format = trackGroup.getFormat(j);
@@ -224,6 +238,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             }
             jTrackGroups.add(jTrackGroup);
         }
+
 
         JsonArray jTrackSelections = new JsonArray(trackSelections.length);
         for (int i = 0; i < trackSelections.length; i++) {
@@ -251,8 +266,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         jsonObject.addProperty("language", format.language);
         jsonObject.addProperty("height", format.height);
         jsonObject.addProperty("width", format.width);
-        jsonObject.addProperty("containerMimeType", format.containerMimeType);
-        jsonObject.addProperty("sampleMimeType", format.sampleMimeType);
+        jsonObject.addProperty("mimeType", format.sampleMimeType);
 
         return jsonObject;
     }
