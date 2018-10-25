@@ -15,8 +15,8 @@ package com.kaltura.playkit;
 import android.content.Context;
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.player.DefaultProfiler;
 import com.kaltura.playkit.player.MediaSupport;
-import com.kaltura.playkit.player.Profiler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,7 +56,7 @@ public class PlayKitManager {
 
     public static Player loadPlayer(Context context, @Nullable PKPluginConfigs pluginConfigs) {
 
-        Profiler.init(context);
+        DefaultProfiler.init(context);
         MediaSupport.initializeDrm(context, null);
 
         if (shouldSendDeviceCapabilitiesReport) {

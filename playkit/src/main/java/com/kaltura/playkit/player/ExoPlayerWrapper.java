@@ -199,7 +199,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 }
             });
         }
-        
+
         player.setPlayWhenReady(false);
     }
 
