@@ -1,6 +1,8 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -19,6 +21,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -297,7 +301,47 @@ class DefaultProfiler extends Profiler {
 
     @Override
     void onPrepareStarted(final PlayerEngine playerEngine, final PKMediaSourceConfig sourceConfig) {
-        log("PrepareStarted", field("engine", playerEngine.getClass().getSimpleName()), field("source", sourceConfig.getUrl().toString()), field("useTextureView", sourceConfig.playerSettings.useTextureView()));
+
+        final Uri sourceUrl = sourceConfig.getUrl();
+
+        log("PrepareStarted",
+                field("engine", playerEngine.getClass().getSimpleName()),
+                field("source", sourceUrl.toString()),
+                field("useTextureView", sourceConfig.playerSettings.useTextureView()));
+
+        ioHandler.postAtFrontOfQueue(new Runnable() {
+            @Override
+            public void run() {
+
+                logServerInfo(sourceUrl);
+            }
+        });
+    }
+
+    private void logServerInfo(Uri url) {
+        String hostName = url.getHost();
+        String canonicalHostName = null;
+        String hostIp = null;
+        String error = null;
+        long lookupTime = -1;
+
+        try {
+            long start = SystemClock.elapsedRealtime();
+            InetAddress address = InetAddress.getByName(url.getHost());
+            hostIp = address.getHostAddress();
+            lookupTime = SystemClock.elapsedRealtime() - start;
+            canonicalHostName = address.getCanonicalHostName();
+        } catch (UnknownHostException e) {
+            error = e.toString();
+        }
+
+        log("ServerInfo",
+                field("hostName", hostName),
+                field("canonicalHostName", canonicalHostName),
+                field("hostIp", hostIp),
+                timeField("lookupTime", lookupTime),
+                field("lookupError", error)
+        );
     }
 
     @Override

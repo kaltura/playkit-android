@@ -69,20 +69,12 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         }
     }
 
-    private static String nullable(String name, String value) {
-        if (value == null) {
-            return name + "=null";
-        }
-
-        return Profiler.field(name, value);
-    }
-
     private String trackFormatString(@Nullable Format trackFormat) {
         if (trackFormat == null) {
             return null;
         }
-        return nullable("id", trackFormat.id) + DefaultProfiler.SEPARATOR + "bitrate=" + trackFormat.bitrate + DefaultProfiler.SEPARATOR +
-                nullable("codecs", trackFormat.codecs) + DefaultProfiler.SEPARATOR + nullable("language", trackFormat.language);
+        return Profiler.nullable("id", trackFormat.id) + DefaultProfiler.SEPARATOR + "bitrate=" + trackFormat.bitrate + DefaultProfiler.SEPARATOR +
+                Profiler.nullable("codecs", trackFormat.codecs) + DefaultProfiler.SEPARATOR + Profiler.nullable("language", trackFormat.language);
     }
 
     private String trackTypeString(int trackType) {
@@ -102,10 +94,6 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             case DATA_TYPE_DRM: return "DRM";
             default: return null;
         }
-    }
-
-    private static Float msecToSec(Long ms) {
-        return ms == null ? null : ms / 1000f;
     }
 
     @Override

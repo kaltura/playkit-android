@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Locale;
 
 public abstract class Profiler {
@@ -120,7 +122,7 @@ public abstract class Profiler {
     }
 
     static String field(String name, float value) {
-        return String.format(Locale.US, "%s=%03f", name, value);
+        return String.format(Locale.US, "%s=%.03f", name, value);
     }
 
     static String timeField(String name, long value) {
@@ -199,6 +201,14 @@ public abstract class Profiler {
         } catch (JsonParseException e) {
             pkLog.e("Failed to parse config", e);
         }
+    }
+
+    static String nullable(String name, String value) {
+        if (value == null) {
+            return name + "=null";
+        }
+
+        return field(name, value);
     }
 
     abstract void newSession(String sessionId);
