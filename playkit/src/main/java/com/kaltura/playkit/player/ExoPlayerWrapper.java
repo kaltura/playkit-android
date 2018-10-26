@@ -214,7 +214,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
 
-        if (playerSettings.getSubtitles() != null) {
+        if (playerSettings != null && playerSettings.getSubtitles() != null) {
             configureSubtitleView();
         }
     }
