@@ -17,6 +17,7 @@ import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PlayerView;
+import com.kaltura.playkit.player.SubtitleSettings;
 import com.kaltura.playkit.utils.Consts;
 
 /**
@@ -134,6 +135,14 @@ public interface Player {
          * @return - Player Settings.
          */
         Settings setPreferredMediaFormat(PKMediaFormat preferredMediaFormat);
+
+        /**
+         * Set the Player's Subtitles
+         *
+         * @param subtitleSettings - SubtitleSettings
+         * @return - Player Settings
+         */
+        Settings setSubtitles(SubtitleSettings subtitleSettings);
     }
 
     /**
@@ -272,6 +281,10 @@ public interface Player {
      */
     String getSessionId();
 
+    /**
+     * Checks if the stream is live or not
+     * @return flag for live
+     */
     boolean isLive();
 
     /**
@@ -300,5 +313,11 @@ public interface Player {
      * otherwise return null.
      */
     <T extends PKController> T getController(Class<T> type);
+
+    /**
+     * Update Subtitles : After setting the values to SubtitleSettings, call this method
+     */
+    void updateSubtitles();
+
 }
 

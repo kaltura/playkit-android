@@ -214,6 +214,11 @@ public interface PlayerEngine {
     float getPlaybackRate();
 
     /**
+     * Update Subtitles
+     */
+    void updateSubtitles();
+
+    /**
      * Generic getters for playkit controllers.
      *
      * @param type - type of the controller you want to obtain.

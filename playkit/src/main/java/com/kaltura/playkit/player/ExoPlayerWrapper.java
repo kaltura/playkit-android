@@ -15,11 +15,14 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.view.View;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -42,9 +45,11 @@ import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
+import com.google.android.exoplayer2.text.CaptionStyleCompat;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSource.Factory;
@@ -208,6 +213,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
         player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
+
+        if (playerSettings.getSubtitles() != null) {
+            configureSubtitleView();
+        }
     }
 
     private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig) {
@@ -620,7 +629,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private boolean isLiveMediaWithoutDvr() {
-        return (isLive() || PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) && sourceConfig != null && sourceConfig.dvrStatus != null && sourceConfig.dvrStatus == PKMediaSourceConfig.LiveStreamMode.LIVE;
+        return (PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType);
     }
 
     @Override
@@ -866,4 +875,37 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             }
         }
     }
+
+    /* Remove this comment while merging to DEV. Following functionality is available in Prime Video for subtitles
+      1. Functionality to increase text size
+      2. White text black background with alpha
+      3. White text black background with Transparency
+      4. Yellow text background with black
+      5. black text color
+     */
+
+    /**
+     * Subtitle configuration {@link SubtitleSettings}
+     */
+
+    private void configureSubtitleView() {
+        if (getView() != null && getView().getSubtitleView() != null) {
+            CaptionStyleCompat style = new CaptionStyleCompat(playerSettings.getSubtitles().getSubtitleTextColor(),
+                                           playerSettings.getSubtitles().getSubtitleBackgroundColor(),
+                                           Color.TRANSPARENT,
+                                           CaptionStyleCompat.EDGE_TYPE_NONE,
+                                           Color.TRANSPARENT, null);
+            getView().getSubtitleView().setStyle(style);
+            getView().getSubtitleView().setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * playerSettings.getSubtitles().getSubtitleTextSizeFraction());
+        } else {
+            log.e("Subtitle view is not available");
+        }
+
+    }
+
+    @Override
+    public void updateSubtitles() {
+        configureSubtitleView();
+    }
+
 }

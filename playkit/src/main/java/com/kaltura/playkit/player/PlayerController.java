@@ -16,7 +16,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
-
+import com.google.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
@@ -31,9 +31,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
-
 import java.util.UUID;
-
 import static com.kaltura.playkit.PKMediaFormat.wvm;
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 
@@ -97,6 +95,11 @@ public class PlayerController implements Player {
             public void showVideoSubtitles() {
                 setVideoSubtitlesVisibility(true);
 
+            }
+
+            @Override
+            public SubtitleView getSubtitleView() {
+                return null;
             }
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -493,6 +496,15 @@ public class PlayerController implements Player {
         return Consts.PLAYBACK_SPEED_RATE_UNKNOWN;
     }
 
+    @Override
+    public void updateSubtitles() {
+        if (player != null) {
+            player.updateSubtitles();
+        } else {
+            log.e("Player instance is null");
+        }
+    }
+
     private boolean shouldSwitchBetweenPlayers(PKMediaSource newSource) {
 
         PKMediaFormat currentMediaFormat = newSource.getMediaFormat();
@@ -636,7 +648,7 @@ public class PlayerController implements Player {
     }
 
     private boolean isLiveMediaWithDvr() {
-        return (isLive() || PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType) && sourceConfig != null && sourceConfig.dvrStatus != null && sourceConfig.dvrStatus == PKMediaSourceConfig.LiveStreamMode.LIVE_DVR;
+        return (PKMediaEntry.MediaEntryType.DvrLive == sourceConfig.mediaEntryType);
     }
 
     private PlayerEngine.StateChangedListener initStateChangeListener() {
