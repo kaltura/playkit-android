@@ -887,7 +887,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     /**
      * Subtitle configuration {@link SubtitleSettings}
      */
-
     private void configureSubtitleView() {
         if (getView() != null && getView().getSubtitleView() != null) {
             CaptionStyleCompat style = new CaptionStyleCompat(playerSettings.getSubtitles().getSubtitleTextColor(),
@@ -905,7 +904,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void updateSubtitles() {
-        configureSubtitleView();
+        if (playerSettings != null && playerSettings.getSubtitles() != null) {
+            configureSubtitleView();
+        }
     }
 
 }
