@@ -49,6 +49,11 @@ public abstract class PlayerDecorator extends PlayerDecoratorBase {
         super.removeStateChangeListener(listener);
     }
 
+    @Override
+    final public void removeListener(@NonNull PKEvent.Listener listener) {
+        super.removeListener(listener);
+    }
+
     final Player getPlayer() {
         return super.getPlayer();
     }

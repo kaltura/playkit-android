@@ -245,6 +245,7 @@ public interface Player {
      * Remove event listener to the player.
      *
      * @param listener - event listener.
+     * @param events   - events the subscriber interested in.
      */
     void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events);
 
@@ -261,6 +262,15 @@ public interface Player {
      * @param listener - state changed listener
      */
     void removeStateChangeListener(@NonNull PKEvent.Listener listener);
+
+
+    /**
+     * remove listener to the player.
+     *
+     * @param listener - state changed listener
+     */
+    void removeListener(@NonNull PKEvent.Listener listener);
+
 
     /**
      * Change current track, with specified one by uniqueId.

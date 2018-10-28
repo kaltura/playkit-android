@@ -427,6 +427,11 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void removeListener(@NonNull PKEvent.Listener listener) {
+        Assert.shouldNeverHappen();
+    }
+
+    @Override
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         Assert.shouldNeverHappen();
     }

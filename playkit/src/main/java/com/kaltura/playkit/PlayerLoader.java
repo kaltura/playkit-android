@@ -197,4 +197,9 @@ class PlayerLoader extends PlayerDecoratorBase {
     public void removeStateChangeListener(@NonNull final PKEvent.Listener listener) {
         messageBus.remove(listener, PlayerEvent.Type.STATE_CHANGED);
     }
+
+    @Override
+    public void removeListener(@NonNull PKEvent.Listener listener) {
+        messageBus.removeListener(listener);
+    }
 }

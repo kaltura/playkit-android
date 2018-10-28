@@ -16,6 +16,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,6 +54,18 @@ public class MessageBus {
             Set<PKEvent.Listener> listenerSet = listeners.get(eventType);
             if (listenerSet != null) {
                 listenerSet.remove(listener);
+            }
+        }
+    }
+
+    public void removeListener(PKEvent.Listener listener) {
+        for (Set<PKEvent.Listener> listenerSet : listeners.values()) {
+            Iterator<PKEvent.Listener> iterator = listenerSet.iterator();
+            while (iterator.hasNext()) {
+                PKEvent.Listener element = iterator.next();
+                if (element == listener) {
+                    iterator.remove();
+                }
             }
         }
     }

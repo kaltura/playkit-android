@@ -139,6 +139,11 @@ public class PlayerDecoratorBase implements Player {
         player.removeStateChangeListener(listener);
     }
 
+    @Override
+    public void removeListener(@NonNull PKEvent.Listener listener) {
+        player.removeListener(listener);
+    }
+
     void setPlayer(Player player) {
         this.player = player;
     }
