@@ -59,12 +59,14 @@ public class MessageBus {
     }
 
     public void removeListener(PKEvent.Listener listener) {
-        for (Set<PKEvent.Listener> listenerSet : listeners.values()) {
-            Iterator<PKEvent.Listener> iterator = listenerSet.iterator();
-            while (iterator.hasNext()) {
-                PKEvent.Listener element = iterator.next();
-                if (element == listener) {
-                    iterator.remove();
+        if (listeners.values() != null) {
+            for (Set<PKEvent.Listener> listenerSet : listeners.values()) {
+                Iterator<PKEvent.Listener> iterator = listenerSet.iterator();
+                while (iterator.hasNext()) {
+                    PKEvent.Listener element = iterator.next();
+                    if (element == listener) {
+                        iterator.remove();
+                    }
                 }
             }
         }
