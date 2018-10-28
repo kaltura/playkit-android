@@ -57,7 +57,7 @@ public class MessageBus {
         }
     }
 
-    public void listen(PKEvent.Listener listener, Enum... eventTypes) {
+    public PKEvent.Listener listen(PKEvent.Listener listener, Enum... eventTypes) {
         for (Enum eventType : eventTypes) {
             Set<PKEvent.Listener> listenerSet = listeners.get(eventType);
             if (listenerSet == null) {
@@ -68,5 +68,6 @@ public class MessageBus {
                 listenerSet.add(listener);
             }
         }
+        return listener;
     }
 }

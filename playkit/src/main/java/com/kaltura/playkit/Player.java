@@ -239,14 +239,28 @@ public interface Player {
      * @param listener - event listener.
      * @param events   - events the subscriber interested in.
      */
-    void addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
+    PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
+
+    /**
+     * Remove event listener to the player.
+     *
+     * @param listener - event listener.
+     */
+    void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events);
 
     /**
      * Add state changed listener to the player.
      *
      * @param listener - state changed listener
      */
-    void addStateChangeListener(@NonNull PKEvent.Listener listener);
+    PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener);
+
+    /**
+     * remove state changed listener to the player.
+     *
+     * @param listener - state changed listener
+     */
+    void removeStateChangeListener(@NonNull PKEvent.Listener listener);
 
     /**
      * Change current track, with specified one by uniqueId.
