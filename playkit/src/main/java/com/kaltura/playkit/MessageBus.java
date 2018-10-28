@@ -52,7 +52,9 @@ public class MessageBus {
         for (Enum eventType : eventTypes) {
             Set<PKEvent.Listener> listenerSet = listeners.get(eventType);
             if (listenerSet != null) {
-                listenerSet.remove(listener);
+                if (listenerSet.contains(listener)) {
+                    listenerSet.remove(listener);
+                }
             }
         }
     }
