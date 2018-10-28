@@ -267,7 +267,7 @@ public interface Player {
     /**
      * remove listener to the player.
      *
-     * @param listener - state changed listener
+     * @param listener - event listener / state changed listener
      */
     void removeListener(@NonNull PKEvent.Listener listener);
 
