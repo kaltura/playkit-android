@@ -405,12 +405,29 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
+    public PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
+        Assert.shouldNeverHappen();
+        return null;
+    }
+
+    @Override
+    public void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
         Assert.shouldNeverHappen();
     }
 
     @Override
-    public void addStateChangeListener(@NonNull PKEvent.Listener listener) {
+    public PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener) {
+        Assert.shouldNeverHappen();
+        return null;
+    }
+
+    @Override
+    public void removeStateChangeListener(@NonNull PKEvent.Listener listener) {
+        Assert.shouldNeverHappen();
+    }
+
+    @Override
+    public void removeListener(@NonNull PKEvent.Listener listener) {
         Assert.shouldNeverHappen();
     }
 

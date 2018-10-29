@@ -179,12 +179,27 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     @Override
-    public void addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
-        messageBus.listen(listener, events);
+    public PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
+        return messageBus.listen(listener, events);
     }
 
     @Override
-    public void addStateChangeListener(@NonNull final PKEvent.Listener listener) {
-        messageBus.listen(listener, PlayerEvent.Type.STATE_CHANGED);
+    public void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
+        messageBus.remove(listener, events);
+    }
+
+    @Override
+    public PKEvent.Listener addStateChangeListener(@NonNull final PKEvent.Listener listener) {
+        return messageBus.listen(listener, PlayerEvent.Type.STATE_CHANGED);
+    }
+
+    @Override
+    public void removeStateChangeListener(@NonNull final PKEvent.Listener listener) {
+        messageBus.remove(listener, PlayerEvent.Type.STATE_CHANGED);
+    }
+
+    @Override
+    public void removeListener(@NonNull PKEvent.Listener listener) {
+        messageBus.removeListener(listener);
     }
 }

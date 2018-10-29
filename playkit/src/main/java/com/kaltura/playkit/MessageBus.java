@@ -16,6 +16,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -57,7 +58,21 @@ public class MessageBus {
         }
     }
 
-    public void listen(PKEvent.Listener listener, Enum... eventTypes) {
+    public void removeListener(PKEvent.Listener listener) {
+        if (listeners.values() != null) {
+            for (Set<PKEvent.Listener> listenerSet : listeners.values()) {
+                Iterator<PKEvent.Listener> iterator = listenerSet.iterator();
+                while (iterator.hasNext()) {
+                    PKEvent.Listener element = iterator.next();
+                    if (element == listener) {
+                        iterator.remove();
+                    }
+                }
+            }
+        }
+    }
+
+    public PKEvent.Listener listen(PKEvent.Listener listener, Enum... eventTypes) {
         for (Enum eventType : eventTypes) {
             Set<PKEvent.Listener> listenerSet = listeners.get(eventType);
             if (listenerSet == null) {
@@ -68,5 +83,6 @@ public class MessageBus {
                 listenerSet.add(listener);
             }
         }
+        return listener;
     }
 }
