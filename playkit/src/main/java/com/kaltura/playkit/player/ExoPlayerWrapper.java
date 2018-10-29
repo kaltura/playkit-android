@@ -373,7 +373,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private void pausePlayerAfterEndedEvent() {
-        if (PlayerEvent.Type.ENDED == currentEvent) {
+        if (PlayerEvent.Type.ENDED != currentEvent) {
+            log.d("Pause pausePlayerAfterEndedEvent");
             player.setPlayWhenReady(false);
         }
     }
