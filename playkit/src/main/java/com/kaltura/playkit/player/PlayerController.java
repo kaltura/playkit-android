@@ -567,13 +567,7 @@ public class PlayerController implements Player {
                             event = new PlayerEvent.Generic(eventType);
                             break;
                         case PAUSE:
-                            event = new PlayerEvent.Generic(eventType);
-                            cancelUpdateProgress();
-                            break;
                         case ENDED:
-                            if (isPlayerStopped) {
-                                return;
-                            }
                             event = new PlayerEvent.Generic(eventType);
                             cancelUpdateProgress();
                             break;
