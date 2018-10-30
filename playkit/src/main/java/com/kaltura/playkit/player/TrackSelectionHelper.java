@@ -174,7 +174,7 @@ class TrackSelectionHelper {
                                 if (!isDashManifest) {
                                     audioTrackLabel = format.id;
                                 }
-                                if (format.language == null) { // filtering audio tracks that their language us null
+                                if (format.language == null) { // filtering audio tracks that their language is null
                                     if (mpgaAudioFormatEnabled) {
                                         audioTracks.add(new AudioTrack(uniqueId, format.id, audioTrackLabel, format.bitrate, format.selectionFlags, false));
                                     }
