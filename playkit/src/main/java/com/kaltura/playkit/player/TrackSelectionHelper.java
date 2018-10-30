@@ -80,6 +80,8 @@ class TrackSelectionHelper {
 
     private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
 
+    private boolean mpgaAudioFormatEnabled; // Flag that indicates if application interested MPGA Audio format
+
     private TracksInfoListener tracksInfoListener;
 
     interface TracksInfoListener {
@@ -172,7 +174,13 @@ class TrackSelectionHelper {
                                 if (!isDashManifest) {
                                     audioTrackLabel = format.id;
                                 }
-                                audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), audioTrackLabel, format.bitrate, format.selectionFlags, false));
+                                if (format.language == null) { // filtering audio tracks that their language us null
+                                    if (mpgaAudioFormatEnabled) {
+                                        audioTracks.add(new AudioTrack(uniqueId, format.id, audioTrackLabel, format.bitrate, format.selectionFlags, false));
+                                    }
+                                } else {
+                                    audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), audioTrackLabel, format.bitrate, format.selectionFlags, false));
+                                }
                                 break;
                             case TRACK_TYPE_TEXT:
                                 String textTrackLabel = null;
@@ -873,9 +881,10 @@ class TrackSelectionHelper {
     }
 
     void applyPlayerSettings(PlayerSettings settings) {
-        this.cea608CaptionsEnabled = settings.cea608CaptionsEnabled();
+        this.mpgaAudioFormatEnabled = settings.mpgaAudioFormatEnabled();
+        this.cea608CaptionsEnabled  = settings.cea608CaptionsEnabled();
         this.preferredAudioLanguageConfig = settings.getPreferredAudioTrackConfig();
-        this.preferredTextLanguageConfig = settings.getPreferredTextTrackConfig();
+        this.preferredTextLanguageConfig  = settings.getPreferredTextTrackConfig();
     }
 }
 
