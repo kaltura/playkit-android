@@ -13,6 +13,7 @@
 package com.kaltura.playkit.plugins.playback;
 
 import android.net.Uri;
+import android.text.TextUtils;
 
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
@@ -45,9 +46,11 @@ public class KalturaPlaybackRequestAdapter implements PKRequestParams.Adapter {
         if (url.getPath().contains("/playManifest/")) {
             Uri alt = url.buildUpon()
                     .appendQueryParameter("clientTag", CLIENT_TAG)
-                    .appendQueryParameter("referrer", toBase64(applicationName.getBytes()))
-                    .appendQueryParameter("playSessionId", playSessionId)
-                    .build();
+                    .appendQueryParameter("playSessionId", playSessionId).build();
+
+            if (!TextUtils.isEmpty(applicationName)) {
+                alt = alt.buildUpon().appendQueryParameter("referrer", toBase64(applicationName.getBytes())).build();
+            }
 
             String lastPathSegment = requestParams.url.getLastPathSegment();
             if (lastPathSegment.endsWith(".wvm")) {
