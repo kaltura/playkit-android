@@ -174,9 +174,11 @@ class TrackSelectionHelper {
                                 if (!isDashManifest) {
                                     audioTrackLabel = format.id;
                                 }
-                                if (format.language == null) { // filtering audio tracks that their language is null
-                                    if (mpgaAudioFormatEnabled) {
-                                        audioTracks.add(new AudioTrack(uniqueId, format.id, audioTrackLabel, format.bitrate, format.selectionFlags, false));
+                                if (format.language == null) {
+                                    if (format.id != null && format.id.matches("\\d+/\\d+")) {
+                                        if (mpgaAudioFormatEnabled) {
+                                            audioTracks.add(new AudioTrack(uniqueId, format.id, audioTrackLabel, format.bitrate, format.selectionFlags, false));
+                                        }
                                     }
                                 } else {
                                     audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), audioTrackLabel, format.bitrate, format.selectionFlags, false));
