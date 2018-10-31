@@ -214,9 +214,9 @@ public interface PlayerEngine {
     float getPlaybackRate();
 
     /**
-     * Update Subtitles
+     * Update Subtitle Styles
      */
-    void updateSubtitles();
+    void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
 
     /**
      * Generic getters for playkit controllers.

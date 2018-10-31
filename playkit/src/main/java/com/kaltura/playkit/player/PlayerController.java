@@ -497,9 +497,9 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void updateSubtitles() {
+    public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         if (player != null) {
-            player.updateSubtitles();
+            player.updateSubtitleStyle(subtitleStyleSettings);
         } else {
             log.e("Player instance is null");
         }

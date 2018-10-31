@@ -211,7 +211,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
 
-        if (playerSettings != null && playerSettings.getSubtitles() != null) {
+        if (playerSettings != null && playerSettings.getSubtitleStyle() != null) {
             configureSubtitleView();
         }
     }
@@ -882,17 +882,17 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      */
 
     /**
-     * Subtitle configuration {@link SubtitleSettings}
+     * Subtitle configuration {@link SubtitleStyleSettings}
      */
     private void configureSubtitleView() {
         if (getView() != null && getView().getSubtitleView() != null) {
-            CaptionStyleCompat style = new CaptionStyleCompat(playerSettings.getSubtitles().getSubtitleTextColor(),
-                                           playerSettings.getSubtitles().getSubtitleBackgroundColor(),
+            CaptionStyleCompat style = new CaptionStyleCompat(playerSettings.getSubtitleStyle().getSubtitleTextColor(),
+                                           playerSettings.getSubtitleStyle().getSubtitleBackgroundColor(),
                                            Color.TRANSPARENT,
                                            CaptionStyleCompat.EDGE_TYPE_NONE,
                                            Color.TRANSPARENT, null);
             getView().getSubtitleView().setStyle(style);
-            getView().getSubtitleView().setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * playerSettings.getSubtitles().getSubtitleTextSizeFraction());
+            getView().getSubtitleView().setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * playerSettings.getSubtitleStyle().getSubtitleTextSizeFraction());
         } else {
             log.e("Subtitle view is not available");
         }
@@ -900,8 +900,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @Override
-    public void updateSubtitles() {
-        if (playerSettings != null && playerSettings.getSubtitles() != null) {
+    public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
+        if (playerSettings != null && playerSettings.getSubtitleStyle() != null) {
+            playerSettings.setSubtitleStyle(subtitleStyleSettings);
             configureSubtitleView();
         }
     }

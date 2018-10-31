@@ -599,7 +599,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public void updateSubtitles() {
+    public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         //Do nothing
     }
 

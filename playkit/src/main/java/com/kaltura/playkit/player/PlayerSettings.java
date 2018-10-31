@@ -26,7 +26,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
-    private SubtitleSettings subtitleSettings;
+    private SubtitleStyleSettings subtitleStyleSettings;
 
 
     private PKTrackConfig preferredTextTrackConfig;
@@ -87,8 +87,8 @@ public class PlayerSettings implements Player.Settings {
         return loadControlBuffers;
     }
 
-    public SubtitleSettings getSubtitles() {
-        return subtitleSettings;
+    public SubtitleStyleSettings getSubtitleStyle() {
+        return subtitleStyleSettings;
     }
 
     @Override
@@ -165,8 +165,8 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setSubtitles(SubtitleSettings subtitleSettings) {
-        this.subtitleSettings = subtitleSettings;
+    public Player.Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
+        this.subtitleStyleSettings = subtitleStyleSettings;
         return this;
     }
 }

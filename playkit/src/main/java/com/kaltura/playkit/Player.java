@@ -17,7 +17,7 @@ import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PlayerView;
-import com.kaltura.playkit.player.SubtitleSettings;
+import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.utils.Consts;
 
 /**
@@ -139,10 +139,10 @@ public interface Player {
         /**
          * Set the Player's Subtitles
          *
-         * @param subtitleSettings - SubtitleSettings
+         * @param subtitleStyleSettings - SubtitleStyleSettings
          * @return - Player Settings
          */
-        Settings setSubtitles(SubtitleSettings subtitleSettings);
+        Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
     }
 
     /**
@@ -315,9 +315,9 @@ public interface Player {
     <T extends PKController> T getController(Class<T> type);
 
     /**
-     * Update Subtitles : After setting the values to SubtitleSettings, call this method
+     * Update Subtitle Styles
      */
-    void updateSubtitles();
+    void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
 
 }
 
