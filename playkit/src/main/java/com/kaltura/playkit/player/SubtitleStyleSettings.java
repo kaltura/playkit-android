@@ -26,6 +26,13 @@ public class SubtitleStyleSettings {
         SUBTITLE_FRACTION_50, SUBTITLE_FRACTION_75, SUBTITLE_FRACTION_100, SUBTITLE_FRACTION_125, SUBTITLE_FRACTION_150, SUBTITLE_FRACTION_200
     }
 
+    private static final float fraction50  = 0.50f;
+    private static final float fraction75  = 0.75f;
+    private static final float fraction100 = 1.0f;
+    private static final float fraction125 = 1.25f;
+    private static final float fraction150 = 1.50f;
+    private static final float fraction200 = 2.0f;
+
     // Default values are in builder
     private int subtitleTextColor;
     private int subtitleBackgroundColor;
@@ -122,22 +129,22 @@ public class SubtitleStyleSettings {
         public SubtitleStyleBuilder setSubtitleTextSizeFraction(SubtitleTextSizeFraction subtitleTextSizeFraction) {
             switch (subtitleTextSizeFraction) {
                 case SUBTITLE_FRACTION_50:
-                    this.subtitleTextSizeFraction = 0.50f;
+                    this.subtitleTextSizeFraction = fraction50;
                     break;
                 case SUBTITLE_FRACTION_75:
-                    this.subtitleTextSizeFraction = 0.75f;
+                    this.subtitleTextSizeFraction = fraction75;
                     break;
                 case SUBTITLE_FRACTION_100:
-                    this.subtitleTextSizeFraction = 1.0f;
+                    this.subtitleTextSizeFraction = fraction100;
                     break;
                 case SUBTITLE_FRACTION_125:
-                    this.subtitleTextSizeFraction = 1.25f;
+                    this.subtitleTextSizeFraction = fraction125;
                     break;
                 case SUBTITLE_FRACTION_150:
-                    this.subtitleTextSizeFraction = 1.50f;
+                    this.subtitleTextSizeFraction = fraction150;
                     break;
                 case SUBTITLE_FRACTION_200:
-                    this.subtitleTextSizeFraction = 2.0f;
+                    this.subtitleTextSizeFraction = fraction200;
                     break;
             }
             return this;
