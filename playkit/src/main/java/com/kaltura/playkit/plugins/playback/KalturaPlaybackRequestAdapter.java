@@ -17,6 +17,7 @@ import android.text.TextUtils;
 
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.player.PlayerSettings;
 
 import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
 import static com.kaltura.playkit.Utils.toBase64;
@@ -30,6 +31,12 @@ public class KalturaPlaybackRequestAdapter implements PKRequestParams.Adapter {
     private String playSessionId;
 
     public static void install(Player player, String applicationName) {
+        if (player.getSettings() instanceof PlayerSettings &&
+                ((PlayerSettings)player.getSettings()).getContentRequestAdapter() != null &&
+                TextUtils.isEmpty(applicationName)) {
+            applicationName = ((PlayerSettings)player.getSettings()).getContentRequestAdapter().getApplicationName();
+        }
+
         KalturaPlaybackRequestAdapter decorator = new KalturaPlaybackRequestAdapter(applicationName, player);
         player.getSettings().setContentRequestAdapter(decorator);
     }
@@ -66,5 +73,10 @@ public class KalturaPlaybackRequestAdapter implements PKRequestParams.Adapter {
     @Override
     public void updateParams(Player player) {
         this.playSessionId = player.getSessionId();
+    }
+
+    @Override
+    public String getApplicationName() {
+        return applicationName;
     }
 }
