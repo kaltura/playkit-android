@@ -211,7 +211,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
 
-        if (playerSettings != null && playerSettings.getSubtitleStyle() != null) {
+        if (playerSettings != null && playerSettings.getSubtitleStyleSettings() != null) {
             configureSubtitleView();
         }
     }
@@ -886,13 +886,15 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      */
     private void configureSubtitleView() {
         if (getView() != null && getView().getSubtitleView() != null) {
-            CaptionStyleCompat style = new CaptionStyleCompat(playerSettings.getSubtitleStyle().getSubtitleTextColor(),
-                                           playerSettings.getSubtitleStyle().getSubtitleBackgroundColor(),
-                                           Color.TRANSPARENT,
-                                           CaptionStyleCompat.EDGE_TYPE_NONE,
-                                           Color.TRANSPARENT, null);
+            CaptionStyleCompat style = new CaptionStyleCompat(playerSettings.getSubtitleStyleSettings().getSubtitleTextColor(),
+                    playerSettings.getSubtitleStyleSettings().getSubtitleBackgroundColor(),
+                    playerSettings.getSubtitleStyleSettings().getSubtitleWindowColor(),
+                    playerSettings.getSubtitleStyleSettings().getSubtitleEdgeType(),
+                    playerSettings.getSubtitleStyleSettings().getSubtitleEdgeColor(),
+                    null);
+
             getView().getSubtitleView().setStyle(style);
-            getView().getSubtitleView().setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * playerSettings.getSubtitleStyle().getSubtitleTextSizeFraction());
+            getView().getSubtitleView().setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * playerSettings.getSubtitleStyleSettings().getSubtitleTextSizeFraction());
         } else {
             log.e("Subtitle view is not available");
         }
@@ -901,7 +903,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
-        if (playerSettings != null && playerSettings.getSubtitleStyle() != null) {
+        if (playerSettings != null && playerSettings.getSubtitleStyleSettings() != null) {
             playerSettings.setSubtitleStyle(subtitleStyleSettings);
             configureSubtitleView();
         }

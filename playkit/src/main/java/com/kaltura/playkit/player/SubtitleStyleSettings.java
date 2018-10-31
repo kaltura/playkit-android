@@ -14,17 +14,33 @@ package com.kaltura.playkit.player;
 
 import android.graphics.Color;
 
+import com.google.android.exoplayer2.text.CaptionStyleCompat;
+
 public class SubtitleStyleSettings {
+
+    public enum SubtitleStyleEdgeType {
+        EDGE_TYPE_NONE, EDGE_TYPE_OUTLINE, EDGE_TYPE_DROP_SHADOW, EDGE_TYPE_RAISED, EDGE_TYPE_DEPRESSED;
+    }
+
+    public enum SubtitleTextSizeFraction {
+        SUBTITLE_FRACTION_50, SUBTITLE_FRACTION_75, SUBTITLE_FRACTION_100, SUBTITLE_FRACTION_125, SUBTITLE_FRACTION_150, SUBTITLE_FRACTION_200
+    }
 
     // Default values are in builder
     private int subtitleTextColor;
     private int subtitleBackgroundColor;
     private float subtitleTextSizeFraction;
+    private int subtitleWindowColor;
+    private int subtitleEdgeType;
+    private int subtitleEdgeColor;
 
     private SubtitleStyleSettings(SubtitleStyleBuilder subtitleStyleBuilder) {
         this.subtitleTextColor = subtitleStyleBuilder.subtitleTextColor;
         this.subtitleBackgroundColor = subtitleStyleBuilder.subtitleBackgroundColor;
         this.subtitleTextSizeFraction = subtitleStyleBuilder.subtitleTextSizeFraction;
+        this.subtitleWindowColor = subtitleStyleBuilder.subtitleWindowColor;
+        this.subtitleEdgeType = subtitleStyleBuilder.subtitleEdgeType;
+        this.subtitleEdgeColor = subtitleStyleBuilder.subtitleEdgeType;
     }
 
     public int getSubtitleTextColor() {
@@ -39,16 +55,28 @@ public class SubtitleStyleSettings {
         return subtitleTextSizeFraction;
     }
 
+    public int getSubtitleWindowColor() {
+        return subtitleWindowColor;
+    }
+
+    public int getSubtitleEdgeType() {
+        return subtitleEdgeType;
+    }
+
+    public int getSubtitleEdgeColor() {
+        return subtitleEdgeColor;
+    }
+
     public static class SubtitleStyleBuilder {
 
-        // Subtitle Text Color, Default is Black
-        private int subtitleTextColor = Color.BLACK;
-        // Subtitle Background Color, Default is Transparent
-        private int subtitleBackgroundColor = Color.TRANSPARENT;
-
+        private int subtitleTextColor = Color.WHITE;
+        private int subtitleBackgroundColor = Color.BLACK;
         // Recommended fraction values is  1f < subtitleTextSizeFraction < 2.5f with 0.25f Multiplier
         // Subtitle TextSize fraction, Default is 0.0533f ; {@link com.google.android.exoplayer2.ui.SubtitleView}
         private float subtitleTextSizeFraction = 0.0533f;
+        private int subtitleWindowColor = Color.TRANSPARENT;
+        private int subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
+        private int subtitleEdgeColor = Color.WHITE;
 
         public SubtitleStyleBuilder setSubtitleTextColor(int subtitleTextColor) {
             this.subtitleTextColor = subtitleTextColor;
@@ -60,8 +88,58 @@ public class SubtitleStyleSettings {
             return this;
         }
 
-        public SubtitleStyleBuilder setSubtitleTextSizeFraction(float subtitleTextSizeFraction) {
-            this.subtitleTextSizeFraction = subtitleTextSizeFraction;
+        public SubtitleStyleBuilder setSubtitleEdgeColor(int subtitleEdgeColor) {
+            this.subtitleEdgeColor = subtitleEdgeColor;
+            return this;
+        }
+
+        public SubtitleStyleBuilder setSubtitleWindowColor(int subtitleWindowColor) {
+            this.subtitleWindowColor = subtitleWindowColor;
+            return this;
+        }
+
+        public SubtitleStyleBuilder setSubtitleEdgeType(SubtitleStyleEdgeType subtitleEdgeType) {
+            switch (subtitleEdgeType) {
+                case EDGE_TYPE_NONE:
+                    this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
+                    break;
+                case EDGE_TYPE_OUTLINE:
+                    this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_OUTLINE;
+                    break;
+                case EDGE_TYPE_DROP_SHADOW:
+                    this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW;
+                    break;
+                case EDGE_TYPE_RAISED:
+                    this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_RAISED;
+                    break;
+                case EDGE_TYPE_DEPRESSED:
+                    this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_DEPRESSED;
+                    break;
+            }
+            return this;
+        }
+
+        public SubtitleStyleBuilder setSubtitleTextSizeFraction(SubtitleTextSizeFraction subtitleTextSizeFraction) {
+            switch (subtitleTextSizeFraction) {
+                case SUBTITLE_FRACTION_50:
+                    this.subtitleTextSizeFraction = 0.50f;
+                    break;
+                case SUBTITLE_FRACTION_75:
+                    this.subtitleTextSizeFraction = 0.75f;
+                    break;
+                case SUBTITLE_FRACTION_100:
+                    this.subtitleTextSizeFraction = 1.0f;
+                    break;
+                case SUBTITLE_FRACTION_125:
+                    this.subtitleTextSizeFraction = 1.25f;
+                    break;
+                case SUBTITLE_FRACTION_150:
+                    this.subtitleTextSizeFraction = 1.50f;
+                    break;
+                case SUBTITLE_FRACTION_200:
+                    this.subtitleTextSizeFraction = 2.0f;
+                    break;
+            }
             return this;
         }
 

@@ -87,7 +87,7 @@ public class PlayerSettings implements Player.Settings {
         return loadControlBuffers;
     }
 
-    public SubtitleStyleSettings getSubtitleStyle() {
+    public SubtitleStyleSettings getSubtitleStyleSettings() {
         return subtitleStyleSettings;
     }
 
