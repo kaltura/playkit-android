@@ -205,7 +205,8 @@ public class PlayerEvent implements PKEvent {
         VIDEO_TRACK_CHANGED,
         AUDIO_TRACK_CHANGED,
         TEXT_TRACK_CHANGED,
-        PLAYBACK_RATE_CHANGED
+        PLAYBACK_RATE_CHANGED,
+        SUBTITLE_STYLE_CHANGED //Send when subtitle style is changed.
     }
 
     @Override

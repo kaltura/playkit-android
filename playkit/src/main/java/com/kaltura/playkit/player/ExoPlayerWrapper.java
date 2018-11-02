@@ -906,6 +906,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (playerSettings != null && playerSettings.getSubtitleStyleSettings() != null) {
             playerSettings.setSubtitleStyle(subtitleStyleSettings);
             configureSubtitleView();
+            sendEvent(PlayerEvent.Type.SUBTITLE_STYLE_CHANGED);
         }
     }
 
