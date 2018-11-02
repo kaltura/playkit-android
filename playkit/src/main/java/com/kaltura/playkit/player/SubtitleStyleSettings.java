@@ -13,6 +13,7 @@
 package com.kaltura.playkit.player;
 
 import android.graphics.Color;
+import android.graphics.Typeface;
 
 import com.google.android.exoplayer2.text.CaptionStyleCompat;
 
@@ -24,6 +25,10 @@ public class SubtitleStyleSettings {
 
     public enum SubtitleTextSizeFraction {
         SUBTITLE_FRACTION_50, SUBTITLE_FRACTION_75, SUBTITLE_FRACTION_100, SUBTITLE_FRACTION_125, SUBTITLE_FRACTION_150, SUBTITLE_FRACTION_200
+    }
+
+    public enum SubtitleStyleTypeface {
+        DEFAULT, DEFAULT_BOLD, MONOSPACE, SERIF, SANS_SERIF
     }
 
     private static final float fraction50  = 0.50f;
@@ -40,6 +45,7 @@ public class SubtitleStyleSettings {
     private int subtitleWindowColor;
     private int subtitleEdgeType;
     private int subtitleEdgeColor;
+    private Typeface subtitleTypeface;
 
     private SubtitleStyleSettings(SubtitleStyleBuilder subtitleStyleBuilder) {
         this.subtitleTextColor = subtitleStyleBuilder.subtitleTextColor;
@@ -48,6 +54,7 @@ public class SubtitleStyleSettings {
         this.subtitleWindowColor = subtitleStyleBuilder.subtitleWindowColor;
         this.subtitleEdgeType = subtitleStyleBuilder.subtitleEdgeType;
         this.subtitleEdgeColor = subtitleStyleBuilder.subtitleEdgeColor;
+        this.subtitleTypeface = subtitleStyleBuilder.subtitleTypeface;
     }
 
     public int getSubtitleTextColor() {
@@ -74,6 +81,10 @@ public class SubtitleStyleSettings {
         return subtitleEdgeColor;
     }
 
+    public Typeface getSubtitleTypeface() {
+        return subtitleTypeface;
+    }
+
     public static class SubtitleStyleBuilder {
 
         private int subtitleTextColor = Color.WHITE;
@@ -84,6 +95,7 @@ public class SubtitleStyleSettings {
         private int subtitleWindowColor = Color.TRANSPARENT;
         private int subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
         private int subtitleEdgeColor = Color.WHITE;
+        private Typeface subtitleTypeface = Typeface.DEFAULT;
 
         public SubtitleStyleBuilder setSubtitleTextColor(int subtitleTextColor) {
             this.subtitleTextColor = subtitleTextColor;
@@ -153,6 +165,31 @@ public class SubtitleStyleSettings {
                     this.subtitleTextSizeFraction = fraction100;
                     break;
             }
+            return this;
+        }
+
+        public SubtitleStyleBuilder setSubtitleTypeface(SubtitleStyleTypeface subtitleStyleTypeface) {
+            switch (subtitleStyleTypeface) {
+                case DEFAULT:
+                    this.subtitleTypeface = Typeface.DEFAULT;
+                    break;
+                case DEFAULT_BOLD:
+                    this.subtitleTypeface = Typeface.DEFAULT_BOLD;
+                    break;
+                case MONOSPACE:
+                    this.subtitleTypeface = Typeface.MONOSPACE;
+                    break;
+                case SERIF:
+                    this.subtitleTypeface = Typeface.SERIF;
+                    break;
+                case SANS_SERIF:
+                    this.subtitleTypeface = Typeface.SANS_SERIF;
+                    break;
+                default:
+                    this.subtitleTypeface = Typeface.DEFAULT;
+                    break;
+            }
+
             return this;
         }
 

@@ -15,6 +15,7 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -890,7 +891,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                     playerSettings.getSubtitleStyleSettings().getSubtitleWindowColor(),
                     playerSettings.getSubtitleStyleSettings().getSubtitleEdgeType(),
                     playerSettings.getSubtitleStyleSettings().getSubtitleEdgeColor(),
-                    null);
+                    playerSettings.getSubtitleStyleSettings().getSubtitleTypeface());
 
             getView().getSubtitleView().setStyle(style);
             getView().getSubtitleView().setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * playerSettings.getSubtitleStyleSettings().getSubtitleTextSizeFraction());
