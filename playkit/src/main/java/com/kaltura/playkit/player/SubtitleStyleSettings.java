@@ -122,6 +122,9 @@ public class SubtitleStyleSettings {
                 case EDGE_TYPE_DEPRESSED:
                     this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_DEPRESSED;
                     break;
+                default:
+                    this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
+                    break;
             }
             return this;
         }
@@ -145,6 +148,9 @@ public class SubtitleStyleSettings {
                     break;
                 case SUBTITLE_FRACTION_200:
                     this.subtitleTextSizeFraction = fraction200;
+                    break;
+                default:
+                    this.subtitleTextSizeFraction = fraction100;
                     break;
             }
             return this;
