@@ -14,7 +14,6 @@ package com.kaltura.playkit.player;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
-
 import com.google.android.exoplayer2.text.CaptionStyleCompat;
 
 public class SubtitleStyleSettings {
@@ -31,31 +30,22 @@ public class SubtitleStyleSettings {
         DEFAULT, DEFAULT_BOLD, MONOSPACE, SERIF, SANS_SERIF
     }
 
-    private static final float fraction50  = 0.50f;
-    private static final float fraction75  = 0.75f;
+    private static final float fraction50 = 0.50f;
+    private static final float fraction75 = 0.75f;
     private static final float fraction100 = 1.0f;
     private static final float fraction125 = 1.25f;
     private static final float fraction150 = 1.50f;
     private static final float fraction200 = 2.0f;
 
-    // Default values are in builder
-    private int subtitleTextColor;
-    private int subtitleBackgroundColor;
-    private float subtitleTextSizeFraction;
-    private int subtitleWindowColor;
-    private int subtitleEdgeType;
-    private int subtitleEdgeColor;
-    private Typeface subtitleTypeface;
-
-    private SubtitleStyleSettings(SubtitleStyleBuilder subtitleStyleBuilder) {
-        this.subtitleTextColor = subtitleStyleBuilder.subtitleTextColor;
-        this.subtitleBackgroundColor = subtitleStyleBuilder.subtitleBackgroundColor;
-        this.subtitleTextSizeFraction = subtitleStyleBuilder.subtitleTextSizeFraction;
-        this.subtitleWindowColor = subtitleStyleBuilder.subtitleWindowColor;
-        this.subtitleEdgeType = subtitleStyleBuilder.subtitleEdgeType;
-        this.subtitleEdgeColor = subtitleStyleBuilder.subtitleEdgeColor;
-        this.subtitleTypeface = subtitleStyleBuilder.subtitleTypeface;
-    }
+    private int subtitleTextColor = Color.WHITE;
+    private int subtitleBackgroundColor = Color.BLACK;
+    // Recommended fraction values is  1f < subtitleTextSizeFraction < 2.5f with 0.25f Multiplier
+    // Subtitle TextSize fraction, Default is 1.0f ; {@link com.google.android.exoplayer2.ui.SubtitleView}
+    private float subtitleTextSizeFraction = fraction100;
+    private int subtitleWindowColor = Color.TRANSPARENT;
+    private int subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
+    private int subtitleEdgeColor = Color.WHITE;
+    private Typeface subtitleTypeface = Typeface.DEFAULT;
 
     public int getSubtitleTextColor() {
         return subtitleTextColor;
@@ -85,118 +75,98 @@ public class SubtitleStyleSettings {
         return subtitleTypeface;
     }
 
-    public static class SubtitleStyleBuilder {
-
-        private int subtitleTextColor = Color.WHITE;
-        private int subtitleBackgroundColor = Color.BLACK;
-        // Recommended fraction values is  1f < subtitleTextSizeFraction < 2.5f with 0.25f Multiplier
-        // Subtitle TextSize fraction, Default is 1.0f ; {@link com.google.android.exoplayer2.ui.SubtitleView}
-        private float subtitleTextSizeFraction = fraction100;
-        private int subtitleWindowColor = Color.TRANSPARENT;
-        private int subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
-        private int subtitleEdgeColor = Color.WHITE;
-        private Typeface subtitleTypeface = Typeface.DEFAULT;
-
-        public SubtitleStyleBuilder setSubtitleTextColor(int subtitleTextColor) {
-            this.subtitleTextColor = subtitleTextColor;
-            return this;
-        }
-
-        public SubtitleStyleBuilder setSubtitleBackgroundColor(int subtitleBackgroundColor) {
-            this.subtitleBackgroundColor = subtitleBackgroundColor;
-            return this;
-        }
-
-        public SubtitleStyleBuilder setSubtitleEdgeColor(int subtitleEdgeColor) {
-            this.subtitleEdgeColor = subtitleEdgeColor;
-            return this;
-        }
-
-        public SubtitleStyleBuilder setSubtitleWindowColor(int subtitleWindowColor) {
-            this.subtitleWindowColor = subtitleWindowColor;
-            return this;
-        }
-
-        public SubtitleStyleBuilder setSubtitleEdgeType(SubtitleStyleEdgeType subtitleEdgeType) {
-            switch (subtitleEdgeType) {
-                case EDGE_TYPE_NONE:
-                    this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
-                    break;
-                case EDGE_TYPE_OUTLINE:
-                    this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_OUTLINE;
-                    break;
-                case EDGE_TYPE_DROP_SHADOW:
-                    this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW;
-                    break;
-                case EDGE_TYPE_RAISED:
-                    this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_RAISED;
-                    break;
-                case EDGE_TYPE_DEPRESSED:
-                    this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_DEPRESSED;
-                    break;
-                default:
-                    this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
-                    break;
-            }
-            return this;
-        }
-
-        public SubtitleStyleBuilder setSubtitleTextSizeFraction(SubtitleTextSizeFraction subtitleTextSizeFraction) {
-            switch (subtitleTextSizeFraction) {
-                case SUBTITLE_FRACTION_50:
-                    this.subtitleTextSizeFraction = fraction50;
-                    break;
-                case SUBTITLE_FRACTION_75:
-                    this.subtitleTextSizeFraction = fraction75;
-                    break;
-                case SUBTITLE_FRACTION_100:
-                    this.subtitleTextSizeFraction = fraction100;
-                    break;
-                case SUBTITLE_FRACTION_125:
-                    this.subtitleTextSizeFraction = fraction125;
-                    break;
-                case SUBTITLE_FRACTION_150:
-                    this.subtitleTextSizeFraction = fraction150;
-                    break;
-                case SUBTITLE_FRACTION_200:
-                    this.subtitleTextSizeFraction = fraction200;
-                    break;
-                default:
-                    this.subtitleTextSizeFraction = fraction100;
-                    break;
-            }
-            return this;
-        }
-
-        public SubtitleStyleBuilder setSubtitleTypeface(SubtitleStyleTypeface subtitleStyleTypeface) {
-            switch (subtitleStyleTypeface) {
-                case DEFAULT:
-                    this.subtitleTypeface = Typeface.DEFAULT;
-                    break;
-                case DEFAULT_BOLD:
-                    this.subtitleTypeface = Typeface.DEFAULT_BOLD;
-                    break;
-                case MONOSPACE:
-                    this.subtitleTypeface = Typeface.MONOSPACE;
-                    break;
-                case SERIF:
-                    this.subtitleTypeface = Typeface.SERIF;
-                    break;
-                case SANS_SERIF:
-                    this.subtitleTypeface = Typeface.SANS_SERIF;
-                    break;
-                default:
-                    this.subtitleTypeface = Typeface.DEFAULT;
-                    break;
-            }
-
-            return this;
-        }
-
-        public SubtitleStyleSettings build() {
-            return new SubtitleStyleSettings(this);
-        }
-
+    public SubtitleStyleSettings setSubtitleTextColor(int subtitleTextColor) {
+        this.subtitleTextColor = subtitleTextColor;
+        return this;
     }
 
+    public SubtitleStyleSettings setSubtitleBackgroundColor(int subtitleBackgroundColor) {
+        this.subtitleBackgroundColor = subtitleBackgroundColor;
+        return this;
+    }
+
+    public SubtitleStyleSettings setSubtitleEdgeColor(int subtitleEdgeColor) {
+        this.subtitleEdgeColor = subtitleEdgeColor;
+        return this;
+    }
+
+    public SubtitleStyleSettings setSubtitleWindowColor(int subtitleWindowColor) {
+        this.subtitleWindowColor = subtitleWindowColor;
+        return this;
+    }
+
+    public SubtitleStyleSettings setSubtitleEdgeType(SubtitleStyleEdgeType subtitleEdgeType) {
+        switch (subtitleEdgeType) {
+            case EDGE_TYPE_NONE:
+                this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
+                break;
+            case EDGE_TYPE_OUTLINE:
+                this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_OUTLINE;
+                break;
+            case EDGE_TYPE_DROP_SHADOW:
+                this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW;
+                break;
+            case EDGE_TYPE_RAISED:
+                this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_RAISED;
+                break;
+            case EDGE_TYPE_DEPRESSED:
+                this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_DEPRESSED;
+                break;
+            default:
+                this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
+                break;
+        }
+        return this;
+    }
+
+    public SubtitleStyleSettings setSubtitleTextSizeFraction(SubtitleTextSizeFraction subtitleTextSizeFraction) {
+        switch (subtitleTextSizeFraction) {
+            case SUBTITLE_FRACTION_50:
+                this.subtitleTextSizeFraction = fraction50;
+                break;
+            case SUBTITLE_FRACTION_75:
+                this.subtitleTextSizeFraction = fraction75;
+                break;
+            case SUBTITLE_FRACTION_100:
+                this.subtitleTextSizeFraction = fraction100;
+                break;
+            case SUBTITLE_FRACTION_125:
+                this.subtitleTextSizeFraction = fraction125;
+                break;
+            case SUBTITLE_FRACTION_150:
+                this.subtitleTextSizeFraction = fraction150;
+                break;
+            case SUBTITLE_FRACTION_200:
+                this.subtitleTextSizeFraction = fraction200;
+                break;
+            default:
+                this.subtitleTextSizeFraction = fraction100;
+                break;
+        }
+        return this;
+    }
+
+    public SubtitleStyleSettings setSubtitleTypeface(SubtitleStyleTypeface subtitleStyleTypeface) {
+        switch (subtitleStyleTypeface) {
+            case DEFAULT:
+                subtitleTypeface = Typeface.DEFAULT;
+                break;
+            case DEFAULT_BOLD:
+                subtitleTypeface = Typeface.DEFAULT_BOLD;
+                break;
+            case MONOSPACE:
+                subtitleTypeface = Typeface.MONOSPACE;
+                break;
+            case SERIF:
+                subtitleTypeface = Typeface.SERIF;
+                break;
+            case SANS_SERIF:
+                subtitleTypeface = Typeface.SANS_SERIF;
+                break;
+            default:
+                subtitleTypeface = Typeface.DEFAULT;
+                break;
+        }
+        return this;
+    }
 }
