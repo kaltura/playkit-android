@@ -47,7 +47,7 @@ public class SubtitleStyleSettings {
         this.subtitleTextSizeFraction = subtitleStyleBuilder.subtitleTextSizeFraction;
         this.subtitleWindowColor = subtitleStyleBuilder.subtitleWindowColor;
         this.subtitleEdgeType = subtitleStyleBuilder.subtitleEdgeType;
-        this.subtitleEdgeColor = subtitleStyleBuilder.subtitleEdgeType;
+        this.subtitleEdgeColor = subtitleStyleBuilder.subtitleEdgeColor;
     }
 
     public int getSubtitleTextColor() {
@@ -79,8 +79,8 @@ public class SubtitleStyleSettings {
         private int subtitleTextColor = Color.WHITE;
         private int subtitleBackgroundColor = Color.BLACK;
         // Recommended fraction values is  1f < subtitleTextSizeFraction < 2.5f with 0.25f Multiplier
-        // Subtitle TextSize fraction, Default is 0.0533f ; {@link com.google.android.exoplayer2.ui.SubtitleView}
-        private float subtitleTextSizeFraction = 0.0533f;
+        // Subtitle TextSize fraction, Default is 1.0f ; {@link com.google.android.exoplayer2.ui.SubtitleView}
+        private float subtitleTextSizeFraction = fraction100;
         private int subtitleWindowColor = Color.TRANSPARENT;
         private int subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
         private int subtitleEdgeColor = Color.WHITE;
