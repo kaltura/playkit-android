@@ -637,7 +637,6 @@ public class PlayerController implements Player {
                         case PLAYBACK_RATE_CHANGED:
                             event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
                             break;
-                        case SUBTITLE_STYLE_CHANGED:
                         default:
                             event = new PlayerEvent.Generic(eventType);
                     }
