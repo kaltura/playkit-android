@@ -361,6 +361,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 break;
             case Player.STATE_ENDED:
                 log.d("onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
+                pausePlayerAfterEndedEvent();
                 changeState(PlayerState.IDLE);
                 sendDistinctEvent(PlayerEvent.Type.ENDED);
                 break;
@@ -369,6 +370,13 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         }
 
+    }
+
+    private void pausePlayerAfterEndedEvent() {
+        if (PlayerEvent.Type.ENDED != currentEvent) {
+            log.d("Pause pausePlayerAfterEndedEvent");
+            player.setPlayWhenReady(false);
+        }
     }
 
     @Override
