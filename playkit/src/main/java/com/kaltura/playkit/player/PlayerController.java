@@ -490,7 +490,7 @@ public class PlayerController implements Player {
 
     @Override
     public void setPlaybackRate(float rate) {
-        log.v("getPlaybackRate");
+        log.v("setPlaybackRate");
         if (assertPlayerIsNotNull("setPlaybackRate()")) {
             player.setPlaybackRate(rate);
         }
