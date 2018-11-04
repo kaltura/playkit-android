@@ -16,7 +16,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
-
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
@@ -33,7 +32,6 @@ import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.UUID;
-
 import static com.kaltura.playkit.PKMediaFormat.wvm;
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 
@@ -44,7 +42,6 @@ import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 public class PlayerController implements Player {
 
     private static final PKLog log = PKLog.get("PlayerController");
-
     private Context context;
     private PKMediaConfig mediaConfig;
     private PKMediaSourceConfig sourceConfig;
@@ -68,7 +65,7 @@ public class PlayerController implements Player {
     private PKEvent.Listener eventListener;
     private PlayerEngine.EventListener eventTrigger = initEventListener();
     private PlayerEngine.StateChangedListener stateChangedTrigger = initStateChangeListener();
-
+    private final String nullPlayerMsgFormat = "Attempt to invoke '%s' on null instance of the player engine";
 
     public PlayerController(Context context) {
         this.context = context;
@@ -183,7 +180,7 @@ public class PlayerController implements Player {
             isNewEntry = true;
             stop();
         }
-        
+
         sessionId = generateSessionId();
         if (playerSettings.getContentRequestAdapter() != null) {
             playerSettings.getContentRequestAdapter().updateParams(this);
@@ -289,8 +286,8 @@ public class PlayerController implements Player {
     }
 
     private void startPlaybackFrom(long startPosition) {
-        if (player == null) {
-            log.w("Attempt to invoke 'startPlaybackFrom()' on null instance of the player engine");
+        log.d("startPlaybackFrom " + startPosition);
+        if (assertPlayerIstNull("startPlaybackFrom()")) {
             return;
         }
 
@@ -307,8 +304,8 @@ public class PlayerController implements Player {
 
     @Override
     public <T extends PKController> T getController(Class<T> type) {
-        if (player == null) {
-            log.w("Attempt to invoke 'getController()' on null instance of the player engine");
+        log.d("getController");
+        if (assertPlayerIstNull("getController()")) {
             return null;
         }
 
@@ -316,21 +313,24 @@ public class PlayerController implements Player {
     }
 
     public long getDuration() {
-        if (player == null) {
+        log.d("getDuration");
+        if (assertPlayerIstNull("getDuration()")) {
             return Consts.TIME_UNSET;
         }
         return player.getDuration();
     }
 
     public long getCurrentPosition() {
-        if (player == null) {
+        log.d("getCurrentPosition");
+        if (assertPlayerIstNull("getCurrentPosition()")) {
             return Consts.POSITION_UNSET;
         }
         return player.getCurrentPosition();
     }
 
     public long getBufferedPosition() {
-        if (player == null) {
+        log.d("getBufferedPosition");
+        if (assertPlayerIstNull("getBufferedPosition()")) {
             return Consts.POSITION_UNSET;
         }
         return player.getBufferedPosition();
@@ -338,8 +338,7 @@ public class PlayerController implements Player {
 
     public void seekTo(long position) {
         log.d("seek to " + position);
-        if (player == null) {
-            log.w("Attempt to invoke 'seekTo()' on null instance of the player engine");
+        if (assertPlayerIstNull("seekTo()")) {
             return;
         }
         targetSeekPosition = position;
@@ -348,9 +347,7 @@ public class PlayerController implements Player {
 
     public void play() {
         log.d("play");
-
-        if (player == null) {
-            log.w("Attempt to invoke 'play()' on null instance of the player engine");
+        if (assertPlayerIstNull("play()")) {
             return;
         }
 
@@ -360,8 +357,7 @@ public class PlayerController implements Player {
 
     public void pause() {
         log.d("pause");
-        if (player == null) {
-            log.w("Attempt to invoke 'pause()' on null instance of the player engine");
+        if (assertPlayerIstNull("pause()")) {
             return;
         }
         player.pause();
@@ -370,8 +366,7 @@ public class PlayerController implements Player {
     @Override
     public void replay() {
         log.d("replay");
-        if (player == null) {
-            log.w("Attempt to invoke 'replay()' on null instance of the player engine");
+        if (assertPlayerIstNull("replay()")) {
             return;
         }
         player.replay();
@@ -379,8 +374,8 @@ public class PlayerController implements Player {
 
     @Override
     public void setVolume(float volume) {
-        if (player == null) {
-            log.w("Attempt to invoke 'setVolume()' on null instance of the player engine");
+        log.d("setVolume");
+        if (assertPlayerIstNull("setVolume()")) {
             return;
         }
         player.setVolume(volume);
@@ -392,7 +387,8 @@ public class PlayerController implements Player {
     }
 
     private void togglePlayerListeners(boolean enable) {
-        if (player == null) {
+        log.d("togglePlayerListeners");
+        if (assertPlayerIstNull("togglePlayerListeners()")) {
             return;
         }
         if (enable) {
@@ -439,8 +435,7 @@ public class PlayerController implements Player {
     @Override
     public void onApplicationPaused() {
         log.d("onApplicationPaused");
-        if (player == null) {
-            log.w("Attempt to invoke 'release()' on null instance of the player engine");
+        if (assertPlayerIstNull("onApplicationPaused()")) {
             return;
         }
         if (player.isPlaying()) {
@@ -464,13 +459,16 @@ public class PlayerController implements Player {
 
     @Override
     public void onOrientationChanged() {
+        log.d("onOrientationChanged");
+        if (assertPlayerIstNull("onOrientationChanged()")) {
+            return;
+        }
         player.onOrientationChanged();
     }
 
     @Override
     public void changeTrack(String uniqueId) {
-        if (player == null) {
-            log.w("Attempt to invoke 'changeTrack()' on null instance of the player engine");
+        if (assertPlayerIstNull("changeTrack()")) {
             return;
         }
 
@@ -508,6 +506,14 @@ public class PlayerController implements Player {
             return player.getPlaybackRate();
         }
         return Consts.PLAYBACK_SPEED_RATE_UNKNOWN;
+    }
+
+    private boolean assertPlayerIstNull(String message) {
+        if (player == null) {
+            log.w(String.format(nullPlayerMsgFormat, message));
+            return true;
+        }
+        return false;
     }
 
     private boolean shouldSwitchBetweenPlayers(PKMediaSource newSource) {
