@@ -468,6 +468,7 @@ public class PlayerController implements Player {
 
     @Override
     public void changeTrack(String uniqueId) {
+        log.d("changeTrack");
         if (assertPlayerIstNull("changeTrack()")) {
             return;
         }
