@@ -96,11 +96,6 @@ public class PlayerController implements Player {
                 setVideoSubtitlesVisibility(true);
 
             }
-
-            @Override
-            public SubtitleView getSubtitleView() {
-                return null;
-            }
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         this.rootPlayerView.setLayoutParams(lp);

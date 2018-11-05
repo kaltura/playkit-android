@@ -114,8 +114,4 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
 
     }
 
-    @Override
-    public SubtitleView getSubtitleView() {
-        return null;
-    }
 }
