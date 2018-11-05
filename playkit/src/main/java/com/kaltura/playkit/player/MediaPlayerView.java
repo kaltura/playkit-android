@@ -19,8 +19,6 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-
-import com.google.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.playkit.PKLog;
 
 /**

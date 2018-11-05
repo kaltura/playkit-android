@@ -15,7 +15,6 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
-import com.google.android.exoplayer2.ui.SubtitleView;
 
 /**
  * Created by gilad.nadav on 27/12/2016.
