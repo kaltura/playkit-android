@@ -209,10 +209,7 @@ class ExoPlayerView extends BaseExoplayerView {
 
     @Override
     public SubtitleView getSubtitleView() {
-        if (subtitleView != null) {
-            return subtitleView;
-        }
-        return null;
+        return subtitleView;
     }
 
     @Override
