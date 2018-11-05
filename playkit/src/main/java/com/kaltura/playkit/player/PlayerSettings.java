@@ -22,6 +22,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean useTextureView;
     private boolean isSurfaceSecured;
     private boolean cea608CaptionsEnabled;
+    private boolean mpgaAudioFormatEnabled;
     private boolean crossProtocolRedirectEnabled;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
@@ -57,6 +58,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean cea608CaptionsEnabled() {
         return cea608CaptionsEnabled;
+    }
+
+    public boolean mpgaAudioFormatEnabled() {
+        return mpgaAudioFormatEnabled;
     }
 
     public boolean isSurfaceSecured() {
@@ -112,6 +117,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled) {
         this.cea608CaptionsEnabled = cea608CaptionsEnabled;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setMpgaAudioFormatEnabled(boolean mpgaAudioFormatEnabled) {
+        this.mpgaAudioFormatEnabled = mpgaAudioFormatEnabled;
         return this;
     }
 
