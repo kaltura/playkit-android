@@ -169,7 +169,7 @@ class WidevineModularAdapter extends DrmAdapter {
         FrameworkMediaDrm mediaDrm = createMediaDrm();
         FrameworkMediaDrm.KeyRequest releaseRequest;
         try {
-            releaseRequest = mediaDrm.getKeyRequest(keySetId, null, null, MediaDrm.KEY_TYPE_RELEASE, null);
+            releaseRequest = mediaDrm.getKeyRequest(keySetId, null ,MediaDrm.KEY_TYPE_RELEASE,null);
         } catch (NotProvisionedException e) {
             throw new WidevineNotSupportedException(e);
         }
@@ -317,7 +317,7 @@ class WidevineModularAdapter extends DrmAdapter {
 
     private byte[] executeKeyRequest(String licenseUrl, ExoMediaDrm.KeyRequest keyRequest) throws Exception {
         HttpMediaDrmCallback httpMediaDrmCallback = new HttpMediaDrmCallback(licenseUrl, buildDataSourceFactory());
-        return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest, null);
+        return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest);
     }
 
     private HttpDataSource.Factory buildDataSourceFactory() {

@@ -165,7 +165,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 playerSettings.getLoadControlBuffers().getMaxPlayerBufferMs(),
                 playerSettings.getLoadControlBuffers().getMinBufferAfterInteractionMs(),
                 playerSettings.getLoadControlBuffers().getMinBufferAfterReBufferMs()).createDefaultLoadControl();
-        player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector, loadControl);
+        player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, loadControl);
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);

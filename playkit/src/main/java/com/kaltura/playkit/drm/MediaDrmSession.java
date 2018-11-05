@@ -20,9 +20,14 @@ import android.media.NotProvisionedException;
 import android.os.Build;
 import android.support.annotation.NonNull;
 
+import com.google.android.exoplayer2.drm.DrmInitData;
 import com.google.android.exoplayer2.drm.FrameworkMediaDrm;
+import com.kaltura.playkit.player.MediaSupport;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by anton.afanasiev on 13/12/2016.
@@ -63,7 +68,10 @@ class MediaDrmSession {
 
     FrameworkMediaDrm.KeyRequest getOfflineKeyRequest(byte[] initData, String mimeType) {
         try {
-            return mMediaDrm.getKeyRequest(mSessionId, initData, mimeType, MediaDrm.KEY_TYPE_OFFLINE, null);
+            DrmInitData.SchemeData schemeData = new DrmInitData.SchemeData(MediaSupport.WIDEVINE_UUID, mimeType, initData);
+            List<DrmInitData.SchemeData> schemeList = new ArrayList<>();
+            schemeList.add(schemeData);
+            return mMediaDrm.getKeyRequest(mSessionId, schemeList, MediaDrm.KEY_TYPE_OFFLINE, null);
         } catch (NotProvisionedException e) {
             throw new WidevineNotSupportedException(e);
         }

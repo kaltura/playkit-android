@@ -53,9 +53,9 @@ public class DummySurfaceWorkaroundTest {
         }
 
         @Override
-        public byte[] executeKeyRequest(UUID uuid, ExoMediaDrm.KeyRequest request, @Nullable String mediaProvidedLicenseServerUrl) throws Exception {
-            Thread.sleep(10000);
-            return null;
+        public byte[] executeKeyRequest(UUID uuid, ExoMediaDrm.KeyRequest request) throws Exception {
+           Thread.sleep(10000);
+           return null;
         }
     };
 

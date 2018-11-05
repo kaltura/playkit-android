@@ -55,6 +55,7 @@ import com.google.android.exoplayer2.video.VideoRendererEventListener.EventDispa
 import com.kaltura.playkit.player.DummySurfaceWorkaroundTest;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 /**
  * Decodes and renders video using {@link MediaCodec}.
@@ -205,7 +206,7 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
                                     @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
                                     boolean playClearSamplesWithoutKeys, @Nullable Handler eventHandler,
                                     @Nullable VideoRendererEventListener eventListener, int maxDroppedFramesToNotify) {
-        super(C.TRACK_TYPE_VIDEO, mediaCodecSelector, drmSessionManager, playClearSamplesWithoutKeys);
+        super(C.TRACK_TYPE_VIDEO, mediaCodecSelector, drmSessionManager, playClearSamplesWithoutKeys, 3);
         this.allowedJoiningTimeMs = allowedJoiningTimeMs;
         this.maxDroppedFramesToNotify = maxDroppedFramesToNotify;
         this.context = context.getApplicationContext();
@@ -240,34 +241,40 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
                 requiresSecureDecryption |= drmInitData.get(i).requiresSecureDecryption;
             }
         }
-        MediaCodecInfo decoderInfo = mediaCodecSelector.getDecoderInfo(mimeType,
-                requiresSecureDecryption);
+        List<MediaCodecInfo> decoderInfo = mediaCodecSelector.getDecoderInfos(mimeType, requiresSecureDecryption);
         if (decoderInfo == null) {
-            return requiresSecureDecryption && mediaCodecSelector.getDecoderInfo(mimeType, false) != null
+            return requiresSecureDecryption && mediaCodecSelector.getDecoderInfos(mimeType, false) != null
                     ? FORMAT_UNSUPPORTED_DRM : FORMAT_UNSUPPORTED_SUBTYPE;
         }
         if (!supportsFormatDrm(drmSessionManager, drmInitData)) {
             return FORMAT_UNSUPPORTED_DRM;
         }
-        boolean decoderCapable = decoderInfo.isCodecSupported(format.codecs);
-        if (decoderCapable && format.width > 0 && format.height > 0) {
-            if (Util.SDK_INT >= 21) {
-                decoderCapable = decoderInfo.isVideoSizeAndRateSupportedV21(format.width, format.height,
-                        format.frameRate);
-            } else {
-                decoderCapable = format.width * format.height <= MediaCodecUtil.maxH264DecodableFrameSize();
-                if (!decoderCapable) {
-                    Log.d(TAG, "FalseCheck [legacyFrameSize, " + format.width + "x" + format.height + "] ["
-                            + Util.DEVICE_DEBUG_INFO + "]");
+        for (MediaCodecInfo mediaCodecInfo : decoderInfo) {
+            if (mimeType != null && mimeType.equals(mediaCodecInfo.mimeType)) {
+                boolean decoderCapable = mediaCodecInfo.isCodecSupported(format.codecs);
+                if (decoderCapable && format.width > 0 && format.height > 0) {
+                    if (Util.SDK_INT >= 21) {
+                        decoderCapable = mediaCodecInfo.isVideoSizeAndRateSupportedV21(format.width, format.height,
+                                format.frameRate);
+                    } else {
+                        decoderCapable = format.width * format.height <= MediaCodecUtil.maxH264DecodableFrameSize();
+                        if (!decoderCapable) {
+                            Log.d(TAG, "FalseCheck [legacyFrameSize, " + format.width + "x" + format.height + "] ["
+                                    + Util.DEVICE_DEBUG_INFO + "]");
+                        }
+                    }
                 }
-            }
-        }
 
-        int adaptiveSupport = decoderInfo.adaptive ? ADAPTIVE_SEAMLESS : ADAPTIVE_NOT_SEAMLESS;
-        int tunnelingSupport = decoderInfo.tunneling ? TUNNELING_SUPPORTED : TUNNELING_NOT_SUPPORTED;
-        int formatSupport = decoderCapable ? FORMAT_HANDLED : FORMAT_EXCEEDS_CAPABILITIES;
-        return adaptiveSupport | tunnelingSupport | formatSupport;
+                int adaptiveSupport = mediaCodecInfo.adaptive ? ADAPTIVE_SEAMLESS : ADAPTIVE_NOT_SEAMLESS;
+                int tunnelingSupport = mediaCodecInfo.tunneling ? TUNNELING_SUPPORTED : TUNNELING_NOT_SUPPORTED;
+                int formatSupport = decoderCapable ? FORMAT_HANDLED : FORMAT_EXCEEDS_CAPABILITIES;
+                return adaptiveSupport | tunnelingSupport | formatSupport;
+            }
+            return FORMAT_UNSUPPORTED_TYPE;
+        }
+        return FORMAT_UNSUPPORTED_TYPE;
     }
+
 
     @Override
     protected void onEnabled(boolean joining) throws ExoPlaybackException {
@@ -439,8 +446,7 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
     }
 
     @Override
-    protected void configureCodec(MediaCodecInfo codecInfo, MediaCodec codec, Format format,
-                                  MediaCrypto crypto) throws DecoderQueryException {
+    protected void configureCodec(MediaCodecInfo codecInfo, MediaCodec codec, Format format, MediaCrypto crypto, float codecOperatingRate) throws DecoderQueryException {
         codecMaxValues = getCodecMaxValues(codecInfo, format, getStreamFormats());
         MediaFormat mediaFormat = getMediaFormat(format, codecMaxValues, deviceNeedsAutoFrcWorkaround,
                 tunnelingAudioSessionId);
@@ -556,9 +562,7 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
     }
 
     @Override
-    protected boolean processOutputBuffer(long positionUs, long elapsedRealtimeUs, MediaCodec codec,
-                                          ByteBuffer buffer, int bufferIndex, int bufferFlags, long bufferPresentationTimeUs,
-                                          boolean shouldSkip) throws ExoPlaybackException {
+    protected boolean processOutputBuffer(long positionUs, long elapsedRealtimeUs, MediaCodec codec, ByteBuffer buffer, int bufferIndex, int bufferFlags, long bufferPresentationTimeUs, boolean shouldSkip, Format format) throws ExoPlaybackException {
         if (initialPositionUs == C.TIME_UNSET) {
             initialPositionUs = positionUs;
         }
