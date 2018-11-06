@@ -171,7 +171,7 @@ public class SubtitleStyleSettings {
         return this;
     }
 
-    protected CaptionStyleCompat toCaptionStyles() {
+    public CaptionStyleCompat toCaptionStyle() {
         return new CaptionStyleCompat(getSubtitleTextColor(),
                 getSubtitleBackgroundColor(),
                 getSubtitleWindowColor(),
