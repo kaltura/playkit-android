@@ -14,6 +14,7 @@ package com.kaltura.playkit.player;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.text.TextUtils;
 
 import com.google.android.exoplayer2.text.CaptionStyleCompat;
 
@@ -47,6 +48,15 @@ public class SubtitleStyleSettings {
     private int subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
     private int subtitleEdgeColor = Color.WHITE;
     private Typeface subtitleTypeface = Typeface.DEFAULT;
+    private String subtitleStyleName;
+
+    public SubtitleStyleSettings(String subtitleStyleName) {
+        if (!TextUtils.isEmpty(subtitleStyleName)) {
+            this.subtitleStyleName = subtitleStyleName;
+        } else {
+            this.subtitleStyleName = "Unknown"; // Application does not provide any subtitle name or it is set to null
+        }
+    }
 
     public int getSubtitleTextColor() {
         return subtitleTextColor;
@@ -74,6 +84,10 @@ public class SubtitleStyleSettings {
 
     public Typeface getSubtitleTypeface() {
         return subtitleTypeface;
+    }
+
+    public String getSubtitleStyleName() {
+        return subtitleStyleName;
     }
 
     public SubtitleStyleSettings setSubtitleTextColor(int subtitleTextColor) {

@@ -176,6 +176,16 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class SubtitlesStyleChanged extends PlayerEvent {
+
+        public final String styleName;
+
+        public  SubtitlesStyleChanged(String styleName) {
+            super(Type.SUBTITLE_STYLE_CHANGED);
+            this.styleName = styleName;
+        }
+    }
+
     public final Type type;
 
     public PlayerEvent(Type type) {

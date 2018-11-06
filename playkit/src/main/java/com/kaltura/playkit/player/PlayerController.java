@@ -16,6 +16,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
+
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
@@ -30,7 +31,9 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
+
 import java.util.UUID;
+
 import static com.kaltura.playkit.PKMediaFormat.wvm;
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 
@@ -653,6 +656,9 @@ public class PlayerController implements Player {
                             break;
                         case PLAYBACK_RATE_CHANGED:
                             event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
+                            break;
+                        case SUBTITLE_STYLE_CHANGED:
+                            event = new PlayerEvent.SubtitlesStyleChanged(playerSettings.getSubtitleStyleSettings().getSubtitleStyleName());
                             break;
                         default:
                             event = new PlayerEvent.Generic(eventType);
