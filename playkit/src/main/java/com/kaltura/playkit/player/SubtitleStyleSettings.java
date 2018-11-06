@@ -14,6 +14,7 @@ package com.kaltura.playkit.player;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
+
 import com.google.android.exoplayer2.text.CaptionStyleCompat;
 
 public class SubtitleStyleSettings {
@@ -168,5 +169,14 @@ public class SubtitleStyleSettings {
                 break;
         }
         return this;
+    }
+
+    protected CaptionStyleCompat toCaptionStyles() {
+        return new CaptionStyleCompat(getSubtitleTextColor(),
+                getSubtitleBackgroundColor(),
+                getSubtitleWindowColor(),
+                getSubtitleEdgeType(),
+                getSubtitleEdgeColor(),
+                getSubtitleTypeface());
     }
 }

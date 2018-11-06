@@ -880,32 +880,23 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 
-    /* Remove this comment while merging to DEV. Following functionality is available in Prime Video for subtitles
-      1. Functionality to increase text size
-      2. White text black background with alpha
-      3. White text black background with Transparency
-      4. Yellow text background with black
-      5. black text color
-     */
-
     /**
      * Subtitle configuration {@link SubtitleStyleSettings}
      */
     private void configureSubtitleView() {
-        if (exoPlayerView != null && exoPlayerView.getSubtitleView() != null) {
-            CaptionStyleCompat style = new CaptionStyleCompat(playerSettings.getSubtitleStyleSettings().getSubtitleTextColor(),
-                    playerSettings.getSubtitleStyleSettings().getSubtitleBackgroundColor(),
-                    playerSettings.getSubtitleStyleSettings().getSubtitleWindowColor(),
-                    playerSettings.getSubtitleStyleSettings().getSubtitleEdgeType(),
-                    playerSettings.getSubtitleStyleSettings().getSubtitleEdgeColor(),
-                    playerSettings.getSubtitleStyleSettings().getSubtitleTypeface());
-
-            exoPlayerView.getSubtitleView().setStyle(style);
-            exoPlayerView.getSubtitleView().setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * playerSettings.getSubtitleStyleSettings().getSubtitleTextSizeFraction());
+        SubtitleView exoPlayerSubtitleView = null;
+        if(exoPlayerView != null) {
+            exoPlayerSubtitleView = exoPlayerView.getSubtitleView();
         } else {
-            log.e("Subtitle view is not available");
+            log.e("ExoPlayerView is not available");
         }
 
+        if (exoPlayerSubtitleView != null) {
+            exoPlayerSubtitleView.setStyle(playerSettings.getSubtitleStyleSettings().toCaptionStyles());
+            exoPlayerSubtitleView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * playerSettings.getSubtitleStyleSettings().getSubtitleTextSizeFraction());
+        } else {
+            log.e("Subtitle View is not available");
+        }
     }
 
     @Override
