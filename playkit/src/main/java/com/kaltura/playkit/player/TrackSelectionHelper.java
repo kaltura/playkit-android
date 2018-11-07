@@ -405,6 +405,7 @@ class TrackSelectionHelper {
             parametersBuilder.setRendererDisabled(TRACK_TYPE_TEXT, uniqueTrackId[TRACK_INDEX] == TRACK_DISABLED);
         }
 
+
         SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
@@ -480,15 +481,19 @@ class TrackSelectionHelper {
                     AudioTrack audioTrack;
                     int audioGroupIndex;
                     int audioTrackIndex;
-
                     for (int i = 0; i < audioTracks.size(); i++) {
 
                         audioTrack = audioTracks.get(i);
                         audioGroupIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), GROUP_INDEX);
                         audioTrackIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX);
-
-                        if (audioGroupIndex == groupIndex && audioTrackIndex != TRACK_ADAPTIVE) {
-                            adaptiveTrackIndexesList.add(getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX));
+                        //TODO  - Validate this logic with more streams
+                        if (audioGroupIndex == groupIndex && audioTrackIndex == TRACK_ADAPTIVE) {
+                            TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(TRACK_TYPE_AUDIO).get(audioGroupIndex);
+                            if (trackGroup != null) {
+                                for (int ind = 0 ; ind < trackGroup.length ; ind++) {
+                                    adaptiveTrackIndexesList.add(ind);
+                                }
+                            }
                         }
                     }
                     break;
