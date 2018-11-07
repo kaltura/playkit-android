@@ -157,7 +157,6 @@ class TrackSelectionHelper {
 
                 //run through the all tracks in current trackGroup.
                 for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
-
                     // the format of the current trackGroup.
                     format = trackGroup.getFormat(trackIndex);
                     maybeAddAdaptiveTrack(rendererIndex, groupIndex, format);
@@ -167,6 +166,9 @@ class TrackSelectionHelper {
                         String uniqueId = getUniqueId(rendererIndex, groupIndex, trackIndex);
                         switch (rendererIndex) {
                             case TRACK_TYPE_VIDEO:
+                                if (format.bitrate == -1 && format.codecs == null) {
+                                    continue;
+                                }
                                 videoTracks.add(new VideoTrack(uniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false));
                                 break;
                             case TRACK_TYPE_AUDIO:
