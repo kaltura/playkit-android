@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.google.android.exoplayer2.drm.DefaultDrmSessionEventListener;
 import com.google.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.google.android.exoplayer2.drm.DrmInitData;
 import com.google.android.exoplayer2.drm.DrmSession;
@@ -45,7 +46,7 @@ import static com.kaltura.playkit.Utils.toBase64;
  * @hide
  */
 
-public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMediaCrypto>, DefaultDrmSessionManager.EventListener {
+public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMediaCrypto>, DefaultDrmSessionEventListener {
 
     private static final PKLog log = PKLog.get("DeferredDrmSessionManager");
 
@@ -78,8 +79,10 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
             } else {
                 licenseUrl = getLicenseUrl(mediaSource);
             }
-            drmSessionManager = DefaultDrmSessionManager.newWidevineInstance(new HttpMediaDrmCallback(licenseUrl, dataSourceFactory), null, mainHandler, this);
-
+            drmSessionManager = DefaultDrmSessionManager.newWidevineInstance(new HttpMediaDrmCallback(licenseUrl, dataSourceFactory), null);
+            if (mainHandler != null) {
+                drmSessionManager.addListener(mainHandler, this);
+            }
         } catch (UnsupportedDrmException exception) {
 
             PKError error = new PKError(PKPlayerErrorType.DRM_ERROR, "This device doesn't support widevine modular", exception);

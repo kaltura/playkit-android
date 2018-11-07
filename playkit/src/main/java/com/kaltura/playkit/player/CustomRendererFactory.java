@@ -21,7 +21,7 @@ import java.util.ArrayList;
 public class CustomRendererFactory extends DefaultRenderersFactory {
 
     public CustomRendererFactory(Context context, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, int extensionRendererMode) {
-        super(context, drmSessionManager, extensionRendererMode);
+        super(context, extensionRendererMode);
     }
 
     @Override

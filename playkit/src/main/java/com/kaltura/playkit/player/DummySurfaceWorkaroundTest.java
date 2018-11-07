@@ -16,6 +16,7 @@ import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.drm.DefaultDrmSessionEventListener;
 import com.google.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.google.android.exoplayer2.drm.ExoMediaDrm;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
@@ -117,7 +118,31 @@ public class DummySurfaceWorkaroundTest {
 
     private static DefaultDrmSessionManager<FrameworkMediaCrypto> getDrmSessionManager(Handler mainHandler) {
         try {
-            return DefaultDrmSessionManager.newWidevineInstance(fakeDrmCallback, null, mainHandler, null);
+            DefaultDrmSessionManager defaultDrmSessionManager = DefaultDrmSessionManager.newWidevineInstance(fakeDrmCallback, null);
+            if (mainHandler != null) {
+                defaultDrmSessionManager.addListener(mainHandler, new DefaultDrmSessionEventListener() {
+                    @Override
+                    public void onDrmKeysLoaded() {
+
+                    }
+
+                    @Override
+                    public void onDrmSessionManagerError(Exception error) {
+
+                    }
+
+                    @Override
+                    public void onDrmKeysRestored() {
+
+                    }
+
+                    @Override
+                    public void onDrmKeysRemoved() {
+
+                    }
+                });
+            }
+            return defaultDrmSessionManager;
         } catch (UnsupportedDrmException e) {
             e.printStackTrace();
             return null;
