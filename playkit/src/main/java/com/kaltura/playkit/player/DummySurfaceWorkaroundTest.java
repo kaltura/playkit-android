@@ -27,6 +27,7 @@ import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.playkit.PKDeviceCapabilities;
@@ -54,8 +55,8 @@ public class DummySurfaceWorkaroundTest {
 
         @Override
         public byte[] executeKeyRequest(UUID uuid, ExoMediaDrm.KeyRequest request) throws Exception {
-           Thread.sleep(10000);
-           return null;
+            Thread.sleep(10000);
+            return null;
         }
     };
 
@@ -67,9 +68,7 @@ public class DummySurfaceWorkaroundTest {
         DataSource.Factory mediaDataSourceFactory = new DefaultDataSourceFactory(context, "whatever");
 
         Handler mainHandler = new Handler(Looper.getMainLooper());
-
-        DefaultTrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory(null));
-
+        DefaultTrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory());
 
         DefaultDrmSessionManager<FrameworkMediaCrypto> drmSessionManager =
                 getDrmSessionManager(mainHandler);
@@ -78,9 +77,10 @@ public class DummySurfaceWorkaroundTest {
             return;
         }
 
-        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context, drmSessionManager);
-        final SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
-        player.addListener(new Player.DefaultEventListener() {
+        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context);
+        final SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, drmSessionManager);
+
+        player.addListener(new Player.EventListener() {
             @Override
             public void onPlayerError(ExoPlaybackException error) {
                 if (error.getCause() instanceof MediaCodecRenderer.DecoderInitializationException) {
