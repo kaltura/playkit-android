@@ -1321,8 +1321,8 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
         // https://github.com/google/ExoPlayer/issues/4460,
         // https://github.com/google/ExoPlayer/issues/4468.
 
-        boolean decoderRequires = "OMX.qcom.video.decoder.avc".equals(name) || "OMX.MTK.VIDEO.DECODER.AVC".equals(name) || "OMX.k3.video.decoder.avc".equals(name) || "OMX.IMG.MSVDX.Decoder.AVC".equals(name);
-        if (decoderRequires || DummySurfaceWorkaroundTest.workaroundRequired) {
+        //boolean decoderRequires = "OMX.qcom.video.decoder.avc".equals(name) || "OMX.MTK.VIDEO.DECODER.AVC".equals(name) || "OMX.k3.video.decoder.avc".equals(name) || "OMX.IMG.MSVDX.Decoder.AVC".equals(name);
+        if (DummySurfaceWorkaroundTest.workaroundRequired) {
             return true;
         }
 
