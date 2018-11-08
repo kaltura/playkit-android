@@ -40,7 +40,6 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
-import com.google.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -161,15 +160,22 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildCustomHttpDataSourceFactory(), drmSessionListener);
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context,
                 drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
-        LoadControl loadControl = new DefaultLoadControl.Builder().setBufferDurationsMs(playerSettings.getLoadControlBuffers().getMinPlayerBufferMs(),
-                playerSettings.getLoadControlBuffers().getMaxPlayerBufferMs(),
-                playerSettings.getLoadControlBuffers().getMinBufferAfterInteractionMs(),
-                playerSettings.getLoadControlBuffers().getMinBufferAfterReBufferMs()).createDefaultLoadControl();
-        player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, loadControl, drmSessionManager);
+        LoadControl loadControl = getUpdtedLoadControl();
+
+        player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, loadControl, drmSessionManager, bandwidthMeter);
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
         player.setPlayWhenReady(false);
+    }
+
+    @NonNull
+    private DefaultLoadControl getUpdtedLoadControl() {
+        return new DefaultLoadControl.Builder().
+                setBufferDurationsMs(playerSettings.getLoadControlBuffers().getMinPlayerBufferMs(),
+                playerSettings.getLoadControlBuffers().getMaxPlayerBufferMs(),
+                playerSettings.getLoadControlBuffers().getMinBufferAfterInteractionMs(),
+                playerSettings.getLoadControlBuffers().getMinBufferAfterReBufferMs()).setBackBuffer(playerSettings.getLoadControlBuffers().getBackBufferDurationMs(), playerSettings.getLoadControlBuffers().getRetainBackBufferFromKeyframe()).createDefaultLoadControl();
     }
 
     private void setPlayerListeners() {
@@ -219,13 +225,13 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         Uri uri = sourceConfig.getUrl();
         if (mediaDataSourceFactory == null) {
-            mediaDataSourceFactory = buildDataSourceFactory(true);
+            mediaDataSourceFactory = buildDataSourceFactory();
         }
         switch (format) {
 
             case dash:
                 if (manifestDataSourceFactory == null) {
-                    manifestDataSourceFactory = buildDataSourceFactory(false);
+                    manifestDataSourceFactory = buildDataSourceFactory();
                 }
                 return new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
@@ -248,24 +254,19 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     /**
      * Returns a new DataSource factory.
      *
-     * @param useBandwidthMeter Whether to set {@link #bandwidthMeter} as a listener to the new
-     *                          DataSource factory.
      * @return A new DataSource factory.
      */
-    private DataSource.Factory buildDataSourceFactory(boolean useBandwidthMeter) {
-        return new DefaultDataSourceFactory(context, useBandwidthMeter ? bandwidthMeter : null,
-                buildHttpDataSourceFactory(useBandwidthMeter));
+    private DataSource.Factory buildDataSourceFactory() {
+        return new DefaultDataSourceFactory(context, buildHttpDataSourceFactory());
     }
 
     /**
      * Returns a new HttpDataSource factory.
      *
-     * @param useBandwidthMeter Whether to set {@link #bandwidthMeter} as a listener to the new
-     *                          DataSource factory.
      * @return A new HttpDataSource factory.
      */
-    private HttpDataSource.Factory buildHttpDataSourceFactory(boolean useBandwidthMeter) {
-        return new DefaultHttpDataSourceFactory(getUserAgent(context), useBandwidthMeter ? bandwidthMeter : null, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+    private HttpDataSource.Factory buildHttpDataSourceFactory() {
+        return new DefaultHttpDataSourceFactory(getUserAgent(context), DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
     }
 
@@ -456,7 +457,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
         //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
         if (shouldGetTracksInfo) {
-            shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(player.getCurrentManifest() instanceof DashManifest);
+            shouldGetTracksInfo = !trackSelectionHelper.prepareTracks();
         }
 
         trackSelectionHelper.notifyAboutTrackChange(trackSelections);

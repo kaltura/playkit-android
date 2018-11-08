@@ -116,14 +116,14 @@ class TrackSelectionHelper {
      *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
-    boolean prepareTracks(boolean isDashManifest) {
+    boolean prepareTracks() {
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
             log.w("Trying to get current MappedTrackInfo returns null");
             return false;
         }
         warnAboutUnsupportedRenderTypes();
-        PKTracks tracksInfo = buildTracks(isDashManifest);
+        PKTracks tracksInfo = buildTracks();
 
         if (tracksInfoListener != null) {
             tracksInfoListener.onTracksInfoReady(tracksInfo);
@@ -136,7 +136,7 @@ class TrackSelectionHelper {
      * Actually build {@link PKTracks} object, based on the loaded manifest into Exoplayer.
      * This method knows how to filter unsupported/unknown formats, and create adaptive option when this is possible.
      */
-    private PKTracks buildTracks(boolean isDashManifest) {
+    private PKTracks buildTracks() {
 
         clearTracksLists();
 
@@ -173,9 +173,7 @@ class TrackSelectionHelper {
                                 break;
                             case TRACK_TYPE_AUDIO:
                                 String audioTrackLabel = null;
-                                if (!isDashManifest) {
-                                    audioTrackLabel = format.id;
-                                }
+                                audioTrackLabel = format.label;
                                 if (format.language == null && format.codecs == null) {
                                     if (mpgaAudioFormatEnabled && format.id != null && format.id.matches("\\d+/\\d+")) {
                                         audioTracks.add(new AudioTrack(uniqueId, format.id, audioTrackLabel, format.bitrate, format.selectionFlags, false));
@@ -186,9 +184,7 @@ class TrackSelectionHelper {
                                 break;
                             case TRACK_TYPE_TEXT:
                                 String textTrackLabel = null;
-                                if (!isDashManifest) {
-                                    textTrackLabel = format.id;
-                                }
+                                textTrackLabel = format.label;
                                 if (CEA_608.equals(format.sampleMimeType)) {
                                     if (cea608CaptionsEnabled) {
                                         textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
@@ -221,7 +217,6 @@ class TrackSelectionHelper {
         if (format.language == null) {
             return LANGUAGE_UNKNOWN;
         }
-
         return format.language;
     }
 
