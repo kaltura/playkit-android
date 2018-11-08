@@ -249,11 +249,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public void retry() {
-        // Do Nothing
-    }
-
-    @Override
     public long getCurrentPosition() {
         if (player == null || !PREPARED.equals(prepareState)) {
             return 0;

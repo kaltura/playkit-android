@@ -68,13 +68,6 @@ public interface PlayerEngine {
     void replay();
 
     /**
-     * retry playing the current  media upon error.
-     * Retries a failed or stopped playback. Does nothing if the player has been reset, or if playback
-     * has not failed or been stopped.
-     */
-    void retry();
-
-    /**
      * Getter for the current playback position.
      *
      * @return - position of the player or {@link Consts#POSITION_UNSET} if position is unknown or player is null

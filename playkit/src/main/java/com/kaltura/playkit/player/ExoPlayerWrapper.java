@@ -692,15 +692,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @Override
-    public void retry() {
-        log.v("retry");
-        if (assertPlayerIsNotNull("retry()")) {
-            player.retry();
-            sendDistinctEvent(PlayerEvent.Type.RETRY);
-        }
-    }
-
-    @Override
     public void setVolume(float volume) {
         log.v("setVolume");
         if (assertPlayerIsNotNull("setVolume()")) {

@@ -205,13 +205,6 @@ public interface Player {
     void replay();
 
     /**
-     * Retry playing the media upon error.
-     * Retries a failed or stopped playback. Does nothing if the player has been reset, or if playback
-     * has not failed or been stopped.
-     */
-    void retry();
-
-    /**
      * The Player's View.
      *
      * @return - the view player attached to.

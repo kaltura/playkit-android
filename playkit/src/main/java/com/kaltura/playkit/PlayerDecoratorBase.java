@@ -90,11 +90,6 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void retry() {
-        player.retry();
-    }
-
-    @Override
     public void setVolume(float volume) {
         player.setVolume(volume);
     }
