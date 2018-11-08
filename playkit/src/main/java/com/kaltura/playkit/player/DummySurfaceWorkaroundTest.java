@@ -116,31 +116,7 @@ public class DummySurfaceWorkaroundTest {
 
     private static DefaultDrmSessionManager<FrameworkMediaCrypto> getDrmSessionManager(Handler mainHandler) {
         try {
-            DefaultDrmSessionManager defaultDrmSessionManager = DefaultDrmSessionManager.newWidevineInstance(fakeDrmCallback, null);
-            if (mainHandler != null) {
-                defaultDrmSessionManager.addListener(mainHandler, new DefaultDrmSessionEventListener() {
-                    @Override
-                    public void onDrmKeysLoaded() {
-
-                    }
-
-                    @Override
-                    public void onDrmSessionManagerError(Exception error) {
-
-                    }
-
-                    @Override
-                    public void onDrmKeysRestored() {
-
-                    }
-
-                    @Override
-                    public void onDrmKeysRemoved() {
-
-                    }
-                });
-            }
-            return defaultDrmSessionManager;
+            return DefaultDrmSessionManager.newWidevineInstance(fakeDrmCallback, null);
         } catch (UnsupportedDrmException e) {
             e.printStackTrace();
             return null;
