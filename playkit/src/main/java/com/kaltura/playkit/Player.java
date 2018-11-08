@@ -201,8 +201,15 @@ public interface Player {
 
     /**
      * Replay the media.
+     * Retries a failed or stopped playback. Does nothing if the player has been reset, or if playback
+     * has not failed or been stopped.
      */
     void replay();
+
+    /**
+     * Retry playing the media upon error.
+     */
+    void retry();
 
     /**
      * The Player's View.

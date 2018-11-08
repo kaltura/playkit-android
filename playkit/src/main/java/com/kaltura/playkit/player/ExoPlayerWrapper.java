@@ -160,7 +160,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildCustomHttpDataSourceFactory(), drmSessionListener);
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context,
                 drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
-        LoadControl loadControl = getUpdtedLoadControl();
+        LoadControl loadControl = getUpdatedLoadControl();
 
         player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, loadControl, drmSessionManager, bandwidthMeter);
         window = new Timeline.Window();
@@ -170,16 +170,20 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @NonNull
-    private DefaultLoadControl getUpdtedLoadControl() {
+    private DefaultLoadControl getUpdatedLoadControl() {
+        int backBufferDurationMs = playerSettings.getLoadControlBuffers().getBackBufferDurationMs();
+        boolean retainBackBufferFromKeyframe = playerSettings.getLoadControlBuffers().getRetainBackBufferFromKeyframe();
         return new DefaultLoadControl.Builder().
                 setBufferDurationsMs(playerSettings.getLoadControlBuffers().getMinPlayerBufferMs(),
-                playerSettings.getLoadControlBuffers().getMaxPlayerBufferMs(),
-                playerSettings.getLoadControlBuffers().getMinBufferAfterInteractionMs(),
-                playerSettings.getLoadControlBuffers().getMinBufferAfterReBufferMs()).setBackBuffer(playerSettings.getLoadControlBuffers().getBackBufferDurationMs(), playerSettings.getLoadControlBuffers().getRetainBackBufferFromKeyframe()).createDefaultLoadControl();
+                        playerSettings.getLoadControlBuffers().getMaxPlayerBufferMs(),
+                        playerSettings.getLoadControlBuffers().getMinBufferAfterInteractionMs(),
+                        playerSettings.getLoadControlBuffers().getMinBufferAfterReBufferMs()).
+                setBackBuffer(backBufferDurationMs, retainBackBufferFromKeyframe).createDefaultLoadControl();
     }
 
     private void setPlayerListeners() {
-        if (player != null) {
+        log.v("setPlayerListeners");
+        if (assertPlayerIsNotNull("setPlayerListeners()")) {
             player.addListener(this);
             player.addMetadataOutput(this);
         }
@@ -525,84 +529,84 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void play() {
-        log.d("play");
-        if (player == null) {
-            log.w("Attempt to invoke 'play()' on null instance of the exoplayer.");
-            return;
-        }
+        log.v("play");
+        if (assertPlayerIsNotNull("play()")) {
+            //If player already set to play, return.
+            if (player.getPlayWhenReady()) {
+                return;
+            }
+            sendDistinctEvent(PlayerEvent.Type.PLAY);
+            if (isLiveMediaWithoutDvr()) {
+                player.seekToDefaultPosition();
+            }
 
-        //If player already set to play, return.
-        if (player.getPlayWhenReady()) {
-            return;
+            player.setPlayWhenReady(true);
         }
-        sendDistinctEvent(PlayerEvent.Type.PLAY);
-        if (isLiveMediaWithoutDvr()) {
-            player.seekToDefaultPosition();
-        }
-
-        player.setPlayWhenReady(true);
     }
 
     @Override
     public void pause() {
-        if (player == null) {
-            log.w("Attempt to invoke 'pause()' on null instance of the exoplayer");
-            return;
-        }
+        log.v("pause");
+        if (assertPlayerIsNotNull("pause()")) {
+            //If player already set to pause, return.
+            if (!player.getPlayWhenReady()) {
+                return;
+            }
 
-        //If player already set to pause, return.
-        if (!player.getPlayWhenReady()) {
-            return;
-        }
+            if (currentEvent == PlayerEvent.Type.ENDED) {
+                return;
+            }
 
-        if (currentEvent == PlayerEvent.Type.ENDED) {
-            return;
+            sendDistinctEvent(PlayerEvent.Type.PAUSE);
+            player.setPlayWhenReady(false);
         }
-
-        sendDistinctEvent(PlayerEvent.Type.PAUSE);
-        player.setPlayWhenReady(false);
     }
 
     @Override
     public long getCurrentPosition() {
-        if (player == null) {
-            return Consts.POSITION_UNSET;
+        log.v("getCurrentPosition");
+        if (assertPlayerIsNotNull("getCurrentPosition()")) {
+            return player.getCurrentPosition();
         }
-        return player.getCurrentPosition();
+        return Consts.POSITION_UNSET;
     }
 
     @Override
     public void seekTo(long position) {
-        if (player == null) {
-            log.w("Attempt to invoke 'seekTo()' on null instance of the exoplayer");
-            return;
-        }
-        isSeeking = true;
-        sendDistinctEvent(PlayerEvent.Type.SEEKING);
-        if (isLive() && position == player.getDuration()) {
-            player.seekToDefaultPosition();
-        } else {
-            player.seekTo(position);
+        log.v("seekTo");
+        if (assertPlayerIsNotNull("seekTo()")) {
+            isSeeking = true;
+            sendDistinctEvent(PlayerEvent.Type.SEEKING);
+            if (isLive() && position == player.getDuration()) {
+                player.seekToDefaultPosition();
+            } else {
+                player.seekTo(position);
+            }
         }
     }
 
     @Override
     public long getDuration() {
-        return player == null ? Consts.TIME_UNSET : player.getDuration();
+        log.v("getDuration");
+        if (assertPlayerIsNotNull("getDuration()")) {
+            return player.getDuration();
+        }
+        return Consts.TIME_UNSET;
     }
 
     @Override
     public long getBufferedPosition() {
-        if (player == null) {
-            return Consts.POSITION_UNSET;
+        log.v("getBufferedPosition");
+        if (assertPlayerIsNotNull("getBufferedPosition()")) {
+            return player.getBufferedPosition();
         }
-        return player.getBufferedPosition();
+        return Consts.POSITION_UNSET;
     }
 
     @Override
     public void release() {
-        log.d("release");
-        if (player != null) {
+        log.v("release");
+        if (assertPlayerIsNotNull("release()")) {
             savePlayerPosition();
             player.release();
             player = null;
@@ -614,7 +618,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void restore() {
-        log.d("restore");
+        log.v("restore");
         if (player == null) {
             initializePlayer();
             setVolume(lastKnownVolume);
@@ -634,8 +638,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void destroy() {
-        log.d("destroy");
-        if (player != null) {
+        log.v("destroy");
+        if (assertPlayerIsNotNull("destroy()")) {
             player.release();
         }
         window = null;
@@ -659,17 +663,15 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void startFrom(long position) {
-        if (player == null) {
-            log.w("Attempt to invoke 'startFrom()' on null instance of the exoplayer");
-            return;
+        log.v("startFrom");
+        if (assertPlayerIsNotNull("startFrom()")) {
+            if (shouldRestorePlayerToPreviousState) {
+                log.i("Restoring player from previous known state. So skip this block.");
+                return;
+            }
+            isSeeking = false;
+            player.seekTo(position);
         }
-
-        if (shouldRestorePlayerToPreviousState) {
-            log.i("Restoring player from previous known state. So skip this block.");
-            return;
-        }
-        isSeeking = false;
-        player.seekTo(position);
     }
 
     public void setEventListener(final EventListener eventTrigger) {
@@ -682,47 +684,58 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void replay() {
-        if (player == null) {
-            log.w("Attempt to invoke 'replay()' on null instance of the exoplayer");
-            return;
+        log.v("replay");
+        if (assertPlayerIsNotNull("replay()")) {
+            isSeeking = false;
+            player.seekTo(0);
+            player.setPlayWhenReady(true);
+            sendDistinctEvent(PlayerEvent.Type.REPLAY);
         }
-        isSeeking = false;
-        player.seekTo(0);
-        player.setPlayWhenReady(true);
-        sendDistinctEvent(PlayerEvent.Type.REPLAY);
+    }
+
+    @Override
+    public void retry() {
+        log.v("retry");
+        if (assertPlayerIsNotNull("retry()")) {
+            player.retry();
+            sendDistinctEvent(PlayerEvent.Type.RETRY);
+        }
     }
 
     @Override
     public void setVolume(float volume) {
-        if (player == null) {
-            log.w("Attempt to invoke 'setVolume()' on null instance of the exoplayer");
-            return;
-        }
+        log.v("setVolume");
+        if (assertPlayerIsNotNull("setVolume()")) {
+            this.lastKnownVolume = volume;
+            if (lastKnownVolume < 0) {
+                lastKnownVolume = 0;
+            } else if (lastKnownVolume > 1) {
+                lastKnownVolume = 1;
+            }
 
-        this.lastKnownVolume = volume;
-        if (lastKnownVolume < 0) {
-            lastKnownVolume = 0;
-        } else if (lastKnownVolume > 1) {
-            lastKnownVolume = 1;
-        }
-
-        if (volume != player.getVolume()) {
-            player.setVolume(lastKnownVolume);
-            sendEvent(PlayerEvent.Type.VOLUME_CHANGED);
+            if (volume != player.getVolume()) {
+                player.setVolume(lastKnownVolume);
+                sendEvent(PlayerEvent.Type.VOLUME_CHANGED);
+            }
         }
     }
 
     @Override
     public float getVolume() {
-        if (player == null) {
-            return Consts.VOLUME_UNKNOWN;
+        log.v("getVolume");
+        if (assertPlayerIsNotNull("getVolume()")) {
+            return player.getVolume();
         }
-        return player.getVolume();
+        return Consts.VOLUME_UNKNOWN;
     }
 
     @Override
     public boolean isPlaying() {
-        return player != null && player.getPlayWhenReady() && currentState == PlayerState.READY;
+        log.v("isPlaying");
+        if (assertPlayerIsNotNull("isPlaying()")) {
+            return player.getPlayWhenReady() && currentState == PlayerState.READY;
+        }
+        return false;
     }
 
     @Override
@@ -741,7 +754,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void stop() {
-        log.d("stop");
+        log.v("stop");
 
         shouldResetPlayerPosition = true;
         preferredLanguageWasSelected = false;
@@ -751,22 +764,21 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (trackSelectionHelper != null) {
             trackSelectionHelper.stop();
         }
-        if (player != null) {
+        if (assertPlayerIsNotNull("stop()")) {
             player.setPlayWhenReady(false);
             player.stop(true);
         }
     }
 
     private void savePlayerPosition() {
-        if (player == null) {
-            log.w("Attempt to invoke 'savePlayerPosition()' on null instance of the exoplayer");
-            return;
-        }
-        currentError = null;
-        playerWindow = player.getCurrentWindowIndex();
-        Timeline timeline = player.getCurrentTimeline();
-        if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
-            playerPosition = player.getCurrentPosition();
+        log.v("savePlayerPosition");
+        if (assertPlayerIsNotNull("savePlayerPosition()")) {
+            currentError = null;
+            playerWindow = player.getCurrentWindowIndex();
+            Timeline timeline = player.getCurrentTimeline();
+            if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
+                playerPosition = player.getCurrentPosition();
+            }
         }
     }
 
@@ -829,22 +841,30 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public boolean isLive() {
-        return player != null && player.isCurrentWindowDynamic();
+        log.v("isLive");
+        if (assertPlayerIsNotNull("isLive()")) {
+            return player.isCurrentWindowDynamic();
+        }
+        return false;
     }
 
     @Override
     public void setPlaybackRate(float rate) {
-        this.lastKnownPlaybackRate = rate;
-        if (player != null) {
+        log.v("setPlaybackRate");
+        if (assertPlayerIsNotNull("setPlaybackRate()")) {
             PlaybackParameters playbackParameters = new PlaybackParameters(rate, DEFAULT_PITCH_RATE);
             player.setPlaybackParameters(playbackParameters);
+            this.lastKnownPlaybackRate = rate;
         }
     }
 
     @Override
     public float getPlaybackRate() {
-        if (player != null && player.getPlaybackParameters() != null) {
-            return player.getPlaybackParameters().speed;
+        log.v("getPlaybackRate");
+        if (assertPlayerIsNotNull("getPlaybackRate()")) {
+            if (player.getPlaybackParameters() != null) {
+                return player.getPlaybackParameters().speed;
+            }
         }
         return lastKnownPlaybackRate;
     }
@@ -874,5 +894,14 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 log.d("preferred language selected for track type = " + trackType);
             }
         }
+    }
+
+    private boolean assertPlayerIsNotNull(String methodName) {
+        if (player != null) {
+            return true;
+        }
+        String nullPlayerMsgFormat = "Attempt to invoke '%s' on null instance of the player engine";
+        log.w(String.format(nullPlayerMsgFormat, methodName));
+        return false;
     }
 }

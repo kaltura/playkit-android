@@ -365,6 +365,14 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void retry() {
+        log.v("retry");
+        if (assertPlayerIsNotNull("retry()")) {
+            player.retry();
+        }
+    }
+
+    @Override
     public void setVolume(float volume) {
         log.v("setVolume");
         if (assertPlayerIsNotNull("setVolume()")) {
