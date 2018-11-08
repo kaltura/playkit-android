@@ -27,7 +27,6 @@ import com.kaltura.playkit.player.MediaSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Created by anton.afanasiev on 13/12/2016.

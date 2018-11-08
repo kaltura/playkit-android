@@ -20,7 +20,7 @@ import java.util.ArrayList;
 
 public class CustomRendererFactory extends DefaultRenderersFactory {
 
-    public CustomRendererFactory(Context context, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, int extensionRendererMode) {
+    public CustomRendererFactory(Context context, int extensionRendererMode) {
         super(context, extensionRendererMode);
     }
 

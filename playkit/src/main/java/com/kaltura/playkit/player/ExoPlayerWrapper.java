@@ -158,11 +158,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private void initializePlayer() {
         DefaultTrackSelector trackSelector = initializeTrackSelector();
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, buildCustomHttpDataSourceFactory(), drmSessionListener);
-        CustomRendererFactory renderersFactory = new CustomRendererFactory(context,
-                drmSessionManager, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
-        LoadControl loadControl = getUpdatedLoadControl();
+        CustomRendererFactory renderersFactory = new CustomRendererFactory(context, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
 
-        player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, loadControl, drmSessionManager, bandwidthMeter);
+        player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
@@ -861,10 +859,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public float getPlaybackRate() {
         log.v("getPlaybackRate");
-        if (assertPlayerIsNotNull("getPlaybackRate()")) {
-            if (player.getPlaybackParameters() != null) {
-                return player.getPlaybackParameters().speed;
-            }
+        if (assertPlayerIsNotNull("getPlaybackRate()") && player.getPlaybackParameters() != null) {
+            return player.getPlaybackParameters().speed;
         }
         return lastKnownPlaybackRate;
     }
