@@ -18,23 +18,27 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 
 public class PKTrackConfig {
+    private static final PKLog log = PKLog.get("PKTrackConfig");
+
     private static final String NONE = "none";
     private String trackLanguage;
     private Mode preferredMode = Mode.OFF;
 
     public String getTrackLanguage() {
+        String languageText = null;
         try {
             if (preferredMode == Mode.OFF) {
                 return NONE;
             } else if (preferredMode == Mode.AUTO) {
-                return Locale.getDefault().getISO3Language();
+                languageText =  Locale.getDefault().getISO3Language();
             }
             if (trackLanguage != null) {
-                return new Locale(trackLanguage).getISO3Language();
+                languageText = new Locale(trackLanguage).getISO3Language();
             }
         } catch (MissingResourceException ex) {
+            log.e("Error No Locale mapping to language " + trackLanguage) ;
         }
-        return null;
+        return languageText;
     }
 
     public Mode getPreferredMode() {
