@@ -483,7 +483,7 @@ class TrackSelectionHelper {
                         audioTrack = audioTracks.get(i);
                         audioGroupIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), GROUP_INDEX);
                         audioTrackIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX);
-                        //TODO  - Validate this logic with more streams
+                       
                         if (audioGroupIndex == groupIndex && audioTrackIndex == TRACK_ADAPTIVE) {
                             TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(TRACK_TYPE_AUDIO).get(audioGroupIndex);
                             if (trackGroup != null) {
