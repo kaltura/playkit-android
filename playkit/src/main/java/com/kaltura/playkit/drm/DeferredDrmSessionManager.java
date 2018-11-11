@@ -134,8 +134,13 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
             return null;
         }
 
+        DrmInitData.SchemeData schemeData = null;
+        for (int i = 0 ; i < drmInitData.schemeDataCount ; i++) {
+            if (drmInitData.get(i) != null && drmInitData.get(i).matches(MediaSupport.WIDEVINE_UUID)) {
+                schemeData = drmInitData.get(i);
+            }
+        }
 
-        DrmInitData.SchemeData schemeData = drmInitData.get(MediaSupport.WIDEVINE_UUID);
         if (schemeData == null) {
             return null;
         }
