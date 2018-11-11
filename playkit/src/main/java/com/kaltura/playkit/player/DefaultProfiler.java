@@ -235,6 +235,11 @@ class DefaultProfiler extends Profiler {
     }
 
     private void postChunk(String string) {
+        if (postURL == null) {
+            pkLog.w("No POST URL");
+            return;
+        }
+
         try {
             Utils.executePost(postURL + "?mode=addChunk&sessionId=" + sessionId, string.getBytes(), null);
         } catch (IOException e) {
