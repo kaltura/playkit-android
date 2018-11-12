@@ -57,6 +57,18 @@ public interface Player {
         Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled);
 
         /**
+         * Enable/disable MPGA audio tracks.
+         * By default they are disabled.
+         * Note! Once set, this value will be applied to all mediaSources for that instance of Player.
+         * In order to disable/enable it again, you should update that value once again.
+         * Otherwise it will stay in the previous state.
+         *
+         * @param mpgaAudioFormatEnabled - should Enable MPGA Audio track.
+         * @return - Player Settings.
+         */
+        Settings setMpgaAudioFormatEnabled(boolean mpgaAudioFormatEnabled);
+
+        /**
          * Decide if player should use {@link android.view.TextureView} as primary surface
          * to render the video content. If set to false, will use the {@link android.view.SurfaceView} instead.
          * Note!!! Use this carefully, because {@link android.view.TextureView} is more expensive and not DRM
@@ -239,14 +251,38 @@ public interface Player {
      * @param listener - event listener.
      * @param events   - events the subscriber interested in.
      */
-    void addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
+    PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
+
+    /**
+     * Remove event listener to the player.
+     *
+     * @param listener - event listener.
+     * @param events   - events the subscriber interested in.
+     */
+    void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events);
 
     /**
      * Add state changed listener to the player.
      *
      * @param listener - state changed listener
      */
-    void addStateChangeListener(@NonNull PKEvent.Listener listener);
+    PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener);
+
+    /**
+     * remove state changed listener to the player.
+     *
+     * @param listener - state changed listener
+     */
+    void removeStateChangeListener(@NonNull PKEvent.Listener listener);
+
+
+    /**
+     * remove listener to the player.
+     *
+     * @param listener - event listener / state changed listener
+     */
+    void removeListener(@NonNull PKEvent.Listener listener);
+
 
     /**
      * Change current track, with specified one by uniqueId.
