@@ -13,6 +13,8 @@
 package com.kaltura.playkit.player;
 
 
+import android.support.annotation.NonNull;
+
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.source.TrackGroup;
@@ -145,7 +147,7 @@ class TrackSelectionHelper {
         Format format;
         //run through the all renders.
         for (int rendererIndex = 0; rendererIndex < TRACK_RENDERERS_AMOUNT; rendererIndex++) {
-
+            PKCodecSupport.TrackType trackType = getTrackType(rendererIndex);
             //the trackGroupArray of the current renderer.
             trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
 
@@ -162,7 +164,7 @@ class TrackSelectionHelper {
                     maybeAddAdaptiveTrack(rendererIndex, groupIndex, format);
 
                     //filter all the unsupported and unknown formats.
-                    if (isFormatSupported(rendererIndex, groupIndex, trackIndex)) {
+                    if (isFormatSupported(rendererIndex, groupIndex, trackIndex) || PKCodecSupport.isFormatSupported(format, trackType)) {
                         String uniqueId = getUniqueId(rendererIndex, groupIndex, trackIndex);
                         switch (rendererIndex) {
                             case TRACK_TYPE_VIDEO:
@@ -211,6 +213,26 @@ class TrackSelectionHelper {
         int defaultTextTrackIndex = getDefaultTrackIndex(textTracks, lastSelectedTrackIds[TRACK_TYPE_TEXT]);
 
         return new PKTracks(videoTracks, filteredAudioTracks, textTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex);
+    }
+
+    @NonNull
+    private PKCodecSupport.TrackType getTrackType(int rendererIndex) {
+        PKCodecSupport.TrackType trackType;
+        switch (rendererIndex) {
+            case TRACK_TYPE_VIDEO:
+                trackType = PKCodecSupport.TrackType.VIDEO;
+                break;
+            case TRACK_TYPE_AUDIO:
+                trackType = PKCodecSupport.TrackType.AUDIO;
+                break;
+            case TRACK_TYPE_TEXT:
+                trackType = PKCodecSupport.TrackType.TEXT;
+                break;
+            default:
+                trackType = PKCodecSupport.TrackType.UNKNOWN;
+                break;
+        }
+        return trackType;
     }
 
     private String getLanguageFromFormat(Format format) {

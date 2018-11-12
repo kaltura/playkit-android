@@ -64,12 +64,9 @@ public class DummySurfaceWorkaroundTest {
         }
 
         DataSource.Factory mediaDataSourceFactory = new DefaultDataSourceFactory(context, "whatever");
-
-        Handler mainHandler = new Handler(Looper.getMainLooper());
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory());
 
-        DefaultDrmSessionManager<FrameworkMediaCrypto> drmSessionManager =
-                getDrmSessionManager();
+        DefaultDrmSessionManager<FrameworkMediaCrypto> drmSessionManager = getDrmSessionManager();
 
         if (drmSessionManager == null) {
             return;
