@@ -116,7 +116,7 @@ class TrackSelectionHelper {
      *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
-    boolean prepareTracks() {
+    protected boolean prepareTracks() {
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
             log.w("Trying to get current MappedTrackInfo returns null");
@@ -383,7 +383,7 @@ class TrackSelectionHelper {
      * @param uniqueId - unique identifier of the track to apply.
      */
 
-    void changeTrack(String uniqueId) {
+    protected void changeTrack(String uniqueId) {
         log.i("Request change track to uniqueID -> " + uniqueId);
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
@@ -483,7 +483,7 @@ class TrackSelectionHelper {
                         audioTrack = audioTracks.get(i);
                         audioGroupIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), GROUP_INDEX);
                         audioTrackIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX);
-                       
+
                         if (audioGroupIndex == groupIndex && audioTrackIndex == TRACK_ADAPTIVE) {
                             TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(TRACK_TYPE_AUDIO).get(audioGroupIndex);
                             if (trackGroup != null) {
@@ -665,7 +665,7 @@ class TrackSelectionHelper {
         }
     }
 
-    void setTracksInfoListener(TracksInfoListener tracksInfoListener) {
+    protected void setTracksInfoListener(TracksInfoListener tracksInfoListener) {
         this.tracksInfoListener = tracksInfoListener;
     }
 
@@ -675,13 +675,13 @@ class TrackSelectionHelper {
         textTracks.clear();
     }
 
-    void release() {
+    protected void release() {
         tracksInfoListener.onRelease(lastSelectedTrackIds);
         tracksInfoListener = null;
         clearTracksLists();
     }
 
-    long getCurrentVideoBitrate() {
+    protected long getCurrentVideoBitrate() {
         if (trackSelectionArray != null) {
             TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
             if (trackSelection != null) {
@@ -691,7 +691,7 @@ class TrackSelectionHelper {
         return -1;
     }
 
-    long getCurrentAudioBitrate() {
+    protected long getCurrentAudioBitrate() {
         if (trackSelectionArray != null) {
             TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_AUDIO);
             if (trackSelection != null) {
@@ -701,7 +701,7 @@ class TrackSelectionHelper {
         return -1;
     }
 
-    long getCurrentVideoWidth() {
+    protected long getCurrentVideoWidth() {
         if (trackSelectionArray != null) {
             TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
             if (trackSelection != null) {
@@ -711,7 +711,7 @@ class TrackSelectionHelper {
         return -1;
     }
 
-    long getCurrentVideoHeight() {
+    protected long getCurrentVideoHeight() {
         if (trackSelectionArray != null) {
             TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
             if (trackSelection != null) {
@@ -721,7 +721,7 @@ class TrackSelectionHelper {
         return -1;
     }
 
-    void notifyAboutTrackChange(TrackSelectionArray trackSelections) {
+    protected void notifyAboutTrackChange(TrackSelectionArray trackSelections) {
 
         this.trackSelectionArray = trackSelections;
         if (tracksInfoListener == null) {
@@ -782,7 +782,7 @@ class TrackSelectionHelper {
     }
 
     // clean previous selection
-    void stop() {
+    protected void stop() {
         lastSelectedTrackIds = new String[]{NONE, NONE, NONE};
         requestedChangeTrackIds = new String[]{NONE, NONE, NONE};
     }
@@ -797,7 +797,7 @@ class TrackSelectionHelper {
      * In case of TextTrack if no preferred track exist will return null.
      * Otherwise will return uniqueId that is corresponded to the selected {@link PKTrackConfig.Mode}.
      */
-    String getPreferredTrackId(int trackType) {
+    protected String getPreferredTrackId(int trackType) {
 
         switch (trackType) {
             case TRACK_TYPE_AUDIO:
@@ -882,7 +882,7 @@ class TrackSelectionHelper {
                 (preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredTextLanguageConfig.getTrackLanguage() == null));
     }
 
-    void applyPlayerSettings(PlayerSettings settings) {
+    protected void applyPlayerSettings(PlayerSettings settings) {
         this.mpgaAudioFormatEnabled = settings.mpgaAudioFormatEnabled();
         this.cea608CaptionsEnabled  = settings.cea608CaptionsEnabled();
         this.preferredAudioLanguageConfig = settings.getPreferredAudioTrackConfig();
