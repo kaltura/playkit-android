@@ -69,7 +69,7 @@ public class DummySurfaceWorkaroundTest {
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory());
 
         DefaultDrmSessionManager<FrameworkMediaCrypto> drmSessionManager =
-                getDrmSessionManager(mainHandler);
+                getDrmSessionManager();
 
         if (drmSessionManager == null) {
             return;
@@ -113,7 +113,7 @@ public class DummySurfaceWorkaroundTest {
         }
     }
 
-    private static DefaultDrmSessionManager<FrameworkMediaCrypto> getDrmSessionManager(Handler mainHandler) {
+    private static DefaultDrmSessionManager<FrameworkMediaCrypto> getDrmSessionManager() {
         try {
             return DefaultDrmSessionManager.newWidevineInstance(fakeDrmCallback, null);
         } catch (UnsupportedDrmException e) {
