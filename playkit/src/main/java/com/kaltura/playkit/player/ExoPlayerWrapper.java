@@ -651,7 +651,25 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             log.w("Attempt to invoke 'changeTrack()' on null instance of the TracksSelectionHelper");
             return;
         }
-        trackSelectionHelper.changeTrack(uniqueId);
+
+        IllegalArgumentException invalidUniqueIdException = trackSelectionHelper.validateUniqueId(uniqueId);
+        if (invalidUniqueIdException == null) {
+            trackSelectionHelper.changeTrack(uniqueId);
+        } else {
+            sendTrackSelectionError(uniqueId, invalidUniqueIdException);
+        }
+    }
+
+    private void sendTrackSelectionError(String uniqueId, IllegalArgumentException invalidUniqueIdException) {
+        String errorStr = "Track Selection failed uniqueId = " + uniqueId;
+        log.e(errorStr);
+        currentError = new PKError(PKPlayerErrorType.TRACK_SELECTION_FAILED, errorStr, invalidUniqueIdException);
+        if (eventListener != null) {
+            log.e("Error-Event sent, type = " + PKPlayerErrorType.TRACK_SELECTION_FAILED);
+            eventListener.onEvent(PlayerEvent.Type.ERROR);
+        } else {
+            log.e("eventListener is null cannot send Error-Event type = " + PKPlayerErrorType.TRACK_SELECTION_FAILED + " uniqueId = " + uniqueId);
+        }
     }
 
     public PKTracks getPKTracks() {

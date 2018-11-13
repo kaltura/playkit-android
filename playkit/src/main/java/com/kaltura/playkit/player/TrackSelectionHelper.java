@@ -414,7 +414,7 @@ class TrackSelectionHelper {
             return;
         }
 
-        int[] uniqueTrackId = validateUniqueId(uniqueId);
+        int[] uniqueTrackId = parseUniqueId(uniqueId);
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
         requestedChangeTrackIds[rendererIndex] = uniqueId;
@@ -617,13 +617,12 @@ class TrackSelectionHelper {
      * Validate and return parsed uniqueId.
      *
      * @param uniqueId - uniqueId to validate
-     * @return - parsed uniqueId in case of success.
-     * @throws IllegalArgumentException when uniqueId is illegal.
+     * @return IllegalArgumentException when uniqueId is illegal ele return null
      */
-    private int[] validateUniqueId(String uniqueId) throws IllegalArgumentException {
+    public IllegalArgumentException validateUniqueId(String uniqueId) {
 
         if (uniqueId == null) {
-            throw new IllegalArgumentException("uniqueId is null");
+            return new IllegalArgumentException("uniqueId is null");
         }
 
         if (uniqueId.contains(VIDEO_PREFIX)
@@ -633,21 +632,19 @@ class TrackSelectionHelper {
 
             int[] parsedUniqueId = parseUniqueId(uniqueId);
             if (!isRendererTypeValid(parsedUniqueId[RENDERER_INDEX])) {
-                throw new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid renderer index. " + parsedUniqueId[RENDERER_INDEX]);
+                return new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid renderer index. " + parsedUniqueId[RENDERER_INDEX]);
             }
 
             if (!isGroupIndexValid(parsedUniqueId)) {
-                throw new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid group index. " + parsedUniqueId[GROUP_INDEX]);
+                return new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid group index. " + parsedUniqueId[GROUP_INDEX]);
             }
 
             if (!isTrackIndexValid(parsedUniqueId)) {
-                throw new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid track index. " + parsedUniqueId[TRACK_INDEX]);
+                return new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid track index. " + parsedUniqueId[TRACK_INDEX]);
             }
-
-            return parsedUniqueId;
+            return null;
         }
-
-        throw new IllegalArgumentException("Invalid structure of uniqueId " + uniqueId);
+        return new IllegalArgumentException("Invalid structure of uniqueId " + uniqueId);
     }
 
     private boolean isTrackIndexValid(int[] parsedUniqueId) {
@@ -871,14 +868,15 @@ class TrackSelectionHelper {
                 }
             }
             //if user set mode to AUTO and the locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
-            if (preferredTrackUniqueId == null && preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null && textTracks.size() > 1) {
+            if (preferredTrackUniqueId == null && preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null) {
                 for (TextTrack track : textTracks) {
                     if (track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
                         preferredTrackUniqueId = track.getUniqueId();
                         break;
                     }
                 }
-                if (preferredTrackUniqueId == null) {
+                if (preferredTrackUniqueId == null && textTracks.size() > 1) {
+                    //take index = 1 since index = 0 is text track "none"
                     preferredTrackUniqueId = textTracks.get(1).getUniqueId();
                 }
             }
