@@ -414,7 +414,7 @@ class TrackSelectionHelper {
             return;
         }
 
-        int[] uniqueTrackId = parseUniqueId(uniqueId);
+        int[] uniqueTrackId = validateUniqueId(uniqueId);
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
         requestedChangeTrackIds[rendererIndex] = uniqueId;
@@ -617,12 +617,13 @@ class TrackSelectionHelper {
      * Validate and return parsed uniqueId.
      *
      * @param uniqueId - uniqueId to validate
-     * @return IllegalArgumentException when uniqueId is illegal ele return null
+     * @return - parsed uniqueId in case of success.
+     * @throws IllegalArgumentException when uniqueId is illegal.
      */
-    public IllegalArgumentException validateUniqueId(String uniqueId) {
+    private int[] validateUniqueId(String uniqueId) throws IllegalArgumentException {
 
         if (uniqueId == null) {
-            return new IllegalArgumentException("uniqueId is null");
+            throw new IllegalArgumentException("uniqueId is null");
         }
 
         if (uniqueId.contains(VIDEO_PREFIX)
@@ -632,19 +633,19 @@ class TrackSelectionHelper {
 
             int[] parsedUniqueId = parseUniqueId(uniqueId);
             if (!isRendererTypeValid(parsedUniqueId[RENDERER_INDEX])) {
-                return new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid renderer index. " + parsedUniqueId[RENDERER_INDEX]);
+                throw new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid renderer index. " + parsedUniqueId[RENDERER_INDEX]);
             }
 
             if (!isGroupIndexValid(parsedUniqueId)) {
-                return new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid group index. " + parsedUniqueId[GROUP_INDEX]);
+                throw new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid group index. " + parsedUniqueId[GROUP_INDEX]);
             }
 
             if (!isTrackIndexValid(parsedUniqueId)) {
-                return new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid track index. " + parsedUniqueId[TRACK_INDEX]);
+                throw new IllegalArgumentException("Track selection with uniqueId = " + uniqueId + " failed. Due to invalid track index. " + parsedUniqueId[TRACK_INDEX]);
             }
-            return null;
+            return parsedUniqueId;
         }
-        return new IllegalArgumentException("Invalid structure of uniqueId " + uniqueId);
+        throw new IllegalArgumentException("Invalid structure of uniqueId " + uniqueId);
     }
 
     private boolean isTrackIndexValid(int[] parsedUniqueId) {

@@ -652,11 +652,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             return;
         }
 
-        IllegalArgumentException invalidUniqueIdException = trackSelectionHelper.validateUniqueId(uniqueId);
-        if (invalidUniqueIdException == null) {
+        try {
             trackSelectionHelper.changeTrack(uniqueId);
-        } else {
-            sendTrackSelectionError(uniqueId, invalidUniqueIdException);
+        } catch (IllegalArgumentException ex) {
+            sendTrackSelectionError(uniqueId, ex);
         }
     }
 
