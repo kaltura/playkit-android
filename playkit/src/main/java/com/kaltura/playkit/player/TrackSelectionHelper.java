@@ -186,7 +186,7 @@ class TrackSelectionHelper {
                                 }
                                 break;
                             case TRACK_TYPE_TEXT:
-                                String textTrackLabel = null;
+                                String textTrackLabel;
                                 textTrackLabel = format.label;
                                 if (CEA_608.equals(format.sampleMimeType)) {
                                     if (cea608CaptionsEnabled) {
@@ -838,7 +838,7 @@ class TrackSelectionHelper {
     private String getPreferredTextTrackUniqueId(int trackType) {
         String preferredTrackUniqueId = null;
         if (!isValidPreferredTextConfig()) {
-            return preferredTrackUniqueId;
+            return null;
         }
         String preferredTextISO3Lang = preferredTextLanguageConfig.getTrackLanguage();
         if (preferredTextISO3Lang != null) {
@@ -855,17 +855,15 @@ class TrackSelectionHelper {
                     continue;
                 }
 
-                if (preferredTrackUniqueId == null) {
-                    Locale streamLang = new Locale(trackLang);
-                    try {
-                        if (streamLang.getISO3Language().equals(preferredTextISO3Lang)) {
-                            log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
-                            preferredTrackUniqueId = track.getUniqueId();
-                            break;
-                        }
-                    } catch (MissingResourceException ex) {
-                        log.e(ex.getMessage());
+                Locale streamLang = new Locale(trackLang);
+                try {
+                    if (streamLang.getISO3Language().equals(preferredTextISO3Lang)) {
+                        log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
+                        preferredTrackUniqueId = track.getUniqueId();
+                        break;
                     }
+                } catch (MissingResourceException ex) {
+                    log.e(ex.getMessage());
                 }
             }
             //if user set mode to AUTO and the locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
@@ -888,7 +886,7 @@ class TrackSelectionHelper {
     private String getPreferredAudioTrackUniqueId(int trackType) {
         String preferredTrackUniqueId = null;
         if (!isValidPreferredAudioConfig()) {
-            return preferredTrackUniqueId;
+            return null;
         }
         String preferredAudioISO3Lang = preferredAudioLanguageConfig.getTrackLanguage();
         for (AudioTrack track : audioTracks) {

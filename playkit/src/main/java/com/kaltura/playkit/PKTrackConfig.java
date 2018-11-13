@@ -32,7 +32,7 @@ public class PKTrackConfig {
             } else if (preferredMode == Mode.AUTO) {
                 languageText =  Locale.getDefault().getISO3Language();
             }
-            if (trackLanguage != null) {
+            if (languageText == null && trackLanguage != null) {
                 languageText = new Locale(trackLanguage).getISO3Language();
             }
         } catch (MissingResourceException ex) {
