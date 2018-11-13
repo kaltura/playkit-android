@@ -23,12 +23,14 @@ public class AudioTrack extends BaseTrack {
     private long bitrate;
     private String label;
     private String language;
+    private int channelCount;
 
-    AudioTrack(String uniqueId, String language, String label, long bitrate, int selectionFlag, boolean isAdaptive) {
+    AudioTrack(String uniqueId, String language, String label, long bitrate, int channelCount, int selectionFlag, boolean isAdaptive) {
         super(uniqueId, selectionFlag, isAdaptive);
         this.label = label;
         this.bitrate = bitrate;
         this.language = language;
+        this.channelCount = channelCount;
     }
 
     /**
@@ -62,4 +64,15 @@ public class AudioTrack extends BaseTrack {
     String getLabel() {
         return label;
     }
+
+    /**
+     * Getter for the track channels count.
+     * Can be -1 if unknown or not applicable.
+     *
+     * @return - the number of channels of the track.
+     */
+    public int getChannelCount() {
+        return channelCount;
+    }
+
 }

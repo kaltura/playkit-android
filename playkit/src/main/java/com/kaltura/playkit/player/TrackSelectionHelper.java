@@ -179,10 +179,10 @@ class TrackSelectionHelper {
                                 audioTrackLabel = format.label;
                                 if (format.language == null && format.codecs == null) {
                                     if (mpgaAudioFormatEnabled && format.id != null && format.id.matches("\\d+/\\d+")) {
-                                        audioTracks.add(new AudioTrack(uniqueId, format.id, audioTrackLabel, format.bitrate, format.selectionFlags, false));
+                                        audioTracks.add(new AudioTrack(uniqueId, format.id, audioTrackLabel, format.bitrate, format.channelCount, format.selectionFlags, false));
                                     }
                                 } else {
-                                    audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), audioTrackLabel, format.bitrate, format.selectionFlags, false));
+                                    audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), audioTrackLabel, format.bitrate, format.channelCount, format.selectionFlags, false));
                                 }
                                 break;
                             case TRACK_TYPE_TEXT:
@@ -349,7 +349,7 @@ class TrackSelectionHelper {
                     videoTracks.add(new VideoTrack(uniqueId, 0, 0, 0, format.selectionFlags, true));
                     break;
                 case TRACK_TYPE_AUDIO:
-                    audioTracks.add(new AudioTrack(uniqueId, format.language, format.id, 0, format.selectionFlags, true));
+                    audioTracks.add(new AudioTrack(uniqueId, format.language, format.id, 0, format.channelCount, format.selectionFlags, true));
                     break;
                 case TRACK_TYPE_TEXT:
                     textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
