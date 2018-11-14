@@ -179,10 +179,10 @@ class TrackSelectionHelper {
                                 audioTrackLabel = format.label;
                                 if (format.language == null && format.codecs == null) {
                                     if (mpgaAudioFormatEnabled && format.id != null && format.id.matches("\\d+/\\d+")) {
-                                        audioTracks.add(new AudioTrack(uniqueId, format.id, audioTrackLabel, format.bitrate, format.selectionFlags, false));
+                                        audioTracks.add(new AudioTrack(uniqueId, format.id, audioTrackLabel, format.bitrate, format.channelCount, format.selectionFlags, false));
                                     }
                                 } else {
-                                    audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), audioTrackLabel, format.bitrate, format.selectionFlags, false));
+                                    audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), audioTrackLabel, format.bitrate, format.channelCount, format.selectionFlags, false));
                                 }
                                 break;
                             case TRACK_TYPE_TEXT:
@@ -349,7 +349,7 @@ class TrackSelectionHelper {
                     videoTracks.add(new VideoTrack(uniqueId, 0, 0, 0, format.selectionFlags, true));
                     break;
                 case TRACK_TYPE_AUDIO:
-                    audioTracks.add(new AudioTrack(uniqueId, format.language, format.id, 0, format.selectionFlags, true));
+                    audioTracks.add(new AudioTrack(uniqueId, format.language, format.id, 0, format.channelCount, format.selectionFlags, true));
                     break;
                 case TRACK_TYPE_TEXT:
                     textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
@@ -836,10 +836,10 @@ class TrackSelectionHelper {
 
     @Nullable
     private String getPreferredTextTrackUniqueId(int trackType) {
-        String preferredTrackUniqueId = null;
         if (!isValidPreferredTextConfig()) {
             return null;
         }
+        String preferredTrackUniqueId = null;
         String preferredTextISO3Lang = preferredTextLanguageConfig.getTrackLanguage();
         if (preferredTextISO3Lang != null) {
             for (TextTrack track : textTracks) {
@@ -864,30 +864,41 @@ class TrackSelectionHelper {
                     }
                 } catch (MissingResourceException ex) {
                     log.e(ex.getMessage());
+                    preferredTrackUniqueId = null;
                 }
             }
-            //if user set mode to AUTO and the locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
-            if (preferredTrackUniqueId == null && preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null) {
-                for (TextTrack track : textTracks) {
-                    if (track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
-                        preferredTrackUniqueId = track.getUniqueId();
-                        break;
-                    }
-                }
-                if (preferredTrackUniqueId == null && textTracks.size() > 1) {
-                    //take index = 1 since index = 0 is text track "none"
-                    preferredTrackUniqueId = textTracks.get(1).getUniqueId();
-                }
+            if (preferredTrackUniqueId == null) {
+                preferredTrackUniqueId = maybeSetFirstTextTrackAsAutoSelection();
             }
+
         }
         return preferredTrackUniqueId;
     }
 
-    private String getPreferredAudioTrackUniqueId(int trackType) {
+    @Nullable
+    private String maybeSetFirstTextTrackAsAutoSelection() {
         String preferredTrackUniqueId = null;
+        //if user set mode to AUTO and the locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
+        if (preferredTextLanguageConfig != null && preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null) {
+            for (TextTrack track : textTracks) {
+                if (track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
+                    preferredTrackUniqueId = track.getUniqueId();
+                    break;
+                }
+            }
+            if (preferredTrackUniqueId == null && textTracks.size() > 1) {
+                //take index = 1 since index = 0 is text track "none"
+                preferredTrackUniqueId = textTracks.get(1).getUniqueId();
+            }
+        }
+        return preferredTrackUniqueId;
+    }
+    
+    private String getPreferredAudioTrackUniqueId(int trackType) {
         if (!isValidPreferredAudioConfig()) {
             return null;
         }
+        String preferredTrackUniqueId = null;
         String preferredAudioISO3Lang = preferredAudioLanguageConfig.getTrackLanguage();
         for (AudioTrack track : audioTracks) {
             String trackLang = track.getLanguage();
@@ -928,4 +939,3 @@ class TrackSelectionHelper {
         this.preferredTextLanguageConfig  = settings.getPreferredTextTrackConfig();
     }
 }
-
