@@ -836,10 +836,10 @@ class TrackSelectionHelper {
 
     @Nullable
     private String getPreferredTextTrackUniqueId(int trackType) {
-        String preferredTrackUniqueId = null;
         if (!isValidPreferredTextConfig()) {
             return null;
         }
+        String preferredTrackUniqueId = null;
         String preferredTextISO3Lang = preferredTextLanguageConfig.getTrackLanguage();
         if (preferredTextISO3Lang != null) {
             for (TextTrack track : textTracks) {
@@ -884,10 +884,10 @@ class TrackSelectionHelper {
     }
 
     private String getPreferredAudioTrackUniqueId(int trackType) {
-        String preferredTrackUniqueId = null;
         if (!isValidPreferredAudioConfig()) {
             return null;
         }
+        String preferredTrackUniqueId = null;
         String preferredAudioISO3Lang = preferredAudioLanguageConfig.getTrackLanguage();
         for (AudioTrack track : audioTracks) {
             String trackLang = track.getLanguage();
