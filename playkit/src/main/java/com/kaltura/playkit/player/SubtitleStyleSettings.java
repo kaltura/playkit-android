@@ -58,59 +58,59 @@ public class SubtitleStyleSettings {
         }
     }
 
-    public int getSubtitleTextColor() {
+    public int getTextColor() {
         return subtitleTextColor;
     }
 
-    public int getSubtitleBackgroundColor() {
+    public int getBackgroundColor() {
         return subtitleBackgroundColor;
     }
 
-    public float getSubtitleTextSizeFraction() {
+    public float getTextSizeFraction() {
         return subtitleTextSizeFraction;
     }
 
-    public int getSubtitleWindowColor() {
+    public int getWindowColor() {
         return subtitleWindowColor;
     }
 
-    public int getSubtitleEdgeType() {
+    public int getEdgeType() {
         return subtitleEdgeType;
     }
 
-    public int getSubtitleEdgeColor() {
+    public int getEdgeColor() {
         return subtitleEdgeColor;
     }
 
-    public Typeface getSubtitleTypeface() {
+    public Typeface getTypeface() {
         return subtitleTypeface;
     }
 
-    public String getSubtitleStyleName() {
+    public String getStyleName() {
         return subtitleStyleName;
     }
 
-    public SubtitleStyleSettings setSubtitleTextColor(int subtitleTextColor) {
+    public SubtitleStyleSettings setTextColor(int subtitleTextColor) {
         this.subtitleTextColor = subtitleTextColor;
         return this;
     }
 
-    public SubtitleStyleSettings setSubtitleBackgroundColor(int subtitleBackgroundColor) {
+    public SubtitleStyleSettings setBackgroundColor(int subtitleBackgroundColor) {
         this.subtitleBackgroundColor = subtitleBackgroundColor;
         return this;
     }
 
-    public SubtitleStyleSettings setSubtitleEdgeColor(int subtitleEdgeColor) {
+    public SubtitleStyleSettings setEdgeColor(int subtitleEdgeColor) {
         this.subtitleEdgeColor = subtitleEdgeColor;
         return this;
     }
 
-    public SubtitleStyleSettings setSubtitleWindowColor(int subtitleWindowColor) {
+    public SubtitleStyleSettings setWindowColor(int subtitleWindowColor) {
         this.subtitleWindowColor = subtitleWindowColor;
         return this;
     }
 
-    public SubtitleStyleSettings setSubtitleEdgeType(SubtitleStyleEdgeType subtitleEdgeType) {
+    public SubtitleStyleSettings setEdgeType(SubtitleStyleEdgeType subtitleEdgeType) {
         switch (subtitleEdgeType) {
             case EDGE_TYPE_NONE:
                 this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
@@ -134,7 +134,7 @@ public class SubtitleStyleSettings {
         return this;
     }
 
-    public SubtitleStyleSettings setSubtitleTextSizeFraction(SubtitleTextSizeFraction subtitleTextSizeFraction) {
+    public SubtitleStyleSettings setTextSizeFraction(SubtitleTextSizeFraction subtitleTextSizeFraction) {
         switch (subtitleTextSizeFraction) {
             case SUBTITLE_FRACTION_50:
                 this.subtitleTextSizeFraction = fraction50;
@@ -161,7 +161,7 @@ public class SubtitleStyleSettings {
         return this;
     }
 
-    public SubtitleStyleSettings setSubtitleTypeface(SubtitleStyleTypeface subtitleStyleTypeface) {
+    public SubtitleStyleSettings setTypeface(SubtitleStyleTypeface subtitleStyleTypeface) {
         switch (subtitleStyleTypeface) {
             case DEFAULT:
                 subtitleTypeface = Typeface.DEFAULT;
@@ -186,11 +186,11 @@ public class SubtitleStyleSettings {
     }
 
     public CaptionStyleCompat toCaptionStyle() {
-        return new CaptionStyleCompat(getSubtitleTextColor(),
-                getSubtitleBackgroundColor(),
-                getSubtitleWindowColor(),
-                getSubtitleEdgeType(),
-                getSubtitleEdgeColor(),
-                getSubtitleTypeface());
+        return new CaptionStyleCompat(getTextColor(),
+                getBackgroundColor(),
+                getWindowColor(),
+                getEdgeType(),
+                getEdgeColor(),
+                getTypeface());
     }
 }

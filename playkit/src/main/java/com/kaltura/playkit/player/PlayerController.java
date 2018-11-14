@@ -658,7 +658,7 @@ public class PlayerController implements Player {
                             event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
                             break;
                         case SUBTITLE_STYLE_CHANGED:
-                            event = new PlayerEvent.SubtitlesStyleChanged(playerSettings.getSubtitleStyleSettings().getSubtitleStyleName());
+                            event = new PlayerEvent.SubtitlesStyleChanged(playerSettings.getSubtitleStyleSettings().getStyleName());
                             break;
                         default:
                             event = new PlayerEvent.Generic(eventType);
