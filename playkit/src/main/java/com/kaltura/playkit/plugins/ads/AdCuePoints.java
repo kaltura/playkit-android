@@ -31,12 +31,7 @@ public class AdCuePoints {
     }
 
     public boolean hasPreRoll() {
-        if (adCuePoints != null && !adCuePoints.isEmpty()) {
-            if (adCuePoints.get(0) == 0) {
-                return true;
-            }
-        }
-        return false;
+        return (adCuePoints != null && !adCuePoints.isEmpty() && adCuePoints.get(0) == 0);
     }
 
     public boolean hasMidRoll() {
@@ -51,11 +46,6 @@ public class AdCuePoints {
     }
 
     public boolean hasPostRoll() {
-        if (adCuePoints != null && !adCuePoints.isEmpty()) {
-            if (adCuePoints.get(adCuePoints.size() - 1) < 0) {
-                return true;
-            }
-        }
-        return false;
+        return (adCuePoints != null && !adCuePoints.isEmpty() && adCuePoints.get(adCuePoints.size() - 1) < 0);
     }
 }

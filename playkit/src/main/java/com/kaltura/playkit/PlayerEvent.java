@@ -190,7 +190,8 @@ public class PlayerEvent implements PKEvent {
         ERROR,   //  Sent when an error occurs. The element's error attribute contains more information. See Error handling for details.
         LOADED_METADATA,   //  The media's metadata has finished loading; all attributes now contain as much useful information as they're going to.
         PAUSE,   //  Sent when playback is paused.
-        PLAY,   //  Sent when playback of the media starts after having been paused; that is, when playback is resumed after a prior pause event.
+        PLAY,    //  Sent when playback of the media starts after having been paused; that is, when playback is resumed after a prior pause event.
+        RETRY,   //  Sent when retry api is called by app
         PLAYING,   //  Sent when the media begins to play (either for the first time, after having been paused, or after ending and then restarting).
         SEEKED,   //  Sent when a seek operation completes.
         SEEKING,   //  Sent when a seek operation begins.
