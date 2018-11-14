@@ -3,7 +3,6 @@ package com.kaltura.playkit.player;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.MimeTypes;
@@ -59,6 +58,7 @@ public class PKCodecSupport {
     }
 
     public static boolean isFormatSupported(@NonNull Format format, @NonNull TrackType type) {
+
         if (type == TrackType.TEXT) {
             return true;    // always supported
         }
@@ -67,7 +67,6 @@ public class PKCodecSupport {
             log.w("isFormatSupported: codecs==null, assuming supported");
             return true;
         }
-
         return isCodecSupported(format.codecs, type);
     }
 }

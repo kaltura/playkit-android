@@ -836,12 +836,10 @@ class TrackSelectionHelper {
 
     @Nullable
     private String getPreferredTextTrackUniqueId(int trackType) {
-
+        String preferredTrackUniqueId = null;
         if (!isValidPreferredTextConfig()) {
             return null;
         }
-
-        String preferredTrackUniqueId = null;
         String preferredTextISO3Lang = preferredTextLanguageConfig.getTrackLanguage();
         if (preferredTextISO3Lang != null) {
             for (TextTrack track : textTracks) {
@@ -866,30 +864,20 @@ class TrackSelectionHelper {
                     }
                 } catch (MissingResourceException ex) {
                     log.e(ex.getMessage());
-                    preferredTrackUniqueId = null;
                 }
             }
-            if (preferredTrackUniqueId == null) {
-                preferredTrackUniqueId = maybeSetFirstTextTrackAsAutoSelection();
-            }
-        }
-        return preferredTrackUniqueId;
-    }
-
-    @Nullable
-    private String maybeSetFirstTextTrackAsAutoSelection() {
-        String preferredTrackUniqueId = null;
-        //if user set mode to AUTO and the locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
-        if (preferredTextLanguageConfig != null && preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null) {
-            for (TextTrack track : textTracks) {
-                if (track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
-                    preferredTrackUniqueId = track.getUniqueId();
-                    break;
+            //if user set mode to AUTO and the locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
+            if (preferredTrackUniqueId == null && preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null) {
+                for (TextTrack track : textTracks) {
+                    if (track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
+                        preferredTrackUniqueId = track.getUniqueId();
+                        break;
+                    }
                 }
-            }
-            if (preferredTrackUniqueId == null && textTracks.size() > 1) {
-                //take index = 1 since index = 0 is text track "none"
-                preferredTrackUniqueId = textTracks.get(1).getUniqueId();
+                if (preferredTrackUniqueId == null && textTracks.size() > 1) {
+                    //take index = 1 since index = 0 is text track "none"
+                    preferredTrackUniqueId = textTracks.get(1).getUniqueId();
+                }
             }
         }
         return preferredTrackUniqueId;
