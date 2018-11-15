@@ -33,7 +33,7 @@ public class PKMediaSourceConfig {
 
     PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings, VRSettings vrSettings) {
         this.mediaSource = source;
-        this.mediaEntryType = mediaConfig.getMediaEntry().getMediaType();
+        this.mediaEntryType = (mediaConfig != null && mediaConfig.getMediaEntry() != null) ? mediaConfig.getMediaEntry().getMediaType() : PKMediaEntry.MediaEntryType.Unknown;
         this.playerSettings = playerSettings;
         this.vrSettings = vrSettings;
     }

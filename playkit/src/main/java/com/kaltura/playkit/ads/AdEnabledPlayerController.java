@@ -87,21 +87,25 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public void play() {
         log.d("PLAY IMA decorator");
-        if (adsProvider != null && !adsProvider.isAdError()) {
-            log.d("PLAY IMA decorator isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted = " + adsProvider.isAllAdsCompleted());
-            if (!adsProvider.isAllAdsCompleted()) {
-                if (!adsProvider.isAdRequested()) {
-                    adsProvider.start();
-                    return;
-                } else if (adsProvider.isAdDisplayed()) {
-                    adsProvider.resume();
-                    return;
+        if (adsProvider != null) {
+            if (!adsProvider.isAdError()) {
+                log.d("PLAY IMA decorator isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted = " + adsProvider.isAllAdsCompleted());
+                if (!adsProvider.isAllAdsCompleted()) {
+                    if (!adsProvider.isAdRequested()) {
+                        adsProvider.start();
+                        return;
+                    } else if (adsProvider.isAdDisplayed()) {
+                        adsProvider.resume();
+                        return;
+                    }
                 }
             }
+
+            if (adsProvider.isAdDisplayed()) {
+                return;
+            }
         }
-        if (adsProvider.isAdDisplayed()) {
-            return;
-        }
+
         log.d("IMA decorator Calling player play");
         getView().showVideoSurface();
         super.play();
