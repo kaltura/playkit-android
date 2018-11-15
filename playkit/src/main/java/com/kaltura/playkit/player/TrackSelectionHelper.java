@@ -349,10 +349,10 @@ class TrackSelectionHelper {
                     videoTracks.add(new VideoTrack(uniqueId, 0, 0, 0, format.selectionFlags, true));
                     break;
                 case TRACK_TYPE_AUDIO:
-                    audioTracks.add(new AudioTrack(uniqueId, format.language, format.id, 0, format.channelCount, format.selectionFlags, true));
+                    audioTracks.add(new AudioTrack(uniqueId, format.language, format.label, 0, format.channelCount, format.selectionFlags, true));
                     break;
                 case TRACK_TYPE_TEXT:
-                    textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
+                    textTracks.add(new TextTrack(uniqueId, format.language, format.label, format.selectionFlags));
                     break;
             }
         }
