@@ -176,6 +176,16 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class SubtitlesStyleChanged extends PlayerEvent {
+
+        public final String styleName;
+
+        public  SubtitlesStyleChanged(String styleName) {
+            super(Type.SUBTITLE_STYLE_CHANGED);
+            this.styleName = styleName;
+        }
+    }
+
     public final Type type;
 
     public PlayerEvent(Type type) {
@@ -206,7 +216,8 @@ public class PlayerEvent implements PKEvent {
         VIDEO_TRACK_CHANGED,
         AUDIO_TRACK_CHANGED,
         TEXT_TRACK_CHANGED,
-        PLAYBACK_RATE_CHANGED
+        PLAYBACK_RATE_CHANGED,
+        SUBTITLE_STYLE_CHANGED //Send when subtitle style is changed.
     }
 
     @Override

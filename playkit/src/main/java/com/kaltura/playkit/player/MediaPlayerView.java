@@ -19,7 +19,6 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.kaltura.playkit.PKLog;
 
 /**
@@ -111,4 +110,5 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
     public void showVideoSubtitles() {
 
     }
+
 }

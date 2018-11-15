@@ -43,6 +43,7 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSource.Factory;
@@ -215,6 +216,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
         player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
         changeState(PlayerState.LOADING);
+
+        if (playerSettings != null && playerSettings.getSubtitleStyleSettings() != null) {
+            configureSubtitleView();
+        }
     }
 
     private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig) {
@@ -899,6 +904,34 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 
+    /**
+     * Subtitle configuration {@link SubtitleStyleSettings}
+     */
+    private void configureSubtitleView() {
+        SubtitleView exoPlayerSubtitleView = null;
+        if(exoPlayerView != null) {
+            exoPlayerSubtitleView = exoPlayerView.getSubtitleView();
+        } else {
+            log.e("ExoPlayerView is not available");
+        }
+
+        if (exoPlayerSubtitleView != null) {
+            exoPlayerSubtitleView.setStyle(playerSettings.getSubtitleStyleSettings().toCaptionStyle());
+            exoPlayerSubtitleView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * playerSettings.getSubtitleStyleSettings().getTextSizeFraction());
+        } else {
+            log.e("Subtitle View is not available");
+        }
+    }
+
+    @Override
+    public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
+        if (playerSettings != null && playerSettings.getSubtitleStyleSettings() != null) {
+            playerSettings.setSubtitleStyle(subtitleStyleSettings);
+            configureSubtitleView();
+            sendEvent(PlayerEvent.Type.SUBTITLE_STYLE_CHANGED);
+        }
+    }
+  
     private boolean assertPlayerIsNotNull(String methodName) {
         if (player != null) {
             return true;
@@ -907,4 +940,5 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         log.w(String.format(nullPlayerMsgFormat, methodName));
         return false;
     }
+  
 }
