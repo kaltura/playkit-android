@@ -175,25 +175,21 @@ class TrackSelectionHelper {
                                 videoTracks.add(new VideoTrack(uniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false));
                                 break;
                             case TRACK_TYPE_AUDIO:
-                                String audioTrackLabel = null;
-                                audioTrackLabel = format.label;
                                 if (format.language == null && format.codecs == null) {
                                     if (mpgaAudioFormatEnabled && format.id != null && format.id.matches("\\d+/\\d+")) {
-                                        audioTracks.add(new AudioTrack(uniqueId, format.id, audioTrackLabel, format.bitrate, format.channelCount, format.selectionFlags, false));
+                                        audioTracks.add(new AudioTrack(uniqueId, format.id, format.label, format.bitrate, format.channelCount, format.selectionFlags, false));
                                     }
                                 } else {
-                                    audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), audioTrackLabel, format.bitrate, format.channelCount, format.selectionFlags, false));
+                                    audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), format.label, format.bitrate, format.channelCount, format.selectionFlags, false));
                                 }
                                 break;
                             case TRACK_TYPE_TEXT:
-                                String textTrackLabel;
-                                textTrackLabel = format.label;
                                 if (CEA_608.equals(format.sampleMimeType)) {
                                     if (cea608CaptionsEnabled) {
                                         textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
                                     }
                                 } else {
-                                    textTracks.add(new TextTrack(uniqueId, getLanguageFromFormat(format), textTrackLabel, format.selectionFlags));
+                                    textTracks.add(new TextTrack(uniqueId, getLanguageFromFormat(format), format.label, format.selectionFlags));
                                 }
                                 break;
                         }
