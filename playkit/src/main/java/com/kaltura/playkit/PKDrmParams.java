@@ -14,6 +14,7 @@ package com.kaltura.playkit;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.player.MediaSupport;
 
@@ -28,6 +29,7 @@ public class PKDrmParams implements Parcelable {
         FairPlay,
         Unknown;
 
+        @Nullable
         private Boolean supported;
 
         public boolean isSupported() {
@@ -66,8 +68,7 @@ public class PKDrmParams implements Parcelable {
     }
 
     public boolean isSchemeSupported() {
-        boolean isSchemeSupported = (scheme != null && scheme.isSupported());
-        return isSchemeSupported;
+        return (scheme != null && scheme.isSupported());
     }
 
     public String getLicenseUri() {

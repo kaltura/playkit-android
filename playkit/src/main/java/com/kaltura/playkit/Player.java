@@ -15,7 +15,9 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PlayerView;
+import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.utils.Consts;
 
 /**
@@ -54,6 +56,18 @@ public interface Player {
          * @return - Player Settings.
          */
         Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled);
+
+        /**
+         * Enable/disable MPGA audio tracks.
+         * By default they are disabled.
+         * Note! Once set, this value will be applied to all mediaSources for that instance of Player.
+         * In order to disable/enable it again, you should update that value once again.
+         * Otherwise it will stay in the previous state.
+         *
+         * @param mpgaAudioFormatEnabled - should Enable MPGA Audio track.
+         * @return - Player Settings.
+         */
+        Settings setMpgaAudioFormatEnabled(boolean mpgaAudioFormatEnabled);
 
         /**
          * Decide if player should use {@link android.view.TextureView} as primary surface
@@ -95,6 +109,14 @@ public interface Player {
         Settings setAdAutoPlayOnResume(boolean autoPlayOnResume);
 
         /**
+         * Set the player buffers size
+         *
+         * @param loadControlBuffers LoadControlBuffers
+         * @return Player Settings
+         */
+        Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers);
+
+        /**
          * Set the Player's VR/360 support
          *
          * @param vrPlayerEnabled - If 360 media should be played on VR player or default player - default == true.
@@ -125,6 +147,14 @@ public interface Player {
          * @return - Player Settings.
          */
         Settings setPreferredMediaFormat(PKMediaFormat preferredMediaFormat);
+
+        /**
+         * Set the Player's Subtitles
+         *
+         * @param subtitleStyleSettings - SubtitleStyleSettings
+         * @return - Player Settings
+         */
+        Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
     }
 
     /**
@@ -141,18 +171,7 @@ public interface Player {
      */
     void prepare(@NonNull PKMediaConfig playerConfig);
 
-    /**
-     * Prepare for playing the next entry. If config.shouldAutoPlay is true, the entry will automatically
-     * play when it's ready and the current entry is ended.
-     */
-    void prepareNext(@NonNull PKMediaConfig mediaConfig);
-
     void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
-
-    /**
-     * Load the entry that was prepared with {@link #prepareNext(PKMediaConfig)}.
-     */
-    void skip();
 
     /**
      * Player lifecycle method. Should be used when the application went to onPause();
@@ -241,14 +260,38 @@ public interface Player {
      * @param listener - event listener.
      * @param events   - events the subscriber interested in.
      */
-    void addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
+    PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
+
+    /**
+     * Remove event listener to the player.
+     *
+     * @param listener - event listener.
+     * @param events   - events the subscriber interested in.
+     */
+    void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events);
 
     /**
      * Add state changed listener to the player.
      *
      * @param listener - state changed listener
      */
-    void addStateChangeListener(@NonNull PKEvent.Listener listener);
+    PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener);
+
+    /**
+     * remove state changed listener to the player.
+     *
+     * @param listener - state changed listener
+     */
+    void removeStateChangeListener(@NonNull PKEvent.Listener listener);
+
+
+    /**
+     * remove listener to the player.
+     *
+     * @param listener - event listener / state changed listener
+     */
+    void removeListener(@NonNull PKEvent.Listener listener);
+
 
     /**
      * Change current track, with specified one by uniqueId.
@@ -274,6 +317,10 @@ public interface Player {
      */
     String getSessionId();
 
+    /**
+     * Checks if the stream is live or not
+     * @return flag for live
+     */
     boolean isLive();
 
     /**
@@ -302,5 +349,11 @@ public interface Player {
      * otherwise return null.
      */
     <T extends PKController> T getController(Class<T> type);
+
+    /**
+     * Update Subtitle Styles
+     */
+    void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
+
 }
 

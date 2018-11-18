@@ -24,7 +24,7 @@ class PlayerEngineFactory {
         return PlayerEngineType.Exoplayer;
     }
 
-    static PlayerEngine initializePlayerEngine(Context context, PlayerEngineType engineType) throws PlayerInitializationException {
+    static PlayerEngine initializePlayerEngine(Context context, PlayerEngineType engineType, PlayerSettings playerSettings) throws PlayerInitializationException {
 
         switch (engineType) {
             case MediaPlayer:
@@ -46,11 +46,11 @@ class PlayerEngineFactory {
                 }
 
                 //Initialize ExoplayerWrapper for video playback which will use VRView for render purpose.
-                ExoPlayerWrapper exoWrapper = new ExoPlayerWrapper(context, vrPlayerFactory.newVRViewInstance(context));
+                ExoPlayerWrapper exoWrapper = new ExoPlayerWrapper(context, vrPlayerFactory.newVRViewInstance(context), playerSettings);
                 return vrPlayerFactory.newInstance(context, exoWrapper);
 
             default:
-                return new ExoPlayerWrapper(context);
+                return new ExoPlayerWrapper(context, playerSettings);
         }
     }
 

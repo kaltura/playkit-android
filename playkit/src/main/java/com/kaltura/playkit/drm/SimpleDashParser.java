@@ -88,15 +88,13 @@ class SimpleDashParser {
             if (drmInitData == null) {
                 throw new IOException("drmInitData is not initialized");
             }
+            hasContentProtection = drmInitData.schemeDataCount > 0;
+            if (hasContentProtection) {
+                loadDrmInitData(representation);
+            } else {
+                log.i("no content protection found");
+            }
         }
-
-        hasContentProtection = drmInitData.schemeDataCount > 0;
-        if (hasContentProtection) {
-            loadDrmInitData(representation);
-        } else {
-            log.i("no content protection found");
-        }
-
         return this;
     }
 
@@ -134,7 +132,13 @@ class SimpleDashParser {
             return null;
         }
 
-        DrmInitData.SchemeData schemeData = drmInitData.get(widevineUUID);
+        DrmInitData.SchemeData schemeData = null;
+        for (int i = 0 ; i < drmInitData.schemeDataCount ; i++) {
+            if (drmInitData.get(i) != null && drmInitData.get(i).matches(widevineUUID)) {
+                schemeData = drmInitData.get(i);
+            }
+        }
+
         if (schemeData == null) {
             log.e("No Widevine PSSH in media");
             return null;

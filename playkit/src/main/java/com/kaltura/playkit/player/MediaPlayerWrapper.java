@@ -395,7 +395,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             player.pause();
             player.seekTo(0);
             player.reset();
-            sendDistinctEvent(PlayerEvent.Type.STOPPED);
         }
     }
 
@@ -597,6 +596,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     @Override
     public void onOrientationChanged() {
         //Do nothing.
+    }
+
+    @Override
+    public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
+        //Do nothing
     }
 
     @NonNull

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.ui.SubtitleView;
 
 /**
  * Created by anton.afanasiev on 22/04/2018.
@@ -26,5 +27,7 @@ public abstract class BaseExoplayerView extends PlayerView {
     public abstract void setPlayer(SimpleExoPlayer player, boolean useTextureView, boolean isSurfaceSecured);
 
     public abstract void setVideoSurfaceProperties(boolean useTextureView, boolean isSurfaceSecured);
+
+    public abstract SubtitleView getSubtitleView();
 
 }

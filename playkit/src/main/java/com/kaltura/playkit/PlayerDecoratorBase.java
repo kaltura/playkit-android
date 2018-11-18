@@ -16,6 +16,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.player.PlayerView;
+import com.kaltura.playkit.player.SubtitleStyleSettings;
 
 public class PlayerDecoratorBase implements Player {
 
@@ -100,11 +101,6 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
-        player.prepareNext(mediaConfig);
-    }
-
-    @Override
     public long getBufferedPosition() {
         return player.getBufferedPosition();
     }
@@ -125,18 +121,28 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void skip() {
-        player.skip();
+    public PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
+        return player.addEventListener(listener, events);
     }
 
     @Override
-    public void addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
-        player.addEventListener(listener, events);
+    public void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
+        player.removeEventListener(listener);
     }
 
     @Override
-    public void addStateChangeListener(@NonNull PKEvent.Listener listener) {
-        player.addStateChangeListener(listener);
+    public PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener) {
+        return player.addStateChangeListener(listener);
+    }
+
+    @Override
+    public void removeStateChangeListener(@NonNull PKEvent.Listener listener) {
+        player.removeStateChangeListener(listener);
+    }
+
+    @Override
+    public void removeListener(@NonNull PKEvent.Listener listener) {
+        player.removeListener(listener);
     }
 
     void setPlayer(Player player) {
@@ -173,4 +179,10 @@ public class PlayerDecoratorBase implements Player {
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         player.updatePluginConfig(pluginName, pluginConfig);
     }
+
+    @Override
+    public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
+        player.updateSubtitleStyle(subtitleStyleSettings);
+    }
+
 }

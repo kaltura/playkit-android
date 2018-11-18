@@ -21,11 +21,7 @@ import com.kaltura.playkit.PKLog;
 import java.io.FileDescriptor;
 import java.lang.reflect.Method;
 
-/**
- * @hide
- */
-
-public class WidevineClassicCompat {
+class WidevineClassicCompat {
 
     private static final PKLog log = PKLog.get("WidevineClassicCompat");
 
