@@ -145,7 +145,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView, PlayerSettings playerSettings) {
         this.context = context;
-        bandwidthMeter = new DefaultBandwidthMeter.Builder()
+        bandwidthMeter = new DefaultBandwidthMeter.Builder(context)
                 .setEventListener(mainHandler, this)
                 .build();
         this.exoPlayerView = exoPlayerView;
