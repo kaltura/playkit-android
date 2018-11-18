@@ -23,7 +23,8 @@ public enum PKPlayerErrorType {
     UNEXPECTED(7002),
     SOURCE_SELECTION_FAILED(7003),
     FAILED_TO_INITIALIZE_PLAYER(7004),
-    DRM_ERROR(7005);
+    DRM_ERROR(7005),
+    TRACK_SELECTION_FAILED(7006);
 
     public final int errorCode;
 

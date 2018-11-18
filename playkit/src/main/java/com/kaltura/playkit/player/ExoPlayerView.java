@@ -208,6 +208,11 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     @Override
+    public SubtitleView getSubtitleView() {
+        return subtitleView;
+    }
+
+    @Override
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
         if (videoSurface instanceof SurfaceView) {

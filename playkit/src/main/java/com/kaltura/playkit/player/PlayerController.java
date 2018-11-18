@@ -44,7 +44,6 @@ import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 public class PlayerController implements Player {
 
     private static final PKLog log = PKLog.get("PlayerController");
-
     private Context context;
     private PKMediaConfig mediaConfig;
     private PKMediaSourceConfig sourceConfig;
@@ -68,7 +67,6 @@ public class PlayerController implements Player {
     private PKEvent.Listener eventListener;
     private PlayerEngine.EventListener eventTrigger = initEventListener();
     private PlayerEngine.StateChangedListener stateChangedTrigger = initStateChangeListener();
-
 
     public PlayerController(Context context) {
         this.context = context;
@@ -165,7 +163,7 @@ public class PlayerController implements Player {
 
         switchPlayersIfRequired(incomingPlayerType);
 
-        if (player != null) {
+        if (assertPlayerIsNotNull("prepare()")) {
             player.load(sourceConfig);
         }
     }
@@ -178,12 +176,12 @@ public class PlayerController implements Player {
      * otherwise will return false and notify user with the error that happened.
      */
     public boolean setMedia(PKMediaConfig mediaConfig) {
-        log.d("setMedia");
+        log.v("setMedia");
         if (!isNewEntry) {
             isNewEntry = true;
             stop();
         }
-        
+
         sessionId = generateSessionId();
         if (playerSettings.getContentRequestAdapter() != null) {
             playerSettings.getContentRequestAdapter().updateParams(this);
@@ -259,8 +257,8 @@ public class PlayerController implements Player {
 
     @Override
     public void destroy() {
-        log.d("destroy");
-        if (player != null) {
+        log.v("destroy");
+        if (assertPlayerIsNotNull("destroy()")) {
             if (playerEngineView != null) {
                 rootPlayerView.removeView(playerEngineView);
             }
@@ -275,29 +273,27 @@ public class PlayerController implements Player {
 
     @Override
     public void stop() {
-        log.d("stop");
+        log.v("stop");
         if (eventListener != null && !isPlayerStopped) {
             PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
             cancelUpdateProgress();
             isPlayerStopped = true;
             log.d("sending STOPPED event ");
             eventListener.onEvent(event);
-            if (player != null) {
+            if (assertPlayerIsNotNull("stop()")) {
                 player.stop();
             }
         }
     }
 
     private void startPlaybackFrom(long startPosition) {
-        if (player == null) {
-            log.w("Attempt to invoke 'startPlaybackFrom()' on null instance of the player engine");
-            return;
-        }
-
-        if (startPosition <= getDuration()) {
-            player.startFrom(startPosition);
-        } else {
-            log.w("The start position is grater then duration of the video! Start position " + startPosition + ", duration " + mediaConfig.getMediaEntry().getDuration());
+        log.v("startPlaybackFrom " + startPosition);
+        if (assertPlayerIsNotNull("startPlaybackFrom()")) {
+            if (startPosition <= getDuration()) {
+                player.startFrom(startPosition);
+            } else {
+                log.w("The start position is grater then duration of the video! Start position " + startPosition + ", duration " + mediaConfig.getMediaEntry().getDuration());
+            }
         }
     }
 
@@ -307,100 +303,96 @@ public class PlayerController implements Player {
 
     @Override
     public <T extends PKController> T getController(Class<T> type) {
-        if (player == null) {
-            log.w("Attempt to invoke 'getController()' on null instance of the player engine");
-            return null;
+        log.v("getController");
+        if (assertPlayerIsNotNull("getController()")) {
+            return player.getController(type);
         }
-
-        return player.getController(type);
+        return null;
     }
 
     public long getDuration() {
-        if (player == null) {
-            return Consts.TIME_UNSET;
+        log.v("getDuration");
+        if (assertPlayerIsNotNull("getDuration()")) {
+            return player.getDuration();
         }
-        return player.getDuration();
+        return Consts.TIME_UNSET;
     }
 
     public long getCurrentPosition() {
-        if (player == null) {
-            return Consts.POSITION_UNSET;
+        log.v("getCurrentPosition");
+        if (assertPlayerIsNotNull("getCurrentPosition()")) {
+            return player.getCurrentPosition();
         }
-        return player.getCurrentPosition();
+        return Consts.POSITION_UNSET;
     }
 
     public long getBufferedPosition() {
-        if (player == null) {
-            return Consts.POSITION_UNSET;
+        log.v("getBufferedPosition");
+        if (assertPlayerIsNotNull("getBufferedPosition()")) {
+            return player.getBufferedPosition();
         }
-        return player.getBufferedPosition();
+        return Consts.POSITION_UNSET;
+
     }
 
     public void seekTo(long position) {
-        log.d("seek to " + position);
-        if (player == null) {
-            log.w("Attempt to invoke 'seekTo()' on null instance of the player engine");
-            return;
+        log.v("seek to " + position);
+        if (assertPlayerIsNotNull("seekTo()")) {
+            targetSeekPosition = position;
+            player.seekTo(position);
         }
-        targetSeekPosition = position;
-        player.seekTo(position);
     }
 
     public void play() {
-        log.d("play");
-
-        if (player == null) {
-            log.w("Attempt to invoke 'play()' on null instance of the player engine");
-            return;
+        log.v("play");
+        if (assertPlayerIsNotNull("play()")) {
+            addPlayerView();
+            player.play();
         }
-
-        addPlayerView();
-        player.play();
     }
 
     public void pause() {
-        log.d("pause");
-        if (player == null) {
-            log.w("Attempt to invoke 'pause()' on null instance of the player engine");
-            return;
+        log.v("pause");
+        if (assertPlayerIsNotNull("pause()")) {
+            player.pause();
         }
-        player.pause();
     }
 
     @Override
     public void replay() {
-        log.d("replay");
-        if (player == null) {
-            log.w("Attempt to invoke 'replay()' on null instance of the player engine");
-            return;
+        log.v("replay");
+        if (assertPlayerIsNotNull("replay()")) {
+            player.replay();
         }
-        player.replay();
     }
 
     @Override
     public void setVolume(float volume) {
-        if (player == null) {
-            log.w("Attempt to invoke 'setVolume()' on null instance of the player engine");
-            return;
+        log.v("setVolume");
+        if (assertPlayerIsNotNull("setVolume()")) {
+            player.setVolume(volume);
         }
-        player.setVolume(volume);
     }
 
     @Override
     public boolean isPlaying() {
-        return player != null && player.isPlaying();
+        log.v("isPlaying");
+        if (assertPlayerIsNotNull("isPlaying()")) {
+            return player.isPlaying();
+        }
+        return false;
     }
 
     private void togglePlayerListeners(boolean enable) {
-        if (player == null) {
-            return;
-        }
-        if (enable) {
-            player.setEventListener(eventTrigger);
-            player.setStateChangedListener(stateChangedTrigger);
-        } else {
-            player.setEventListener(null);
-            player.setStateChangedListener(null);
+        log.v("togglePlayerListeners");
+        if (assertPlayerIsNotNull("togglePlayerListeners()")) {
+            if (enable) {
+                player.setEventListener(eventTrigger);
+                player.setStateChangedListener(stateChangedTrigger);
+            } else {
+                player.setEventListener(null);
+                player.setStateChangedListener(null);
+            }
         }
     }
 
@@ -438,23 +430,21 @@ public class PlayerController implements Player {
 
     @Override
     public void onApplicationPaused() {
-        log.d("onApplicationPaused");
-        if (player == null) {
-            log.w("Attempt to invoke 'release()' on null instance of the player engine");
-            return;
+        log.v("onApplicationPaused");
+        if (assertPlayerIsNotNull("onApplicationPaused()")) {
+            if (player.isPlaying()) {
+                player.pause();
+            }
+            cancelUpdateProgress();
+            player.release();
+            togglePlayerListeners(false);
         }
-        if (player.isPlaying()) {
-            player.pause();
-        }
-        cancelUpdateProgress();
-        player.release();
-        togglePlayerListeners(false);
     }
 
     @Override
     public void onApplicationResumed() {
-        log.d("onApplicationResumed");
-        if (player != null) {
+        log.v("onApplicationResumed");
+        if (assertPlayerIsNotNull("onApplicationResumed()")) {
             player.restore();
             updateProgress();
         }
@@ -464,17 +454,18 @@ public class PlayerController implements Player {
 
     @Override
     public void onOrientationChanged() {
-        player.onOrientationChanged();
+        log.v("onOrientationChanged");
+        if (assertPlayerIsNotNull("onOrientationChanged()")) {
+            player.onOrientationChanged();
+        }
     }
 
     @Override
     public void changeTrack(String uniqueId) {
-        if (player == null) {
-            log.w("Attempt to invoke 'changeTrack()' on null instance of the player engine");
-            return;
+        log.v("changeTrack");
+        if (assertPlayerIsNotNull("changeTrack()")) {
+            player.changeTrack(uniqueId);
         }
-
-        player.changeTrack(uniqueId);
     }
 
     @Override
@@ -484,7 +475,11 @@ public class PlayerController implements Player {
 
     @Override
     public boolean isLive() {
-        return player != null && player.isLive();
+        log.v("isLive");
+        if (assertPlayerIsNotNull("isLive()")) {
+            return player.isLive();
+        }
+        return false;
     }
 
     @Override
@@ -497,17 +492,37 @@ public class PlayerController implements Player {
 
     @Override
     public void setPlaybackRate(float rate) {
-        if (player != null) {
+        log.v("setPlaybackRate");
+        if (assertPlayerIsNotNull("setPlaybackRate()")) {
             player.setPlaybackRate(rate);
         }
     }
 
     @Override
     public float getPlaybackRate() {
-        if (player != null) {
+        log.v("getPlaybackRate");
+        if (assertPlayerIsNotNull("getPlaybackRate()")) {
             return player.getPlaybackRate();
         }
         return Consts.PLAYBACK_SPEED_RATE_UNKNOWN;
+    }
+
+
+    @Override
+    public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
+        log.v("updateSubtitleStyle");
+        if (assertPlayerIsNotNull("updateSubtitleStyle")) {
+            player.updateSubtitleStyle(subtitleStyleSettings);
+        }
+    }
+  
+    private boolean assertPlayerIsNotNull(String methodName) {
+        if (player != null) {
+            return true;
+        }
+        String nullPlayerMsgFormat = "Attempt to invoke '%s' on null instance of the player engine";
+        log.w(String.format(nullPlayerMsgFormat, methodName));
+        return false;
     }
 
     private boolean shouldSwitchBetweenPlayers(PKMediaSource newSource) {
@@ -641,6 +656,9 @@ public class PlayerController implements Player {
                             break;
                         case PLAYBACK_RATE_CHANGED:
                             event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
+                            break;
+                        case SUBTITLE_STYLE_CHANGED:
+                            event = new PlayerEvent.SubtitlesStyleChanged(playerSettings.getSubtitleStyleSettings().getStyleName());
                             break;
                         default:
                             event = new PlayerEvent.Generic(eventType);
