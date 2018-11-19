@@ -44,7 +44,7 @@ public final class CustomHttpDataSourceFactory extends HttpDataSource.BaseFactor
                 defaultRequestProperties.set(entry.getKey(), entry.getValue());
             }
         }
-        return new DefaultHttpDataSource(userAgent, null, null, connectTimeoutMillis,
+        return new DefaultHttpDataSource(userAgent, null, connectTimeoutMillis,
                 readTimeoutMillis, allowCrossProtocolRedirects, defaultRequestProperties);
     }
 }

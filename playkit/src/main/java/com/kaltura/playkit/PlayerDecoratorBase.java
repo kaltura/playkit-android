@@ -16,6 +16,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.player.PlayerView;
+import com.kaltura.playkit.player.SubtitleStyleSettings;
 
 public class PlayerDecoratorBase implements Player {
 
@@ -178,4 +179,10 @@ public class PlayerDecoratorBase implements Player {
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         player.updatePluginConfig(pluginName, pluginConfig);
     }
+
+    @Override
+    public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
+        player.updateSubtitleStyle(subtitleStyleSettings);
+    }
+
 }

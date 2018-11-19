@@ -384,11 +384,6 @@ class DefaultProfiler extends Profiler {
     }
 
     @Override
-    void onViewportSizeChange(PlayerEngine playerEngine, int width, int height) {
-        log("ViewportSizeChange", field("width", width), field("height", height));
-    }
-
-    @Override
     void onDurationChanged(long duration) {
         log("DurationChanged", timeField("duration", duration));
     }

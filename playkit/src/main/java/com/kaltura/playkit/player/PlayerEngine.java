@@ -216,6 +216,11 @@ public interface PlayerEngine {
     void setProfiler(Profiler profiler);
 
     /**
+     * Update Subtitle Styles
+     */
+    void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
+
+    /**
      * Generic getters for playkit controllers.
      *
      * @param type - type of the controller you want to obtain.

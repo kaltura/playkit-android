@@ -1,6 +1,5 @@
 package com.kaltura.playkit.player;
 
-import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.Surface;
@@ -275,7 +274,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         String dataTypeString = dataTypeString(mediaLoadData.dataType);
         String trackTypeString = trackTypeString(mediaLoadData.trackType);
 
-        if (dataTypeString == null || trackTypeString == null) {
+        if (dataTypeString == null) {
             return;
         }
 
@@ -344,17 +343,11 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onBandwidthEstimate(EventTime eventTime, int totalLoadTimeMs, long totalBytesLoaded, long bitrateEstimate) {
-        log("BandwidthEstimate", Profiler.field("bitrateEstimate", bitrateEstimate));
-    }
-
-    @Override
-    public void onViewportSizeChange(EventTime eventTime, int width, int height) {
-        log("ViewportSizeChange", Profiler.field("width", width), Profiler.field("height", height));
-    }
-
-    @Override
-    public void onNetworkTypeChanged(EventTime eventTime, @Nullable NetworkInfo networkInfo) {
-
+        log("BandwidthSample",
+                Profiler.field("bandwidth", bitrateEstimate),
+                Profiler.timeField("totalLoadTime", totalLoadTimeMs),
+                Profiler.field("totalBytesLoaded", totalBytesLoaded)
+        );
     }
 
     @Override
@@ -425,5 +418,25 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     @Override
     public void onDrmKeysRemoved(EventTime eventTime) {
 
+    }
+
+    @Override
+    public void onSurfaceSizeChanged(EventTime eventTime, int width, int height) {
+        log("ViewportSizeChange", Profiler.field("width", width), Profiler.field("height", height));
+    }
+
+    @Override
+    public void onVolumeChanged(EventTime eventTime, float volume) {
+        log("VolumeChanged", Profiler.field("volume", volume));
+    }
+
+    @Override
+    public void onDrmSessionAcquired(EventTime eventTime) {
+        log("DrmSessionAcquired");
+    }
+
+    @Override
+    public void onDrmSessionReleased(EventTime eventTime) {
+        log("DrmSessionReleased");
     }
 }

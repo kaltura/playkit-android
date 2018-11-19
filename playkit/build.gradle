@@ -3,7 +3,6 @@ apply from: 'version.gradle'
 
 android {
     compileSdkVersion 28
-
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 28
@@ -30,16 +29,15 @@ tasks.withType(Javadoc) {
     options.addBooleanOption('Xdoclint:none', true)
 }
 
-def exoPlayerVersion = '2.8.4'
-
 dependencies {
 
     api 'com.google.code.gson:gson:2.8.2'
+
     // ExoPlayer
-    api 'com.google.android.exoplayer:exoplayer-core:' + exoPlayerVersion
-    api 'com.google.android.exoplayer:exoplayer-dash:' + exoPlayerVersion
-    api 'com.google.android.exoplayer:exoplayer-hls:' + exoPlayerVersion
-    api 'com.google.android.exoplayer:exoplayer-ui:' + exoPlayerVersion
+    api 'com.google.android.exoplayer:exoplayer-core:2.9.1'
+    api 'com.google.android.exoplayer:exoplayer-dash:2.9.1'
+    api 'com.google.android.exoplayer:exoplayer-hls:2.9.1'
+    api 'com.google.android.exoplayer:exoplayer-ui:2.9.1'
 
     // Tests
     testImplementation 'junit:junit:4.12'

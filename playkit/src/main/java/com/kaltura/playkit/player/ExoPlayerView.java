@@ -105,13 +105,6 @@ class ExoPlayerView extends BaseExoplayerView {
         }
     }
 
-    // FIXME: 24/10/2018 This is a workaround and should be removed when migrating to ExoPlayer 2.9
-    void addOnContentLayoutChangeListener(OnLayoutChangeListener listener) {
-        if (contentFrame != null) {
-            contentFrame.addOnLayoutChangeListener(listener);
-        }
-    }
-
     /**
      * Create and set relevant surface and listeners to player and attach Surface to the view hierarchy.
      *
@@ -212,6 +205,11 @@ class ExoPlayerView extends BaseExoplayerView {
     @Override
     public void showVideoSubtitles() {
         subtitleView.setVisibility(VISIBLE);
+    }
+
+    @Override
+    public SubtitleView getSubtitleView() {
+        return subtitleView;
     }
 
     @Override

@@ -602,6 +602,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         //Do nothing.
     }
 
+    @Override
+    public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
+        //Do nothing
+    }
+
     @NonNull
     private Map<String, String> getHeadersMap() {
         Map<String, String> headersMap = new HashMap();

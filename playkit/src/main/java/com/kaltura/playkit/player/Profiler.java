@@ -6,6 +6,7 @@ import android.os.HandlerThread;
 import android.os.Process;
 import android.support.annotation.NonNull;
 
+import com.google.android.exoplayer2.C;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.kaltura.playkit.PKLog;
@@ -71,9 +72,6 @@ public abstract class Profiler {
         void onSessionFinished() {}
 
         @Override
-        void onViewportSizeChange(PlayerEngine playerEngine, int width, int height) {}
-
-        @Override
         void onDurationChanged(long duration) {}
     };
 
@@ -126,7 +124,7 @@ public abstract class Profiler {
     }
 
     static String timeField(String name, long value) {
-        return field(name, value / 1000f);
+        return value == C.TIME_UNSET ? field(name, null) : field(name, value / 1000f);
     }
 
     static Profiler create() {
@@ -234,8 +232,6 @@ public abstract class Profiler {
     abstract void onBandwidthSample(PlayerEngine playerEngine, long bitrate);
 
     abstract void onSessionFinished();
-
-    abstract void onViewportSizeChange(PlayerEngine playerEngine, int width, int height);
 
     abstract void onDurationChanged(long duration);
 }

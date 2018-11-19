@@ -5,9 +5,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.android.exoplayer2.DefaultRenderersFactory;
@@ -53,7 +50,7 @@ public class DummySurfaceWorkaroundTest {
         }
 
         @Override
-        public byte[] executeKeyRequest(UUID uuid, ExoMediaDrm.KeyRequest request, @Nullable String mediaProvidedLicenseServerUrl) throws Exception {
+        public byte[] executeKeyRequest(UUID uuid, ExoMediaDrm.KeyRequest request) throws Exception {
             Thread.sleep(10000);
             return null;
         }
@@ -65,22 +62,18 @@ public class DummySurfaceWorkaroundTest {
         }
 
         DataSource.Factory mediaDataSourceFactory = new DefaultDataSourceFactory(context, "whatever");
+        DefaultTrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory());
 
-        Handler mainHandler = new Handler(Looper.getMainLooper());
-
-        DefaultTrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory(null));
-
-
-        DefaultDrmSessionManager<FrameworkMediaCrypto> drmSessionManager =
-                getDrmSessionManager(mainHandler);
+        DefaultDrmSessionManager<FrameworkMediaCrypto> drmSessionManager = getDrmSessionManager();
 
         if (drmSessionManager == null) {
             return;
         }
 
-        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context, drmSessionManager);
-        final SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
-        player.addListener(new Player.DefaultEventListener() {
+        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context);
+        final SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, drmSessionManager);
+
+        player.addListener(new Player.EventListener() {
             @Override
             public void onPlayerError(ExoPlaybackException error) {
                 if (error.getCause() instanceof MediaCodecRenderer.DecoderInitializationException) {
@@ -115,9 +108,9 @@ public class DummySurfaceWorkaroundTest {
         }
     }
 
-    private static DefaultDrmSessionManager<FrameworkMediaCrypto> getDrmSessionManager(Handler mainHandler) {
+    private static DefaultDrmSessionManager<FrameworkMediaCrypto> getDrmSessionManager() {
         try {
-            return DefaultDrmSessionManager.newWidevineInstance(fakeDrmCallback, null, mainHandler, null);
+            return DefaultDrmSessionManager.newWidevineInstance(fakeDrmCallback, null);
         } catch (UnsupportedDrmException e) {
             e.printStackTrace();
             return null;
