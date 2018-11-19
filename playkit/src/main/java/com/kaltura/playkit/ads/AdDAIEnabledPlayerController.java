@@ -46,7 +46,7 @@ public class AdDAIEnabledPlayerController extends AdEnabledPlayerController {
         this.mediaConfig = mediaConfig;
 
         if (adsProvider != null) {
-            if (adsProvider.isAdRequested()) {
+            if (adsProvider.isAdRequested() && !adsProvider.isAdError()) {
                 if (mediaConfig != null && mediaConfig.getMediaEntry() != null &&
                         mediaConfig.getMediaEntry().hasSources() &&
                         mediaConfig.getMediaEntry().getSources().get(0).getUrl().contains("dai.google.com")) {
@@ -54,8 +54,13 @@ public class AdDAIEnabledPlayerController extends AdEnabledPlayerController {
                     super.prepare(mediaConfig);
                 }
             } else {
-                log.d("IMA setAdProviderListener");
-                adsProvider.setAdProviderListener(AdDAIEnabledPlayerController.this);
+                if (adsProvider.isAdError()) {
+                    super.prepare(mediaConfig);
+                    play();
+                } else {
+                    log.d("IMA setAdProviderListener");
+                    adsProvider.setAdProviderListener(AdDAIEnabledPlayerController.this);
+                }
             }
         }
     }
