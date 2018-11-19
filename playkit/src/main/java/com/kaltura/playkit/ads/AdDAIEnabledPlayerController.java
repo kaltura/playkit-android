@@ -26,7 +26,7 @@ import com.kaltura.playkit.utils.Consts;
 
 public class AdDAIEnabledPlayerController extends AdEnabledPlayerController {
 
-    private static final PKLog log = PKLog.get("AdEnablController");
+    private static final PKLog log = PKLog.get("AdDAIEnabledPlayerController");
 
     private AdsProvider adsProvider;
     private PKMediaConfig mediaConfig;
