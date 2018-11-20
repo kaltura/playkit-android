@@ -2,7 +2,6 @@ package com.kaltura.playkit.player;
 
 import android.content.Context;
 
-import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.player.vr.VRPlayerFactory;
 
@@ -11,7 +10,6 @@ import com.kaltura.playkit.player.vr.VRPlayerFactory;
  */
 
 class PlayerEngineFactory {
-    private static final PKLog log = PKLog.get("PlayerEngineFactory");
 
     static PlayerEngineType selectPlayerType(PKMediaFormat mediaFormat, boolean is360Supported) {
 
@@ -39,23 +37,18 @@ class PlayerEngineFactory {
                     clazz = Class.forName("com.kaltura.playkitvr.DefaultVRPlayerFactory");
                     vrPlayerFactory = (VRPlayerFactory) clazz.newInstance();
                 } catch (ClassNotFoundException e) {
-                    String errorClassNotFoundException = "Could not find com.kaltura.playkitvr.DefaultVRPlayerFactory class." +
-                            " Please check if com.kaltura.playkitvr library exist in project structure";
-                    log.e(errorClassNotFoundException);
-                    throw new PlayerInitializationException(errorClassNotFoundException, e);
+                    throw new PlayerInitializationException("Could not find com.kaltura.playkitvr.DefaultVRPlayerFactory class." +
+                            " Please check if com.kaltura.playkitvr library exist in project structure", e);
                 } catch (InstantiationException e) {
-                    String errorInstantiationException = "Failed to create new instance of VRPlayerFactory";
-                    log.e(errorInstantiationException);
-                    throw new PlayerInitializationException(errorInstantiationException, e);
+                    throw new PlayerInitializationException("Failed to create new instance of VRPlayerFactory", e);
                 } catch (IllegalAccessException e) {
-                    String errorIllegalAccessException = "Illegal package access to VRPlayerFactory. Failed to create.";
-                    log.e(errorIllegalAccessException);
-                    throw new PlayerInitializationException(errorIllegalAccessException, e);
+                    throw new PlayerInitializationException("Illegal package access to VRPlayerFactory. Failed to create.", e);
                 }
 
                 //Initialize ExoplayerWrapper for video playback which will use VRView for render purpose.
                 ExoPlayerWrapper exoWrapper = new ExoPlayerWrapper(context, vrPlayerFactory.newVRViewInstance(context), playerSettings);
                 return vrPlayerFactory.newInstance(context, exoWrapper);
+
             default:
                 return new ExoPlayerWrapper(context, playerSettings);
         }
