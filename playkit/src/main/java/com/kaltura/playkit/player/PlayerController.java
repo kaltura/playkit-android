@@ -233,16 +233,21 @@ public class PlayerController implements Player {
         //Initialize new PlayerEngine.
         try {
             player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType, playerSettings);
-            //IMA workaround. In order to prevent flickering of the first frame
-            //with ExoplayerEngine we should addPlayerView here for all playerEngines except Exoplayer.
-            if (incomingPlayerType == PlayerEngineType.MediaPlayer) {
-                addPlayerView();
-            }
-            togglePlayerListeners(true);
-            currentPlayerType = incomingPlayerType;
         } catch (PlayerEngineFactory.PlayerInitializationException e) {
             sendErrorMessage(PKPlayerErrorType.FAILED_TO_INITIALIZE_PLAYER, e.getMessage(), e);
+            if (incomingPlayerType == PlayerEngineType.VRPlayer) {
+                player = new ExoPlayerWrapper(context, playerSettings);
+            } else {
+                return;
+            }
         }
+        //IMA workaround. In order to prevent flickering of the first frame
+        //with ExoplayerEngine we should addPlayerView here for all playerEngines except Exoplayer.
+        if (incomingPlayerType == PlayerEngineType.MediaPlayer) {
+            addPlayerView();
+        }
+        togglePlayerListeners(true);
+        currentPlayerType = incomingPlayerType;
     }
 
     private void addPlayerView() {
