@@ -290,6 +290,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     @Override
     public void onLoadStarted(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
         logLoadingEvent("LoadStarted", loadEventInfo, mediaLoadData, null, null);
+        profiler.maybeLogServerInfo(loadEventInfo.uri);
     }
 
     @Override

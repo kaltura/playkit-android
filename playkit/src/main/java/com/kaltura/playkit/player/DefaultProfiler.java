@@ -2,7 +2,6 @@ package com.kaltura.playkit.player;
 
 import android.content.Context;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -24,7 +23,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 class ConfigFile {
@@ -45,6 +46,8 @@ class DefaultProfiler extends Profiler {
     long startTime;
     private ExoPlayerProfilingListener analyticsListener;
     private String sessionId;
+
+    private final Set<String> serversLookedUp = new HashSet<>();
 
     DefaultProfiler() {
 
@@ -136,6 +139,8 @@ class DefaultProfiler extends Profiler {
 
         this.startTime = SystemClock.elapsedRealtime();
         this.logQueue.clear();
+
+        this.serversLookedUp.clear();
 
         pkLog.d("New profiler with sessionId: " + sessionId);
 
@@ -314,17 +319,28 @@ class DefaultProfiler extends Profiler {
                 field("source", sourceUrl.toString()),
                 field("useTextureView", sourceConfig.playerSettings.useTextureView()));
 
+
+        maybeLogServerInfo(sourceUrl);
+    }
+
+    void maybeLogServerInfo(final Uri url) {
+        final String hostName = url.getHost();
+        if (serversLookedUp.contains(hostName)) {
+            return;
+        }
+
         ioHandler.postAtFrontOfQueue(new Runnable() {
             @Override
             public void run() {
-
-                logServerInfo(sourceUrl);
+                logServerInfo(hostName);
             }
         });
     }
 
-    private void logServerInfo(Uri url) {
-        String hostName = url.getHost();
+    private void logServerInfo(String hostName) {
+
+        if (serversLookedUp.contains(hostName)) return;
+
         String canonicalHostName = null;
         String hostIp = null;
         String error = null;
@@ -332,7 +348,7 @@ class DefaultProfiler extends Profiler {
 
         try {
             long start = SystemClock.elapsedRealtime();
-            InetAddress address = InetAddress.getByName(url.getHost());
+            InetAddress address = InetAddress.getByName(hostName);
             hostIp = address.getHostAddress();
             lookupTime = SystemClock.elapsedRealtime() - start;
             canonicalHostName = address.getCanonicalHostName();
@@ -347,6 +363,8 @@ class DefaultProfiler extends Profiler {
                 timeField("lookupTime", lookupTime),
                 field("lookupError", error)
         );
+
+        serversLookedUp.add(hostName);
     }
 
     @Override
