@@ -15,7 +15,6 @@ package com.kaltura.playkit.plugins.ads;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaConfig;
-import com.kaltura.playkit.PKMediaSource;
 
 /**
  * Created by gilad.nadav on 22/11/2016.
