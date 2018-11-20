@@ -56,12 +56,10 @@ class PlayerEngineFactory {
                 //Initialize ExoplayerWrapper for video playback which will use VRView for render purpose.
                 ExoPlayerWrapper exoWrapper = new ExoPlayerWrapper(context, vrPlayerFactory.newVRViewInstance(context), playerSettings);
                 return vrPlayerFactory.newInstance(context, exoWrapper);
-
             default:
                 return new ExoPlayerWrapper(context, playerSettings);
         }
     }
-
 
     static class PlayerInitializationException extends Exception {
 
