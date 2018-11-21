@@ -27,6 +27,7 @@ import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -36,6 +37,8 @@ import com.google.android.exoplayer2.metadata.MetadataOutput;
 import com.google.android.exoplayer2.source.BehindLiveWindowException;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.MergingMediaSource;
+import com.google.android.exoplayer2.source.SingleSampleMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
@@ -224,6 +227,15 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig) {
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
+
+        List<PlayerSubtitles> subtitlesList = sourceConfig.mediaSource.getSubtitleList() != null &&
+                                                sourceConfig.mediaSource.getSubtitleList().size() > 0 ?
+                                                    sourceConfig.mediaSource.getSubtitleList() : null;
+        // +1 position to mediasource is to add the video mediasource later
+        // mediasource 0th position is always secured for video media source, rest is for subtitles
+        // if order is reversed then seekbar is not updating
+        MediaSource[] mediaSources = new MediaSource[subtitlesList != null && subtitlesList.size() > 0 ? subtitlesList.size() + 1 : 1];
+
         if (format == null) {
             // TODO: error?
             return null;
@@ -233,28 +245,50 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (mediaDataSourceFactory == null) {
             mediaDataSourceFactory = buildDataSourceFactory();
         }
+
+        if(subtitlesList != null) {
+            for (int subtitlePosition = 0 ; subtitlePosition < subtitlesList.size() ; subtitlePosition ++) {
+                mediaSources[subtitlePosition + 1] = buildSubtitleSource(subtitlesList.get(subtitlePosition));
+            }
+        }
+
         switch (format) {
 
             case dash:
                 if (manifestDataSourceFactory == null) {
                     manifestDataSourceFactory = buildDataSourceFactory();
                 }
-                return new DashMediaSource.Factory(
+                mediaSources[0] = new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
                         manifestDataSourceFactory)
                         .createMediaSource(uri);
+                return new MergingMediaSource(mediaSources);
             case hls:
-                return new HlsMediaSource.Factory(mediaDataSourceFactory)
+                mediaSources[0] = new HlsMediaSource.Factory(mediaDataSourceFactory)
                         .createMediaSource(uri);
-            // mp4 and mp3 both use ExtractorMediaSource
+                return new MergingMediaSource(mediaSources);
+                // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
-                return new ExtractorMediaSource.Factory(mediaDataSourceFactory)
+                mediaSources[0] = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
                         .createMediaSource(uri);
-
+                return new MergingMediaSource(mediaSources);
             default:
                 throw new IllegalStateException("Unsupported type: " + format);
+
         }
+    }
+
+    private MediaSource buildSubtitleSource(PlayerSubtitles playerSubtitles) {
+        // Build the subtitle MediaSource.
+        Format subtitleFormat = Format.createTextSampleFormat(
+                playerSubtitles.getId(), // An identifier for the track. May be null.
+                playerSubtitles.getMimeType(), // The mime type. Must be set correctly.
+                playerSubtitles.getSelectionFlags(), // Selection flags for the track.
+                playerSubtitles.getLanguage()); // The subtitle language. May be null.
+
+        return new SingleSampleMediaSource.Factory(mediaDataSourceFactory)
+                .createMediaSource(Uri.parse(playerSubtitles.getUrl()), subtitleFormat, C.TIME_UNSET);
     }
 
     /**
