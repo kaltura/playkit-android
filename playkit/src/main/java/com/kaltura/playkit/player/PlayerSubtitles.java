@@ -17,8 +17,8 @@ public class PlayerSubtitles implements Parcelable {
     private int selectionFlags = 0;
     private String language;
 
-    public PlayerSubtitles() {
-
+    public PlayerSubtitles(String language) {
+        this.language = language;
     }
 
     public String getId() {
@@ -63,11 +63,6 @@ public class PlayerSubtitles implements Parcelable {
 
     public String getLanguage() {
         return language;
-    }
-
-    public PlayerSubtitles setLanguage(String language) {
-        this.language = language;
-        return this;
     }
 
     protected PlayerSubtitles(Parcel in) {
