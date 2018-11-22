@@ -63,6 +63,7 @@ public class PlayerController implements Player {
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
 
+
     private PKEvent.Listener eventListener;
     private PlayerEngine.EventListener eventTrigger = initEventListener();
     private PlayerEngine.StateChangedListener stateChangedTrigger = initStateChangeListener();
@@ -279,7 +280,6 @@ public class PlayerController implements Player {
     @Override
     public void stop() {
         log.v("stop");
-
         if (eventListener != null && !isPlayerStopped) {
             PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
             cancelUpdateProgress();
@@ -587,8 +587,8 @@ public class PlayerController implements Player {
         }
     }
 
-    public void setEventListener(PKEvent.Listener listener) {
-        this.eventListener = listener;
+    public void setEventListener(PKEvent.Listener eventListener) {
+        this.eventListener = eventListener;
     }
 
     private PlayerEngine.EventListener initEventListener() {
