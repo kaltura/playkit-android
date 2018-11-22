@@ -395,9 +395,12 @@ public class PlayerController implements Player {
             if (enable) {
                 player.setEventListener(eventTrigger);
                 player.setStateChangedListener(stateChangedTrigger);
+                player.setAnalyticsListener(data ->
+                        eventListener.onEvent(new PlayerEvent.AnalyticsDataUpdated(data)));
             } else {
                 player.setEventListener(null);
                 player.setStateChangedListener(null);
+                player.setAnalyticsListener(null);
             }
         }
     }

@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -36,6 +37,7 @@ import com.google.android.exoplayer2.metadata.MetadataOutput;
 import com.google.android.exoplayer2.source.BehindLiveWindowException;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.MediaSourceEventListener;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
@@ -60,6 +62,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
+import com.kaltura.playkit.AnalyticsData;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
@@ -67,6 +70,7 @@ import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 
+import java.io.IOException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -97,6 +101,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private PlayerSettings playerSettings;
     private EventListener eventListener;
     private StateChangedListener stateChangedListener;
+    @Nullable private AnalyticsListener analyticsListener;
 
     private Context context;
     private SimpleExoPlayer player;
@@ -138,6 +143,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
     private PKMediaSourceConfig sourceConfig;
+
+    private long totalDroppedFrames;
+    private long totalBytesTransferred;
+    private long lastBitrateEstimate;
 
     ExoPlayerWrapper(Context context, PlayerSettings playerSettings) {
         this(context, new ExoPlayerView(context), playerSettings);
@@ -184,7 +193,57 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (assertPlayerIsNotNull("setPlayerListeners()")) {
             player.addListener(this);
             player.addMetadataOutput(this);
+            player.addAnalyticsListener(new com.google.android.exoplayer2.analytics.AnalyticsListener() {
+                @Override
+                public void onBandwidthEstimate(EventTime eventTime, int totalLoadTimeMs, long totalBytesLoaded, long bitrateEstimate) {
+                    lastBitrateEstimate = bitrateEstimate;
+                    if (analyticsListener != null) {
+                        final AnalyticsData stats = createPlaybackStats();
+                        analyticsListener.onUpdate(stats);
+                    }
+                }
+
+                @Override
+                public void onDroppedVideoFrames(EventTime eventTime, int droppedFrames, long elapsedMs) {
+                    totalDroppedFrames += droppedFrames;
+                    if (analyticsListener != null) {
+                        AnalyticsData stats = createPlaybackStats();
+                        stats.newDroppedFrames = droppedFrames;
+                        stats.newDroppedFramesTimeMs = elapsedMs;
+                        analyticsListener.onUpdate(stats);
+                    }
+                }
+
+                @Override
+                public void onLoadCompleted(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
+                    totalBytesTransferred += loadEventInfo.bytesLoaded;
+                    if (analyticsListener != null) {
+                        AnalyticsData stats = createPlaybackStats();
+                        stats.newBytesTransferred = loadEventInfo.bytesLoaded;
+                        analyticsListener.onUpdate(stats);
+                    }
+                }
+
+                @Override
+                public void onLoadCanceled(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
+                    onLoadCompleted(eventTime, loadEventInfo, mediaLoadData);
+                }
+
+                @Override
+                public void onLoadError(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData, IOException error, boolean wasCanceled) {
+                    onLoadCompleted(eventTime, loadEventInfo, mediaLoadData);
+                }
+            });
         }
+    }
+
+    @NonNull
+    private AnalyticsData createPlaybackStats() {
+        AnalyticsData stats = new AnalyticsData();
+        stats.bitrateEstimate = lastBitrateEstimate;
+        stats.totalBytesTransferred = totalBytesTransferred;
+        stats.totalDroppedFrames = totalDroppedFrames;
+        return stats;
     }
 
     private DefaultTrackSelector initializeTrackSelector() {
@@ -693,12 +752,19 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 
+    @Override
     public void setEventListener(final EventListener eventTrigger) {
         this.eventListener = eventTrigger;
     }
 
+    @Override
     public void setStateChangedListener(StateChangedListener stateChangedTrigger) {
         this.stateChangedListener = stateChangedTrigger;
+    }
+
+    @Override
+    public void setAnalyticsListener(AnalyticsListener analyticsListener) {
+        this.analyticsListener = analyticsListener;
     }
 
     @Override
@@ -778,6 +844,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player.setPlayWhenReady(false);
             player.stop(true);
         }
+        totalBytesTransferred = 0;
+        totalDroppedFrames = 0;
+        lastBitrateEstimate = 0;
     }
 
     private void savePlayerPosition() {

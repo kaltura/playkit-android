@@ -15,6 +15,7 @@ package com.kaltura.playkit.player;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PlaybackInfo;
+import com.kaltura.playkit.AnalyticsData;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.metadata.PKMetadata;
@@ -154,6 +155,9 @@ public interface PlayerEngine {
      */
     void setStateChangedListener(StateChangedListener stateChangedTrigger);
 
+
+    void setAnalyticsListener(AnalyticsListener analyticsListener);
+
     /**
      * Release the current player.
      * Note, that {@link ExoPlayerWrapper} and {@link TrackSelectionHelper} objects, will be destroyed.
@@ -238,5 +242,9 @@ public interface PlayerEngine {
 
     interface StateChangedListener {
         void onStateChanged(PlayerState oldState, PlayerState newState);
+    }
+
+    interface AnalyticsListener {
+        void onUpdate(AnalyticsData data);
     }
 }
