@@ -60,16 +60,7 @@ class PlayerLoader extends PlayerDecoratorBase {
         // By default, set Kaltura decorator.
         KalturaPlaybackRequestAdapter.install(playerController, context.getPackageName());
 
-        playerController.setEventListener(event -> {
-
-            // Special case: stopping
-            if (event.eventType() == PlayerEvent.Type.STOPPED) {
-                handleStoppingMedia();
-            }
-
-            // notify everyone
-            messageBus.post(event);
-        });
+        setupPlayerControllerListener();
 
         Player player = playerController;
 
@@ -95,10 +86,19 @@ class PlayerLoader extends PlayerDecoratorBase {
         setPlayer(player);
     }
 
-    private void handleStoppingMedia() {
-        for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
-            loadedPluginEntry.getValue().plugin.onStoppingMedia();
-        }
+    private void setupPlayerControllerListener() {
+        playerController.setEventListener(event -> {
+
+            // Special case: stopping. Notify the plugins directly.
+            if (event.eventType() == PlayerEvent.Type.STOPPED) {
+                for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
+                    loadedPluginEntry.getValue().plugin.onStoppingMedia();
+                }
+            }
+
+            // notify everyone
+            messageBus.post(event);
+        });
     }
 
     @Override
