@@ -16,6 +16,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.player.PKMediaActionsListener;
 import com.kaltura.playkit.player.PlayerController;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 
@@ -24,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 
 class LoadedPlugin {
@@ -48,6 +50,16 @@ class PlayerLoader extends PlayerDecoratorBase {
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
     private PlayerController playerController;
 
+    private PKMediaActionsListener mediaActionsListener = new PKMediaActionsListener() {
+        @Override
+        public void onStoppingMedia() {
+            // Notify the plugins
+            for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
+                loadedPluginEntry.getValue().plugin.onStoppingMedia();
+            }
+        }
+    };
+
     PlayerLoader(Context context) {
         this.context = context;
         this.messageBus = new MessageBus();
@@ -60,12 +72,8 @@ class PlayerLoader extends PlayerDecoratorBase {
         // By default, set Kaltura decorator.
         KalturaPlaybackRequestAdapter.install(playerController, context.getPackageName());
 
-        playerController.setEventListener(new PKEvent.Listener() {
-            @Override
-            public void onEvent(PKEvent event) {
-                messageBus.post(event);
-            }
-        });
+        playerController.setEventListener(messageBus::post);
+        playerController.setMediaActionsListener(mediaActionsListener);
 
         Player player = playerController;
 

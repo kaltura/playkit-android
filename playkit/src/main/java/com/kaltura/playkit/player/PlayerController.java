@@ -64,6 +64,8 @@ public class PlayerController implements Player {
     private boolean isPlayerStopped;
 
 
+    private PKMediaActionsListener mediaActionsListener = PKMediaActionsListener.Null;
+
     private PKEvent.Listener eventListener;
     private PlayerEngine.EventListener eventTrigger = initEventListener();
     private PlayerEngine.StateChangedListener stateChangedTrigger = initStateChangeListener();
@@ -280,6 +282,9 @@ public class PlayerController implements Player {
     @Override
     public void stop() {
         log.v("stop");
+
+        mediaActionsListener.onStoppingMedia();
+
         if (eventListener != null && !isPlayerStopped) {
             PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
             cancelUpdateProgress();
@@ -587,8 +592,12 @@ public class PlayerController implements Player {
         }
     }
 
-    public void setEventListener(PKEvent.Listener eventListener) {
-        this.eventListener = eventListener;
+    public void setEventListener(PKEvent.Listener listener) {
+        this.eventListener = listener;
+    }
+
+    public void setMediaActionsListener(PKMediaActionsListener listener) {
+        this.mediaActionsListener = listener;
     }
 
     private PlayerEngine.EventListener initEventListener() {

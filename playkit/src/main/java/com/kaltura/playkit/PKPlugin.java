@@ -38,6 +38,10 @@ public abstract class PKPlugin {
 
     protected abstract void onUpdateConfig(Object config);
 
+    protected void onStoppingMedia() {
+        PKLog.w("PKPlugin", "WARNING: onStoppingMedia() not implemented by plugin " + getClass().getSimpleName());
+    }
+
     protected abstract void onApplicationPaused();
 
     protected abstract void onApplicationResumed();
