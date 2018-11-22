@@ -228,13 +228,17 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig) {
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
 
-        List<PlayerSubtitles> subtitlesList = sourceConfig.mediaSource.getSubtitleList() != null &&
-                                                sourceConfig.mediaSource.getSubtitleList().size() > 0 ?
-                                                    sourceConfig.mediaSource.getSubtitleList() : null;
+        List<PlayerSubtitles> subtitlesList = null;
+
+        if (sourceConfig.getSubtitleList() != null) {
+            subtitlesList = sourceConfig.getSubtitleList() != null &&
+                    sourceConfig.getSubtitleList().size() > 0 ?
+                    sourceConfig.getSubtitleList() : null;
+        }
         // +1 position to mediasource is to add the video mediasource later
         // mediasource 0th position is always secured for video media source, rest is for subtitles
         // if order is reversed then seekbar is not updating
-        MediaSource[] mediaSources = new MediaSource[subtitlesList != null && subtitlesList.size() > 0 ? subtitlesList.size() + 1 : 1];
+        MediaSource[] mediaSources = new MediaSource[(subtitlesList != null && subtitlesList.size() > 0) ? subtitlesList.size() + 1 : 1];
 
         if (format == null) {
             // TODO: error?
@@ -246,7 +250,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             mediaDataSourceFactory = buildDataSourceFactory();
         }
 
-        if(subtitlesList != null) {
+        if (subtitlesList != null) {
             for (int subtitlePosition = 0 ; subtitlePosition < subtitlesList.size() ; subtitlePosition ++) {
                 mediaSources[subtitlePosition + 1] = buildSubtitleSource(subtitlesList.get(subtitlePosition));
             }
@@ -263,16 +267,19 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                         manifestDataSourceFactory)
                         .createMediaSource(uri);
                 return new MergingMediaSource(mediaSources);
+
             case hls:
                 mediaSources[0] = new HlsMediaSource.Factory(mediaDataSourceFactory)
                         .createMediaSource(uri);
                 return new MergingMediaSource(mediaSources);
+
                 // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
                 mediaSources[0] = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
                         .createMediaSource(uri);
                 return new MergingMediaSource(mediaSources);
+
             default:
                 throw new IllegalStateException("Unsupported type: " + format);
 
@@ -281,10 +288,14 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private MediaSource buildSubtitleSource(PlayerSubtitles playerSubtitles) {
         // Build the subtitle MediaSource.
-        Format subtitleFormat = Format.createTextSampleFormat(
+        Format subtitleFormat = Format.createTextContainerFormat(
                 playerSubtitles.getId(), // An identifier for the track. May be null.
+                playerSubtitles.getLabel(),
+                playerSubtitles.getContainerMimeType(),
                 playerSubtitles.getMimeType(), // The mime type. Must be set correctly.
-                playerSubtitles.getSelectionFlags(), // Selection flags for the track.
+                playerSubtitles.getCodecs(),
+                playerSubtitles.getBitrate(),
+                playerSubtitles.getSelectionFlags(),
                 playerSubtitles.getLanguage()); // The subtitle language. May be null.
 
         return new SingleSampleMediaSource.Factory(mediaDataSourceFactory)

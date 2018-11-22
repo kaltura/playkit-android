@@ -15,8 +15,6 @@ package com.kaltura.playkit;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.kaltura.playkit.player.PlayerSubtitles;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -25,7 +23,6 @@ public class PKMediaSource implements Parcelable {
     private String url;
     private PKMediaFormat mediaFormat;
     private List<PKDrmParams> drmData;
-    private List<PlayerSubtitles> subtitleList;
 
     public PKMediaSource() {
     }
@@ -35,7 +32,6 @@ public class PKMediaSource implements Parcelable {
         url = in.readString();
         mediaFormat = Utils.byValue(PKMediaFormat.class, in.readString());
         drmData = in.createTypedArrayList(PKDrmParams.CREATOR);
-        subtitleList = in.createTypedArrayList(PlayerSubtitles.CREATOR);
     }
 
     public String getId() {
@@ -44,15 +40,6 @@ public class PKMediaSource implements Parcelable {
 
     public PKMediaSource setId(String id) {
         this.id = id;
-        return this;
-    }
-
-    public List<PlayerSubtitles> getSubtitleList() {
-        return subtitleList;
-    }
-
-    public PKMediaSource setSubtitleList(List<PlayerSubtitles> subtitleList) {
-        this.subtitleList = subtitleList;
         return this;
     }
 
@@ -106,7 +93,6 @@ public class PKMediaSource implements Parcelable {
         } else {
             dest.writeTypedList(Collections.EMPTY_LIST);
         }
-        dest.writeTypedList(subtitleList);
     }
 
     public static final Creator<PKMediaSource> CREATOR = new Creator<PKMediaSource>() {

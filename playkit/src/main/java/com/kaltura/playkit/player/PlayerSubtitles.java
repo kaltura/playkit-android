@@ -3,6 +3,7 @@ package com.kaltura.playkit.player;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.MimeTypes;
 
 public class PlayerSubtitles implements Parcelable {
@@ -11,23 +12,49 @@ public class PlayerSubtitles implements Parcelable {
         TEXT_VTT, APPLICATION_SUBRIP
     }
 
+    private String url;
     private String id;
     private String mimeType;
-    private String url;
     private int selectionFlags = 0;
     private String language;
+    private String label;
+    private String containerMimeType = null;
+    private String codecs = null;
+    private int bitrate = Format.NO_VALUE;
 
-    public PlayerSubtitles(String language) {
-        this.language = language;
+    public PlayerSubtitles() {
     }
 
     public String getId() {
         return id;
     }
 
-    public PlayerSubtitles setId(String id) {
-        this.id = id;
-        return this;
+    public String getLabel() {
+        return label;
+    }
+
+    public String getContainerMimeType() {
+        return containerMimeType;
+    }
+
+    public String getCodecs() {
+        return codecs;
+    }
+
+    public int getBitrate() {
+        return bitrate;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public int getSelectionFlags() {
+        return selectionFlags;
+    }
+
+    public String getLanguage() {
+        return language;
     }
 
     public String getMimeType() {
@@ -48,8 +75,9 @@ public class PlayerSubtitles implements Parcelable {
         return this;
     }
 
-    public String getUrl() {
-        return url;
+    public PlayerSubtitles setId(String id) {
+        this.id = id;
+        return this;
     }
 
     public PlayerSubtitles setUrl(String url) {
@@ -57,12 +85,14 @@ public class PlayerSubtitles implements Parcelable {
         return this;
     }
 
-    public int getSelectionFlags() {
-        return selectionFlags;
+    public PlayerSubtitles setLanguage(String language) {
+        this.language = language;
+        return this;
     }
 
-    public String getLanguage() {
-        return language;
+    public PlayerSubtitles setLabel(String label) {
+        this.label = label;
+        return this;
     }
 
     protected PlayerSubtitles(Parcel in) {
