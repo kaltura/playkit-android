@@ -1,11 +1,10 @@
 package com.kaltura.playkit;
 
 public class AnalyticsData {
-    public long newDroppedFrames;
-    public long newDroppedFramesTimeMs;
-    public long totalDroppedFrames;
+    public long droppedVideoFrames;
+    public long totalDroppedVideoFrames;
 
-    public long newBytesTransferred;
+    public long bytesTransferred;
     public long totalBytesTransferred;
 
     public long bitrateEstimate;
@@ -13,10 +12,9 @@ public class AnalyticsData {
     @Override
     public String toString() {
         return "AnalyticsData{" +
-                "newDroppedFrames=" + newDroppedFrames +
-                ", newDroppedFramesTimeMs=" + newDroppedFramesTimeMs +
-                ", totalDroppedFrames=" + totalDroppedFrames +
-                ", newBytesTransferred=" + newBytesTransferred +
+                "droppedVideoFrames=" + droppedVideoFrames +
+                ", totalDroppedVideoFrames=" + totalDroppedVideoFrames +
+                ", bytesTransferred=" + bytesTransferred +
                 ", totalBytesTransferred=" + totalBytesTransferred +
                 ", bitrateEstimate=" + bitrateEstimate +
                 '}';
