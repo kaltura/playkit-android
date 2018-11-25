@@ -15,7 +15,6 @@ package com.kaltura.playkit.player;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PlaybackInfo;
-import com.kaltura.playkit.AnalyticsData;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.metadata.PKMetadata;
@@ -245,6 +244,7 @@ public interface PlayerEngine {
     }
 
     interface AnalyticsListener {
-        void onUpdate(AnalyticsData data);
+        void onDroppedFrames(long droppedVideoFrames, long droppedVideoFramesPeriod, long totalDroppedVideoFrames);
+        void onBytesLoaded(long bytesLoaded, long totalBytesLoaded);
     }
 }

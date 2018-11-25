@@ -186,12 +186,44 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
-    public static class AnalyticsDataUpdated extends PlayerEvent {
-        public final AnalyticsData data;
+    public static class VideoFramesDropped extends PlayerEvent {
+        public final long droppedVideoFrames;
+        public final long droppedVideoFramesPeriod;
+        public final long totalDroppedVideoFrames;
 
-        public AnalyticsDataUpdated(AnalyticsData data) {
-            super(Type.ANALYTICS_DATA_UPDATED);
-            this.data = data;
+        public VideoFramesDropped(long droppedVideoFrames, long droppedVideoFramesPeriod, long totalDroppedVideoFrames) {
+            super(Type.VIDEO_FRAMES_DROPPED);
+            this.droppedVideoFrames = droppedVideoFrames;
+            this.droppedVideoFramesPeriod = droppedVideoFramesPeriod;
+            this.totalDroppedVideoFrames = totalDroppedVideoFrames;
+        }
+
+        @Override
+        public String toString() {
+            return "VideoFramesDropped{" +
+                    "droppedVideoFrames=" + droppedVideoFrames +
+                    ", droppedVideoFramesPeriod=" + droppedVideoFramesPeriod +
+                    ", totalDroppedVideoFrames=" + totalDroppedVideoFrames +
+                    '}';
+        }
+    }
+
+    public static class BytesLoaded extends PlayerEvent {
+        public final long bytesLoaded;
+        public final long totalBytesLoaded;
+
+        public BytesLoaded(long bytesLoaded, long totalBytesLoaded) {
+            super(Type.BYTES_LOADED);
+            this.bytesLoaded = bytesLoaded;
+            this.totalBytesLoaded = totalBytesLoaded;
+        }
+
+        @Override
+        public String toString() {
+            return "BytesLoaded{" +
+                    "bytesLoaded=" + bytesLoaded +
+                    ", totalBytesLoaded=" + totalBytesLoaded +
+                    '}';
         }
     }
 
@@ -226,8 +258,9 @@ public class PlayerEvent implements PKEvent {
         AUDIO_TRACK_CHANGED,
         TEXT_TRACK_CHANGED,
         PLAYBACK_RATE_CHANGED,
-        ANALYTICS_DATA_UPDATED,
-        SUBTITLE_STYLE_CHANGED //Send when subtitle style is changed.
+        VIDEO_FRAMES_DROPPED,   // Video frames were dropped, see PlayerEvent.VideoFramesDropped
+        BYTES_LOADED,           // Bytes were downloaded from the network
+        SUBTITLE_STYLE_CHANGED  // Subtitle style is changed.
     }
 
     @Override
