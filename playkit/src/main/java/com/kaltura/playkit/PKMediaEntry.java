@@ -15,7 +15,7 @@ package com.kaltura.playkit;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.kaltura.playkit.player.PlayerSubtitles;
+import com.kaltura.playkit.player.PKExternalSubtitle;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,7 +30,7 @@ public class PKMediaEntry implements Parcelable {
     private long duration; //in milliseconds
     private MediaEntryType mediaType;
     private Map<String, String> metadata;
-    private List<PlayerSubtitles> subtitleList;
+    private List<PKExternalSubtitle> subtitleList;
 
     public PKMediaEntry() {
     }
@@ -94,11 +94,11 @@ public class PKMediaEntry implements Parcelable {
         return metadata;
     }
 
-    public List<PlayerSubtitles> getSubtitleList() {
+    public List<PKExternalSubtitle> getSubtitleList() {
         return subtitleList;
     }
 
-    public PKMediaEntry setSubtitleList(List<PlayerSubtitles> subtitleList) {
+    public PKMediaEntry setSubtitleList(List<PKExternalSubtitle> subtitleList) {
         this.subtitleList = subtitleList;
         return this;
     }
@@ -156,7 +156,7 @@ public class PKMediaEntry implements Parcelable {
                 this.metadata.put(key, value);
             }
         }
-        subtitleList = in.createTypedArrayList(PlayerSubtitles.CREATOR);
+        subtitleList = in.createTypedArrayList(PKExternalSubtitle.CREATOR);
     }
 
     public static final Creator<PKMediaEntry> CREATOR = new Creator<PKMediaEntry>() {

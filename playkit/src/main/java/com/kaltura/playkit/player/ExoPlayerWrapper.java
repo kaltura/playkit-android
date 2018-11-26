@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -55,6 +56,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
+import com.google.android.exoplayer2.util.MimeTypes;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -228,17 +230,18 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig) {
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
 
-        List<PlayerSubtitles> subtitlesList = null;
+        List<PKExternalSubtitle> subtitlesList = null;
 
         if (sourceConfig.getSubtitleList() != null) {
             subtitlesList = sourceConfig.getSubtitleList() != null &&
                     sourceConfig.getSubtitleList().size() > 0 ?
                     sourceConfig.getSubtitleList() : null;
         }
+
         // +1 position to mediasource is to add the video mediasource later
         // mediasource 0th position is always secured for video media source, rest is for subtitles
         // if order is reversed then seekbar is not updating
-        MediaSource[] mediaSources = new MediaSource[(subtitlesList != null && subtitlesList.size() > 0) ? subtitlesList.size() + 1 : 1];
+        List<MediaSource> mediaSourcesList = new ArrayList<>((subtitlesList != null && subtitlesList.size()>0) ? subtitlesList.size() : 8);//
 
         if (format == null) {
             // TODO: error?
@@ -250,10 +253,20 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             mediaDataSourceFactory = buildDataSourceFactory();
         }
 
-        if (subtitlesList != null) {
+        if (subtitlesList != null && subtitlesList.size() > 0) {
             for (int subtitlePosition = 0 ; subtitlePosition < subtitlesList.size() ; subtitlePosition ++) {
-                mediaSources[subtitlePosition + 1] = buildSubtitleSource(subtitlesList.get(subtitlePosition));
+                // 0th position is secured for video media source
+                MediaSource subtitleMediaSource = buildExternalSubtitleSource(subtitlesList.get(subtitlePosition));
+                if (subtitleMediaSource != null) {
+                    mediaSourcesList.add(subtitleMediaSource);
+                }
             }
+        }
+
+        MediaSource[] mediaSources = new MediaSource[(mediaSourcesList.size() > 0) ? mediaSourcesList.size() + 1 : 1];
+
+        for (int mediaSourcePosition = 0; mediaSourcePosition < mediaSourcesList.size(); mediaSourcePosition++) {
+            mediaSources[mediaSourcePosition + 1] = mediaSourcesList.get(mediaSourcePosition);
         }
 
         switch (format) {
@@ -273,7 +286,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                         .createMediaSource(uri);
                 return new MergingMediaSource(mediaSources);
 
-                // mp4 and mp3 both use ExtractorMediaSource
+            // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
                 mediaSources[0] = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
@@ -286,20 +299,59 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 
-    private MediaSource buildSubtitleSource(PlayerSubtitles playerSubtitles) {
-        // Build the subtitle MediaSource.
-        Format subtitleFormat = Format.createTextContainerFormat(
-                playerSubtitles.getId(), // An identifier for the track. May be null.
-                playerSubtitles.getLabel(),
-                playerSubtitles.getContainerMimeType(),
-                playerSubtitles.getMimeType(), // The mime type. Must be set correctly.
-                playerSubtitles.getCodecs(),
-                playerSubtitles.getBitrate(),
-                playerSubtitles.getSelectionFlags(),
-                playerSubtitles.getLanguage()); // The subtitle language. May be null.
+    private MediaSource buildExternalSubtitleSource(PKExternalSubtitle pkExternalSubtitle) {
 
-        return new SingleSampleMediaSource.Factory(mediaDataSourceFactory)
-                .createMediaSource(Uri.parse(playerSubtitles.getUrl()), subtitleFormat, C.TIME_UNSET);
+        boolean urlMimeTypeCompatible = checkSubtitleAndMimeTypeCompatibility(pkExternalSubtitle.getUrl(), pkExternalSubtitle.getMimeType());
+
+        if (urlMimeTypeCompatible) {
+            // Build the subtitle MediaSource.
+            Format subtitleFormat = Format.createTextContainerFormat(
+                    pkExternalSubtitle.getId(), // An identifier for the track. May be null.
+                    pkExternalSubtitle.getLabel(),
+                    pkExternalSubtitle.getContainerMimeType(),
+                    pkExternalSubtitle.getMimeType(), // The mime type. Must be set correctly.
+                    pkExternalSubtitle.getCodecs(),
+                    pkExternalSubtitle.getBitrate(),
+                    pkExternalSubtitle.getSelectionFlags(),
+                    pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
+
+            return new SingleSampleMediaSource.Factory(mediaDataSourceFactory)
+                    .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
+        } else {
+            log.e("Subtitle and Mime type is not compatible.");
+            return null;
+        }
+    }
+
+    private boolean checkSubtitleAndMimeTypeCompatibility(String subtitleURL, String mimeType) {
+
+        if (subtitleURL != null && !TextUtils.isEmpty(subtitleURL)) {
+            int lastDotIndex = subtitleURL.lastIndexOf(".");
+            String subtitleExtensionName = subtitleURL.substring(lastDotIndex + 1 , subtitleURL.length());
+            log.d("Subtitle Extension Name: " + subtitleExtensionName);
+
+            if (mimeType != null) {
+                if (subtitleExtensionName.equals("vtt") && !mimeType.equals(MimeTypes.TEXT_VTT)) {
+                    log.e("Subtitle URL: " + subtitleExtensionName + " and MIME type: " + mimeType + " is not matching.");
+                    return false;
+                }
+
+                if (subtitleExtensionName.equals("srt") && !mimeType.equals(MimeTypes.APPLICATION_SUBRIP)) {
+                    log.e("Subtitle URL: " + subtitleExtensionName + " and MIME type: " + mimeType + " is not matching.");
+                    return false;
+                }
+            } else {
+                log.e("Subtitle MIME type can not be null.");
+                return false;
+            }
+
+        } else {
+            log.e("Subtitle URL can not be null or empty.");
+            return false;
+        }
+
+        return true;
+
     }
 
     /**
@@ -976,7 +1028,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             sendEvent(PlayerEvent.Type.SUBTITLE_STYLE_CHANGED);
         }
     }
-  
+
     private boolean assertPlayerIsNotNull(String methodName) {
         if (player != null) {
             return true;
@@ -985,5 +1037,5 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         log.w(String.format(nullPlayerMsgFormat, methodName));
         return false;
     }
-  
+
 }

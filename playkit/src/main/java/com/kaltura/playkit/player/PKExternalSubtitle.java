@@ -6,7 +6,7 @@ import android.os.Parcelable;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.MimeTypes;
 
-public class PlayerSubtitles implements Parcelable {
+public class PKExternalSubtitle implements Parcelable {
 
     public enum SubtitleMimeType {
         TEXT_VTT, APPLICATION_SUBRIP
@@ -22,7 +22,7 @@ public class PlayerSubtitles implements Parcelable {
     private String codecs = null;
     private int bitrate = Format.NO_VALUE;
 
-    public PlayerSubtitles() {
+    public PKExternalSubtitle() {
     }
 
     public String getId() {
@@ -61,7 +61,12 @@ public class PlayerSubtitles implements Parcelable {
         return mimeType;
     }
 
-    public PlayerSubtitles setMimeType(SubtitleMimeType mimeType) {
+    public PKExternalSubtitle setMimeType(SubtitleMimeType mimeType) {
+
+        if(mimeType == null) {
+            return this;
+        }
+
         switch (mimeType) {
             case TEXT_VTT:
                 this.mimeType = MimeTypes.TEXT_VTT;
@@ -75,27 +80,27 @@ public class PlayerSubtitles implements Parcelable {
         return this;
     }
 
-    public PlayerSubtitles setId(String id) {
+    public PKExternalSubtitle setId(String id) {
         this.id = id;
         return this;
     }
 
-    public PlayerSubtitles setUrl(String url) {
+    public PKExternalSubtitle setUrl(String url) {
         this.url = url;
         return this;
     }
 
-    public PlayerSubtitles setLanguage(String language) {
+    public PKExternalSubtitle setLanguage(String language) {
         this.language = language;
         return this;
     }
 
-    public PlayerSubtitles setLabel(String label) {
+    public PKExternalSubtitle setLabel(String label) {
         this.label = label;
         return this;
     }
 
-    protected PlayerSubtitles(Parcel in) {
+    protected PKExternalSubtitle(Parcel in) {
         id = in.readString();
         mimeType = in.readString();
         url = in.readString();
@@ -117,15 +122,15 @@ public class PlayerSubtitles implements Parcelable {
         return 0;
     }
 
-    public static final Creator<PlayerSubtitles> CREATOR = new Creator<PlayerSubtitles>() {
+    public static final Creator<PKExternalSubtitle> CREATOR = new Creator<PKExternalSubtitle>() {
         @Override
-        public PlayerSubtitles createFromParcel(Parcel in) {
-            return new PlayerSubtitles(in);
+        public PKExternalSubtitle createFromParcel(Parcel in) {
+            return new PKExternalSubtitle(in);
         }
 
         @Override
-        public PlayerSubtitles[] newArray(int size) {
-            return new PlayerSubtitles[size];
+        public PKExternalSubtitle[] newArray(int size) {
+            return new PKExternalSubtitle[size];
         }
     };
 }

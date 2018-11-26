@@ -32,7 +32,7 @@ public class PKMediaSourceConfig {
     PKMediaEntry.MediaEntryType mediaEntryType;
     PlayerSettings playerSettings;
     private VRSettings vrSettings;
-    private List<PlayerSubtitles> subtitlesList;
+    private List<PKExternalSubtitle> subtitlesList;
 
 
     PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings, VRSettings vrSettings) {
@@ -61,7 +61,7 @@ public class PKMediaSourceConfig {
         return this.vrSettings;
     }
 
-    public List<PlayerSubtitles> getSubtitleList() {
+    public List<PKExternalSubtitle> getSubtitleList() {
         return subtitlesList;
     }
 
