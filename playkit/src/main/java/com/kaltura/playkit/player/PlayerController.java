@@ -17,6 +17,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 
+import com.kaltura.playkit.AdsListener;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
@@ -28,10 +29,13 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.PlayerListener;
+import com.kaltura.playkit.Post;
+import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.List;
 import java.util.UUID;
 
 import static com.kaltura.playkit.PKMediaFormat.wvm;
@@ -65,11 +69,13 @@ public class PlayerController implements Player {
 
 
     private PKEvent.Listener eventListener;
+    @NonNull private Post.Target postTarget;
     private PlayerEngine.EventListener eventTrigger = initEventListener();
-    private PlayerEngine.StateChangedListener stateChangedTrigger = initStateChangeListener();
+    private PlayerEngine.StateChangedListener stateChangedListener = initStateChangeListener();
 
-    public PlayerController(Context context) {
+    public PlayerController(Context context, @NonNull Post.Target postTarget) {
         this.context = context;
+        this.postTarget = postTarget;
         initializeRootPlayerView();
     }
 
@@ -196,6 +202,7 @@ public class PlayerController implements Player {
         }
 
         initSourceConfig(mediaConfig.getMediaEntry(), source);
+
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
         return true;
     }
@@ -281,11 +288,10 @@ public class PlayerController implements Player {
     public void stop() {
         log.v("stop");
         if (eventListener != null && !isPlayerStopped) {
-            PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
+            post(PlayerListener::onStopped);
             cancelUpdateProgress();
             isPlayerStopped = true;
             log.d("sending STOPPED event ");
-            eventListener.onEvent(event);
             if (assertPlayerIsNotNull("stop()")) {
                 player.stop();
             }
@@ -394,7 +400,7 @@ public class PlayerController implements Player {
         if (assertPlayerIsNotNull("togglePlayerListeners()")) {
             if (enable) {
                 player.setEventListener(eventTrigger);
-                player.setStateChangedListener(stateChangedTrigger);
+                player.setStateChangedListener(stateChangedListener);
             } else {
                 player.setEventListener(null);
                 player.setStateChangedListener(null);
@@ -521,7 +527,19 @@ public class PlayerController implements Player {
             player.updateSubtitleStyle(subtitleStyleSettings);
         }
     }
-  
+
+    @Override
+    public PlayerListener addPlayerListener(PlayerListener playerListener) {
+        Assert.shouldNeverHappen();
+        return null;
+    }
+
+    @Override
+    public AdsListener addAdsListener(AdsListener adsListener) {
+        Assert.shouldNeverHappen();
+        return null;
+    }
+
     private boolean assertPlayerIsNotNull(String methodName) {
         if (player != null) {
             return true;
@@ -547,8 +565,7 @@ public class PlayerController implements Player {
 
     private void sendErrorMessage(Enum errorType, String errorMessage, @Nullable Exception exception) {
         log.e(errorMessage);
-        PlayerEvent errorEvent = new PlayerEvent.Error(new PKError(errorType, errorMessage, exception));
-        eventListener.onEvent(errorEvent);
+        post(L->L.onError(new PKError(errorType, errorMessage, exception)));
     }
 
     private void updateProgress() {
@@ -563,7 +580,7 @@ public class PlayerController implements Player {
         position = player.getCurrentPosition();
         duration = player.getDuration();
         if (position > 0 && duration > 0) {
-            eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
+            post(L->L.onPlayheadUpdated(position, duration));
         }
 
         // Cancel any pending updates and schedule a new one if necessary.
@@ -591,86 +608,113 @@ public class PlayerController implements Player {
         this.eventListener = eventListener;
     }
 
+    private void post(Post<PlayerListener> post) {
+        postTarget.postPlayerEvent(post);
+    }
+
     private PlayerEngine.EventListener initEventListener() {
-        return new PlayerEngine.EventListener() {
+        return eventType -> {
+            if (eventListener != null) {
 
-            @Override
-            public void onEvent(PlayerEvent.Type eventType) {
-                if (eventListener != null) {
-
-                    PKEvent event;
-                    switch (eventType) {
-                        case PLAYING:
-                            updateProgress();
-                            event = new PlayerEvent.Generic(eventType);
-                            break;
-                        case PAUSE:
-                        case ENDED:
-                            event = new PlayerEvent.Generic(eventType);
-                            cancelUpdateProgress();
-                            break;
-                        case DURATION_CHANGE:
-                            event = new PlayerEvent.DurationChanged(getDuration());
-                            if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
-                                if (mediaConfig.getStartPosition() != null &&
-                                        ((isLiveMediaWithDvr() && mediaConfig.getStartPosition() == 0) ||
-                                                mediaConfig.getStartPosition() > 0)) {
-                                    startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
-                                }
-                                isNewEntry = false;
-                                isPlayerStopped = false;
+                switch (eventType) {
+                    case PLAYING:
+                        updateProgress();
+                        post(PlayerListener::onPlaying);
+                        break;
+                    case PAUSE:
+                        post(PlayerListener::onPause);
+                        cancelUpdateProgress();
+                        break;
+                    case ENDED:
+                        post(PlayerListener::onEnded);
+                        cancelUpdateProgress();
+                        break;
+                    case STATE_CHANGED:
+                        // TODO: this is handled somewhere else
+                        Assert.shouldNeverHappen();
+                        break;
+                    case CAN_PLAY:
+                        post(PlayerListener::onCanPlay);
+                        break;
+                    case DURATION_CHANGE:
+                        post(L->L.onDurationChanged(getDuration()));
+                        if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
+                            if (mediaConfig.getStartPosition() != null &&
+                                    ((isLiveMediaWithDvr() && mediaConfig.getStartPosition() == 0) ||
+                                            mediaConfig.getStartPosition() > 0)) {
+                                startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                             }
-                            break;
-                        case TRACKS_AVAILABLE:
-                            event = new PlayerEvent.TracksAvailable(player.getPKTracks());
-                            break;
-                        case VOLUME_CHANGED:
-                            event = new PlayerEvent.VolumeChanged(player.getVolume());
-                            break;
-                        case PLAYBACK_INFO_UPDATED:
-                            event = new PlayerEvent.PlaybackInfoUpdated(player.getPlaybackInfo());
-                            break;
-                        case ERROR:
-                            if (player.getCurrentError() == null) {
-                                log.e("can not send error event");
-                                return;
-                            }
-                            event = new PlayerEvent.Error(player.getCurrentError());
-                            cancelUpdateProgress();
-                            break;
-                        case METADATA_AVAILABLE:
-                            if (player.getMetadata() == null || player.getMetadata().isEmpty()) {
-                                log.w("METADATA_AVAILABLE event received, but player engine have no metadata.");
-                                return;
-                            }
-                            event = new PlayerEvent.MetadataAvailable(player.getMetadata());
-                            break;
-                        case SOURCE_SELECTED:
-                            event = new PlayerEvent.SourceSelected(sourceConfig.mediaSource);
-                            break;
-                        case SEEKING:
-                            event = new PlayerEvent.Seeking(targetSeekPosition);
-                            break;
-                        case VIDEO_TRACK_CHANGED:
-                            event = new PlayerEvent.VideoTrackChanged((VideoTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_VIDEO));
-                            break;
-                        case AUDIO_TRACK_CHANGED:
-                            event = new PlayerEvent.AudioTrackChanged((AudioTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_AUDIO));
-                            break;
-                        case TEXT_TRACK_CHANGED:
-                            event = new PlayerEvent.TextTrackChanged((TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT));
-                            break;
-                        case PLAYBACK_RATE_CHANGED:
-                            event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
-                            break;
-                        case SUBTITLE_STYLE_CHANGED:
-                            event = new PlayerEvent.SubtitlesStyleChanged(playerSettings.getSubtitleStyleSettings().getStyleName());
-                            break;
-                        default:
-                            event = new PlayerEvent.Generic(eventType);
+                            isNewEntry = false;
+                            isPlayerStopped = false;
+                        }
+                        break;
+                    case TRACKS_AVAILABLE:
+                        post(L->L.onTracksAvailable(player.getPKTracks()));
+                        break;
+                    case VOLUME_CHANGED:
+                        post(L->L.onVolumeChanged(player.getVolume()));
+                        break;
+                    case PLAYBACK_INFO_UPDATED:
+                        post(L->L.onPlaybackInfoUpdated(player.getPlaybackInfo()));
+                        break;
+                    case ERROR: {
+                        final PKError currentError = player.getCurrentError();
+                        if (currentError == null) {
+                            log.e("can not send error event");
+                            return;
+                        }
+                        post(L -> L.onError(currentError));
+                        cancelUpdateProgress();
+                        break;
                     }
-
-                    eventListener.onEvent(event);
+                    case METADATA_AVAILABLE: {
+                        final List<PKMetadata> metadata = player.getMetadata();
+                        if (metadata == null || metadata.isEmpty()) {
+                            log.w("METADATA_AVAILABLE event received, but player engine has no metadata.");
+                            return;
+                        }
+                        post(L -> L.onMetadataAvailable(metadata));
+                        break;
+                    }
+                    case SOURCE_SELECTED:
+                        post(L -> L.onSourceSelected(sourceConfig.mediaSource));
+                        break;
+                    case SEEKING:
+                        post(L -> L.onSeeking(targetSeekPosition));
+                        break;
+                    case VIDEO_TRACK_CHANGED:
+                        post(L -> L.onVideoTrackChanged(((VideoTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_VIDEO))));
+                        break;
+                    case AUDIO_TRACK_CHANGED:
+                        post(L -> L.onAudioTrackChanged((AudioTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_AUDIO)));
+                        break;
+                    case TEXT_TRACK_CHANGED:
+                        post(L -> L.onTextTrackChanged((TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT)));
+                        break;
+                    case PLAYBACK_RATE_CHANGED:
+                        post(L -> L.onPlaybackRateChanged(player.getPlaybackRate()));
+                        break;
+                    case SUBTITLE_STYLE_CHANGED:
+                        post(L -> L.onSubtitlesStyleChanged(playerSettings.getSubtitleStyleSettings().getStyleName()));
+                        break;
+                    case LOADED_METADATA:
+                        post(PlayerListener::onLoadedMetadata);
+                        break;
+                    case PLAY:
+                        post(PlayerListener::onPlay);
+                        break;
+                    case SEEKED:
+                        post(PlayerListener::onSeeked);
+                        break;
+                    case REPLAY:
+                        post(PlayerListener::onReplay);
+                        break;
+                    case STOPPED:
+                        Assert.shouldNeverHappen();
+                        break;
+                    case PLAYHEAD_UPDATED:
+                        Assert.shouldNeverHappen();
+                        break;
                 }
             }
         };
@@ -681,13 +725,8 @@ public class PlayerController implements Player {
     }
 
     private PlayerEngine.StateChangedListener initStateChangeListener() {
-        return new PlayerEngine.StateChangedListener() {
-            @Override
-            public void onStateChanged(PlayerState oldState, PlayerState newState) {
-                if (eventListener != null) {
-                    eventListener.onEvent(new PlayerEvent.StateChanged(newState, oldState));
-                }
-            }
+        return (oldState, newState) -> {
+            postTarget.postPlayerEvent(L -> L.onPlayerStateChanged(newState, oldState));
         };
     }
 }

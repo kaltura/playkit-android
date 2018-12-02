@@ -255,45 +255,6 @@ public interface Player {
     boolean isPlaying();
 
     /**
-     * Add event listener to the player.
-     *
-     * @param listener - event listener.
-     * @param events   - events the subscriber interested in.
-     */
-    PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
-
-    /**
-     * Remove event listener to the player.
-     *
-     * @param listener - event listener.
-     * @param events   - events the subscriber interested in.
-     */
-    void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events);
-
-    /**
-     * Add state changed listener to the player.
-     *
-     * @param listener - state changed listener
-     */
-    PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener);
-
-    /**
-     * remove state changed listener to the player.
-     *
-     * @param listener - state changed listener
-     */
-    void removeStateChangeListener(@NonNull PKEvent.Listener listener);
-
-
-    /**
-     * remove listener to the player.
-     *
-     * @param listener - event listener / state changed listener
-     */
-    void removeListener(@NonNull PKEvent.Listener listener);
-
-
-    /**
      * Change current track, with specified one by uniqueId.
      * If uniqueId is not valid or null, this will throw {@link IllegalArgumentException}.
      * Example of the valid uniqueId for regular video track: Video:0,0,1.
@@ -319,6 +280,7 @@ public interface Player {
 
     /**
      * Checks if the stream is live or not
+     *
      * @return flag for live
      */
     boolean isLive();
@@ -354,6 +316,62 @@ public interface Player {
      * Update Subtitle Styles
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
+
+
+    /**
+     * Add a {@link PlayerListener} for player-only events. Remove with {@link #removeListener(PKEvent.Listener)}.
+     * Use {@link #addAdsListener(AdsListener)} for ad events and {@link #addEventListener(PKEvent.Listener, Enum[])} for events emitted by plugins.
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    PlayerListener addPlayerListener(PlayerListener playerListener);
+
+    /**
+     * Add an {@link AdsListener} for ads-only events. Remove with {@link #removeListener(PKEvent.Listener)}.
+     * Use {@link #addPlayerListener(PlayerListener)} for player events and {@link #addEventListener(PKEvent.Listener, Enum[])} for events emitted by plugins.
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    AdsListener addAdsListener(AdsListener adsListener);
+
+    /**
+     * Add event listener to the player.
+     * NOTE: please use {@link #addPlayerListener(PlayerListener)} and {@link #addAdsListener(AdsListener)}
+     * for player and ads events, respectively. The {@link PlayerEvent} and {@link com.kaltura.playkit.plugins.ads.AdEvent} classes
+     * are deprecated.
+     *
+     * @param listener - event listener.
+     * @param events   - events the subscriber interested in.
+     */
+    PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
+
+    /**
+     * Remove event listener to the player.
+     *
+     * @param listener - event listener.
+     * @param events   - events the subscriber interested in.
+     */
+    void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events);
+
+    /**
+     * @deprecated Use {@link #addPlayerListener(PlayerListener)} and override {@link PlayerListener#onPlayerStateChanged(PlayerState, PlayerState)}.
+     *
+     * @param listener - state changed listener
+     */
+    PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener);
+
+    /**
+     * @deprecated See {@link #addStateChangeListener(PKEvent.Listener)} for details.
+     *
+     * @param listener - state changed listener
+     */
+    void removeStateChangeListener(@NonNull PKEvent.Listener listener);
+
+
+    /**
+     * remove listener to the player.
+     *
+     * @param listener - event listener / state changed listener
+     */
+    void removeListener(@NonNull PKEvent.Listener listener);
 
 }
 

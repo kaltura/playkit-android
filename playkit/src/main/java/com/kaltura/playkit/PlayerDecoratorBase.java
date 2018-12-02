@@ -185,4 +185,14 @@ public class PlayerDecoratorBase implements Player {
         player.updateSubtitleStyle(subtitleStyleSettings);
     }
 
+    @Override
+    public PlayerListener addPlayerListener(PlayerListener playerListener) {
+        return player.addPlayerListener(playerListener);
+    }
+
+    @Override
+    public AdsListener addAdsListener(AdsListener adsListener) {
+        return player.addAdsListener(adsListener);
+    }
+
 }

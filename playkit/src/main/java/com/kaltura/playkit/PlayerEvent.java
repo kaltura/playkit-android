@@ -21,10 +21,9 @@ import com.kaltura.playkit.player.metadata.PKMetadata;
 import java.util.List;
 
 /**
- * Created by Noam Tamim @ Kaltura on 24/10/2016.
+ * @deprecated Please use {@link com.kaltura.playkit.Player#addPlayerListener(PlayerListener)} and {@link com.kaltura.playkit.PlayerListener} instead.
  */
-
-
+@Deprecated
 public class PlayerEvent implements PKEvent {
 
     public static class Generic extends PlayerEvent {
@@ -223,9 +222,5 @@ public class PlayerEvent implements PKEvent {
     @Override
     public Enum eventType() {
         return this.type;
-    }
-
-    public interface Listener {
-        void onPlayerEvent(Player player, Type event);
     }
 }

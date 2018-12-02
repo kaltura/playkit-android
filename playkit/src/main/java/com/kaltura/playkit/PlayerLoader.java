@@ -55,17 +55,12 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     public void load(@NonNull PKPluginConfigs pluginsConfig) {
 
-        playerController = new PlayerController(context);
+        playerController = new PlayerController(context, messageBus);
 
         // By default, set Kaltura decorator.
         KalturaPlaybackRequestAdapter.install(playerController, context.getPackageName());
 
-        playerController.setEventListener(new PKEvent.Listener() {
-            @Override
-            public void onEvent(PKEvent event) {
-                messageBus.post(event);
-            }
-        });
+        playerController.setEventListener(event -> messageBus.post(event));
 
         Player player = playerController;
 
@@ -201,5 +196,17 @@ class PlayerLoader extends PlayerDecoratorBase {
     @Override
     public void removeListener(@NonNull PKEvent.Listener listener) {
         messageBus.removeListener(listener);
+    }
+
+    @Override
+    public PlayerListener addPlayerListener(PlayerListener playerListener) {
+        messageBus.listen(playerListener);
+        return playerListener;
+    }
+
+    @Override
+    public AdsListener addAdsListener(AdsListener adsListener) {
+        messageBus.listen(adsListener);
+        return adsListener;
     }
 }
