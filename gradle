@@ -1,0 +1,8 @@
+// Exclude PlayKit, use on PlayKit dependencies
+ext.excludePlaykit = {
+    // Official PlayKit, from Bintray/JCenter
+    exclude group: 'com.kaltura.playkit', module: 'playkit'
+    // JitPack version (for snapshots etc)
+    exclude group: 'com.kaltura', module: 'playkit-android'
+}
+
