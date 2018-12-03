@@ -521,7 +521,7 @@ public class PlayerController implements Player {
             player.updateSubtitleStyle(subtitleStyleSettings);
         }
     }
-  
+
     private boolean assertPlayerIsNotNull(String methodName) {
         if (player != null) {
             return true;
@@ -548,7 +548,9 @@ public class PlayerController implements Player {
     private void sendErrorMessage(Enum errorType, String errorMessage, @Nullable Exception exception) {
         log.e(errorMessage);
         PlayerEvent errorEvent = new PlayerEvent.Error(new PKError(errorType, errorMessage, exception));
-        eventListener.onEvent(errorEvent);
+        if (eventListener != null) {
+            eventListener.onEvent(errorEvent);
+        }
     }
 
     private void updateProgress() {
@@ -562,7 +564,7 @@ public class PlayerController implements Player {
 
         position = player.getCurrentPosition();
         duration = player.getDuration();
-        if (position > 0 && duration > 0) {
+        if (eventListener != null && position > 0 && duration > 0) {
             eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
         }
 
