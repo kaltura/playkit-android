@@ -566,6 +566,7 @@ public class PlayerController implements Player {
 
     private void sendErrorMessage(Enum errorType, String errorMessage, @Nullable Exception exception) {
         log.e(errorMessage);
+
         post(L->L.onError(new PKError(errorType, errorMessage, exception)));
     }
 
@@ -580,6 +581,7 @@ public class PlayerController implements Player {
 
         position = player.getCurrentPosition();
         duration = player.getDuration();
+
         if (position > 0 && duration > 0) {
             post(L->L.onPlayheadUpdated(position, duration));
         }
