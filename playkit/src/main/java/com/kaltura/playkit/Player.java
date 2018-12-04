@@ -356,6 +356,7 @@ public interface Player {
      *
      * @param listener - state changed listener
      */
+    @Deprecated
     PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener);
 
     /**
@@ -363,13 +364,14 @@ public interface Player {
      *
      * @param listener - state changed listener
      */
+    @Deprecated
     void removeStateChangeListener(@NonNull PKEvent.Listener listener);
 
 
     /**
-     * remove listener to the player.
+     * Remove an event listener from all event types.
      *
-     * @param listener - event listener / state changed listener
+     * @param listener - event listener to remove
      */
     void removeListener(@NonNull PKEvent.Listener listener);
 

@@ -68,7 +68,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private String licenseUri;
 
     private WidevineClassicDrm drmClient;
-    private PlayerEvent.Type currentEvent;
+    private PlayerEngine.Event currentEvent;
     private PlayerState currentState = PlayerState.IDLE, previousState;
     private long playerDuration = Consts.TIME_UNSET;
     private long playerPosition;
@@ -94,7 +94,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         drmClient.setEventListener(new WidevineClassicDrm.EventListener() {
             @Override
             public void onError(final DrmErrorEvent event) {
-                sendDistinctEvent(PlayerEvent.Type.ERROR);
+                sendDistinctEvent(PlayerEngine.Event.ERROR);
             }
 
             @Override
@@ -151,7 +151,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
                 drmClient.acquireRights(assetAcquireUri, licenseUri);
             } else {
                 log.e("Rights acq required but no DRM Params");
-                sendDistinctEvent(PlayerEvent.Type.ERROR);
+                sendDistinctEvent(PlayerEngine.Event.ERROR);
                 return;
             }
         }
@@ -175,11 +175,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     private void sendOnPreparedEvents() {
-        sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
-        sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
-        sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
-        sendDistinctEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
-        sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
+        sendDistinctEvent(PlayerEngine.Event.LOADED_METADATA);
+        sendDistinctEvent(PlayerEngine.Event.DURATION_CHANGE);
+        sendDistinctEvent(PlayerEngine.Event.TRACKS_AVAILABLE);
+        sendDistinctEvent(PlayerEngine.Event.PLAYBACK_INFO_UPDATED);
+        sendDistinctEvent(PlayerEngine.Event.CAN_PLAY);
 
     }
 
@@ -188,7 +188,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         seekTo(playerDuration);
         currentState = PlayerState.IDLE;
         changeState(PlayerState.IDLE);
-        sendDistinctEvent(PlayerEvent.Type.ENDED);
+        sendDistinctEvent(PlayerEngine.Event.ENDED);
     }
 
     @Override
@@ -208,10 +208,10 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             return;
         }
         player.start();
-        sendDistinctEvent(PlayerEvent.Type.PLAY);
+        sendDistinctEvent(PlayerEngine.Event.PLAY);
 
         // FIXME: this should only be sent after playback has started
-        sendDistinctEvent(PlayerEvent.Type.PLAYING);
+        sendDistinctEvent(PlayerEngine.Event.PLAYING);
     }
 
 
@@ -229,7 +229,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         if (player.isPlaying()) {
             player.pause();
         }
-        sendDistinctEvent(PlayerEvent.Type.PAUSE);
+        sendDistinctEvent(PlayerEngine.Event.PAUSE);
     }
 
     @Override
@@ -245,7 +245,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         }
         seekTo(0);
         player.start();
-        sendDistinctEvent(PlayerEvent.Type.REPLAY);
+        sendDistinctEvent(PlayerEngine.Event.REPLAY);
     }
 
     @Override
@@ -295,8 +295,8 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
         player.seekTo((int) position);
         changeState(PlayerState.BUFFERING);
-        sendDistinctEvent(PlayerEvent.Type.SEEKING);
-        sendDistinctEvent(PlayerEvent.Type.SEEKED);
+        sendDistinctEvent(PlayerEngine.Event.SEEKING);
+        sendDistinctEvent(PlayerEngine.Event.SEEKED);
     }
 
     @Override
@@ -360,7 +360,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         } else {
             destroy();
             log.e("Error restore while player is not prepared");
-            sendDistinctEvent(PlayerEvent.Type.ERROR);
+            sendDistinctEvent(PlayerEngine.Event.ERROR);
         }
     }
 
@@ -432,7 +432,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         }
     }
 
-    private void sendDistinctEvent(PlayerEvent.Type newEvent) {
+    private void sendDistinctEvent(PlayerEngine.Event newEvent) {
         if (newEvent.equals(currentEvent)) {
             return;
         }
@@ -440,7 +440,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
 
-    private void sendEvent(PlayerEvent.Type event) {
+    private void sendEvent(PlayerEngine.Event event) {
         if (shouldRestorePlayerToPreviousState) {
             log.i("Trying to send event " + event.name() + ". Should be blocked from sending now, because the player is restoring to the previous state.");
             return;
@@ -461,10 +461,10 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             public void onSeekComplete(MediaPlayer mp) {
                 log.d("onSeekComplete");
                 if (getCurrentPosition() < getDuration()) {
-                    sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
+                    sendDistinctEvent(PlayerEngine.Event.CAN_PLAY);
                     changeState(PlayerState.READY);
                     if (mp.isPlaying()) {
-                        sendDistinctEvent(PlayerEvent.Type.PLAYING);
+                        sendDistinctEvent(PlayerEngine.Event.PLAYING);
                     }
                 }
             }
@@ -476,7 +476,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         changeState(PlayerState.READY);
         sendOnPreparedEvents();
         if (isPlayAfterPrepare) {
-            sendDistinctEvent(PlayerEvent.Type.PLAY);
+            sendDistinctEvent(PlayerEngine.Event.PLAY);
             play();
             isPlayAfterPrepare = false;
         } else if (isPauseAfterPrepare) {
@@ -546,13 +546,13 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
                 player.setDataSource(context, Uri.parse(assetUri), getHeadersMap());
             } catch (IOException e) {
                 log.e(e.getMessage());
-                sendDistinctEvent(PlayerEvent.Type.ERROR);
+                sendDistinctEvent(PlayerEngine.Event.ERROR);
                 return true;
             }
             restore();
             return true;
         }
-        sendDistinctEvent(PlayerEvent.Type.ERROR);
+        sendDistinctEvent(PlayerEngine.Event.ERROR);
         return true;
     }
 

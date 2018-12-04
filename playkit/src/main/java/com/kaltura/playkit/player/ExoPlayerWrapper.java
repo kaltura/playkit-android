@@ -107,7 +107,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private TrackSelectionHelper trackSelectionHelper;
     private DeferredDrmSessionManager drmSessionManager;
 
-    private PlayerEvent.Type currentEvent;
+    private PlayerEngine.Event currentEvent;
     private PlayerState currentState = PlayerState.IDLE;
     private PlayerState previousState;
 
@@ -297,7 +297,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private void changeState(PlayerState newState) {
         previousState = currentState;
-        if (newState.equals(currentState)) {
+        if (newState == currentState) {
             return;
         }
         this.currentState = newState;
@@ -306,21 +306,21 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 
-    private void sendDistinctEvent(PlayerEvent.Type newEvent) {
-        if (newEvent.equals(currentEvent)) {
+    private void sendDistinctEvent(PlayerEngine.Event newEvent) {
+        if (newEvent == currentEvent) {
             return;
         }
         sendEvent(newEvent);
     }
 
-    private void sendEvent(PlayerEvent.Type event) {
+    private void sendEvent(PlayerEngine.Event event) {
         if (shouldRestorePlayerToPreviousState) {
             log.i("Trying to send event " + event.name() + ". Should be blocked from sending now, because the player is restoring to the previous state.");
             return;
         }
         currentEvent = event;
         if (eventListener != null) {
-            if (event != PlayerEvent.Type.PLAYBACK_INFO_UPDATED) {
+            if (event != PlayerEngine.Event.PLAYBACK_INFO_UPDATED) {
                 log.d("Event sent: " + event.name());
             }
             eventListener.onEvent(currentEvent);
@@ -354,15 +354,15 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
                 if (isSeeking) {
                     isSeeking = false;
-                    sendDistinctEvent(PlayerEvent.Type.SEEKED);
+                    sendDistinctEvent(PlayerEngine.Event.SEEKED);
                 }
 
                 if (!previousState.equals(PlayerState.READY)) {
-                    sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
+                    sendDistinctEvent(PlayerEngine.Event.CAN_PLAY);
                 }
 
                 if (playWhenReady) {
-                    sendDistinctEvent(PlayerEvent.Type.PLAYING);
+                    sendDistinctEvent(PlayerEngine.Event.PLAYING);
                 }
 
                 break;
@@ -370,7 +370,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 log.d("onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
                 pausePlayerAfterEndedEvent();
                 changeState(PlayerState.IDLE);
-                sendDistinctEvent(PlayerEvent.Type.ENDED);
+                sendDistinctEvent(PlayerEngine.Event.ENDED);
                 break;
             default:
                 break;
@@ -380,7 +380,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private void pausePlayerAfterEndedEvent() {
-        if (PlayerEvent.Type.ENDED != currentEvent) {
+        if (PlayerEngine.Event.ENDED != currentEvent) {
             log.d("Pause pausePlayerAfterEndedEvent");
             player.setPlayWhenReady(false);
         }
@@ -399,8 +399,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
         log.d("onTimelineChanged");
-        sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
-        sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
+        sendDistinctEvent(PlayerEngine.Event.LOADED_METADATA);
+        sendDistinctEvent(PlayerEngine.Event.DURATION_CHANGE);
         shouldResetPlayerPosition = reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC;
     }
 
@@ -433,7 +433,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         currentError = new PKError(errorType, errorStr, error);
         if (eventListener != null) {
             log.e("Error-Event sent, type = " + error.type);
-            eventListener.onEvent(PlayerEvent.Type.ERROR);
+            eventListener.onEvent(PlayerEngine.Event.ERROR);
         } else {
             log.e("eventListener is null cannot send Error-Event type = " + error.type);
         }
@@ -441,7 +441,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-        sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
+        sendEvent(PlayerEngine.Event.PLAYBACK_RATE_CHANGED);
     }
 
     @Override
@@ -472,7 +472,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void onMetadata(Metadata metadata) {
         this.metadataList = MetadataConverter.convert(metadata);
-        sendEvent(PlayerEvent.Type.METADATA_AVAILABLE);
+        sendEvent(PlayerEngine.Event.METADATA_AVAILABLE);
     }
 
     @Override
@@ -537,7 +537,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             if (player.getPlayWhenReady()) {
                 return;
             }
-            sendDistinctEvent(PlayerEvent.Type.PLAY);
+            sendDistinctEvent(PlayerEngine.Event.PLAY);
             if (isLiveMediaWithoutDvr()) {
                 player.seekToDefaultPosition();
             }
@@ -555,11 +555,11 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 return;
             }
 
-            if (currentEvent == PlayerEvent.Type.ENDED) {
+            if (currentEvent == PlayerEngine.Event.ENDED) {
                 return;
             }
 
-            sendDistinctEvent(PlayerEvent.Type.PAUSE);
+            sendDistinctEvent(PlayerEngine.Event.PAUSE);
             player.setPlayWhenReady(false);
         }
     }
@@ -578,7 +578,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         log.v("seekTo");
         if (assertPlayerIsNotNull("seekTo()")) {
             isSeeking = true;
-            sendDistinctEvent(PlayerEvent.Type.SEEKING);
+            sendDistinctEvent(PlayerEngine.Event.SEEKING);
             if (isLive() && position == player.getDuration()) {
                 player.seekToDefaultPosition();
             } else {
@@ -670,7 +670,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         currentError = new PKError(PKPlayerErrorType.TRACK_SELECTION_FAILED, errorStr, invalidUniqueIdException);
         if (eventListener != null) {
             log.e("Error-Event sent, type = " + PKPlayerErrorType.TRACK_SELECTION_FAILED);
-            eventListener.onEvent(PlayerEvent.Type.ERROR);
+            eventListener.onEvent(PlayerEngine.Event.ERROR);
         } else {
             log.e("eventListener is null cannot send Error-Event type = " + PKPlayerErrorType.TRACK_SELECTION_FAILED + " uniqueId = " + uniqueId);
         }
@@ -708,7 +708,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             isSeeking = false;
             player.seekTo(0);
             player.setPlayWhenReady(true);
-            sendDistinctEvent(PlayerEvent.Type.REPLAY);
+            sendDistinctEvent(PlayerEngine.Event.REPLAY);
         }
     }
 
@@ -725,7 +725,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
             if (volume != player.getVolume()) {
                 player.setVolume(lastKnownVolume);
-                sendEvent(PlayerEvent.Type.VOLUME_CHANGED);
+                sendEvent(PlayerEngine.Event.VOLUME_CHANGED);
             }
         }
     }
@@ -803,7 +803,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
                 tracks = tracksReady;
                 shouldRestorePlayerToPreviousState = false;
-                sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+                sendDistinctEvent(PlayerEngine.Event.TRACKS_AVAILABLE);
                 if (!preferredLanguageWasSelected) {
                     selectPreferredTracksLanguage();
                     preferredLanguageWasSelected = true;
@@ -817,19 +817,19 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
             @Override
             public void onVideoTrackChanged() {
-                sendEvent(PlayerEvent.Type.VIDEO_TRACK_CHANGED);
-                sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+                sendEvent(PlayerEngine.Event.VIDEO_TRACK_CHANGED);
+                sendEvent(PlayerEngine.Event.PLAYBACK_INFO_UPDATED);
             }
 
             @Override
             public void onAudioTrackChanged() {
-                sendEvent(PlayerEvent.Type.AUDIO_TRACK_CHANGED);
-                sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+                sendEvent(PlayerEngine.Event.AUDIO_TRACK_CHANGED);
+                sendEvent(PlayerEngine.Event.PLAYBACK_INFO_UPDATED);
             }
 
             @Override
             public void onTextTrackChanged() {
-                sendEvent(PlayerEvent.Type.TEXT_TRACK_CHANGED);
+                sendEvent(PlayerEngine.Event.TEXT_TRACK_CHANGED);
             }
         };
     }
@@ -839,7 +839,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             @Override
             public void onError(PKError error) {
                 currentError = error;
-                sendEvent(PlayerEvent.Type.ERROR);
+                sendEvent(PlayerEngine.Event.ERROR);
             }
         };
     }
@@ -879,7 +879,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
-        sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+        sendEvent(PlayerEngine.Event.PLAYBACK_INFO_UPDATED);
     }
 
     @Override
@@ -928,7 +928,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (playerSettings != null && playerSettings.getSubtitleStyleSettings() != null) {
             playerSettings.setSubtitleStyle(subtitleStyleSettings);
             configureSubtitleView();
-            sendEvent(PlayerEvent.Type.SUBTITLE_STYLE_CHANGED);
+            sendEvent(PlayerEngine.Event.SUBTITLE_STYLE_CHANGED);
         }
     }
   

@@ -203,7 +203,8 @@ public class PlayerController implements Player {
 
         initSourceConfig(mediaConfig.getMediaEntry(), source);
 
-        eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
+        post(L -> L.onSourceSelected(sourceConfig.mediaSource));
+
         return true;
     }
 
@@ -629,10 +630,6 @@ public class PlayerController implements Player {
                         post(PlayerListener::onEnded);
                         cancelUpdateProgress();
                         break;
-                    case STATE_CHANGED:
-                        // TODO: this is handled somewhere else
-                        Assert.shouldNeverHappen();
-                        break;
                     case CAN_PLAY:
                         post(PlayerListener::onCanPlay);
                         break;
@@ -676,9 +673,6 @@ public class PlayerController implements Player {
                         post(L -> L.onMetadataAvailable(metadata));
                         break;
                     }
-                    case SOURCE_SELECTED:
-                        post(L -> L.onSourceSelected(sourceConfig.mediaSource));
-                        break;
                     case SEEKING:
                         post(L -> L.onSeeking(targetSeekPosition));
                         break;
@@ -708,12 +702,6 @@ public class PlayerController implements Player {
                         break;
                     case REPLAY:
                         post(PlayerListener::onReplay);
-                        break;
-                    case STOPPED:
-                        Assert.shouldNeverHappen();
-                        break;
-                    case PLAYHEAD_UPDATED:
-                        Assert.shouldNeverHappen();
                         break;
                 }
             }

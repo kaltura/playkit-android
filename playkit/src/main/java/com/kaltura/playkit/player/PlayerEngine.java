@@ -27,7 +27,6 @@ import java.util.List;
  * Interface that connect between {@link PlayerController} and actual player engine
  * {@link ExoPlayerWrapper} or MediaPlayerWrapper. Depends on the type of media that
  * should play.
- * Created by anton.afanasiev on 01/11/2016.
  */
 
 public interface PlayerEngine {
@@ -233,10 +232,33 @@ public interface PlayerEngine {
     void onOrientationChanged();
 
     interface EventListener {
-        void onEvent(PlayerEvent.Type event);
+        void onEvent(Event event);
     }
 
     interface StateChangedListener {
         void onStateChanged(PlayerState oldState, PlayerState newState);
+    }
+
+    enum Event {
+        CAN_PLAY,   // Sent when enough data is available that the media can be played, at least for a couple of frames. This corresponds to the HAVE_ENOUGH_DATA readyState.
+        DURATION_CHANGE,   //  The metadata has loaded or changed, indicating a change in duration of the media. This is sent, for example, when the media has loaded enough that the duration is known.
+        ENDED,   //  Sent when playback completes.
+        ERROR,   //  Sent when an error occurs. The element's error attribute contains more information. See Error handling for details.
+        LOADED_METADATA,   //  The media's metadata has finished loading; all attributes now contain as much useful information as they're going to.
+        PAUSE,   //  Sent when playback is paused.
+        PLAY,    //  Sent when playback of the media starts after having been paused; that is, when playback is resumed after a prior pause event.
+        PLAYING,   //  Sent when the media begins to play (either for the first time, after having been paused, or after ending and then restarting).
+        SEEKED,   //  Sent when a seek operation completes.
+        SEEKING,   //  Sent when a seek operation begins.
+        TRACKS_AVAILABLE, // Sent when track info is available.
+        REPLAY, //Sent when replay happened.
+        PLAYBACK_INFO_UPDATED, // Sent event that notify about changes in the playback parameters. When bitrate of the video or audio track changes or new media loaded. Holds the PlaybackInfo.java object with relevant data.
+        VOLUME_CHANGED, // Sent when volume is changed.
+        METADATA_AVAILABLE, // Sent when there is metadata available for this entry.
+        VIDEO_TRACK_CHANGED,
+        AUDIO_TRACK_CHANGED,
+        TEXT_TRACK_CHANGED,
+        PLAYBACK_RATE_CHANGED,
+        SUBTITLE_STYLE_CHANGED //Send when subtitle style is changed.
     }
 }
