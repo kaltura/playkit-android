@@ -27,7 +27,7 @@ import java.util.List;
 public class PlayerEvent implements PKEvent {
 
     public static class Generic extends PlayerEvent {
-        public Generic(Type type) {
+        Generic(Type type) {
             super(type);
         }
     }
@@ -36,7 +36,7 @@ public class PlayerEvent implements PKEvent {
         public final PlayerState newState;
         public final PlayerState oldState;
 
-        public StateChanged(PlayerState newState, PlayerState oldState) {
+        StateChanged(PlayerState newState, PlayerState oldState) {
             super(Type.STATE_CHANGED);
             this.newState = newState;
             this.oldState = oldState;
@@ -47,7 +47,7 @@ public class PlayerEvent implements PKEvent {
 
         public final long duration;
 
-        public DurationChanged(long duration) {
+        DurationChanged(long duration) {
             super(Type.DURATION_CHANGE);
             this.duration = duration;
         }
@@ -57,7 +57,7 @@ public class PlayerEvent implements PKEvent {
 
         public final PKTracks tracksInfo;
 
-        public TracksAvailable(PKTracks tracksInfo) {
+        TracksAvailable(PKTracks tracksInfo) {
             super(Type.TRACKS_AVAILABLE);
             this.tracksInfo = tracksInfo;
         }
@@ -67,7 +67,7 @@ public class PlayerEvent implements PKEvent {
 
         public final float volume;
 
-        public VolumeChanged(float volume) {
+        VolumeChanged(float volume) {
             super(Type.VOLUME_CHANGED);
             this.volume = volume;
         }
@@ -87,7 +87,7 @@ public class PlayerEvent implements PKEvent {
 
         public final List<PKMetadata> metadataList;
 
-        public MetadataAvailable(List<PKMetadata> metadataList) {
+        MetadataAvailable(List<PKMetadata> metadataList) {
             super(Type.METADATA_AVAILABLE);
             this.metadataList = metadataList;
         }
@@ -97,7 +97,7 @@ public class PlayerEvent implements PKEvent {
 
         public final PKMediaSource source;
 
-        public SourceSelected(PKMediaSource source) {
+        SourceSelected(PKMediaSource source) {
             super(Type.SOURCE_SELECTED);
             this.source = source;
         }
@@ -108,7 +108,7 @@ public class PlayerEvent implements PKEvent {
         public final long position;
         public final long duration;
 
-        public PlayheadUpdated(long position, long duration) {
+        PlayheadUpdated(long position, long duration) {
             super(Type.PLAYHEAD_UPDATED);
             this.position = position;
             this.duration = duration;
@@ -119,7 +119,7 @@ public class PlayerEvent implements PKEvent {
 
         public final PKError error;
 
-        public Error(PKError error) {
+        Error(PKError error) {
             super(Type.ERROR);
             this.error = error;
         }
@@ -129,7 +129,7 @@ public class PlayerEvent implements PKEvent {
 
         public final long targetPosition;
 
-        public Seeking(long targetPosition) {
+        Seeking(long targetPosition) {
             super(Type.SEEKING);
             this.targetPosition = targetPosition;
         }
@@ -139,7 +139,7 @@ public class PlayerEvent implements PKEvent {
 
         public final VideoTrack newTrack;
 
-        public VideoTrackChanged(VideoTrack newTrack) {
+        VideoTrackChanged(VideoTrack newTrack) {
             super(Type.VIDEO_TRACK_CHANGED);
             this.newTrack = newTrack;
         }
@@ -149,7 +149,7 @@ public class PlayerEvent implements PKEvent {
 
         public final AudioTrack newTrack;
 
-        public AudioTrackChanged(AudioTrack newTrack) {
+        AudioTrackChanged(AudioTrack newTrack) {
             super(Type.AUDIO_TRACK_CHANGED);
             this.newTrack = newTrack;
         }
@@ -159,7 +159,7 @@ public class PlayerEvent implements PKEvent {
 
         public final TextTrack newTrack;
 
-        public TextTrackChanged(TextTrack newTrack) {
+        TextTrackChanged(TextTrack newTrack) {
             super(Type.TEXT_TRACK_CHANGED);
             this.newTrack = newTrack;
         }
@@ -169,7 +169,7 @@ public class PlayerEvent implements PKEvent {
 
         public final float rate;
 
-        public PlaybackRateChanged(float rate) {
+        PlaybackRateChanged(float rate) {
             super(Type.PLAYBACK_RATE_CHANGED);
             this.rate = rate;
         }
@@ -179,7 +179,7 @@ public class PlayerEvent implements PKEvent {
 
         public final String styleName;
 
-        public  SubtitlesStyleChanged(String styleName) {
+        SubtitlesStyleChanged(String styleName) {
             super(Type.SUBTITLE_STYLE_CHANGED);
             this.styleName = styleName;
         }
