@@ -13,7 +13,7 @@ import java.util.List;
 
 class LegacyEventAdapter {
 
-    private final MessageBus messageBus;
+    private final DefaultMessageBus messageBus;
 
     final PKEvent.Listener legacyToNewAdsEvents = event -> {
         final AdEvent e = (AdEvent) event;
@@ -375,20 +375,20 @@ class LegacyEventAdapter {
         }
     };
 
-    LegacyEventAdapter(MessageBus messageBus) {
+    LegacyEventAdapter(DefaultMessageBus messageBus) {
         this.messageBus = messageBus;
     }
 
-    private void postAdsEvent(Post<AdsListener> post) {
+    private void postAdsEvent(MessageBus.Post<AdsListener> post) {
         messageBus.postAdsEvent(new AdsPost(post));
     }
 
     // Proxy to prevent circular forwarding between adapters
-    class AdsPost implements Post<AdsListener> {
+    class AdsPost implements MessageBus.Post<AdsListener> {
 
-        final Post<AdsListener> realPost;
+        final MessageBus.Post<AdsListener> realPost;
 
-        AdsPost(Post<AdsListener> realPost) {
+        AdsPost(MessageBus.Post<AdsListener> realPost) {
             this.realPost = realPost;
         }
 

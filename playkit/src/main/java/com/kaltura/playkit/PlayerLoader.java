@@ -50,7 +50,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     PlayerLoader(Context context) {
         this.context = context;
-        this.messageBus = new MessageBus();
+        this.messageBus = new DefaultMessageBus();
     }
 
     public void load(@NonNull PKPluginConfigs pluginsConfig) {
@@ -200,13 +200,13 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     @Override
     public PlayerListener addPlayerListener(PlayerListener playerListener) {
-        messageBus.listen(playerListener);
+        messageBus.addListener(playerListener);
         return playerListener;
     }
 
     @Override
     public AdsListener addAdsListener(AdsListener adsListener) {
-        messageBus.listen(adsListener);
+        messageBus.addListener(adsListener);
         return adsListener;
     }
 }

@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 
 import com.kaltura.playkit.AdsListener;
 import com.kaltura.playkit.Assert;
+import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
@@ -29,7 +30,6 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerListener;
-import com.kaltura.playkit.Post;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
@@ -68,13 +68,13 @@ public class PlayerController implements Player {
 
 
     private PKEvent.Listener eventListener;
-    @NonNull private Post.Target postTarget;
+    @NonNull private MessageBus messageBus;
     private PlayerEngine.EventListener eventTrigger = initEventListener();
     private PlayerEngine.StateChangedListener stateChangedListener = initStateChangeListener();
 
-    public PlayerController(Context context, @NonNull Post.Target postTarget) {
+    public PlayerController(Context context, MessageBus messageBus) {
         this.context = context;
-        this.postTarget = postTarget;
+        this.messageBus = messageBus;
         initializeRootPlayerView();
     }
 
@@ -611,8 +611,8 @@ public class PlayerController implements Player {
         this.eventListener = eventListener;
     }
 
-    private void post(Post<PlayerListener> post) {
-        postTarget.postPlayerEvent(post);
+    private void post(MessageBus.Post<PlayerListener> post) {
+        messageBus.postPlayerEvent(post);
     }
 
     private PlayerEngine.EventListener initEventListener() {
@@ -715,8 +715,6 @@ public class PlayerController implements Player {
     }
 
     private PlayerEngine.StateChangedListener initStateChangeListener() {
-        return (oldState, newState) -> {
-            postTarget.postPlayerEvent(L -> L.onPlayerStateChanged(newState, oldState));
-        };
+        return (oldState, newState) -> post(L -> L.onPlayerStateChanged(newState, oldState));
     }
 }
