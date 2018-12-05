@@ -15,7 +15,6 @@ package com.kaltura.playkit.player;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PlaybackInfo;
-import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
@@ -261,4 +260,5 @@ public interface PlayerEngine {
         PLAYBACK_RATE_CHANGED,
         SUBTITLE_STYLE_CHANGED //Send when subtitle style is changed.
     }
+
 }

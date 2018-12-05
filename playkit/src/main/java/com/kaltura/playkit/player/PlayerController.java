@@ -28,7 +28,6 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerListener;
 import com.kaltura.playkit.Post;
 import com.kaltura.playkit.player.metadata.PKMetadata;
@@ -289,7 +288,8 @@ public class PlayerController implements Player {
     public void stop() {
         log.v("stop");
         if (eventListener != null && !isPlayerStopped) {
-            post(PlayerListener::onStopped);
+
+            post(L->L.onStopping(getCurrentPosition()));
             cancelUpdateProgress();
             isPlayerStopped = true;
             log.d("sending STOPPED event ");

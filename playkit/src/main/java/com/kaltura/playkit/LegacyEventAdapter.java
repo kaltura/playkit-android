@@ -222,7 +222,7 @@ class LegacyEventAdapter {
         }
 
         @Override
-        public void onStopped() {
+        public void onStopping(long stopPosition) {
             messageBus.postFromAdapter(new PlayerEvent.Generic(PlayerEvent.Type.STOPPED));
         }
     };

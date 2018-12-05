@@ -55,7 +55,12 @@ public interface PlayerListener {
 
     default void onReplay() {}
 
-    default void onStopped() {}
+    /**
+     * Called when the player is stopping playback. The method is called immediately when the app
+     * requested stop, and it might take some time before playback is actually stopped.
+     * @param stopPosition the position at which the player is stopping.
+     */
+    default void onStopping(long stopPosition) {}
 
     default void onLoadedMetadata() {}
 }
