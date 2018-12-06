@@ -437,7 +437,11 @@ public class PlayerController implements Player {
 
     @Override
     public void onApplicationPaused() {
-        log.v("onApplicationPaused");
+        log.d("onApplicationPaused");
+        if (isPlayerStopped) {
+            log.e("onApplicationPaused called during player state = STOPPED - return");
+            return;
+        }
         if (assertPlayerIsNotNull("onApplicationPaused()")) {
             if (player.isPlaying()) {
                 player.pause();
@@ -450,7 +454,11 @@ public class PlayerController implements Player {
 
     @Override
     public void onApplicationResumed() {
-        log.v("onApplicationResumed");
+        log.d("onApplicationResumed");
+        if (isPlayerStopped) {
+            log.e("onApplicationResumed called during player state = STOPPED - return");
+            return;
+        }
         if (assertPlayerIsNotNull("onApplicationResumed()")) {
             player.restore();
             updateProgress();
