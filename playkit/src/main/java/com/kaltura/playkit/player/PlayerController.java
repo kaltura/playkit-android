@@ -237,6 +237,7 @@ public class PlayerController implements Player {
             log.e(e.getMessage());
             sendErrorMessage(PKPlayerErrorType.FAILED_TO_INITIALIZE_PLAYER, e.getMessage(), e);
             if (incomingPlayerType == PlayerEngineType.VRPlayer) {
+                incomingPlayerType = PlayerEngineType.Exoplayer;
                 player = new ExoPlayerWrapper(context, playerSettings);
             } else {
                 return;
