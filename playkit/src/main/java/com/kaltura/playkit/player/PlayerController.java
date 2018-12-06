@@ -438,6 +438,7 @@ public class PlayerController implements Player {
     public void onApplicationPaused() {
         log.d("onApplicationPaused");
         if (isPlayerStopped) {
+            log.e("onApplicationPaused called during player state = STOPPED - return");
             return;
         }
         if (assertPlayerIsNotNull("onApplicationPaused()")) {
@@ -454,6 +455,7 @@ public class PlayerController implements Player {
     public void onApplicationResumed() {
         log.d("onApplicationResumed");
         if (isPlayerStopped) {
+            log.e("onApplicationResumed called during player state = STOPPED - return");
             return;
         }
         if (assertPlayerIsNotNull("onApplicationResumed()")) {
