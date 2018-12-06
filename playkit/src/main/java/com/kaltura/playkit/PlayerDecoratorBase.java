@@ -141,7 +141,7 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void removeListener(@NonNull PKEvent.Listener listener) {
+    public void removeListener(@NonNull PKListener listener) {
         player.removeListener(listener);
     }
 

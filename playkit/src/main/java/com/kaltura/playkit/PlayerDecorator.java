@@ -50,7 +50,7 @@ public abstract class PlayerDecorator extends PlayerDecoratorBase {
     }
 
     @Override
-    final public void removeListener(@NonNull PKEvent.Listener listener) {
+    final public void removeListener(@NonNull PKListener listener) {
         super.removeListener(listener);
     }
 

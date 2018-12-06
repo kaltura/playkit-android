@@ -1,23 +1,23 @@
 package com.kaltura.playkit;
 
-public interface MessageBus {
-    PKEvent.Listener listen(PKEvent.Listener listener, Enum... eventTypes);
+import android.support.annotation.NonNull;
 
-    void remove(PKEvent.Listener listener, Enum... eventTypes);
+public interface MessageBus extends PKMessage.Poster {
 
-    void removeListener(PKEvent.Listener listener);
+    /**
+     * Start listening to events of the given types.
+     * @param listener an object that will receive the events.
+     * @param eventTypes array of event types that will be sent to the listener.
+     * @return listener
+     */
+    @NonNull
+    PKEvent.Listener listen(@NonNull PKEvent.Listener listener, @NonNull Enum... eventTypes);
 
-    void post(PKEvent event);
+    void remove(@NonNull PKEvent.Listener listener, @NonNull Enum... eventTypes);
 
-    void addListener(PlayerListener listener);
+    void addListener(@NonNull PlayerListener listener);
 
-    void addListener(AdsListener listener);
+    void addListener(@NonNull AdsListener listener);
 
-    void postPlayerEvent(Post<PlayerListener> post);
-
-    void postAdsEvent(Post<AdsListener> post);
-
-    interface Post<L> {
-        void run(L L);
-    }
+    void removeListener(@NonNull PKListener listener);
 }

@@ -35,6 +35,7 @@ public interface Player {
          * @param contentRequestAdapter - request adapter.
          * @return - Player Settings.
          */
+        @SuppressWarnings("UnusedReturnValue")
         Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter);
 
         /**
@@ -43,6 +44,7 @@ public interface Player {
          * @param licenseRequestAdapter - request adapter.
          * @return - Player Settings.
          */
+        @SuppressWarnings("UnusedReturnValue")
         Settings setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
 
         /**
@@ -55,6 +57,7 @@ public interface Player {
          * @param cea608CaptionsEnabled - should cea-608 track should be enabled.
          * @return - Player Settings.
          */
+        @SuppressWarnings("UnusedReturnValue")
         Settings setCea608CaptionsEnabled(boolean cea608CaptionsEnabled);
 
         /**
@@ -67,6 +70,7 @@ public interface Player {
          * @param mpgaAudioFormatEnabled - should Enable MPGA Audio track.
          * @return - Player Settings.
          */
+        @SuppressWarnings("UnusedReturnValue")
         Settings setMpgaAudioFormatEnabled(boolean mpgaAudioFormatEnabled);
 
         /**
@@ -79,6 +83,7 @@ public interface Player {
          * @param useTextureView - true if should use {@link android.view.TextureView}.
          * @return - Player Settings.
          */
+        @SuppressWarnings("UnusedReturnValue")
         Settings useTextureView(boolean useTextureView);
 
         /**
@@ -88,6 +93,7 @@ public interface Player {
          * @param crossProtocolRedirectEnabled - true if should do cross protocol redirect.
          * @return - Player Settings.
          */
+        @SuppressWarnings("UnusedReturnValue")
         Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled);
 
         /**
@@ -98,6 +104,7 @@ public interface Player {
          * @param isSurfaceSecured - should enable/disable secure rendering
          * @return - Player Settings.
          */
+        @SuppressWarnings("UnusedReturnValue")
         Settings setSecureSurface(boolean isSurfaceSecured);
 
         /**
@@ -106,6 +113,7 @@ public interface Player {
          * @param autoPlayOnResume true if it is autoplayed or else false, default is TRUE
          * @return Player Settings
          */
+        @SuppressWarnings("UnusedReturnValue")
         Settings setAdAutoPlayOnResume(boolean autoPlayOnResume);
 
         /**
@@ -114,6 +122,7 @@ public interface Player {
          * @param loadControlBuffers LoadControlBuffers
          * @return Player Settings
          */
+        @SuppressWarnings("UnusedReturnValue")
         Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers);
 
         /**
@@ -122,6 +131,7 @@ public interface Player {
          * @param vrPlayerEnabled - If 360 media should be played on VR player or default player - default == true.
          * @return - Player Settings.
          */
+        @SuppressWarnings("UnusedReturnValue")
         Settings setVRPlayerEnabled(boolean vrPlayerEnabled);
 
         /**
@@ -130,6 +140,7 @@ public interface Player {
          * @param preferredAudioTrackConfig - AudioTrackConfig.
          * @return - Player Settings.
          */
+        @SuppressWarnings("UnusedReturnValue")
         Settings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig);
 
         /**
@@ -138,6 +149,7 @@ public interface Player {
          * @param preferredTextTrackConfig - TextTrackConfig.
          * @return - Player Settings.
          */
+        @SuppressWarnings("UnusedReturnValue")
         Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig);
 
         /**
@@ -146,6 +158,7 @@ public interface Player {
          * @param preferredMediaFormat - PKMediaFormat.
          * @return - Player Settings.
          */
+        @SuppressWarnings("UnusedReturnValue")
         Settings setPreferredMediaFormat(PKMediaFormat preferredMediaFormat);
 
         /**
@@ -154,6 +167,7 @@ public interface Player {
          * @param subtitleStyleSettings - SubtitleStyleSettings
          * @return - Player Settings
          */
+        @SuppressWarnings("UnusedReturnValue")
         Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
     }
 
@@ -319,14 +333,14 @@ public interface Player {
 
 
     /**
-     * Add a {@link PlayerListener} for player-only events. Remove with {@link #removeListener(PKEvent.Listener)}.
+     * Add a {@link PlayerListener} for player-only events. Remove with {@link #removeListener(PKListener)}.
      * Use {@link #addAdsListener(AdsListener)} for ad events and {@link #addEventListener(PKEvent.Listener, Enum[])} for events emitted by plugins.
      */
     @SuppressWarnings("UnusedReturnValue")
     PlayerListener addPlayerListener(PlayerListener playerListener);
 
     /**
-     * Add an {@link AdsListener} for ads-only events. Remove with {@link #removeListener(PKEvent.Listener)}.
+     * Add an {@link AdsListener} for ads-only events. Remove with {@link #removeListener(PKListener)}.
      * Use {@link #addPlayerListener(PlayerListener)} for player events and {@link #addEventListener(PKEvent.Listener, Enum[])} for events emitted by plugins.
      */
     @SuppressWarnings("UnusedReturnValue")
@@ -341,6 +355,7 @@ public interface Player {
      * @param listener - event listener.
      * @param events   - events the subscriber interested in.
      */
+    @SuppressWarnings("UnusedReturnValue")
     PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
 
     /**
@@ -357,6 +372,7 @@ public interface Player {
      * @param listener - state changed listener
      */
     @Deprecated
+    @SuppressWarnings("UnusedReturnValue")
     PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener);
 
     /**
@@ -373,7 +389,6 @@ public interface Player {
      *
      * @param listener - event listener to remove
      */
-    void removeListener(@NonNull PKEvent.Listener listener);
-
+    void removeListener(@NonNull PKListener listener);
 }
 

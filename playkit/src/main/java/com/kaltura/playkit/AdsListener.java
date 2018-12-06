@@ -4,7 +4,7 @@ import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 
 @SuppressWarnings("unused")
-public interface AdsListener {
+public interface AdsListener extends PKListener {
 
     default void onAdFirstPlay() {}
 

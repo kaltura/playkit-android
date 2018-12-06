@@ -23,11 +23,13 @@ import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKListener;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKMessage;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerListener;
 import com.kaltura.playkit.player.metadata.PKMetadata;
@@ -432,7 +434,7 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void removeListener(@NonNull PKEvent.Listener listener) {
+    public void removeListener(@NonNull PKListener listener) {
         Assert.shouldNeverHappen();
     }
 
@@ -611,8 +613,8 @@ public class PlayerController implements Player {
         this.eventListener = eventListener;
     }
 
-    private void post(MessageBus.Post<PlayerListener> post) {
-        messageBus.postPlayerEvent(post);
+    private void post(PKMessage<PlayerListener> message) {
+        messageBus.postPlayerEvent(message);
     }
 
     private PlayerEngine.EventListener initEventListener() {

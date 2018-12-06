@@ -15,7 +15,7 @@ package com.kaltura.playkit;
 public interface PKEvent {
     Enum eventType();
 
-    interface Listener {
+    interface Listener extends PKListener {
         void onEvent(PKEvent event);
     }
 }

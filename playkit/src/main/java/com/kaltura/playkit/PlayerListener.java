@@ -9,7 +9,7 @@ import com.kaltura.playkit.player.metadata.PKMetadata;
 import java.util.List;
 
 @SuppressWarnings("unused")
-public interface PlayerListener {
+public interface PlayerListener extends PKListener {
 
     default void onError(PKError error) {}
 

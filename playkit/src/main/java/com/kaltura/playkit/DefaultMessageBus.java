@@ -14,6 +14,7 @@ package com.kaltura.playkit;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.kaltura.playkit.plugins.ads.AdEvent;
@@ -29,8 +30,7 @@ public class DefaultMessageBus implements MessageBus {
     private static final String TAG = "MessageBus";
 
     private Handler postHandler = new Handler(Looper.getMainLooper());
-    private Map<Object, Set<Object>> listeners;
-    private final LegacyEventAdapter legacyEventAdapter;
+    private Map<Object, Set<PKListener>> listeners;
 
     enum ListenerType {
         player, ads
@@ -40,50 +40,56 @@ public class DefaultMessageBus implements MessageBus {
         listeners = new ConcurrentHashMap<>();
 
         // Pre-allocate the sets for player and ads listeners.
-        listeners.put(ListenerType.player, new HashSet<>(10));
-        listeners.put(ListenerType.ads, new HashSet<>(10));
-
-
-        legacyEventAdapter = new LegacyEventAdapter(this);
+        listeners.put(PlayerListener.class, new HashSet<>(10));
+        listeners.put(AdsListener.class, new HashSet<>(10));
 
         // Forward new-style player events to legacy listeners
-        addListener(legacyEventAdapter.newToLegacyPlayerEvents);
+        addListener(LegacyEventAdapter.newToLegacyPlayerEvents(this));
 
         // Forward new-style ads events to legacy listeners
-        addListener(legacyEventAdapter.newToLegacyAdsEvents);
-
-        // Forward legacy ads events to new listeners. Player events are only sent in new format.
-        listen(legacyEventAdapter.legacyToNewAdsEvents, AdEvent.Type.values());
+        addListener(LegacyEventAdapter.newToLegacyAdsEvents(this));
     }
 
     @Override
-    public void postPlayerEvent(Post<PlayerListener> post) {
-        final Set<Object> listeners = getListeners(ListenerType.player);
+    public void postPlayerEvent(@NonNull PKMessage<PlayerListener> message) {
+        final Set<PKListener> listeners = getListeners(ListenerType.player);
         if (listeners == null) {
             return;
         }
         post(() -> {
             for (Object listener : listeners) {
                 if (listener instanceof PlayerListener) {
-                    post.run(((PlayerListener) listener));
+                    message.run(((PlayerListener) listener));
                 }
             }
         });
     }
 
     @Override
-    public void postAdsEvent(Post<AdsListener> post) {
-        final Set<Object> listeners = this.getListeners(ListenerType.ads);
+    public void postAdsEvent(@NonNull PKMessage<AdsListener> message) {
+        final Set<PKListener> listeners = this.getListeners(ListenerType.ads);
         if (listeners == null) {
             return;
         }
         post(() -> {
             for (Object listener : listeners) {
                 if (listener instanceof AdsListener) {
-                    post.run(((AdsListener) listener));
+                    message.run(((AdsListener) listener));
                 }
             }
         });
+    }
+
+    @Override
+    public void removeListener(@NonNull PKListener listener) {
+        for (Set<PKListener> listenerSet : listeners.values()) {
+            Iterator<PKListener> iterator = listenerSet.iterator();
+            while (iterator.hasNext()) {
+                if (iterator.next() == listener) {
+                    iterator.remove();
+                }
+            }
+        }
     }
 
     void post(Runnable runnable) {
@@ -91,7 +97,7 @@ public class DefaultMessageBus implements MessageBus {
     }
 
     @Override
-    public void post(final PKEvent event) {
+    public void post(@NonNull final PKEvent event) {
 
         if (event instanceof PlayerEvent || event instanceof AdEvent) {
             Log.d(TAG, "LEGACY POSTING EVENT " + event.eventType());
@@ -109,17 +115,14 @@ public class DefaultMessageBus implements MessageBus {
 
     private void postInternal(PKEvent event, boolean fromProxy) {
 
-        final Set<Object> listeners = this.listeners.get(event.eventType());
+        final Set<PKListener> listeners = this.listeners.get(event.eventType());
 
         if (listeners == null) {
             return;
         }
         postHandler.post(() -> {
-            for (Object listener : new HashSet<>(listeners)) {
+            for (PKListener listener : new HashSet<>(listeners)) {
                 if (listener instanceof PKEvent.Listener) {
-                    if (fromProxy && listener == legacyEventAdapter.legacyToNewAdsEvents) {
-                        continue;
-                    }
                     ((PKEvent.Listener) listener).onEvent(event);
                 }
             }
@@ -127,32 +130,20 @@ public class DefaultMessageBus implements MessageBus {
     }
 
     @Override
-    public void remove(PKEvent.Listener listener, Enum... eventTypes) {
+    public void remove(@NonNull PKEvent.Listener listener, @NonNull Enum... eventTypes) {
         for (Enum eventType : eventTypes) {
-            Set<Object> listenerSet = listeners.get(eventType);
+            Set<PKListener> listenerSet = listeners.get(eventType);
             if (listenerSet != null) {
                 listenerSet.remove(listener);
             }
         }
     }
 
+    @NonNull
     @Override
-    public void removeListener(PKEvent.Listener listener) {
-        for (Set<Object> listenerSet : listeners.values()) {
-            Iterator<Object> iterator = listenerSet.iterator();
-            while (iterator.hasNext()) {
-                Object element = iterator.next();
-                if (element == listener) {
-                    iterator.remove();
-                }
-            }
-        }
-    }
-
-    @Override
-    public PKEvent.Listener listen(PKEvent.Listener listener, Enum... eventTypes) {
+    public PKEvent.Listener listen(@NonNull PKEvent.Listener listener, @NonNull Enum... eventTypes) {
         for (Enum eventType : eventTypes) {
-            Set<Object> listenerSet = listeners.get(eventType);
+            Set<PKListener> listenerSet = listeners.get(eventType);
             if (listenerSet == null) {
                 listenerSet = new HashSet<>();
                 listenerSet.add(listener);
@@ -165,16 +156,16 @@ public class DefaultMessageBus implements MessageBus {
     }
 
     @Override
-    public void addListener(PlayerListener listener) {
-        getListeners(ListenerType.player).add(listener);
-    }
-
-    private Set<Object> getListeners(ListenerType type) {
-        return listeners.get(type);
+    public void addListener(@NonNull AdsListener listener) {
+        getListeners(AdsListener.class).add(listener);
     }
 
     @Override
-    public void addListener(AdsListener listener) {
-        getListeners(ListenerType.ads).add(listener);
+    public void addListener(@NonNull PlayerListener listener) {
+        getListeners(PlayerListener.class).add(listener);
+    }
+
+    private Set<PKListener> getListeners(Object type) {
+        return listeners.get(type);
     }
 }
