@@ -24,7 +24,7 @@ public class AdEvent implements PKEvent {
 
     public Type type;
 
-    public AdEvent(Type type) {
+    AdEvent(Type type) {
         this.type = type;
     }
 
@@ -32,7 +32,7 @@ public class AdEvent implements PKEvent {
 
         public final AdInfo adInfo;
 
-        public AdLoadedEvent(AdInfo adInfo) {
+        AdLoadedEvent(AdInfo adInfo) {
             super(Type.LOADED);
             this.adInfo = adInfo;
         }
@@ -42,7 +42,7 @@ public class AdEvent implements PKEvent {
 
         public final AdInfo adInfo;
 
-        public AdStartedEvent(AdInfo adInfo) {
+        AdStartedEvent(AdInfo adInfo) {
             super(Type.STARTED);
             this.adInfo = adInfo;
         }
@@ -52,7 +52,7 @@ public class AdEvent implements PKEvent {
 
         public final AdInfo adInfo;
 
-        public AdPausedEvent(AdInfo adInfo) {
+        AdPausedEvent(AdInfo adInfo) {
             super(Type.PAUSED);
             this.adInfo = adInfo;
         }
@@ -62,7 +62,7 @@ public class AdEvent implements PKEvent {
 
         public final AdInfo adInfo;
 
-        public AdResumedEvent(AdInfo adInfo) {
+        AdResumedEvent(AdInfo adInfo) {
             super(Type.RESUMED);
             this.adInfo = adInfo;
         }
@@ -72,7 +72,7 @@ public class AdEvent implements PKEvent {
 
         public final AdInfo adInfo;
 
-        public AdSkippedEvent(AdInfo adInfo) {
+        AdSkippedEvent(AdInfo adInfo) {
             super(Type.SKIPPED);
             this.adInfo = adInfo;
         }
@@ -82,7 +82,7 @@ public class AdEvent implements PKEvent {
 
         public final AdCuePoints cuePoints;
 
-        public AdCuePointsUpdateEvent(AdCuePoints cuePoints) {
+        AdCuePointsUpdateEvent(AdCuePoints cuePoints) {
             super(Type.CUEPOINTS_CHANGED);
             this.cuePoints = cuePoints;
         }
@@ -92,7 +92,7 @@ public class AdEvent implements PKEvent {
 
         public final long adPlayHead;
 
-        public AdPlayHeadEvent(long adPlayHead) {
+        AdPlayHeadEvent(long adPlayHead) {
             super(Type.PLAY_HEAD_CHANGED);
             this.adPlayHead = adPlayHead;
         }
@@ -102,7 +102,7 @@ public class AdEvent implements PKEvent {
 
         public final String adTagUrl;
 
-        public AdRequestedEvent(String adTagUrl) {
+        AdRequestedEvent(String adTagUrl) {
             super(Type.AD_REQUESTED);
             this.adTagUrl = adTagUrl;
         }
@@ -112,7 +112,7 @@ public class AdEvent implements PKEvent {
 
         public final long adPosition;
 
-        public AdBufferStart(long adPosition) {
+        AdBufferStart(long adPosition) {
             super(Type.AD_BUFFER_START);
             this.adPosition = adPosition;
         }
@@ -122,7 +122,7 @@ public class AdEvent implements PKEvent {
 
         public final long adPosition;
 
-        public AdBufferEnd(long adPosition) {
+        AdBufferEnd(long adPosition) {
             super(Type.AD_BUFFER_END);
             this.adPosition = adPosition;
         }
@@ -132,7 +132,7 @@ public class AdEvent implements PKEvent {
 
         public final PKError error;
 
-        public Error(PKError error) {
+        Error(PKError error) {
             super(Type.ERROR);
             this.error = error;
         }

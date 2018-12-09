@@ -48,4 +48,37 @@ public interface AdsProvider {
     void removeAdProviderListener();
 
     void skipAd();
+
+    enum Event {
+        AD_REQUESTED,
+        AD_FIRST_PLAY,
+        STARTED,
+        AD_DISPLAYED_AFTER_CONTENT_PAUSE,
+        PAUSED,
+        RESUMED,
+        COMPLETED,
+        FIRST_QUARTILE,
+        MIDPOINT,
+        THIRD_QUARTILE,
+        SKIPPED(),
+        CLICKED,
+        TAPPED,
+        ICON_TAPPED,
+        AD_BREAK_READY,
+        AD_PROGRESS,
+        AD_BREAK_STARTED,
+        AD_BREAK_ENDED,
+        AD_BREAK_IGNORED,
+        CUEPOINTS_CHANGED,
+        PLAY_HEAD_CHANGED,
+        LOADED,
+        CONTENT_PAUSE_REQUESTED,
+        CONTENT_RESUME_REQUESTED,
+        ALL_ADS_COMPLETED,
+        AD_LOAD_TIMEOUT_TIMER_STARTED,
+        AD_BUFFER_START,
+        AD_BUFFER_END,
+        ERROR
+    }
+
 }

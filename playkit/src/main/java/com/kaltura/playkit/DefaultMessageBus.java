@@ -15,9 +15,8 @@ package com.kaltura.playkit;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
-import com.kaltura.playkit.plugins.ads.AdEvent;
+import com.kaltura.playkit.plugins.ads.AdsListenerAdapter;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,7 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("WeakerAccess")
-public class DefaultMessageBus implements MessageBus {
+class DefaultMessageBus implements MessageBus {
     private static final String TAG = "MessageBus";
 
     private Handler postHandler = new Handler(Looper.getMainLooper());
@@ -36,7 +35,7 @@ public class DefaultMessageBus implements MessageBus {
         player, ads
     }
 
-    public DefaultMessageBus() {
+    DefaultMessageBus() {
         listeners = new ConcurrentHashMap<>();
 
         // Pre-allocate the sets for player and ads listeners.
@@ -44,10 +43,10 @@ public class DefaultMessageBus implements MessageBus {
         listeners.put(AdsListener.class, new HashSet<>(10));
 
         // Forward new-style player events to legacy listeners
-        addListener(LegacyEventAdapter.newToLegacyPlayerEvents(this));
+        addListener(new PlayerListenerAdapter(this));
 
         // Forward new-style ads events to legacy listeners
-        addListener(LegacyEventAdapter.newToLegacyAdsEvents(this));
+        addListener(new AdsListenerAdapter(this));
     }
 
     @Override
@@ -99,27 +98,12 @@ public class DefaultMessageBus implements MessageBus {
     @Override
     public void post(@NonNull final PKEvent event) {
 
-        if (event instanceof PlayerEvent || event instanceof AdEvent) {
-            Log.d(TAG, "LEGACY POSTING EVENT " + event.eventType());
-        }
-
-        postInternal(event, false);
-    }
-
-    void postFromAdapter(PKEvent event) {
-
-        Log.d(TAG, "ADAPTER POSTING EVENT " + event.eventType());
-
-        postInternal(event, true);
-    }
-
-    private void postInternal(PKEvent event, boolean fromProxy) {
-
         final Set<PKListener> listeners = this.listeners.get(event.eventType());
 
         if (listeners == null) {
             return;
         }
+
         postHandler.post(() -> {
             for (PKListener listener : new HashSet<>(listeners)) {
                 if (listener instanceof PKEvent.Listener) {
