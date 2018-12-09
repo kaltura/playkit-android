@@ -8,10 +8,11 @@ import com.kaltura.playkit.player.metadata.PKMetadata;
 
 import java.util.List;
 
+@SuppressWarnings("deprecation")
 class PlayerListenerAdapter implements PlayerListener {
-    private final DefaultMessageBus messageBus;
+    private final PKMessage.Poster messageBus;
 
-    public PlayerListenerAdapter(DefaultMessageBus messageBus) {
+    PlayerListenerAdapter(DefaultMessageBus messageBus) {
         this.messageBus = messageBus;
     }
 

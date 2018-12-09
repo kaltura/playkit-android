@@ -24,6 +24,7 @@ import java.util.List;
  * @deprecated Please use {@link com.kaltura.playkit.Player#addPlayerListener(PlayerListener)} and {@link com.kaltura.playkit.PlayerListener} instead.
  */
 @Deprecated
+@SuppressWarnings({"deprecation", "WeakerAccess", "DeprecatedIsStillUsed"})
 public class PlayerEvent implements PKEvent {
 
     public static class Generic extends PlayerEvent {

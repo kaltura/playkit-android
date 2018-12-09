@@ -62,5 +62,9 @@ public interface AdsListener extends PKListener {
 
     default void onAdBufferEnd(long adPosition) {}
 
+    default void onAdPlaybackInfoUpdated(int width, int height, int bitrate) {}
+
+    default void onSkippableStateChanged() {}
+
     default void onError(PKError error) {}
 }
