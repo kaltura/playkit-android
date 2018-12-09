@@ -246,6 +246,7 @@ public class PlayerController implements Player {
             log.e(e.getMessage());
             sendErrorMessage(PKPlayerErrorType.FAILED_TO_INITIALIZE_PLAYER, e.getMessage(), e);
             if (incomingPlayerType == PlayerEngineType.VRPlayer) {
+                incomingPlayerType = PlayerEngineType.Exoplayer;
                 player = new ExoPlayerWrapper(context, playerSettings);
             } else {
                 return;
@@ -445,7 +446,11 @@ public class PlayerController implements Player {
 
     @Override
     public void onApplicationPaused() {
-        log.v("onApplicationPaused");
+        log.d("onApplicationPaused");
+        if (isPlayerStopped) {
+            log.e("onApplicationPaused called during player state = STOPPED - return");
+            return;
+        }
         if (assertPlayerIsNotNull("onApplicationPaused()")) {
             if (player.isPlaying()) {
                 player.pause();
@@ -458,7 +463,11 @@ public class PlayerController implements Player {
 
     @Override
     public void onApplicationResumed() {
-        log.v("onApplicationResumed");
+        log.d("onApplicationResumed");
+        if (isPlayerStopped) {
+            log.e("onApplicationResumed called during player state = STOPPED - return");
+            return;
+        }
         if (assertPlayerIsNotNull("onApplicationResumed()")) {
             player.restore();
             updateProgress();
