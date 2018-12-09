@@ -128,6 +128,20 @@ public class AdEvent implements PKEvent {
         }
     }
 
+    public static class AdPlaybackInfoUpdated extends AdEvent {
+
+        public final int width;
+        public final int height;
+        public final int bitrate;
+
+        public AdPlaybackInfoUpdated(int width, int height, int bitrate) {
+            super(Type.AD_PLAYBACK_INFO_UPDATED);
+            this.width = width;
+            this.height = height;
+            this.bitrate = bitrate;
+        }
+    }
+
     public static class Error extends AdEvent {
 
         public final PKError error;
@@ -149,7 +163,8 @@ public class AdEvent implements PKEvent {
         FIRST_QUARTILE,
         MIDPOINT,
         THIRD_QUARTILE,
-        SKIPPED(),
+        SKIPPED,
+        SKIPPABLE_STATE_CHANGED,
         CLICKED,
         TAPPED,
         ICON_TAPPED,
@@ -167,6 +182,7 @@ public class AdEvent implements PKEvent {
         AD_LOAD_TIMEOUT_TIMER_STARTED,
         AD_BUFFER_START,
         AD_BUFFER_END,
+        AD_PLAYBACK_INFO_UPDATED,
         ERROR
     }
 
