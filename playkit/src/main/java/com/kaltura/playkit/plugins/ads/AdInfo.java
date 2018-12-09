@@ -26,11 +26,13 @@ public class AdInfo implements PKAdInfo {
 
     private String adTitle;
     private boolean isAdSkippable;
+    private long skipTimeOffset;
     private String adContnentType;
     private String adId;
     private String adSystem;
     private int adHeight;
     private int adWidth;
+    private int mediaBitrate;
     private int totalAdsInPod;
     private int adIndexInPod;
     private int podIndex;
@@ -39,8 +41,8 @@ public class AdInfo implements PKAdInfo {
     private long adPodTimeOffset;
 
     public AdInfo(String adDescription, long adDuration, long adPlayHead, String adTitle,
-                  boolean isAdSkippable, String adContnentType,
-                  String adId, String adSystem, int adHeight, int adWidth,
+                  boolean isAdSkippable, long skipTimeOffset, String adContnentType,
+                  String adId, String adSystem, int adHeight, int adWidth, int mediaBitrate,
                   int totalAdsInPod, int adIndexInPod, int currentPodIndex, int podCount,
                   boolean isBumper, long adPodTimeOffset) {
 
@@ -49,11 +51,13 @@ public class AdInfo implements PKAdInfo {
         this.adPlayHead = adPlayHead;
         this.adTitle = adTitle;
         this.isAdSkippable = isAdSkippable;
+        this.skipTimeOffset = skipTimeOffset;
         this.adContnentType = adContnentType;
         this.adId = adId;
         this.adSystem = adSystem;
         this.adHeight = adHeight;
         this.adWidth = adWidth;
+        this.mediaBitrate = mediaBitrate;
         this.totalAdsInPod = totalAdsInPod;
         this.adIndexInPod = adIndexInPod;
         this.podIndex = currentPodIndex;
@@ -159,9 +163,29 @@ public class AdInfo implements PKAdInfo {
         this.adPlayHead = adPlayHead;
     }
 
+    public void setMediaBitrate(int mediaBitrate) {
+        this.mediaBitrate = mediaBitrate;
+    }
+
+    public void setAdWidth(int adWidth) {
+        this.adWidth = adWidth;
+    }
+
+    public void setAdHeight(int adHeight) {
+        this.adHeight = adHeight;
+    }
+
     public String getAdContnentType() {
         return adContnentType;
 
+    }
+
+    public long getSkipTimeOffset() {
+        return skipTimeOffset;
+    }
+
+    public int getMediaBitrate() {
+        return mediaBitrate;
     }
 
     @Override
