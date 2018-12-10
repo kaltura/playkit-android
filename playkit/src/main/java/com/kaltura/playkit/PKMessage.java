@@ -7,10 +7,10 @@ import android.support.annotation.NonNull;
  * Usage:
  * poster.postAdsEvent(L->L.onAdStarted(adInfo))
  * poster.postPlayerEvent(L->L.onPlaying())
- * @param <Listener> listener type
+ * @param <L> listener type
  */
-public interface PKMessage<Listener> {
-    void run(@NonNull Listener L);
+public interface PKMessage<L> {
+    void run(@NonNull L L);
 
     interface Poster {
         void post(@NonNull PKEvent event);

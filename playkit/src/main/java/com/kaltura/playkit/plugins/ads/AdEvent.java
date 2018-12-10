@@ -12,12 +12,11 @@
 
 package com.kaltura.playkit.plugins.ads;
 
-import com.kaltura.playkit.AdsListener;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 
 /**
- * @deprecated Please use {@link com.kaltura.playkit.Player#addAdsListener(AdsListener)} and {@link com.kaltura.playkit.AdsListener} instead.
+ * @deprecated Please use {@link com.kaltura.playkit.AdsListener} with {@link com.kaltura.playkit.Player#addAdsListener(com.kaltura.playkit.AdsListener)} instead.
  */
 @Deprecated
 public class AdEvent implements PKEvent {

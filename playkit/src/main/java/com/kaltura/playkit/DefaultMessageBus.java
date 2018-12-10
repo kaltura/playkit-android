@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @SuppressWarnings("WeakerAccess")
 class DefaultMessageBus implements MessageBus {
     private static final String TAG = "MessageBus";
+    public static final int INITIAL_LISTENER_CAPACITY = 10;
 
     private Handler postHandler = new Handler(Looper.getMainLooper());
     private Map<Object, Set<PKListener>> listeners;
@@ -39,8 +40,8 @@ class DefaultMessageBus implements MessageBus {
         listeners = new ConcurrentHashMap<>();
 
         // Pre-allocate the sets for player and ads listeners.
-        listeners.put(PlayerListener.class, new HashSet<>(10));
-        listeners.put(AdsListener.class, new HashSet<>(10));
+        listeners.put(PlayerListener.class, new HashSet<>(INITIAL_LISTENER_CAPACITY));
+        listeners.put(AdsListener.class, new HashSet<>(INITIAL_LISTENER_CAPACITY));
 
         // Forward new-style player events to legacy listeners
         addListener(new PlayerListenerAdapter(this));
