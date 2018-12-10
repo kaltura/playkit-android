@@ -1,3 +1,5 @@
+println("PlayKit Gradle Tools")
+
 // Exclude PlayKit, use on PlayKit dependencies
 ext.excludePlaykit = {
     // Official PlayKit, from Bintray/JCenter
