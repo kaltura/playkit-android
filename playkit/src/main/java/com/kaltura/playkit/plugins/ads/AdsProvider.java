@@ -60,7 +60,8 @@ public interface AdsProvider {
         FIRST_QUARTILE,
         MIDPOINT,
         THIRD_QUARTILE,
-        SKIPPED(),
+        SKIPPED,
+        SKIPPABLE_STATE_CHANGED,
         CLICKED,
         TAPPED,
         ICON_TAPPED,
@@ -78,6 +79,7 @@ public interface AdsProvider {
         AD_LOAD_TIMEOUT_TIMER_STARTED,
         AD_BUFFER_START,
         AD_BUFFER_END,
+        AD_PLAYBACK_INFO_UPDATED,
         ERROR
     }
 
