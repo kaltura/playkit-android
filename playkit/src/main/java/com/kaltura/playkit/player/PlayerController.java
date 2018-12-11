@@ -29,7 +29,6 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.PKMessage;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerListener;
 import com.kaltura.playkit.player.metadata.PKMetadata;
@@ -622,7 +621,7 @@ public class PlayerController implements Player {
         this.eventListener = eventListener;
     }
 
-    private void post(PKMessage<PlayerListener> message) {
+    private void post(MessageBus.Message<PlayerListener> message) {
         messageBus.postPlayerEvent(message);
     }
 

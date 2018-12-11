@@ -10,7 +10,7 @@ import java.util.List;
 
 @SuppressWarnings("deprecation")
 class PlayerListenerAdapter implements PlayerListener {
-    private final PKMessage.Poster messageBus;
+    private final MessageBus messageBus;
 
     PlayerListenerAdapter(DefaultMessageBus messageBus) {
         this.messageBus = messageBus;

@@ -2,7 +2,7 @@ package com.kaltura.playkit;
 
 import android.support.annotation.NonNull;
 
-public interface MessageBus extends PKMessage.Poster {
+public interface MessageBus {
 
     /**
      * Start listening to events of the given types.
@@ -22,4 +22,21 @@ public interface MessageBus extends PKMessage.Poster {
     void addListener(@NonNull AdsListener listener);
 
     void removeListener(@NonNull PKListener listener);
+
+    void post(@NonNull PKEvent event);
+
+    void postPlayerEvent(@NonNull Message<PlayerListener> message);
+
+    void postAdsEvent(@NonNull Message<AdsListener> message);
+
+    /**
+     * A message that can be sent by running code. Should be implemented using a lambda.
+     * Usage:
+     * bus.postAdsEvent(L->L.onAdStarted(adInfo))
+     * bus.postPlayerEvent(L->L.onPlaying())
+     * @param <L> listener type
+     */
+    interface Message<L> {
+        void run(@NonNull L L);
+    }
 }

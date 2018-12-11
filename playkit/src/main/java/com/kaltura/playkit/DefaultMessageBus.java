@@ -45,7 +45,7 @@ class DefaultMessageBus implements MessageBus {
     }
 
     @Override
-    public void postPlayerEvent(@NonNull PKMessage<PlayerListener> message) {
+    public void postPlayerEvent(@NonNull Message<PlayerListener> message) {
         final Set<PKListener> listeners = getListeners(PlayerListener.class);
         if (listeners == null) {
             return;
@@ -60,7 +60,7 @@ class DefaultMessageBus implements MessageBus {
     }
 
     @Override
-    public void postAdsEvent(@NonNull PKMessage<AdsListener> message) {
+    public void postAdsEvent(@NonNull Message<AdsListener> message) {
         final Set<PKListener> listeners = this.getListeners(AdsListener.class);
         if (listeners == null) {
             return;
