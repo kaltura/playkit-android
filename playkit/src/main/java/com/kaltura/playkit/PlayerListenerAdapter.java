@@ -130,4 +130,9 @@ class PlayerListenerAdapter implements PlayerListener {
     public void onStopping(long stopPosition) {
         messageBus.post(new PlayerEvent.Generic(PlayerEvent.Type.STOPPED));
     }
+
+    @Override
+    public void onLoadedMetadata() {
+        messageBus.post(new PlayerEvent.Generic(PlayerEvent.Type.LOADED_METADATA));
+    }
 }
