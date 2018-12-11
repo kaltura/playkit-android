@@ -13,6 +13,8 @@ public interface MessageBus extends PKMessage.Poster {
     @NonNull
     PKEvent.Listener listen(@NonNull PKEvent.Listener listener, @NonNull Enum... eventTypes);
 
+    void postRunnable(Runnable runnable);
+
     void remove(@NonNull PKEvent.Listener listener, @NonNull Enum... eventTypes);
 
     void addListener(@NonNull PlayerListener listener);

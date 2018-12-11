@@ -50,7 +50,7 @@ class DefaultMessageBus implements MessageBus {
         if (listeners == null) {
             return;
         }
-        post(() -> {
+        postRunnable(() -> {
             for (Object listener : listeners) {
                 if (listener instanceof PlayerListener) {
                     message.run(((PlayerListener) listener));
@@ -65,7 +65,7 @@ class DefaultMessageBus implements MessageBus {
         if (listeners == null) {
             return;
         }
-        post(() -> {
+        postRunnable(() -> {
             for (Object listener : listeners) {
                 if (listener instanceof AdsListener) {
                     message.run(((AdsListener) listener));
@@ -86,7 +86,8 @@ class DefaultMessageBus implements MessageBus {
         }
     }
 
-    void post(Runnable runnable) {
+    @Override
+    public void postRunnable(Runnable runnable) {
         postHandler.post(runnable);
     }
 
