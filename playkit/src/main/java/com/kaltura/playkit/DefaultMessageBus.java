@@ -24,17 +24,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-@SuppressWarnings("WeakerAccess")
 class DefaultMessageBus implements MessageBus {
-    private static final String TAG = "MessageBus";
-    public static final int INITIAL_LISTENER_CAPACITY = 10;
+    private static final int INITIAL_LISTENER_CAPACITY = 10;
 
     private Handler postHandler = new Handler(Looper.getMainLooper());
     private Map<Object, Set<PKListener>> listeners;
-
-    enum ListenerType {
-        player, ads
-    }
 
     DefaultMessageBus() {
         listeners = new ConcurrentHashMap<>();
@@ -52,7 +46,7 @@ class DefaultMessageBus implements MessageBus {
 
     @Override
     public void postPlayerEvent(@NonNull PKMessage<PlayerListener> message) {
-        final Set<PKListener> listeners = getListeners(ListenerType.player);
+        final Set<PKListener> listeners = getListeners(PlayerListener.class);
         if (listeners == null) {
             return;
         }
@@ -67,7 +61,7 @@ class DefaultMessageBus implements MessageBus {
 
     @Override
     public void postAdsEvent(@NonNull PKMessage<AdsListener> message) {
-        final Set<PKListener> listeners = this.getListeners(ListenerType.ads);
+        final Set<PKListener> listeners = this.getListeners(AdsListener.class);
         if (listeners == null) {
             return;
         }
