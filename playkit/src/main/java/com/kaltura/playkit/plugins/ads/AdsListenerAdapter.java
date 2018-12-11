@@ -152,6 +152,16 @@ public class AdsListenerAdapter implements AdsListener {
     }
 
     @Override
+    public void onAdPlaybackInfoUpdated(int width, int height, int bitrate) {
+        messageBus.post(new AdEvent.AdPlaybackInfoUpdated(width, height, bitrate));
+    }
+
+    @Override
+    public void onSkippableStateChanged() {
+        messageBus.post(new AdEvent(AdEvent.Type.SKIPPABLE_STATE_CHANGED));
+    }
+
+    @Override
     public void onError(PKError error) {
         messageBus.post(new AdEvent.Error(error));
     }
