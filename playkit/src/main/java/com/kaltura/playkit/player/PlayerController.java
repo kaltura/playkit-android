@@ -290,8 +290,9 @@ public class PlayerController implements Player {
     public void stop() {
         log.v("stop");
         if (eventListener != null && !isPlayerStopped) {
+            long position = getCurrentPosition();
+            post(L-> L.onStopping(position));
 
-            post(L->L.onStopping(getCurrentPosition()));
             cancelUpdateProgress();
             isPlayerStopped = true;
             log.d("sending STOPPED event ");
