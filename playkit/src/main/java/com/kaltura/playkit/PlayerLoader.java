@@ -202,4 +202,16 @@ class PlayerLoader extends PlayerDecoratorBase {
     public void removeListener(@NonNull PKEvent.Listener listener) {
         messageBus.removeListener(listener);
     }
+
+    @Override
+    public <E extends PKEvent> PKEvent.Listener<E> addListener(Class<E> type, PKEvent.Listener<E> listener) {
+        messageBus.addListener(type, listener);
+        return listener;
+    }
+
+    @Override
+    public PKEvent.Listener addListener(Enum type, PKEvent.Listener listener) {
+        messageBus.addListener(type, listener);
+        return listener;
+    }
 }

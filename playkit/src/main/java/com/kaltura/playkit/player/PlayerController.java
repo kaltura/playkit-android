@@ -531,6 +531,18 @@ public class PlayerController implements Player {
         }
     }
 
+    @Override
+    public <E extends PKEvent> PKEvent.Listener<E> addListener(Class<E> type, PKEvent.Listener<E> listener) {
+        Assert.shouldNeverHappen();
+        return null;
+    }
+
+    @Override
+    public PKEvent.Listener addListener(Enum type, PKEvent.Listener listener) {
+        Assert.shouldNeverHappen();
+        return null;
+    }
+
     private boolean assertPlayerIsNotNull(String methodName) {
         if (player != null) {
             return true;

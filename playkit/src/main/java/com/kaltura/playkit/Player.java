@@ -355,5 +355,13 @@ public interface Player {
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
 
+
+
+
+    @SuppressWarnings("UnusedReturnValue")
+    <E extends PKEvent> PKEvent.Listener<E> addListener(Class<E> type, PKEvent.Listener<E> listener);
+
+    @SuppressWarnings("UnusedReturnValue")
+    PKEvent.Listener addListener(Enum type, PKEvent.Listener listener);
 }
 
