@@ -17,6 +17,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.player.PlayerController;
+import com.kaltura.playkit.player.PlayerEngine;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 
 import java.util.ArrayList;
@@ -68,6 +69,7 @@ class PlayerLoader extends PlayerDecoratorBase {
         });
 
         Player player = playerController;
+        PlayerEngineWrapper playerEngineWrapper = null;
 
         for (Map.Entry<String, Object> entry : pluginsConfig) {
             String name = entry.getKey();
@@ -85,8 +87,15 @@ class PlayerLoader extends PlayerDecoratorBase {
                 player = decorator;
             }
 
+            PlayerEngineWrapper wrapper = plugin.getPlayerEngineWrapper();
+            if (wrapper != null && playerEngineWrapper == null) {
+                playerEngineWrapper = wrapper;
+            }
+
             loadedPlugins.put(name, new LoadedPlugin(plugin, decorator));
         }
+
+        playerController.setPlayerEngineWrapper(playerEngineWrapper);
 
         setPlayer(player);
     }

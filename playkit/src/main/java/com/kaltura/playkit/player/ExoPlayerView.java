@@ -187,18 +187,27 @@ class ExoPlayerView extends BaseExoplayerView {
 
     @Override
     public void hideVideoSurface() {
+        if (videoSurface == null || subtitleView == null) {
+            return;
+        }
         videoSurface.setVisibility(GONE);
         subtitleView.setVisibility(GONE);
     }
 
     @Override
     public void showVideoSurface() {
+        if (videoSurface == null || subtitleView == null) {
+            return;
+        }
         videoSurface.setVisibility(VISIBLE);
         subtitleView.setVisibility(VISIBLE);
     }
 
     @Override
     public void hideVideoSubtitles() {
+        if (subtitleView == null) {
+            return;
+        }
         subtitleView.setVisibility(GONE);
     }
 
