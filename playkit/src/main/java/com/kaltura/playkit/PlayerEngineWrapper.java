@@ -171,4 +171,8 @@ public class PlayerEngineWrapper implements PlayerEngine {
     public void setPlayerEngine(PlayerEngine playerEngine) {
         this.playerEngine = playerEngine;
     }
+
+    public PlayerEngine getPlayerEngine() {
+        return this.playerEngine;
+    }
 }
