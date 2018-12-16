@@ -34,11 +34,9 @@ class LoadedPlugin {
 
     PKPlugin plugin;
     PlayerDecorator decorator;
-
 }
 
 class PlayerLoader extends PlayerDecoratorBase {
-
 
     private static final PKLog log = PKLog.get("PlayerLoader");
 
@@ -60,12 +58,7 @@ class PlayerLoader extends PlayerDecoratorBase {
         // By default, set Kaltura decorator.
         KalturaPlaybackRequestAdapter.install(playerController, context.getPackageName());
 
-        playerController.setEventListener(new PKEvent.Listener() {
-            @Override
-            public void onEvent(PKEvent event) {
-                messageBus.post(event);
-            }
-        });
+        playerController.setEventListener(messageBus::post);
 
         Player player = playerController;
 

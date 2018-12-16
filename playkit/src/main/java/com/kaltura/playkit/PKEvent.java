@@ -18,5 +18,9 @@ public interface PKEvent {
     interface Listener<E extends PKEvent> {
         void onEvent(E event);
     }
+
+    interface RawListener {
+        void onEvent(PKEvent event);
+    }
 }
 
