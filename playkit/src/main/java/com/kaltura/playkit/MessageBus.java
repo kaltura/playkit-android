@@ -47,9 +47,12 @@ public class MessageBus {
             postHandler.post(() -> {
                 for (PKEvent.Listener listener : listenerSet) {
                     try {
+                        // If the listener type does not match event type (programming error),
+                        // there will be a ClassCastException. Log it but don't crash.
+                        //noinspection unchecked
                         listener.onEvent(event);
                     } catch (ClassCastException e) {
-                        Log.e(TAG, "post: ", e);
+                        Log.e(TAG, "Wrong type of listener " + listener.getClass() + " for event (" + event.eventType() + ")", e);
                     }
                 }
             });
