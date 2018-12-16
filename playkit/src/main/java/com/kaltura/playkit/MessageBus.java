@@ -24,9 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Created by Noam Tamim @ Kaltura on 07/11/2016.
- */
 @SuppressWarnings("WeakerAccess")
 public class MessageBus {
     private static final String TAG = "MessageBus";

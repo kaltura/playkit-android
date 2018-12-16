@@ -14,15 +14,15 @@ package com.kaltura.playkit;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.utils.Consts;
 
-/**
- * Created by Noam Tamim @ Kaltura on 18/09/2016.
- */
+import java.util.List;
+
 public interface Player {
 
     /**
@@ -255,45 +255,6 @@ public interface Player {
     boolean isPlaying();
 
     /**
-     * Add event listener to the player.
-     *
-     * @param listener - event listener.
-     * @param events   - events the subscriber interested in.
-     */
-    PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
-
-    /**
-     * Remove event listener to the player.
-     *
-     * @param listener - event listener.
-     * @param events   - events the subscriber interested in.
-     */
-    void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events);
-
-    /**
-     * Add state changed listener to the player.
-     *
-     * @param listener - state changed listener
-     */
-    PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener);
-
-    /**
-     * remove state changed listener to the player.
-     *
-     * @param listener - state changed listener
-     */
-    void removeStateChangeListener(@NonNull PKEvent.Listener listener);
-
-
-    /**
-     * remove listener to the player.
-     *
-     * @param listener - event listener / state changed listener
-     */
-    void removeListener(@NonNull PKEvent.Listener listener);
-
-
-    /**
      * Change current track, with specified one by uniqueId.
      * If uniqueId is not valid or null, this will throw {@link IllegalArgumentException}.
      * Example of the valid uniqueId for regular video track: Video:0,0,1.
@@ -357,11 +318,93 @@ public interface Player {
 
 
 
-
+    /**
+     * Add listener by event type as Class object. This generics-based method allows the caller to
+     * avoid the otherwise required cast.
+     *
+     * Sample usage:
+     * <pre>
+     *   player.addListener(PlayerEvent.stateChanged,
+     *      event -> Log.d(TAG, "Player state change: " + event.oldState + " => " + event.newState));
+     * </pre>
+     * @param type A typed {@link Class} object. The class type must extend PKEvent.
+     * @param listener a typed {@link PKEvent.Listener}. Must match the type given as the first parameter.
+     * @param <E> Event type.
+     * @return the given event.
+     */
     @SuppressWarnings("UnusedReturnValue")
     <E extends PKEvent> PKEvent.Listener<E> addListener(Class<E> type, PKEvent.Listener<E> listener);
 
+    /**
+     * Add listener by event type as enum, for use with events that don't have payloads.
+     *
+     * Sample usage:
+     * <pre>
+     *   player.addListener(PlayerEvent.canPlay, event -> {
+     *       Log.d(TAG, "Player can play");
+     *   });
+     * </pre>
+     * @param type event type
+     * @param listener listener
+     * @return the given event
+     */
     @SuppressWarnings("UnusedReturnValue")
     PKEvent.Listener addListener(Enum type, PKEvent.Listener listener);
+
+    /**
+     * remove listener to the player.
+     *
+     * @param listener - event listener / state changed listener
+     */
+    void removeListener(@NonNull PKEvent.Listener listener);
+
+    /**
+     * Remove all listeners in the list, regardless of event type.
+     * @param listeners list of listeners to remove
+     */
+    default void removeListeners(List<PKEvent.Listener> listeners) {
+        for (PKEvent.Listener listener : listeners) {
+            removeListener(listener);
+        }
+    }
+
+    /**
+     * Add event listener to the player.
+     *
+     * @param listener - event listener.
+     * @param events   - events the subscriber interested in.
+     * @deprecated It's better to use one listener per event type with {@link #addListener(Class, PKEvent.Listener)}.
+     */
+    @Deprecated
+    PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
+
+    /**
+     * Remove event listener to the player.
+     *
+     * @param listener - event listener.
+     * @param events   - events the subscriber interested in.
+     * @deprecated It's better to use one listener per event type with {@link #addListener(Class, PKEvent.Listener)} and remove
+     * them with {@link #removeListener(PKEvent.Listener)} or {@link #removeListeners(List)}.
+     */
+    @Deprecated
+    void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events);
+
+    /**
+     * Add state changed listener to the player.
+     *
+     * @param listener - state changed listener
+     * @deprecated Use {@link #addListener(Class, PKEvent.Listener)} with {@link PlayerEvent#stateChanged}.
+     */
+    @Deprecated
+    PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener);
+
+    /**
+     * remove state changed listener to the player.
+     *
+     * @param listener - state changed listener
+     * @deprecated See {@link #addStateChangeListener(PKEvent.Listener)} and remove with {@link #removeListener(PKEvent.Listener)}.
+     */
+    @Deprecated
+    void removeStateChangeListener(@NonNull PKEvent.Listener listener);
 }
 
