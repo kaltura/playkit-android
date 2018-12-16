@@ -18,7 +18,6 @@ import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
-import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
 
@@ -33,10 +32,12 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     private Context context;
     private AdsProvider adsProvider;
     private PKMediaSourceConfig mediaSourceConfig;
+    private DefaultAdControllerImpl defaultAdController;
 
     public AdsPlayerEngineWrapper(final Context context, AdsProvider adsProvider) {
         this.context = context;
         this.adsProvider = adsProvider;
+        this.defaultAdController = new DefaultAdControllerImpl(adsProvider);
     }
 
     @Override
@@ -86,13 +87,10 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
         log.d("PAUSE IMA decorator isAdDisplayed = " + isAdDisplayed + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
         if (isAdDisplayed && !adsProvider.isAdError()) {
             adsProvider.pause();
-            ///super.pause();
-            log.d("XXXXXX1");
             return;
         }
 
         if (super.isPlaying()) {
-            log.d("XXXXXX2");
             log.d("IMA decorator Calling content player pause");
             super.pause();
         }
@@ -100,36 +98,38 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
 
     @Override
     public long getCurrentPosition() {
-        long currpos;
-        if (adsProvider.isAdDisplayed()) {
-            currpos = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
-            log.d("IMA -> XXXX getCurrentPosition = " + currpos);
-        } else {
-            currpos = super.getCurrentPosition();
-            log.d("PLAYER -> XXXX getCurrentPosition = " + currpos);
-        }
-        return currpos;
+//        long currpos;
+//        if (adsProvider.isAdDisplayed()) {
+//            currpos = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
+//            //log.d("IMA -> getCurrentPosition = " + currpos);
+//        } else {
+//            currpos = super.getCurrentPosition();
+//            //log.d("PLAYER -> getCurrentPosition = " + currpos);
+//        }
+//        return currpos;
+        return super.getCurrentPosition();
     }
 
     @Override
     public long getDuration() {
-        long playbackDuration;
-        if (adsProvider.isAdDisplayed()) {
-            playbackDuration = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
-            log.d("IMA -> XXXX getDuration = " + playbackDuration);
-        } else {
-            playbackDuration = super.getDuration();
-            log.d("PLAYER -> XXXX getDuration = " + playbackDuration);
-        }
-        return playbackDuration;
+//        long playbackDuration;
+//        if (adsProvider.isAdDisplayed()) {
+//            playbackDuration = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
+//            //log.d("IMA -> getDuration = " + playbackDuration);
+//        } else {
+//            playbackDuration = super.getDuration();
+//            //log.d("PLAYER -> getDuration = " + playbackDuration);
+//        }
+//        return playbackDuration;
+        return super.getDuration();
     }
 
     @Override
     public void seekTo(long position) {
-        if (adsProvider.isAdDisplayed()) {
-            log.d("seekTo is not enabled during AD playback");
-            return;
-        }
+//        if (adsProvider.isAdDisplayed()) {
+//            log.d("seekTo is not enabled during AD playback");
+//            return;
+//        }
         super.seekTo(position);
     }
 
@@ -142,12 +142,6 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
         return super.isPlaying();
     }
 
-    //TDOD???
-//    @Override
-//    public void release() {
-//
-//    }
-
     @Override
     public void stop() {
         log.d("AdEnabled IMA stop");
@@ -159,11 +153,10 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
 
     @Override
     public <T extends PKController> T getController(Class<T> type) {
-        // TODO: 12/12/18  which class to use
-//        if (type == AdEnabledPlayerController.class) {
-//            return (T) this;
-//        }
-        return super.getController(type);
+        if (type == AdController.class && defaultAdController != null) {
+            return (T) this.defaultAdController;
+        }
+        return null;
     }
 
     @Override

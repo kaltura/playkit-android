@@ -12,7 +12,6 @@
 
 package com.kaltura.playkit.plugins.ads;
 
-import com.kaltura.playkit.ads.AdEnabledPlayerController;
 import com.kaltura.playkit.ads.PKAdInfo;
 import com.kaltura.playkit.ads.PKAdProviderListener;
 
@@ -29,6 +28,8 @@ public interface AdsProvider {
     void contentCompleted();
 
     PKAdInfo getAdInfo();
+
+    AdCuePoints getCuePoints();
 
     boolean isAdDisplayed();
 

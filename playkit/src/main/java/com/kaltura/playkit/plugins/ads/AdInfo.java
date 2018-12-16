@@ -198,7 +198,7 @@ public class AdInfo implements PKAdInfo {
         } else {
             adType = "Pre-Roll";
         }
-        return "AdType=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " isBumper=" + isBumper + " contentType = " + adContnentType +
-                " adCount = " + adIndexInPod + "/" + totalAdsInPod + " podCount = " + podIndex + "/" + podCount;
+        return "AdType=" + adType + " adTimeOffset=" + adPodTimeOffset + " adTitle=" + adTitle + " adDuration=" + adDuration + " isBumper=" + isBumper + " contentType= " + adContnentType + " adBitrate=" + mediaBitrate +
+               " adWidth=" + adWidth + " adHeight=" + adHeight + " adCount= " + adIndexInPod + "/" + totalAdsInPod + " podCount= " + podIndex + "/" + podCount;
     }
 }
