@@ -49,6 +49,12 @@ public class MessageBus {
         }
     }
 
+    public void post(final Runnable runnable) {
+        if (postHandler != null) {
+            postHandler.post(runnable);
+        }
+    }
+
     public void remove(PKEvent.Listener listener, Enum... eventTypes) {
         for (Enum eventType : eventTypes) {
             Set<PKEvent.Listener> listenerSet = listeners.get(eventType);

@@ -47,6 +47,8 @@ public interface AdsProvider {
 
     void setAdProviderListener(PKAdProviderListener adProviderListener);
 
+    void setAdRequested(boolean isAdRequested);
+
     void removeAdProviderListener();
 
     void skipAd();

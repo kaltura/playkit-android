@@ -146,6 +146,7 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     public void stop() {
         log.d("AdEnabled IMA stop");
         if (adsProvider != null) {
+            adsProvider.setAdRequested(false);
             adsProvider.destroyAdsManager();
         }
         super.stop();
