@@ -14,7 +14,6 @@ package com.kaltura.playkit;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PlayerView;
@@ -23,11 +22,13 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 public interface Player {
 
     /**
      * Interface used for setting optional Player settings.
      */
+    @SuppressWarnings({"UnusedReturnValue", "unused"})
     interface Settings {
         /**
          * Set the Player's contentRequestAdapter.
@@ -375,6 +376,7 @@ public interface Player {
      * @param events   - events the subscriber interested in.
      * @deprecated It's better to use one listener per event type with {@link #addListener(Class, PKEvent.Listener)}.
      */
+    @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated
     PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
 
@@ -386,6 +388,7 @@ public interface Player {
      * @deprecated It's better to use one listener per event type with {@link #addListener(Class, PKEvent.Listener)} and remove
      * them with {@link #removeListener(PKEvent.Listener)} or {@link #removeListeners(List)}.
      */
+    @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated
     void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events);
 
@@ -395,6 +398,7 @@ public interface Player {
      * @param listener - state changed listener
      * @deprecated Use {@link #addListener(Class, PKEvent.Listener)} with {@link PlayerEvent#stateChanged}.
      */
+    @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated
     PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener);
 
@@ -404,6 +408,7 @@ public interface Player {
      * @param listener - state changed listener
      * @deprecated See {@link #addStateChangeListener(PKEvent.Listener)} and remove with {@link #removeListener(PKEvent.Listener)}.
      */
+    @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated
     void removeStateChangeListener(@NonNull PKEvent.Listener listener);
 }
