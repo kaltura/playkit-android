@@ -28,13 +28,11 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.UUID;
 
-import static com.kaltura.playkit.PKMediaFormat.wvm;
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 
 /**
@@ -299,7 +297,7 @@ public class PlayerController implements Player {
             if (startPosition <= getDuration()) {
                 player.startFrom(startPosition);
             } else {
-                log.w("The start position is grater then duration of the video! Start position " + startPosition + ", duration " + mediaConfig.getMediaEntry().getDuration());
+                log.w("The start position is grater then duration of the video! Start position " + startPosition + ", duration " + getDuration());
             }
         }
     }
@@ -550,14 +548,6 @@ public class PlayerController implements Player {
         String nullPlayerMsgFormat = "Attempt to invoke '%s' on null instance of the player engine";
         log.w(String.format(nullPlayerMsgFormat, methodName));
         return false;
-    }
-
-    private boolean shouldSwitchBetweenPlayers(PKMediaSource newSource) {
-
-        PKMediaFormat currentMediaFormat = newSource.getMediaFormat();
-        return currentMediaFormat != wvm && player instanceof MediaPlayerWrapper ||
-                currentMediaFormat == wvm && player instanceof ExoPlayerWrapper;
-
     }
 
     private void removePlayerView() {
