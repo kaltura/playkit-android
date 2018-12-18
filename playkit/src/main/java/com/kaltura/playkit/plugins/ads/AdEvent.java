@@ -15,11 +15,42 @@ package com.kaltura.playkit.plugins.ads;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 
-/**
- * Created by gilad.nadav on 22/11/2016.
- */
-
+@SuppressWarnings("unused")
 public class AdEvent implements PKEvent {
+
+    public static final Class<AdLoadedEvent> loaded = AdLoadedEvent.class;
+    public static final Class<AdStartedEvent> started = AdStartedEvent.class;
+    public static final Class<AdPausedEvent> paused = AdPausedEvent.class;
+    public static final Class<AdResumedEvent> resumed = AdResumedEvent.class;
+    public static final Class<AdSkippedEvent> skipped = AdSkippedEvent.class;
+    public static final Class<AdCuePointsUpdateEvent> cuepointsChanged = AdCuePointsUpdateEvent.class;
+    public static final Class<AdPlayHeadEvent> playHeadChanged = AdPlayHeadEvent.class;
+    public static final Class<AdRequestedEvent> adRequested = AdRequestedEvent.class;
+    public static final Class<AdBufferStart> adBufferStart = AdBufferStart.class;
+    public static final Class<AdBufferEnd> adBufferEnd = AdBufferEnd.class;
+    public static final Class<AdPlaybackInfoUpdated> adPlaybackInfoUpdated = AdPlaybackInfoUpdated.class;
+    public static final Class<Error> error = Error.class;
+
+    public static final AdEvent.Type adFirstPlay = Type.AD_FIRST_PLAY;
+    public static final AdEvent.Type adDisplayedAfterContentPause = Type.AD_DISPLAYED_AFTER_CONTENT_PAUSE;
+    public static final AdEvent.Type completed = Type.COMPLETED;
+    public static final AdEvent.Type firstQuartile = Type.FIRST_QUARTILE;
+    public static final AdEvent.Type midpoint = Type.MIDPOINT;
+    public static final AdEvent.Type thirdQuartile = Type.THIRD_QUARTILE;
+    public static final AdEvent.Type skippableStateChanged = Type.SKIPPABLE_STATE_CHANGED;
+    public static final AdEvent.Type clicked = Type.CLICKED;
+    public static final AdEvent.Type tapped = Type.TAPPED;
+    public static final AdEvent.Type iconTapped = Type.ICON_TAPPED;
+    public static final AdEvent.Type adBreakReady = Type.AD_BREAK_READY;
+    public static final AdEvent.Type adProgress = Type.AD_PROGRESS;
+    public static final AdEvent.Type adBreakStarted = Type.AD_BREAK_STARTED;
+    public static final AdEvent.Type adBreakEnded = Type.AD_BREAK_ENDED;
+    public static final AdEvent.Type adBreakIgnored = Type.AD_BREAK_IGNORED;
+    public static final AdEvent.Type contentPauseRequested = Type.CONTENT_PAUSE_REQUESTED;
+    public static final AdEvent.Type contentResumeRequested = Type.CONTENT_RESUME_REQUESTED;
+    public static final AdEvent.Type allAdsCompleted = Type.ALL_ADS_COMPLETED;
+    public static final AdEvent.Type adLoadTimeoutTimerStarted = Type.AD_LOAD_TIMEOUT_TIMER_STARTED;
+
 
     public Type type;
 

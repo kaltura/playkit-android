@@ -20,12 +20,34 @@ import com.kaltura.playkit.player.metadata.PKMetadata;
 
 import java.util.List;
 
-/**
- * Created by Noam Tamim @ Kaltura on 24/10/2016.
- */
-
-
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class PlayerEvent implements PKEvent {
+
+    public static final Class<Error> error = Error.class;
+    public static final Class<StateChanged> stateChanged = StateChanged.class;
+    public static final Class<DurationChanged> durationChanged = DurationChanged.class;
+    public static final Class<TracksAvailable> tracksAvailable = TracksAvailable.class;
+    public static final Class<VolumeChanged> volumeChanged = VolumeChanged.class;
+    public static final Class<PlaybackInfoUpdated> playbackInfoUpdated = PlaybackInfoUpdated.class;
+    public static final Class<MetadataAvailable> metadataAvailable = MetadataAvailable.class;
+    public static final Class<SourceSelected> sourceSelected = SourceSelected.class;
+    public static final Class<PlayheadUpdated> playheadUpdated = PlayheadUpdated.class;
+    public static final Class<Seeking> seeking = Seeking.class;
+    public static final Class<VideoTrackChanged> videoTrackChanged = VideoTrackChanged.class;
+    public static final Class<AudioTrackChanged> audioTrackChanged = AudioTrackChanged.class;
+    public static final Class<TextTrackChanged> textTrackChanged = TextTrackChanged.class;
+    public static final Class<PlaybackRateChanged> playbackRateChanged = PlaybackRateChanged.class;
+    public static final Class<SubtitlesStyleChanged> subtitlesStyleChanged = SubtitlesStyleChanged.class;
+
+    public static final PlayerEvent.Type canPlay = Type.CAN_PLAY;
+    public static final PlayerEvent.Type ended = Type.ENDED;
+    public static final PlayerEvent.Type loadedMetadata = Type.LOADED_METADATA;
+    public static final PlayerEvent.Type pause = Type.PAUSE;
+    public static final PlayerEvent.Type play = Type.PLAY;
+    public static final PlayerEvent.Type playing = Type.PLAYING;
+    public static final PlayerEvent.Type seeked = Type.SEEKED;
+    public static final PlayerEvent.Type replay = Type.REPLAY;
+    public static final PlayerEvent.Type stopped = Type.STOPPED;
 
     public static class Generic extends PlayerEvent {
         public Generic(Type type) {
@@ -268,7 +290,5 @@ public class PlayerEvent implements PKEvent {
         return this.type;
     }
 
-    public interface Listener {
-        void onPlayerEvent(Player player, Type event);
-    }
+
 }
