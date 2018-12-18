@@ -171,21 +171,25 @@ class PlayerLoader extends PlayerDecoratorBase {
         return plugin;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
         return messageBus.listen(listener, events);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
         messageBus.remove(listener, events);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public PKEvent.Listener addStateChangeListener(@NonNull final PKEvent.Listener listener) {
         return messageBus.listen(listener, PlayerEvent.Type.STATE_CHANGED);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void removeStateChangeListener(@NonNull final PKEvent.Listener listener) {
         messageBus.remove(listener, PlayerEvent.Type.STATE_CHANGED);

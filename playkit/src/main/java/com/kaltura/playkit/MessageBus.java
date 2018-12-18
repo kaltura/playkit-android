@@ -15,8 +15,8 @@ package com.kaltura.playkit;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -58,10 +58,11 @@ public class MessageBus {
         }
     }
 
-    private Set<PKEvent.Listener> safeSet(@Nullable Set<PKEvent.Listener> listeners) {
+    private static Set<PKEvent.Listener> safeSet(@Nullable Set<PKEvent.Listener> listeners) {
         return listeners != null ? listeners : Collections.emptySet();
     }
 
+    @Deprecated
     public void remove(PKEvent.Listener listener, Enum... eventTypes) {
         for (Enum eventType : eventTypes) {
             Set<PKEvent.Listener> listenerSet = listeners.get(eventType);
@@ -71,6 +72,10 @@ public class MessageBus {
         }
     }
 
+    /**
+     * Remove the listener regardless of event type.
+     * @param listener Listener to remove.
+     */
     public void removeListener(PKEvent.Listener listener) {
         for (Set<PKEvent.Listener> listenerSet : listeners.values()) {
             Iterator<PKEvent.Listener> iterator = listenerSet.iterator();
@@ -83,6 +88,17 @@ public class MessageBus {
         }
     }
 
+    /**
+     * Remove all listeners in the collection regardless of event type.
+     * @param listeners Collection of listeners to remove.
+     */
+    public void removeListeners(Collection<PKEvent.Listener> listeners) {
+        for (PKEvent.Listener listener : listeners) {
+            removeListener(listener);
+        }
+    }
+
+    @Deprecated
     public PKEvent.Listener listen(PKEvent.Listener listener, Enum... eventTypes) {
         for (Enum eventType : eventTypes) {
             addListener(eventType, listener);
@@ -94,7 +110,7 @@ public class MessageBus {
         addListener((Object)type, listener);
     }
 
-    public <E extends PKEvent> void addListener(Class<E> type, PKEvent.Listener listener) {
+    public <E extends PKEvent> void addListener(Class<E> type, PKEvent.Listener<E> listener) {
         addListener((Object)type, listener);
     }
 
