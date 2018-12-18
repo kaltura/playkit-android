@@ -21,7 +21,6 @@ import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Collection;
-import java.util.List;
 
 @SuppressWarnings("unused")
 public interface Player {
