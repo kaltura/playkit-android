@@ -394,9 +394,21 @@ public class PlayerController implements Player {
             if (enable) {
                 player.setEventListener(eventTrigger);
                 player.setStateChangedListener(stateChangedTrigger);
+                player.setAnalyticsListener(new PlayerEngine.AnalyticsListener() {
+                    @Override
+                    public void onDroppedFrames(long droppedVideoFrames, long droppedVideoFramesPeriod, long totalDroppedVideoFrames) {
+                        eventListener.onEvent(new PlayerEvent.VideoFramesDropped(droppedVideoFrames, droppedVideoFramesPeriod, totalDroppedVideoFrames));
+                    }
+
+                    @Override
+                    public void onBytesLoaded(long bytesLoaded, long totalBytesLoaded) {
+                        eventListener.onEvent(new PlayerEvent.BytesLoaded(bytesLoaded, totalBytesLoaded));
+                    }
+                });
             } else {
                 player.setEventListener(null);
                 player.setStateChangedListener(null);
+                player.setAnalyticsListener(null);
             }
         }
     }

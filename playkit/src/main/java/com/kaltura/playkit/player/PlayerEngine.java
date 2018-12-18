@@ -154,6 +154,9 @@ public interface PlayerEngine {
      */
     void setStateChangedListener(StateChangedListener stateChangedTrigger);
 
+
+    void setAnalyticsListener(AnalyticsListener analyticsListener);
+
     /**
      * Release the current player.
      * Note, that {@link ExoPlayerWrapper} and {@link TrackSelectionHelper} objects, will be destroyed.
@@ -238,5 +241,10 @@ public interface PlayerEngine {
 
     interface StateChangedListener {
         void onStateChanged(PlayerState oldState, PlayerState newState);
+    }
+
+    interface AnalyticsListener {
+        void onDroppedFrames(long droppedVideoFrames, long droppedVideoFramesPeriod, long totalDroppedVideoFrames);
+        void onBytesLoaded(long bytesLoaded, long totalBytesLoaded);
     }
 }

@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit;
 
+import android.support.annotation.NonNull;
+
 import com.kaltura.playkit.player.AudioTrack;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
@@ -38,6 +40,8 @@ public class PlayerEvent implements PKEvent {
     public static final Class<TextTrackChanged> textTrackChanged = TextTrackChanged.class;
     public static final Class<PlaybackRateChanged> playbackRateChanged = PlaybackRateChanged.class;
     public static final Class<SubtitlesStyleChanged> subtitlesStyleChanged = SubtitlesStyleChanged.class;
+    public static final Class<VideoFramesDropped> videoFramesDropped = VideoFramesDropped.class;
+    public static final Class<BytesLoaded> bytesLoaded = BytesLoaded.class;
 
     public static final PlayerEvent.Type canPlay = Type.CAN_PLAY;
     public static final PlayerEvent.Type ended = Type.ENDED;
@@ -48,6 +52,12 @@ public class PlayerEvent implements PKEvent {
     public static final PlayerEvent.Type seeked = Type.SEEKED;
     public static final PlayerEvent.Type replay = Type.REPLAY;
     public static final PlayerEvent.Type stopped = Type.STOPPED;
+
+    public final Type type;
+
+    public PlayerEvent(Type type) {
+        this.type = type;
+    }
 
     public static class Generic extends PlayerEvent {
         public Generic(Type type) {
@@ -202,16 +212,53 @@ public class PlayerEvent implements PKEvent {
 
         public final String styleName;
 
-        public  SubtitlesStyleChanged(String styleName) {
+        public SubtitlesStyleChanged(String styleName) {
             super(Type.SUBTITLE_STYLE_CHANGED);
             this.styleName = styleName;
         }
     }
 
-    public final Type type;
+    public static class VideoFramesDropped extends PlayerEvent {
+        public final long droppedVideoFrames;
+        public final long droppedVideoFramesPeriod;
+        public final long totalDroppedVideoFrames;
 
-    public PlayerEvent(Type type) {
-        this.type = type;
+        public VideoFramesDropped(long droppedVideoFrames, long droppedVideoFramesPeriod, long totalDroppedVideoFrames) {
+            super(Type.VIDEO_FRAMES_DROPPED);
+            this.droppedVideoFrames = droppedVideoFrames;
+            this.droppedVideoFramesPeriod = droppedVideoFramesPeriod;
+            this.totalDroppedVideoFrames = totalDroppedVideoFrames;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "VideoFramesDropped{" +
+                    "droppedVideoFrames=" + droppedVideoFrames +
+                    ", droppedVideoFramesPeriod=" + droppedVideoFramesPeriod +
+                    ", totalDroppedVideoFrames=" + totalDroppedVideoFrames +
+                    '}';
+        }
+    }
+
+    public static class BytesLoaded extends PlayerEvent {
+        public final long bytesLoaded;
+        public final long totalBytesLoaded;
+
+        public BytesLoaded(long bytesLoaded, long totalBytesLoaded) {
+            super(Type.BYTES_LOADED);
+            this.bytesLoaded = bytesLoaded;
+            this.totalBytesLoaded = totalBytesLoaded;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "BytesLoaded{" +
+                    "bytesLoaded=" + bytesLoaded +
+                    ", totalBytesLoaded=" + totalBytesLoaded +
+                    '}';
+        }
     }
 
     public enum Type {
@@ -239,7 +286,9 @@ public class PlayerEvent implements PKEvent {
         AUDIO_TRACK_CHANGED,
         TEXT_TRACK_CHANGED,
         PLAYBACK_RATE_CHANGED,
-        SUBTITLE_STYLE_CHANGED //Send when subtitle style is changed.
+        VIDEO_FRAMES_DROPPED,   // Video frames were dropped, see PlayerEvent.VideoFramesDropped
+        BYTES_LOADED,           // Bytes were downloaded from the network
+        SUBTITLE_STYLE_CHANGED  // Subtitle style is changed.
     }
 
     @Override

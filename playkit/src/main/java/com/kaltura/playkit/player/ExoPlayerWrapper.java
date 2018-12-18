@@ -97,6 +97,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private PlayerSettings playerSettings;
     private EventListener eventListener;
     private StateChangedListener stateChangedListener;
+    private ExoAnalyticsAggregator analyticsAggregator = new ExoAnalyticsAggregator();
 
     private Context context;
     private SimpleExoPlayer player;
@@ -184,6 +185,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (assertPlayerIsNotNull("setPlayerListeners()")) {
             player.addListener(this);
             player.addMetadataOutput(this);
+            player.addAnalyticsListener(analyticsAggregator);
         }
     }
 
@@ -426,6 +428,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             case ExoPlaybackException.TYPE_RENDERER:
                 errorType = PKPlayerErrorType.RENDERER_ERROR;
                 break;
+            case ExoPlaybackException.TYPE_UNEXPECTED:
             default:
                 errorType = PKPlayerErrorType.UNEXPECTED;
                 break;
@@ -696,12 +699,19 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 
+    @Override
     public void setEventListener(final EventListener eventTrigger) {
         this.eventListener = eventTrigger;
     }
 
+    @Override
     public void setStateChangedListener(StateChangedListener stateChangedTrigger) {
         this.stateChangedListener = stateChangedTrigger;
+    }
+
+    @Override
+    public void setAnalyticsListener(AnalyticsListener analyticsListener) {
+        this.analyticsAggregator.setListener(analyticsListener);
     }
 
     @Override
@@ -781,6 +791,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player.setPlayWhenReady(false);
             player.stop(true);
         }
+        analyticsAggregator.reset();
     }
 
     private void savePlayerPosition() {
@@ -943,5 +954,5 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         log.w(String.format(nullPlayerMsgFormat, methodName));
         return false;
     }
-  
+
 }
