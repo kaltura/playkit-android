@@ -26,7 +26,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("WeakerAccess")
 public class MessageBus {
-    private static final String TAG = "MessageBus";
+
+    private static final PKLog log = PKLog.get("MessageBus");
+
     private Handler postHandler = new Handler(Looper.getMainLooper());
     private Map<Object, Set<PKEvent.Listener>> listeners;
 
@@ -49,7 +51,7 @@ public class MessageBus {
                         //noinspection unchecked
                         listener.onEvent(event);
                     } catch (ClassCastException e) {
-                        Log.e(TAG, "Wrong type of listener " + listener.getClass() + " for event (" + event.eventType() + ")", e);
+                        log.e("Wrong type of listener " + listener.getClass() + " for event (" + event.eventType() + ")", e);
                     }
                 }
             });
