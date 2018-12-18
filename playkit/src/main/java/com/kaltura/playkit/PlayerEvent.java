@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit;
 
+import android.support.annotation.NonNull;
+
 import com.kaltura.playkit.player.AudioTrack;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
@@ -38,6 +40,8 @@ public class PlayerEvent implements PKEvent {
     public static final Class<TextTrackChanged> textTrackChanged = TextTrackChanged.class;
     public static final Class<PlaybackRateChanged> playbackRateChanged = PlaybackRateChanged.class;
     public static final Class<SubtitlesStyleChanged> subtitlesStyleChanged = SubtitlesStyleChanged.class;
+    public static final Class<VideoFramesDropped> videoFramesDropped = VideoFramesDropped.class;
+    public static final Class<BytesLoaded> bytesLoaded = BytesLoaded.class;
 
     public static final PlayerEvent.Type canPlay = Type.CAN_PLAY;
     public static final PlayerEvent.Type ended = Type.ENDED;
@@ -48,6 +52,12 @@ public class PlayerEvent implements PKEvent {
     public static final PlayerEvent.Type seeked = Type.SEEKED;
     public static final PlayerEvent.Type replay = Type.REPLAY;
     public static final PlayerEvent.Type stopped = Type.STOPPED;
+
+    public final Type type;
+
+    public PlayerEvent(Type type) {
+        this.type = type;
+    }
 
     public static class Generic extends PlayerEvent {
         public Generic(Type type) {
@@ -220,6 +230,7 @@ public class PlayerEvent implements PKEvent {
             this.totalDroppedVideoFrames = totalDroppedVideoFrames;
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "VideoFramesDropped{" +
@@ -240,6 +251,7 @@ public class PlayerEvent implements PKEvent {
             this.totalBytesLoaded = totalBytesLoaded;
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "BytesLoaded{" +
@@ -247,12 +259,6 @@ public class PlayerEvent implements PKEvent {
                     ", totalBytesLoaded=" + totalBytesLoaded +
                     '}';
         }
-    }
-
-    public final Type type;
-
-    public PlayerEvent(Type type) {
-        this.type = type;
     }
 
     public enum Type {
