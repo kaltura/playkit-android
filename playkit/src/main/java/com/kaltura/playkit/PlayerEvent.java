@@ -20,14 +20,9 @@ import com.kaltura.playkit.player.metadata.PKMetadata;
 
 import java.util.List;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class PlayerEvent implements PKEvent {
 
-    public static class Generic extends PlayerEvent {
-        public Generic(Type type) {
-            super(type);
-        }
-    }
     public static final Class<Error> error = Error.class;
     public static final Class<StateChanged> stateChanged = StateChanged.class;
     public static final Class<DurationChanged> durationChanged = DurationChanged.class;
@@ -53,6 +48,12 @@ public class PlayerEvent implements PKEvent {
     public static final PlayerEvent.Type seeked = Type.SEEKED;
     public static final PlayerEvent.Type replay = Type.REPLAY;
     public static final PlayerEvent.Type stopped = Type.STOPPED;
+
+    public static class Generic extends PlayerEvent {
+        public Generic(Type type) {
+            super(type);
+        }
+    }
 
     public static class StateChanged extends PlayerEvent {
         public final PlayerState newState;
