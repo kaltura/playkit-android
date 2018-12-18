@@ -87,7 +87,7 @@ class SimpleDashParser {
             }
             
             if (drmInitData != null && drmInitData.schemeDataCount > 0) {
-                hasContentProtection = drmInitData.schemeDataCount > 0;
+                hasContentProtection = true;
                 loadDrmInitData(representation);
             } else {
                 log.i("no content protection found");
