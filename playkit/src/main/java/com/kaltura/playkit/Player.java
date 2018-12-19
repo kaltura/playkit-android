@@ -20,7 +20,7 @@ import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.utils.Consts;
 
-import java.util.List;
+import java.util.Collection;
 
 @SuppressWarnings("unused")
 public interface Player {
@@ -353,7 +353,7 @@ public interface Player {
     PKEvent.Listener addListener(Enum type, PKEvent.Listener listener);
 
     /**
-     * remove listener to the player.
+     * Remove listener to the player, regardless of event type.
      *
      * @param listener - event listener / state changed listener
      */
@@ -363,7 +363,7 @@ public interface Player {
      * Remove all listeners in the list, regardless of event type.
      * @param listeners list of listeners to remove
      */
-    default void removeListeners(List<PKEvent.Listener> listeners) {
+    default void removeListeners(Collection<PKEvent.Listener> listeners) {
         for (PKEvent.Listener listener : listeners) {
             removeListener(listener);
         }
@@ -376,19 +376,17 @@ public interface Player {
      * @param events   - events the subscriber interested in.
      * @deprecated It's better to use one listener per event type with {@link #addListener(Class, PKEvent.Listener)}.
      */
-    @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated
     PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
 
     /**
-     * Remove event listener to the player.
+     * Remove event listener from the player.
      *
      * @param listener - event listener.
      * @param events   - events the subscriber interested in.
      * @deprecated It's better to use one listener per event type with {@link #addListener(Class, PKEvent.Listener)} and remove
-     * them with {@link #removeListener(PKEvent.Listener)} or {@link #removeListeners(List)}.
+     * them with {@link #removeListener(PKEvent.Listener)} or {@link #removeListeners(Collection)}.
      */
-    @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated
     void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events);
 
@@ -398,17 +396,15 @@ public interface Player {
      * @param listener - state changed listener
      * @deprecated Use {@link #addListener(Class, PKEvent.Listener)} with {@link PlayerEvent#stateChanged}.
      */
-    @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated
     PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener);
 
     /**
-     * remove state changed listener to the player.
+     * Remove state changed listener from the player.
      *
      * @param listener - state changed listener
      * @deprecated See {@link #addStateChangeListener(PKEvent.Listener)} and remove with {@link #removeListener(PKEvent.Listener)}.
      */
-    @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated
     void removeStateChangeListener(@NonNull PKEvent.Listener listener);
 }
