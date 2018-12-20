@@ -14,12 +14,11 @@ package com.kaltura.playkit.ads;
 
 import android.content.Context;
 
-import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
-import com.kaltura.playkit.utils.Consts;
 
 /**
  * @hide
@@ -158,6 +157,16 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
             return (T) this.defaultAdController;
         }
         return null;
+    }
+
+    @Override
+    public void destroy() {
+        if (adsProvider != null) {
+            adsProvider.setAdRequested(false);
+            adsProvider.destroyAdsManager();
+            adsProvider = null;
+        }
+        super.destroy();
     }
 
     @Override
