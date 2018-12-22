@@ -21,7 +21,7 @@ import com.google.android.exoplayer2.text.CaptionStyleCompat;
 public class SubtitleStyleSettings {
 
     public enum SubtitleStyleEdgeType {
-        EDGE_TYPE_NONE, EDGE_TYPE_OUTLINE, EDGE_TYPE_DROP_SHADOW, EDGE_TYPE_RAISED, EDGE_TYPE_DEPRESSED;
+        EDGE_TYPE_NONE, EDGE_TYPE_OUTLINE, EDGE_TYPE_DROP_SHADOW, EDGE_TYPE_RAISED, EDGE_TYPE_DEPRESSED
     }
 
     public enum SubtitleTextSizeFraction {
