@@ -36,6 +36,7 @@ import com.google.android.exoplayer2.metadata.MetadataOutput;
 import com.google.android.exoplayer2.source.BehindLiveWindowException;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.SinglePeriodTimeline;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
@@ -75,6 +76,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
+import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
@@ -127,7 +129,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private boolean shouldRestorePlayerToPreviousState;
 
     private int playerWindow;
-    private long playerPosition = Consts.TIME_UNSET;
+    private long playerPosition = TIME_UNSET;
 
     private float lastKnownVolume = Consts.DEFAULT_VOLUME;
     private float lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
@@ -580,6 +582,20 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @Override
+    public long getProgramStartTime() {
+        final int currentWindowIndex = player.getCurrentWindowIndex();
+        if (currentWindowIndex == C.INDEX_UNSET) {
+            return TIME_UNSET;
+        }
+        final Timeline.Window window = player.getCurrentTimeline().getWindow(currentWindowIndex, new Timeline.Window());
+        if (window == null) {
+            return TIME_UNSET;
+        }
+
+        return window.windowStartTimeMs;
+    }
+
+    @Override
     public void seekTo(long position) {
         log.v("seekTo");
         if (assertPlayerIsNotNull("seekTo()")) {
@@ -599,7 +615,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (assertPlayerIsNotNull("getDuration()")) {
             return player.getDuration();
         }
-        return Consts.TIME_UNSET;
+        return TIME_UNSET;
     }
 
     @Override
@@ -633,7 +649,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             setPlaybackRate(lastKnownPlaybackRate);
         }
 
-        if (playerPosition == Consts.TIME_UNSET || isLiveMediaWithoutDvr()) {
+        if (playerPosition == TIME_UNSET || isLiveMediaWithoutDvr()) {
             player.seekToDefaultPosition();
         } else {
             player.seekTo(playerWindow, playerPosition);
@@ -653,7 +669,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         window = null;
         player = null;
         exoPlayerView = null;
-        playerPosition = Consts.TIME_UNSET;
+        playerPosition = TIME_UNSET;
     }
 
     @Override

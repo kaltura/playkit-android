@@ -34,6 +34,8 @@ import com.kaltura.playkit.utils.Consts;
 import java.util.UUID;
 
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
+import static com.kaltura.playkit.utils.Consts.POSITION_UNSET;
+import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 
 /**
  * @hide
@@ -331,13 +333,23 @@ public class PlayerController implements Player {
         return Consts.POSITION_UNSET;
     }
 
+    @Override
+    public long getCurrentProgramTime() {
+        if (assertPlayerIsNotNull("getCurrentProgramTime()")) {
+            final long currentPosition = getCurrentPosition();
+            final long programStartTime = player.getProgramStartTime();
+            return currentPosition != POSITION_UNSET && programStartTime != TIME_UNSET ?
+                    programStartTime + currentPosition : TIME_UNSET;
+        }
+        return TIME_UNSET;
+    }
+
     public long getBufferedPosition() {
         log.v("getBufferedPosition");
         if (assertPlayerIsNotNull("getBufferedPosition()")) {
             return player.getBufferedPosition();
         }
         return Consts.POSITION_UNSET;
-
     }
 
     public void seekTo(long position) {
