@@ -29,13 +29,11 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.UUID;
 
-import static com.kaltura.playkit.PKMediaFormat.wvm;
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
 
 /**
@@ -65,7 +63,7 @@ public class PlayerController implements Player {
     private boolean isPlayerStopped;
 
 
-    private PKEvent.Listener eventListener;
+    private PKEvent.RawListener eventListener;
     private PlayerEngine.EventListener eventTrigger = initEventListener();
     private PlayerEngine.StateChangedListener stateChangedTrigger = initStateChangeListener();
     private PlayerEngineWrapper playerEngineWrapper;
@@ -305,7 +303,7 @@ public class PlayerController implements Player {
             if (startPosition <= getDuration()) {
                 player.startFrom(startPosition);
             } else {
-                log.w("The start position is grater then duration of the video! Start position " + startPosition + ", duration " + mediaConfig.getMediaEntry().getDuration());
+                log.w("The start position is grater then duration of the video! Start position " + startPosition + ", duration " + getDuration());
             }
         }
     }
@@ -402,9 +400,21 @@ public class PlayerController implements Player {
             if (enable) {
                 player.setEventListener(eventTrigger);
                 player.setStateChangedListener(stateChangedTrigger);
+                player.setAnalyticsListener(new PlayerEngine.AnalyticsListener() {
+                    @Override
+                    public void onDroppedFrames(long droppedVideoFrames, long droppedVideoFramesPeriod, long totalDroppedVideoFrames) {
+                        eventListener.onEvent(new PlayerEvent.VideoFramesDropped(droppedVideoFrames, droppedVideoFramesPeriod, totalDroppedVideoFrames));
+                    }
+
+                    @Override
+                    public void onBytesLoaded(long bytesLoaded, long totalBytesLoaded) {
+                        eventListener.onEvent(new PlayerEvent.BytesLoaded(bytesLoaded, totalBytesLoaded));
+                    }
+                });
             } else {
                 player.setEventListener(null);
                 player.setStateChangedListener(null);
+                player.setAnalyticsListener(null);
             }
         }
     }
@@ -537,6 +547,18 @@ public class PlayerController implements Player {
         }
     }
 
+    @Override
+    public <E extends PKEvent> PKEvent.Listener<E> addListener(Class<E> type, PKEvent.Listener<E> listener) {
+        Assert.shouldNeverHappen();
+        return null;
+    }
+
+    @Override
+    public PKEvent.Listener addListener(Enum type, PKEvent.Listener listener) {
+        Assert.shouldNeverHappen();
+        return null;
+    }
+
     private boolean assertPlayerIsNotNull(String methodName) {
         if (player != null) {
             return true;
@@ -544,14 +566,6 @@ public class PlayerController implements Player {
         String nullPlayerMsgFormat = "Attempt to invoke '%s' on null instance of the player engine";
         log.w(String.format(nullPlayerMsgFormat, methodName));
         return false;
-    }
-
-    private boolean shouldSwitchBetweenPlayers(PKMediaSource newSource) {
-
-        PKMediaFormat currentMediaFormat = newSource.getMediaFormat();
-        return currentMediaFormat != wvm && player instanceof MediaPlayerWrapper ||
-                currentMediaFormat == wvm && player instanceof ExoPlayerWrapper;
-
     }
 
     private void removePlayerView() {
@@ -590,12 +604,7 @@ public class PlayerController implements Player {
     }
 
     private Runnable initProgressAction() {
-        return new Runnable() {
-            @Override
-            public void run() {
-                updateProgress();
-            }
-        };
+        return this::updateProgress;
     }
 
     private void cancelUpdateProgress() {
@@ -604,91 +613,87 @@ public class PlayerController implements Player {
         }
     }
 
-    public void setEventListener(PKEvent.Listener eventListener) {
+    public void setEventListener(PKEvent.RawListener eventListener) {
         this.eventListener = eventListener;
     }
 
     private PlayerEngine.EventListener initEventListener() {
-        return new PlayerEngine.EventListener() {
+        return eventType -> {
+            if (eventListener != null) {
 
-            @Override
-            public void onEvent(PlayerEvent.Type eventType) {
-                if (eventListener != null) {
-
-                    PKEvent event;
-                    switch (eventType) {
-                        case PLAYING:
-                            updateProgress();
-                            event = new PlayerEvent.Generic(eventType);
-                            break;
-                        case PAUSE:
-                        case ENDED:
-                            event = new PlayerEvent.Generic(eventType);
-                            cancelUpdateProgress();
-                            break;
-                        case DURATION_CHANGE:
-                            event = new PlayerEvent.DurationChanged(getDuration());
-                            if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
-                                if (mediaConfig.getStartPosition() != null &&
-                                        ((isLiveMediaWithDvr() && mediaConfig.getStartPosition() == 0) ||
-                                                mediaConfig.getStartPosition() > 0)) {
-                                    startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
-                                }
-                                isNewEntry = false;
-                                isPlayerStopped = false;
+                PKEvent event;
+                switch (eventType) {
+                    case PLAYING:
+                        updateProgress();
+                        event = new PlayerEvent.Generic(eventType);
+                        break;
+                    case PAUSE:
+                    case ENDED:
+                        event = new PlayerEvent.Generic(eventType);
+                        cancelUpdateProgress();
+                        break;
+                    case DURATION_CHANGE:
+                        event = new PlayerEvent.DurationChanged(getDuration());
+                        if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
+                            if (mediaConfig.getStartPosition() != null &&
+                                    ((isLiveMediaWithDvr() && mediaConfig.getStartPosition() == 0) ||
+                                            mediaConfig.getStartPosition() > 0)) {
+                                startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                             }
-                            break;
-                        case TRACKS_AVAILABLE:
-                            event = new PlayerEvent.TracksAvailable(player.getPKTracks());
-                            break;
-                        case VOLUME_CHANGED:
-                            event = new PlayerEvent.VolumeChanged(player.getVolume());
-                            break;
-                        case PLAYBACK_INFO_UPDATED:
-                            event = new PlayerEvent.PlaybackInfoUpdated(player.getPlaybackInfo());
-                            break;
-                        case ERROR:
-                            if (player.getCurrentError() == null) {
-                                log.e("can not send error event");
-                                return;
-                            }
-                            event = new PlayerEvent.Error(player.getCurrentError());
-                            cancelUpdateProgress();
-                            break;
-                        case METADATA_AVAILABLE:
-                            if (player.getMetadata() == null || player.getMetadata().isEmpty()) {
-                                log.w("METADATA_AVAILABLE event received, but player engine have no metadata.");
-                                return;
-                            }
-                            event = new PlayerEvent.MetadataAvailable(player.getMetadata());
-                            break;
-                        case SOURCE_SELECTED:
-                            event = new PlayerEvent.SourceSelected(sourceConfig.mediaSource);
-                            break;
-                        case SEEKING:
-                            event = new PlayerEvent.Seeking(targetSeekPosition);
-                            break;
-                        case VIDEO_TRACK_CHANGED:
-                            event = new PlayerEvent.VideoTrackChanged((VideoTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_VIDEO));
-                            break;
-                        case AUDIO_TRACK_CHANGED:
-                            event = new PlayerEvent.AudioTrackChanged((AudioTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_AUDIO));
-                            break;
-                        case TEXT_TRACK_CHANGED:
-                            event = new PlayerEvent.TextTrackChanged((TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT));
-                            break;
-                        case PLAYBACK_RATE_CHANGED:
-                            event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
-                            break;
-                        case SUBTITLE_STYLE_CHANGED:
-                            event = new PlayerEvent.SubtitlesStyleChanged(playerSettings.getSubtitleStyleSettings().getStyleName());
-                            break;
-                        default:
-                            event = new PlayerEvent.Generic(eventType);
-                    }
-
-                    eventListener.onEvent(event);
+                            isNewEntry = false;
+                            isPlayerStopped = false;
+                        }
+                        break;
+                    case TRACKS_AVAILABLE:
+                        event = new PlayerEvent.TracksAvailable(player.getPKTracks());
+                        break;
+                    case VOLUME_CHANGED:
+                        event = new PlayerEvent.VolumeChanged(player.getVolume());
+                        break;
+                    case PLAYBACK_INFO_UPDATED:
+                        event = new PlayerEvent.PlaybackInfoUpdated(player.getPlaybackInfo());
+                        break;
+                    case ERROR:
+                        if (player.getCurrentError() == null) {
+                            log.e("can not send error event");
+                            return;
+                        }
+                        event = new PlayerEvent.Error(player.getCurrentError());
+                        cancelUpdateProgress();
+                        break;
+                    case METADATA_AVAILABLE:
+                        if (player.getMetadata() == null || player.getMetadata().isEmpty()) {
+                            log.w("METADATA_AVAILABLE event received, but player engine have no metadata.");
+                            return;
+                        }
+                        event = new PlayerEvent.MetadataAvailable(player.getMetadata());
+                        break;
+                    case SOURCE_SELECTED:
+                        event = new PlayerEvent.SourceSelected(sourceConfig.mediaSource);
+                        break;
+                    case SEEKING:
+                        event = new PlayerEvent.Seeking(targetSeekPosition);
+                        break;
+                    case VIDEO_TRACK_CHANGED:
+                        event = new PlayerEvent.VideoTrackChanged((VideoTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_VIDEO));
+                        break;
+                    case AUDIO_TRACK_CHANGED:
+                        event = new PlayerEvent.AudioTrackChanged((AudioTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_AUDIO));
+                        break;
+                    case TEXT_TRACK_CHANGED:
+                        event = new PlayerEvent.TextTrackChanged((TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT));
+                        break;
+                    case PLAYBACK_RATE_CHANGED:
+                        event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
+                        break;
+                    case SUBTITLE_STYLE_CHANGED:
+                        event = new PlayerEvent.SubtitlesStyleChanged(playerSettings.getSubtitleStyleSettings().getStyleName());
+                        break;
+                    default:
+                        event = new PlayerEvent.Generic(eventType);
                 }
+
+                eventListener.onEvent(event);
             }
         };
     }
@@ -698,12 +703,9 @@ public class PlayerController implements Player {
     }
 
     private PlayerEngine.StateChangedListener initStateChangeListener() {
-        return new PlayerEngine.StateChangedListener() {
-            @Override
-            public void onStateChanged(PlayerState oldState, PlayerState newState) {
-                if (eventListener != null) {
-                    eventListener.onEvent(new PlayerEvent.StateChanged(newState, oldState));
-                }
+        return (oldState, newState) -> {
+            if (eventListener != null) {
+                eventListener.onEvent(new PlayerEvent.StateChanged(newState, oldState));
             }
         };
     }
