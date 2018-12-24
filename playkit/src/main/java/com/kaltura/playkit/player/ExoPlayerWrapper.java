@@ -36,7 +36,6 @@ import com.google.android.exoplayer2.metadata.MetadataOutput;
 import com.google.android.exoplayer2.source.BehindLiveWindowException;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.SinglePeriodTimeline;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
@@ -415,7 +414,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
         if (isBehindLiveWindow(error) && sourceConfig != null) {
-            log.d("onPlayerError BehindLiveWindowException receivec repreparing player");
+            log.d("onPlayerError BehindLiveWindowException received, re-preparing player");
             player.prepare(buildExoMediaSource(sourceConfig), true, false);
             return;
         }
@@ -489,7 +488,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
         PKRequestParams.Adapter licenseRequestAdapter = playerSettings.getLicenseRequestAdapter();
         if (licenseRequestAdapter != null) {
-            httpDataSourceRequestParams = licenseRequestAdapter.adapt(new PKRequestParams(null, new HashMap<String, String>()));
+            httpDataSourceRequestParams = licenseRequestAdapter.adapt(new PKRequestParams(null, new HashMap<>()));
         }
 
         if (player == null) {
@@ -865,12 +864,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private DeferredDrmSessionManager.DrmSessionListener initDrmSessionListener() {
-        return new DeferredDrmSessionManager.DrmSessionListener() {
-            @Override
-            public void onError(PKError error) {
-                currentError = error;
-                sendEvent(PlayerEvent.Type.ERROR);
-            }
+        return error -> {
+            currentError = error;
+            sendEvent(PlayerEvent.Type.ERROR);
         };
     }
 
