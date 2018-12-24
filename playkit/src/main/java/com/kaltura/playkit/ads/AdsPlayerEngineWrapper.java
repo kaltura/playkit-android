@@ -142,6 +142,11 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     }
 
     @Override
+    public void setAnalyticsListener(AnalyticsListener analyticsListener) {
+        super.setAnalyticsListener(analyticsListener);
+    }
+
+    @Override
     public void stop() {
         log.d("AdEnabled IMA stop");
         if (adsProvider != null) {

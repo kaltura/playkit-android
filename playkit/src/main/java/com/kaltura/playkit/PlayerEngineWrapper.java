@@ -97,6 +97,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public void setAnalyticsListener(AnalyticsListener analyticsListener) {
+        playerEngine.setAnalyticsListener(analyticsListener);
+    }
+
+    @Override
     public void release() {
         playerEngine.release();
     }
