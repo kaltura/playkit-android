@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.plugins.ads;
 
+import android.support.annotation.Nullable;
+
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 
@@ -142,9 +144,9 @@ public class AdEvent implements PKEvent {
 
         public final String clickThruUrl;
 
-        public AdClickedEvent(String clickThruUrl) {
+        public AdClickedEvent(@Nullable String clickThruUrl) {
             super(Type.CLICKED);
-            this.clickThruUrl = clickThruUrl;
+            this.clickThruUrl = (clickThruUrl != null) ? clickThruUrl : "";
         }
     }
 
