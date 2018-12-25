@@ -75,6 +75,12 @@ public interface PlayerEngine {
     long getCurrentPosition();
 
     /**
+     * The program start time, as set by availabilityStartTime in DASH or the EXT-X-PROGRAM-DATE-TIME in HLS.
+     * @return The program start time in milliseconds since the epoch.
+     */
+    long getProgramStartTime();
+
+    /**
      * @return - The total duration of current media
      * or {@link Consts#TIME_UNSET} if the duration is unknown or player is null.
      */

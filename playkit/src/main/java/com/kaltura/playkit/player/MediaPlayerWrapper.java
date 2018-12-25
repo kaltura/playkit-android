@@ -45,6 +45,7 @@ import java.util.Map;
 import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.NOT_PREPARED;
 import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARED;
 import static com.kaltura.playkit.player.MediaPlayerWrapper.PrepareState.PREPARING;
+import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 
 /**
  * Created by gilad.nadav on 30/12/2016.
@@ -70,7 +71,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private WidevineClassicDrm drmClient;
     private PlayerEvent.Type currentEvent;
     private PlayerState currentState = PlayerState.IDLE, previousState;
-    private long playerDuration = Consts.TIME_UNSET;
+    private long playerDuration = TIME_UNSET;
     private long playerPosition;
     private EventListener eventListener;
     private StateChangedListener stateChangedListener;
@@ -159,7 +160,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             if (prepareState == NOT_PREPARED) {
                 changeState(PlayerState.BUFFERING);
                 prepareState = PREPARING;
-                playerDuration = Consts.TIME_UNSET;
+                playerDuration = TIME_UNSET;
                 player.prepareAsync();
             }
         }
@@ -255,6 +256,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         }
 
         return player.getCurrentPosition();
+    }
+
+    @Override
+    public long getProgramStartTime() {
+        return TIME_UNSET;
     }
 
     @Override
@@ -502,7 +508,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         if (prepareState == NOT_PREPARED) {
             changeState(PlayerState.BUFFERING);
             prepareState = PREPARING;
-            playerDuration = Consts.TIME_UNSET;
+            playerDuration = TIME_UNSET;
             player.prepareAsync();
         }
     }

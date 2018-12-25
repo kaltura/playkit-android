@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.plugins.ads;
 
+import android.support.annotation.Nullable;
+
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 
@@ -29,6 +31,7 @@ public class AdEvent implements PKEvent {
     public static final Class<AdBufferStart> adBufferStart = AdBufferStart.class;
     public static final Class<AdBufferEnd> adBufferEnd = AdBufferEnd.class;
     public static final Class<AdPlaybackInfoUpdated> adPlaybackInfoUpdated = AdPlaybackInfoUpdated.class;
+    public static final Class<AdClickedEvent> adClickedEvent = AdClickedEvent.class;
     public static final Class<Error> error = Error.class;
 
     public static final AdEvent.Type adFirstPlay = Type.AD_FIRST_PLAY;
@@ -38,7 +41,6 @@ public class AdEvent implements PKEvent {
     public static final AdEvent.Type midpoint = Type.MIDPOINT;
     public static final AdEvent.Type thirdQuartile = Type.THIRD_QUARTILE;
     public static final AdEvent.Type skippableStateChanged = Type.SKIPPABLE_STATE_CHANGED;
-    public static final AdEvent.Type clicked = Type.CLICKED;
     public static final AdEvent.Type tapped = Type.TAPPED;
     public static final AdEvent.Type iconTapped = Type.ICON_TAPPED;
     public static final AdEvent.Type adBreakReady = Type.AD_BREAK_READY;
@@ -135,6 +137,16 @@ public class AdEvent implements PKEvent {
         public AdRequestedEvent(String adTagUrl) {
             super(Type.AD_REQUESTED);
             this.adTagUrl = adTagUrl;
+        }
+    }
+
+    public static class AdClickedEvent extends AdEvent {
+
+        public final String clickThruUrl;
+
+        public AdClickedEvent(@Nullable String clickThruUrl) {
+            super(Type.CLICKED);
+            this.clickThruUrl = clickThruUrl;
         }
     }
 
