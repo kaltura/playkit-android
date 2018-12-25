@@ -236,8 +236,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (mediaDataSourceFactory == null) {
             mediaDataSourceFactory = buildDataSourceFactory();
         }
-        switch (format) {
 
+        switch (format) {
             case dash:
                 if (manifestDataSourceFactory == null) {
                     manifestDataSourceFactory = buildDataSourceFactory();
@@ -591,7 +591,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             return TIME_UNSET;
         }
 
-        return window.windowStartTimeMs;
+        return window.presentationStartTimeMs;
     }
 
     @Override
