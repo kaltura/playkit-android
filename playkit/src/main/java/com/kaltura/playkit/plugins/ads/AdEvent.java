@@ -146,7 +146,7 @@ public class AdEvent implements PKEvent {
 
         public AdClickedEvent(@Nullable String clickThruUrl) {
             super(Type.CLICKED);
-            this.clickThruUrl = (clickThruUrl != null) ? clickThruUrl : "";
+            this.clickThruUrl = clickThruUrl;
         }
     }
 
