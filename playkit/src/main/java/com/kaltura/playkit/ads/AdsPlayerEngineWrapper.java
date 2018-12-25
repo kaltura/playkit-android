@@ -110,6 +110,11 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     }
 
     @Override
+    public long getProgramStartTime() {
+        return super.getProgramStartTime();
+    }
+
+    @Override
     public long getDuration() {
 //        long playbackDuration;
 //        if (adsProvider.isAdDisplayed()) {

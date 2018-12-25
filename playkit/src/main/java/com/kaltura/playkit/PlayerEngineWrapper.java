@@ -42,6 +42,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public long getProgramStartTime() {
+        return playerEngine.getProgramStartTime();
+    }
+
+    @Override
     public long getDuration() {
         return playerEngine.getDuration();
     }
