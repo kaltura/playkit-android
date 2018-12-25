@@ -229,6 +229,13 @@ public interface Player {
     long getCurrentPosition();
 
     /**
+     * The current program time is milliseconds since the epoch, or {@link Consts#TIME_UNSET} if not set.
+     * This value is derived from the attribute availabilityStartTime in DASH or the tag EXT-X-PROGRAM-DATE-TIME in HLS.
+     * @return The current program time is milliseconds since the epoch, or {@link Consts#TIME_UNSET} if not set.
+     */
+    long getCurrentProgramTime();
+
+    /**
      * @return - The total duration of current media
      * or {@link Consts#TIME_UNSET} if the duration is unknown or player engine is null.
      */
