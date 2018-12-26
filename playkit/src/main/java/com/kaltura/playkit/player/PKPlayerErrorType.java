@@ -24,12 +24,12 @@ public enum PKPlayerErrorType {
     SOURCE_SELECTION_FAILED(7003),
     FAILED_TO_INITIALIZE_PLAYER(7004),
     DRM_ERROR(7005),
-    TRACK_SELECTION_FAILED(7006);
+    TRACK_SELECTION_FAILED(7006),
+    LOAD_ERROR(7007);
 
     public final int errorCode;
 
     PKPlayerErrorType(int errorCode) {
         this.errorCode = errorCode;
     }
-
 }
