@@ -75,6 +75,12 @@ public interface PlayerEngine {
     long getCurrentPosition();
 
     /**
+     * The program start time, as set by availabilityStartTime in DASH or the EXT-X-PROGRAM-DATE-TIME in HLS.
+     * @return The program start time in milliseconds since the epoch.
+     */
+    long getProgramStartTime();
+
+    /**
      * @return - The total duration of current media
      * or {@link Consts#TIME_UNSET} if the duration is unknown or player is null.
      */
@@ -153,6 +159,9 @@ public interface PlayerEngine {
      * @param stateChangedTrigger - the state change listener.
      */
     void setStateChangedListener(StateChangedListener stateChangedTrigger);
+
+
+    void setAnalyticsListener(AnalyticsListener analyticsListener);
 
     /**
      * Release the current player.
@@ -238,5 +247,10 @@ public interface PlayerEngine {
 
     interface StateChangedListener {
         void onStateChanged(PlayerState oldState, PlayerState newState);
+    }
+
+    interface AnalyticsListener {
+        void onDroppedFrames(long droppedVideoFrames, long droppedVideoFramesPeriod, long totalDroppedVideoFrames);
+        void onBytesLoaded(long bytesLoaded, long totalBytesLoaded);
     }
 }

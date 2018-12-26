@@ -80,6 +80,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
+import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
@@ -102,6 +103,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private PlayerSettings playerSettings;
     private EventListener eventListener;
     private StateChangedListener stateChangedListener;
+    private ExoAnalyticsAggregator analyticsAggregator = new ExoAnalyticsAggregator();
 
     private Context context;
     private SimpleExoPlayer player;
@@ -131,7 +133,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private boolean shouldRestorePlayerToPreviousState;
 
     private int playerWindow;
-    private long playerPosition = Consts.TIME_UNSET;
+    private long playerPosition = TIME_UNSET;
 
     private float lastKnownVolume = Consts.DEFAULT_VOLUME;
     private float lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
@@ -189,6 +191,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (assertPlayerIsNotNull("setPlayerListeners()")) {
             player.addListener(this);
             player.addMetadataOutput(this);
+            player.addAnalyticsListener(analyticsAggregator);
         }
     }
 
@@ -252,7 +255,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         MediaSource[] mediaSources = buildMediaSourceList(subtitlesList);
 
         switch (format) {
-
             case dash:
                 if (manifestDataSourceFactory == null) {
                     manifestDataSourceFactory = buildDataSourceFactory();
@@ -524,17 +526,20 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
-        log.d("onTimelineChanged");
-        sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
-        sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
-        shouldResetPlayerPosition = reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC;
+        log.d("onTimelineChanged reason = " + reason);
+        if (reason == Player.TIMELINE_CHANGE_REASON_PREPARED) {
+            sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
+            sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
+        }
+
+        shouldResetPlayerPosition = (reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC);
     }
 
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
         if (isBehindLiveWindow(error) && sourceConfig != null) {
-            log.d("onPlayerError BehindLiveWindowException receivec repreparing player");
+            log.d("onPlayerError BehindLiveWindowException received, re-preparing player");
             player.prepare(buildExoMediaSource(sourceConfig), true, false);
             return;
         }
@@ -549,6 +554,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             case ExoPlaybackException.TYPE_RENDERER:
                 errorType = PKPlayerErrorType.RENDERER_ERROR;
                 break;
+            case ExoPlaybackException.TYPE_UNEXPECTED:
             default:
                 errorType = PKPlayerErrorType.UNEXPECTED;
                 break;
@@ -607,7 +613,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
         PKRequestParams.Adapter licenseRequestAdapter = playerSettings.getLicenseRequestAdapter();
         if (licenseRequestAdapter != null) {
-            httpDataSourceRequestParams = licenseRequestAdapter.adapt(new PKRequestParams(null, new HashMap<String, String>()));
+            httpDataSourceRequestParams = licenseRequestAdapter.adapt(new PKRequestParams(null, new HashMap<>()));
         }
 
         if (player == null) {
@@ -700,6 +706,20 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @Override
+    public long getProgramStartTime() {
+        final int currentWindowIndex = player.getCurrentWindowIndex();
+        if (currentWindowIndex == C.INDEX_UNSET) {
+            return TIME_UNSET;
+        }
+        final Timeline.Window window = player.getCurrentTimeline().getWindow(currentWindowIndex, new Timeline.Window());
+        if (window == null) {
+            return TIME_UNSET;
+        }
+
+        return window.presentationStartTimeMs;
+    }
+
+    @Override
     public void seekTo(long position) {
         log.v("seekTo");
         if (assertPlayerIsNotNull("seekTo()")) {
@@ -719,7 +739,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (assertPlayerIsNotNull("getDuration()")) {
             return player.getDuration();
         }
-        return Consts.TIME_UNSET;
+        return TIME_UNSET;
     }
 
     @Override
@@ -753,7 +773,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             setPlaybackRate(lastKnownPlaybackRate);
         }
 
-        if (playerPosition == Consts.TIME_UNSET || isLiveMediaWithoutDvr()) {
+        if (playerPosition == TIME_UNSET || isLiveMediaWithoutDvr()) {
             player.seekToDefaultPosition();
         } else {
             player.seekTo(playerWindow, playerPosition);
@@ -773,7 +793,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         window = null;
         player = null;
         exoPlayerView = null;
-        playerPosition = Consts.TIME_UNSET;
+        playerPosition = TIME_UNSET;
     }
 
     @Override
@@ -819,12 +839,19 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 
+    @Override
     public void setEventListener(final EventListener eventTrigger) {
         this.eventListener = eventTrigger;
     }
 
+    @Override
     public void setStateChangedListener(StateChangedListener stateChangedTrigger) {
         this.stateChangedListener = stateChangedTrigger;
+    }
+
+    @Override
+    public void setAnalyticsListener(AnalyticsListener analyticsListener) {
+        this.analyticsAggregator.setListener(analyticsListener);
     }
 
     @Override
@@ -904,6 +931,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player.setPlayWhenReady(false);
             player.stop(true);
         }
+        analyticsAggregator.reset();
     }
 
     private void savePlayerPosition() {
@@ -961,12 +989,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private DeferredDrmSessionManager.DrmSessionListener initDrmSessionListener() {
-        return new DeferredDrmSessionManager.DrmSessionListener() {
-            @Override
-            public void onError(PKError error) {
-                currentError = error;
-                sendEvent(PlayerEvent.Type.ERROR);
-            }
+        return error -> {
+            currentError = error;
+            sendEvent(PlayerEvent.Type.ERROR);
         };
     }
 
