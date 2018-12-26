@@ -23,11 +23,29 @@ public class PKError {
     public final Throwable exception;
     @NonNull
     public final Enum errorType;
+    @NonNull
+    public final Severity severity;
+
 
     public PKError(@NonNull Enum errorType, @Nullable String message, @Nullable Throwable exception) {
         this.errorType = errorType;
+        this.severity = Severity.Fatal;
         this.message = message;
         this.exception = exception;
     }
 
+    public PKError(@NonNull Enum errorType, @NonNull Severity severity, @Nullable String message, @Nullable Throwable exception) {
+        this.errorType = errorType;
+        this.severity = severity;
+        this.message = message;
+        this.exception = exception;
+    }
+
+    public boolean isFatal() {
+        return severity == Severity.Fatal;
+    }
+    public enum Severity {
+        Recoverable,
+        Fatal;
+    }
 }
