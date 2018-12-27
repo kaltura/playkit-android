@@ -44,6 +44,9 @@ class ExoAnalyticsAggregator implements AnalyticsListener {
     @Override
     public void onLoadError(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData, IOException error, boolean wasCanceled) {
         onLoadCompleted(eventTime, loadEventInfo, mediaLoadData);   // in case there are bytes loaded
+        if (listener != null) {
+            listener.onLoadError(error, wasCanceled);
+        }
     }
 
     public void setListener(PlayerEngine.AnalyticsListener listener) {
