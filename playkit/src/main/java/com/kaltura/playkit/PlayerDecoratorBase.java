@@ -125,21 +125,25 @@ public class PlayerDecoratorBase implements Player {
         return player.getView();
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
         return player.addEventListener(listener, events);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
         player.removeEventListener(listener);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener) {
         return player.addStateChangeListener(listener);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void removeStateChangeListener(@NonNull PKEvent.Listener listener) {
         player.removeStateChangeListener(listener);
@@ -147,7 +151,7 @@ public class PlayerDecoratorBase implements Player {
 
     @Override
     public void removeListener(@NonNull PKEvent.Listener listener) {
-        player.removeListener(listener);
+        player.removeListeners(listener);
     }
 
     void setPlayer(Player player) {
@@ -191,12 +195,17 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public <E extends PKEvent> PKEvent.Listener<E> addListener(Class<E> type, PKEvent.Listener<E> listener) {
-        return player.addListener(type, listener);
+    public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
+        player.addListener(groupId, type, listener);
     }
 
     @Override
-    public PKEvent.Listener addListener(Enum type, PKEvent.Listener listener) {
-        return player.addListener(type, listener);
+    public void addListener(Object groupId, Enum type, PKEvent.Listener listener) {
+        player.addListener(groupId, type, listener);
+    }
+
+    @Override
+    public void removeListeners(@NonNull Object groupId) {
+        player.removeListeners(groupId);
     }
 }

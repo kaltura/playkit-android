@@ -16,12 +16,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("WeakerAccess")
@@ -30,10 +30,12 @@ public class MessageBus {
     private static final PKLog log = PKLog.get("MessageBus");
 
     private Handler postHandler = new Handler(Looper.getMainLooper());
-    private Map<Object, Set<PKEvent.Listener>> listeners;
+    private Map<Object, Set<PKEvent.Listener>> listeners;   // Key is the event type, value is the listeners to call.
+    private Map<Object, Set<PKEvent.Listener>> listenerGroups;  // Key is group id, value is the listeners to remove.
 
     public MessageBus() {
         listeners = new ConcurrentHashMap<>();
+        listenerGroups = Collections.synchronizedMap(new WeakHashMap<>());
     }
 
     public void post(final PKEvent event) {
@@ -72,28 +74,42 @@ public class MessageBus {
         }
     }
 
+    private static <T> Set<T> clone(Set<T> set) {
+        return new HashSet<>(set);
+    }
+
     /**
      * Remove the listener regardless of event type.
      * @param listener Listener to remove.
      */
     public void removeListener(PKEvent.Listener listener) {
         for (Set<PKEvent.Listener> listenerSet : listeners.values()) {
-            Iterator<PKEvent.Listener> iterator = listenerSet.iterator();
-            while (iterator.hasNext()) {
-                PKEvent.Listener element = iterator.next();
-                if (element == listener) {
-                    iterator.remove();
-                }
+            removeListener(listenerSet, listener);
+        }
+
+        for (Set<PKEvent.Listener> listenerSet : listenerGroups.values()) {
+            removeListener(listenerSet, listener);
+        }
+    }
+
+    private static void removeListener(Set<PKEvent.Listener> listenerSet, PKEvent.Listener listener) {
+        Iterator<PKEvent.Listener> iterator = listenerSet.iterator();
+        while (iterator.hasNext()) {
+            PKEvent.Listener element = iterator.next();
+            if (element == listener) {
+                iterator.remove();
             }
         }
     }
 
     /**
      * Remove all listeners in the collection regardless of event type.
-     * @param listeners Collection of listeners to remove.
+     * @param groupId Group id of listeners to remove.
      */
-    public void removeListeners(Collection<PKEvent.Listener> listeners) {
-        for (PKEvent.Listener listener : listeners) {
+    public void removeListeners(Object groupId) {
+        final Set<PKEvent.Listener> listeners = listenerGroups.get(groupId);
+
+        for (PKEvent.Listener listener : new HashSet<>(listeners)) {
             removeListener(listener);
         }
     }
@@ -101,25 +117,31 @@ public class MessageBus {
     @Deprecated
     public PKEvent.Listener listen(PKEvent.Listener listener, Enum... eventTypes) {
         for (Enum eventType : eventTypes) {
-            addListener(eventType, listener);
+            addListener(null, eventType, listener);
         }
         return listener;
     }
 
-    public void addListener(Enum type, PKEvent.Listener listener) {
-        addListener((Object)type, listener);
+    public void addListener(Object groupId, Enum type, PKEvent.Listener listener) {
+        addListener(groupId, (Object)type, listener);
     }
 
-    public <E extends PKEvent> void addListener(Class<E> type, PKEvent.Listener<E> listener) {
-        addListener((Object)type, listener);
+    public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
+        addListener(groupId, (Object)type, listener);
     }
 
-    private void addListener(Object type, PKEvent.Listener listener) {
-        Set<PKEvent.Listener> listenerSet = listeners.get(type);
+    private void addListener(Object groupId, Object type, PKEvent.Listener listener) {
+        addToMap(type, listener, listeners);
+        addToMap(groupId, listener, listenerGroups);
+    }
+
+    private void addToMap(Object key, PKEvent.Listener listener, Map<Object, Set<PKEvent.Listener>> map) {
+        Set<PKEvent.Listener> listenerSet;
+        listenerSet = map.get(key);
         if (listenerSet == null) {
             listenerSet = new HashSet<>();
             listenerSet.add(listener);
-            listeners.put(type, listenerSet);
+            map.put(key, listenerSet);
         } else {
             listenerSet.add(listener);
         }
