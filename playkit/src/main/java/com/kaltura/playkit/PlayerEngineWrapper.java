@@ -11,6 +11,9 @@ import com.kaltura.playkit.player.metadata.PKMetadata;
 import java.util.List;
 
 public class PlayerEngineWrapper implements PlayerEngine {
+
+    protected PlayerEngine playerEngine;
+
     @Override
     public void load(PKMediaSourceConfig mediaSourceConfig) {
         playerEngine.load(mediaSourceConfig);
@@ -175,8 +178,6 @@ public class PlayerEngineWrapper implements PlayerEngine {
     public void onOrientationChanged() {
         playerEngine.onOrientationChanged();
     }
-
-    protected PlayerEngine playerEngine;
 
     public void setPlayerEngine(PlayerEngine playerEngine) {
         this.playerEngine = playerEngine;

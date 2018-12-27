@@ -16,7 +16,6 @@ import android.content.Context;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.kaltura.playkit.player.PlayerEngine;
 
 import java.util.HashMap;
 import java.util.Map;
