@@ -130,6 +130,7 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
 
     @Override
     public void seekTo(long position) {
+        log.d("AdWrapper seekTo");
 //        if (adsProvider.isAdDisplayed()) {
 //            log.d("seekTo is not enabled during AD playback");
 //            return;
@@ -139,7 +140,7 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
 
     @Override
     public boolean isPlaying() {
-        log.d("AdEnabled isPlaying");
+        log.d("AdWrapper isPlaying");
         if (adsProvider != null && adsProvider.isAdDisplayed()) {
             return !adsProvider.isAdPaused();
         }
@@ -153,7 +154,7 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
 
     @Override
     public void stop() {
-        log.d("AdEnabled IMA stop");
+        log.d("AdWrapper IMA stop");
         if (adsProvider != null) {
             adsProvider.setAdRequested(false);
             adsProvider.destroyAdsManager();
