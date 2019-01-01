@@ -49,7 +49,9 @@ public class KalturaPlaybackRequestAdapter implements PKRequestParams.Adapter {
     @Override
     public PKRequestParams adapt(PKRequestParams requestParams) {
         Uri url = requestParams.url;
-
+        if (true) {
+            return new PKRequestParams(url, requestParams.headers);
+        }
         if (url != null && url.getPath().contains("/playManifest/")) {
             Uri alt = url.buildUpon()
                     .appendQueryParameter("clientTag", CLIENT_TAG)

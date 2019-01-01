@@ -12,15 +12,20 @@
 
 package com.kaltura.playkit;
 
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.google.android.exoplayer2.offline.StreamKey;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DataSource.Factory;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Collection;
+import java.util.List;
 
 @SuppressWarnings("unused")
 public interface Player {
@@ -156,6 +161,10 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
+
+        Settings setOfflineDataSourceFactory(DataSource.Factory offlineDataSourceFactory);
+
+        Settings setOfflineStreamKeys(List<StreamKey> streamKeys);
     }
 
     /**

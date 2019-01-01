@@ -40,6 +40,7 @@ import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
+import com.google.android.exoplayer2.source.hls.playlist.DefaultHlsPlaylistParserFactory;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
@@ -247,8 +248,14 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                         manifestDataSourceFactory)
                         .createMediaSource(uri);
             case hls:
+
                 return new HlsMediaSource.Factory(mediaDataSourceFactory)
+                        .setPlaylistParserFactory(
+                                new DefaultHlsPlaylistParserFactory(playerSettings.getOfflineStreamKeys()))
                         .createMediaSource(uri);
+
+//                return new HlsMediaSource.Factory(mediaDataSourceFactory)
+//                        .createMediaSource(uri);
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
@@ -266,6 +273,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      * @return A new DataSource factory.
      */
     private DataSource.Factory buildDataSourceFactory() {
+        if (playerSettings.getOfflineDataSourceFactory() != null) {
+            return playerSettings.getOfflineDataSourceFactory();
+        }
         return new DefaultDataSourceFactory(context, buildHttpDataSourceFactory());
     }
 

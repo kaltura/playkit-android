@@ -12,10 +12,16 @@
 
 package com.kaltura.playkit.player;
 
+import android.net.Uri;
+
+import com.google.android.exoplayer2.offline.StreamKey;
+import com.google.android.exoplayer2.upstream.DataSource;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
+
+import java.util.List;
 
 public class PlayerSettings implements Player.Settings {
 
@@ -28,7 +34,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean vrPlayerEnabled = true;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
-
+    private DataSource.Factory offlineDataSourceFactory;
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -37,7 +43,7 @@ public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
-
+    private List<StreamKey> offlineStreamKeys;
 
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
@@ -94,6 +100,14 @@ public class PlayerSettings implements Player.Settings {
 
     public SubtitleStyleSettings getSubtitleStyleSettings() {
         return subtitleStyleSettings;
+    }
+
+    public DataSource.Factory getOfflineDataSourceFactory() {
+        return offlineDataSourceFactory;
+    }
+
+    public List<StreamKey> getOfflineStreamKeys() {
+        return offlineStreamKeys;
     }
 
     @Override
@@ -178,6 +192,18 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         this.subtitleStyleSettings = subtitleStyleSettings;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setOfflineDataSourceFactory(DataSource.Factory offlineDataSourceFactory) {
+        this.offlineDataSourceFactory = offlineDataSourceFactory;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setOfflineStreamKeys(List<StreamKey> offlineStreamKeys) {
+        this.offlineStreamKeys = offlineStreamKeys;
         return this;
     }
 }
