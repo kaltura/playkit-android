@@ -53,6 +53,8 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.playkit.ExoCacheProvider;
+import com.kaltura.playkit.PKCacheProvider;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -233,6 +235,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             return null;
         }
 
+        ExoCacheProvider cacheProvider = getExoCacheProvider();
+
         Uri uri = sourceConfig.getUrl();
         if (mediaDataSourceFactory == null) {
             mediaDataSourceFactory = buildDataSourceFactory();
@@ -247,12 +251,18 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                         new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
                         manifestDataSourceFactory)
                         .createMediaSource(uri);
-            case hls:
 
-                return new HlsMediaSource.Factory(mediaDataSourceFactory)
-                        .setPlaylistParserFactory(
-                                new DefaultHlsPlaylistParserFactory(playerSettings.getOfflineStreamKeys()))
-                        .createMediaSource(uri);
+            case hls: {
+
+                final HlsMediaSource.Factory factory = new HlsMediaSource.Factory(mediaDataSourceFactory);
+
+                if (cacheProvider != null) {
+                    factory.setPlaylistParserFactory(
+                            new DefaultHlsPlaylistParserFactory(cacheProvider.getOfflineStreamKeys(uri)));
+                }
+
+                return factory.createMediaSource(uri);
+            }
 
 //                return new HlsMediaSource.Factory(mediaDataSourceFactory)
 //                        .createMediaSource(uri);
@@ -267,14 +277,23 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 
+    private ExoCacheProvider getExoCacheProvider() {
+        final PKCacheProvider provider = playerSettings.getCacheProvider();
+        if (provider instanceof ExoCacheProvider) {
+            return ((ExoCacheProvider) provider);
+        }
+        return null;
+    }
+
     /**
      * Returns a new DataSource factory.
      *
      * @return A new DataSource factory.
      */
     private DataSource.Factory buildDataSourceFactory() {
-        if (playerSettings.getOfflineDataSourceFactory() != null) {
-            return playerSettings.getOfflineDataSourceFactory();
+        final ExoCacheProvider exoCacheProvider = getExoCacheProvider();
+        if (exoCacheProvider != null) {
+            return exoCacheProvider.buildDataSourceFactory();
         }
         return new DefaultDataSourceFactory(context, buildHttpDataSourceFactory());
     }

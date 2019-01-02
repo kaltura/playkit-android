@@ -162,9 +162,7 @@ public interface Player {
          */
         Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
 
-        Settings setOfflineDataSourceFactory(DataSource.Factory offlineDataSourceFactory);
-
-        Settings setOfflineStreamKeys(List<StreamKey> streamKeys);
+        Settings setCacheProvider(PKCacheProvider provider);
     }
 
     /**
