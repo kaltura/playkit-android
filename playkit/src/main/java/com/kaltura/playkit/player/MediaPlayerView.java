@@ -111,4 +111,13 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
 
     }
 
+    @Override
+    public void hideShutterView() {
+
+    }
+
+    @Override
+    public void showShutterView() {
+
+    }
 }

@@ -213,6 +213,16 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     @Override
+    public void hideShutterView() {
+        shutterView.setVisibility(INVISIBLE);
+    }
+
+    @Override
+    public void showShutterView() {
+        shutterView.setVisibility(VISIBLE);
+    }
+
+    @Override
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
         if (videoSurface instanceof SurfaceView) {

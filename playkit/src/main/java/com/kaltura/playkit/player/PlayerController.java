@@ -97,6 +97,16 @@ public class PlayerController implements Player {
                 setVideoSubtitlesVisibility(true);
 
             }
+
+            @Override
+            public void hideShutterView() {
+
+            }
+
+            @Override
+            public void showShutterView() {
+
+            }
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         this.rootPlayerView.setLayoutParams(lp);
