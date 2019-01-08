@@ -17,6 +17,8 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.RectF;
+
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.SurfaceView;
@@ -32,6 +34,7 @@ import com.google.android.exoplayer2.text.TextOutput;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.video.VideoListener;
+import com.kaltura.playkit.PKLog;
 
 import java.util.List;
 
@@ -43,7 +46,7 @@ import java.util.List;
  */
 
 class ExoPlayerView extends BaseExoplayerView {
-
+    private static final PKLog log = PKLog.get("ExoPlayerView");
     private View shutterView;
     private View videoSurface;
     private SubtitleView subtitleView;
@@ -51,8 +54,9 @@ class ExoPlayerView extends BaseExoplayerView {
 
     private SimpleExoPlayer player;
     private ComponentListener componentListener;
-
+    private Player.EventListener playerEventListener;
     private int textureViewRotation;
+
 
 
     ExoPlayerView(Context context) {
@@ -66,9 +70,31 @@ class ExoPlayerView extends BaseExoplayerView {
     ExoPlayerView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         componentListener = new ComponentListener();
+        playerEventListener = getPlayerEventListener();
         initContentFrame();
         initSubtitleLayout();
         initPosterView();
+    }
+
+    @NonNull
+    private Player.EventListener getPlayerEventListener() {
+        return new Player.EventListener() {
+            @Override
+            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                switch (playbackState) {
+
+                    case Player.STATE_READY:
+                        if (playWhenReady) {
+                            log.d("ExoPlayerView READY. playWhenReady => " + playWhenReady);
+                            shutterView.setVisibility(INVISIBLE);
+                        }
+                        break;
+                    default:
+                        break;
+
+                }
+            }
+        };
     }
 
     /**
@@ -117,6 +143,7 @@ class ExoPlayerView extends BaseExoplayerView {
 
         Player.VideoComponent newVideoComponent = player.getVideoComponent();
         Player.TextComponent newTextComponent = player.getTextComponent();
+        player.addListener(playerEventListener);
 
         //Decide which type of videoSurface should be set.
         if (newVideoComponent != null) {
@@ -144,7 +171,9 @@ class ExoPlayerView extends BaseExoplayerView {
 
         Player.VideoComponent oldVideoComponent = player.getVideoComponent();
         Player.TextComponent oldTextComponent = player.getTextComponent();
-
+        if (playerEventListener != null) {
+            player.removeListener(playerEventListener);
+        }
         //Remove existed videoSurface from player.
         if (oldVideoComponent != null) {
 
@@ -211,7 +240,7 @@ class ExoPlayerView extends BaseExoplayerView {
     public SubtitleView getSubtitleView() {
         return subtitleView;
     }
-
+    
     @Override
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
