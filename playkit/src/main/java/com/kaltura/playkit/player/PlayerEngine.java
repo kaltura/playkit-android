@@ -20,6 +20,7 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 
+import java.io.IOException;
 import java.util.List;
 
 
@@ -252,5 +253,6 @@ public interface PlayerEngine {
     interface AnalyticsListener {
         void onDroppedFrames(long droppedVideoFrames, long droppedVideoFramesPeriod, long totalDroppedVideoFrames);
         void onBytesLoaded(long bytesLoaded, long totalBytesLoaded);
+        void onLoadError(IOException error, boolean wasCanceled);
     }
 }

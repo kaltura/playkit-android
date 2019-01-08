@@ -41,5 +41,4 @@ public abstract class PlayerView extends FrameLayout {
     public abstract void hideVideoSubtitles();
 
     public abstract void showVideoSubtitles();
-
 }

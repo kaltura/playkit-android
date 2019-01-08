@@ -31,6 +31,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
 
+import java.io.IOException;
 import java.util.UUID;
 
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
@@ -415,6 +416,14 @@ public class PlayerController implements Player {
                     @Override
                     public void onBytesLoaded(long bytesLoaded, long totalBytesLoaded) {
                         eventListener.onEvent(new PlayerEvent.BytesLoaded(bytesLoaded, totalBytesLoaded));
+                    }
+
+                    @Override
+                    public void onLoadError(IOException error, boolean wasCanceled) {
+                        String errorStr =  "onLoadError Player Load error: " + PKPlayerErrorType.LOAD_ERROR;
+                        log.e(errorStr);
+                        PKError loadError = new PKError(PKPlayerErrorType.LOAD_ERROR, PKError.Severity.Recoverable, errorStr, error);
+                            eventListener.onEvent(new PlayerEvent.Error(loadError));
                     }
                 });
             } else {
