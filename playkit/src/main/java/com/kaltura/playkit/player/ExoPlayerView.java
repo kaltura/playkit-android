@@ -18,6 +18,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.SurfaceView;
@@ -69,7 +70,15 @@ class ExoPlayerView extends BaseExoplayerView {
     ExoPlayerView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         componentListener = new ComponentListener();
-        playerEventListener = new Player.EventListener() {
+        playerEventListener = getPlayerEventListener();
+        initContentFrame();
+        initSubtitleLayout();
+        initPosterView();
+    }
+
+    @NonNull
+    private Player.EventListener getPlayerEventListener() {
+        return new Player.EventListener() {
             @Override
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
                 switch (playbackState) {
@@ -77,7 +86,7 @@ class ExoPlayerView extends BaseExoplayerView {
                     case Player.STATE_READY:
                         if (playWhenReady) {
                             log.d("ExoPlayerView READY. playWhenReady => " + playWhenReady);
-                            hideShutterView();
+                            shutterView.setVisibility(INVISIBLE);
                         }
                         break;
                     default:
@@ -86,9 +95,6 @@ class ExoPlayerView extends BaseExoplayerView {
                 }
             }
         };
-        initContentFrame();
-        initSubtitleLayout();
-        initPosterView();
     }
 
     /**
@@ -234,15 +240,7 @@ class ExoPlayerView extends BaseExoplayerView {
     public SubtitleView getSubtitleView() {
         return subtitleView;
     }
-
-    private void hideShutterView() {
-        shutterView.setVisibility(INVISIBLE);
-    }
-
-    private void showShutterView() {
-        shutterView.setVisibility(VISIBLE);
-    }
-
+    
     @Override
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
