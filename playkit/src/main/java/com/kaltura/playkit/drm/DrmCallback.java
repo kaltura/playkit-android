@@ -42,10 +42,8 @@ public class DrmCallback implements MediaDrmCallback {
 
         callback = new HttpMediaDrmCallback(params.url.toString(), dataSourceFactory);
 
-        if (params.headers != null) {
-            for (Map.Entry<String, String> entry : params.headers.entrySet()) {
-                callback.setKeyRequestProperty(entry.getKey(), entry.getValue());
-            }
+        for (Map.Entry<String, String> entry : params.headers.entrySet()) {
+            callback.setKeyRequestProperty(entry.getKey(), entry.getValue());
         }
     }
 }
