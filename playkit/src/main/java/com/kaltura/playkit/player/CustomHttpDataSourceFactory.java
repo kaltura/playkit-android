@@ -1,7 +1,7 @@
 package com.kaltura.playkit.player;
 
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
-import com.google.android.exoplayer2.upstream.HttpDataSource;
+import com.google.android.kexoplayer2.upstream.DefaultHttpDataSource;
+import com.google.android.kexoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.PKRequestParams;
 
 import java.util.Map;

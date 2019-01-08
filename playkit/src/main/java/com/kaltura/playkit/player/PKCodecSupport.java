@@ -4,8 +4,8 @@ import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.support.annotation.NonNull;
 
-import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.util.MimeTypes;
+import com.google.android.kexoplayer2.Format;
+import com.google.android.kexoplayer2.util.MimeTypes;
 import com.kaltura.playkit.PKLog;
 
 import java.util.HashMap;

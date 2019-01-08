@@ -16,7 +16,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.TextUtils;
 
-import com.google.android.exoplayer2.text.CaptionStyleCompat;
+import com.google.android.kexoplayer2.text.CaptionStyleCompat;
 
 public class SubtitleStyleSettings {
 
