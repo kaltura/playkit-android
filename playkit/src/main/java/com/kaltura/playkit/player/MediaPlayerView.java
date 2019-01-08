@@ -110,5 +110,4 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
     public void showVideoSubtitles() {
 
     }
-
 }
