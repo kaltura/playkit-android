@@ -33,7 +33,7 @@ public class DrmCallback implements MediaDrmCallback {
         this.adapter = adapter;
     }
 
-    public void setLicenseUrl(String licenseUrl) {
+    void setLicenseUrl(String licenseUrl) {
         PKRequestParams params = new PKRequestParams(Uri.parse(licenseUrl), new HashMap<>());
 
         if (adapter != null) {
