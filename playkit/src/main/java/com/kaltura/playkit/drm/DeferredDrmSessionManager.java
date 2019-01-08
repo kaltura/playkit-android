@@ -22,10 +22,8 @@ import com.google.android.exoplayer2.drm.DrmInitData;
 import com.google.android.exoplayer2.drm.DrmSession;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
-import com.google.android.exoplayer2.drm.HttpMediaDrmCallback;
 import com.google.android.exoplayer2.drm.UnsupportedDrmException;
 import com.google.android.exoplayer2.extractor.mp4.PsshAtomUtil;
-import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.Util;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKDrmParams;
@@ -51,8 +49,8 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
     private static final PKLog log = PKLog.get("DeferredDrmSessionManager");
 
     private Handler mainHandler;
+    private final DrmCallback drmCallback;
     private DrmSessionListener drmSessionListener;
-    private HttpDataSource.Factory dataSourceFactory;
     private LocalAssetsManager.LocalMediaSource localMediaSource = null;
     private DefaultDrmSessionManager<FrameworkMediaCrypto> drmSessionManager = null;
 
@@ -60,9 +58,9 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
         void onError(PKError error);
     }
 
-    public DeferredDrmSessionManager(Handler mainHandler, HttpDataSource.Factory factory, DrmSessionListener drmSessionListener) {
+    public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener) {
         this.mainHandler = mainHandler;
-        this.dataSourceFactory = factory;
+        this.drmCallback = drmCallback;
         this.drmSessionListener = drmSessionListener;
     }
 
@@ -73,16 +71,17 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
         }
 
         try {
-            String licenseUrl = null;
             if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
                 localMediaSource = (LocalAssetsManager.LocalMediaSource) mediaSource;
             } else {
-                licenseUrl = getLicenseUrl(mediaSource);
+                drmCallback.setLicenseUrl(getLicenseUrl(mediaSource));
             }
-            drmSessionManager = DefaultDrmSessionManager.newWidevineInstance(new HttpMediaDrmCallback(licenseUrl, dataSourceFactory), null);
+
+            drmSessionManager = DefaultDrmSessionManager.newWidevineInstance(drmCallback, null);
             if (mainHandler != null) {
                 drmSessionManager.addListener(mainHandler, this);
             }
+
         } catch (UnsupportedDrmException exception) {
 
             PKError error = new PKError(PKPlayerErrorType.DRM_ERROR, "This device doesn't support widevine modular", exception);
