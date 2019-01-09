@@ -1,13 +1,11 @@
 language: android
-dist: trusty
+dist: xenial
 sudo: required
 jdk:
   - oraclejdk8
 android:
   components:
     - tools
-before_script:
-  - curl https://kaltura.github.io/fe-tools/android/license.sh | sh
 script:
   - ./gradlew playkit:build
 after_failure:
@@ -19,6 +17,5 @@ notifications:
     recipients:
       - noam.tamim@kaltura.com
       - gilad.nadav@kaltura.com
-      - Anton.Afanasiev@kaltura.com
     on_success: change
     on_failure: always
