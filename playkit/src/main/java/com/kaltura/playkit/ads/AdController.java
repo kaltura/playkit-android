@@ -27,9 +27,9 @@ public interface AdController extends PKController {
 
     void seekTo(long position);
 
-    long getCurrentPosition();
+    long getAdCurrentPosition();
 
-    long getDuration();
+    long getAdDuration();
 
     boolean isAdDisplayed();
 
