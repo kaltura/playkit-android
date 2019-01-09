@@ -324,64 +324,57 @@ public interface Player {
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
 
-
-
     /**
      * Add listener by event type as Class object. This generics-based method allows the caller to
      * avoid the otherwise required cast.
      *
      * Sample usage:
      * <pre>
-     *   player.addListener(PlayerEvent.stateChanged,
+     *   player.addListener(this, PlayerEvent.stateChanged,
      *      event -> Log.d(TAG, "Player state change: " + event.oldState + " => " + event.newState));
      * </pre>
+     * @param groupId listener group id for calling {@link #removeListeners(Object)}
      * @param type A typed {@link Class} object. The class type must extend PKEvent.
      * @param listener a typed {@link PKEvent.Listener}. Must match the type given as the first parameter.
      * @param <E> Event type.
-     * @return the given event.
      */
-    @SuppressWarnings("UnusedReturnValue")
-    <E extends PKEvent> PKEvent.Listener<E> addListener(Class<E> type, PKEvent.Listener<E> listener);
+    <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener);
 
     /**
      * Add listener by event type as enum, for use with events that don't have payloads.
      *
      * Sample usage:
      * <pre>
-     *   player.addListener(PlayerEvent.canPlay, event -> {
+     *   player.addListener(this, PlayerEvent.canPlay, event -> {
      *       Log.d(TAG, "Player can play");
      *   });
      * </pre>
+     * @param groupId listener group id for calling {@link #removeListeners(Object)}
      * @param type event type
      * @param listener listener
-     * @return the given event
      */
-    @SuppressWarnings("UnusedReturnValue")
-    PKEvent.Listener addListener(Enum type, PKEvent.Listener listener);
+    void addListener(Object groupId, Enum type, PKEvent.Listener listener);
 
     /**
-     * Remove listener to the player, regardless of event type.
+     * Remove all listeners that belong to the group.
      *
-     * @param listener - event listener / state changed listener
+     * @param groupId listener group id as passed to {@link #addListener(Object, Enum, PKEvent.Listener)} or {@link #addListener(Object, Class, PKEvent.Listener)}.
+     */
+    void removeListeners(@NonNull Object groupId);
+
+    /**
+     * Remove event listener, regardless of event type.
+
+     * @param listener - event listener
      */
     void removeListener(@NonNull PKEvent.Listener listener);
-
-    /**
-     * Remove all listeners in the list, regardless of event type.
-     * @param listeners list of listeners to remove
-     */
-    default void removeListeners(Collection<PKEvent.Listener> listeners) {
-        for (PKEvent.Listener listener : listeners) {
-            removeListener(listener);
-        }
-    }
 
     /**
      * Add event listener to the player.
      *
      * @param listener - event listener.
      * @param events   - events the subscriber interested in.
-     * @deprecated It's better to use one listener per event type with {@link #addListener(Class, PKEvent.Listener)}.
+     * @deprecated It's better to use one listener per event type with {@link #addListener(Object, Enum, PKEvent.Listener)} or {@link #addListener(Object, Class, PKEvent.Listener)}.
      */
     @Deprecated
     PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events);
@@ -391,8 +384,7 @@ public interface Player {
      *
      * @param listener - event listener.
      * @param events   - events the subscriber interested in.
-     * @deprecated It's better to use one listener per event type with {@link #addListener(Class, PKEvent.Listener)} and remove
-     * them with {@link #removeListener(PKEvent.Listener)} or {@link #removeListeners(Collection)}.
+     * @deprecated See {@link #addEventListener(PKEvent.Listener, Enum[])} for deprecation note.
      */
     @Deprecated
     void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events);
@@ -401,7 +393,8 @@ public interface Player {
      * Add state changed listener to the player.
      *
      * @param listener - state changed listener
-     * @deprecated Use {@link #addListener(Class, PKEvent.Listener)} with {@link PlayerEvent#stateChanged}.
+     * @deprecated Use {@link #addListener(Object, Class, PKEvent.Listener)} with {@link PlayerEvent#stateChanged}
+     * and remove with {@link #removeListeners(Object)}.
      */
     @Deprecated
     PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener);
@@ -410,7 +403,7 @@ public interface Player {
      * Remove state changed listener from the player.
      *
      * @param listener - state changed listener
-     * @deprecated See {@link #addStateChangeListener(PKEvent.Listener)} and remove with {@link #removeListener(PKEvent.Listener)}.
+     * @deprecated See {@link #addStateChangeListener(PKEvent.Listener)} for deprecation note.
      */
     @Deprecated
     void removeStateChangeListener(@NonNull PKEvent.Listener listener);
