@@ -89,7 +89,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
 
-    private static final boolean useOkHttp = true;
+    private static final boolean useOkHttp = false;
 
     private static final CookieManager DEFAULT_COOKIE_MANAGER;
 
