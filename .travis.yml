@@ -1,5 +1,5 @@
 language: android
-dist: xenial
+dist: trusty
 sudo: required
 jdk:
   - oraclejdk8
