@@ -13,6 +13,7 @@
 package com.kaltura.playkit.plugins.playback;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.kaltura.playkit.PKRequestParams;
@@ -46,6 +47,7 @@ public class KalturaPlaybackRequestAdapter implements PKRequestParams.Adapter {
         updateParams(player);
     }
 
+    @NonNull
     @Override
     public PKRequestParams adapt(PKRequestParams requestParams) {
         Uri url = requestParams.url;
