@@ -214,12 +214,7 @@ class DefaultProfiler extends Profiler {
         if (Looper.myLooper() == ioHandler.getLooper()) {
             postChunk(string);
         } else {
-            ioHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    postChunk(string);
-                }
-            });
+            ioHandler.post(() -> postChunk(string));
         }
 
         if (devMode && externalFilesDir != null) {
@@ -329,12 +324,7 @@ class DefaultProfiler extends Profiler {
             return;
         }
 
-        ioHandler.postAtFrontOfQueue(new Runnable() {
-            @Override
-            public void run() {
-                logServerInfo(hostName);
-            }
-        });
+        ioHandler.postAtFrontOfQueue(() -> logServerInfo(hostName));
     }
 
     private void logServerInfo(String hostName) {

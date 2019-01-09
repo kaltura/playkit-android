@@ -20,6 +20,7 @@ import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
 
+import java.io.IOException;
 import java.util.List;
 
 
@@ -73,6 +74,12 @@ public interface PlayerEngine {
      * @return - position of the player or {@link Consts#POSITION_UNSET} if position is unknown or player is null
      */
     long getCurrentPosition();
+
+    /**
+     * The program start time, as set by availabilityStartTime in DASH or the EXT-X-PROGRAM-DATE-TIME in HLS.
+     * @return The program start time in milliseconds since the epoch.
+     */
+    long getProgramStartTime();
 
     /**
      * @return - The total duration of current media
@@ -153,6 +160,9 @@ public interface PlayerEngine {
      * @param stateChangedTrigger - the state change listener.
      */
     void setStateChangedListener(StateChangedListener stateChangedTrigger);
+
+
+    void setAnalyticsListener(AnalyticsListener analyticsListener);
 
     /**
      * Release the current player.
@@ -240,5 +250,11 @@ public interface PlayerEngine {
 
     interface StateChangedListener {
         void onStateChanged(PlayerState oldState, PlayerState newState);
+    }
+
+    interface AnalyticsListener {
+        void onDroppedFrames(long droppedVideoFrames, long droppedVideoFramesPeriod, long totalDroppedVideoFrames);
+        void onBytesLoaded(long bytesLoaded, long totalBytesLoaded);
+        void onLoadError(IOException error, boolean wasCanceled);
     }
 }

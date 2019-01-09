@@ -14,18 +14,21 @@ package com.kaltura.playkit;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.Nullable;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Created by Noam Tamim @ Kaltura on 07/11/2016.
- */
 @SuppressWarnings("WeakerAccess")
 public class MessageBus {
+
+    private static final PKLog log = PKLog.get("MessageBus");
+
     private Handler postHandler = new Handler(Looper.getMainLooper());
     private Map<Object, Set<PKEvent.Listener>> listeners;
 
@@ -35,20 +38,31 @@ public class MessageBus {
 
     public void post(final PKEvent event) {
 
-        final Set<PKEvent.Listener> listeners = this.listeners.get(event.eventType());
+        final Set<PKEvent.Listener> listenerSet = new HashSet<>();
+        listenerSet.addAll(safeSet(this.listeners.get(event.eventType())));
+        listenerSet.addAll(safeSet(this.listeners.get(event.getClass())));
 
-        if (listeners != null) {
-            postHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    for (PKEvent.Listener listener : new HashSet<>(listeners)) {
+        if (!listenerSet.isEmpty()) {
+            postHandler.post(() -> {
+                for (PKEvent.Listener listener : listenerSet) {
+                    try {
+                        // If the listener type does not match event type (programming error),
+                        // there will be a ClassCastException. Log it but don't crash.
+                        //noinspection unchecked
                         listener.onEvent(event);
+                    } catch (ClassCastException e) {
+                        log.e("Wrong type of listener " + listener.getClass() + " for event (" + event.eventType() + ")", e);
                     }
                 }
             });
         }
     }
 
+    private static Set<PKEvent.Listener> safeSet(@Nullable Set<PKEvent.Listener> listeners) {
+        return listeners != null ? listeners : Collections.emptySet();
+    }
+
+    @Deprecated
     public void remove(PKEvent.Listener listener, Enum... eventTypes) {
         for (Enum eventType : eventTypes) {
             Set<PKEvent.Listener> listenerSet = listeners.get(eventType);
@@ -58,31 +72,56 @@ public class MessageBus {
         }
     }
 
+    /**
+     * Remove the listener regardless of event type.
+     * @param listener Listener to remove.
+     */
     public void removeListener(PKEvent.Listener listener) {
-        if (listeners.values() != null) {
-            for (Set<PKEvent.Listener> listenerSet : listeners.values()) {
-                Iterator<PKEvent.Listener> iterator = listenerSet.iterator();
-                while (iterator.hasNext()) {
-                    PKEvent.Listener element = iterator.next();
-                    if (element == listener) {
-                        iterator.remove();
-                    }
+        for (Set<PKEvent.Listener> listenerSet : listeners.values()) {
+            Iterator<PKEvent.Listener> iterator = listenerSet.iterator();
+            while (iterator.hasNext()) {
+                PKEvent.Listener element = iterator.next();
+                if (element == listener) {
+                    iterator.remove();
                 }
             }
         }
     }
 
+    /**
+     * Remove all listeners in the collection regardless of event type.
+     * @param listeners Collection of listeners to remove.
+     */
+    public void removeListeners(Collection<PKEvent.Listener> listeners) {
+        for (PKEvent.Listener listener : listeners) {
+            removeListener(listener);
+        }
+    }
+
+    @Deprecated
     public PKEvent.Listener listen(PKEvent.Listener listener, Enum... eventTypes) {
         for (Enum eventType : eventTypes) {
-            Set<PKEvent.Listener> listenerSet = listeners.get(eventType);
-            if (listenerSet == null) {
-                listenerSet = new HashSet<>();
-                listenerSet.add(listener);
-                listeners.put(eventType, listenerSet);
-            } else {
-                listenerSet.add(listener);
-            }
+            addListener(eventType, listener);
         }
         return listener;
+    }
+
+    public void addListener(Enum type, PKEvent.Listener listener) {
+        addListener((Object)type, listener);
+    }
+
+    public <E extends PKEvent> void addListener(Class<E> type, PKEvent.Listener<E> listener) {
+        addListener((Object)type, listener);
+    }
+
+    private void addListener(Object type, PKEvent.Listener listener) {
+        Set<PKEvent.Listener> listenerSet = listeners.get(type);
+        if (listenerSet == null) {
+            listenerSet = new HashSet<>();
+            listenerSet.add(listener);
+            listeners.put(type, listenerSet);
+        } else {
+            listenerSet.add(listener);
+        }
     }
 }

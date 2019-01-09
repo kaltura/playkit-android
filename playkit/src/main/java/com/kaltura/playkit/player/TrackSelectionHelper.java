@@ -802,6 +802,11 @@ class TrackSelectionHelper {
     protected void stop() {
         lastSelectedTrackIds = new String[]{NONE, NONE, NONE};
         requestedChangeTrackIds = new String[]{NONE, NONE, NONE};
+        trackSelectionArray = null;
+        mappedTrackInfo = null;
+        videoTracks.clear();
+        audioTracks.clear();
+        textTracks.clear();
     }
 
     /**

@@ -41,6 +41,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public long getCurrentProgramTime() {
+        return player.getCurrentProgramTime();
+    }
+
+    @Override
     public void seekTo(long position) {
         player.seekTo(position);
     }
@@ -185,4 +190,13 @@ public class PlayerDecoratorBase implements Player {
         player.updateSubtitleStyle(subtitleStyleSettings);
     }
 
+    @Override
+    public <E extends PKEvent> PKEvent.Listener<E> addListener(Class<E> type, PKEvent.Listener<E> listener) {
+        return player.addListener(type, listener);
+    }
+
+    @Override
+    public PKEvent.Listener addListener(Enum type, PKEvent.Listener listener) {
+        return player.addListener(type, listener);
+    }
 }

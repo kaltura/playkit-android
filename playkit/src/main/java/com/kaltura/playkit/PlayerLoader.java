@@ -34,11 +34,9 @@ class LoadedPlugin {
 
     PKPlugin plugin;
     PlayerDecorator decorator;
-
 }
 
 class PlayerLoader extends PlayerDecoratorBase {
-
 
     private static final PKLog log = PKLog.get("PlayerLoader");
 
@@ -60,12 +58,7 @@ class PlayerLoader extends PlayerDecoratorBase {
         // By default, set Kaltura decorator.
         KalturaPlaybackRequestAdapter.install(playerController, context.getPackageName());
 
-        playerController.setEventListener(new PKEvent.Listener() {
-            @Override
-            public void onEvent(PKEvent event) {
-                messageBus.post(event);
-            }
-        });
+        playerController.setEventListener(messageBus::post);
 
         Player player = playerController;
 
@@ -178,21 +171,25 @@ class PlayerLoader extends PlayerDecoratorBase {
         return plugin;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
         return messageBus.listen(listener, events);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
         messageBus.remove(listener, events);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public PKEvent.Listener addStateChangeListener(@NonNull final PKEvent.Listener listener) {
         return messageBus.listen(listener, PlayerEvent.Type.STATE_CHANGED);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void removeStateChangeListener(@NonNull final PKEvent.Listener listener) {
         messageBus.remove(listener, PlayerEvent.Type.STATE_CHANGED);
@@ -201,5 +198,17 @@ class PlayerLoader extends PlayerDecoratorBase {
     @Override
     public void removeListener(@NonNull PKEvent.Listener listener) {
         messageBus.removeListener(listener);
+    }
+
+    @Override
+    public <E extends PKEvent> PKEvent.Listener<E> addListener(Class<E> type, PKEvent.Listener<E> listener) {
+        messageBus.addListener(type, listener);
+        return listener;
+    }
+
+    @Override
+    public PKEvent.Listener addListener(Enum type, PKEvent.Listener listener) {
+        messageBus.addListener(type, listener);
+        return listener;
     }
 }

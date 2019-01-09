@@ -17,8 +17,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.Locale;
 
 public abstract class Profiler {
@@ -91,12 +89,7 @@ public abstract class Profiler {
             handlerThread.start();
             ioHandler = new Handler(handlerThread.getLooper());
 
-            ioHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    downloadConfig(appContext);
-                }
-            });
+            ioHandler.post(() -> downloadConfig(appContext));
 
             DefaultProfiler.initMembers(appContext);
 

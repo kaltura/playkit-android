@@ -12,14 +12,47 @@
 
 package com.kaltura.playkit.plugins.ads;
 
+import android.support.annotation.Nullable;
+
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 
-/**
- * Created by gilad.nadav on 22/11/2016.
- */
-
+@SuppressWarnings("unused")
 public class AdEvent implements PKEvent {
+
+    public static final Class<AdLoadedEvent> loaded = AdLoadedEvent.class;
+    public static final Class<AdStartedEvent> started = AdStartedEvent.class;
+    public static final Class<AdPausedEvent> paused = AdPausedEvent.class;
+    public static final Class<AdResumedEvent> resumed = AdResumedEvent.class;
+    public static final Class<AdSkippedEvent> skipped = AdSkippedEvent.class;
+    public static final Class<AdCuePointsUpdateEvent> cuepointsChanged = AdCuePointsUpdateEvent.class;
+    public static final Class<AdPlayHeadEvent> playHeadChanged = AdPlayHeadEvent.class;
+    public static final Class<AdRequestedEvent> adRequested = AdRequestedEvent.class;
+    public static final Class<AdBufferStart> adBufferStart = AdBufferStart.class;
+    public static final Class<AdBufferEnd> adBufferEnd = AdBufferEnd.class;
+    public static final Class<AdPlaybackInfoUpdated> adPlaybackInfoUpdated = AdPlaybackInfoUpdated.class;
+    public static final Class<AdClickedEvent> adClickedEvent = AdClickedEvent.class;
+    public static final Class<Error> error = Error.class;
+
+    public static final AdEvent.Type adFirstPlay = Type.AD_FIRST_PLAY;
+    public static final AdEvent.Type adDisplayedAfterContentPause = Type.AD_DISPLAYED_AFTER_CONTENT_PAUSE;
+    public static final AdEvent.Type completed = Type.COMPLETED;
+    public static final AdEvent.Type firstQuartile = Type.FIRST_QUARTILE;
+    public static final AdEvent.Type midpoint = Type.MIDPOINT;
+    public static final AdEvent.Type thirdQuartile = Type.THIRD_QUARTILE;
+    public static final AdEvent.Type skippableStateChanged = Type.SKIPPABLE_STATE_CHANGED;
+    public static final AdEvent.Type tapped = Type.TAPPED;
+    public static final AdEvent.Type iconTapped = Type.ICON_TAPPED;
+    public static final AdEvent.Type adBreakReady = Type.AD_BREAK_READY;
+    public static final AdEvent.Type adProgress = Type.AD_PROGRESS;
+    public static final AdEvent.Type adBreakStarted = Type.AD_BREAK_STARTED;
+    public static final AdEvent.Type adBreakEnded = Type.AD_BREAK_ENDED;
+    public static final AdEvent.Type adBreakIgnored = Type.AD_BREAK_IGNORED;
+    public static final AdEvent.Type contentPauseRequested = Type.CONTENT_PAUSE_REQUESTED;
+    public static final AdEvent.Type contentResumeRequested = Type.CONTENT_RESUME_REQUESTED;
+    public static final AdEvent.Type allAdsCompleted = Type.ALL_ADS_COMPLETED;
+    public static final AdEvent.Type adLoadTimeoutTimerStarted = Type.AD_LOAD_TIMEOUT_TIMER_STARTED;
+
 
     public Type type;
 
@@ -107,6 +140,16 @@ public class AdEvent implements PKEvent {
         }
     }
 
+    public static class AdClickedEvent extends AdEvent {
+
+        public final String clickThruUrl;
+
+        public AdClickedEvent(@Nullable String clickThruUrl) {
+            super(Type.CLICKED);
+            this.clickThruUrl = clickThruUrl;
+        }
+    }
+
     public static class AdBufferStart extends AdEvent {
 
         public final long adPosition;
@@ -124,6 +167,20 @@ public class AdEvent implements PKEvent {
         public AdBufferEnd(long adPosition) {
             super(Type.AD_BUFFER_END);
             this.adPosition = adPosition;
+        }
+    }
+
+    public static class AdPlaybackInfoUpdated extends AdEvent {
+
+        public final int width;
+        public final int height;
+        public final int bitrate;
+
+        public AdPlaybackInfoUpdated(int width, int height, int bitrate) {
+            super(Type.AD_PLAYBACK_INFO_UPDATED);
+            this.width = width;
+            this.height = height;
+            this.bitrate = bitrate;
         }
     }
 
@@ -148,7 +205,8 @@ public class AdEvent implements PKEvent {
         FIRST_QUARTILE,
         MIDPOINT,
         THIRD_QUARTILE,
-        SKIPPED(),
+        SKIPPED,
+        SKIPPABLE_STATE_CHANGED,
         CLICKED,
         TAPPED,
         ICON_TAPPED,
@@ -166,6 +224,7 @@ public class AdEvent implements PKEvent {
         AD_LOAD_TIMEOUT_TIMER_STARTED,
         AD_BUFFER_START,
         AD_BUFFER_END,
+        AD_PLAYBACK_INFO_UPDATED,
         ERROR
     }
 
