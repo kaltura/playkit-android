@@ -51,6 +51,7 @@ import com.google.android.exoplayer2.upstream.DataSource.Factory;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
@@ -87,6 +88,8 @@ import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
+
+    private static final boolean useOkHttp = true;
 
     private static final CookieManager DEFAULT_COOKIE_MANAGER;
 
@@ -268,15 +271,26 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private HttpDataSource.Factory httpDataSourceFactory() {
         if (httpDataSourceFactory == null) {
-            // Configure a new okhttp client
-            final OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                    .followSslRedirects(crossProtocolRedirectEnabled)
-                    .protocols(Collections.singletonList(Protocol.HTTP_1_1))    // Avoid http/2 due to https://github.com/google/ExoPlayer/issues/4078
-                    .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-                    .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-                    .build();
 
-            httpDataSourceFactory = new OkHttpDataSourceFactory(okHttpClient, getUserAgent(context));
+            final String userAgent = getUserAgent(context);
+
+            if (useOkHttp) {
+                // Configure a new okhttp client
+                final OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                        .followSslRedirects(crossProtocolRedirectEnabled)
+                        .protocols(Collections.singletonList(Protocol.HTTP_1_1))    // Avoid http/2 due to https://github.com/google/ExoPlayer/issues/4078
+                        .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                        .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                        .build();
+
+                httpDataSourceFactory = new OkHttpDataSourceFactory(okHttpClient, userAgent);
+
+            } else {
+
+                httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent,
+                        DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                        DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
+            }
         }
         return httpDataSourceFactory;
     }
