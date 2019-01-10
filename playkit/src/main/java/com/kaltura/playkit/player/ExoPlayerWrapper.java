@@ -161,9 +161,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
             CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
         }
-
-        httpDataSourceFactory = httpDataSourceFactory(context, this.playerSettings.crossProtocolRedirectEnabled());
-        dataSourceFactory = new DefaultDataSourceFactory(context, httpDataSourceFactory);
     }
 
     @Override
@@ -174,7 +171,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private void initializePlayer() {
         DefaultTrackSelector trackSelector = initializeTrackSelector();
 
-        final DrmCallback drmCallback = new DrmCallback(httpDataSourceFactory, playerSettings.getLicenseRequestAdapter());
+        final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(), playerSettings.getLicenseRequestAdapter());
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener);
 
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
@@ -259,6 +256,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         Uri uri = sourceConfig.getUrl();
 
+        final DataSource.Factory dataSourceFactory = getDataSourceFactory();
+
         switch (format) {
             case dash:
                 return new DashMediaSource.Factory(
@@ -279,27 +278,39 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 
-    private static HttpDataSource.Factory httpDataSourceFactory(Context context, boolean crossProtocolRedirectEnabled) {
+    private HttpDataSource.Factory getHttpDataSourceFactory() {
 
-        final String userAgent = getUserAgent(context);
+        if (httpDataSourceFactory == null) {
+            final String userAgent = getUserAgent(context);
 
-        if (useOkHttp) {
-            // Configure a new okhttp client
-            final OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                    .followSslRedirects(crossProtocolRedirectEnabled)
-                    .protocols(Collections.singletonList(Protocol.HTTP_1_1))    // Avoid http/2 due to https://github.com/google/ExoPlayer/issues/4078
-                    .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-                    .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-                    .build();
+            final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
+            if (useOkHttp) {
+                // Configure a new okhttp client
+                final OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                        .followSslRedirects(crossProtocolRedirectEnabled)
+                        .protocols(Collections.singletonList(Protocol.HTTP_1_1))    // Avoid http/2 due to https://github.com/google/ExoPlayer/issues/4078
+                        .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                        .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                        .build();
 
-            return new OkHttpDataSourceFactory(okHttpClient, userAgent);
+                httpDataSourceFactory = new OkHttpDataSourceFactory(okHttpClient, userAgent);
 
-        } else {
+            } else {
 
-            return new DefaultHttpDataSourceFactory(userAgent,
-                    DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                    DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
+                httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent,
+                        DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                        DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
+            }
         }
+
+        return httpDataSourceFactory;
+    }
+
+    private DataSource.Factory getDataSourceFactory() {
+        if (dataSourceFactory == null) {
+            dataSourceFactory = new DefaultDataSourceFactory(context, getHttpDataSourceFactory());
+        }
+        return dataSourceFactory;
     }
 
     private static String getUserAgent(Context context) {
