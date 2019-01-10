@@ -13,22 +13,24 @@
 package com.kaltura.playkit;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class PKRequestParams {
 
     public final Uri url;
-    public final Map<String, String> headers;
+    @NonNull public final Map<String, String> headers;
 
     public PKRequestParams(Uri url, Map<String, String> headers) {
         this.url = url;
-        this.headers = headers;
+        this.headers = headers != null ? headers : new HashMap<>();
     }
 
     /**
-     * PKRequestParams.Adapter allows adapting the request parameters before sending the request
-     * to the server.
+     * PKRequestParams.Adapter allows adapting (changing) the request parameters before sending the
+     * request to the server.
      */
     public interface Adapter {
         /**
@@ -39,7 +41,7 @@ public class PKRequestParams {
          * @param requestParams Request parameters, as will be sent to the server.
          * @return The input object, or an adapted one.
          */
-        PKRequestParams adapt(PKRequestParams requestParams);
+        @NonNull PKRequestParams adapt(PKRequestParams requestParams);
 
         void updateParams(Player player);
 
