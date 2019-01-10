@@ -162,7 +162,7 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     public void onAdLoadingFinished() {
         log.d("onAdLoadingFinished pkPrepareReason");
         if (mediaSourceConfig == null) {
-            log.e("AdWrapper onAdLoadingFinished mediaSourceConfig == null");
+            log.d("AdWrapper onAdLoadingFinished mediaSourceConfig == null");
             return;
         }
         load(mediaSourceConfig);
