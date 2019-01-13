@@ -426,7 +426,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         shouldResetPlayerPosition = (reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC);
     }
 
-
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
