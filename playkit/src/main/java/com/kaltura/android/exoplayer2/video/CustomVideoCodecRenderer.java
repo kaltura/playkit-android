@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.android.kexoplayer2.video;
+package com.kaltura.android.exoplayer2.video;
 
 
 import android.annotation.SuppressLint;
@@ -51,6 +51,11 @@ import com.google.android.kexoplayer2.util.Log;
 import com.google.android.kexoplayer2.util.MimeTypes;
 import com.google.android.kexoplayer2.util.TraceUtil;
 import com.google.android.kexoplayer2.util.Util;
+import com.google.android.kexoplayer2.video.DummySurface;
+import com.google.android.kexoplayer2.video.MediaCodecVideoRenderer;
+import com.google.android.kexoplayer2.video.VideoFrameMetadataListener;
+import com.google.android.kexoplayer2.video.VideoFrameReleaseTimeHelper;
+import com.google.android.kexoplayer2.video.VideoRendererEventListener;
 import com.google.android.kexoplayer2.video.VideoRendererEventListener.EventDispatcher;
 import com.kaltura.playkit.player.DummySurfaceWorkaroundTest;
 
@@ -141,7 +146,8 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
     private long lastInputTimeUs;
     private long outputStreamOffsetUs;
     private int pendingOutputStreamOffsetCount;
-    private @Nullable VideoFrameMetadataListener frameMetadataListener;
+    private @Nullable
+    VideoFrameMetadataListener frameMetadataListener;
 
     /**
      * @param context A context.

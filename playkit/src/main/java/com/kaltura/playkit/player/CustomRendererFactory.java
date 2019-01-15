@@ -9,7 +9,7 @@ import com.google.android.kexoplayer2.Renderer;
 import com.google.android.kexoplayer2.drm.DrmSessionManager;
 import com.google.android.kexoplayer2.drm.FrameworkMediaCrypto;
 import com.google.android.kexoplayer2.mediacodec.MediaCodecSelector;
-import com.google.android.kexoplayer2.video.CustomVideoCodecRenderer;
+import com.kaltura.android.exoplayer2.video.CustomVideoCodecRenderer;
 import com.google.android.kexoplayer2.video.VideoRendererEventListener;
 
 import java.util.ArrayList;
