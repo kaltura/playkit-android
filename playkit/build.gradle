@@ -38,10 +38,10 @@ dependencies {
 
     api 'com.google.code.gson:gson:2.8.2'
     // ExoPlayer
-    api 'com.kaltura.exoplayer:exoplayer-hls:2.9.1'
-    api 'com.kaltura.exoplayer:exoplayer-ui:2.9.1'
-    api 'com.kaltura.exoplayer:exoplayer-dash:2.9.1'
-    api 'com.kaltura.exoplayer:exoplayer-core:2.9.1'
+    api 'com.kaltura.exoplayer:exoplayer-hls:62f9a761658cbb20162ed65185fe6b66f20d28c6'
+    api 'com.kaltura.exoplayer:exoplayer-ui:62f9a761658cbb20162ed65185fe6b66f20d28c6'
+    api 'com.kaltura.exoplayer:exoplayer-dash:62f9a761658cbb20162ed65185fe6b66f20d28c6'
+    api 'com.kaltura.exoplayer:exoplayer-core:62f9a761658cbb20162ed65185fe6b66f20d28c6'
 
     //api 'com.kaltura.exoplayer:exoplayer:2.9.1'
 
