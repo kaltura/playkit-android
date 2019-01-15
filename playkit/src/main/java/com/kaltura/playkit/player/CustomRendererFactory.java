@@ -4,13 +4,13 @@ import android.content.Context;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 
-import com.google.android.kexoplayer2.DefaultRenderersFactory;
-import com.google.android.kexoplayer2.Renderer;
-import com.google.android.kexoplayer2.drm.DrmSessionManager;
-import com.google.android.kexoplayer2.drm.FrameworkMediaCrypto;
-import com.google.android.kexoplayer2.mediacodec.MediaCodecSelector;
+import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
+import com.kaltura.android.exoplayer2.Renderer;
+import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
+import com.kaltura.android.exoplayer2.drm.FrameworkMediaCrypto;
+import com.kaltura.android.exoplayer2.mediacodec.MediaCodecSelector;
 import com.kaltura.android.exoplayer2.video.CustomVideoCodecRenderer;
-import com.google.android.kexoplayer2.video.VideoRendererEventListener;
+import com.kaltura.android.exoplayer2.video.VideoRendererEventListener;
 
 import java.util.ArrayList;
 

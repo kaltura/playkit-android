@@ -3,8 +3,8 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 import android.util.AttributeSet;
 
-import com.google.android.kexoplayer2.SimpleExoPlayer;
-import com.google.android.kexoplayer2.ui.SubtitleView;
+import com.kaltura.android.exoplayer2.SimpleExoPlayer;
+import com.kaltura.android.exoplayer2.ui.SubtitleView;
 
 /**
  * Created by anton.afanasiev on 22/04/2018.
