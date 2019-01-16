@@ -19,6 +19,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Locale;
 
+import okhttp3.OkHttpClient;
+
 public abstract class Profiler {
 
     private static final float DEFAULT_SEND_PERCENTAGE = 100; // Start disabled
@@ -71,6 +73,9 @@ public abstract class Profiler {
 
         @Override
         void onDurationChanged(long duration) {}
+
+        @Override
+        void startNetworkListener(OkHttpClient.Builder builder) {}
     };
 
     public static void init(Context context) {
@@ -227,4 +232,6 @@ public abstract class Profiler {
     abstract void onSessionFinished();
 
     abstract void onDurationChanged(long duration);
+
+    abstract void startNetworkListener(OkHttpClient.Builder builder);
 }

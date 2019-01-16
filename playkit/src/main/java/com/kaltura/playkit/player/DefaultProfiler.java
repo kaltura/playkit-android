@@ -28,6 +28,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import okhttp3.OkHttpClient;
+
 class ConfigFile {
     String putLogURL;
     float sendPercentage;
@@ -37,7 +39,7 @@ class DefaultProfiler extends Profiler {
 
     static final String SEPARATOR = "\t";
     private static final boolean devMode = true;
-    private static final int SEND_INTERVAL_SEC = devMode ? 30 : 300;   // Report every 5 minutes
+    private static final int SEND_INTERVAL_SEC = devMode ? 10 : 300;   // Report every 5 minutes
 
     private static String currentExperiment;
     private static DisplayMetrics metrics;
@@ -221,7 +223,7 @@ class DefaultProfiler extends Profiler {
             // Write to disk
             BufferedWriter writer = null;
             try {
-                writer = new BufferedWriter(new FileWriter(new File(externalFilesDir, sessionId.replace(':', '_') + ".txt"), true));
+                writer = new BufferedWriter(new FileWriter(new File(externalFilesDir, sessionId.replace(':', '_') + ".prof.log"), true));
                 writer.append(string);
                 writer.newLine();
                 writer.flush();
@@ -254,7 +256,7 @@ class DefaultProfiler extends Profiler {
         DefaultProfiler.currentExperiment = currentExperiment;
     }
 
-    private void log(String event, String... strings) {
+    void log(String event, String... strings) {
         StringBuilder sb = startLog(event);
         logPayload(sb, strings);
         endLog(sb);
@@ -395,4 +397,11 @@ class DefaultProfiler extends Profiler {
     void onDurationChanged(long duration) {
         log("DurationChanged", timeField("duration", duration));
     }
+
+    @Override
+    void startNetworkListener(OkHttpClient.Builder builder) {
+//        builder.eventListener(new OkHttpListener(this));
+        builder.eventListenerFactory(call -> new OkHttpListener(this, call));
+    }
+
 }

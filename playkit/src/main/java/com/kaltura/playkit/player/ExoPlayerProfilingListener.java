@@ -40,6 +40,9 @@ import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_INTERNAL
 import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_PERIOD_TRANSITION;
 import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK;
 import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT;
+import static com.kaltura.playkit.player.Profiler.field;
+import static com.kaltura.playkit.player.Profiler.pkLog;
+import static com.kaltura.playkit.player.Profiler.timeField;
 
 class ExoPlayerProfilingListener implements AnalyticsListener {
 
@@ -115,7 +118,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             default: return;
         }
 
-        log("PlayerStateChanged", Profiler.field("state", state), Profiler.field("shouldPlay", playWhenReady));
+        log("PlayerStateChanged", field("state", state), field("shouldPlay", playWhenReady));
     }
 
     @Override
@@ -146,7 +149,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
                 reasonString = "Unknown:" + reason;
         }
 
-        log("PositionDiscontinuity", Profiler.field("reason", reasonString));
+        log("PositionDiscontinuity", field("reason", reasonString));
     }
 
     @Override
@@ -161,7 +164,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onPlaybackParametersChanged(EventTime eventTime, PlaybackParameters playbackParameters) {
-        log("PlaybackParametersChanged", Profiler.field("speed", playbackParameters.speed), Profiler.field("pitch", playbackParameters.pitch));
+        log("PlaybackParametersChanged", field("speed", playbackParameters.speed), field("pitch", playbackParameters.pitch));
     }
 
     @Override
@@ -181,17 +184,17 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
                 strMode = "Unknown(" + repeatMode + ")";
                 break;
         }
-        log("RepeatModeChanged", Profiler.field("repeatMode", strMode));
+        log("RepeatModeChanged", field("repeatMode", strMode));
     }
 
     @Override
     public void onShuffleModeChanged(EventTime eventTime, boolean shuffleModeEnabled) {
-        log("ShuffleModeChanged", Profiler.field("shuffleModeEnabled", shuffleModeEnabled));
+        log("ShuffleModeChanged", field("shuffleModeEnabled", shuffleModeEnabled));
     }
 
     @Override
     public void onLoadingChanged(EventTime eventTime, boolean isLoading) {
-        log("LoadingChanged", Profiler.field("isLoading", isLoading));
+        log("LoadingChanged", field("isLoading", isLoading));
     }
 
     @Override
@@ -209,7 +212,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
                 break;
         }
 
-        log("PlayerError", Profiler.field("type", type), "cause={" + error.getCause() + "}");
+        log("PlayerError", field("type", type), "cause={" + error.getCause() + "}");
     }
 
     @Override
@@ -247,8 +250,8 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         }
 
         log("TracksChanged",
-                Profiler.field("available", jTrackGroups.toString()),
-                Profiler.field("selected", jTrackSelections.toString()));
+                field("available", jTrackGroups.toString()),
+                field("selected", jTrackSelections.toString()));
     }
 
     private JsonObject toJSON(@Nullable Format format) {
@@ -278,13 +281,17 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             return;
         }
 
+        if (loadEventInfo.dataSpec.uri.getPath().contains("widevine")) {
+            pkLog.d(loadEventInfo.dataSpec.uri.toString());
+        }
+
         log(event,
-                Profiler.timeField("time", loadEventInfo.elapsedRealtimeMs - profiler.startTime), Profiler.field("uri", loadEventInfo.dataSpec.uri.toString()),
-                Profiler.field("dataType", dataTypeString), Profiler.field("trackType", trackTypeString),
-                trackFormatString(mediaLoadData.trackFormat), Profiler.field("reason", trackSelectionReasonString(mediaLoadData.trackSelectionReason)),
-                Profiler.timeField("rangeStart", mediaLoadData.mediaStartTimeMs), Profiler.timeField("rangeEnd", mediaLoadData.mediaEndTimeMs),
-                Profiler.timeField("loadTime", loadEventInfo.loadDurationMs), Profiler.field("bytes", loadEventInfo.bytesLoaded),
-                Profiler.field("error", error != null ? "{" + error.getMessage() + "}" : null), wasCanceled == null ? null : Profiler.field("canceled", wasCanceled));
+                timeField("time", loadEventInfo.elapsedRealtimeMs - profiler.startTime), field("uri", loadEventInfo.dataSpec.uri.toString()),
+                field("dataType", dataTypeString), field("trackType", trackTypeString),
+                trackFormatString(mediaLoadData.trackFormat), field("reason", trackSelectionReasonString(mediaLoadData.trackSelectionReason)),
+                timeField("rangeStart", mediaLoadData.mediaStartTimeMs), timeField("rangeEnd", mediaLoadData.mediaEndTimeMs),
+                timeField("loadTime", loadEventInfo.loadDurationMs), field("bytes", loadEventInfo.bytesLoaded),
+                field("error", error != null ? "{" + error.getMessage() + "}" : null), wasCanceled == null ? null : field("canceled", wasCanceled));
     }
 
     @Override
@@ -315,7 +322,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             return;
         }
 
-        log("DownstreamFormatChanged", Profiler.field("trackType", trackTypeString), trackFormatString(mediaLoadData.trackFormat), Profiler.field("reason", trackSelectionReasonString(mediaLoadData.trackSelectionReason)));
+        log("DownstreamFormatChanged", field("trackType", trackTypeString), trackFormatString(mediaLoadData.trackFormat), field("reason", trackSelectionReasonString(mediaLoadData.trackSelectionReason)));
     }
 
     @Override
@@ -324,7 +331,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         if (trackTypeString == null) {
             return;
         }
-        log("UpstreamDiscarded", Profiler.field("trackType", trackTypeString), Profiler.field("start", mediaLoadData.mediaStartTimeMs / 1000f), Profiler.field("end", mediaLoadData.mediaEndTimeMs / 1000f));
+        log("UpstreamDiscarded", field("trackType", trackTypeString), field("start", mediaLoadData.mediaStartTimeMs / 1000f), field("end", mediaLoadData.mediaEndTimeMs / 1000f));
     }
 
     @Override
@@ -345,9 +352,9 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     @Override
     public void onBandwidthEstimate(EventTime eventTime, int totalLoadTimeMs, long totalBytesLoaded, long bitrateEstimate) {
         log("BandwidthSample",
-                Profiler.field("bandwidth", bitrateEstimate),
-                Profiler.timeField("totalLoadTime", totalLoadTimeMs),
-                Profiler.field("totalBytesLoaded", totalBytesLoaded)
+                field("bandwidth", bitrateEstimate),
+                timeField("totalLoadTime", totalLoadTimeMs),
+                field("totalBytesLoaded", totalBytesLoaded)
         );
     }
 
@@ -363,12 +370,12 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onDecoderInitialized(EventTime eventTime, int trackType, String decoderName, long initializationDurationMs) {
-        log("DecoderInitialized", Profiler.field("name", decoderName), Profiler.field("duration", initializationDurationMs / 1000f));
+        log("DecoderInitialized", field("name", decoderName), field("duration", initializationDurationMs / 1000f));
     }
 
     @Override
     public void onDecoderInputFormatChanged(EventTime eventTime, int trackType, Format format) {
-        log("DecoderInputFormatChanged", Profiler.field("id", format.id), Profiler.field("codecs", format.codecs), Profiler.field("bitrate", format.bitrate));
+        log("DecoderInputFormatChanged", field("id", format.id), field("codecs", format.codecs), field("bitrate", format.bitrate));
     }
 
     @Override
@@ -388,17 +395,37 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onDroppedVideoFrames(EventTime eventTime, int droppedFrames, long elapsedMs) {
-        log("DroppedFrames", Profiler.field("count", droppedFrames), Profiler.field("time", elapsedMs / 1000f));
+        log("DroppedFrames", field("count", droppedFrames), field("time", elapsedMs / 1000f));
     }
 
     @Override
     public void onVideoSizeChanged(EventTime eventTime, int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
-        log("VideoSizeChanged", Profiler.field("width", width), Profiler.field("height", height));
+        log("VideoSizeChanged", field("width", width), field("height", height));
     }
 
     @Override
     public void onRenderedFirstFrame(EventTime eventTime, Surface surface) {
         log("RenderedFirstFrame");
+    }
+
+    @Override
+    public void onSurfaceSizeChanged(EventTime eventTime, int width, int height) {
+        log("ViewportSizeChange", field("width", width), field("height", height));
+    }
+
+    @Override
+    public void onVolumeChanged(EventTime eventTime, float volume) {
+        log("VolumeChanged", field("volume", volume));
+    }
+
+    @Override
+    public void onDrmSessionAcquired(EventTime eventTime) {
+        log("DrmSessionAcquired");
+    }
+
+    @Override
+    public void onDrmSessionReleased(EventTime eventTime) {
+        log("DrmSessionReleased");
     }
 
     @Override
@@ -419,25 +446,5 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     @Override
     public void onDrmKeysRemoved(EventTime eventTime) {
 
-    }
-
-    @Override
-    public void onSurfaceSizeChanged(EventTime eventTime, int width, int height) {
-        log("ViewportSizeChange", Profiler.field("width", width), Profiler.field("height", height));
-    }
-
-    @Override
-    public void onVolumeChanged(EventTime eventTime, float volume) {
-        log("VolumeChanged", Profiler.field("volume", volume));
-    }
-
-    @Override
-    public void onDrmSessionAcquired(EventTime eventTime) {
-        log("DrmSessionAcquired");
-    }
-
-    @Override
-    public void onDrmSessionReleased(EventTime eventTime) {
-        log("DrmSessionReleased");
     }
 }

@@ -88,7 +88,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
 
-    private static final boolean useOkHttp = false;
+    private static final boolean useOkHttp = true;
 
     private static final CookieManager DEFAULT_COOKIE_MANAGER;
 
@@ -284,14 +284,20 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             final String userAgent = getUserAgent(context);
 
             final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
+
             if (useOkHttp) {
-                // Configure a new okhttp client
-                final OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                // Configure a new client
+                final OkHttpClient.Builder builder = new OkHttpClient.Builder()
                         .followSslRedirects(crossProtocolRedirectEnabled)
                         .protocols(Collections.singletonList(Protocol.HTTP_1_1))    // Avoid http/2 due to https://github.com/google/ExoPlayer/issues/4078
                         .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-                        .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-                        .build();
+                        .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+
+                if (profiler != null) {
+                    profiler.startNetworkListener(builder);
+                }
+
+                final OkHttpClient okHttpClient = builder.build();
 
                 httpDataSourceFactory = new OkHttpDataSourceFactory(okHttpClient, userAgent);
 
