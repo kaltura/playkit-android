@@ -311,10 +311,22 @@ class DefaultProfiler extends Profiler {
 
         final Uri sourceUrl = sourceConfig.getUrl();
 
+        final PlayerSettings playerSettings = sourceConfig.playerSettings;
+
+        final LoadControlBuffers loadControl = playerSettings.getLoadControlBuffers();
+        if (loadControl != null) {
+            log("PlayerLoadControl",
+                    field("minBufferLenMs", loadControl.getMinPlayerBufferMs()),
+                    field("maxBufferLenMs", loadControl.getMaxPlayerBufferMs()),
+                    field("minRebufferLenMs", loadControl.getMinBufferAfterReBufferMs()),
+                    field("minSeekBufferLenMs", loadControl.getMinBufferAfterInteractionMs())
+            );
+        }
+
         log("PrepareStarted",
                 field("engine", playerEngine.getClass().getSimpleName()),
                 field("source", sourceUrl.toString()),
-                field("useTextureView", sourceConfig.playerSettings.useTextureView()));
+                field("useTextureView", playerSettings.useTextureView()));
 
 
         maybeLogServerInfo(sourceUrl);
