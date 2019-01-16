@@ -1,5 +1,6 @@
 package com.kaltura.playkit.player;
 
+import android.os.Build;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
@@ -57,7 +58,7 @@ class OkHttpListener extends EventListener {
     }
 
     private void log(String event, String... strings) {
-        profiler.log(event, field("id", id), timeField("callTime", relTime()), TextUtils.join("\t", strings));
+        profiler.log("net_" + event, field("id", id), timeField("callTime", relTime()), TextUtils.join("\t", strings));
     }
 
     private long relTime() {
@@ -92,10 +93,26 @@ class OkHttpListener extends EventListener {
     @Override
     public void connectStart(Call call, InetSocketAddress inetSocketAddress, Proxy proxy) {
         log("connectStart",
-                field("hostName", hostName),
+                field("hostName", host(inetSocketAddress)),
                 field("hostIp", inetSocketAddress.getAddress().getHostAddress()),
                 field("port", inetSocketAddress.getPort()),
                 field("proxy", String.valueOf(proxy)));
+    }
+
+    private static String host(InetSocketAddress inetSocketAddress) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            return inetSocketAddress.getHostString();
+        } else {
+            return inetSocketAddress.getHostName();
+        }
+    }
+
+    private static String host(Call call) {
+        try {
+            return call.request().url().host();
+        } catch (NullPointerException e) {
+            return null;
+        }
     }
 
     @Override
