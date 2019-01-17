@@ -378,7 +378,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 if (playWhenReady) {
                     sendDistinctEvent(PlayerEvent.Type.PLAYING);
                 }
-
                 break;
             case Player.STATE_ENDED:
                 log.d("onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
