@@ -21,6 +21,7 @@ import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Collection;
+import java.util.List;
 
 @SuppressWarnings("unused")
 public interface Player {
@@ -271,6 +272,16 @@ public interface Player {
      * @param uniqueId - the unique id of the new track that will play instead of the old one.
      */
     void changeTrack(String uniqueId);
+
+    /**
+     * Change current track, with specified uniqueIds for MBR.
+     * If uniqueId is not valid or null, this will throw {@link IllegalArgumentException}.
+     * Example of the valid uniqueId for regular video track: Video:0,0,1.
+     * Example of the valid uniqueId for adaptive video track: Video:0,0,adaptive.
+     *
+     * @param uniqueIds - the unique id of the new track that will play instead of the old one.
+     */
+    void changeTrackMBRSubset(List<String> uniqueIds);
 
     /**
      * Seek player to the specified position.

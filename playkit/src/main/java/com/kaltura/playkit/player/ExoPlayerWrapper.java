@@ -692,6 +692,15 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 
+    @Override
+    public void changeTrackMBRSubset(List<String> uniqueIds) {
+        if (trackSelectionHelper == null) {
+            log.w("Attempt to invoke 'changeTrack()' on null instance of the TracksSelectionHelper");
+            return;
+        }
+        trackSelectionHelper.changeTrackMBRSubset(uniqueIds);
+    }
+
     private void sendTrackSelectionError(String uniqueId, IllegalArgumentException invalidUniqueIdException) {
         String errorStr = "Track Selection failed uniqueId = " + uniqueId;
         log.e(errorStr);

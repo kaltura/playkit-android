@@ -75,6 +75,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public void changeTrackMBRSubset(List<String> uniqueIds){
+        playerEngine.changeTrackMBRSubset(uniqueIds);
+    }
+
+    @Override
     public void seekTo(long position) {
         playerEngine.seekTo(position);
     }

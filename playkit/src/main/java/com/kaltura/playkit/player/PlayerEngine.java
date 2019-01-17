@@ -115,6 +115,13 @@ public interface PlayerEngine {
     void changeTrack(String uniqueId);
 
     /**
+     * changeTrackMBRSubset.
+     *
+     * @param uniqueIds - List<String> uniqueIds in MBR.
+     */
+    void changeTrackMBRSubset(List<String> uniqueIds);
+
+    /**
      * Seek player to the specified position.
      *
      * @param position - desired position.

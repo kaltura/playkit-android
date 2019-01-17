@@ -293,6 +293,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
+    public void changeTrackMBRSubset(List uniqueIds) {
+        // Do Nothing
+    }
+
+    @Override
     public void seekTo(long position) {
         log.d("seekTo " + position);
         if (player == null || !PREPARED.equals(prepareState)) {
