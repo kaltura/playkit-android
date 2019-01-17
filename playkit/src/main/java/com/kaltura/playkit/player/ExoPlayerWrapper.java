@@ -389,7 +389,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             default:
                 break;
         }
-
     }
 
     private void pausePlayerAfterEndedEvent() {
