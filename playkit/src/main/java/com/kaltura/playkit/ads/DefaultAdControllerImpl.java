@@ -49,7 +49,7 @@ public class DefaultAdControllerImpl implements AdController {
     }
 
     @Override
-    public long getCurrentPosition() {
+    public long getAdCurrentPosition() {
         if (adsProvider != null && isAdDisplayed()) {
             return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
         }
@@ -57,7 +57,7 @@ public class DefaultAdControllerImpl implements AdController {
     }
 
     @Override
-    public long getDuration() {
+    public long getAdDuration() {
         if (adsProvider != null && isAdDisplayed()) {
             return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
         }

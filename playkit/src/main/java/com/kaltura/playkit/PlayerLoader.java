@@ -94,12 +94,16 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     @Override
     public void updatePluginConfig(@NonNull final String pluginName, @Nullable final Object pluginConfig) {
-        messageBus.post(() -> {
-            LoadedPlugin loadedPlugin = loadedPlugins.get(pluginName);
-            if (loadedPlugin != null) {
-                loadedPlugin.plugin.onUpdateConfig(pluginConfig);
-            }
-        });
+        LoadedPlugin loadedPlugin = loadedPlugins.get(pluginName);
+        if (loadedPlugin != null) {
+            loadedPlugin.plugin.onUpdateConfig(pluginConfig);
+        }
+//        messageBus.post(() -> {
+//            LoadedPlugin loadedPlugin = loadedPlugins.get(pluginName);
+//            if (loadedPlugin != null) {
+//                loadedPlugin.plugin.onUpdateConfig(pluginConfig);
+//            }
+//        });
     }
 
     @Override
@@ -219,14 +223,17 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     @Override
-    public <E extends PKEvent> PKEvent.Listener<E> addListener(Class<E> type, PKEvent.Listener<E> listener) {
-        messageBus.addListener(type, listener);
-        return listener;
+    public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
+        messageBus.addListener(groupId, type, listener);
     }
 
     @Override
-    public PKEvent.Listener addListener(Enum type, PKEvent.Listener listener) {
-        messageBus.addListener(type, listener);
-        return listener;
+    public void addListener(Object groupId, Enum type, PKEvent.Listener listener) {
+        messageBus.addListener(groupId, type, listener);
+    }
+
+    @Override
+    public void removeListeners(@NonNull Object groupId) {
+        messageBus.removeListeners(groupId);
     }
 }

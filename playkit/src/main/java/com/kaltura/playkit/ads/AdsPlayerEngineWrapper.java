@@ -44,10 +44,10 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
         this.mediaSourceConfig = mediaSourceConfig;
         if (adsProvider != null) {
             if (adsProvider.isAdRequested()) {
-                log.d("IMA calling super.prepare");
+                log.d("AdWrapper calling super.prepare");
                 super.load(mediaSourceConfig);
             } else {
-                log.d("IMA setAdProviderListener");
+                log.d("AdWrapper setAdProviderListener");
                 adsProvider.setAdProviderListener(this);
             }
         }
@@ -55,10 +55,10 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
 
     @Override
     public void play() {
-        log.d("PLAY IMA decorator");
+        log.d("AdWrapper PLAY");
         if (adsProvider != null) {
             if (!adsProvider.isAdError()) {
-                log.d("PLAY IMA decorator isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted = " + adsProvider.isAllAdsCompleted());
+                log.d("AdWrapper PLAY isAdDisplayed = " + adsProvider.isAdDisplayed() + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted = " + adsProvider.isAllAdsCompleted());
                 if (!adsProvider.isAllAdsCompleted()) {
                     if (!adsProvider.isAdRequested()) {
                         adsProvider.start();
@@ -74,7 +74,7 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
             }
         }
 
-        log.d("IMA decorator Calling player play");
+        log.d("AdWrapper decorator Calling player play");
         getView().showVideoSurface();
         super.play();
 
@@ -83,29 +83,20 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     @Override
     public void pause() {
         boolean isAdDisplayed = adsProvider.isAdDisplayed();
-        log.d("PAUSE IMA decorator isAdDisplayed = " + isAdDisplayed + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
+        log.d("AdWrapper PAUSE decorator isAdDisplayed = " + isAdDisplayed + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
         if (isAdDisplayed && !adsProvider.isAdError()) {
             adsProvider.pause();
             return;
         }
 
         if (super.isPlaying()) {
-            log.d("IMA decorator Calling content player pause");
+            log.d("AdWrapper decorator Calling content player pause");
             super.pause();
         }
     }
 
     @Override
     public long getCurrentPosition() {
-//        long currpos;
-//        if (adsProvider.isAdDisplayed()) {
-//            currpos = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
-//            //log.d("IMA -> getCurrentPosition = " + currpos);
-//        } else {
-//            currpos = super.getCurrentPosition();
-//            //log.d("PLAYER -> getCurrentPosition = " + currpos);
-//        }
-//        return currpos;
         return super.getCurrentPosition();
     }
 
@@ -116,30 +107,18 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
 
     @Override
     public long getDuration() {
-//        long playbackDuration;
-//        if (adsProvider.isAdDisplayed()) {
-//            playbackDuration = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
-//            //log.d("IMA -> getDuration = " + playbackDuration);
-//        } else {
-//            playbackDuration = super.getDuration();
-//            //log.d("PLAYER -> getDuration = " + playbackDuration);
-//        }
-//        return playbackDuration;
         return super.getDuration();
     }
 
     @Override
     public void seekTo(long position) {
-//        if (adsProvider.isAdDisplayed()) {
-//            log.d("seekTo is not enabled during AD playback");
-//            return;
-//        }
+        log.d("AdWrapper seekTo");
         super.seekTo(position);
     }
 
     @Override
     public boolean isPlaying() {
-        log.d("AdEnabled isPlaying");
+        log.d("AdWrapper isPlaying");
         if (adsProvider != null && adsProvider.isAdDisplayed()) {
             return !adsProvider.isAdPaused();
         }
@@ -153,7 +132,7 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
 
     @Override
     public void stop() {
-        log.d("AdEnabled IMA stop");
+        log.d("AdWrapper stop");
         if (adsProvider != null) {
             adsProvider.setAdRequested(false);
             adsProvider.destroyAdsManager();
@@ -183,7 +162,7 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     public void onAdLoadingFinished() {
         log.d("onAdLoadingFinished pkPrepareReason");
         if (mediaSourceConfig == null) {
-            log.e("IMA onAdLoadingFinished mediaSourceConfig == null");
+            log.d("AdWrapper onAdLoadingFinished mediaSourceConfig == null");
             return;
         }
         load(mediaSourceConfig);
