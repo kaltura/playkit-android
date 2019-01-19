@@ -58,7 +58,7 @@ public class DefaultAdControllerImpl implements AdController {
 
     @Override
     public long getAdDuration() {
-        if (adsProvider != null && isAdDisplayed()) {
+        if (adsProvider != null && adsProvider.getDuration() != Consts.TIME_UNSET && isAdDisplayed()) {
             return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
         }
         return Consts.TIME_UNSET;
