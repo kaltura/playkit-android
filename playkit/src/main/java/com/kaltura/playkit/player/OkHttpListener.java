@@ -4,6 +4,8 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
+import com.kaltura.playkit.PKLog;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -24,14 +26,16 @@ import okhttp3.TlsVersion;
 
 import static com.kaltura.playkit.player.Profiler.field;
 import static com.kaltura.playkit.player.Profiler.nullable;
+import static com.kaltura.playkit.player.Profiler.pkLog;
 import static com.kaltura.playkit.player.Profiler.timeField;
 
 class OkHttpListener extends EventListener {
 
+    private static final PKLog log = PKLog.get("OkHttpListener");
+
     private static AtomicLong nextId = new AtomicLong(1);
 
     private final DefaultProfiler profiler;
-    private final String referer;
     private final String url;
     private final String hostName;
     private final long startTime = SystemClock.elapsedRealtime();
@@ -41,7 +45,6 @@ class OkHttpListener extends EventListener {
         profiler = defaultProfiler;
         final Request request = call.request();
         if (request != null) {
-            referer = request.header("referer");
             HttpUrl httpUrl = request.url();
             if (httpUrl != null) {
                 hostName = httpUrl.host();
@@ -51,7 +54,6 @@ class OkHttpListener extends EventListener {
                 url = null;
             }
         } else {
-            referer = null;
             url = null;
             hostName = null;
         }
@@ -67,9 +69,10 @@ class OkHttpListener extends EventListener {
 
     @Override
     public void callStart(Call call) {
+        log.d("callStart " + id);
         log("callStart",
                 field("url", url), field("hostName", hostName),
-                nullable("referer", referer), field("method", call.request().method()));
+                field("method", call.request().method()));
     }
 
     @Override
