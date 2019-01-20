@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+curl https://kaltura.github.io/fe-tools/android/license.sh | sh
+
 ##############################################################################
 ##
 ##  Gradle start up script for UN*X
