@@ -44,6 +44,10 @@ public abstract class PKPlugin {
 
     protected abstract void onDestroy();
 
+    protected PlayerEngineWrapper getPlayerEngineWrapper() {
+        return null;
+    }
+
     protected PlayerDecorator getPlayerDecorator() {
         return null;
     }

@@ -412,12 +412,15 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
-        log.d("onTimelineChanged");
-        sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
-        sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
-        shouldResetPlayerPosition = reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC;
-    }
+        log.d("onTimelineChanged reason = " + reason);
+        if (reason == Player.TIMELINE_CHANGE_REASON_PREPARED) {
+            sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
+            sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
+        }
 
+        shouldResetPlayerPosition = (reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC);
+    }
+    
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
@@ -775,7 +778,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     public boolean isPlaying() {
         log.v("isPlaying");
         if (assertPlayerIsNotNull("isPlaying()")) {
-            return player.getPlayWhenReady() && currentState == PlayerState.READY;
+            return player.getPlayWhenReady() && (currentState == PlayerState.READY || currentState == PlayerState.BUFFERING);
         }
         return false;
     }
