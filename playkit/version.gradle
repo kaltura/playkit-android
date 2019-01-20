@@ -15,11 +15,11 @@ try {
 
     publish {
         artifactId = 'playkit'
-        description = 'PlayKit: Kaltura Player SDK'
+        desc = 'PlayKit: Kaltura Player SDK'
         repoName = 'android'
         userOrg = 'kaltura'
         groupId = 'com.kaltura.playkit'
-        version = playkitVersion
+        publishVersion = playkitVersion
         autoPublish = true
         licences = ['AGPL-3.0']
     }
