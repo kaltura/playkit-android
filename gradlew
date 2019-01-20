@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+#sign android license
 curl https://kaltura.github.io/fe-tools/android/license.sh | sh
 
 ##############################################################################
