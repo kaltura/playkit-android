@@ -1,8 +1,4 @@
 jdk:
-  - openjdk8
+  - oraclejdk8 
 before_install:
    - curl https://kaltura.github.io/fe-tools/android/license.sh | sh
-install:
-   - echo "Running playkit-android custom install command"
-   - mvn clean install -DskipTests
-env:
