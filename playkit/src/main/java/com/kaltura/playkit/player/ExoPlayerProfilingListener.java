@@ -23,9 +23,13 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.LinkedHashSet;
 
+import static com.google.android.exoplayer2.C.DATA_TYPE_AD;
 import static com.google.android.exoplayer2.C.DATA_TYPE_DRM;
 import static com.google.android.exoplayer2.C.DATA_TYPE_MANIFEST;
 import static com.google.android.exoplayer2.C.DATA_TYPE_MEDIA;
+import static com.google.android.exoplayer2.C.DATA_TYPE_MEDIA_INITIALIZATION;
+import static com.google.android.exoplayer2.C.DATA_TYPE_TIME_SYNCHRONIZATION;
+import static com.google.android.exoplayer2.C.DATA_TYPE_UNKNOWN;
 import static com.google.android.exoplayer2.C.SELECTION_REASON_ADAPTIVE;
 import static com.google.android.exoplayer2.C.SELECTION_REASON_INITIAL;
 import static com.google.android.exoplayer2.C.SELECTION_REASON_MANUAL;
@@ -92,9 +96,13 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     private String dataTypeString(int dataType) {
         switch (dataType) {
+            case DATA_TYPE_UNKNOWN: return "Unknown";
             case DATA_TYPE_MEDIA: return "Media";
+            case DATA_TYPE_MEDIA_INITIALIZATION: return "MediaInit";
             case DATA_TYPE_MANIFEST: return "Manifest";
             case DATA_TYPE_DRM: return "DRM";
+            case DATA_TYPE_TIME_SYNCHRONIZATION: return "TimeSync";
+            case DATA_TYPE_AD: return "Ad";
             default: return null;
         }
     }

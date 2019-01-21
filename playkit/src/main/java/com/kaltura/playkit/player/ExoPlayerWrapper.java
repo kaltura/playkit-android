@@ -293,6 +293,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                         .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
                         .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
 
+                // TODO: 21/01/2019 Connect the profiler in a more portable way
                 if (profiler != null) {
                     profiler.startNetworkListener(builder);
                 }
