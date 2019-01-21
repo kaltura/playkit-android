@@ -342,7 +342,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                     pkExternalSubtitle.getSelectionFlags(),
                     pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
 
-            return new SingleSampleMediaSource.Factory(mediaDataSourceFactory)
+            return new SingleSampleMediaSource.Factory(dataSourceFactory)
                     .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
         } else {
             log.e("Subtitle and Mime type is not compatible.");
