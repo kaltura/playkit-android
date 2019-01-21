@@ -12,8 +12,8 @@
 
 package com.kaltura.playkit.plugins.ads;
 
-import com.kaltura.playkit.ads.AdEnabledPlayerController;
 import com.kaltura.playkit.ads.PKAdInfo;
+import com.kaltura.playkit.ads.PKAdProviderListener;
 
 
 public interface AdsProvider {
@@ -29,6 +29,8 @@ public interface AdsProvider {
 
     PKAdInfo getAdInfo();
 
+    AdCuePoints getCuePoints();
+
     boolean isAdDisplayed();
 
     boolean isAdPaused();
@@ -43,7 +45,9 @@ public interface AdsProvider {
 
     long getCurrentPosition();
 
-    void setAdProviderListener(AdEnabledPlayerController adEnabledPlayerController);
+    void setAdProviderListener(PKAdProviderListener adProviderListener);
+
+    void setAdRequested(boolean isAdRequested);
 
     void removeAdProviderListener();
 

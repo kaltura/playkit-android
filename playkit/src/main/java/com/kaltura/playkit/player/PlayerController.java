@@ -27,6 +27,7 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
@@ -68,6 +69,7 @@ public class PlayerController implements Player {
     private PKEvent.RawListener eventListener;
     private PlayerEngine.EventListener eventTrigger = initEventListener();
     private PlayerEngine.StateChangedListener stateChangedTrigger = initStateChangeListener();
+    private PlayerEngineWrapper playerEngineWrapper;
 
     public PlayerController(Context context) {
         this.context = context;
@@ -149,7 +151,7 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public Player.Settings getSettings() {
+    public Settings getSettings() {
         return playerSettings;
     }
 
@@ -234,6 +236,10 @@ public class PlayerController implements Player {
         //Initialize new PlayerEngine.
         try {
             player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType, playerSettings);
+            if (playerEngineWrapper != null) {
+                playerEngineWrapper.setPlayerEngine(player);
+                player = playerEngineWrapper;
+            }
         } catch (PlayerEngineFactory.PlayerInitializationException e) {
             log.e(e.getMessage());
             sendErrorMessage(PKPlayerErrorType.FAILED_TO_INITIALIZE_PLAYER, e.getMessage(), e);
@@ -563,15 +569,18 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public <E extends PKEvent> PKEvent.Listener<E> addListener(Class<E> type, PKEvent.Listener<E> listener) {
+    public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         Assert.shouldNeverHappen();
-        return null;
     }
 
     @Override
-    public PKEvent.Listener addListener(Enum type, PKEvent.Listener listener) {
+    public void addListener(Object groupId, Enum type, PKEvent.Listener listener) {
         Assert.shouldNeverHappen();
-        return null;
+    }
+
+    @Override
+    public void removeListeners(@NonNull Object groupId) {
+        Assert.shouldNeverHappen();
     }
 
     private boolean assertPlayerIsNotNull(String methodName) {
@@ -723,5 +732,9 @@ public class PlayerController implements Player {
                 eventListener.onEvent(new PlayerEvent.StateChanged(newState, oldState));
             }
         };
+    }
+
+    public void setPlayerEngineWrapper(PlayerEngineWrapper playerEngineWrapper) {
+        this.playerEngineWrapper = playerEngineWrapper;
     }
 }

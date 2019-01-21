@@ -61,6 +61,7 @@ class PlayerLoader extends PlayerDecoratorBase {
         playerController.setEventListener(messageBus::post);
 
         Player player = playerController;
+        PlayerEngineWrapper playerEngineWrapper = null;
 
         for (Map.Entry<String, Object> entry : pluginsConfig) {
             String name = entry.getKey();
@@ -78,18 +79,31 @@ class PlayerLoader extends PlayerDecoratorBase {
                 player = decorator;
             }
 
+            PlayerEngineWrapper wrapper = plugin.getPlayerEngineWrapper();
+            if (wrapper != null && playerEngineWrapper == null) {
+                playerEngineWrapper = wrapper;
+            }
+
             loadedPlugins.put(name, new LoadedPlugin(plugin, decorator));
         }
+
+        playerController.setPlayerEngineWrapper(playerEngineWrapper);
 
         setPlayer(player);
     }
 
     @Override
-    public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
+    public void updatePluginConfig(@NonNull final String pluginName, @Nullable final Object pluginConfig) {
         LoadedPlugin loadedPlugin = loadedPlugins.get(pluginName);
         if (loadedPlugin != null) {
             loadedPlugin.plugin.onUpdateConfig(pluginConfig);
         }
+//        messageBus.post(() -> {
+//            LoadedPlugin loadedPlugin = loadedPlugins.get(pluginName);
+//            if (loadedPlugin != null) {
+//                loadedPlugin.plugin.onUpdateConfig(pluginConfig);
+//            }
+//        });
     }
 
     @Override
@@ -121,7 +135,7 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     @Override
-    public void prepare(@NonNull PKMediaConfig mediaConfig) {
+    public void prepare(@NonNull final PKMediaConfig mediaConfig) {
 
         //If mediaConfig is not valid, playback is impossible, so return.
         //setMedia() is responsible to notify application with exact error that happened.
@@ -134,6 +148,14 @@ class PlayerLoader extends PlayerDecoratorBase {
         for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
             loadedPluginEntry.getValue().plugin.onUpdateMedia(mediaConfig);
         }
+//        messageBus.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                for (Map.Entry<String, LoadedPlugin> loadedPluginEntry : loadedPlugins.entrySet()) {
+//                    loadedPluginEntry.getValue().plugin.onUpdateMedia(mediaConfig);
+//                }
+//            }
+//        });
     }
 
     private void releasePlugins() {
@@ -201,14 +223,17 @@ class PlayerLoader extends PlayerDecoratorBase {
     }
 
     @Override
-    public <E extends PKEvent> PKEvent.Listener<E> addListener(Class<E> type, PKEvent.Listener<E> listener) {
-        messageBus.addListener(type, listener);
-        return listener;
+    public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
+        messageBus.addListener(groupId, type, listener);
     }
 
     @Override
-    public PKEvent.Listener addListener(Enum type, PKEvent.Listener listener) {
-        messageBus.addListener(type, listener);
-        return listener;
+    public void addListener(Object groupId, Enum type, PKEvent.Listener listener) {
+        messageBus.addListener(groupId, type, listener);
+    }
+
+    @Override
+    public void removeListeners(@NonNull Object groupId) {
+        messageBus.removeListeners(groupId);
     }
 }
