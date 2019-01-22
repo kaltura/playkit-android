@@ -963,12 +963,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @Override
-    public <T extends PKController> T getController(Class<T> type) {
-        //Currently no controller for ExoplayerWrapper. So always return null.
-        return null;
-    }
-
-    @Override
     public void onOrientationChanged() {
         //Do nothing.
     }

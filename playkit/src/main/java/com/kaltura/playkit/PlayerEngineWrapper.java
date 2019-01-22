@@ -167,7 +167,7 @@ public class PlayerEngineWrapper implements PlayerEngine {
 
     @Override
     public void setProfiler(Profiler profiler) {
-
+        this.playerEngine.setProfiler(profiler);
     }
 
     @Override

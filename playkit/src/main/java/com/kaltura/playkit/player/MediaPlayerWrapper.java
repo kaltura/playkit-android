@@ -599,16 +599,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public void setProfiler(Profiler profiler) {
-      
-    }
-
-    public <T extends PKController> T getController(Class<T> type) {
-        //Currently no controller for MediaPlayerWrapper. So always return null.
-        return null;
-    }
-
-    @Override
     public void onOrientationChanged() {
         //Do nothing.
     }
@@ -620,7 +610,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @NonNull
     private Map<String, String> getHeadersMap() {
-        Map<String, String> headersMap = new HashMap();
+        Map<String, String> headersMap = new HashMap<>();
         headersMap.put("User-Agent", getUserAgent(context));
         return headersMap;
     }
