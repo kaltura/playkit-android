@@ -166,7 +166,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         final DrmCallback drmCallback = new DrmCallback(httpDataSourceFactory(), playerSettings.getLicenseRequestAdapter());
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener);
-        CustomRendererFactory renderersFactory = new CustomRendererFactory(context, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
+        CustomRendererFactory renderersFactory = new CustomRendererFactory(context, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF, playerSettings.allowClearLead());
 
         player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
         window = new Timeline.Window();
@@ -422,7 +422,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
         shouldResetPlayerPosition = (reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC);
     }
-
+    
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
@@ -780,7 +780,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     public boolean isPlaying() {
         log.v("isPlaying");
         if (assertPlayerIsNotNull("isPlaying()")) {
-            return player.getPlayWhenReady() && currentState == PlayerState.READY;
+            return player.getPlayWhenReady() && (currentState == PlayerState.READY || currentState == PlayerState.BUFFERING);
         }
         return false;
     }

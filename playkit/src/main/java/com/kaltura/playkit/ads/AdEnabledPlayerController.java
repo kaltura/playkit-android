@@ -18,12 +18,11 @@ import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PlayerDecorator;
+import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
 
-/**
- * @hide
- */
+
 
 public class AdEnabledPlayerController extends PlayerDecorator implements AdController, PKAdProviderListener, PKController {
 
@@ -144,7 +143,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
-    public void skipAd() {
+    public void skip() {
         if (adsProvider != null && !adsProvider.isAdError()) {
             adsProvider.skipAd();
         }
@@ -165,6 +164,46 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
             return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
         }
         return Consts.TIME_UNSET;
+    }
+
+    @Override
+    public boolean isAdDisplayed() {
+        if (adsProvider != null) {
+            return adsProvider.isAdDisplayed();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isAdError() {
+        if (adsProvider != null) {
+            return adsProvider.isAdError();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isAllAdsCompleted() {
+        if (adsProvider != null) {
+            return adsProvider.isAllAdsCompleted();
+        }
+        return false;
+    }
+
+    @Override
+    public PKAdInfo getAdInfo() {
+        if (adsProvider != null) {
+            return adsProvider.getAdInfo();
+        }
+        return null;
+    }
+
+    @Override
+    public AdCuePoints getCuePoints() {
+        if (adsProvider != null) {
+            return adsProvider.getCuePoints();
+        }
+        return null;
     }
 
     @Override
