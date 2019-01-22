@@ -166,7 +166,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         final DrmCallback drmCallback = new DrmCallback(httpDataSourceFactory(), playerSettings.getLicenseRequestAdapter());
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener);
-        CustomRendererFactory renderersFactory = new CustomRendererFactory(context, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
+        CustomRendererFactory renderersFactory = new CustomRendererFactory(context, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF, playerSettings.allowClearLead());
 
         player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
         window = new Timeline.Window();

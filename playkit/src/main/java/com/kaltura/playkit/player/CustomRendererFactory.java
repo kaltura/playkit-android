@@ -19,15 +19,17 @@ import java.util.ArrayList;
  */
 
 public class CustomRendererFactory extends DefaultRenderersFactory {
+    private boolean allowClearLead;
 
-    public CustomRendererFactory(Context context, int extensionRendererMode) {
+    public CustomRendererFactory(Context context, int extensionRendererMode, boolean allowClearLead) {
         super(context, extensionRendererMode);
+        this.allowClearLead = allowClearLead;
     }
 
     @Override
     protected void buildVideoRenderers(Context context, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, long allowedVideoJoiningTimeMs, Handler eventHandler, VideoRendererEventListener eventListener, int extensionRendererMode, ArrayList<Renderer> out) {
         out.add(new CustomVideoCodecRenderer(context, MediaCodecSelector.DEFAULT,
-                allowedVideoJoiningTimeMs, drmSessionManager, false, eventHandler, eventListener,
+                allowedVideoJoiningTimeMs, drmSessionManager, allowClearLead, eventHandler, eventListener,
                 MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY));
     }
 }
