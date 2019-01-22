@@ -12,13 +12,32 @@
 
 package com.kaltura.playkit.ads;
 
+import com.kaltura.playkit.PKController;
+import com.kaltura.playkit.plugins.ads.AdCuePoints;
+
 /**
  * Created by Noam Tamim @ Kaltura on 14/12/2016.
  */
-public interface AdController {
-    void skipAd();
+public interface AdController extends PKController {
+    void skip();
+
+    void play();
+
+    void pause();
+
+    void seekTo(long position);
 
     long getAdCurrentPosition();
 
     long getAdDuration();
+
+    boolean isAdDisplayed();
+
+    boolean isAdError();
+
+    boolean isAllAdsCompleted();
+
+    PKAdInfo getAdInfo();
+
+    AdCuePoints getCuePoints();
 }

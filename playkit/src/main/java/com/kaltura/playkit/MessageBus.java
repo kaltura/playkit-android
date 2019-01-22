@@ -63,6 +63,12 @@ public class MessageBus {
         }
     }
 
+    public void post(final Runnable runnable) {
+        if (postHandler != null) {
+            postHandler.post(runnable);
+        }
+    }
+
     private static Set<PKEvent.Listener> safeSet(@Nullable Set<PKEvent.Listener> listeners) {
         return listeners != null ? listeners : Collections.emptySet();
     }
