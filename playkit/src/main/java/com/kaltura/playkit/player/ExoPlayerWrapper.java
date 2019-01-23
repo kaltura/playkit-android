@@ -53,7 +53,6 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.PKConnectionPoolManager;
-import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -176,7 +175,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(), playerSettings.getLicenseRequestAdapter());
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener);
 
-        CustomRendererFactory renderersFactory = new CustomRendererFactory(context, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
+        CustomRendererFactory renderersFactory = new CustomRendererFactory(context, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF, playerSettings.allowClearLead());
 
         player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
 
