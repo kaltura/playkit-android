@@ -52,4 +52,6 @@ public interface AdsProvider {
     void removeAdProviderListener();
 
     void skipAd();
+
+    void seekTo(long position);
 }

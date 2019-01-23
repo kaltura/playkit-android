@@ -194,6 +194,16 @@ public class AdEvent implements PKEvent {
         }
     }
 
+    public static class DAISourceSelected extends AdEvent {
+
+        public final String sourceURL;
+
+        public DAISourceSelected(String sourceURL) {
+            super(Type.DAI_SOURCE_ELECTED);
+            this.sourceURL = sourceURL;
+        }
+    }
+
     public enum Type {
         AD_REQUESTED,
         AD_FIRST_PLAY,
@@ -225,7 +235,8 @@ public class AdEvent implements PKEvent {
         AD_BUFFER_START,
         AD_BUFFER_END,
         AD_PLAYBACK_INFO_UPDATED,
-        ERROR
+        ERROR,
+        DAI_SOURCE_ELECTED
     }
 
 
