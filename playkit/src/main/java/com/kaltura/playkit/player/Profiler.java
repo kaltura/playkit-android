@@ -17,7 +17,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.DoubleBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import okhttp3.OkHttpClient;
 
@@ -33,6 +39,8 @@ public abstract class Profiler {
     static PKLog pkLog = PKLog.get("Profiler");
     private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
     private static boolean started;
+    static final Map<String, Object> experiments = new LinkedHashMap<>();
+
     private static Profiler NULL = new Profiler() {
 
         @Override
@@ -100,6 +108,10 @@ public abstract class Profiler {
 
             started = true;
         }
+    }
+
+    public static void setExperiment(String key, Object value) {
+        experiments.put(key, value);
     }
 
     static String field(String name, String value) {

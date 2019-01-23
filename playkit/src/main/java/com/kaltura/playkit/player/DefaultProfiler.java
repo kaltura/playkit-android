@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
 import com.google.gson.JsonArray;
@@ -22,9 +23,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -41,7 +45,6 @@ class DefaultProfiler extends Profiler {
     private static final boolean devMode = true;
     private static final int SEND_INTERVAL_SEC = devMode ? 10 : 300;   // Report every 5 minutes
 
-    private static String currentExperiment;
     private static DisplayMetrics metrics;
     private static File externalFilesDir;   // for debug logs
     private final ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
@@ -174,11 +177,38 @@ class DefaultProfiler extends Profiler {
                 field("screenDpi", metrics.xdpi + "x" + metrics.ydpi)
         );
 
-
-        if (currentExperiment != null) {
-            log("Experiment", field("info", currentExperiment));
-        }
+        logExperiments();
     }
+
+    private void logExperiments() {
+
+        List<String> values = new ArrayList<>();
+
+        for (Map.Entry<String, Object> entry : experiments.entrySet()) {
+
+            final String key = entry.getKey();
+            final Object value = entry.getValue();
+            String strValue;
+
+            if (key == null) {
+                continue;
+            }
+
+            if (value instanceof String) {
+                strValue = "{" + value + "}";
+            } else if (value instanceof Number || value instanceof Boolean) {
+                strValue = value.toString();
+            } else {
+                continue;
+            }
+
+            values.add(key + "=" + strValue);
+        }
+
+        log("Experiments", TextUtils.join("\t", values));
+    }
+
+
 
     @Override
     void startListener(ExoPlayerWrapper playerEngine) {
@@ -253,7 +283,6 @@ class DefaultProfiler extends Profiler {
 
     @Override
     void setCurrentExperiment(String currentExperiment) {
-        DefaultProfiler.currentExperiment = currentExperiment;
     }
 
     void log(String event, String... strings) {
