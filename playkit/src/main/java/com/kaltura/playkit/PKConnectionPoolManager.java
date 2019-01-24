@@ -9,9 +9,11 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.Connection;
 import okhttp3.ConnectionPool;
 import okhttp3.EventListener;
@@ -53,29 +55,40 @@ public class PKConnectionPoolManager {
             })
             .build();
 
+
     public static void warmUp(String... urls) {
 
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            AsyncTask.execute(() -> warmUp(urls));
-            return;
-        }
+        CountDownLatch latch = new CountDownLatch(urls.length);
 
         for (String url : urls) {
 
             final Call call = okClient.newCall(new Request.Builder().url(url).build());
-            try {
-                final Response response = call.execute();
-                final ResponseBody body = response.body();
-                if (body != null) {
-                    if (body.contentLength() < 10_000_000) {
-                        body.bytes();
-                    }
-                    body.close();
-                    showPool("After close");
+            call.enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    showPool("After error");
+                    latch.countDown();
                 }
-            } catch (IOException e) {
-                showPool("After exception");
-            }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    final ResponseBody body = response.body();
+                    if (body != null) {
+                        if (body.contentLength() < 10_000_000) {
+                            body.bytes();
+                        }
+                        body.close();
+                        showPool("After close");
+                    }
+                    latch.countDown();
+                }
+            });
+        }
+
+        try {
+            latch.await(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
