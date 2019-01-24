@@ -256,6 +256,7 @@ class DefaultProfiler extends Profiler {
                 writer = new BufferedWriter(new FileWriter(new File(externalFilesDir, sessionId.replace(':', '_') + ".prof.log"), true));
                 writer.append(string);
                 writer.newLine();
+                writer.newLine();
                 writer.flush();
 
             } catch (IOException e) {
