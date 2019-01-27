@@ -895,7 +895,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     public void setPlaybackRate(float rate) {
         log.v("setPlaybackRate");
         if (assertPlayerIsNotNull("setPlaybackRate()")) {
-            PlaybackParameters playbackParameters = new PlaybackParameters(rate, DEFAULT_PITCH_RATE);
+            PlaybackParameters playbackParameters = new PlaybackParameters(rate, DEFAULT_PITCH_RATE, true);
             player.setPlaybackParameters(playbackParameters);
             this.lastKnownPlaybackRate = rate;
         }
