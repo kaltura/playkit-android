@@ -288,14 +288,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
             if (useOkHttp) {
 
-                final ConnectionPool pool = PKConnectionPoolManager.getOkPool();
-                log.d("PKConnectionPoolManager connections: " + pool.connectionCount() + "; " + pool.idleConnectionCount());
-
-                // Configure a new client
-                final OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                final OkHttpClient.Builder builder = PKConnectionPoolManager.newClientBuilder()
                         .followSslRedirects(crossProtocolRedirectEnabled)
-                        .protocols(Collections.singletonList(Protocol.HTTP_1_1))    // Avoid http/2 due to https://github.com/google/ExoPlayer/issues/4078
-                        .connectionPool(pool)
                         .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
                         .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
 
@@ -305,9 +299,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 }
 
                 final OkHttpClient okHttpClient = builder.build();
-
-                if (okHttpClient.connectionPool() != pool) throw new IllegalStateException();
-
 
                 httpDataSourceFactory = new OkHttpDataSourceFactory(okHttpClient, userAgent);
 
