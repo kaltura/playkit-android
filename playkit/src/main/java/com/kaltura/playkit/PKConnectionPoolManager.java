@@ -35,12 +35,9 @@ public class PKConnectionPoolManager {
 
     public static void warmUp(String... urls) {
 
-        // Call each URL twice to make sure there are more open connections.
-
-        CountDownLatch latch = new CountDownLatch(urls.length * 2);
+        CountDownLatch latch = new CountDownLatch(urls.length);
 
         for (String url : urls) {
-            warmUrl(url, latch);
             warmUrl(url, latch);
         }
 
