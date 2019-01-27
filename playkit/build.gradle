@@ -40,10 +40,10 @@ dependencies {
     // ExoPlayer
     //api 'com.kaltura:exoplayer:73ae68123956444b47eaf5178c5ccde097744c6f'
 
-    api 'com.kaltura.exoplayer:exoplayer-hls:73ae68123956444b47eaf5178c5ccde097744c6f'
-    api 'com.kaltura.exoplayer:exoplayer-ui:73ae68123956444b47eaf5178c5ccde097744c6f'
-    api 'com.kaltura.exoplayer:exoplayer-dash:73ae68123956444b47eaf5178c5ccde097744c6f'
-    api 'com.kaltura.exoplayer:exoplayer-core:73ae68123956444b47eaf5178c5ccde097744c6f'
+    api 'com.kaltura.exoplayer:exoplayer-hls:4f6a6ccb3af9f818a2eef284660942a3b58d7f38'
+    api 'com.kaltura.exoplayer:exoplayer-ui:4f6a6ccb3af9f818a2eef284660942a3b58d7f38'
+    api 'com.kaltura.exoplayer:exoplayer-dash:4f6a6ccb3af9f818a2eef284660942a3b58d7f38'
+    api 'com.kaltura.exoplayer:exoplayer-core:4f6a6ccb3af9f818a2eef284660942a3b58d7f38'
 
     //api 'com.kaltura.exoplayer:exoplayer:2.9.1'
 
