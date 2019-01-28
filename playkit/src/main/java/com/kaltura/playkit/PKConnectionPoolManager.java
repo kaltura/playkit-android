@@ -21,7 +21,7 @@ public class PKConnectionPoolManager {
     private static final String userAgent = PlayKitManager.CLIENT_TAG;
 
     private static final int MAX_IDLE_CONNECTIONS = 10;
-    private static final int KEEP_ALIVE_DURATION = 10;
+    private static final int KEEP_ALIVE_DURATION = 5;
 
     private static final OkHttpClient okClient = new OkHttpClient.Builder()
             .connectionPool(new ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_DURATION, TimeUnit.MINUTES))
@@ -35,14 +35,18 @@ public class PKConnectionPoolManager {
 
     public static void warmUp(String... urls) {
 
-        CountDownLatch latch = new CountDownLatch(urls.length);
+        int times = 2;
+
+        CountDownLatch latch = new CountDownLatch(urls.length * times);
 
         for (String url : urls) {
-            warmUrl(url, latch);
+            for (int i = 0; i < times; i++) {
+                warmUrl(url, latch);
+            }
         }
 
         try {
-            latch.await(5, TimeUnit.SECONDS);
+            latch.await(6, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
