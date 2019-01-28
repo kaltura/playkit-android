@@ -4,8 +4,13 @@ import android.content.Context;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 
+
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.Renderer;
+import com.kaltura.android.exoplayer2.audio.AudioCapabilities;
+import com.kaltura.android.exoplayer2.audio.AudioProcessor;
+import com.kaltura.android.exoplayer2.audio.AudioRendererEventListener;
+import com.kaltura.android.exoplayer2.audio.MediaCodecAudioRenderer;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecSelector;
