@@ -22,26 +22,25 @@ public class PKConnectionPoolManager {
 
     private static final int MAX_IDLE_CONNECTIONS = 10;
     private static final int KEEP_ALIVE_DURATION = 5;
+    private static final int WARMUP_TIMES = 2;
 
     private static final OkHttpClient okClient = new OkHttpClient.Builder()
+            .followRedirects(false)
             .connectionPool(new ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_DURATION, TimeUnit.MINUTES))
             .protocols(Collections.singletonList(Protocol.HTTP_1_1))    // Avoid http/2 due to https://github.com/google/ExoPlayer/issues/4078
             .build();
 
     public static OkHttpClient.Builder newClientBuilder() {
-        return okClient.newBuilder();
+        return okClient.newBuilder().followRedirects(true);
     }
 
+    public static void warmUp(String... hosts) {
 
-    public static void warmUp(String... urls) {
+        CountDownLatch latch = new CountDownLatch(hosts.length * WARMUP_TIMES);
 
-        int times = 2;
-
-        CountDownLatch latch = new CountDownLatch(urls.length * times);
-
-        for (String url : urls) {
-            for (int i = 0; i < times; i++) {
-                warmUrl(url, latch);
+        for (String host : hosts) {
+            for (int i = 0; i < WARMUP_TIMES; i++) {
+                warmUrl("https://" + host + "/playkit-warmup", latch);
             }
         }
 
