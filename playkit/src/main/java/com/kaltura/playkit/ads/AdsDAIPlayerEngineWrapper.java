@@ -19,6 +19,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
+import com.kaltura.playkit.utils.Consts;
 
 /**
  * @hide
@@ -77,7 +78,6 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
         log.d("AdWrapper decorator Calling player play");
         getView().showVideoSurface();
         super.play();
-
     }
 
     @Override
@@ -97,6 +97,9 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
 
     @Override
     public long getCurrentPosition() {
+        if (adsProvider.isAdDisplayed()) {
+            return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
+        }
         return super.getCurrentPosition();
     }
 
@@ -107,13 +110,23 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
 
     @Override
     public long getDuration() {
+        if (adsProvider.isAdDisplayed()) {
+            return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
+        }
         return super.getDuration();
     }
 
     @Override
     public void seekTo(long position) {
-        log.d("AdWrapper seekTo");
-        super.seekTo(position);
+        if (adsProvider.isAdDisplayed()) {
+            log.d("seekTo is not enabled during AD playback");
+            return;
+        }
+        boolean isPlaying = isPlaying();
+        adsProvider.seekTo(position);
+        if (!isPlaying) {
+            pause();
+        }
     }
 
     @Override
