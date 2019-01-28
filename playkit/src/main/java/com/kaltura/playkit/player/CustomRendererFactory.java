@@ -4,8 +4,13 @@ import android.content.Context;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 
+
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.Renderer;
+import com.google.android.exoplayer2.audio.AudioCapabilities;
+import com.google.android.exoplayer2.audio.AudioProcessor;
+import com.google.android.exoplayer2.audio.AudioRendererEventListener;
+import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
@@ -19,15 +24,33 @@ import java.util.ArrayList;
  */
 
 public class CustomRendererFactory extends DefaultRenderersFactory {
+    private boolean allowClearLead;
 
-    public CustomRendererFactory(Context context, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, int extensionRendererMode) {
+    public CustomRendererFactory(Context context, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, int extensionRendererMode, boolean allowClearLead) {
         super(context, drmSessionManager, extensionRendererMode);
+
+        this.allowClearLead = allowClearLead;
     }
 
     @Override
     protected void buildVideoRenderers(Context context, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, long allowedVideoJoiningTimeMs, Handler eventHandler, VideoRendererEventListener eventListener, int extensionRendererMode, ArrayList<Renderer> out) {
+
         out.add(new CustomVideoCodecRenderer(context, MediaCodecSelector.DEFAULT,
-                allowedVideoJoiningTimeMs, drmSessionManager, false, eventHandler, eventListener,
+                allowedVideoJoiningTimeMs, drmSessionManager, allowClearLead, eventHandler, eventListener,
                 MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY));
+    }
+
+    @Override
+    protected void buildAudioRenderers(Context context, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, AudioProcessor[] audioProcessors, Handler eventHandler, AudioRendererEventListener eventListener, int extensionRendererMode, ArrayList<Renderer> out) {
+        out.add(
+                new MediaCodecAudioRenderer(
+                        context,
+                        MediaCodecSelector.DEFAULT,
+                        drmSessionManager,
+                        allowClearLead,
+                        eventHandler,
+                        eventListener,
+                        AudioCapabilities.getCapabilities(context),
+                        audioProcessors));
     }
 }
