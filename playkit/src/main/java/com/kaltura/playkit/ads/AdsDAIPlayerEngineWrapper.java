@@ -32,12 +32,12 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
     private Context context;
     private AdsProvider adsProvider;
     private PKMediaSourceConfig mediaSourceConfig;
-    private DefaultAdControllerImpl defaultAdController;
+    private DefaultDAIAdControllerImpl defaultDAIAdController;
 
     public AdsDAIPlayerEngineWrapper(final Context context, AdsProvider adsProvider) {
         this.context = context;
         this.adsProvider = adsProvider;
-        this.defaultAdController = new DefaultAdControllerImpl(adsProvider);
+        this.defaultDAIAdController = new DefaultDAIAdControllerImpl(adsProvider);
     }
 
     @Override
@@ -155,8 +155,8 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
 
     @Override
     public <T extends PKController> T getController(Class<T> type) {
-        if (type == AdController.class && defaultAdController != null) {
-            return (T) this.defaultAdController;
+        if (type == AdController.class && defaultDAIAdController != null) {
+            return (T) this.defaultDAIAdController;
         }
         return null;
     }
