@@ -30,7 +30,7 @@ public class PKMediaEntry implements Parcelable {
     private long duration; //in milliseconds
     private MediaEntryType mediaType;
     private Map<String, String> metadata;
-    private List<PKExternalSubtitle> subtitleList;
+    private List<PKExternalSubtitle> externalSubtitleList;
 
     public PKMediaEntry() {
     }
@@ -94,12 +94,12 @@ public class PKMediaEntry implements Parcelable {
         return metadata;
     }
 
-    public List<PKExternalSubtitle> getSubtitleList() {
-        return subtitleList;
+    public List<PKExternalSubtitle> getExternalSubtitleList() {
+        return externalSubtitleList;
     }
 
-    public PKMediaEntry setSubtitleList(List<PKExternalSubtitle> subtitleList) {
-        this.subtitleList = subtitleList;
+    public PKMediaEntry setExternalSubtitleList(List<PKExternalSubtitle> externalSubtitleList) {
+        this.externalSubtitleList = externalSubtitleList;
         return this;
     }
 
@@ -135,7 +135,7 @@ public class PKMediaEntry implements Parcelable {
         } else {
             dest.writeInt(-1);
         }
-        dest.writeTypedList(subtitleList);
+        dest.writeTypedList(externalSubtitleList);
     }
 
     protected PKMediaEntry(Parcel in) {
@@ -156,7 +156,7 @@ public class PKMediaEntry implements Parcelable {
                 this.metadata.put(key, value);
             }
         }
-        subtitleList = in.createTypedArrayList(PKExternalSubtitle.CREATOR);
+        externalSubtitleList = in.createTypedArrayList(PKExternalSubtitle.CREATOR);
     }
 
     public static final Creator<PKMediaEntry> CREATOR = new Creator<PKMediaEntry>() {

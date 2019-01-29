@@ -239,12 +239,11 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig) {
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
 
-        List<PKExternalSubtitle> subtitlesList = null;
+        List<PKExternalSubtitle> externalSubtitleList = null;
 
-        if (sourceConfig.getSubtitleList() != null) {
-            subtitlesList = sourceConfig.getSubtitleList() != null &&
-                    sourceConfig.getSubtitleList().size() > 0 ?
-                    sourceConfig.getSubtitleList() : null;
+        if (sourceConfig.getExternalSubtitleList() != null) {
+            externalSubtitleList = sourceConfig.getExternalSubtitleList().size() > 0 ?
+                    sourceConfig.getExternalSubtitleList() : null;
         }
 
         if (format == null) {
@@ -257,7 +256,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         final Factory dataSourceFactory = dataSourceFactory();
 
         // Build Media Source array with subtitles if exists
-        MediaSource[] mediaSources = buildMediaSourceList(subtitlesList);
+        MediaSource[] mediaSources = buildMediaSourceList(externalSubtitleList);
 
         switch (format) {
             case dash:
@@ -285,18 +284,18 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     /**
-     * Return the media source with subtitles if exists
-     * @param subtitlesList Subtitle List
+     * Return the media source with external subtitles if exists
+     * @param externalSubtitleList External subtitle List
      * @return Media Source array
      */
 
-    private MediaSource[] buildMediaSourceList(List<PKExternalSubtitle> subtitlesList) {
-        List<MediaSource> subtitleSourcesList = new ArrayList<>((subtitlesList != null && subtitlesList.size() > 0) ? subtitlesList.size() : 8);//
+    private MediaSource[] buildMediaSourceList(List<PKExternalSubtitle> externalSubtitleList) {
+        List<MediaSource> subtitleSourcesList = new ArrayList<>((externalSubtitleList != null && externalSubtitleList.size() > 0) ? externalSubtitleList.size() : 8);//
 
-        if (subtitlesList != null && subtitlesList.size() > 0) {
-            for (int subtitlePosition = 0 ; subtitlePosition < subtitlesList.size() ; subtitlePosition ++) {
+        if (externalSubtitleList != null && externalSubtitleList.size() > 0) {
+            for (int subtitlePosition = 0 ; subtitlePosition < externalSubtitleList.size() ; subtitlePosition ++) {
                 // 0th position is secured for video media source
-                MediaSource subtitleMediaSource = buildExternalSubtitleSource(subtitlesList.get(subtitlePosition));
+                MediaSource subtitleMediaSource = buildExternalSubtitleSource(externalSubtitleList.get(subtitlePosition));
                 if (subtitleMediaSource != null) {
                     subtitleSourcesList.add(subtitleMediaSource);
                 }
@@ -307,8 +306,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     /**
-     * Extract Subtitle source list and create media source array
-     * @param subtitleSourcesList subtitle source list
+     * Extract external Subtitle source list and create media source array
+     * @param subtitleSourcesList External subtitle source list
      * @return Media Source array
      */
     private MediaSource[] getMediaSources(List<MediaSource> subtitleSourcesList) {
@@ -323,12 +322,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     /**
      * Create single Media Source object with each subtitle
-     * @param pkExternalSubtitle external subtitle object
-     * @return An object of subtitle media source
+     * @param pkExternalSubtitle External subtitle object
+     * @return An object of external subtitle media source
      */
 
     private MediaSource buildExternalSubtitleSource(PKExternalSubtitle pkExternalSubtitle) {
-        boolean urlMimeTypeCompatible = checkSubtitleAndMimeTypeCompatibility(pkExternalSubtitle.getUrl(), pkExternalSubtitle.getMimeType());
+        boolean urlMimeTypeCompatible = checkExternalSubtitleAndMimeTypeCompatibility(pkExternalSubtitle.getUrl(), pkExternalSubtitle.getMimeType());
 
         if (urlMimeTypeCompatible) {
             // Build the subtitle MediaSource.
@@ -344,6 +343,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
             return new SingleSampleMediaSource.Factory(dataSourceFactory)
                     .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
+
         } else {
             log.e("Subtitle and Mime type is not compatible.");
             return null;
@@ -351,13 +351,13 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     /**
-     * Check Subtitle and its Mime type compatibility
-     * @param subtitleURL subtitle url to extract the subtitle extension (SRT and VTT only) passed by application
+     * Check External subtitle and its Mime type compatibility
+     * @param subtitleURL External subtitle url to extract the subtitle extension (SRT and VTT only) passed by application
      * @param mimeType Mime type passed by application
      * @return if compatible then true or false
      */
 
-    private boolean checkSubtitleAndMimeTypeCompatibility(String subtitleURL, String mimeType) {
+    private boolean checkExternalSubtitleAndMimeTypeCompatibility(String subtitleURL, String mimeType) {
         if (subtitleURL != null && !TextUtils.isEmpty(subtitleURL)) {
             int lastDotIndex = subtitleURL.lastIndexOf(".");
             String subtitleExtensionName = subtitleURL.substring(lastDotIndex + 1 , subtitleURL.length());
