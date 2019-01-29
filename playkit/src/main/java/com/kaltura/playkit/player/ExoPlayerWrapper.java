@@ -91,9 +91,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private static final CookieManager DEFAULT_COOKIE_MANAGER;
 
-    private static final String HTTP_PROVIDER_OK = "okhttp";
-    private static final String HTTP_PROVIDER_SYSTEM = "system";
-
     static {
         DEFAULT_COOKIE_MANAGER = new CookieManager();
         DEFAULT_COOKIE_MANAGER.setCookiePolicy(CookiePolicy.ACCEPT_ORIGINAL_SERVER);
@@ -275,11 +272,11 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
             final String userAgent = getUserAgent(context);
 
-            final boolean useOkHttp = HTTP_PROVIDER_OK.equalsIgnoreCase(playerSettings.getNetworkProvider());
+            final boolean useOkHttp = PKHttpClientManager.HTTP_PROVIDER_OK.equalsIgnoreCase(playerSettings.getNetworkProvider());
 
             if (useOkHttp) {
 
-                final OkHttpClient.Builder builder = PKConnectionPoolManager.newClientBuilder()
+                final OkHttpClient.Builder builder = PKHttpClientManager.newClientBuilder()
                         .followRedirects(true)
                         .followSslRedirects(crossProtocolRedirectEnabled)
                         .protocols(Collections.singletonList(Protocol.HTTP_1_1))    // Avoid http/2 due to https://github.com/google/ExoPlayer/issues/4078

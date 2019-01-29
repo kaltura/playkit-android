@@ -1,8 +1,10 @@
 package com.kaltura.playkit.player;
 
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayKitManager;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -15,8 +17,14 @@ import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okio.BufferedSource;
 
-public class PKConnectionPoolManager {
+public class PKHttpClientManager {
+
+    private static final PKLog log = PKLog.get("PKHttpClientManager");
+
+    static final String HTTP_PROVIDER_OK = "okhttp";
+    static final String HTTP_PROVIDER_SYSTEM = "system";
 
     private static final String userAgent = PlayKitManager.CLIENT_TAG;
 
@@ -25,7 +33,7 @@ public class PKConnectionPoolManager {
     private static final int WARMUP_TIMES = 2;
 
     private static final OkHttpClient okClient = new OkHttpClient.Builder()
-            .followRedirects(false)
+            .followRedirects(false)     // Only warm up explicitly specified hosts
             .connectionPool(new ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_DURATION, TimeUnit.MINUTES))
             .protocols(Collections.singletonList(Protocol.HTTP_1_1))    // Avoid http/2 due to https://github.com/google/ExoPlayer/issues/4078
             .build();
@@ -39,6 +47,7 @@ public class PKConnectionPoolManager {
     }
 
     public static void warmUp(OkHttpClient okClient, String userAgent, int warmUpTimes, String[] hosts) {
+
         CountDownLatch latch = new CountDownLatch(hosts.length * warmUpTimes);
 
         for (String host : hosts) {
@@ -72,9 +81,6 @@ public class PKConnectionPoolManager {
             public void onResponse(Call call, Response response) throws IOException {
                 final ResponseBody body = response.body();
                 if (body != null) {
-                    if (body.contentLength() < 10_000_000) {
-                        body.bytes();
-                    }
                     body.close();
                 }
                 latch.countDown();
