@@ -150,7 +150,7 @@ public interface Player {
         Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig);
 
         /**
-         * Set the Player's setPreferredMediaFormat.
+         * Set the Player's PreferredMediaFormat.
          *
          * @param preferredMediaFormat - PKMediaFormat.
          * @return - Player Settings.
