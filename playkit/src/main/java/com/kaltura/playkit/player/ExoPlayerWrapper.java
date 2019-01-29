@@ -52,7 +52,6 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
-import com.kaltura.playkit.PKConnectionPoolManager;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -71,13 +70,10 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
-import okhttp3.Protocol;
 
 import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
 import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
@@ -289,6 +285,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             if (useOkHttp) {
 
                 final OkHttpClient.Builder builder = PKConnectionPoolManager.newClientBuilder()
+                        .followRedirects(true)
                         .followSslRedirects(crossProtocolRedirectEnabled)
                         .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
                         .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);

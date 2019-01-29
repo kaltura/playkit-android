@@ -1,6 +1,6 @@
-package com.kaltura.playkit;
+package com.kaltura.playkit.player;
 
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
+import com.kaltura.playkit.PlayKitManager;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -30,17 +30,20 @@ public class PKConnectionPoolManager {
             .protocols(Collections.singletonList(Protocol.HTTP_1_1))    // Avoid http/2 due to https://github.com/google/ExoPlayer/issues/4078
             .build();
 
-    public static OkHttpClient.Builder newClientBuilder() {
+    static OkHttpClient.Builder newClientBuilder() {
         return okClient.newBuilder().followRedirects(true);
     }
 
     public static void warmUp(String... hosts) {
+        warmUp(okClient, userAgent, WARMUP_TIMES, hosts);
+    }
 
-        CountDownLatch latch = new CountDownLatch(hosts.length * WARMUP_TIMES);
+    public static void warmUp(OkHttpClient okClient, String userAgent, int warmUpTimes, String[] hosts) {
+        CountDownLatch latch = new CountDownLatch(hosts.length * warmUpTimes);
 
         for (String host : hosts) {
-            for (int i = 0; i < WARMUP_TIMES; i++) {
-                warmUrl("https://" + host + "/playkit-warmup", latch);
+            for (int i = 0; i < warmUpTimes; i++) {
+                warmUpUrl(okClient, userAgent, latch, "https://" + host + "/playkit-warmup");
             }
         }
 
@@ -51,8 +54,7 @@ public class PKConnectionPoolManager {
         }
     }
 
-    private static void warmUrl(String url, CountDownLatch latch) {
-
+    private static void warmUpUrl(OkHttpClient okClient, String userAgent, CountDownLatch latch, String url) {
         final Call call = okClient.newCall(
                 new Request.Builder()
                         .url(url)
