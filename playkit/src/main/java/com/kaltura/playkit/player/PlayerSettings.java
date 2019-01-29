@@ -38,7 +38,7 @@ public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
-
+    private String networkProvider;
 
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
@@ -190,5 +190,15 @@ public class PlayerSettings implements Player.Settings {
     public Player.Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         this.subtitleStyleSettings = subtitleStyleSettings;
         return this;
+    }
+
+    @Override
+    public Player.Settings setNetworkProvider(String provider) {
+        this.networkProvider = provider;
+        return this;
+    }
+
+    public String getNetworkProvider() {
+        return networkProvider;
     }
 }

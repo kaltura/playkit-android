@@ -164,6 +164,15 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
+
+
+        /**
+         * Set the http provider. Valid options are "system" (use the build-in {@linkplain java.net.HttpURLConnection})
+         * and "okhttp" (use Square's <a href="https://square.github.io/okhttp/">OkHttp</a> library).
+         * @param provider "system" (default) or "okhttp"
+         * @return - Player Settings
+         */
+        Settings setNetworkProvider(String provider);
     }
 
     /**
