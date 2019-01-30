@@ -191,14 +191,4 @@ public class PlayerSettings implements Player.Settings {
         this.subtitleStyleSettings = subtitleStyleSettings;
         return this;
     }
-
-    @Override
-    public Player.Settings setNetworkProvider(String provider) {
-        this.networkProvider = provider;
-        return this;
-    }
-
-    public String getNetworkProvider() {
-        return networkProvider;
-    }
 }

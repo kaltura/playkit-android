@@ -272,9 +272,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
             final String userAgent = getUserAgent(context);
 
-            final boolean useOkHttp = PKHttpClientManager.HTTP_PROVIDER_OK.equalsIgnoreCase(playerSettings.getNetworkProvider());
-
-            if (useOkHttp) {
+            if (PKHttpClientManager.useOkHttp()) {
 
                 final OkHttpClient.Builder builder = PKHttpClientManager.newClientBuilder()
                         .followRedirects(true)
