@@ -1,26 +1,20 @@
 package com.kaltura.playkit.player;
 
-import android.util.Base64;
-
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayKitManager;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -47,6 +41,8 @@ public class PKHttpClientManager {
     private static final OkHttpClient okClient = new OkHttpClient.Builder()
             .followRedirects(false)     // Only warm up explicitly specified URLs
             .connectionPool(new ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_DURATION, TimeUnit.MINUTES))
+            .connectTimeout(3, TimeUnit.SECONDS)
+            .readTimeout(3, TimeUnit.SECONDS)
             .protocols(Collections.singletonList(Protocol.HTTP_1_1))    // Avoid http/2 due to https://github.com/google/ExoPlayer/issues/4078
             .build();
 
@@ -69,40 +65,27 @@ public class PKHttpClientManager {
         httpProviderId = providerId;
     }
 
+    public static String getHttpProvider() {
+        return httpProviderId;
+    }
+
     /**
      * Warm up the connection to a list of URLs. There should be only one URL per host, and the URLs
      * should resolve to valid pathnames. A good choice might be favicon.ico or crossdomain.xml.
      * @param urls List of URLs.
      */
     public static void warmUp(String... urls) {
-        if (useOkHttp()) {
-            warmUpOk(okClient, warmUpUserAgent, WARMUP_TIMES, urls);
-        } else {
-            warmUpSystem(warmUpUserAgent, urls);
-        }
-    }
-
-    public static void warmUpSystem(String userAgent, String[] urls) {
-
         final ExecutorService service = Executors.newCachedThreadPool();
 
         List<Callable<Void>> calls = new ArrayList<>(urls.length);
         for (String url : urls) {
-            calls.add(() -> {
-                try {
-                    final HttpURLConnection urlConnection = ((HttpURLConnection) new URL(url).openConnection());
-                    urlConnection.addRequestProperty("user-agent", userAgent);
-                    final InputStream inputStream = urlConnection.getInputStream();
-                    byte[] buffer = new byte[1024];
-                    int size = inputStream.read(buffer);
-                    log.d("Read from " + url + ": " + Base64.encodeToString(buffer, 0, size, Base64.NO_WRAP));
-                    inputStream.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return null;
-            });
+            final Callable<Void> callable = useOkHttp() ? getOkCallable(url) : getSystemCallable(url);
+
+            for (int i = 0; i < WARMUP_TIMES; i++) {
+                calls.add(callable);
+            }
         }
+
         try {
             service.invokeAll(calls, 6, TimeUnit.SECONDS);
             log.d("All urls finished");
@@ -111,45 +94,36 @@ public class PKHttpClientManager {
         }
     }
 
-    public static void warmUpOk(OkHttpClient okClient, String userAgent, int warmUpTimes, String[] urls) {
-
-        CountDownLatch latch = new CountDownLatch(urls.length * warmUpTimes);
-
-        for (String url : urls) {
-            for (int i = 0; i < warmUpTimes; i++) {
-                warmUpOkUrl(okClient, userAgent, latch, url);
+    private static Callable<Void> getSystemCallable(String url) {
+        return () -> {
+            try {
+                final HttpURLConnection urlConnection = ((HttpURLConnection) new URL(url).openConnection());
+                urlConnection.setConnectTimeout(3000);
+                urlConnection.setReadTimeout(3000);
+                urlConnection.addRequestProperty("user-agent", PKHttpClientManager.warmUpUserAgent);
+                final InputStream inputStream = urlConnection.getInputStream();
+                inputStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        }
-
-        try {
-            latch.await(6, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+            return null;
+        };
     }
 
-    private static void warmUpOkUrl(OkHttpClient okClient, String userAgent, CountDownLatch latch, String url) {
-        final Call call = okClient.newCall(
-                new Request.Builder()
-                        .url(url)
-                        .header("user-agent", userAgent)
-                        .build()
-        );
-
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                latch.countDown();
+    private static Callable<Void> getOkCallable(String url) {
+        return () -> {
+            final Call call = PKHttpClientManager.okClient.newCall(
+                    new Request.Builder()
+                            .url(url)
+                            .header("user-agent", PKHttpClientManager.warmUpUserAgent)
+                            .build()
+            );
+            final Response response = call.execute();
+            final ResponseBody body = response.body();
+            if (body != null) {
+                body.close();
             }
-
-            @Override
-            public void onResponse(Call call, Response response) {
-                final ResponseBody body = response.body();
-                if (body != null) {
-                    body.close();
-                }
-                latch.countDown();
-            }
-        });
+            return null;
+        };
     }
 }
