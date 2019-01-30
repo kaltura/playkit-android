@@ -24,6 +24,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean cea608CaptionsEnabled;
     private boolean mpgaAudioFormatEnabled;
     private boolean crossProtocolRedirectEnabled;
+    private boolean allowClearLead;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
@@ -37,7 +38,7 @@ public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
-
+    private String networkProvider;
 
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
@@ -54,6 +55,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean crossProtocolRedirectEnabled() {
         return crossProtocolRedirectEnabled;
+    }
+
+    public boolean allowClearLead() {
+        return allowClearLead;
     }
 
     public boolean cea608CaptionsEnabled() {
@@ -166,6 +171,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
         this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
+        return this;
+    }
+
+    @Override
+    public Player.Settings allowClearLead(boolean allowClearLead) {
+        this.allowClearLead = allowClearLead;
         return this;
     }
 

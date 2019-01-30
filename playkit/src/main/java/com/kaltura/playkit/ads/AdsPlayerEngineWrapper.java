@@ -145,7 +145,7 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
         if (type == AdController.class && defaultAdController != null) {
             return (T) this.defaultAdController;
         }
-        return null;
+        return super.getController(type);
     }
 
     @Override

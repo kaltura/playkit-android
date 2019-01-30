@@ -93,6 +93,14 @@ public interface Player {
         Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled);
 
         /**
+         * Decide if player should play clear lead content
+         *
+         * @param allowClearLead - should enable/disable clear lead playback default false
+         * @return - Player Settings.
+         */
+        Settings allowClearLead(boolean allowClearLead);
+
+        /**
          * Decide if player should use secure rendering on the surface.
          * Known limitation - when useTextureView set to true and isSurfaceSecured set to true -
          * secure rendering will have no effect.
