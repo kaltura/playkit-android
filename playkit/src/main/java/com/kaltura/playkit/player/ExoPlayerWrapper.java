@@ -255,28 +255,25 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         final Factory dataSourceFactory = dataSourceFactory();
 
-        // Build Media Source array with subtitles if exists
-        MediaSource[] mediaSources = buildMediaSourceList(externalSubtitleList);
-
         switch (format) {
             case dash:
-                mediaSources[0] = new DashMediaSource.Factory(
+                DashMediaSource dashDataSource = new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(dataSourceFactory),
                         dataSourceFactory)
                         .createMediaSource(uri);
-                return new MergingMediaSource(mediaSources);
+                return new MergingMediaSource(buildMediaSourceList(dashDataSource, externalSubtitleList));
 
             case hls:
-                mediaSources[0] = new HlsMediaSource.Factory(dataSourceFactory)
+                HlsMediaSource hlsMediaSource = new HlsMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(uri);
-                return new MergingMediaSource(mediaSources);
+                return new MergingMediaSource(buildMediaSourceList(hlsMediaSource, externalSubtitleList));
 
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
-                mediaSources[0] = new ExtractorMediaSource.Factory(dataSourceFactory)
+                ExtractorMediaSource extractorMediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(uri);
-                return new MergingMediaSource(mediaSources);
+                return new MergingMediaSource(buildMediaSourceList(extractorMediaSource, externalSubtitleList));
 
             default:
                 throw new IllegalStateException("Unsupported type: " + format);
@@ -289,20 +286,21 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      * @return Media Source array
      */
 
-    private MediaSource[] buildMediaSourceList(List<PKExternalSubtitle> externalSubtitleList) {
-        List<MediaSource> subtitleSourcesList = new ArrayList<>((externalSubtitleList != null && externalSubtitleList.size() > 0) ? externalSubtitleList.size() : 8);//
+    private MediaSource[] buildMediaSourceList(MediaSource mediaSource, List<PKExternalSubtitle> externalSubtitleList) {
+        List<MediaSource> streamMediaSources = new ArrayList<>();
 
         if (externalSubtitleList != null && externalSubtitleList.size() > 0) {
             for (int subtitlePosition = 0 ; subtitlePosition < externalSubtitleList.size() ; subtitlePosition ++) {
-                // 0th position is secured for video media source
                 MediaSource subtitleMediaSource = buildExternalSubtitleSource(externalSubtitleList.get(subtitlePosition));
                 if (subtitleMediaSource != null) {
-                    subtitleSourcesList.add(subtitleMediaSource);
+                    streamMediaSources.add(subtitleMediaSource);
                 }
             }
         }
 
-        return getMediaSources(subtitleSourcesList);
+        // 0th position is secured for dash/hls/extractor media source
+        streamMediaSources.add(0, mediaSource);
+        return getMediaSources(streamMediaSources);
     }
 
     /**
