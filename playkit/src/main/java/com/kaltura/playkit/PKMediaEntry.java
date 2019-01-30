@@ -14,6 +14,8 @@ package com.kaltura.playkit;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
+
 import com.kaltura.playkit.player.PKExternalSubtitle;
 
 import java.util.Collections;
@@ -106,7 +108,11 @@ public class PKMediaEntry implements Parcelable {
             PKExternalSubtitle pkExternalSubtitle = externalSubtitleListIterator.next();
             PKSubtitleFormat urlFormat = PKSubtitleFormat.valueOfUrl(pkExternalSubtitle.getUrl());
 
-            if (urlFormat == null || !urlFormat.mimeType.equals(pkExternalSubtitle.getMimeType())) {
+            if (urlFormat != null && pkExternalSubtitle.getMimeType() == null) {
+                pkExternalSubtitle.setMimeType(urlFormat);
+            }
+
+            if (TextUtils.isEmpty(pkExternalSubtitle.getUrl()) || (urlFormat != null && !urlFormat.mimeType.equals(pkExternalSubtitle.getMimeType()))) {
                 externalSubtitleListIterator.remove();
             }
         }

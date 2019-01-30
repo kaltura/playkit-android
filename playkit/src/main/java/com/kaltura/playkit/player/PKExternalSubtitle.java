@@ -64,22 +64,24 @@ public class PKExternalSubtitle implements Parcelable {
         return isDefault;
     }
 
-    public PKExternalSubtitle setMimeType(@NonNull PKSubtitleFormat mimeType) {
-        this.mimeType = mimeType.mimeType;
+    public PKExternalSubtitle setMimeType(PKSubtitleFormat subtitleFormat) {
+        if (subtitleFormat != null) {
+            this.mimeType = subtitleFormat.mimeType;
+        }
         return this;
     }
 
-    public PKExternalSubtitle setUrl(String url) {
+    public PKExternalSubtitle setUrl(@NonNull String url) {
         this.url = url;
         return this;
     }
 
-    public PKExternalSubtitle setLanguage(String language) {
+    public PKExternalSubtitle setLanguage(@NonNull String language) {
         this.language = language;
         return this;
     }
 
-    public PKExternalSubtitle setLabel(String label) {
+    public PKExternalSubtitle setLabel(@NonNull String label) {
         this.label = label;
         return this;
     }
