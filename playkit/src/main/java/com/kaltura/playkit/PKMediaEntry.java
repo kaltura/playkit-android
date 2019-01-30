@@ -14,12 +14,12 @@ package com.kaltura.playkit;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import com.kaltura.playkit.player.PKExternalSubtitle;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 public class PKMediaEntry implements Parcelable {
@@ -100,6 +100,17 @@ public class PKMediaEntry implements Parcelable {
 
     public PKMediaEntry setExternalSubtitleList(List<PKExternalSubtitle> externalSubtitleList) {
         this.externalSubtitleList = externalSubtitleList;
+        ListIterator<PKExternalSubtitle> externalSubtitleListIterator = externalSubtitleList.listIterator();
+
+        while (externalSubtitleListIterator.hasNext()) {
+            PKExternalSubtitle pkExternalSubtitle = externalSubtitleListIterator.next();
+            PKSubtitleFormat urlFormat = PKSubtitleFormat.valueOfUrl(pkExternalSubtitle.getUrl());
+
+            if (urlFormat == null || !urlFormat.mimeType.equals(pkExternalSubtitle.getMimeType())) {
+                externalSubtitleListIterator.remove();
+            }
+        }
+
         return this;
     }
 

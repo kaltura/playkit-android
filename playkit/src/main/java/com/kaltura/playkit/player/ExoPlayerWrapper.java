@@ -20,7 +20,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -57,7 +56,6 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
-import com.google.android.exoplayer2.util.MimeTypes;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -291,7 +289,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         if (externalSubtitleList != null && externalSubtitleList.size() > 0) {
             for (int subtitlePosition = 0 ; subtitlePosition < externalSubtitleList.size() ; subtitlePosition ++) {
-                MediaSource subtitleMediaSource = buildExternalSubtitleSource(externalSubtitleList.get(subtitlePosition));
+                MediaSource subtitleMediaSource = buildExternalSubtitleSource(subtitlePosition, externalSubtitleList.get(subtitlePosition));
                 if (subtitleMediaSource != null) {
                     streamMediaSources.add(subtitleMediaSource);
                 }
@@ -300,22 +298,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         // 0th position is secured for dash/hls/extractor media source
         streamMediaSources.add(0, mediaSource);
-        return getMediaSources(streamMediaSources);
-    }
-
-    /**
-     * Extract external Subtitle source list and create media source array
-     * @param subtitleSourcesList External subtitle source list
-     * @return Media Source array
-     */
-    private MediaSource[] getMediaSources(List<MediaSource> subtitleSourcesList) {
-        MediaSource[] mediaSources = new MediaSource[(subtitleSourcesList.size() > 0) ? subtitleSourcesList.size() + 1 : 1];
-
-        for (int mediaSourcePosition = 0; mediaSourcePosition < subtitleSourcesList.size(); mediaSourcePosition++) {
-            mediaSources[mediaSourcePosition + 1] = subtitleSourcesList.get(mediaSourcePosition);
-        }
-
-        return mediaSources;
+        return streamMediaSources.toArray(new MediaSource[streamMediaSources.size()]);
     }
 
     /**
@@ -324,13 +307,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
      * @return An object of external subtitle media source
      */
 
-    private MediaSource buildExternalSubtitleSource(PKExternalSubtitle pkExternalSubtitle) {
-        boolean urlMimeTypeCompatible = checkExternalSubtitleAndMimeTypeCompatibility(pkExternalSubtitle.getUrl(), pkExternalSubtitle.getMimeType());
-
-        if (urlMimeTypeCompatible) {
+    private MediaSource buildExternalSubtitleSource(int subtitleId, PKExternalSubtitle pkExternalSubtitle) {
             // Build the subtitle MediaSource.
             Format subtitleFormat = Format.createTextContainerFormat(
-                    pkExternalSubtitle.getId(), // An identifier for the track. May be null.
+                    String.valueOf(subtitleId), // An identifier for the track. May be null.
                     pkExternalSubtitle.getLabel(),
                     pkExternalSubtitle.getContainerMimeType(),
                     pkExternalSubtitle.getMimeType(), // The mime type. Must be set correctly.
@@ -341,47 +321,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
             return new SingleSampleMediaSource.Factory(dataSourceFactory)
                     .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
-
-        } else {
-            log.e("Subtitle and Mime type is not compatible.");
-            return null;
-        }
-    }
-
-    /**
-     * Check External subtitle and its Mime type compatibility
-     * @param subtitleURL External subtitle url to extract the subtitle extension (SRT and VTT only) passed by application
-     * @param mimeType Mime type passed by application
-     * @return if compatible then true or false
-     */
-
-    private boolean checkExternalSubtitleAndMimeTypeCompatibility(String subtitleURL, String mimeType) {
-        if (subtitleURL != null && !TextUtils.isEmpty(subtitleURL)) {
-            int lastDotIndex = subtitleURL.lastIndexOf(".");
-            String subtitleExtensionName = subtitleURL.substring(lastDotIndex + 1 , subtitleURL.length());
-            log.d("Subtitle Extension Name: " + subtitleExtensionName);
-
-            if (mimeType != null) {
-                if ("vtt".equals(subtitleExtensionName) && !mimeType.equals(MimeTypes.TEXT_VTT)) {
-                    log.e("Subtitle URL: " + subtitleExtensionName + " and MIME type: " + mimeType + " is not matching.");
-                    return false;
-                }
-
-                if ("srt".equals(subtitleExtensionName) && !mimeType.equals(MimeTypes.APPLICATION_SUBRIP)) {
-                    log.e("Subtitle URL: " + subtitleExtensionName + " and MIME type: " + mimeType + " is not matching.");
-                    return false;
-                }
-            } else {
-                log.e("Subtitle MIME type can not be null.");
-                return false;
-            }
-
-        } else {
-            log.e("Subtitle URL can not be null or empty.");
-            return false;
-        }
-
-        return true;
     }
 
     private DataSource.Factory dataSourceFactory() {
