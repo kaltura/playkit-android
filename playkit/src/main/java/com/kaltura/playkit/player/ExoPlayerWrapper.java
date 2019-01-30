@@ -378,7 +378,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 if (playWhenReady) {
                     sendDistinctEvent(PlayerEvent.Type.PLAYING);
                 }
-
                 break;
             case Player.STATE_ENDED:
                 log.d("onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
@@ -388,9 +387,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 break;
             default:
                 break;
-
         }
-
     }
 
     private void pausePlayerAfterEndedEvent() {
@@ -412,12 +409,17 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
-        log.d("onTimelineChanged reason = " + reason);
+        log.d("onTimelineChanged reason = " + reason + " duration = " + getDuration());
         if (reason == Player.TIMELINE_CHANGE_REASON_PREPARED) {
             sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
-            sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
+            if (getDuration() != TIME_UNSET) {
+                sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
+            }
         }
 
+        if (reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC && getDuration() != TIME_UNSET) {
+            sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
+        }
         shouldResetPlayerPosition = (reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC);
     }
     
