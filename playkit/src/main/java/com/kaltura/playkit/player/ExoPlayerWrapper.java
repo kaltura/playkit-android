@@ -27,6 +27,7 @@ import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -37,6 +38,8 @@ import com.google.android.exoplayer2.metadata.MetadataOutput;
 import com.google.android.exoplayer2.source.BehindLiveWindowException;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.MergingMediaSource;
+import com.google.android.exoplayer2.source.SingleSampleMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
@@ -84,9 +87,6 @@ import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
-
-    private static final boolean useOkHttp = true;
-
     private static final CookieManager DEFAULT_COOKIE_MANAGER;
 
     static {
@@ -246,6 +246,14 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig) {
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
+
+        List<PKExternalSubtitle> externalSubtitleList = null;
+
+        if (sourceConfig.getExternalSubtitleList() != null) {
+            externalSubtitleList = sourceConfig.getExternalSubtitleList().size() > 0 ?
+                    sourceConfig.getExternalSubtitleList() : null;
+        }
+
         if (format == null) {
             // TODO: error?
             return null;
@@ -257,34 +265,82 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         switch (format) {
             case dash:
-                return new DashMediaSource.Factory(
+                DashMediaSource dashDataSource = new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(dataSourceFactory),
                         dataSourceFactory)
                         .createMediaSource(uri);
+                return new MergingMediaSource(buildMediaSourceList(dashDataSource, externalSubtitleList));
+
             case hls:
-                return new HlsMediaSource.Factory(dataSourceFactory)
+                HlsMediaSource hlsMediaSource = new HlsMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(uri);
+                return new MergingMediaSource(buildMediaSourceList(hlsMediaSource, externalSubtitleList));
+
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
-                return new ExtractorMediaSource.Factory(dataSourceFactory)
+                ExtractorMediaSource extractorMediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(uri);
+                return new MergingMediaSource(buildMediaSourceList(extractorMediaSource, externalSubtitleList));
 
             default:
                 throw new IllegalStateException("Unsupported type: " + format);
         }
     }
 
-    private HttpDataSource.Factory getHttpDataSourceFactory() {
+    /**
+     * Return the media source with external subtitles if exists
+     * @param externalSubtitleList External subtitle List
+     * @return Media Source array
+     */
 
+    private MediaSource[] buildMediaSourceList(MediaSource mediaSource, List<PKExternalSubtitle> externalSubtitleList) {
+        List<MediaSource> streamMediaSources = new ArrayList<>();
+
+        if (externalSubtitleList != null && externalSubtitleList.size() > 0) {
+            for (int subtitlePosition = 0 ; subtitlePosition < externalSubtitleList.size() ; subtitlePosition ++) {
+                MediaSource subtitleMediaSource = buildExternalSubtitleSource(subtitlePosition, externalSubtitleList.get(subtitlePosition));
+                streamMediaSources.add(subtitleMediaSource);
+            }
+        }
+
+        // 0th position is secured for dash/hls/extractor media source
+        streamMediaSources.add(0, mediaSource);
+        return streamMediaSources.toArray(new MediaSource[0]);
+    }
+
+    /**
+     * Create single Media Source object with each subtitle
+     * @param pkExternalSubtitle External subtitle object
+     * @return An object of external subtitle media source
+     */
+
+    @NonNull
+    private MediaSource buildExternalSubtitleSource(int subtitleId, PKExternalSubtitle pkExternalSubtitle) {
+            // Build the subtitle MediaSource.
+            Format subtitleFormat = Format.createTextContainerFormat(
+                    String.valueOf(subtitleId), // An identifier for the track. May be null.
+                    pkExternalSubtitle.getLabel(),
+                    pkExternalSubtitle.getContainerMimeType(),
+                    pkExternalSubtitle.getMimeType(), // The mime type. Must be set correctly.
+                    pkExternalSubtitle.getCodecs(),
+                    pkExternalSubtitle.getBitrate(),
+                    pkExternalSubtitle.getSelectionFlags(),
+                    pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
+
+            return new SingleSampleMediaSource.Factory(dataSourceFactory)
+                    .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
+    }
+
+    private HttpDataSource.Factory getHttpDataSourceFactory() {
+        
         if (httpDataSourceFactory == null) {
             final String userAgent = getUserAgent(context);
-
             final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
 
-            if (useOkHttp) {
+            if (PKHttpClientManager.useOkHttp()) {
 
-                final OkHttpClient.Builder builder = PKConnectionPoolManager.newClientBuilder()
+                final OkHttpClient.Builder builder = PKHttpClientManager.newClientBuilder()
                         .followRedirects(true)
                         .followSslRedirects(crossProtocolRedirectEnabled)
                         .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
@@ -295,9 +351,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                     profiler.startNetworkListener(builder);
                 }
 
-                final OkHttpClient okHttpClient = builder.build();
-
-                httpDataSourceFactory = new OkHttpDataSourceFactory(okHttpClient, userAgent);
+                httpDataSourceFactory = new OkHttpDataSourceFactory(builder.build(), userAgent);
 
             } else {
 
@@ -402,7 +456,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 if (playWhenReady) {
                     sendDistinctEvent(PlayerEvent.Type.PLAYING);
                 }
-
                 break;
 
             case Player.STATE_ENDED:
@@ -415,7 +468,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             default:
                 break;
         }
-
     }
 
     private void pausePlayerAfterEndedEvent() {
@@ -437,16 +489,21 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
-        log.d("onTimelineChanged reason = " + reason);
+        log.d("onTimelineChanged reason = " + reason + " duration = " + getDuration());
         if (reason == Player.TIMELINE_CHANGE_REASON_PREPARED) {
             sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
-            sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
-            profiler.onDurationChanged(getDuration());
+            if (getDuration() != TIME_UNSET) {
+                sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
+                profiler.onDurationChanged(getDuration());
+            }
         }
 
+        if (reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC && getDuration() != TIME_UNSET) {
+            sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
+        }
         shouldResetPlayerPosition = (reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC);
     }
-    
+
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
