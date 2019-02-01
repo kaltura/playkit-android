@@ -659,10 +659,14 @@ public class PlayerController implements Player {
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
                         if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
-                            if (mediaConfig.getStartPosition() != null &&
-                                    ((isLiveMediaWithDvr() && mediaConfig.getStartPosition() == 0) ||
-                                            mediaConfig.getStartPosition() > 0)) {
-                                startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+                            if(mediaConfig.getStartPosition() != null) {
+                                if (mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER > getDuration()) {
+                                    mediaConfig.setStartPosition(getDuration() / MILLISECONDS_MULTIPLIER);
+                                }
+                                if ((isLiveMediaWithDvr() && mediaConfig.getStartPosition() == 0) ||
+                                                mediaConfig.getStartPosition() > 0) {
+                                    startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+                                }
                             }
                             isNewEntry = false;
                             isPlayerStopped = false;
