@@ -458,7 +458,9 @@ class TrackSelectionHelper {
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
             while (videoTrackIterator.hasNext()) {
                 VideoTrack currertVideoTrack = videoTrackIterator.next();
-                if (currertVideoTrack.getBitrate() < minVideoBitrate || currertVideoTrack.getBitrate() > maxVideoBitrare) {
+                if (currertVideoTrack.isAdaptive()) {
+                    uniqueIds.add(currertVideoTrack.getUniqueId());
+                } else if (currertVideoTrack.getBitrate() < minVideoBitrate || currertVideoTrack.getBitrate() > maxVideoBitrare) {
                     videoTrackIterator.remove();
                 } else {
                     uniqueIds.add(currertVideoTrack.getUniqueId());
