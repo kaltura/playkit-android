@@ -458,12 +458,10 @@ class TrackSelectionHelper {
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
             while (videoTrackIterator.hasNext()) {
                 VideoTrack currertVideoTrack = videoTrackIterator.next();
-                if (currertVideoTrack.isAdaptive()) {
+                if (currertVideoTrack.isAdaptive() || ((currertVideoTrack.getBitrate() >= minVideoBitrate && currertVideoTrack.getBitrate() <= maxVideoBitrare))) {
                     uniqueIds.add(currertVideoTrack.getUniqueId());
-                } else if (currertVideoTrack.getBitrate() < minVideoBitrate || currertVideoTrack.getBitrate() > maxVideoBitrare) {
-                    videoTrackIterator.remove();
                 } else {
-                    uniqueIds.add(currertVideoTrack.getUniqueId());
+                    videoTrackIterator.remove();
                 }
             }
         }
