@@ -663,6 +663,10 @@ public class PlayerController implements Player {
                                 if (mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER > getDuration()) {
                                     mediaConfig.setStartPosition(getDuration() / MILLISECONDS_MULTIPLIER);
                                 }
+                                if (mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER < 0) {
+                                    mediaConfig.setStartPosition(0L);
+                                }
+
                                 if ((isLiveMediaWithDvr() && mediaConfig.getStartPosition() == 0) ||
                                                 mediaConfig.getStartPosition() > 0) {
                                     startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
