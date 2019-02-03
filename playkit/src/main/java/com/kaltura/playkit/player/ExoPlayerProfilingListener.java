@@ -44,9 +44,9 @@ import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_INTERNAL
 import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_PERIOD_TRANSITION;
 import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK;
 import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT;
-import static com.kaltura.playkit.player.Profiler.field;
+import static com.kaltura.playkit.player.DefaultProfiler.field;
 import static com.kaltura.playkit.player.Profiler.pkLog;
-import static com.kaltura.playkit.player.Profiler.timeField;
+import static com.kaltura.playkit.player.DefaultProfiler.timeField;
 
 class ExoPlayerProfilingListener implements AnalyticsListener {
 
@@ -80,8 +80,8 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         if (trackFormat == null) {
             return null;
         }
-        return Profiler.nullable("id", trackFormat.id) + DefaultProfiler.SEPARATOR + "bitrate=" + trackFormat.bitrate + DefaultProfiler.SEPARATOR +
-                Profiler.nullable("codecs", trackFormat.codecs) + DefaultProfiler.SEPARATOR + Profiler.nullable("language", trackFormat.language);
+        return DefaultProfiler.nullable("id", trackFormat.id) + DefaultProfiler.SEPARATOR + "bitrate=" + trackFormat.bitrate + DefaultProfiler.SEPARATOR +
+                DefaultProfiler.nullable("codecs", trackFormat.codecs) + DefaultProfiler.SEPARATOR + DefaultProfiler.nullable("language", trackFormat.language);
     }
 
     private String trackTypeString(int trackType) {

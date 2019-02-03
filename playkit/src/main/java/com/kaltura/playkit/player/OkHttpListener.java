@@ -24,10 +24,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.TlsVersion;
 
-import static com.kaltura.playkit.player.Profiler.field;
-import static com.kaltura.playkit.player.Profiler.nullable;
-import static com.kaltura.playkit.player.Profiler.pkLog;
-import static com.kaltura.playkit.player.Profiler.timeField;
+import static com.kaltura.playkit.player.DefaultProfiler.field;
+import static com.kaltura.playkit.player.DefaultProfiler.timeField;
 
 class OkHttpListener extends EventListener {
 

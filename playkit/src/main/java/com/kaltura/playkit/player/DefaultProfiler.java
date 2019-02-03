@@ -3,13 +3,20 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.Process;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
+import com.google.android.exoplayer2.C;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
@@ -19,6 +26,8 @@ import com.kaltura.playkit.Utils;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -28,6 +37,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -44,6 +54,15 @@ class DefaultProfiler extends Profiler {
     static final String SEPARATOR = "\t";
     private static final boolean devMode = true;
     private static final int SEND_INTERVAL_SEC = devMode ? 10 : 300;   // Report every 5 minutes
+    private static final float DEFAULT_SEND_PERCENTAGE = 1; // Start disabled
+    static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
+    private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
+    private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json-";
+    private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
+    static String postURL = DEFAULT_POST_URL;
+    private static final int MAX_CONFIG_SIZE = 10240;
+    static Handler ioHandler;
+    static boolean initialized;
 
     private static DisplayMetrics metrics;
     private static File externalFilesDir;   // for debug logs
@@ -53,6 +72,7 @@ class DefaultProfiler extends Profiler {
     private String sessionId;
 
     private final Set<String> serversLookedUp = new HashSet<>();
+
 
     DefaultProfiler() {
 
@@ -67,6 +87,10 @@ class DefaultProfiler extends Profiler {
             }
         });
 
+    }
+
+    public static boolean isInitialized() {
+        return initialized;
     }
 
     static void initMembers(final Context context) {
@@ -127,6 +151,128 @@ class DefaultProfiler extends Profiler {
         }
 
         return json;
+    }
+
+    static String field(String name, String value) {
+        if (value == null) {
+            return null;
+        }
+        return name + "={" + value + "}";
+    }
+
+    static String field(String name, long value) {
+        return name + "=" + value;
+    }
+
+    static String field(String name, boolean value) {
+        return name + "=" + value;
+    }
+
+    static String field(String name, float value) {
+        return String.format(Locale.US, "%s=%.03f", name, value);
+    }
+
+    static String timeField(String name, long value) {
+        return value == C.TIME_UNSET ? field(name, null) : field(name, value / 1000f);
+    }
+
+    static Profiler maybeCreate() {
+
+        return initialized && Math.random() < (sendPercentage / 100) ? new DefaultProfiler() : null;
+    }
+
+    static void downloadConfig(Context context) {
+        final byte[] bytes;
+
+        // Download
+        try {
+            bytes = Utils.executeGet(CONFIG_URL, null);
+
+            parseConfig(bytes);
+
+        } catch (IOException e) {
+            pkLog.e("Failed to download config", e);
+            return;
+        }
+
+        // Save to cache
+        final File cachedConfigFile = getCachedConfigFile(context);
+        if (cachedConfigFile.getParentFile().canWrite()) {
+            FileOutputStream outputStream = null;
+            try {
+                outputStream = new FileOutputStream(cachedConfigFile);
+                outputStream.write(bytes);
+            } catch (IOException e) {
+                pkLog.e("Failed to save config to cache", e);
+            } finally {
+                Utils.safeClose(outputStream);
+            }
+        }
+    }
+
+    static void loadCachedConfig(Context context) {
+        final File configFile = getCachedConfigFile(context);
+
+        if (configFile.canRead()) {
+            FileInputStream inputStream = null;
+            try {
+                inputStream = new FileInputStream(configFile);
+                parseConfig(Utils.fullyReadInputStream(inputStream, MAX_CONFIG_SIZE).toByteArray());
+
+            } catch (IOException e) {
+                pkLog.e("Failed to read cached config file", e);
+
+            } finally {
+                Utils.safeClose(inputStream);
+            }
+        }
+    }
+
+    @NonNull
+    private static File getCachedConfigFile(Context context) {
+        return new File(context.getFilesDir(), CONFIG_CACHE_FILENAME);
+    }
+
+    private static void parseConfig(byte[] bytes) {
+        try {
+            final ConfigFile configFile = new Gson().fromJson(new String(bytes), ConfigFile.class);
+            postURL = configFile.putLogURL;
+            sendPercentage = configFile.sendPercentage;
+        } catch (JsonParseException e) {
+            pkLog.e("Failed to parse config", e);
+        }
+    }
+
+    static String nullable(String name, String value) {
+        if (value == null) {
+            return name + "=null";
+        }
+
+        return field(name, value);
+    }
+
+    public static void init(Context context) {
+        if (initialized) {
+            return;
+        }
+
+        final Context appContext = context.getApplicationContext();
+
+        synchronized (Profiler.class) {
+
+            // Load cached config. Will load from network later, in a handler thread.
+            loadCachedConfig(appContext);
+
+            HandlerThread handlerThread = new HandlerThread("ProfilerIO", Process.THREAD_PRIORITY_BACKGROUND);
+            handlerThread.start();
+            ioHandler = new Handler(handlerThread.getLooper());
+
+            ioHandler.post(() -> downloadConfig(appContext));
+
+            initMembers(appContext);
+
+            initialized = true;
+        }
     }
 
     @Override

@@ -1,41 +1,25 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Process;
 import android.support.annotation.NonNull;
 
-import com.google.android.exoplayer2.C;
-import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
-import com.kaltura.playkit.Utils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 
 import okhttp3.OkHttpClient;
 
 public abstract class Profiler {
 
-    private static final float DEFAULT_SEND_PERCENTAGE = 100; // Start disabled
-    private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
-    private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json-";
-    private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
-    private static final int MAX_CONFIG_SIZE = 10240;
-    static String postURL = DEFAULT_POST_URL;
-    static Handler ioHandler;
     static PKLog pkLog = PKLog.get("Profiler");
-    private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
-    private static boolean started;
     static final Map<String, Object> experiments = new LinkedHashMap<>();
+
+    static boolean initDone;
+    private static Method profilerFactory;
 
     private static Profiler NULL = new Profiler() {
 
@@ -82,137 +66,55 @@ public abstract class Profiler {
         void startNetworkListener(OkHttpClient.Builder builder) {}
     };
 
+    // Called by PlayerController
+    @NonNull
+    static Profiler get() {
+
+        try {
+            final Object profilerObj = profilerFactory.invoke(null);
+            if (profilerObj instanceof Profiler) {
+                return ((Profiler) profilerObj);
+            }
+
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
+        return NULL;
+    }
+
+    // Called by PlayKitManager
     public static void init(Context context) {
-        if (started) {
-            return;
+
+        // If profiler is either ALREADY initialized or WON'T initialize, do nothing.
+        if (initDone) return;
+
+        try {
+            // Get the DefaultProfiler class
+            final Class<?> profilerClass = Class.forName("com.kaltura.playkit.player.DefaultProfiler");
+            // Call static DefaultProfiler.init(context)
+            profilerClass.getDeclaredMethod("init", Context.class).invoke(null, context);
+
+            // Save the factory for later
+            profilerFactory = profilerClass.getDeclaredMethod("maybeCreate");
+
+        } catch (ClassNotFoundException e) {
+            // No profiler -- ignore.
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
 
-        final Context appContext = context.getApplicationContext();
-
-        synchronized (Profiler.class) {
-
-            // Load cached config. Will load from network later, in a handler thread.
-            loadCachedConfig(appContext);
-
-            HandlerThread handlerThread = new HandlerThread("ProfilerIO", Process.THREAD_PRIORITY_BACKGROUND);
-            handlerThread.start();
-            ioHandler = new Handler(handlerThread.getLooper());
-
-            ioHandler.post(() -> downloadConfig(appContext));
-
-            DefaultProfiler.initMembers(appContext);
-
-            started = true;
-        }
+        initDone = true;
     }
 
     public static void setExperiment(String key, Object value) {
         experiments.put(key, value);
-    }
-
-    static String field(String name, String value) {
-        if (value == null) {
-            return null;
-        }
-        return name + "={" + value + "}";
-    }
-
-    static String field(String name, long value) {
-        return name + "=" + value;
-    }
-
-    static String field(String name, boolean value) {
-        return name + "=" + value;
-    }
-
-    static String field(String name, float value) {
-        return String.format(Locale.US, "%s=%.03f", name, value);
-    }
-
-    static String timeField(String name, long value) {
-        return value == C.TIME_UNSET ? field(name, null) : field(name, value / 1000f);
-    }
-
-    static Profiler create() {
-        if (!Profiler.started || !Profiler.shouldEnable()) {
-            return NULL;
-        }
-
-        return new DefaultProfiler();
-    }
-
-    private static boolean shouldEnable() {
-        return Math.random() < (Profiler.sendPercentage / 100);
-    }
-
-    private static void downloadConfig(Context context) {
-        final byte[] bytes;
-
-        // Download
-        try {
-            bytes = Utils.executeGet(CONFIG_URL, null);
-
-            parseConfig(bytes);
-
-        } catch (IOException e) {
-            pkLog.e("Failed to download config", e);
-            return;
-        }
-
-        // Save to cache
-        final File cachedConfigFile = getCachedConfigFile(context);
-        if (cachedConfigFile.getParentFile().canWrite()) {
-            FileOutputStream outputStream = null;
-            try {
-                outputStream = new FileOutputStream(cachedConfigFile);
-                outputStream.write(bytes);
-            } catch (IOException e) {
-                pkLog.e("Failed to save config to cache", e);
-            } finally {
-                Utils.safeClose(outputStream);
-            }
-        }
-    }
-
-    static void loadCachedConfig(Context context) {
-        final File configFile = getCachedConfigFile(context);
-
-        if (configFile.canRead()) {
-            FileInputStream inputStream = null;
-            try {
-                inputStream = new FileInputStream(configFile);
-                parseConfig(Utils.fullyReadInputStream(inputStream, MAX_CONFIG_SIZE).toByteArray());
-
-            } catch (IOException e) {
-                pkLog.e("Failed to read cached config file", e);
-
-            } finally {
-                Utils.safeClose(inputStream);
-            }
-        }
-    }
-
-    @NonNull
-    private static File getCachedConfigFile(Context context) {
-        return new File(context.getFilesDir(), CONFIG_CACHE_FILENAME);
-    }
-
-    private static void parseConfig(byte[] bytes) {
-        try {
-            final ConfigFile configFile = new Gson().fromJson(new String(bytes), ConfigFile.class);
-            postURL = configFile.putLogURL;
-            sendPercentage = configFile.sendPercentage;
-        } catch (JsonParseException e) {
-            pkLog.e("Failed to parse config", e);
-        }
-    }
-
-    static String nullable(String name, String value) {
-        if (value == null) {
-            return name + "=null";
-        }
-
-        return field(name, value);
     }
 
     abstract void newSession(String sessionId);

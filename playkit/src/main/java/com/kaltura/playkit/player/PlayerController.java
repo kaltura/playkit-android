@@ -65,7 +65,7 @@ public class PlayerController implements Player {
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
 
-    private Profiler profiler = Profiler.create();
+    private Profiler profiler = Profiler.get();
 
     private PKEvent.RawListener eventListener;
     private PlayerEngine.EventListener eventTrigger = initEventListener();
