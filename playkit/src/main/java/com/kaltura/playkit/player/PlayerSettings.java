@@ -38,7 +38,7 @@ public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
-
+    private String networkProvider;
 
 
     public PKRequestParams.Adapter getContentRequestAdapter() {

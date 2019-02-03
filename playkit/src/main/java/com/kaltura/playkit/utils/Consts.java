@@ -64,6 +64,12 @@ public class Consts {
      */
     public static final int DEFAULT_TRACK_SELECTION_FLAG = 5;
 
+    /**
+     * Flag that indicates, that this specified track will not
+     * be selected by the player as default track.
+     */
+    public static final int TRACK_UNSELECTED_FLAG = 0;
+
     public static final double PERCENT_FACTOR = 100.0;
 
     public static final long MILLISECONDS_MULTIPLIER = 1000L;
