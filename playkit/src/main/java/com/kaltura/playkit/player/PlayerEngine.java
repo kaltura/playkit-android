@@ -117,7 +117,7 @@ public interface PlayerEngine {
     /**
      * changeTrackMBRSubset.
      *
-     * @param uniqueIds - List<String> uniqueIds in MBR.
+     * @param uniqueIds - List of String uniqueIds in MBR.
      */
     void changeTrackMBRSubset(List<String> uniqueIds);
 

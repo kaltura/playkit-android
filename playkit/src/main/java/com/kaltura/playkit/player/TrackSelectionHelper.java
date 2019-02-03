@@ -511,7 +511,7 @@ class TrackSelectionHelper {
     }
 
     private int[][] validateAndBuildUniqueIds(List<String> uniqueIds) {
-        int [][] idsList = new int [uniqueIds.size()][3];
+        int [][] idsList = new int [uniqueIds.size()][TRACK_RENDERERS_AMOUNT];
         for (int index = 0 ; index < idsList.length ; index++) {
             int[] uniqueTrackId = validateUniqueId(uniqueIds.get(index));
             idsList[index] = uniqueTrackId;
