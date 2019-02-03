@@ -51,30 +51,31 @@ class ConfigFile {
 
 class DefaultProfiler extends Profiler {
 
-    static final String SEPARATOR = "\t";
+    private static final String SEPARATOR = "\t";
     private static final boolean devMode = true;
     private static final int SEND_INTERVAL_SEC = devMode ? 10 : 300;   // Report every 5 minutes
-    private static final float DEFAULT_SEND_PERCENTAGE = 1; // Start disabled
-    static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
+    private static final float DEFAULT_SEND_PERCENTAGE = 100; // Start disabled
+    private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
     private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
     private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json-";
     private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
-    static String postURL = DEFAULT_POST_URL;
+    private static String postURL = DEFAULT_POST_URL;
     private static final int MAX_CONFIG_SIZE = 10240;
-    static Handler ioHandler;
-    static boolean initialized;
+    private static Handler ioHandler;
+    private static boolean initialized;
 
     private static DisplayMetrics metrics;
     private static File externalFilesDir;   // for debug logs
     private final ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
-    long startTime;
+
+    long sessionStartTime;
     private ExoPlayerProfilingListener analyticsListener;
     private String sessionId;
 
     private final Set<String> serversLookedUp = new HashSet<>();
 
 
-    DefaultProfiler() {
+    private DefaultProfiler() {
 
         ioHandler.post(new Runnable() {
             @Override
@@ -89,11 +90,7 @@ class DefaultProfiler extends Profiler {
 
     }
 
-    public static boolean isInitialized() {
-        return initialized;
-    }
-
-    static void initMembers(final Context context) {
+    private static void initMembers(final Context context) {
 
         metrics = context.getResources().getDisplayMetrics();
 
@@ -251,6 +248,11 @@ class DefaultProfiler extends Profiler {
         return field(name, value);
     }
 
+    /**
+     * Initialize the static part of the profiler -- load the config and store it,
+     * create IO thread and handler.
+     * @param context
+     */
     public static void init(Context context) {
         if (initialized) {
             return;
@@ -275,6 +277,10 @@ class DefaultProfiler extends Profiler {
         }
     }
 
+    static String joinFields(String... fields) {
+        return TextUtils.join(SEPARATOR, fields);
+    }
+
     @Override
     void newSession(final String sessionId) {
 
@@ -288,7 +294,7 @@ class DefaultProfiler extends Profiler {
             return;     // the null profiler
         }
 
-        this.startTime = SystemClock.elapsedRealtime();
+        this.sessionStartTime = SystemClock.elapsedRealtime();
         this.logQueue.clear();
 
         this.serversLookedUp.clear();
@@ -443,7 +449,7 @@ class DefaultProfiler extends Profiler {
 
         StringBuilder sb = new StringBuilder(100);
         sb
-                .append(SystemClock.elapsedRealtime() - startTime)
+                .append(SystemClock.elapsedRealtime() - sessionStartTime)
                 .append(SEPARATOR)
                 .append(event);
 

@@ -45,6 +45,8 @@ import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_PERIOD_T
 import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK;
 import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT;
 import static com.kaltura.playkit.player.DefaultProfiler.field;
+import static com.kaltura.playkit.player.DefaultProfiler.joinFields;
+import static com.kaltura.playkit.player.DefaultProfiler.nullable;
 import static com.kaltura.playkit.player.Profiler.pkLog;
 import static com.kaltura.playkit.player.DefaultProfiler.timeField;
 
@@ -80,8 +82,9 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         if (trackFormat == null) {
             return null;
         }
-        return DefaultProfiler.nullable("id", trackFormat.id) + DefaultProfiler.SEPARATOR + "bitrate=" + trackFormat.bitrate + DefaultProfiler.SEPARATOR +
-                DefaultProfiler.nullable("codecs", trackFormat.codecs) + DefaultProfiler.SEPARATOR + DefaultProfiler.nullable("language", trackFormat.language);
+
+        return joinFields(nullable("id", trackFormat.id), "bitrate=" + trackFormat.bitrate,
+                nullable("codecs", trackFormat.codecs), nullable("language", trackFormat.language));
     }
 
     private String trackTypeString(int trackType) {
@@ -289,12 +292,8 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             return;
         }
 
-        if (loadEventInfo.dataSpec.uri.getPath().contains("widevine")) {
-            pkLog.d(loadEventInfo.dataSpec.uri.toString());
-        }
-
         log(event,
-                timeField("time", loadEventInfo.elapsedRealtimeMs - profiler.startTime), field("uri", loadEventInfo.dataSpec.uri.toString()),
+                timeField("time", loadEventInfo.elapsedRealtimeMs - profiler.sessionStartTime), field("uri", loadEventInfo.dataSpec.uri.toString()),
                 field("dataType", dataTypeString), field("trackType", trackTypeString),
                 trackFormatString(mediaLoadData.trackFormat), field("reason", trackSelectionReasonString(mediaLoadData.trackSelectionReason)),
                 timeField("rangeStart", mediaLoadData.mediaStartTimeMs), timeField("rangeEnd", mediaLoadData.mediaEndTimeMs),
