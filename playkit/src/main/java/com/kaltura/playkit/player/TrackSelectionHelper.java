@@ -15,6 +15,7 @@ package com.kaltura.playkit.player;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
 
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
@@ -31,6 +32,7 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -426,8 +428,10 @@ class TrackSelectionHelper {
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
-    public void changeTrackMBRSubset(List<String> uniqueIds) {
-        log.i("Request changeTrackMBRSubset");
+    public void overrideMediaDefaultABR(int minVideoBitrate, int maxVideoBitrare) {
+
+        List<String> uniqueIds = getABRUniqeIds(minVideoBitrate, maxVideoBitrare);
+        log.i("niqeRequest overrideMediaDefaultABR");
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
             log.w("Trying to get current MappedTrackInfo returns null");
@@ -446,6 +450,24 @@ class TrackSelectionHelper {
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
+    private List<String> getABRUniqeIds(int minVideoBitrate, int maxVideoBitrare) {
+        List<String> uniqueIds = new ArrayList<>();
+        if (videoTracks != null) {
+            //List<VideoTrack> newTracksList = new ArrayList<>(videoTracks);
+
+            Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
+            while (videoTrackIterator.hasNext()) {
+                VideoTrack currertVideoTrack = videoTrackIterator.next();
+                if (currertVideoTrack.getBitrate() < minVideoBitrate || currertVideoTrack.getBitrate() > maxVideoBitrare) {
+                    videoTrackIterator.remove();
+                } else {
+                    uniqueIds.add(currertVideoTrack.getUniqueId());
+                }
+            }
+        }
+        return uniqueIds;
+    }
+
     private SelectionOverride retrieveOverrideSelectionList(int[][] uniqueIds) {
         if (uniqueIds == null || uniqueIds[0] == null) {
             throw new IllegalArgumentException("Track selection with uniqueId = null");
@@ -459,9 +481,9 @@ class TrackSelectionHelper {
         boolean isAdaptive = trackIndex == TRACK_ADAPTIVE;
 
         if (uniqueIds.length == 1 && isAdaptive) {
-            override = selectAutoMBRTracks(rendererIndex, groupIndex);
+            override = overrideAutoABRTracks(rendererIndex, groupIndex);
         } else if (uniqueIds.length > 1) {
-            override = selectSubsetMBRTracks(uniqueIds, rendererIndex, groupIndex);
+            override = overrideMediaDefaultABR(uniqueIds, rendererIndex, groupIndex);
         } else {
             override = new SelectionOverride(groupIndex, trackIndex);
         }
@@ -469,7 +491,7 @@ class TrackSelectionHelper {
     }
 
     @NonNull
-    private SelectionOverride selectSubsetMBRTracks(int[][] uniqueIds, int rendererIndex, int groupIndex) {
+    private SelectionOverride overrideMediaDefaultABR(int[][] uniqueIds, int rendererIndex, int groupIndex) {
         SelectionOverride override;List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
         int[] adaptiveTrackIndexes;
 
@@ -618,7 +640,7 @@ class TrackSelectionHelper {
     }
 
     @NonNull
-    private SelectionOverride selectAutoMBRTracks(int rendererIndex, int groupIndex) {
+    private SelectionOverride overrideAutoABRTracks(int rendererIndex, int groupIndex) {
         SelectionOverride override;List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
         int[] adaptiveTrackIndexes;
 

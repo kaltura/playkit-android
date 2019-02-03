@@ -39,6 +39,8 @@ public class PlayerSettings implements Player.Settings {
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
     private String networkProvider;
+    private Integer minVideoBitrate = Integer.MIN_VALUE;
+    private Integer maxVideoBitrate = Integer.MAX_VALUE;
 
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
@@ -99,6 +101,14 @@ public class PlayerSettings implements Player.Settings {
 
     public SubtitleStyleSettings getSubtitleStyleSettings() {
         return subtitleStyleSettings;
+    }
+
+    public Integer getMinVideoBitrate() {
+        return minVideoBitrate;
+    }
+
+    public Integer getMaxVideoBitrate() {
+        return maxVideoBitrate;
     }
 
     @Override
@@ -177,6 +187,18 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings allowClearLead(boolean allowClearLead) {
         this.allowClearLead = allowClearLead;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setMinVideoBitrate(int minVideoBitrate) {
+        this.minVideoBitrate = minVideoBitrate;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setMaxVideoBitrate(int maxVideoBitrate) {
+        this.maxVideoBitrate = maxVideoBitrate;
         return this;
     }
 

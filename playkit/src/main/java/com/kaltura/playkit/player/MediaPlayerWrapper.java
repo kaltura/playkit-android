@@ -293,7 +293,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public void changeTrackMBRSubset(List uniqueIds) {
+    public void overrideMediaDefaultABR(int minVideoBitrate, int maxVideoBitrate) {
         // Do Nothing
     }
 

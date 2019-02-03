@@ -182,11 +182,6 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void changeTrackMBRSubset(List<String> uniqueIds) {
-        player.changeTrackMBRSubset(uniqueIds);
-    }
-
-    @Override
     public void onApplicationPaused() {
         player.onApplicationPaused();
     }

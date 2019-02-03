@@ -33,7 +33,6 @@ import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
@@ -519,15 +518,6 @@ public class PlayerController implements Player {
         if (assertPlayerIsNotNull("changeTrack()")) {
             player.changeTrack(uniqueId);
         }
-    }
-
-    @Override
-    public void changeTrackMBRSubset(List<String> uniqueIds) {
-        if (player == null) {
-            log.w("Attempt to invoke 'changeTrackMBRSubset()' on null instance of the player engine");
-            return;
-        }
-        player.changeTrackMBRSubset(uniqueIds);
     }
 
     @Override

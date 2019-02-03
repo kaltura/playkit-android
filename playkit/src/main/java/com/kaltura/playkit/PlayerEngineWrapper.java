@@ -75,8 +75,8 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
-    public void changeTrackMBRSubset(List<String> uniqueIds){
-        playerEngine.changeTrackMBRSubset(uniqueIds);
+    public void overrideMediaDefaultABR(int minVideoBitrate, int maxVideoBitrate){
+        playerEngine.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
     }
 
     @Override

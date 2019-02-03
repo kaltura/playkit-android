@@ -115,11 +115,12 @@ public interface PlayerEngine {
     void changeTrack(String uniqueId);
 
     /**
-     * changeTrackMBRSubset.
+     * overrideMediaDefaultABR.
      *
-     * @param uniqueIds - List of String uniqueIds in MBR.
+     * @param minVideoBitrate - minVideoBitrate.
+     * @param maxVideoBitrate - minVideoBitrate.
      */
-    void changeTrackMBRSubset(List<String> uniqueIds);
+    void overrideMediaDefaultABR(int minVideoBitrate, int maxVideoBitrate);
 
     /**
      * Seek player to the specified position.
