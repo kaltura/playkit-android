@@ -4,11 +4,11 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.google.android.exoplayer2.analytics.AnalyticsListener;
-import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -17,7 +17,6 @@ import okhttp3.OkHttpClient;
 
 public abstract class Profiler {
 
-    static PKLog pkLog = PKLog.get("Profiler");
     static final Map<String, Object> experiments = new LinkedHashMap<>();
 
     static boolean initDone;
@@ -31,45 +30,45 @@ public abstract class Profiler {
         public void setPlayerEngine(ExoPlayerWrapper playerEngine) {}
 
         @Override
-        void newSession(String sessionId) {}
+        public void newSession(String sessionId, PlayerSettings playerSettings) {}
 
         @Override
-        AnalyticsListener getExoAnalyticsListener() {
+        public AnalyticsListener getExoAnalyticsListener() {
             return exoAnalyticsListener;
         }
 
         @Override
-        void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig) {}
+        public void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig) {}
 
         @Override
-        void onPrepareStarted(PlayerEngine playerEngine, PKMediaSourceConfig sourceConfig) {}
+        public void onPrepareStarted(PlayerEngine playerEngine, PKMediaSourceConfig sourceConfig) {}
 
         @Override
-        void onSeekRequested(PlayerEngine playerEngine, long position) {}
+        public void onSeekRequested(PlayerEngine playerEngine, long position) {}
 
         @Override
-        void onPauseRequested(PlayerEngine playerEngine) {}
+        public void onPauseRequested(PlayerEngine playerEngine) {}
 
         @Override
-        void onReplayRequested(PlayerEngine playerEngine) {}
+        public void onReplayRequested(PlayerEngine playerEngine) {}
 
         @Override
-        void onPlayRequested(PlayerEngine playerEngine) {}
+        public void onPlayRequested(PlayerEngine playerEngine) {}
 
         @Override
-        void onBandwidthSample(PlayerEngine playerEngine, long bitrate) {}
+        public void onBandwidthSample(PlayerEngine playerEngine, long bitrate) {}
 
         @Override
-        void onSessionFinished() {}
+        public void onSessionFinished() {}
 
         @Override
-        void onDurationChanged(long duration) {}
+        public void onDurationChanged(long duration) {}
 
         @Override
-        void startNetworkListener(OkHttpClient.Builder builder) {}
+        public void startNetworkListener(OkHttpClient.Builder builder) {}
 
         @Override
-        EventListener.Factory getOkListenerFactory() {
+        public EventListener.Factory getOkListenerFactory() {
             return null;
         }
     };
@@ -78,16 +77,18 @@ public abstract class Profiler {
     @NonNull
     static Profiler get() {
 
-        try {
-            final Object profilerObj = profilerFactory.invoke(null);
-            if (profilerObj instanceof Profiler) {
-                return ((Profiler) profilerObj);
-            }
+        if (profilerFactory != null) {
+            try {
+                final Object profilerObj = profilerFactory.invoke(null);
+                if (profilerObj instanceof Profiler) {
+                    return ((Profiler) profilerObj);
+                }
 
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
         }
 
         return NULL;
@@ -103,7 +104,7 @@ public abstract class Profiler {
 
         try {
             // Get the DefaultProfiler class
-            final Class<?> profilerClass = Class.forName("com.kaltura.playkit.player.DefaultProfiler");
+            final Class<?> profilerClass = Class.forName("com.kaltura.playkit.profiler.DefaultProfiler");
             // Call static DefaultProfiler.init(context)
             profilerClass.getDeclaredMethod("init", Context.class).invoke(null, context);
 
@@ -123,34 +124,37 @@ public abstract class Profiler {
         initDone = true;
     }
 
+    public static Map<String, Object> getExperiments() {
+        return Collections.unmodifiableMap(experiments);
+    }
+
     public static void setExperiment(String key, Object value) {
         experiments.put(key, value);
     }
 
-    abstract void newSession(String sessionId);
+    public abstract void newSession(String sessionId, PlayerSettings playerSettings);
 
+    public abstract AnalyticsListener getExoAnalyticsListener();
 
-    abstract AnalyticsListener getExoAnalyticsListener();
+    public abstract void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig);
 
-    abstract void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig);
+    public abstract void onPrepareStarted(PlayerEngine playerEngine, PKMediaSourceConfig sourceConfig);
 
-    abstract void onPrepareStarted(PlayerEngine playerEngine, PKMediaSourceConfig sourceConfig);
+    public abstract void onSeekRequested(PlayerEngine playerEngine, long position);
 
-    abstract void onSeekRequested(PlayerEngine playerEngine, long position);
+    public abstract void onPauseRequested(PlayerEngine playerEngine);
 
-    abstract void onPauseRequested(PlayerEngine playerEngine);
+    public abstract void onReplayRequested(PlayerEngine playerEngine);
 
-    abstract void onReplayRequested(PlayerEngine playerEngine);
+    public abstract void onPlayRequested(PlayerEngine playerEngine);
 
-    abstract void onPlayRequested(PlayerEngine playerEngine);
+    public abstract void onBandwidthSample(PlayerEngine playerEngine, long bitrate);
 
-    abstract void onBandwidthSample(PlayerEngine playerEngine, long bitrate);
+    public abstract void onSessionFinished();
 
-    abstract void onSessionFinished();
+    public abstract void onDurationChanged(long duration);
 
-    abstract void onDurationChanged(long duration);
+    public abstract void startNetworkListener(OkHttpClient.Builder builder);
 
-    abstract void startNetworkListener(OkHttpClient.Builder builder);
-
-    abstract EventListener.Factory getOkListenerFactory();
+    public abstract EventListener.Factory getOkListenerFactory();
 }

@@ -196,7 +196,7 @@ public class PlayerController implements Player {
             playerSettings.getContentRequestAdapter().updateParams(this);
         }
 
-        profiler.newSession(sessionId);
+        profiler.newSession(sessionId, playerSettings);
         profiler.onSetMedia(this, mediaConfig);
 
         this.mediaConfig = mediaConfig;
