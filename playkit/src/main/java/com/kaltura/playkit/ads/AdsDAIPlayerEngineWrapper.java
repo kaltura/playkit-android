@@ -100,7 +100,7 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
         if (adsProvider.isAdDisplayed()) {
             return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
         }
-        return super.getCurrentPosition();
+        return adsProvider.getCurrentPosition();
     }
 
     @Override
@@ -113,7 +113,7 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
         if (adsProvider.isAdDisplayed()) {
             return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
         }
-        return super.getDuration();
+        return adsProvider.getDuration();
     }
 
     @Override
