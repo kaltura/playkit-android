@@ -3,6 +3,7 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import com.google.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 
@@ -11,6 +12,7 @@ import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import okhttp3.EventListener;
 import okhttp3.OkHttpClient;
 
 public abstract class Profiler {
@@ -23,17 +25,18 @@ public abstract class Profiler {
 
     private static Profiler NULL = new Profiler() {
 
+        private AnalyticsListener exoAnalyticsListener = new AnalyticsListener() {};
+
+        @Override
+        public void setPlayerEngine(ExoPlayerWrapper playerEngine) {}
+
         @Override
         void newSession(String sessionId) {}
 
         @Override
-        void startListener(ExoPlayerWrapper playerEngine) {}
-
-        @Override
-        void stopListener(ExoPlayerWrapper playerEngine) {}
-
-        @Override
-        void setCurrentExperiment(String currentExperiment) {}
+        AnalyticsListener getExoAnalyticsListener() {
+            return exoAnalyticsListener;
+        }
 
         @Override
         void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig) {}
@@ -64,6 +67,11 @@ public abstract class Profiler {
 
         @Override
         void startNetworkListener(OkHttpClient.Builder builder) {}
+
+        @Override
+        EventListener.Factory getOkListenerFactory() {
+            return null;
+        }
     };
 
     // Called by PlayerController
@@ -84,6 +92,8 @@ public abstract class Profiler {
 
         return NULL;
     }
+
+    public abstract void setPlayerEngine(ExoPlayerWrapper playerEngine);
 
     // Called by PlayKitManager
     public static void init(Context context) {
@@ -119,11 +129,8 @@ public abstract class Profiler {
 
     abstract void newSession(String sessionId);
 
-    abstract void startListener(ExoPlayerWrapper playerEngine);
 
-    abstract void stopListener(ExoPlayerWrapper playerEngine);
-
-    abstract void setCurrentExperiment(String currentExperiment);
+    abstract AnalyticsListener getExoAnalyticsListener();
 
     abstract void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig);
 
@@ -144,4 +151,6 @@ public abstract class Profiler {
     abstract void onDurationChanged(long duration);
 
     abstract void startNetworkListener(OkHttpClient.Builder builder);
+
+    abstract EventListener.Factory getOkListenerFactory();
 }

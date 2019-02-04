@@ -202,7 +202,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             player.addListener(this);
             player.addMetadataOutput(this);
             player.addAnalyticsListener(analyticsAggregator);
-            profiler.startListener(this);
+            player.addAnalyticsListener(profiler.getExoAnalyticsListener());
         }
     }
 
@@ -346,9 +346,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                         .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
                         .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
 
-                // TODO: 21/01/2019 Connect the profiler in a more portable way
-                if (profiler != null) {
-                    profiler.startNetworkListener(builder);
+                final okhttp3.EventListener.Factory okListenerFactory = profiler.getOkListenerFactory();
+                if (okListenerFactory != null) {
+                    builder.eventListenerFactory(okListenerFactory);
                 }
 
                 httpDataSourceFactory = new OkHttpDataSourceFactory(builder.build(), userAgent);
@@ -982,18 +982,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         return false;
     }
 
-    void addAnalyticsListener(ExoPlayerProfilingListener listener) {
-        if (player != null) {
-            player.addAnalyticsListener(listener);
-        }
-    }
-
-    void removeAnalyticsListener(ExoPlayerProfilingListener listener) {
-        if (player != null) {
-            player.removeAnalyticsListener(listener);
-        }
-    }
-
     private void closeProfilerSession() {
         profiler.onSessionFinished();
     }
@@ -1034,6 +1022,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     public void setProfiler(Profiler profiler) {
         this.profiler = profiler;
+        profiler.setPlayerEngine(this);
     }
 
     private void configureSubtitleView() {

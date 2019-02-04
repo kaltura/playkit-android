@@ -53,18 +53,13 @@ import static com.kaltura.playkit.player.DefaultProfiler.timeField;
 class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @NonNull private final DefaultProfiler profiler;
-    @NonNull private final WeakReference<PlayerEngine> playerEngine;
 
-    ExoPlayerProfilingListener(@NonNull DefaultProfiler profiler, PlayerEngine playerEngine) {
+    ExoPlayerProfilingListener(@NonNull DefaultProfiler profiler) {
         this.profiler = profiler;
-        this.playerEngine = new WeakReference<>(playerEngine);
     }
 
     public void log(String event, String... strings) {
-        final PlayerEngine pe = this.playerEngine.get();
-        if (pe != null) {
-            profiler.logWithPlaybackInfo(event, pe, strings);
-        }
+        profiler.logWithPlaybackInfo(event, strings);
     }
 
     private String trackSelectionReasonString(int trackSelectionReason) {

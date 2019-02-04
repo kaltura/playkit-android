@@ -9,10 +9,12 @@ import android.os.Looper;
 import android.os.Process;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
 import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.analytics.AnalyticsListener;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -30,6 +32,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -42,6 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import okhttp3.EventListener;
 import okhttp3.OkHttpClient;
 
 class ConfigFile {
@@ -68,12 +72,16 @@ class DefaultProfiler extends Profiler {
     private static File externalFilesDir;   // for debug logs
     private final ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
 
-    long sessionStartTime;
-    private ExoPlayerProfilingListener analyticsListener;
     private String sessionId;
+
+    long sessionStartTime;
+    private final ExoPlayerProfilingListener analyticsListener = new ExoPlayerProfilingListener(this);
+
+    private final EventListener.Factory okListenerFactory = call -> new OkHttpListener(DefaultProfiler.this, call);
 
     private final Set<String> serversLookedUp = new HashSet<>();
 
+    @Nullable private WeakReference<ExoPlayerWrapper> playerEngine;
 
     private DefaultProfiler() {
 
@@ -88,6 +96,11 @@ class DefaultProfiler extends Profiler {
             }
         });
 
+    }
+
+    @Override
+    public void setPlayerEngine(ExoPlayerWrapper playerEngine) {
+        this.playerEngine = new WeakReference<>(playerEngine);
     }
 
     private static void initMembers(final Context context) {
@@ -178,7 +191,7 @@ class DefaultProfiler extends Profiler {
         return initialized && Math.random() < (sendPercentage / 100) ? new DefaultProfiler() : null;
     }
 
-    static void downloadConfig(Context context) {
+    private static void downloadConfig(Context context) {
         final byte[] bytes;
 
         // Download
@@ -207,7 +220,7 @@ class DefaultProfiler extends Profiler {
         }
     }
 
-    static void loadCachedConfig(Context context) {
+    private static void loadCachedConfig(Context context) {
         final File configFile = getCachedConfigFile(context);
 
         if (configFile.canRead()) {
@@ -251,7 +264,6 @@ class DefaultProfiler extends Profiler {
     /**
      * Initialize the static part of the profiler -- load the config and store it,
      * create IO thread and handler.
-     * @param context
      */
     public static void init(Context context) {
         if (initialized) {
@@ -332,6 +344,11 @@ class DefaultProfiler extends Profiler {
         logExperiments();
     }
 
+    @Override
+    AnalyticsListener getExoAnalyticsListener() {
+        return analyticsListener;
+    }
+
     private void logExperiments() {
 
         List<String> values = new ArrayList<>();
@@ -358,21 +375,6 @@ class DefaultProfiler extends Profiler {
         }
 
         log("Experiments", TextUtils.join("\t", values));
-    }
-
-
-
-    @Override
-    void startListener(ExoPlayerWrapper playerEngine) {
-        if (analyticsListener == null) {
-            analyticsListener = new ExoPlayerProfilingListener(this, playerEngine);
-        }
-        playerEngine.addAnalyticsListener(analyticsListener);
-    }
-
-    @Override
-    void stopListener(ExoPlayerWrapper playerEngine) {
-        playerEngine.removeAnalyticsListener(analyticsListener);
     }
 
     private void sendLogChunk() {
@@ -434,10 +436,6 @@ class DefaultProfiler extends Profiler {
         }
     }
 
-    @Override
-    void setCurrentExperiment(String currentExperiment) {
-    }
-
     void log(String event, String... strings) {
         StringBuilder sb = startLog(event);
         logPayload(sb, strings);
@@ -469,7 +467,7 @@ class DefaultProfiler extends Profiler {
         logQueue.add(sb.toString());
     }
 
-    void logWithPlaybackInfo(String event, PlayerEngine playerEngine, String... strings) {
+    private void logWithPlaybackInfo(String event, PlayerEngine playerEngine, String... strings) {
 
         StringBuilder sb = startLog(event);
 
@@ -594,8 +592,17 @@ class DefaultProfiler extends Profiler {
 
     @Override
     void startNetworkListener(OkHttpClient.Builder builder) {
-//        builder.eventListener(new OkHttpListener(this));
         builder.eventListenerFactory(call -> new OkHttpListener(this, call));
     }
 
+    @Override
+    EventListener.Factory getOkListenerFactory() {
+        return okListenerFactory;
+    }
+
+    void logWithPlaybackInfo(String event, String[] strings) {
+        if (playerEngine != null) {
+            logWithPlaybackInfo(event, playerEngine.get(), strings);
+        }
+    }
 }

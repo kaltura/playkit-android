@@ -168,6 +168,8 @@ public class PlayerController implements Player {
 
         switchPlayersIfRequired(incomingPlayerType);
 
+
+
         if (assertPlayerIsNotNull("prepare()")) {
             player.setProfiler(profiler);
             player.load(sourceConfig);
