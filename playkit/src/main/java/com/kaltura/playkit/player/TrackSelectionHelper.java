@@ -31,6 +31,7 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -427,11 +428,11 @@ class TrackSelectionHelper {
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
-    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrare) {
+    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
 
-        List<String> uniqueIds = getABRUniqueIds(minVideoBitrate, maxVideoBitrare);
+        List<String> uniqueIds = getABRUniqueIds(minVideoBitrate, maxVideoBitrate);
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
-        if (mappedTrackInfo == null && uniqueIds.isEmpty()) {
+        if (mappedTrackInfo == null || uniqueIds.isEmpty()) {
             return;
         }
 
@@ -447,16 +448,27 @@ class TrackSelectionHelper {
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
-    private List<String> getABRUniqueIds(long minVideoBitrate, long maxVideoBitrare) {
+    private List<String> getABRUniqueIds(long minVideoBitrate, long maxVideoBitrate) {
         List<String> uniqueIds = new ArrayList<>();
+        boolean isValidABRRange = true;
         if (videoTracks != null) {
+            Collections.sort(videoTracks);
+            if (videoTracks.size() >= 2) {
+                if (minVideoBitrate < videoTracks.get(1).getBitrate()) {
+                    isValidABRRange = false;
+                }
+            }
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
             while (videoTrackIterator.hasNext()) {
                 VideoTrack currentVideoTrack = videoTrackIterator.next();
-                if (currentVideoTrack.isAdaptive() || ((currentVideoTrack.getBitrate() >= minVideoBitrate && currentVideoTrack.getBitrate() <= maxVideoBitrare))) {
+                if (currentVideoTrack.isAdaptive() || (currentVideoTrack.getBitrate() >= minVideoBitrate && currentVideoTrack.getBitrate() <= maxVideoBitrate)) {
                     uniqueIds.add(currentVideoTrack.getUniqueId());
                 } else {
-                    videoTrackIterator.remove();
+                    if (!isValidABRRange) {
+                        uniqueIds.add(currentVideoTrack.getUniqueId());
+                    } else {
+                        videoTrackIterator.remove();
+                    }
                 }
             }
         }

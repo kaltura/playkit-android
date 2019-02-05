@@ -767,12 +767,19 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @Override
-    public void overrideMediaDefaultABR(long minVideoBitratem, long maxVideoBitrate) {
+    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
         if (trackSelectionHelper == null) {
             log.w("Attempt to invoke 'overrideMediaDefaultABR()' on null instance of the TracksSelectionHelper");
             return;
         }
-        trackSelectionHelper.overrideMediaDefaultABR(minVideoBitratem, maxVideoBitrate);
+
+        if (minVideoBitrate > maxVideoBitrate) {
+            minVideoBitrate = Long.MIN_VALUE;
+            maxVideoBitrate = Long.MAX_VALUE;
+            String errorMessage = "given minVideoBitrate is greater than the maxVideoBitrate";
+            sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
+        }
+        trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
     }
 
     private void sendTrackSelectionError(String uniqueId, IllegalArgumentException invalidUniqueIdException) {
@@ -919,9 +926,18 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         return new TrackSelectionHelper.TracksInfoListener() {
             @Override
             public void onTracksInfoReady(PKTracks tracksReady) {
-                overrideMediaDefaultABR(playerSettings.getMinVideoBitrate(), playerSettings.getMaxVideoBitrate());
+                if (playerSettings.getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getMaxVideoBitrate() != Long.MAX_VALUE) {
+                    overrideMediaDefaultABR(playerSettings.getMinVideoBitrate(), playerSettings.getMaxVideoBitrate());
+                }
                 //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
                 tracks = tracksReady;
+                if (tracks.getVideoTracks().size() >= 2) {
+                    if (playerSettings.getMinVideoBitrate() < tracks.getVideoTracks().get(1).getBitrate()) {
+                        String errorMessage = "given minVideoBitrate is less than the stream minimum bitrate";
+                        sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
+                    }
+                }
+
                 shouldRestorePlayerToPreviousState = false;
                 sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
                 if (!preferredLanguageWasSelected) {
@@ -952,6 +968,13 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 sendEvent(PlayerEvent.Type.TEXT_TRACK_CHANGED);
             }
         };
+    }
+
+    private void sendInvalidVideoBitrateRangeIfNeeded(String errorMessage) {
+        if (eventListener != null) {
+            currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
+            eventListener.onEvent(PlayerEvent.Type.ERROR);
+        }
     }
 
     private DeferredDrmSessionManager.DrmSessionListener initDrmSessionListener() {
