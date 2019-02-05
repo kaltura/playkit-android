@@ -431,7 +431,7 @@ class TrackSelectionHelper {
 
         List<String> uniqueIds = getABRUniqueIds(minVideoBitrate, maxVideoBitrare);
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
-        if (mappedTrackInfo == null) {
+        if (mappedTrackInfo == null && uniqueIds.isEmpty()) {
             return;
         }
 
