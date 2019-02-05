@@ -18,8 +18,6 @@ import android.support.annotation.Nullable;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 
-import java.util.List;
-
 public class PlayerDecoratorBase implements Player {
 
     @Override
