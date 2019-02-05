@@ -128,6 +128,16 @@ public interface Player {
         Settings setDefaultMaxVideoBitrate();
 
         /**
+         * Sets the initial bitrate estimate in bits per second that should be assumed when a bandwidth
+         * estimate is unavailable.
+         *
+         * @param networkType NetworkType;
+         * @param initialBitrateEstimate The initial bitrate estimate in bits per second.
+         * @return - Player Settings.
+         */
+        Settings setInitialBitrateEstimate(int networkType, long initialBitrateEstimate);
+
+        /**
          * Decide if player should use secure rendering on the surface.
          * Known limitation - when useTextureView set to true and isSurfaceSecured set to true -
          * secure rendering will have no effect.

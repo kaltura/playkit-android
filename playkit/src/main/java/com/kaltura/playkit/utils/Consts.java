@@ -93,4 +93,17 @@ public class Consts {
     public static final float DEFAULT_VOLUME = 1.0f;
 
     public static float DEFAULT_PITCH_RATE = 1.0f;
+
+    /** Unknown network type. */
+    public static final int NETWORK_TYPE_UNKNOWN = 0;
+    /** No network connection. */
+    public static final int NETWORK_TYPE_OFFLINE = 1;
+    /** Network type for a Wifi connection. */
+    public static final int NETWORK_TYPE_WIFI = 2;
+    /** Network type for a 2G cellular connection. */
+    public static final int NETWORK_TYPE_2G = 3;
+    /** Network type for a 3G cellular connection. */
+    public static final int NETWORK_TYPE_3G = 4;
+    /** Network type for a 4G cellular connection. */
+    public static final int NETWORK_TYPE_4G = 5;
 }

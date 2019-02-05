@@ -154,6 +154,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         this.context = context;
         bandwidthMeter = new DefaultBandwidthMeter.Builder(context)
                 .setEventListener(mainHandler, this)
+                .setInitialBitrateEstimate(playerSettings.getNetworkType(), playerSettings.getInitialBitrateEstimate())
                 .build();
         this.exoPlayerView = exoPlayerView;
         this.playerSettings = playerSettings;

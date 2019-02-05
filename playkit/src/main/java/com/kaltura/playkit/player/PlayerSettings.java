@@ -12,10 +12,14 @@
 
 package com.kaltura.playkit.player;
 
+
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.utils.Consts;
+
+import static com.google.android.exoplayer2.upstream.DefaultBandwidthMeter.DEFAULT_INITIAL_BITRATE_ESTIMATE;
 
 public class PlayerSettings implements Player.Settings {
 
@@ -41,7 +45,8 @@ public class PlayerSettings implements Player.Settings {
     private String networkProvider;
     private Integer minVideoBitrate = Integer.MIN_VALUE;
     private Integer maxVideoBitrate = Integer.MAX_VALUE;
-
+    private int networkType = Consts.NETWORK_TYPE_UNKNOWN;
+    private long initialBitrateEstimate = DEFAULT_INITIAL_BITRATE_ESTIMATE;
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
@@ -109,6 +114,14 @@ public class PlayerSettings implements Player.Settings {
 
     public Integer getMaxVideoBitrate() {
         return maxVideoBitrate;
+    }
+
+    public int getNetworkType() {
+        return networkType;
+    }
+
+    public long getInitialBitrateEstimate() {
+        return initialBitrateEstimate;
     }
 
     @Override
@@ -211,6 +224,13 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setDefaultMaxVideoBitrate() {
         this.maxVideoBitrate = Integer.MAX_VALUE;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setInitialBitrateEstimate(int networkType, long initialBitrateEstimate) {
+        this.networkType = networkType;
+        this.initialBitrateEstimate = initialBitrateEstimate;
         return this;
     }
 
