@@ -210,10 +210,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         return trackSelector;
     }
 
-    private void setMinMaxVideoBitrate(int minVideoBitrate, int maxVideoBitrate) {
-        overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
-    }
-
     private void preparePlayer(@NonNull PKMediaSourceConfig sourceConfig) {
         this.sourceConfig = sourceConfig;
         //reset metadata on prepare.
@@ -910,7 +906,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         return new TrackSelectionHelper.TracksInfoListener() {
             @Override
             public void onTracksInfoReady(PKTracks tracksReady) {
-                setMinMaxVideoBitrate(playerSettings.getMinVideoBitrate(), playerSettings.getMaxVideoBitrate());
+                overrideMediaDefaultABR(playerSettings.getMinVideoBitrate(), playerSettings.getMaxVideoBitrate());
                 //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
                 tracks = tracksReady;
                 shouldRestorePlayerToPreviousState = false;

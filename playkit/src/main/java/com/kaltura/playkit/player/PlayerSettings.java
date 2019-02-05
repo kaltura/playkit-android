@@ -203,6 +203,18 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
+    public Player.Settings setDefaultMinVideoBitrate() {
+        this.minVideoBitrate = Integer.MIN_VALUE;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setDefaultMaxVideoBitrate() {
+        this.maxVideoBitrate = Integer.MAX_VALUE;
+        return this;
+    }
+
+    @Override
     public Player.Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers) {
         this.loadControlBuffers = loadControlBuffers;
         return this;

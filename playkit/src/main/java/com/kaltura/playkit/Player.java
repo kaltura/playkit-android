@@ -114,6 +114,20 @@ public interface Player {
         Settings setMaxVideoBitrate(int maxVideoBitrate);
 
         /**
+         * Set default VideoBitrate to Integer.MIN_VALUE in ABR
+         *
+         * @return - Player Settings.
+         */
+        Settings setDefaultMinVideoBitrate();
+
+        /**
+         * Set default VideoBitrate to Integer.MAX_VALUE in ABR
+         *
+         * @return - Player Settings.
+         */
+        Settings setDefaultMaxVideoBitrate();
+
+        /**
          * Decide if player should use secure rendering on the surface.
          * Known limitation - when useTextureView set to true and isSurfaceSecured set to true -
          * secure rendering will have no effect.
