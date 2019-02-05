@@ -773,10 +773,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             return;
         }
 
-        if (minVideoBitrate > maxVideoBitrate && (minVideoBitrate <= 0 || maxVideoBitrate <= 0)) {
+        if (minVideoBitrate > maxVideoBitrate || maxVideoBitrate <= 0) {
             minVideoBitrate = Long.MIN_VALUE;
             maxVideoBitrate = Long.MAX_VALUE;
-            String errorMessage = "given minVideoBitrate is greater than the maxVideoBitrate";
+            String errorMessage = "given maxVideoBitrate is not greater than the minVideoBitrate";
             sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
         }
         trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
@@ -932,8 +932,9 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
                 tracks = tracksReady;
                 if (tracks.getVideoTracks().size() >= 2) {
-                    if (playerSettings.getMinVideoBitrate() < tracks.getVideoTracks().get(1).getBitrate()) {
-                        String errorMessage = "given minVideoBitrate is less than the stream minimum bitrate";
+                    if ((playerSettings.getMinVideoBitrate() < tracks.getVideoTracks().get(1).getBitrate() && playerSettings.getMaxVideoBitrate() <  tracks.getVideoTracks().get(1).getBitrate()) ||
+                            (playerSettings.getMinVideoBitrate() > tracks.getVideoTracks().get(tracks.getVideoTracks().size() - 1).getBitrate() && playerSettings.getMaxVideoBitrate()  > tracks.getVideoTracks().get(tracks.getVideoTracks().size() - 1).getBitrate())) {
+                        String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
                         sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
                     }
                 }
