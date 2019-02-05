@@ -15,7 +15,6 @@ package com.kaltura.playkit.player;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.util.Pair;
 
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
@@ -428,13 +427,11 @@ class TrackSelectionHelper {
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
-    public void overrideMediaDefaultABR(int minVideoBitrate, int maxVideoBitrare) {
+    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrare) {
 
-        List<String> uniqueIds = getABRUniqeIds(minVideoBitrate, maxVideoBitrare);
-        log.i("niqeRequest overrideMediaDefaultABR");
+        List<String> uniqueIds = getABRUniqueIds(minVideoBitrate, maxVideoBitrare);
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
-            log.w("Trying to get current MappedTrackInfo returns null");
             return;
         }
 
@@ -450,16 +447,14 @@ class TrackSelectionHelper {
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
-    private List<String> getABRUniqeIds(int minVideoBitrate, int maxVideoBitrare) {
+    private List<String> getABRUniqueIds(long minVideoBitrate, long maxVideoBitrare) {
         List<String> uniqueIds = new ArrayList<>();
         if (videoTracks != null) {
-            //List<VideoTrack> newTracksList = new ArrayList<>(videoTracks);
-
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
             while (videoTrackIterator.hasNext()) {
-                VideoTrack currertVideoTrack = videoTrackIterator.next();
-                if (currertVideoTrack.isAdaptive() || ((currertVideoTrack.getBitrate() >= minVideoBitrate && currertVideoTrack.getBitrate() <= maxVideoBitrare))) {
-                    uniqueIds.add(currertVideoTrack.getUniqueId());
+                VideoTrack currentVideoTrack = videoTrackIterator.next();
+                if (currentVideoTrack.isAdaptive() || ((currentVideoTrack.getBitrate() >= minVideoBitrate && currentVideoTrack.getBitrate() <= maxVideoBitrare))) {
+                    uniqueIds.add(currentVideoTrack.getUniqueId());
                 } else {
                     videoTrackIterator.remove();
                 }
@@ -500,13 +495,13 @@ class TrackSelectionHelper {
                 int videoGroupIndex;
                 int videoTrackIndex;
 
-                for (int i = 0; i < uniqueIds.length; i++) {
-                    if (uniqueIds[i] != null) {
-                        videoGroupIndex = uniqueIds[i][GROUP_INDEX];
-                        videoTrackIndex = uniqueIds[i][TRACK_INDEX];
+                for (int[] uniqueId : uniqueIds) {
+                    if (uniqueId != null) {
+                        videoGroupIndex = uniqueId[GROUP_INDEX];
+                        videoTrackIndex = uniqueId[TRACK_INDEX];
 
                         if (videoGroupIndex == groupIndex && videoTrackIndex != TRACK_ADAPTIVE) {
-                            adaptiveTrackIndexesList.add(uniqueIds[i][TRACK_INDEX]);
+                            adaptiveTrackIndexesList.add(uniqueId[TRACK_INDEX]);
                         }
                     }
                 }
@@ -515,13 +510,13 @@ class TrackSelectionHelper {
                 int audioGroupIndex;
                 int audioTrackIndex;
 
-                for (int i = 0; i < uniqueIds.length; i++) {
-                    if (uniqueIds[i] != null) {
-                        audioGroupIndex = uniqueIds[i][GROUP_INDEX];
-                        audioTrackIndex = uniqueIds[i][TRACK_INDEX];
+                for (int[] uniqueId : uniqueIds) {
+                    if (uniqueId != null) {
+                        audioGroupIndex = uniqueId[GROUP_INDEX];
+                        audioTrackIndex = uniqueId[TRACK_INDEX];
 
                         if (audioGroupIndex == groupIndex && audioTrackIndex != TRACK_ADAPTIVE) {
-                            adaptiveTrackIndexesList.add(uniqueIds[i][TRACK_INDEX]);
+                            adaptiveTrackIndexesList.add(uniqueId[TRACK_INDEX]);
                         }
                     }
                 }

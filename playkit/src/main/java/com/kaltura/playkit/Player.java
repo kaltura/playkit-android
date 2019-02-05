@@ -103,7 +103,7 @@ public interface Player {
          * @param minVideoBitrate - minimum video bitrate in ABR
          * @return - Player Settings.
          */
-        Settings setMinVideoBitrate(int minVideoBitrate);
+        Settings setMinVideoBitrate(long minVideoBitrate);
 
         /**
          * Set maxVideoBitrate in ABR
@@ -111,7 +111,7 @@ public interface Player {
          * @param maxVideoBitrate - maximum video bitrate in ABR
          * @return - Player Settings.
          */
-        Settings setMaxVideoBitrate(int maxVideoBitrate);
+        Settings setMaxVideoBitrate(long maxVideoBitrate);
 
         /**
          * Set default VideoBitrate to Integer.MIN_VALUE in ABR
@@ -131,11 +131,10 @@ public interface Player {
          * Sets the initial bitrate estimate in bits per second that should be assumed when a bandwidth
          * estimate is unavailable.
          *
-         * @param networkType NetworkType;
          * @param initialBitrateEstimate The initial bitrate estimate in bits per second.
          * @return - Player Settings.
          */
-        Settings setInitialBitrateEstimate(int networkType, long initialBitrateEstimate);
+        Settings setInitialBitrateEstimate(long initialBitrateEstimate);
 
         /**
          * Decide if player should use secure rendering on the surface.

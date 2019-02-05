@@ -152,10 +152,14 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView, PlayerSettings playerSettings) {
         this.context = context;
-        bandwidthMeter = new DefaultBandwidthMeter.Builder(context)
-                .setEventListener(mainHandler, this)
-                .setInitialBitrateEstimate(playerSettings.getNetworkType(), playerSettings.getInitialBitrateEstimate())
-                .build();
+
+        DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context).setEventListener(mainHandler, this);
+
+        if (playerSettings.getInitialBitrateEstimate() != null) {
+            bandwidthMeterBuilder.setInitialBitrateEstimate(playerSettings.getInitialBitrateEstimate());
+        }
+
+        bandwidthMeter = bandwidthMeterBuilder.build();
         this.exoPlayerView = exoPlayerView;
         this.playerSettings = playerSettings;
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
@@ -755,7 +759,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @Override
-    public void overrideMediaDefaultABR(int minVideoBitratem, int maxVideoBitrate) {
+    public void overrideMediaDefaultABR(long minVideoBitratem, long maxVideoBitrate) {
         if (trackSelectionHelper == null) {
             log.w("Attempt to invoke 'changeTrack()' on null instance of the TracksSelectionHelper");
             return;

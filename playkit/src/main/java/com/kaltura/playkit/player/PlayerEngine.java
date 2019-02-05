@@ -120,7 +120,7 @@ public interface PlayerEngine {
      * @param minVideoBitrate - minVideoBitrate.
      * @param maxVideoBitrate - minVideoBitrate.
      */
-    void overrideMediaDefaultABR(int minVideoBitrate, int maxVideoBitrate);
+    void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate);
 
     /**
      * Seek player to the specified position.

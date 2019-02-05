@@ -43,10 +43,9 @@ public class PlayerSettings implements Player.Settings {
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
     private String networkProvider;
-    private Integer minVideoBitrate = Integer.MIN_VALUE;
-    private Integer maxVideoBitrate = Integer.MAX_VALUE;
-    private int networkType = Consts.NETWORK_TYPE_UNKNOWN;
-    private long initialBitrateEstimate = DEFAULT_INITIAL_BITRATE_ESTIMATE;
+    private Long minVideoBitrate = Long.MIN_VALUE;
+    private Long maxVideoBitrate = Long.MAX_VALUE;
+    private Long initialBitrateEstimate;
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
@@ -108,19 +107,15 @@ public class PlayerSettings implements Player.Settings {
         return subtitleStyleSettings;
     }
 
-    public Integer getMinVideoBitrate() {
+    public Long getMinVideoBitrate() {
         return minVideoBitrate;
     }
 
-    public Integer getMaxVideoBitrate() {
+    public Long getMaxVideoBitrate() {
         return maxVideoBitrate;
     }
 
-    public int getNetworkType() {
-        return networkType;
-    }
-
-    public long getInitialBitrateEstimate() {
+    public Long getInitialBitrateEstimate() {
         return initialBitrateEstimate;
     }
 
@@ -204,32 +199,31 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setMinVideoBitrate(int minVideoBitrate) {
+    public Player.Settings setMinVideoBitrate(long minVideoBitrate) {
         this.minVideoBitrate = minVideoBitrate;
         return this;
     }
 
     @Override
-    public Player.Settings setMaxVideoBitrate(int maxVideoBitrate) {
+    public Player.Settings setMaxVideoBitrate(long maxVideoBitrate) {
         this.maxVideoBitrate = maxVideoBitrate;
         return this;
     }
 
     @Override
     public Player.Settings setDefaultMinVideoBitrate() {
-        this.minVideoBitrate = Integer.MIN_VALUE;
+        this.minVideoBitrate = Long.MIN_VALUE;
         return this;
     }
 
     @Override
     public Player.Settings setDefaultMaxVideoBitrate() {
-        this.maxVideoBitrate = Integer.MAX_VALUE;
+        this.maxVideoBitrate = Long.MAX_VALUE;
         return this;
     }
 
     @Override
-    public Player.Settings setInitialBitrateEstimate(int networkType, long initialBitrateEstimate) {
-        this.networkType = networkType;
+    public Player.Settings setInitialBitrateEstimate(long initialBitrateEstimate) {
         this.initialBitrateEstimate = initialBitrateEstimate;
         return this;
     }
