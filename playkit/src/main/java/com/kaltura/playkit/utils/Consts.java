@@ -93,5 +93,4 @@ public class Consts {
     public static final float DEFAULT_VOLUME = 1.0f;
 
     public static float DEFAULT_PITCH_RATE = 1.0f;
-
 }
