@@ -454,7 +454,7 @@ class TrackSelectionHelper {
         if (videoTracks != null) {
             Collections.sort(videoTracks);
             if (videoTracks.size() >= 2) {
-                if (minVideoBitrate < videoTracks.get(1).getBitrate()) {
+                if (minVideoBitrate < videoTracks.get(1).getBitrate() || minVideoBitrate > videoTracks.get(videoTracks.size() - 1).getBitrate()) {
                     isValidABRRange = false;
                 }
             }

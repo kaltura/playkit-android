@@ -773,7 +773,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             return;
         }
 
-        if (minVideoBitrate > maxVideoBitrate) {
+        if (minVideoBitrate > maxVideoBitrate && (minVideoBitrate <= 0 || maxVideoBitrate <= 0)) {
             minVideoBitrate = Long.MIN_VALUE;
             maxVideoBitrate = Long.MAX_VALUE;
             String errorMessage = "given minVideoBitrate is greater than the maxVideoBitrate";
