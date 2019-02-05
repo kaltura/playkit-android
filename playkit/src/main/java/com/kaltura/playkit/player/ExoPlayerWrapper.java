@@ -668,9 +668,17 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         if (assertPlayerIsNotNull("seekTo()")) {
             isSeeking = true;
             sendDistinctEvent(PlayerEvent.Type.SEEKING);
-            if (isLive() && position == player.getDuration()) {
+            if(player.getDuration() == TIME_UNSET) {
+                return;
+            }
+            if (isLive() && position >= player.getDuration()) {
                 player.seekToDefaultPosition();
             } else {
+                if (position < 0) {
+                    position = 0;
+                } else if (position > player.getDuration()) {
+                    position = player.getDuration();
+                }
                 player.seekTo(position);
             }
         }
