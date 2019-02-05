@@ -17,9 +17,6 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.utils.Consts;
-
-import static com.google.android.exoplayer2.upstream.DefaultBandwidthMeter.DEFAULT_INITIAL_BITRATE_ESTIMATE;
 
 public class PlayerSettings implements Player.Settings {
 
@@ -42,7 +39,6 @@ public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
-    private String networkProvider;
     private Long minVideoBitrate = Long.MIN_VALUE;
     private Long maxVideoBitrate = Long.MAX_VALUE;
     private Long initialBitrateEstimate;

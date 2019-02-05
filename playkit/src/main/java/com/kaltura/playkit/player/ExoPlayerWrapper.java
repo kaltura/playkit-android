@@ -769,7 +769,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     @Override
     public void overrideMediaDefaultABR(long minVideoBitratem, long maxVideoBitrate) {
         if (trackSelectionHelper == null) {
-            log.w("Attempt to invoke 'changeTrack()' on null instance of the TracksSelectionHelper");
+            log.w("Attempt to invoke 'overrideMediaDefaultABR()' on null instance of the TracksSelectionHelper");
             return;
         }
         trackSelectionHelper.overrideMediaDefaultABR(minVideoBitratem, maxVideoBitrate);
