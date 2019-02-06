@@ -140,6 +140,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
+    private TrackSelectionHelper.TracksErrorListener tracksErrorListener = initTracksErrorListener();
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
     private PKMediaSourceConfig sourceConfig;
 
@@ -152,9 +153,16 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView, PlayerSettings playerSettings) {
         this.context = context;
-        bandwidthMeter = new DefaultBandwidthMeter.Builder(context)
-                .setEventListener(mainHandler, this)
-                .build();
+
+        DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context).setEventListener(mainHandler, this);
+
+        Long initialBitrateEstimate = playerSettings.getAbrSettings().getInitialBitrateEstimate();
+
+        if (initialBitrateEstimate != null && initialBitrateEstimate > 0) {
+            bandwidthMeterBuilder.setInitialBitrateEstimate(initialBitrateEstimate);
+        }
+
+        bandwidthMeter = bandwidthMeterBuilder.build();
         this.exoPlayerView = exoPlayerView;
         this.playerSettings = playerSettings;
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
@@ -206,6 +214,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, lastSelectedTrackIds);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
+        trackSelectionHelper.setTracksErrorListener(tracksErrorListener);
 
         return trackSelector;
     }
@@ -764,6 +773,22 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 
+    @Override
+    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
+        if (trackSelectionHelper == null) {
+            log.w("Attempt to invoke 'overrideMediaDefaultABR()' on null instance of the TracksSelectionHelper");
+            return;
+        }
+
+        if (minVideoBitrate > maxVideoBitrate || maxVideoBitrate <= 0) {
+            minVideoBitrate = Long.MIN_VALUE;
+            maxVideoBitrate = Long.MAX_VALUE;
+            String errorMessage = "given maxVideoBitrate is not greater than the minVideoBitrate";
+            sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
+        }
+        trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
+    }
+
     private void sendTrackSelectionError(String uniqueId, IllegalArgumentException invalidUniqueIdException) {
         String errorStr = "Track Selection failed uniqueId = " + uniqueId;
         log.e(errorStr);
@@ -904,10 +929,22 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         return metadataList;
     }
 
+    private TrackSelectionHelper.TracksErrorListener initTracksErrorListener() {
+        return pkError -> {
+                currentError = pkError;
+                if (eventListener != null) {
+                    eventListener.onEvent(PlayerEvent.Type.ERROR);
+                }
+        };
+    }
+
     private TrackSelectionHelper.TracksInfoListener initTracksInfoListener() {
         return new TrackSelectionHelper.TracksInfoListener() {
             @Override
             public void onTracksInfoReady(PKTracks tracksReady) {
+                if (playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE) {
+                    overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+                }
                 //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
                 tracks = tracksReady;
                 shouldRestorePlayerToPreviousState = false;
@@ -940,6 +977,13 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 sendEvent(PlayerEvent.Type.TEXT_TRACK_CHANGED);
             }
         };
+    }
+
+    private void sendInvalidVideoBitrateRangeIfNeeded(String errorMessage) {
+        if (eventListener != null) {
+            currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
+            eventListener.onEvent(PlayerEvent.Type.ERROR);
+        }
     }
 
     private DeferredDrmSessionManager.DrmSessionListener initDrmSessionListener() {

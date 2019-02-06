@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.player;
 
+
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
@@ -29,6 +30,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean vrPlayerEnabled = true;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
+    private ABRSettings abrSettings = new ABRSettings();
 
 
     private PKTrackConfig preferredTextTrackConfig;
@@ -38,7 +40,6 @@ public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
-    private String networkProvider;
 
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
@@ -99,6 +100,10 @@ public class PlayerSettings implements Player.Settings {
 
     public SubtitleStyleSettings getSubtitleStyleSettings() {
         return subtitleStyleSettings;
+    }
+
+    public ABRSettings getAbrSettings() {
+        return abrSettings;
     }
 
     @Override
@@ -189,6 +194,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         this.subtitleStyleSettings = subtitleStyleSettings;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setABRSettings(ABRSettings abrSettings) {
+        this.abrSettings = abrSettings;
         return this;
     }
 }

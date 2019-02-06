@@ -15,12 +15,11 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.utils.Consts;
-
-import java.util.Collection;
 
 @SuppressWarnings("unused")
 public interface Player {
@@ -164,6 +163,14 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
+
+        /**
+         *  Set the Player's ABR settings
+         *
+         * @param abrSettings ABR settings
+         * @return - Player Settings
+         */
+        Settings setABRSettings(ABRSettings abrSettings);
     }
 
     /**
