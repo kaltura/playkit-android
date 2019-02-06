@@ -45,7 +45,7 @@ public abstract class Profiler {
         return Collections.unmodifiableMap(experiments);
     }
 
-    public void setPlayerEngine(ExoPlayerWrapper playerEngine) {}
+    public void setPlayerEngine(PlayerEngine playerEngine) {}
 
     public void newSession(String sessionId, PlayerSettings playerSettings) {}
 
@@ -53,19 +53,19 @@ public abstract class Profiler {
         return exoAnalyticsListener;
     }
 
-    public void onSetMedia(PlayerController playerController, PKMediaConfig mediaConfig) {}
+    public void onSetMedia(PKMediaConfig mediaConfig) {}
 
-    public void onPrepareStarted(PlayerEngine playerEngine, PKMediaSourceConfig sourceConfig) {}
+    public void onPrepareStarted(PKMediaSourceConfig sourceConfig) {}
 
-    public void onSeekRequested(PlayerEngine playerEngine, long position) {}
+    public void onSeekRequested(long position) {}
 
-    public void onPauseRequested(PlayerEngine playerEngine) {}
+    public void onPauseRequested() {}
 
-    public void onReplayRequested(PlayerEngine playerEngine) {}
+    public void onReplayRequested() {}
 
-    public void onPlayRequested(PlayerEngine playerEngine) {}
+    public void onPlayRequested() {}
 
-    public void onBandwidthSample(PlayerEngine playerEngine, long bitrate) {}
+    public void onBandwidthSample(long bitrate) {}
 
     public void onSessionFinished() {}
 

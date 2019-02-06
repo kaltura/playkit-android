@@ -168,8 +168,6 @@ public class PlayerController implements Player {
 
         switchPlayersIfRequired(incomingPlayerType);
 
-
-
         if (assertPlayerIsNotNull("prepare()")) {
             player.setProfiler(profiler);
             player.load(sourceConfig);
@@ -197,7 +195,7 @@ public class PlayerController implements Player {
         }
 
         profiler.newSession(sessionId, playerSettings);
-        profiler.onSetMedia(this, mediaConfig);
+        profiler.onSetMedia(mediaConfig);
 
         this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry(), playerSettings.getPreferredMediaFormat());

@@ -232,7 +232,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         trackSelectionHelper.applyPlayerSettings(playerSettings);
 
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
-        profiler.onPrepareStarted(this, sourceConfig);
+        profiler.onPrepareStarted(sourceConfig);
         player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
         player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
@@ -639,7 +639,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 player.seekToDefaultPosition();
             }
 
-            profiler.onPlayRequested(this);
+            profiler.onPlayRequested();
             player.setPlayWhenReady(true);
         }
     }
@@ -658,7 +658,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             }
 
             sendDistinctEvent(PlayerEvent.Type.PAUSE);
-            profiler.onPauseRequested(this);
+            profiler.onPauseRequested();
             player.setPlayWhenReady(false);
         }
     }
@@ -692,7 +692,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (assertPlayerIsNotNull("seekTo()")) {
             isSeeking = true;
             sendDistinctEvent(PlayerEvent.Type.SEEKING);
-            profiler.onSeekRequested(this, position);
+            profiler.onSeekRequested(position);
             if (isLive() && position == player.getDuration()) {
                 player.seekToDefaultPosition();
             } else {
@@ -828,7 +828,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         log.v("replay");
         if (assertPlayerIsNotNull("replay()")) {
             isSeeking = false;
-            profiler.onReplayRequested(this);
+            profiler.onReplayRequested();
             player.seekTo(0);
             player.setPlayWhenReady(true);
             sendDistinctEvent(PlayerEvent.Type.REPLAY);
