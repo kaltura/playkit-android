@@ -25,12 +25,15 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.Selecti
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -87,6 +90,8 @@ class TrackSelectionHelper {
 
     private TracksInfoListener tracksInfoListener;
 
+    private TracksErrorListener tracksErrorListener;
+
     interface TracksInfoListener {
 
         void onTracksInfoReady(PKTracks PKTracks);
@@ -100,6 +105,10 @@ class TrackSelectionHelper {
         void onTextTrackChanged();
     }
 
+    interface TracksErrorListener {
+
+        void onTracksOverrideABRError(PKError pkError);
+    }
 
     /**
      * @param selector             The track selector.
@@ -426,6 +435,123 @@ class TrackSelectionHelper {
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
+    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
+
+        List<String> uniqueIds = getABRUniqueIds(minVideoBitrate, maxVideoBitrate);
+        mappedTrackInfo = selector.getCurrentMappedTrackInfo();
+        if (mappedTrackInfo == null || uniqueIds.isEmpty()) {
+            return;
+        }
+
+        int[] uniqueTrackId = validateUniqueId(uniqueIds.get(0));
+        int rendererIndex = uniqueTrackId[RENDERER_INDEX];
+
+        requestedChangeTrackIds[rendererIndex] = uniqueIds.get(0);
+
+        DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
+
+
+        SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
+        overrideTrack(rendererIndex, override, parametersBuilder);
+    }
+
+    private List<String> getABRUniqueIds(long minVideoBitrate, long maxVideoBitrate) {
+        List<String> uniqueIds = new ArrayList<>();
+        boolean isValidABRRange = true;
+        if (videoTracks != null) {
+            Collections.sort(videoTracks);
+            if (videoTracks.size() >= 2) {
+                if ((minVideoBitrate < videoTracks.get(1).getBitrate() && maxVideoBitrate <  videoTracks.get(1).getBitrate()) ||
+                        (minVideoBitrate > videoTracks.get(videoTracks.size() - 1).getBitrate() && maxVideoBitrate  > videoTracks.get(videoTracks.size() - 1).getBitrate())) {
+                    isValidABRRange = false;
+                    String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
+                    PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
+                    tracksErrorListener.onTracksOverrideABRError(currentError);
+                }
+            }
+            Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
+            while (videoTrackIterator.hasNext()) {
+                VideoTrack currentVideoTrack = videoTrackIterator.next();
+                if (currentVideoTrack.isAdaptive() || (currentVideoTrack.getBitrate() >= minVideoBitrate && currentVideoTrack.getBitrate() <= maxVideoBitrate)) {
+                    uniqueIds.add(currentVideoTrack.getUniqueId());
+                } else {
+                    if (!isValidABRRange) {
+                        uniqueIds.add(currentVideoTrack.getUniqueId());
+                    } else {
+                        videoTrackIterator.remove();
+                    }
+                }
+            }
+        }
+        return uniqueIds;
+    }
+
+    private SelectionOverride retrieveOverrideSelectionList(int[][] uniqueIds) {
+        if (uniqueIds == null || uniqueIds[0] == null) {
+            throw new IllegalArgumentException("Track selection with uniqueId = null");
+        }
+
+        // Only for video tracks : RENDERER_INDEX is always 0 means video
+        SelectionOverride override;
+        int rendererIndex = uniqueIds[0][RENDERER_INDEX];
+        int groupIndex = uniqueIds[0][GROUP_INDEX];
+        int trackIndex = uniqueIds[0][TRACK_INDEX];
+
+        boolean isAdaptive = trackIndex == TRACK_ADAPTIVE;
+
+        if (uniqueIds.length == 1 && isAdaptive) {
+            override = overrideAutoABRTracks(rendererIndex, groupIndex);
+        } else if (uniqueIds.length > 1) {
+            override = overrideMediaDefaultABR(uniqueIds, rendererIndex, groupIndex);
+        } else {
+            override = new SelectionOverride(groupIndex, trackIndex);
+        }
+        return override;
+    }
+
+    @NonNull
+    private SelectionOverride overrideMediaDefaultABR(int[][] uniqueIds, int rendererIndex, int groupIndex) {
+        SelectionOverride override;
+        int[] adaptiveTrackIndexes;
+        List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
+
+        switch (rendererIndex) {
+            case TRACK_TYPE_VIDEO:
+            case TRACK_TYPE_AUDIO:
+                createAdaptiveTrackIndexList(uniqueIds, groupIndex, adaptiveTrackIndexesList);
+                break;
+        }
+        adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
+        override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
+        return override;
+    }
+
+    private void createAdaptiveTrackIndexList(int[][] uniqueIds, int groupIndex, List<Integer> adaptiveTrackIndexesList) {
+        int trackIndex;
+        int trackGroupIndex;
+
+        for (int[] uniqueId : uniqueIds) {
+            if (uniqueId != null) {
+                trackGroupIndex = uniqueId[GROUP_INDEX];
+                trackIndex = uniqueId[TRACK_INDEX];
+
+                if (trackGroupIndex == groupIndex && trackIndex != TRACK_ADAPTIVE) {
+                    adaptiveTrackIndexesList.add(uniqueId[TRACK_INDEX]);
+                }
+            }
+        }
+    }
+
+
+    private int[][] validateAndBuildUniqueIds(List<String> uniqueIds) {
+        int [][] idsList = new int [uniqueIds.size()][TRACK_RENDERERS_AMOUNT];
+        for (int index = 0 ; index < idsList.length ; index++) {
+            int[] uniqueTrackId = validateUniqueId(uniqueIds.get(index));
+            idsList[index] = uniqueTrackId;
+        }
+        return idsList;
+    }
+
     /**
      * @param uniqueId - the uniqueId to convert.
      * @return - int[] that consist from indexes that are readable to Exoplayer.
@@ -521,6 +647,53 @@ class TrackSelectionHelper {
             override = new SelectionOverride(groupIndex, trackIndex);
         }
 
+        return override;
+    }
+
+    @NonNull
+    private SelectionOverride overrideAutoABRTracks(int rendererIndex, int groupIndex) {
+        SelectionOverride override;List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
+        int[] adaptiveTrackIndexes;
+
+        switch (rendererIndex) {
+            case TRACK_TYPE_VIDEO:
+
+                VideoTrack videoTrack;
+                int videoGroupIndex;
+                int videoTrackIndex;
+
+                for (int i = 0; i < videoTracks.size(); i++) {
+
+                    videoTrack = videoTracks.get(i);
+                    videoGroupIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), GROUP_INDEX);
+                    videoTrackIndex = getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX);
+
+                    if (videoGroupIndex == groupIndex && videoTrackIndex != TRACK_ADAPTIVE) {
+                        adaptiveTrackIndexesList.add(getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX));
+                    }
+                }
+                break;
+            case TRACK_TYPE_AUDIO:
+
+                AudioTrack audioTrack;
+                int audioGroupIndex;
+                int audioTrackIndex;
+
+                for (int i = 0; i < audioTracks.size(); i++) {
+
+                    audioTrack = audioTracks.get(i);
+                    audioGroupIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), GROUP_INDEX);
+                    audioTrackIndex = getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX);
+
+                    if (audioGroupIndex == groupIndex && audioTrackIndex != TRACK_ADAPTIVE) {
+                        adaptiveTrackIndexesList.add(getIndexFromUniqueId(audioTrack.getUniqueId(), TRACK_INDEX));
+                    }
+                }
+                break;
+        }
+
+        adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
+        override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
         return override;
     }
 
@@ -684,6 +857,10 @@ class TrackSelectionHelper {
 
     protected void setTracksInfoListener(TracksInfoListener tracksInfoListener) {
         this.tracksInfoListener = tracksInfoListener;
+    }
+
+    protected void setTracksErrorListener(TracksErrorListener tracksErrorListener) {
+        this.tracksErrorListener = tracksErrorListener;
     }
 
     private void clearTracksLists() {
@@ -894,7 +1071,7 @@ class TrackSelectionHelper {
         }
         return preferredTrackUniqueId;
     }
-    
+
     private String getPreferredAudioTrackUniqueId(int trackType) {
         if (!isValidPreferredAudioConfig()) {
             return null;
