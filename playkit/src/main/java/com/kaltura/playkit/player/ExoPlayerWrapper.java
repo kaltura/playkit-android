@@ -156,8 +156,10 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context).setEventListener(mainHandler, this);
 
-        if (playerSettings.getInitialBitrateEstimate() != null && playerSettings.getInitialBitrateEstimate() > 0) {
-            bandwidthMeterBuilder.setInitialBitrateEstimate(playerSettings.getInitialBitrateEstimate());
+        Long initialBitrateEstimate = playerSettings.getAbrSettings().getInitialBitrateEstimate();
+
+        if (initialBitrateEstimate != null && initialBitrateEstimate > 0) {
+            bandwidthMeterBuilder.setInitialBitrateEstimate(initialBitrateEstimate);
         }
 
         bandwidthMeter = bandwidthMeterBuilder.build();
@@ -925,9 +927,11 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     private TrackSelectionHelper.TracksErrorListener initTracksErrorListener() {
-        return () -> {
-            String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
-            sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
+        return pkError -> {
+                currentError = pkError;
+                if (eventListener != null) {
+                    eventListener.onEvent(PlayerEvent.Type.ERROR);
+                }
         };
     }
 
@@ -935,8 +939,8 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         return new TrackSelectionHelper.TracksInfoListener() {
             @Override
             public void onTracksInfoReady(PKTracks tracksReady) {
-                if (playerSettings.getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getMaxVideoBitrate() != Long.MAX_VALUE) {
-                    overrideMediaDefaultABR(playerSettings.getMinVideoBitrate(), playerSettings.getMaxVideoBitrate());
+                if (playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE) {
+                    overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
                 }
                 //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
                 tracks = tracksReady;

@@ -30,6 +30,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean vrPlayerEnabled = true;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
+    private ABRSettings abrSettings = new ABRSettings();
 
 
     private PKTrackConfig preferredTextTrackConfig;
@@ -39,9 +40,7 @@ public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
-    private Long minVideoBitrate = Long.MIN_VALUE;
-    private Long maxVideoBitrate = Long.MAX_VALUE;
-    private Long initialBitrateEstimate;
+
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
@@ -103,16 +102,8 @@ public class PlayerSettings implements Player.Settings {
         return subtitleStyleSettings;
     }
 
-    public Long getMinVideoBitrate() {
-        return minVideoBitrate;
-    }
-
-    public Long getMaxVideoBitrate() {
-        return maxVideoBitrate;
-    }
-
-    public Long getInitialBitrateEstimate() {
-        return initialBitrateEstimate;
+    public ABRSettings getAbrSettings() {
+        return abrSettings;
     }
 
     @Override
@@ -195,36 +186,6 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setMinVideoBitrate(long minVideoBitrate) {
-        this.minVideoBitrate = minVideoBitrate;
-        return this;
-    }
-
-    @Override
-    public Player.Settings setMaxVideoBitrate(long maxVideoBitrate) {
-        this.maxVideoBitrate = maxVideoBitrate;
-        return this;
-    }
-
-    @Override
-    public Player.Settings setDefaultMinVideoBitrate() {
-        this.minVideoBitrate = Long.MIN_VALUE;
-        return this;
-    }
-
-    @Override
-    public Player.Settings setDefaultMaxVideoBitrate() {
-        this.maxVideoBitrate = Long.MAX_VALUE;
-        return this;
-    }
-
-    @Override
-    public Player.Settings setInitialBitrateEstimate(long initialBitrateEstimate) {
-        this.initialBitrateEstimate = initialBitrateEstimate;
-        return this;
-    }
-
-    @Override
     public Player.Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers) {
         this.loadControlBuffers = loadControlBuffers;
         return this;
@@ -233,6 +194,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         this.subtitleStyleSettings = subtitleStyleSettings;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setABRSettings(ABRSettings abrSettings) {
+        this.abrSettings = abrSettings;
         return this;
     }
 }

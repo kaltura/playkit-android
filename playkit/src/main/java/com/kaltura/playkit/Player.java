@@ -15,6 +15,7 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
@@ -98,45 +99,6 @@ public interface Player {
         Settings allowClearLead(boolean allowClearLead);
 
         /**
-         * Set minVideoBitrate in ABR
-         *
-         * @param minVideoBitrate - minimum video bitrate in ABR
-         * @return - Player Settings.
-         */
-        Settings setMinVideoBitrate(long minVideoBitrate);
-
-        /**
-         * Set maxVideoBitrate in ABR
-         *
-         * @param maxVideoBitrate - maximum video bitrate in ABR
-         * @return - Player Settings.
-         */
-        Settings setMaxVideoBitrate(long maxVideoBitrate);
-
-        /**
-         * Set default VideoBitrate to Integer.MIN_VALUE in ABR
-         *
-         * @return - Player Settings.
-         */
-        Settings setDefaultMinVideoBitrate();
-
-        /**
-         * Set default VideoBitrate to Integer.MAX_VALUE in ABR
-         *
-         * @return - Player Settings.
-         */
-        Settings setDefaultMaxVideoBitrate();
-
-        /**
-         * Sets the initial bitrate estimate in bits per second that should be assumed when a bandwidth
-         * estimate is unavailable.
-         *
-         * @param initialBitrateEstimate The initial bitrate estimate in bits per second.
-         * @return - Player Settings.
-         */
-        Settings setInitialBitrateEstimate(long initialBitrateEstimate);
-
-        /**
          * Decide if player should use secure rendering on the surface.
          * Known limitation - when useTextureView set to true and isSurfaceSecured set to true -
          * secure rendering will have no effect.
@@ -201,6 +163,14 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
+
+        /**
+         *  Set the Player's ABR settings
+         *
+         * @param abrSettings ABR settings
+         * @return - Player Settings
+         */
+        Settings setABRSettings(ABRSettings abrSettings);
     }
 
     /**

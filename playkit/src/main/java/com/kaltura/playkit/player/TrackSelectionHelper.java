@@ -25,6 +25,7 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.Selecti
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.utils.Consts;
@@ -106,9 +107,8 @@ class TrackSelectionHelper {
 
     interface TracksErrorListener {
 
-        void onTracksError();
+        void onTracksOverrideABRError(PKError pkError);
     }
-
 
     /**
      * @param selector             The track selector.
@@ -464,7 +464,9 @@ class TrackSelectionHelper {
                 if ((minVideoBitrate < videoTracks.get(1).getBitrate() && maxVideoBitrate <  videoTracks.get(1).getBitrate()) ||
                         (minVideoBitrate > videoTracks.get(videoTracks.size() - 1).getBitrate() && maxVideoBitrate  > videoTracks.get(videoTracks.size() - 1).getBitrate())) {
                     isValidABRRange = false;
-                    tracksErrorListener.onTracksError();
+                    String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
+                    PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
+                    tracksErrorListener.onTracksOverrideABRError(currentError);
                 }
             }
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
@@ -489,6 +491,7 @@ class TrackSelectionHelper {
             throw new IllegalArgumentException("Track selection with uniqueId = null");
         }
 
+        // Only for video tracks : RENDERER_INDEX is always 0 means video
         SelectionOverride override;
         int rendererIndex = uniqueIds[0][RENDERER_INDEX];
         int groupIndex = uniqueIds[0][GROUP_INDEX];
@@ -508,45 +511,37 @@ class TrackSelectionHelper {
 
     @NonNull
     private SelectionOverride overrideMediaDefaultABR(int[][] uniqueIds, int rendererIndex, int groupIndex) {
-        SelectionOverride override;List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
+        SelectionOverride override;
         int[] adaptiveTrackIndexes;
+        List<Integer> adaptiveTrackIndexesList = new ArrayList<>();
 
         switch (rendererIndex) {
             case TRACK_TYPE_VIDEO:
-                int videoGroupIndex;
-                int videoTrackIndex;
-
-                for (int[] uniqueId : uniqueIds) {
-                    if (uniqueId != null) {
-                        videoGroupIndex = uniqueId[GROUP_INDEX];
-                        videoTrackIndex = uniqueId[TRACK_INDEX];
-
-                        if (videoGroupIndex == groupIndex && videoTrackIndex != TRACK_ADAPTIVE) {
-                            adaptiveTrackIndexesList.add(uniqueId[TRACK_INDEX]);
-                        }
-                    }
-                }
-                break;
             case TRACK_TYPE_AUDIO:
-                int audioGroupIndex;
-                int audioTrackIndex;
-
-                for (int[] uniqueId : uniqueIds) {
-                    if (uniqueId != null) {
-                        audioGroupIndex = uniqueId[GROUP_INDEX];
-                        audioTrackIndex = uniqueId[TRACK_INDEX];
-
-                        if (audioGroupIndex == groupIndex && audioTrackIndex != TRACK_ADAPTIVE) {
-                            adaptiveTrackIndexesList.add(uniqueId[TRACK_INDEX]);
-                        }
-                    }
-                }
+                createAdaptiveTrackIndexList(uniqueIds, groupIndex, adaptiveTrackIndexesList);
                 break;
         }
         adaptiveTrackIndexes = convertAdaptiveListToArray(adaptiveTrackIndexesList);
         override = new SelectionOverride(groupIndex, adaptiveTrackIndexes);
         return override;
     }
+
+    private void createAdaptiveTrackIndexList(int[][] uniqueIds, int groupIndex, List<Integer> adaptiveTrackIndexesList) {
+        int trackIndex;
+        int trackGroupIndex;
+
+        for (int[] uniqueId : uniqueIds) {
+            if (uniqueId != null) {
+                trackGroupIndex = uniqueId[GROUP_INDEX];
+                trackIndex = uniqueId[TRACK_INDEX];
+
+                if (trackGroupIndex == groupIndex && trackIndex != TRACK_ADAPTIVE) {
+                    adaptiveTrackIndexesList.add(uniqueId[TRACK_INDEX]);
+                }
+            }
+        }
+    }
+
 
     private int[][] validateAndBuildUniqueIds(List<String> uniqueIds) {
         int [][] idsList = new int [uniqueIds.size()][TRACK_RENDERERS_AMOUNT];
