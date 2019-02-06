@@ -140,6 +140,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
+    private TrackSelectionHelper.TracksErrorListener tracksErrorListener = initTracksErrorListener();
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
     private PKMediaSourceConfig sourceConfig;
 
@@ -211,6 +212,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, lastSelectedTrackIds);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
+        trackSelectionHelper.setTracksErrorListener(tracksErrorListener);
 
         return trackSelector;
     }
@@ -922,6 +924,13 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         return metadataList;
     }
 
+    private TrackSelectionHelper.TracksErrorListener initTracksErrorListener() {
+        return () -> {
+            String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
+            sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
+        };
+    }
+
     private TrackSelectionHelper.TracksInfoListener initTracksInfoListener() {
         return new TrackSelectionHelper.TracksInfoListener() {
             @Override
@@ -931,14 +940,6 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
                 }
                 //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
                 tracks = tracksReady;
-                if (tracks.getVideoTracks().size() >= 2) {
-                    if ((playerSettings.getMinVideoBitrate() < tracks.getVideoTracks().get(1).getBitrate() && playerSettings.getMaxVideoBitrate() <  tracks.getVideoTracks().get(1).getBitrate()) ||
-                            (playerSettings.getMinVideoBitrate() > tracks.getVideoTracks().get(tracks.getVideoTracks().size() - 1).getBitrate() && playerSettings.getMaxVideoBitrate()  > tracks.getVideoTracks().get(tracks.getVideoTracks().size() - 1).getBitrate())) {
-                        String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
-                        sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
-                    }
-                }
-
                 shouldRestorePlayerToPreviousState = false;
                 sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
                 if (!preferredLanguageWasSelected) {

@@ -89,6 +89,8 @@ class TrackSelectionHelper {
 
     private TracksInfoListener tracksInfoListener;
 
+    private TracksErrorListener tracksErrorListener;
+
     interface TracksInfoListener {
 
         void onTracksInfoReady(PKTracks PKTracks);
@@ -100,6 +102,11 @@ class TrackSelectionHelper {
         void onAudioTrackChanged();
 
         void onTextTrackChanged();
+    }
+
+    interface TracksErrorListener {
+
+        void onTracksError();
     }
 
 
@@ -457,6 +464,7 @@ class TrackSelectionHelper {
                 if ((minVideoBitrate < videoTracks.get(1).getBitrate() && maxVideoBitrate <  videoTracks.get(1).getBitrate()) ||
                         (minVideoBitrate > videoTracks.get(videoTracks.size() - 1).getBitrate() && maxVideoBitrate  > videoTracks.get(videoTracks.size() - 1).getBitrate())) {
                     isValidABRRange = false;
+                    tracksErrorListener.onTracksError();
                 }
             }
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
@@ -854,6 +862,10 @@ class TrackSelectionHelper {
 
     protected void setTracksInfoListener(TracksInfoListener tracksInfoListener) {
         this.tracksInfoListener = tracksInfoListener;
+    }
+
+    protected void setTracksErrorListener(TracksErrorListener tracksErrorListener) {
+        this.tracksErrorListener = tracksErrorListener;
     }
 
     private void clearTracksLists() {
