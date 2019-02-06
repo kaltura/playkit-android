@@ -16,7 +16,6 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.player.MediaSupport;
-import com.kaltura.playkit.player.Profiler;
 
 import java.util.HashMap;
 import java.util.Map;

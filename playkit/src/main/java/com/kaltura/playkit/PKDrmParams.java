@@ -115,12 +115,4 @@ public class PKDrmParams implements Parcelable {
             return new PKDrmParams[size];
         }
     };
-
-    @Override
-    public String toString() {
-        return "PKDrmParams{" +
-                "licenseUri='" + licenseUri + '\'' +
-                ", scheme=" + scheme +
-                '}';
-    }
 }

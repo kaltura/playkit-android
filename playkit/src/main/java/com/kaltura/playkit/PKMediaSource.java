@@ -128,14 +128,4 @@ public class PKMediaSource implements Parcelable {
         result = 31 * result + url.hashCode();
         return result;
     }
-
-    @Override
-    public String toString() {
-        return "PKMediaSource{" +
-                "id='" + id + '\'' +
-                ", url='" + url + '\'' +
-                ", mediaFormat=" + mediaFormat +
-                ", drmData=" + drmData +
-                '}';
-    }
 }
