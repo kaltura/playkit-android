@@ -56,7 +56,6 @@ public class PlayKitManager {
 
     public static Player loadPlayer(Context context, @Nullable PKPluginConfigs pluginConfigs) {
 
-        Profiler.init(context);
         MediaSupport.initializeDrm(context, null);
 
         if (shouldSendDeviceCapabilitiesReport) {
