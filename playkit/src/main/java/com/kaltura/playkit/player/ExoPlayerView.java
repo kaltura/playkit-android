@@ -351,7 +351,7 @@ class ExoPlayerView extends BaseExoplayerView {
     public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         this.resizeMode = ExoPlayerView.getExoPlayerAspectRatioResizeMode(resizeMode);
         if (contentFrame != null) {
-            contentFrame.setResizeMode(resizeMode);
+            contentFrame.setResizeMode(this.resizeMode);
         }
     }
 
