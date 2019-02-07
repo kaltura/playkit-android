@@ -163,7 +163,6 @@ class ExoPlayerView extends BaseExoplayerView {
             oldTextComponent.removeTextOutput(componentListener);
         }
 
-        contentFrame.setResizeMode(resizeMode);
         contentFrame.removeView(videoSurface);
     }
 
