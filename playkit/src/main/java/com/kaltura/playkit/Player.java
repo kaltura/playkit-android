@@ -94,7 +94,7 @@ public interface Player {
         /**
          * Decide if player should play clear lead content
          *
-         * @param allowClearLead - should enable/disable clear lead playback default false
+         * @param allowClearLead - should enable/disable clear lead playback default true (enabled)
          * @return - Player Settings.
          */
         Settings allowClearLead(boolean allowClearLead);
