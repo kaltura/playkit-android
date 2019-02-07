@@ -76,6 +76,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate){
+        playerEngine.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
+    }
+
+    @Override
     public void seekTo(long position) {
         playerEngine.seekTo(position);
     }

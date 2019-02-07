@@ -293,12 +293,21 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
+    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
+        // Do Nothing
+    }
+
+    @Override
     public void seekTo(long position) {
         log.d("seekTo " + position);
         if (player == null || !PREPARED.equals(prepareState)) {
             return;
         }
-
+        if (position < 0) {
+            position = 0;
+        } else if (position > player.getDuration()) {
+            position = player.getDuration();
+        }
         player.seekTo((int) position);
         changeState(PlayerState.BUFFERING);
         sendDistinctEvent(PlayerEvent.Type.SEEKING);

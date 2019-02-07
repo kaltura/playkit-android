@@ -134,6 +134,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private String[] lastSelectedTrackIds = {TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
+    private TrackSelectionHelper.TracksErrorListener tracksErrorListener = initTracksErrorListener();
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
 
     private PKMediaSourceConfig sourceConfig;
@@ -146,14 +147,22 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         this(context, new ExoPlayerView(context), playerSettings);
     }
 
-    ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView, PlayerSettings playerSettings) {
+    ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView, PlayerSettings settings) {
         this.context = context;
-        bandwidthMeter = new DefaultBandwidthMeter.Builder(context)
-                .setEventListener(mainHandler, this)
-                .build();
+
+        playerSettings = settings != null ? settings : new PlayerSettings();
+
+        DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context).setEventListener(mainHandler, this);
+
+        Long initialBitrateEstimate = playerSettings.getAbrSettings().getInitialBitrateEstimate();
+
+        if (initialBitrateEstimate != null && initialBitrateEstimate > 0) {
+            bandwidthMeterBuilder.setInitialBitrateEstimate(initialBitrateEstimate);
+        }
+
+        bandwidthMeter = bandwidthMeterBuilder.build();
         this.exoPlayerView = exoPlayerView;
 
-        this.playerSettings = playerSettings != null ? playerSettings : new PlayerSettings();
 
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
             CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
@@ -215,6 +224,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, lastSelectedTrackIds);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
+        trackSelectionHelper.setTracksErrorListener(tracksErrorListener);
 
         return trackSelector;
     }
@@ -693,9 +703,17 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             isSeeking = true;
             sendDistinctEvent(PlayerEvent.Type.SEEKING);
             profiler.onSeekRequested(position);
-            if (isLive() && position == player.getDuration()) {
+            if (player.getDuration() == TIME_UNSET) {
+                return;
+            }
+            if (isLive() && position >= player.getDuration()) {
                 player.seekToDefaultPosition();
             } else {
+                if (position < 0) {
+                    position = 0;
+                } else if (position > player.getDuration()) {
+                    position = player.getDuration();
+                }
                 player.seekTo(position);
             }
         }
@@ -777,6 +795,22 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         } catch (IllegalArgumentException ex) {
             sendTrackSelectionError(uniqueId, ex);
         }
+    }
+
+    @Override
+    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
+        if (trackSelectionHelper == null) {
+            log.w("Attempt to invoke 'overrideMediaDefaultABR()' on null instance of the TracksSelectionHelper");
+            return;
+        }
+
+        if (minVideoBitrate > maxVideoBitrate || maxVideoBitrate <= 0) {
+            minVideoBitrate = Long.MIN_VALUE;
+            maxVideoBitrate = Long.MAX_VALUE;
+            String errorMessage = "given maxVideoBitrate is not greater than the minVideoBitrate";
+            sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
+        }
+        trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
     }
 
     private void sendTrackSelectionError(String uniqueId, IllegalArgumentException invalidUniqueIdException) {
@@ -923,10 +957,22 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return metadataList;
     }
 
+    private TrackSelectionHelper.TracksErrorListener initTracksErrorListener() {
+        return pkError -> {
+                currentError = pkError;
+                if (eventListener != null) {
+                    eventListener.onEvent(PlayerEvent.Type.ERROR);
+                }
+        };
+    }
+
     private TrackSelectionHelper.TracksInfoListener initTracksInfoListener() {
         return new TrackSelectionHelper.TracksInfoListener() {
             @Override
             public void onTracksInfoReady(PKTracks tracksReady) {
+                if (playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE) {
+                    overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+                }
                 //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
                 tracks = tracksReady;
                 shouldRestorePlayerToPreviousState = false;
@@ -959,6 +1005,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 sendEvent(PlayerEvent.Type.TEXT_TRACK_CHANGED);
             }
         };
+    }
+
+    private void sendInvalidVideoBitrateRangeIfNeeded(String errorMessage) {
+        if (eventListener != null) {
+            currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
+            eventListener.onEvent(PlayerEvent.Type.ERROR);
+        }
     }
 
     private DeferredDrmSessionManager.DrmSessionListener initDrmSessionListener() {

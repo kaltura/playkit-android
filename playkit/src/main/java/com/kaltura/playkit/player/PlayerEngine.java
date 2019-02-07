@@ -115,6 +115,14 @@ public interface PlayerEngine {
     void changeTrack(String uniqueId);
 
     /**
+     * overrideMediaDefaultABR.
+     *
+     * @param minVideoBitrate - minVideoBitrate.
+     * @param maxVideoBitrate - minVideoBitrate.
+     */
+    void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate);
+
+    /**
      * Seek player to the specified position.
      *
      * @param position - desired position.

@@ -12,11 +12,14 @@
 
 package com.kaltura.playkit.player;
 
+import android.support.annotation.NonNull;
+
+
 /**
  * Video track data holder.
  * Created by anton.afanasiev on 17/11/2016.
  */
-public class VideoTrack extends BaseTrack {
+public class VideoTrack extends BaseTrack implements Comparable<VideoTrack> {
 
     private int width;
     private int height;
@@ -58,5 +61,10 @@ public class VideoTrack extends BaseTrack {
      */
     public int getHeight() {
         return height;
+    }
+
+    @Override
+    public int compareTo(@NonNull VideoTrack track) {
+        return Integer.compare((int)this.getBitrate(), (int)track.getBitrate());
     }
 }
