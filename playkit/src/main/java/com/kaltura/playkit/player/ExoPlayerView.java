@@ -390,6 +390,9 @@ class ExoPlayerView extends BaseExoplayerView {
     @Override
     public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         this.resizeMode = ExoPlayerView.getExoPlayerAspectRatioResizeMode(resizeMode);
+        if (contentFrame != null) {
+            contentFrame.setResizeMode(this.resizeMode);
+        }
     }
 
     public static @AspectRatioFrameLayout.ResizeMode int getExoPlayerAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
