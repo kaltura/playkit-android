@@ -1081,12 +1081,12 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         if(playerSettings != null){
             playerSettings.setSurfaceAspectRatioResizeMode(resizeMode);
-            configureSurfaceViewSize();
+            configureAspectRatioResizeMode();
             sendEvent(PlayerEvent.Type.ASPECT_RATIO_RESIZE_MODE_CHANGED);
         }
     }
 
-    private void configureSurfaceViewSize() {
+    private void configureAspectRatioResizeMode() {
         if(exoPlayerView != null){
             exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
         }
