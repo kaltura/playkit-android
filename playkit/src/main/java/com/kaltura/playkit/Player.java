@@ -15,6 +15,7 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PlayerView;
@@ -350,7 +351,7 @@ public interface Player {
 
     /** Update video size **/
 
-    void updateSurfaceViewSize(int resizeMode);
+    void updateSurfaceViewSize(@AspectRatioFrameLayout.ResizeMode int resizeMode);
 
     /**
      * Add listener by event type as Class object. This generics-based method allows the caller to

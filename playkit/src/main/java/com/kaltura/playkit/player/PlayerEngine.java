@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.player;
 
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PlaybackInfo;
@@ -238,7 +239,7 @@ public interface PlayerEngine {
 
     /** update view size **/
 
-    void updateSurfaceViewSize(int resizeMode);
+    void updateSurfaceViewSize(@AspectRatioFrameLayout.ResizeMode int resizeMode);
 
     /**
      * Generic getters for playkit controllers.

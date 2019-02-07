@@ -387,7 +387,7 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     @Override
-    public void setSurfaceSize(int resizeMode) {
+    public void setSurfaceSize(@AspectRatioFrameLayout.ResizeMode int resizeMode) {
         this.resizeMode = resizeMode;
     }
 }

@@ -42,6 +42,7 @@ public class PlayerEvent implements PKEvent {
     public static final Class<SubtitlesStyleChanged> subtitlesStyleChanged = SubtitlesStyleChanged.class;
     public static final Class<VideoFramesDropped> videoFramesDropped = VideoFramesDropped.class;
     public static final Class<BytesLoaded> bytesLoaded = BytesLoaded.class;
+    public static final Class<SurfaceSizeModeChanged> surfaceSizeModeChanged = SurfaceSizeModeChanged.class;
 
     public static final PlayerEvent.Type canPlay = Type.CAN_PLAY;
     public static final PlayerEvent.Type ended = Type.ENDED;

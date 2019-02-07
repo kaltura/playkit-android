@@ -47,6 +47,7 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
@@ -1077,7 +1078,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @Override
-    public void updateSurfaceViewSize(int resizeMode) {
+    public void updateSurfaceViewSize(@AspectRatioFrameLayout.ResizeMode int resizeMode) {
         if(playerSettings != null){
             playerSettings.setSurfaceViewResizeMode(resizeMode);
             configureSurfaceViewSize();
@@ -1085,7 +1086,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
     }
 
-    private void configureSurfaceViewSize(){
+    private void configureSurfaceViewSize() {
         if(exoPlayerView != null){
             exoPlayerView.setSurfaceSize(playerSettings.getSurfaceViewSize());
         }

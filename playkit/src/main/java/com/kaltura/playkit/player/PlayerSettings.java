@@ -13,6 +13,7 @@
 package com.kaltura.playkit.player;
 
 
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
@@ -209,7 +210,7 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setSurfaceViewResizeMode(int resizeMode) {
+    public Player.Settings setSurfaceViewResizeMode(@AspectRatioFrameLayout.ResizeMode int resizeMode) {
         this.resizeMode = resizeMode;
         return this;
     }
