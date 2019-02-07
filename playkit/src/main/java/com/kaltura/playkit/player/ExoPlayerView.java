@@ -56,6 +56,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private ComponentListener componentListener;
     private Player.EventListener playerEventListener;
     private int textureViewRotation;
+    private int resizeMode; // Set 0 as default value @AspectFrame
 
 
 
@@ -332,6 +333,7 @@ class ExoPlayerView extends BaseExoplayerView {
                 applyTextureViewRotation((TextureView) videoSurface, textureViewRotation);
             }
 
+            contentFrame.setResizeMode(resizeMode);
             contentFrame.setAspectRatio(videoAspectRatio);
         }
 
@@ -382,6 +384,11 @@ class ExoPlayerView extends BaseExoplayerView {
                 textureView.setTransform(transformMatrix);
             }
         }
+    }
+
+    @Override
+    public void setSurfaceSize(int resizeMode) {
+        this.resizeMode = resizeMode;
     }
 }
 

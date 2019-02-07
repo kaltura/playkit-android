@@ -30,4 +30,6 @@ public abstract class BaseExoplayerView extends PlayerView {
 
     public abstract SubtitleView getSubtitleView();
 
+    public abstract void setSurfaceSize(int resizeMode);
+
 }

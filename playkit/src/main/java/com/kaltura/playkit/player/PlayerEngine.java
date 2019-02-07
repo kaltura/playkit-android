@@ -236,6 +236,10 @@ public interface PlayerEngine {
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
 
+    /** update view size **/
+
+    void updateSurfaceViewSize(int resizeMode);
+
     /**
      * Generic getters for playkit controllers.
      *

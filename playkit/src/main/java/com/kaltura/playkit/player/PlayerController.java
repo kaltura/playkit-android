@@ -99,6 +99,11 @@ public class PlayerController implements Player {
                 setVideoSubtitlesVisibility(true);
 
             }
+
+            @Override
+            public void setSurfaceSize(int resizeMode) {
+
+            }
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         this.rootPlayerView.setLayoutParams(lp);
@@ -569,6 +574,14 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void updateSurfaceViewSize(int resizeMode) {
+        log.v("surfaceView size");
+        if(assertPlayerIsNotNull("updateSurfaceViewResize")){
+            player.updateSurfaceViewSize(resizeMode);
+        }
+    }
+
+    @Override
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         Assert.shouldNeverHappen();
     }
@@ -720,6 +733,9 @@ public class PlayerController implements Player {
                         break;
                     case SUBTITLE_STYLE_CHANGED:
                         event = new PlayerEvent.SubtitlesStyleChanged(playerSettings.getSubtitleStyleSettings().getStyleName());
+                        break;
+                    case SURFACE_SIZE_CHANGED:
+                        event = new PlayerEvent.SurfaceSizeModeChanged(playerSettings.getSurfaceViewSize());
                         break;
                     default:
                         event = new PlayerEvent.Generic(eventType);

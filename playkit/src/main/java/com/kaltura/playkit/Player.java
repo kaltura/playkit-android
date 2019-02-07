@@ -171,6 +171,15 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setABRSettings(ABRSettings abrSettings);
+
+        /**
+         *  Set the Player's surfaceView resize Mode
+         *
+         * @param resizeMode
+         * @return - Player Settings
+         */
+
+        Settings setSurfaceViewResizeMode(int resizeMode);
     }
 
     /**
@@ -338,6 +347,10 @@ public interface Player {
      * Update Subtitle Styles
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
+
+    /** Update video size **/
+
+    void updateSurfaceViewSize(int resizeMode);
 
     /**
      * Add listener by event type as Class object. This generics-based method allows the caller to

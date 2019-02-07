@@ -180,6 +180,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
         window = new Timeline.Window();
         setPlayerListeners();
+        exoPlayerView.setSurfaceSize(playerSettings.getSurfaceViewSize());
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
         player.setPlayWhenReady(false);
     }
@@ -1074,7 +1075,22 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             sendEvent(PlayerEvent.Type.SUBTITLE_STYLE_CHANGED);
         }
     }
-  
+
+    @Override
+    public void updateSurfaceViewSize(int resizeMode) {
+        if(playerSettings != null){
+            playerSettings.setSurfaceViewResizeMode(resizeMode);
+            configureSurfaceViewSize();
+            sendEvent(PlayerEvent.Type.SURFACE_SIZE_CHANGED);
+        }
+    }
+
+    private void configureSurfaceViewSize(){
+        if(exoPlayerView != null){
+            exoPlayerView.setSurfaceSize(playerSettings.getSurfaceViewSize());
+        }
+    }
+
     private boolean assertPlayerIsNotNull(String methodName) {
         if (player != null) {
             return true;

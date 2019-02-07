@@ -175,6 +175,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public void updateSurfaceViewSize(int resizeMode) {
+        playerEngine.updateSurfaceViewSize(resizeMode);
+    }
+
+    @Override
     public <T extends PKController> T getController(Class<T> type) {
         return playerEngine.getController(type);
     }

@@ -218,6 +218,16 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class SurfaceSizeModeChanged extends PlayerEvent {
+
+        public final int resizeMode;
+
+        public SurfaceSizeModeChanged(int resizeMode) {
+            super(Type.SURFACE_SIZE_CHANGED);
+            this.resizeMode = resizeMode;
+        }
+    }
+
     public static class VideoFramesDropped extends PlayerEvent {
         public final long droppedVideoFrames;
         public final long droppedVideoFramesPeriod;
@@ -288,7 +298,8 @@ public class PlayerEvent implements PKEvent {
         PLAYBACK_RATE_CHANGED,
         VIDEO_FRAMES_DROPPED,   // Video frames were dropped, see PlayerEvent.VideoFramesDropped
         BYTES_LOADED,           // Bytes were downloaded from the network
-        SUBTITLE_STYLE_CHANGED  // Subtitle style is changed.
+        SUBTITLE_STYLE_CHANGED,  // Subtitle style is changed.
+        SURFACE_SIZE_CHANGED //Send when subtitle style is changed.
     }
 
     @Override

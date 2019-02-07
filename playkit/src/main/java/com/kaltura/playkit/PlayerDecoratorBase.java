@@ -195,6 +195,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public void updateSurfaceViewSize(int resizeMode) {
+        player.updateSurfaceViewSize(resizeMode);
+    }
+
+    @Override
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         player.addListener(groupId, type, listener);
     }

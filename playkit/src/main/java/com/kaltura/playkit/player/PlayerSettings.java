@@ -30,6 +30,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean vrPlayerEnabled = true;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
+    private int resizeMode;
     private ABRSettings abrSettings = new ABRSettings();
 
 
@@ -104,6 +105,10 @@ public class PlayerSettings implements Player.Settings {
 
     public ABRSettings getAbrSettings() {
         return abrSettings;
+    }
+
+    public int getSurfaceViewSize(){
+        return resizeMode;
     }
 
     @Override
@@ -200,6 +205,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setABRSettings(ABRSettings abrSettings) {
         this.abrSettings = abrSettings;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setSurfaceViewResizeMode(int resizeMode) {
+        this.resizeMode = resizeMode;
         return this;
     }
 }
