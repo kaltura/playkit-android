@@ -106,7 +106,7 @@ public class PlayerSettings implements Player.Settings {
         return abrSettings;
     }
 
-    public PKAspectRatioResizeMode getSurfaceViewSize(){
+    public PKAspectRatioResizeMode getAspectRatioResizeMode(){
         return resizeMode;
     }
 
