@@ -46,6 +46,7 @@ dependencies {
     api "com.google.android.exoplayer:exoplayer-ui:$exoPlayerVersion"
     api "com.google.android.exoplayer:extension-okhttp:$exoPlayerVersion"
 
+    // Ok is (optionally) used by ExoPlayer now
     api("com.squareup.okhttp3:okhttp:3.12.1")
 
     // Tests
