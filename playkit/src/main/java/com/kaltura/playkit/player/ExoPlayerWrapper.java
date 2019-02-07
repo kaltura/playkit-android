@@ -838,6 +838,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 return;
             }
             isSeeking = false;
+            playerPosition = position;
             player.seekTo(position);
         }
     }
