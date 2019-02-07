@@ -348,8 +348,9 @@ public interface Player {
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
 
-    /** Update video size **/
-
+    /**
+     * Update video size
+     */
     void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
 
     /**
