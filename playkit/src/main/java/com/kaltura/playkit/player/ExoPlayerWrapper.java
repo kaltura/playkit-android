@@ -95,7 +95,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private DefaultBandwidthMeter bandwidthMeter;
-    private PlayerSettings playerSettings;
+    @NonNull private PlayerSettings playerSettings;
     private EventListener eventListener;
     private StateChangedListener stateChangedListener;
     private ExoAnalyticsAggregator analyticsAggregator = new ExoAnalyticsAggregator();
@@ -249,7 +249,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         changeState(PlayerState.LOADING);
 
-        if (playerSettings != null && playerSettings.getSubtitleStyleSettings() != null) {
+        if (playerSettings.getSubtitleStyleSettings() != null) {
             configureSubtitleView();
         }
     }
