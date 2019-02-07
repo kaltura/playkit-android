@@ -56,7 +56,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private ComponentListener componentListener;
     private Player.EventListener playerEventListener;
     private int textureViewRotation;
-    private int resizeMode;
+    private @AspectRatioFrameLayout.ResizeMode int resizeMode;
 
 
 
@@ -392,22 +392,22 @@ class ExoPlayerView extends BaseExoplayerView {
         this.resizeMode = ExoPlayerView.getExoPlayerAspectRatioResizeMode(resizeMode);
     }
 
-    public static int getExoPlayerAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
-        int exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
+    public static @AspectRatioFrameLayout.ResizeMode int getExoPlayerAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        @AspectRatioFrameLayout.ResizeMode int exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
         switch(resizeMode) {
-            case ResizeModFixedWidth:
-                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH;
+            case fixedWidth:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH ;
                 break;
-            case ResizeModFixedHeight:
+            case fixedHeight:
                 exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT;
                 break;
-            case ResizeModFill:
+            case fill:
                 exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL;
                 break;
-            case ResizeModZoom:
+            case Zoom:
                 exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM;
                 break;
-            case ResizeModeFit:
+            case fit:
             default:
                 exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
                 break;

@@ -29,7 +29,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean vrPlayerEnabled = true;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
-    private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.ResizeModeFit;
+    private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
     private ABRSettings abrSettings = new ABRSettings();
 
 
