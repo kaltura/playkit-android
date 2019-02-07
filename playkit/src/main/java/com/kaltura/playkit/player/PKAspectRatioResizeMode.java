@@ -6,5 +6,5 @@ public enum PKAspectRatioResizeMode {
     fixedWidth,
     fixedHeight,
     fill,
-    Zoom
+    zoom
 }

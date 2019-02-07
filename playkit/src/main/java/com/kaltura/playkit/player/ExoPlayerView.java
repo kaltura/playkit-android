@@ -404,7 +404,7 @@ class ExoPlayerView extends BaseExoplayerView {
             case fill:
                 exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL;
                 break;
-            case Zoom:
+            case zoom:
                 exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM;
                 break;
             case fit:
