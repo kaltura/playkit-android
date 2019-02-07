@@ -180,7 +180,7 @@ public interface Player {
          * @return - Player Settings
          */
 
-        Settings setSurfaceViewResizeMode(int resizeMode);
+        Settings setSurfaceViewResizeMode(@AspectRatioFrameLayout.ResizeMode int resizeMode);
     }
 
     /**
