@@ -571,7 +571,7 @@ public class PlayerController implements Player {
     @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         log.v("updateSurfaceAspectRatioResizeMode");
-        if(assertPlayerIsNotNull("updateSurfaceViewResize")){
+        if(assertPlayerIsNotNull("updateSurfaceAspectRatioResizeMode")){
             player.updateSurfaceAspectRatioResizeMode(resizeMode);
         }
     }
