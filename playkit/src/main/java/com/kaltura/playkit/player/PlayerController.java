@@ -730,7 +730,7 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.SubtitlesStyleChanged(playerSettings.getSubtitleStyleSettings().getStyleName());
                         break;
                     case ASPECT_RATIO_RESIZE_MODE_CHANGED:
-                        event = new PlayerEvent.SurfaceAspectRationResizeModeChanged(playerSettings.getSurfaceViewSize());
+                        event = new PlayerEvent.SurfaceAspectRationResizeModeChanged(playerSettings.getAspectRatioResizeMode());
                         break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
