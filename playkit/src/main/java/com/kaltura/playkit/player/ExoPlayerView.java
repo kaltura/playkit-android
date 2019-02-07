@@ -295,6 +295,7 @@ class ExoPlayerView extends BaseExoplayerView {
                 applyTextureViewRotation((TextureView) videoSurface, textureViewRotation);
             }
 
+            contentFrame.setResizeMode(resizeMode);
             contentFrame.setAspectRatio(videoAspectRatio);
         }
 
