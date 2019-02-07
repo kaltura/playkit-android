@@ -15,7 +15,7 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
+import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 
@@ -196,8 +196,8 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void updateSurfaceViewSize(@AspectRatioFrameLayout.ResizeMode int resizeMode) {
-        player.updateSurfaceViewSize(resizeMode);
+    public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        player.updateSurfaceAspectRatioResizeMode(resizeMode);
     }
 
     @Override

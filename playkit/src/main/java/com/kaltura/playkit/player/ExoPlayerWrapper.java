@@ -47,7 +47,6 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
@@ -181,7 +180,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
         window = new Timeline.Window();
         setPlayerListeners();
-        exoPlayerView.setSurfaceSize(playerSettings.getSurfaceViewSize());
+        exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getSurfaceViewSize());
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
         player.setPlayWhenReady(false);
     }
@@ -1079,17 +1078,17 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
     }
 
     @Override
-    public void updateSurfaceViewSize(@AspectRatioFrameLayout.ResizeMode int resizeMode) {
+    public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         if(playerSettings != null){
-            playerSettings.setSurfaceViewResizeMode(resizeMode);
+            playerSettings.setSurfaceAspectRatioResizeMode(resizeMode);
             configureSurfaceViewSize();
-            sendEvent(PlayerEvent.Type.SURFACE_SIZE_CHANGED);
+            sendEvent(PlayerEvent.Type.ASPECT_RATIO_RESIZE_MODE_CHANGED);
         }
     }
 
     private void configureSurfaceViewSize() {
         if(exoPlayerView != null){
-            exoPlayerView.setSurfaceSize(playerSettings.getSurfaceViewSize());
+            exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getSurfaceViewSize());
         }
     }
 

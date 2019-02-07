@@ -15,9 +15,9 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
+import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.utils.Consts;
@@ -174,13 +174,12 @@ public interface Player {
         Settings setABRSettings(ABRSettings abrSettings);
 
         /**
-         *  Set the Player's surfaceView resize Mode
+         *  Set the Player's AspectRatio resize Mode
          *
          * @param resizeMode
          * @return - Player Settings
          */
-
-        Settings setSurfaceViewResizeMode(@AspectRatioFrameLayout.ResizeMode int resizeMode);
+        Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
     }
 
     /**
@@ -351,7 +350,7 @@ public interface Player {
 
     /** Update video size **/
 
-    void updateSurfaceViewSize(@AspectRatioFrameLayout.ResizeMode int resizeMode);
+    void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
 
     /**
      * Add listener by event type as Class object. This generics-based method allows the caller to

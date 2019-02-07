@@ -17,7 +17,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
@@ -98,11 +97,6 @@ public class PlayerController implements Player {
             @Override
             public void showVideoSubtitles() {
                 setVideoSubtitlesVisibility(true);
-
-            }
-
-            @Override
-            public void setSurfaceSize(int resizeMode) {
 
             }
         };
@@ -575,10 +569,10 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void updateSurfaceViewSize(@AspectRatioFrameLayout.ResizeMode int resizeMode) {
+    public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         log.v("surfaceView size");
         if(assertPlayerIsNotNull("updateSurfaceViewResize")){
-            player.updateSurfaceViewSize(resizeMode);
+            player.updateSurfaceAspectRatioResizeMode(resizeMode);
         }
     }
 
@@ -735,8 +729,8 @@ public class PlayerController implements Player {
                     case SUBTITLE_STYLE_CHANGED:
                         event = new PlayerEvent.SubtitlesStyleChanged(playerSettings.getSubtitleStyleSettings().getStyleName());
                         break;
-                    case SURFACE_SIZE_CHANGED:
-                        event = new PlayerEvent.SurfaceSizeModeChanged(playerSettings.getSurfaceViewSize());
+                    case ASPECT_RATIO_RESIZE_MODE_CHANGED:
+                        event = new PlayerEvent.SurfaceAspectRationResizeModeChanged(playerSettings.getSurfaceViewSize());
                         break;
                     default:
                         event = new PlayerEvent.Generic(eventType);

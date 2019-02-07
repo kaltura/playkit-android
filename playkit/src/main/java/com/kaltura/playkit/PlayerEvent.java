@@ -15,6 +15,7 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 
 import com.kaltura.playkit.player.AudioTrack;
+import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
 import com.kaltura.playkit.player.VideoTrack;
@@ -42,7 +43,7 @@ public class PlayerEvent implements PKEvent {
     public static final Class<SubtitlesStyleChanged> subtitlesStyleChanged = SubtitlesStyleChanged.class;
     public static final Class<VideoFramesDropped> videoFramesDropped = VideoFramesDropped.class;
     public static final Class<BytesLoaded> bytesLoaded = BytesLoaded.class;
-    public static final Class<SurfaceSizeModeChanged> surfaceSizeModeChanged = SurfaceSizeModeChanged.class;
+    public static final Class<SurfaceAspectRationResizeModeChanged> surfaceAspectRationSizeModeChanged = SurfaceAspectRationResizeModeChanged.class;
 
     public static final PlayerEvent.Type canPlay = Type.CAN_PLAY;
     public static final PlayerEvent.Type ended = Type.ENDED;
@@ -219,12 +220,12 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
-    public static class SurfaceSizeModeChanged extends PlayerEvent {
+    public static class SurfaceAspectRationResizeModeChanged extends PlayerEvent {
 
-        public final int resizeMode;
+        public final PKAspectRatioResizeMode resizeMode;
 
-        public SurfaceSizeModeChanged(int resizeMode) {
-            super(Type.SURFACE_SIZE_CHANGED);
+        public SurfaceAspectRationResizeModeChanged(PKAspectRatioResizeMode resizeMode) {
+            super(Type.ASPECT_RATIO_RESIZE_MODE_CHANGED);
             this.resizeMode = resizeMode;
         }
     }
@@ -300,7 +301,7 @@ public class PlayerEvent implements PKEvent {
         VIDEO_FRAMES_DROPPED,   // Video frames were dropped, see PlayerEvent.VideoFramesDropped
         BYTES_LOADED,           // Bytes were downloaded from the network
         SUBTITLE_STYLE_CHANGED,  // Subtitle style is changed.
-        SURFACE_SIZE_CHANGED //Send when subtitle style is changed.
+        ASPECT_RATIO_RESIZE_MODE_CHANGED //Send when updating the Surface Vide Aspect Ratio size mode.
     }
 
     @Override

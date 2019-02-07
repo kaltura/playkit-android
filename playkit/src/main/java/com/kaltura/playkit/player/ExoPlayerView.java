@@ -56,7 +56,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private ComponentListener componentListener;
     private Player.EventListener playerEventListener;
     private int textureViewRotation;
-    private int resizeMode; // Set 0 as default value @AspectFrame
+    private int resizeMode;
 
 
 
@@ -333,6 +333,7 @@ class ExoPlayerView extends BaseExoplayerView {
                 applyTextureViewRotation((TextureView) videoSurface, textureViewRotation);
             }
 
+
             contentFrame.setResizeMode(resizeMode);
             contentFrame.setAspectRatio(videoAspectRatio);
         }
@@ -387,8 +388,31 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     @Override
-    public void setSurfaceSize(@AspectRatioFrameLayout.ResizeMode int resizeMode) {
-        this.resizeMode = resizeMode;
+    public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        this.resizeMode = ExoPlayerView.getExoPlayerAspectRatioResizeMode(resizeMode);
+    }
+
+    public static int getExoPlayerAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        int exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
+        switch(resizeMode) {
+            case ResizeModFixedWidth:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH;
+                break;
+            case ResizeModFixedHeight:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT;
+                break;
+            case ResizeModFill:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL;
+                break;
+            case ResizeModZoom:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM;
+                break;
+            case ResizeModeFit:
+            default:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
+                break;
+        }
+        return exoPlayerAspectRatioResizeMode;
     }
 }
 

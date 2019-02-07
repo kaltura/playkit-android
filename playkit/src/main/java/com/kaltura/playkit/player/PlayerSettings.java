@@ -12,8 +12,6 @@
 
 package com.kaltura.playkit.player;
 
-
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
@@ -31,7 +29,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean vrPlayerEnabled = true;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
-    private int resizeMode;
+    private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.ResizeModeFit;
     private ABRSettings abrSettings = new ABRSettings();
 
 
@@ -108,7 +106,7 @@ public class PlayerSettings implements Player.Settings {
         return abrSettings;
     }
 
-    public int getSurfaceViewSize(){
+    public PKAspectRatioResizeMode getSurfaceViewSize(){
         return resizeMode;
     }
 
@@ -210,7 +208,7 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setSurfaceViewResizeMode(@AspectRatioFrameLayout.ResizeMode int resizeMode) {
+    public Player.Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         this.resizeMode = resizeMode;
         return this;
     }

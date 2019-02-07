@@ -42,5 +42,5 @@ public abstract class PlayerView extends FrameLayout {
 
     public abstract void showVideoSubtitles();
 
-    public abstract void setSurfaceSize(int resizeMode);
+    public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {};
 }
