@@ -236,8 +236,9 @@ public interface PlayerEngine {
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
 
-    /** update view size **/
-
+     /**
+     *  update view size 
+     **/
     default void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {};
 
     /**
