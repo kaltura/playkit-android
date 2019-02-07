@@ -53,6 +53,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private ComponentListener componentListener;
 
     private int textureViewRotation;
+    private @AspectRatioFrameLayout.ResizeMode int resizeMode;
 
 
     ExoPlayerView(Context context) {
@@ -162,8 +163,8 @@ class ExoPlayerView extends BaseExoplayerView {
             oldTextComponent.removeTextOutput(componentListener);
         }
 
+        contentFrame.setResizeMode(resizeMode);
         contentFrame.removeView(videoSurface);
-
     }
 
     /**
@@ -344,6 +345,34 @@ class ExoPlayerView extends BaseExoplayerView {
                 textureView.setTransform(transformMatrix);
             }
         }
+    }
+
+    @Override
+    public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        this.resizeMode = ExoPlayerView.getExoPlayerAspectRatioResizeMode(resizeMode);
+    }
+
+    public static @AspectRatioFrameLayout.ResizeMode int getExoPlayerAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        @AspectRatioFrameLayout.ResizeMode int exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
+        switch(resizeMode) {
+            case fixedWidth:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH;
+                break;
+            case fixedHeight:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT;
+                break;
+            case fill:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL;
+                break;
+            case zoom:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM;
+                break;
+            case fit:
+            default:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
+                break;
+        }
+        return exoPlayerAspectRatioResizeMode;
     }
 }
 

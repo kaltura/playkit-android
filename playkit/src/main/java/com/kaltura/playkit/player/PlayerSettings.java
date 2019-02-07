@@ -28,6 +28,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean vrPlayerEnabled = true;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
+    private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
 
 
     private PKTrackConfig preferredTextTrackConfig;
@@ -96,6 +97,10 @@ public class PlayerSettings implements Player.Settings {
         return subtitleStyleSettings;
     }
 
+    public PKAspectRatioResizeMode getAspectRatioResizeMode(){
+        return resizeMode;
+    }
+
     @Override
     public Player.Settings setVRPlayerEnabled(boolean vrPlayerEnabled) {
         this.vrPlayerEnabled = vrPlayerEnabled;
@@ -162,7 +167,6 @@ public class PlayerSettings implements Player.Settings {
         return this;
     }
 
-
     @Override
     public Player.Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled) {
         this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
@@ -178,6 +182,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         this.subtitleStyleSettings = subtitleStyleSettings;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        this.resizeMode = resizeMode;
         return this;
     }
 }

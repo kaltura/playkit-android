@@ -13,6 +13,7 @@
 package com.kaltura.playkit;
 
 import com.kaltura.playkit.player.AudioTrack;
+import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
 import com.kaltura.playkit.player.VideoTrack;
@@ -186,6 +187,16 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class SurfaceAspectRationResizeModeChanged extends PlayerEvent {
+
+        public final PKAspectRatioResizeMode resizeMode;
+
+        public SurfaceAspectRationResizeModeChanged(PKAspectRatioResizeMode resizeMode) {
+            super(Type.ASPECT_RATIO_RESIZE_MODE_CHANGED);
+            this.resizeMode = resizeMode;
+        }
+    }
+
     public final Type type;
 
     public PlayerEvent(Type type) {
@@ -217,7 +228,8 @@ public class PlayerEvent implements PKEvent {
         AUDIO_TRACK_CHANGED,
         TEXT_TRACK_CHANGED,
         PLAYBACK_RATE_CHANGED,
-        SUBTITLE_STYLE_CHANGED //Send when subtitle style is changed.
+        SUBTITLE_STYLE_CHANGED, //Send when subtitle style is changed.
+        ASPECT_RATIO_RESIZE_MODE_CHANGED //Send when updating the Surface Vide Aspect Ratio size mode.
     }
 
     @Override
