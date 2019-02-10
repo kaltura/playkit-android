@@ -13,12 +13,12 @@ import okhttp3.EventListener;
 
 public abstract class Profiler {
 
-    private static final Map<String, Object> experiments = new LinkedHashMap<>();
+    @NonNull private static final Map<String, Object> experiments = new LinkedHashMap<>();
 
-    private static AnalyticsListener exoAnalyticsListener = new AnalyticsListener() {};
+    @NonNull private static final AnalyticsListener exoAnalyticsListener = new AnalyticsListener() {};
 
     // a profiler that doesn't do anything.
-    private static Profiler NULL = new Profiler() {};
+    @NonNull private static final Profiler NULL = new Profiler() {};
 
     // Factory, by default returns the NULL profiler
     @NonNull private static Factory profilerFactory = () -> NULL;
@@ -33,7 +33,7 @@ public abstract class Profiler {
         experiments.put(key, value);
     }
 
-    // Called by PlayerController
+    // Called by PlayerController. Always returns a profiler, but the profiler may be a no-op.
     @NonNull
     static Profiler get() {
         return profilerFactory.getProfiler();
