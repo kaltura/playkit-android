@@ -17,6 +17,7 @@ import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
+import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.utils.Consts;
@@ -171,6 +172,14 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setABRSettings(ABRSettings abrSettings);
+
+        /**
+         *  Set the Player's AspectRatio resize Mode
+         *
+         * @param resizeMode
+         * @return - Player Settings
+         */
+        Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
     }
 
     /**
@@ -338,6 +347,11 @@ public interface Player {
      * Update Subtitle Styles
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
+
+    /**
+     * Update video size
+     */
+    void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
 
     /**
      * Add listener by event type as Class object. This generics-based method allows the caller to

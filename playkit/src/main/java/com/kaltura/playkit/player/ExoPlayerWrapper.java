@@ -186,6 +186,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         window = new Timeline.Window();
         setPlayerListeners();
+        exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
 
         player.setPlayWhenReady(false);
@@ -1103,7 +1104,22 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             sendEvent(PlayerEvent.Type.SUBTITLE_STYLE_CHANGED);
         }
     }
-  
+
+    @Override
+    public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        if(playerSettings != null){
+            playerSettings.setSurfaceAspectRatioResizeMode(resizeMode);
+            configureAspectRatioResizeMode();
+            sendEvent(PlayerEvent.Type.ASPECT_RATIO_RESIZE_MODE_CHANGED);
+        }
+    }
+
+    private void configureAspectRatioResizeMode() {
+        if(exoPlayerView != null){
+            exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
+        }
+    }
+
     private boolean assertPlayerIsNotNull(String methodName) {
         if (player != null) {
             return true;

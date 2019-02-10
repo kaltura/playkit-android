@@ -56,6 +56,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private ComponentListener componentListener;
     private Player.EventListener playerEventListener;
     private int textureViewRotation;
+    private @AspectRatioFrameLayout.ResizeMode int resizeMode;
 
 
 
@@ -332,6 +333,8 @@ class ExoPlayerView extends BaseExoplayerView {
                 applyTextureViewRotation((TextureView) videoSurface, textureViewRotation);
             }
 
+
+            contentFrame.setResizeMode(resizeMode);
             contentFrame.setAspectRatio(videoAspectRatio);
         }
 
@@ -382,6 +385,37 @@ class ExoPlayerView extends BaseExoplayerView {
                 textureView.setTransform(transformMatrix);
             }
         }
+    }
+
+    @Override
+    public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        this.resizeMode = ExoPlayerView.getExoPlayerAspectRatioResizeMode(resizeMode);
+        if (contentFrame != null) {
+            contentFrame.setResizeMode(this.resizeMode);
+        }
+    }
+
+    public static @AspectRatioFrameLayout.ResizeMode int getExoPlayerAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        @AspectRatioFrameLayout.ResizeMode int exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
+        switch(resizeMode) {
+            case fixedWidth:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH;
+                break;
+            case fixedHeight:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT;
+                break;
+            case fill:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL;
+                break;
+            case zoom:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM;
+                break;
+            case fit:
+            default:
+                exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
+                break;
+        }
+        return exoPlayerAspectRatioResizeMode;
     }
 }
 

@@ -577,6 +577,14 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        log.v("updateSurfaceAspectRatioResizeMode");
+        if(assertPlayerIsNotNull("updateSurfaceAspectRatioResizeMode")){
+            player.updateSurfaceAspectRatioResizeMode(resizeMode);
+        }
+    }
+
+    @Override
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         Assert.shouldNeverHappen();
     }
@@ -728,6 +736,9 @@ public class PlayerController implements Player {
                         break;
                     case SUBTITLE_STYLE_CHANGED:
                         event = new PlayerEvent.SubtitlesStyleChanged(playerSettings.getSubtitleStyleSettings().getStyleName());
+                        break;
+                    case ASPECT_RATIO_RESIZE_MODE_CHANGED:
+                        event = new PlayerEvent.SurfaceAspectRationResizeModeChanged(playerSettings.getAspectRatioResizeMode());
                         break;
                     default:
                         event = new PlayerEvent.Generic(eventType);

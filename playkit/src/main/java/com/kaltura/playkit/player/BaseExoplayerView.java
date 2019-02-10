@@ -6,10 +6,6 @@ import android.util.AttributeSet;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.ui.SubtitleView;
 
-/**
- * Created by anton.afanasiev on 22/04/2018.
- */
-
 public abstract class BaseExoplayerView extends PlayerView {
 
     public BaseExoplayerView(Context context) {
