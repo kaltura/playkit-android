@@ -34,8 +34,8 @@ then
 fi
 
 
-# Assuming a successful playkit:build, create javadoc jar, sources jar, pom
-./gradlew playkit:publishMavenPublicationToMavenLocal -x mavenAndroidJavadocs
+# Assuming a successful build, create javadoc jar, sources jar, pom
+./gradlew publishReleasePublicationToMavenLocal
 
 # Upload
-./gradlew playkit:bintrayUpload -PdryRun=$DRY_RUN -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY
+./gradlew bintrayUpload -PdryRun=$DRY_RUN -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY

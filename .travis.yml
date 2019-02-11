@@ -11,9 +11,10 @@ android:
 before_script:
   - curl https://kaltura.github.io/fe-tools/android/license.sh | sh
 script:
-  - ./gradlew playkit:build
+  - ./gradlew assembleRelease
 after_failure:
   - cat playkit/build/reports/lint-results.xml
+  - cat profiler/build/reports/lint-results.xml
 after_success:
   - ./travis-push-to-bintray.sh
 notifications:
