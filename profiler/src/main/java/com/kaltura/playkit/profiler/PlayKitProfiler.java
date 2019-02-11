@@ -33,6 +33,7 @@ import com.kaltura.playkit.player.PKMediaSourceConfig;
 import com.kaltura.playkit.player.PlayerEngine;
 import com.kaltura.playkit.player.PlayerSettings;
 import com.kaltura.playkit.player.Profiler;
+import com.kaltura.playkit.player.ProfilerFactory;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -47,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -60,32 +62,36 @@ class ConfigFile {
     float sendPercentage;
 }
 
-public class PlayKitProfiler extends Profiler {
+public class PlayKitProfiler implements Profiler {
 
-    private static PKLog pkLog = PKLog.get("Profiler");
+    // Static constants
+    private static final PKLog pkLog = PKLog.get("Profiler");
 
     private static final String SEPARATOR = "\t";
     private static final boolean devMode = true;
     private static final int SEND_INTERVAL_SEC = devMode ? 10 : 300;   // Report every 5 minutes
     private static final float DEFAULT_SEND_PERCENTAGE = 100; // Start disabled
-    private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
     private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
     private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json-";
     private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
-    private static String postURL = DEFAULT_POST_URL;
     private static final int MAX_CONFIG_SIZE = 10240;
+
+    // Configuration
+    private static String postURL = DEFAULT_POST_URL;
+    private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
+
+    // Static setup
     private static Handler ioHandler;
     private static boolean initialized;
 
     private static DisplayMetrics metrics;
     private static File externalFilesDir;   // for debug logs
 
-
-    private static Factory factory = () -> initialized && Math.random() < (sendPercentage / 100) ? new PlayKitProfiler() : null;
+    @NonNull
+    private static final Map<String, Object> experiments = new LinkedHashMap<>();
 
 
     private final ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
-
 
     private String sessionId;
 
@@ -100,21 +106,19 @@ public class PlayKitProfiler extends Profiler {
 
     /**
      * Initialize the static part of the profiler -- load the config and store it,
-     * create IO thread and handler.
+     * create IO thread and handler. Must be called by the app to enable the profiler.
      */
     public static void init(Context context) {
 
-        pkLog.d("init()");
-
+        // This only has to happen once.
         if (initialized) return;
 
-        final Context appContext = context.getApplicationContext();
-
-
-        synchronized (Profiler.class) {
+        synchronized (PlayKitProfiler.class) {
 
             // Ask again, after sync.
             if (initialized) return;
+
+            final Context appContext = context.getApplicationContext();
 
             // Load cached config. Will load from network later, in a handler thread.
             loadCachedConfig(appContext);
@@ -129,7 +133,12 @@ public class PlayKitProfiler extends Profiler {
 
             initialized = true;
 
-            Profiler.setProfilerFactory(factory);
+            ProfilerFactory.setProfilerFactory(new ProfilerFactory() {
+                @Override
+                protected Profiler getProfiler() {
+                    return initialized && Math.random() < (sendPercentage / 100) ? new PlayKitProfiler() : null;
+                }
+            });
         }
     }
 
@@ -145,17 +154,11 @@ public class PlayKitProfiler extends Profiler {
                 ioHandler.postDelayed(this, SEND_INTERVAL_SEC * 1000);
             }
         });
-
     }
 
-    @Override
-    public void setPlayerEngine(PlayerEngine playerEngine) {
-
-        if (playerEngine instanceof ExoPlayerWrapper) {
-            this.playerEngine = new WeakReference<>(((ExoPlayerWrapper) playerEngine));
-        } else {
-            this.playerEngine = null;   // other engines are not supported
-        }
+    // Called by the app
+    public static void setExperiment(String key, Object value) {
+        experiments.put(key, value);
     }
 
     private static void initMembers(final Context context) {
@@ -251,7 +254,7 @@ public class PlayKitProfiler extends Profiler {
             parseConfig(bytes);
 
         } catch (IOException e) {
-            pkLog.e("Failed to download config", e);
+            pkLog.w("Failed to download config", e);
             return;
         }
 
@@ -315,79 +318,11 @@ public class PlayKitProfiler extends Profiler {
         return TextUtils.join(SEPARATOR, fields);
     }
 
-    @Override
-    public void newSession(final String sessionId, PlayerSettings playerSettings) {
-
-        if (this.sessionId != null) {
-            // close current session
-            closeSession();
-        }
-
-        this.sessionId = sessionId;
-        if (sessionId == null) {
-            return;     // the null profiler
-        }
-
-        this.sessionStartTime = SystemClock.elapsedRealtime();
-        this.logQueue.clear();
-
-        this.serversLookedUp.clear();
-
-        pkLog.d("New profiler with sessionId: " + sessionId);
-
-        log("StartSession",
-                field("now", System.currentTimeMillis()),
-                field("strNow", new Date().toString()),
-                field("sessionId", sessionId)
-        );
-
-        log("PlayKit",
-                field("version", PlayKitManager.VERSION_STRING),
-                field("clientTag", PlayKitManager.CLIENT_TAG)
-        );
-
-        log("Platform",
-                field("name", "Android"),
-                field("apiLevel", Build.VERSION.SDK_INT),
-                field("chipset", MediaSupport.DEVICE_CHIPSET),
-                field("brand", Build.BRAND),
-                field("model", Build.MODEL),
-                field("manufacturer", Build.MANUFACTURER),
-                field("device", Build.DEVICE),
-                field("tags", Build.TAGS),
-                field("fingerprint", Build.FINGERPRINT),
-                field("screenSize", metrics.widthPixels + "x" + metrics.heightPixels),
-                field("screenDpi", metrics.xdpi + "x" + metrics.ydpi)
-        );
-
-        log("PlayerSettings",
-                field("allowClearLead", playerSettings.allowClearLead()),
-                field("useTextureView", playerSettings.useTextureView()));
-
-        final LoadControlBuffers loadControl = playerSettings.getLoadControlBuffers();
-        if (loadControl != null) {
-            log("PlayerLoadControl",
-                    field("minBufferLenMs", loadControl.getMinPlayerBufferMs()),
-                    field("maxBufferLenMs", loadControl.getMaxPlayerBufferMs()),
-                    field("minRebufferLenMs", loadControl.getMinBufferAfterReBufferMs()),
-                    field("minSeekBufferLenMs", loadControl.getMinBufferAfterInteractionMs())
-            );
-        }
-
-
-        logExperiments();
-    }
-
-    @Override
-    public AnalyticsListener getExoAnalyticsListener() {
-        return analyticsListener;
-    }
-
     private void logExperiments() {
 
         List<String> values = new ArrayList<>();
 
-        for (Map.Entry<String, Object> entry : getExperiments().entrySet()) {
+        for (Map.Entry<String, Object> entry : experiments.entrySet()) {
 
             final String key = entry.getKey();
             final Object value = entry.getValue();
@@ -515,27 +450,6 @@ public class PlayKitProfiler extends Profiler {
         endLog(sb);
     }
 
-    @Override
-    public void onSetMedia(PKMediaConfig mediaConfig) {
-        JsonObject json = new JsonObject();
-        json.add("entry", toJSON(mediaConfig.getMediaEntry()));
-        json.addProperty("startPosition", mediaConfig.getStartPosition());
-
-        log("SetMedia", field("config", json.toString()));
-    }
-
-    @Override
-    public void onPrepareStarted(final PKMediaSourceConfig sourceConfig) {
-
-        final Uri sourceUrl = sourceConfig.getUrl();
-
-        log("PrepareStarted",
-                field("engine", playerEngine.get().getClass().getSimpleName()),
-                field("source", sourceUrl.toString()));
-
-        maybeLogServerInfo(sourceUrl);
-    }
-
     void maybeLogServerInfo(final Uri url) {
         final String hostName = url.getHost();
         if (serversLookedUp.contains(hostName)) {
@@ -575,6 +489,116 @@ public class PlayKitProfiler extends Profiler {
         serversLookedUp.add(hostName);
     }
 
+
+    private void closeSession() {
+        sendLogChunk();
+    }
+
+    void logWithPlaybackInfo(String event, String... strings) {
+        if (playerEngine != null) {
+            logWithPlaybackInfo(event, playerEngine.get(), strings);
+        }
+    }
+
+    @Override
+    public void setPlayerEngine(PlayerEngine engine) {
+
+        if (engine instanceof ExoPlayerWrapper) {
+            playerEngine = new WeakReference<>(((ExoPlayerWrapper) engine));
+        } else {
+            playerEngine = null;   // other engines are not supported
+        }
+    }
+
+    @Override
+    public void onPrepareStarted(final PKMediaSourceConfig sourceConfig) {
+
+        final Uri sourceUrl = sourceConfig.getUrl();
+
+        log("PrepareStarted",
+                field("engine", playerEngine.get().getClass().getSimpleName()),
+                field("source", sourceUrl.toString()));
+
+        maybeLogServerInfo(sourceUrl);
+    }
+
+    @Override
+    public void newSession(final String sessionId, PlayerSettings playerSettings) {
+
+        if (sessionId != null) {
+            // close current session
+            closeSession();
+        }
+
+        PlayKitProfiler.this.sessionId = sessionId;
+        if (sessionId == null) {
+            return;     // the null profiler
+        }
+
+        PlayKitProfiler.this.sessionStartTime = SystemClock.elapsedRealtime();
+        PlayKitProfiler.this.logQueue.clear();
+
+        PlayKitProfiler.this.serversLookedUp.clear();
+
+        pkLog.d("New profiler with sessionId: " + sessionId);
+
+        log("StartSession",
+                field("now", System.currentTimeMillis()),
+                field("strNow", new Date().toString()),
+                field("sessionId", sessionId)
+        );
+
+        log("PlayKit",
+                field("version", PlayKitManager.VERSION_STRING),
+                field("clientTag", PlayKitManager.CLIENT_TAG)
+        );
+
+        log("Platform",
+                field("name", "Android"),
+                field("apiLevel", Build.VERSION.SDK_INT),
+                field("chipset", MediaSupport.DEVICE_CHIPSET),
+                field("brand", Build.BRAND),
+                field("model", Build.MODEL),
+                field("manufacturer", Build.MANUFACTURER),
+                field("device", Build.DEVICE),
+                field("tags", Build.TAGS),
+                field("fingerprint", Build.FINGERPRINT),
+                field("screenSize", metrics.widthPixels + "x" + metrics.heightPixels),
+                field("screenDpi", metrics.xdpi + "x" + metrics.ydpi)
+        );
+
+        log("PlayerSettings",
+                field("allowClearLead", playerSettings.allowClearLead()),
+                field("useTextureView", playerSettings.useTextureView()));
+
+        final LoadControlBuffers loadControl = playerSettings.getLoadControlBuffers();
+        if (loadControl != null) {
+            log("PlayerLoadControl",
+                    field("minBufferLenMs", loadControl.getMinPlayerBufferMs()),
+                    field("maxBufferLenMs", loadControl.getMaxPlayerBufferMs()),
+                    field("minRebufferLenMs", loadControl.getMinBufferAfterReBufferMs()),
+                    field("minSeekBufferLenMs", loadControl.getMinBufferAfterInteractionMs())
+            );
+        }
+
+
+        logExperiments();
+    }
+
+    @Override
+    public AnalyticsListener getExoAnalyticsListener() {
+        return analyticsListener;
+    }
+
+    @Override
+    public void onSetMedia(PKMediaConfig mediaConfig) {
+        JsonObject json = new JsonObject();
+        json.add("entry", toJSON(mediaConfig.getMediaEntry()));
+        json.addProperty("startPosition", mediaConfig.getStartPosition());
+
+        log("SetMedia", field("config", json.toString()));
+    }
+
     @Override
     public void onSeekRequested(long position) {
         logWithPlaybackInfo("SeekRequested", timeField("targetPosition", position));
@@ -596,17 +620,8 @@ public class PlayKitProfiler extends Profiler {
     }
 
     @Override
-    public void onBandwidthSample(long bitrate) {
-        log("BandwidthSample", field("bandwidth", bitrate));
-    }
-
-    @Override
     public void onSessionFinished() {
         closeSession();
-    }
-
-    private void closeSession() {
-        sendLogChunk();
     }
 
     @Override
@@ -617,11 +632,5 @@ public class PlayKitProfiler extends Profiler {
     @Override
     public EventListener.Factory getOkListenerFactory() {
         return okListenerFactory;
-    }
-
-    void logWithPlaybackInfo(String event, String... strings) {
-        if (playerEngine != null) {
-            logWithPlaybackInfo(event, playerEngine.get(), strings);
-        }
     }
 }

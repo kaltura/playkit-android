@@ -32,6 +32,7 @@ import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.analytics.AnalyticsListener;
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
@@ -212,7 +213,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             player.addListener(this);
             player.addMetadataOutput(this);
             player.addAnalyticsListener(analyticsAggregator);
-            player.addAnalyticsListener(profiler.getExoAnalyticsListener());
+            final com.google.android.exoplayer2.analytics.AnalyticsListener exoAnalyticsListener = profiler.getExoAnalyticsListener();
+            if (exoAnalyticsListener != null) {
+                player.addAnalyticsListener(exoAnalyticsListener);
+            }
         }
     }
 
@@ -1098,7 +1102,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
-        if (playerSettings != null && playerSettings.getSubtitleStyleSettings() != null) {
+        if (playerSettings.getSubtitleStyleSettings() != null) {
             playerSettings.setSubtitleStyle(subtitleStyleSettings);
             configureSubtitleView();
             sendEvent(PlayerEvent.Type.SUBTITLE_STYLE_CHANGED);
@@ -1107,11 +1111,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
-        if(playerSettings != null){
-            playerSettings.setSurfaceAspectRatioResizeMode(resizeMode);
-            configureAspectRatioResizeMode();
-            sendEvent(PlayerEvent.Type.ASPECT_RATIO_RESIZE_MODE_CHANGED);
-        }
+        playerSettings.setSurfaceAspectRatioResizeMode(resizeMode);
+        configureAspectRatioResizeMode();
+        sendEvent(PlayerEvent.Type.ASPECT_RATIO_RESIZE_MODE_CHANGED);
     }
 
     private void configureAspectRatioResizeMode() {
