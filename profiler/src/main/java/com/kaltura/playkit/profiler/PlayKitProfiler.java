@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import okhttp3.EventListener;
@@ -62,7 +63,7 @@ class ConfigFile {
     float sendPercentage;
 }
 
-public class PlayKitProfiler implements Profiler {
+public class PlayKitProfiler extends Profiler {
 
     // Static constants
     private static final PKLog pkLog = PKLog.get("Profiler");
@@ -136,12 +137,7 @@ public class PlayKitProfiler implements Profiler {
 
             initialized = true;
 
-            ProfilerFactory.setProfilerFactory(new ProfilerFactory() {
-                @Override
-                protected Profiler getProfiler() {
-                    return initialized && Math.random() < (sendPercentage / 100) ? new PlayKitProfiler() : null;
-                }
-            });
+            ProfilerFactory.setFactory(() -> initialized && Math.random() < (sendPercentage / 100) ? new PlayKitProfiler() : null);
         }
     }
 

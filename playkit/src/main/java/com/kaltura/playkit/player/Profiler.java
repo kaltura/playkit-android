@@ -7,19 +7,19 @@ import java.util.Map;
 
 import okhttp3.EventListener;
 
-public interface Profiler {
-    default void setPlayerEngine(PlayerEngine playerEngine) {}
+public abstract class Profiler {
+    public void setPlayerEngine(PlayerEngine playerEngine) {}
 
-    default void newSession(String sessionId, PlayerSettings playerSettings) {}
-    default void onSetMedia(PKMediaConfig mediaConfig) {}
-    default void onPrepareStarted(PKMediaSourceConfig sourceConfig) {}
-    default void onSeekRequested(long position) {}
-    default void onPauseRequested() {}
-    default void onReplayRequested() {}
-    default void onPlayRequested() {}
-    default void onSessionFinished() {}
-    default void onDurationChanged(long duration) {}
+    public void newSession(String sessionId, PlayerSettings playerSettings) {}
+    public void onSetMedia(PKMediaConfig mediaConfig) {}
+    public void onPrepareStarted(PKMediaSourceConfig sourceConfig) {}
+    public void onSeekRequested(long position) {}
+    public void onPauseRequested() {}
+    public void onReplayRequested() {}
+    public void onPlayRequested() {}
+    public void onSessionFinished() {}
+    public void onDurationChanged(long duration) {}
 
-    default EventListener.Factory getOkListenerFactory() {return null;}
-    default AnalyticsListener getExoAnalyticsListener() {return null;}
+    public EventListener.Factory getOkListenerFactory() {return null;}
+    public AnalyticsListener getExoAnalyticsListener() {return null;}
 }
