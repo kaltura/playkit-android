@@ -137,7 +137,7 @@ public class PlayKitProfiler extends Profiler {
 
             initialized = true;
 
-            ProfilerFactory.setFactory(() -> initialized && Math.random() < (sendPercentage / 100) ? new PlayKitProfiler() : null);
+            ProfilerFactory.setFactory(() -> Math.random() < (sendPercentage / 100) ? new PlayKitProfiler() : null);
         }
     }
 
