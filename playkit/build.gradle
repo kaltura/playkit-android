@@ -36,7 +36,7 @@ tasks.withType(Javadoc) {
 
 dependencies {
 
-    def exoPlayerVersion = '2.9.3'
+    def exoPlayerVersion = '2.9.5'
 
     api 'com.google.code.gson:gson:2.8.2'
     // ExoPlayer
