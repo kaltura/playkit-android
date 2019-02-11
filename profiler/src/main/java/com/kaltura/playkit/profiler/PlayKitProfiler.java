@@ -62,7 +62,7 @@ class ConfigFile {
     float sendPercentage;
 }
 
-public class PlayKitProfiler extends Profiler {
+public class PlayKitProfiler {
 
     // Static constants
     private static final PKLog pkLog = PKLog.get("Profiler");
@@ -136,7 +136,8 @@ public class PlayKitProfiler extends Profiler {
 
             initialized = true;
 
-            ProfilerFactory.setFactory(() -> Math.random() < (sendPercentage / 100) ? new PlayKitProfiler() : null);
+            ProfilerFactory.setFactory(() ->
+                    Math.random() < (sendPercentage / 100) ? new PlayKitProfiler().profilerImp : null);
         }
     }
 
@@ -484,137 +485,139 @@ public class PlayKitProfiler extends Profiler {
         }
     }
 
-    @Override
-    public void setPlayerEngine(PlayerEngine engine) {
+    private Profiler profilerImp = new Profiler() {
+        @Override
+        public void setPlayerEngine(PlayerEngine engine) {
 
-        if (engine instanceof ExoPlayerWrapper) {
-            playerEngine = new WeakReference<>(((ExoPlayerWrapper) engine));
-        } else {
-            playerEngine = null;   // other engines are not supported
+            if (engine instanceof ExoPlayerWrapper) {
+                playerEngine = new WeakReference<>(((ExoPlayerWrapper) engine));
+            } else {
+                playerEngine = null;   // other engines are not supported
+            }
         }
-    }
 
-    @Override
-    public void onPrepareStarted(final PKMediaSourceConfig sourceConfig) {
+        @Override
+        public void onPrepareStarted(final PKMediaSourceConfig sourceConfig) {
 
-        final Uri sourceUrl = sourceConfig.getUrl();
+            final Uri sourceUrl = sourceConfig.getUrl();
 
-        log("PrepareStarted",
-                field("engine", playerEngine.get().getClass().getSimpleName()),
-                field("source", sourceUrl.toString()));
+            log("PrepareStarted",
+                    field("engine", playerEngine.get().getClass().getSimpleName()),
+                    field("source", sourceUrl.toString()));
 
-        maybeLogServerInfo(sourceUrl);
-    }
+            maybeLogServerInfo(sourceUrl);
+        }
 
-    @Override
-    public void newSession(final String sessionId, PlayerSettings playerSettings) {
+        @Override
+        public void newSession(final String sessionId, PlayerSettings playerSettings) {
 
-        if (sessionId != null) {
-            // close current session
+            if (sessionId != null) {
+                // close current session
+                closeSession();
+            }
+
+            PlayKitProfiler.this.sessionId = sessionId;
+            if (sessionId == null) {
+                return;     // the null profiler
+            }
+
+            PlayKitProfiler.this.sessionStartTime = SystemClock.elapsedRealtime();
+            PlayKitProfiler.this.logQueue.clear();
+
+            PlayKitProfiler.this.serversLookedUp.clear();
+
+            pkLog.d("New profiler with sessionId: " + sessionId);
+
+            log("StartSession",
+                    field("now", System.currentTimeMillis()),
+                    field("strNow", new Date().toString()),
+                    field("sessionId", sessionId)
+            );
+
+            log("PlayKit",
+                    field("version", PlayKitManager.VERSION_STRING),
+                    field("clientTag", PlayKitManager.CLIENT_TAG)
+            );
+
+            log("Platform",
+                    field("name", "Android"),
+                    field("apiLevel", Build.VERSION.SDK_INT),
+                    field("chipset", MediaSupport.DEVICE_CHIPSET),
+                    field("brand", Build.BRAND),
+                    field("model", Build.MODEL),
+                    field("manufacturer", Build.MANUFACTURER),
+                    field("device", Build.DEVICE),
+                    field("tags", Build.TAGS),
+                    field("fingerprint", Build.FINGERPRINT),
+                    field("screenSize", metrics.widthPixels + "x" + metrics.heightPixels),
+                    field("screenDpi", metrics.xdpi + "x" + metrics.ydpi)
+            );
+
+            log("PlayerSettings",
+                    field("allowClearLead", playerSettings.allowClearLead()),
+                    field("useTextureView", playerSettings.useTextureView()));
+
+            final LoadControlBuffers loadControl = playerSettings.getLoadControlBuffers();
+            if (loadControl != null) {
+                log("PlayerLoadControl",
+                        field("minBufferLenMs", loadControl.getMinPlayerBufferMs()),
+                        field("maxBufferLenMs", loadControl.getMaxPlayerBufferMs()),
+                        field("minRebufferLenMs", loadControl.getMinBufferAfterReBufferMs()),
+                        field("minSeekBufferLenMs", loadControl.getMinBufferAfterInteractionMs())
+                );
+            }
+
+
+            logExperiments();
+        }
+
+        @Override
+        public AnalyticsListener getExoAnalyticsListener() {
+            return analyticsListener;
+        }
+
+        @Override
+        public void onSetMedia(PKMediaConfig mediaConfig) {
+            JsonObject json = new JsonObject();
+            json.add("entry", toJSON(mediaConfig.getMediaEntry()));
+            json.addProperty("startPosition", mediaConfig.getStartPosition());
+
+            log("SetMedia", field("config", json.toString()));
+        }
+
+        @Override
+        public void onSeekRequested(long position) {
+            logWithPlaybackInfo("SeekRequested", timeField("targetPosition", position));
+        }
+
+        @Override
+        public void onPauseRequested() {
+            logWithPlaybackInfo("PauseRequested");
+        }
+
+        @Override
+        public void onReplayRequested() {
+            logWithPlaybackInfo("ReplayRequested");
+        }
+
+        @Override
+        public void onPlayRequested() {
+            logWithPlaybackInfo("PlayRequested");
+        }
+
+        @Override
+        public void onSessionFinished() {
             closeSession();
         }
 
-        PlayKitProfiler.this.sessionId = sessionId;
-        if (sessionId == null) {
-            return;     // the null profiler
+        @Override
+        public void onDurationChanged(long duration) {
+            log("DurationChanged", timeField("duration", duration));
         }
 
-        PlayKitProfiler.this.sessionStartTime = SystemClock.elapsedRealtime();
-        PlayKitProfiler.this.logQueue.clear();
-
-        PlayKitProfiler.this.serversLookedUp.clear();
-
-        pkLog.d("New profiler with sessionId: " + sessionId);
-
-        log("StartSession",
-                field("now", System.currentTimeMillis()),
-                field("strNow", new Date().toString()),
-                field("sessionId", sessionId)
-        );
-
-        log("PlayKit",
-                field("version", PlayKitManager.VERSION_STRING),
-                field("clientTag", PlayKitManager.CLIENT_TAG)
-        );
-
-        log("Platform",
-                field("name", "Android"),
-                field("apiLevel", Build.VERSION.SDK_INT),
-                field("chipset", MediaSupport.DEVICE_CHIPSET),
-                field("brand", Build.BRAND),
-                field("model", Build.MODEL),
-                field("manufacturer", Build.MANUFACTURER),
-                field("device", Build.DEVICE),
-                field("tags", Build.TAGS),
-                field("fingerprint", Build.FINGERPRINT),
-                field("screenSize", metrics.widthPixels + "x" + metrics.heightPixels),
-                field("screenDpi", metrics.xdpi + "x" + metrics.ydpi)
-        );
-
-        log("PlayerSettings",
-                field("allowClearLead", playerSettings.allowClearLead()),
-                field("useTextureView", playerSettings.useTextureView()));
-
-        final LoadControlBuffers loadControl = playerSettings.getLoadControlBuffers();
-        if (loadControl != null) {
-            log("PlayerLoadControl",
-                    field("minBufferLenMs", loadControl.getMinPlayerBufferMs()),
-                    field("maxBufferLenMs", loadControl.getMaxPlayerBufferMs()),
-                    field("minRebufferLenMs", loadControl.getMinBufferAfterReBufferMs()),
-                    field("minSeekBufferLenMs", loadControl.getMinBufferAfterInteractionMs())
-            );
+        @Override
+        public EventListener.Factory getOkListenerFactory() {
+            return okListenerFactory;
         }
-
-
-        logExperiments();
-    }
-
-    @Override
-    public AnalyticsListener getExoAnalyticsListener() {
-        return analyticsListener;
-    }
-
-    @Override
-    public void onSetMedia(PKMediaConfig mediaConfig) {
-        JsonObject json = new JsonObject();
-        json.add("entry", toJSON(mediaConfig.getMediaEntry()));
-        json.addProperty("startPosition", mediaConfig.getStartPosition());
-
-        log("SetMedia", field("config", json.toString()));
-    }
-
-    @Override
-    public void onSeekRequested(long position) {
-        logWithPlaybackInfo("SeekRequested", timeField("targetPosition", position));
-    }
-
-    @Override
-    public void onPauseRequested() {
-        logWithPlaybackInfo("PauseRequested");
-    }
-
-    @Override
-    public void onReplayRequested() {
-        logWithPlaybackInfo("ReplayRequested");
-    }
-
-    @Override
-    public void onPlayRequested() {
-        logWithPlaybackInfo("PlayRequested");
-    }
-
-    @Override
-    public void onSessionFinished() {
-        closeSession();
-    }
-
-    @Override
-    public void onDurationChanged(long duration) {
-        log("DurationChanged", timeField("duration", duration));
-    }
-
-    @Override
-    public EventListener.Factory getOkListenerFactory() {
-        return okListenerFactory;
-    }
+    };
 }
