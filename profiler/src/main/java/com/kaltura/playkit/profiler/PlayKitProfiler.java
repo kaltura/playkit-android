@@ -75,34 +75,37 @@ public class PlayKitProfiler implements Profiler {
     private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json-";
     private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
     private static final int MAX_CONFIG_SIZE = 10240;
-
+    @NonNull
+    private static final Map<String, Object> experiments = new LinkedHashMap<>();
     // Configuration
     private static String postURL = DEFAULT_POST_URL;
     private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
-
     // Static setup
     private static Handler ioHandler;
     private static boolean initialized;
-
     private static DisplayMetrics metrics;
     private static File externalFilesDir;   // for debug logs
-
-    @NonNull
-    private static final Map<String, Object> experiments = new LinkedHashMap<>();
-
-
     private final ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
-
-    private String sessionId;
-
-    long sessionStartTime;
     private final ExoPlayerProfilingListener analyticsListener = new ExoPlayerProfilingListener(this);
-
     private final EventListener.Factory okListenerFactory = call -> new OkHttpListener(PlayKitProfiler.this, call);
-
     private final Set<String> serversLookedUp = new HashSet<>();
-
+    long sessionStartTime;
+    private String sessionId;
     @Nullable private WeakReference<ExoPlayerWrapper> playerEngine;
+
+    private PlayKitProfiler() {
+
+        ioHandler.post(new Runnable() {
+            @Override
+            public void run() {
+
+                // Send queue content to the server
+                sendLogChunk();
+
+                ioHandler.postDelayed(this, SEND_INTERVAL_SEC * 1000);
+            }
+        });
+    }
 
     /**
      * Initialize the static part of the profiler -- load the config and store it,
@@ -140,20 +143,6 @@ public class PlayKitProfiler implements Profiler {
                 }
             });
         }
-    }
-
-    private PlayKitProfiler() {
-
-        ioHandler.post(new Runnable() {
-            @Override
-            public void run() {
-
-                // Send queue content to the server
-                sendLogChunk();
-
-                ioHandler.postDelayed(this, SEND_INTERVAL_SEC * 1000);
-            }
-        });
     }
 
     // Called by the app
