@@ -25,13 +25,16 @@ import java.util.ArrayList;
 public class CustomRendererFactory extends DefaultRenderersFactory {
     private boolean allowClearLead;
 
-    public CustomRendererFactory(Context context, int extensionRendererMode, boolean allowClearLead) {
-        super(context, extensionRendererMode);
+    public CustomRendererFactory(Context context) {
+        super(context);
+    }
+
+    void setAllowClearLead(boolean allowClearLead) {
         this.allowClearLead = allowClearLead;
     }
 
     @Override
-    protected void buildVideoRenderers(Context context, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, long allowedVideoJoiningTimeMs, Handler eventHandler, VideoRendererEventListener eventListener, int extensionRendererMode, ArrayList<Renderer> out) {
+    protected void buildVideoRenderers(Context context, int extensionRendererMode, MediaCodecSelector mediaCodecSelector, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, boolean playClearSamplesWithoutKeys, Handler eventHandler, VideoRendererEventListener eventListener, long allowedVideoJoiningTimeMs, ArrayList<Renderer> out) {
 
         out.add(new CustomVideoCodecRenderer(context, MediaCodecSelector.DEFAULT,
                 allowedVideoJoiningTimeMs, drmSessionManager, allowClearLead, eventHandler, eventListener,
@@ -39,7 +42,7 @@ public class CustomRendererFactory extends DefaultRenderersFactory {
     }
 
     @Override
-    protected void buildAudioRenderers(Context context, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, AudioProcessor[] audioProcessors, Handler eventHandler, AudioRendererEventListener eventListener, int extensionRendererMode, ArrayList<Renderer> out) {
+    protected void buildAudioRenderers(Context context, int extensionRendererMode, MediaCodecSelector mediaCodecSelector, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, boolean playClearSamplesWithoutKeys, AudioProcessor[] audioProcessors, Handler eventHandler, AudioRendererEventListener eventListener, ArrayList<Renderer> out) {
 
         out.add(
                 new MediaCodecAudioRenderer(
