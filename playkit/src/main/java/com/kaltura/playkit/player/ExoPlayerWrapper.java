@@ -32,7 +32,6 @@ import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.analytics.AnalyticsListener;
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
@@ -139,7 +138,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
 
     private PKMediaSourceConfig sourceConfig;
-    private Profiler profiler;
+    @NonNull private Profiler profiler = Profiler.NOOP;
 
     private DataSource.Factory dataSourceFactory;
     private HttpDataSource.Factory httpDataSourceFactory;
@@ -1080,8 +1079,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     public void setProfiler(Profiler profiler) {
-        this.profiler = profiler;
-        profiler.setPlayerEngine(this);
+        if (profiler != null) {
+            this.profiler = profiler;
+            profiler.setPlayerEngine(this);
+        }
     }
 
     private void configureSubtitleView() {

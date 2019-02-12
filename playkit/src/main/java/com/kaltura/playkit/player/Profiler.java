@@ -1,5 +1,7 @@
 package com.kaltura.playkit.player;
 
+import android.support.annotation.NonNull;
+
 import com.google.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.playkit.PKMediaConfig;
 
@@ -8,6 +10,9 @@ import java.util.Map;
 import okhttp3.EventListener;
 
 public abstract class Profiler {
+    // A no-op profiler to avoid null checks.
+    @NonNull static final Profiler NOOP = new Profiler() {};
+
     public void setPlayerEngine(PlayerEngine playerEngine) {}
 
     public void newSession(String sessionId, PlayerSettings playerSettings) {}
