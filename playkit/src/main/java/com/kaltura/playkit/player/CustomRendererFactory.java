@@ -25,11 +25,8 @@ import java.util.ArrayList;
 public class CustomRendererFactory extends DefaultRenderersFactory {
     private boolean allowClearLead;
 
-    public CustomRendererFactory(Context context) {
+    public CustomRendererFactory(Context context, boolean allowClearLead) {
         super(context);
-    }
-
-    void setAllowClearLead(boolean allowClearLead) {
         this.allowClearLead = allowClearLead;
     }
 
