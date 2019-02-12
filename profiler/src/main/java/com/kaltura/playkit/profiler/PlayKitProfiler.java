@@ -65,7 +65,7 @@ class ConfigFile {
 public class PlayKitProfiler {
 
     // Static constants
-    private static final PKLog pkLog = PKLog.get("Profiler");
+    private static final PKLog pkLog = PKLog.get("PlayKitProfiler");
 
     private static final String SEPARATOR = "\t";
     private static final boolean devMode = true;
@@ -75,8 +75,8 @@ public class PlayKitProfiler {
     private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json-";
     private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
     private static final int MAX_CONFIG_SIZE = 10240;
-    @NonNull
-    private static final Map<String, Object> experiments = new LinkedHashMap<>();
+
+    private static final Map<String, String> experiments = new LinkedHashMap<>();
     // Configuration
     private static String postURL = DEFAULT_POST_URL;
     private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
@@ -85,6 +85,7 @@ public class PlayKitProfiler {
     private static boolean initialized;
     private static DisplayMetrics metrics;
     private static File externalFilesDir;   // for debug logs
+    private static String packageName;
     private final ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
     private final ExoPlayerProfilingListener analyticsListener = new ExoPlayerProfilingListener(this);
     private final EventListener.Factory okListenerFactory = call -> new OkHttpListener(PlayKitProfiler.this, call);
@@ -143,10 +144,42 @@ public class PlayKitProfiler {
 
     // Called by the app
     public static void setExperiment(String key, Object value) {
-        experiments.put(key, value);
+        if (key == null) {
+            pkLog.w("setExperiment: key is null");
+            return;
+        }
+
+        final String strValue;
+        if (value instanceof String) {
+            strValue = "{" + value + "}";
+        } else if (value instanceof Number || value instanceof Boolean) {
+            strValue = value.toString();
+        } else {
+            pkLog.w("setExperiment: value type is not valid (" + (value != null ? value.getClass().toString() : null) + "); ignored");
+            return;
+        }
+
+        experiments.put(key, strValue);
+    }
+
+    private void logExperiments() {
+
+        List<String> values = new ArrayList<>();
+
+        for (Map.Entry<String, String> entry : experiments.entrySet()) {
+
+            final String key = entry.getKey();
+            final String value = entry.getValue();
+
+            values.add(key + "=" + value);
+        }
+
+        log("Experiments", TextUtils.join("\t", values));
     }
 
     private static void initMembers(final Context context) {
+
+        packageName = context.getPackageName();
 
         metrics = context.getResources().getDisplayMetrics();
 
@@ -301,34 +334,6 @@ public class PlayKitProfiler {
 
     static String joinFields(String... fields) {
         return TextUtils.join(SEPARATOR, fields);
-    }
-
-    private void logExperiments() {
-
-        List<String> values = new ArrayList<>();
-
-        for (Map.Entry<String, Object> entry : experiments.entrySet()) {
-
-            final String key = entry.getKey();
-            final Object value = entry.getValue();
-            String strValue;
-
-            if (key == null) {
-                continue;
-            }
-
-            if (value instanceof String) {
-                strValue = "{" + value + "}";
-            } else if (value instanceof Number || value instanceof Boolean) {
-                strValue = value.toString();
-            } else {
-                continue;
-            }
-
-            values.add(key + "=" + strValue);
-        }
-
-        log("Experiments", TextUtils.join("\t", values));
     }
 
     private void sendLogChunk() {
@@ -531,7 +536,8 @@ public class PlayKitProfiler {
             log("StartSession",
                     field("now", System.currentTimeMillis()),
                     field("strNow", new Date().toString()),
-                    field("sessionId", sessionId)
+                    field("sessionId", sessionId),
+                    field("packageName", packageName)
             );
 
             log("PlayKit",
