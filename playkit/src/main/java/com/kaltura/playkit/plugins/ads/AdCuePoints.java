@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.plugins.ads;
 
+import android.util.Pair;
+
 import java.util.List;
 
 /**
@@ -21,13 +23,22 @@ import java.util.List;
 public class AdCuePoints {
 
     private List<Long> adCuePoints;
-
+    private  List<Pair<Long,Long>> daiAdsList;
     public AdCuePoints(List<Long> adCuePoints) {
         this.adCuePoints = adCuePoints;
     }
 
+    public AdCuePoints(List<Long> adCuePoints, List<Pair<Long,Long>> daiAdsList) {
+        this.adCuePoints = adCuePoints;
+        this.daiAdsList = daiAdsList;
+    }
+
     public List<Long> getAdCuePoints() {
         return adCuePoints;
+    }
+
+    public List<Pair<Long, Long>> getDaiAdsList() {
+        return daiAdsList;
     }
 
     public boolean hasPreRoll() {

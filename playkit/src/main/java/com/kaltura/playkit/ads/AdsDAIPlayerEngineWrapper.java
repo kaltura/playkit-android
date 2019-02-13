@@ -14,10 +14,14 @@ package com.kaltura.playkit.ads;
 
 import android.content.Context;
 
+import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEngineWrapper;
+import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
+import com.kaltura.playkit.plugins.ads.AdCuePoints;
+import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
 
@@ -31,12 +35,14 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
 
     private Context context;
     private AdsProvider adsProvider;
+    private MessageBus messageBus;
     private PKMediaSourceConfig mediaSourceConfig;
     private DefaultDAIAdControllerImpl defaultDAIAdController;
 
-    public AdsDAIPlayerEngineWrapper(final Context context, AdsProvider adsProvider) {
+    public AdsDAIPlayerEngineWrapper(final Context context, AdsProvider adsProvider, MessageBus messageBus) {
         this.context = context;
         this.adsProvider = adsProvider;
+        this.messageBus = messageBus;
         this.defaultDAIAdController = new DefaultDAIAdControllerImpl(adsProvider);
     }
 
@@ -70,7 +76,7 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
                     }
                 }
             }
-            if (adsProvider.isAdDisplayed()) {
+            if (adsProvider.isAdDisplayed() && isPlaying()) {
                 return;
             }
         }
@@ -96,11 +102,37 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
     }
 
     @Override
+    public void replay() {
+        super.replay();
+        seekTo(0);
+    }
+
+    @Override
     public long getCurrentPosition() {
-        if (adsProvider.isAdDisplayed()) {
-            return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
+        return getFakePlayerPosition();
+    }
+
+    private long getFakePlayerPosition() {
+        long playerPosition = super.getCurrentPosition();
+        if (playerPosition == Consts.POSITION_UNSET) {
+            return 0;
         }
-        return adsProvider.getCurrentPosition();
+        AdCuePoints adCuePoints = adsProvider.getCuePoints();
+        if (adCuePoints.getAdCuePoints().size() != adCuePoints.getDaiAdsList().size()) {
+            return playerPosition;
+        }
+
+        long fakePos = playerPosition;
+        for (int indx = 0 ; indx < adCuePoints.getDaiAdsList().size() ; indx++) {
+            long cuePointPosition = adCuePoints.getDaiAdsList().get(indx).first;
+            if (cuePointPosition <= playerPosition) {
+                fakePos -= adCuePoints.getDaiAdsList().get(indx).second;
+            }
+        }
+        if (fakePos < 0) {
+            return 0;
+        }
+        return fakePos;
     }
 
     @Override
@@ -110,10 +142,28 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
 
     @Override
     public long getDuration() {
-        if (adsProvider.isAdDisplayed()) {
-            return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
+        return getFakePlayerDuration();
+    }
+
+    private long getFakePlayerDuration() {
+        long duration = super.getDuration();
+        if (duration == Consts.TIME_UNSET) {
+            return 0;
         }
-        return adsProvider.getDuration();
+        AdCuePoints adCuePoints = adsProvider.getCuePoints();
+
+        if (adCuePoints.getAdCuePoints() == null || adCuePoints.getDaiAdsList() == null || adCuePoints.getAdCuePoints().size() != adCuePoints.getDaiAdsList().size()) {
+            return duration;
+        }
+
+        long fakeDuration = duration;
+        for (int indx = 0 ; indx < adCuePoints.getDaiAdsList().size() ; indx++) {
+            fakeDuration -= adCuePoints.getDaiAdsList().get(indx).second;
+        }
+        if (fakeDuration < 0) {
+            return 0;
+        }
+        return fakeDuration;
     }
 
     @Override

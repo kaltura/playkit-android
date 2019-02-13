@@ -29,6 +29,7 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
 
@@ -625,10 +626,12 @@ public class PlayerController implements Player {
 
         position = player.getCurrentPosition();
         duration = player.getDuration();
-        if (eventListener != null && position > 0 && duration > 0) {
-            eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
+        AdController adController = player.getController(AdController.class);
+        if (adController != null && !adController.isAdDisplayed()) {
+            if (eventListener != null && position > 0 && duration > 0) {
+                eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
+            }
         }
-
         // Cancel any pending updates and schedule a new one if necessary.
         player.getView().removeCallbacks(updateProgressAction);
         player.getView().postDelayed(updateProgressAction, Consts.DEFAULT_PLAYHEAD_UPDATE_MILI);
