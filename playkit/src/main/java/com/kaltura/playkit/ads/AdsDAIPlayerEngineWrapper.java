@@ -14,14 +14,11 @@ package com.kaltura.playkit.ads;
 
 import android.content.Context;
 
-import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEngineWrapper;
-import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
-import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
 
@@ -31,18 +28,16 @@ import com.kaltura.playkit.utils.Consts;
 
 public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdProviderListener {
 
-    private static final PKLog log = PKLog.get("AdsDAIPlayerEngineWrapper");
+    private static final PKLog log = PKLog.get("DAIPlayerEngineWrapper");
 
     private Context context;
     private AdsProvider adsProvider;
-    private MessageBus messageBus;
     private PKMediaSourceConfig mediaSourceConfig;
     private DefaultDAIAdControllerImpl defaultDAIAdController;
 
-    public AdsDAIPlayerEngineWrapper(final Context context, AdsProvider adsProvider, MessageBus messageBus) {
+    public AdsDAIPlayerEngineWrapper(final Context context, AdsProvider adsProvider) {
         this.context = context;
         this.adsProvider = adsProvider;
-        this.messageBus = messageBus;
         this.defaultDAIAdController = new DefaultDAIAdControllerImpl(adsProvider);
     }
 
@@ -114,6 +109,7 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
 
     private long getFakePlayerPosition() {
         long playerPosition = super.getCurrentPosition();
+        //log.d("playerPosition = " + playerPosition);
         if (playerPosition == Consts.POSITION_UNSET) {
             return 0;
         }
@@ -132,6 +128,7 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
         if (fakePos < 0) {
             return 0;
         }
+        //log.d("fakePos = " + fakePos);
         return fakePos;
     }
 
@@ -163,6 +160,7 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
         if (fakeDuration < 0) {
             return 0;
         }
+        //log.d("fakeDuration = " + fakeDuration);
         return fakeDuration;
     }
 

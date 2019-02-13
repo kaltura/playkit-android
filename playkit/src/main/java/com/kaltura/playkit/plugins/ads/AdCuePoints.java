@@ -23,7 +23,7 @@ import java.util.List;
 public class AdCuePoints {
 
     private List<Long> adCuePoints;
-    private  List<Pair<Long,Long>> daiAdsList;
+    private List<Pair<Long,Long>> daiAdsList;
     public AdCuePoints(List<Long> adCuePoints) {
         this.adCuePoints = adCuePoints;
     }

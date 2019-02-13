@@ -627,7 +627,8 @@ public class PlayerController implements Player {
         position = player.getCurrentPosition();
         duration = player.getDuration();
         AdController adController = player.getController(AdController.class);
-        if (adController != null && !adController.isAdDisplayed()) {
+        if (adController == null || (adController != null && !adController.isAdDisplayed())) {
+            log.v("updateProgress new position/duration = " + position + "/" + duration);
             if (eventListener != null && position > 0 && duration > 0) {
                 eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
             }
