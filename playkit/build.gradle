@@ -39,15 +39,8 @@ dependencies {
     def exoPlayerVersion = '2.9.3'
 
     api 'com.google.code.gson:gson:2.8.2'
-    // ExoPlayer
-//    api project(':exoplayer-library-core')
-//    api project(':exoplayer-library-dash')
-//    api project(':exoplayer-library-hls')
-//    api project(':exoplayer-library-ui')
-//    api project(':exoplayer-extension-okhttp')
-//
-//    api 'com.android.support:support-annotations:28.0.0'
 
+    // ExoPlayer
     api "com.google.android.exoplayer:exoplayer-core:$exoPlayerVersion"
     api "com.google.android.exoplayer:exoplayer-dash:$exoPlayerVersion"
     api "com.google.android.exoplayer:exoplayer-hls:$exoPlayerVersion"
