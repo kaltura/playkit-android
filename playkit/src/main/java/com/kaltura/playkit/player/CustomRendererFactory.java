@@ -23,33 +23,27 @@ import java.util.ArrayList;
  */
 
 public class CustomRendererFactory extends DefaultRenderersFactory {
-    private boolean allowClearLead;
 
     public CustomRendererFactory(Context context, boolean allowClearLead) {
         super(context);
-        this.allowClearLead = allowClearLead;
+        setPlayClearSamplesWithoutKeys(allowClearLead);
     }
 
     @Override
-    protected void buildVideoRenderers(Context context, int extensionRendererMode, MediaCodecSelector mediaCodecSelector, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, boolean playClearSamplesWithoutKeys, Handler eventHandler, VideoRendererEventListener eventListener, long allowedVideoJoiningTimeMs, ArrayList<Renderer> out) {
-
-        out.add(new CustomVideoCodecRenderer(context, MediaCodecSelector.DEFAULT,
-                allowedVideoJoiningTimeMs, drmSessionManager, allowClearLead, eventHandler, eventListener,
-                MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY));
+    public DefaultRenderersFactory setPlayClearSamplesWithoutKeys(boolean playClearSamplesWithoutKeys) {
+        return super.setPlayClearSamplesWithoutKeys(playClearSamplesWithoutKeys);
     }
 
     @Override
-    protected void buildAudioRenderers(Context context, int extensionRendererMode, MediaCodecSelector mediaCodecSelector, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, boolean playClearSamplesWithoutKeys, AudioProcessor[] audioProcessors, Handler eventHandler, AudioRendererEventListener eventListener, ArrayList<Renderer> out) {
+    public DefaultRenderersFactory setExtensionRendererMode(int extensionRendererMode) {
+        return super.setExtensionRendererMode(extensionRendererMode);
+    }
 
-        out.add(
-                new MediaCodecAudioRenderer(
-                        context,
-                        MediaCodecSelector.DEFAULT,
-                        drmSessionManager,
-                        allowClearLead,
-                        eventHandler,
-                        eventListener,
-                        AudioCapabilities.getCapabilities(context),
-                        audioProcessors));
+    /**
+     * Default maximum duration (5000 ms) for which a video renderer can attempt to seamlessly join an ongoing playback.
+     */
+    @Override
+    public DefaultRenderersFactory setAllowedVideoJoiningTimeMs(long allowedVideoJoiningTimeMs) {
+        return super.setAllowedVideoJoiningTimeMs(allowedVideoJoiningTimeMs);
     }
 }
