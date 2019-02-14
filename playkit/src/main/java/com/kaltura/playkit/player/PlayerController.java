@@ -719,13 +719,25 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.Seeking(targetSeekPosition);
                         break;
                     case VIDEO_TRACK_CHANGED:
-                        event = new PlayerEvent.VideoTrackChanged((VideoTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_VIDEO));
+                        VideoTrack videoTrack = (VideoTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_VIDEO);
+                        if (videoTrack == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.VideoTrackChanged(videoTrack);
                         break;
                     case AUDIO_TRACK_CHANGED:
-                        event = new PlayerEvent.AudioTrackChanged((AudioTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_AUDIO));
+                        AudioTrack audioTrack = (AudioTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_AUDIO);
+                        if (audioTrack == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.AudioTrackChanged(audioTrack);
                         break;
                     case TEXT_TRACK_CHANGED:
-                        event = new PlayerEvent.TextTrackChanged((TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT));
+                        TextTrack textTrack = (TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT);
+                        if (textTrack == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.TextTrackChanged(textTrack);
                         break;
                     case PLAYBACK_RATE_CHANGED:
                         event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
