@@ -33,6 +33,8 @@ public interface AdController extends PKController {
 
     boolean isAdDisplayed();
 
+    boolean isAdPlaying();
+
     boolean isAdError();
 
     boolean isAllAdsCompleted();

@@ -136,9 +136,6 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public boolean isPlaying() {
         log.d("AdEnabled isPlaying");
-        if (adsProvider != null && adsProvider.isAdDisplayed()) {
-            return !adsProvider.isAdPaused();
-        }
         return super.isPlaying();
     }
 
@@ -170,6 +167,14 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     public boolean isAdDisplayed() {
         if (adsProvider != null) {
             return adsProvider.isAdDisplayed();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isAdPlaying() {
+        if (adsProvider != null) {
+            return !adsProvider.isAdPaused();
         }
         return false;
     }

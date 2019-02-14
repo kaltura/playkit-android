@@ -73,6 +73,14 @@ public class DefaultAdControllerImpl implements AdController {
     }
 
     @Override
+    public boolean isAdPlaying() {
+        if (adsProvider != null) {
+            return !adsProvider.isAdPaused();
+        }
+        return false;
+    }
+
+    @Override
     public boolean isAdError() {
         if (adsProvider != null) {
             return adsProvider.isAdError();

@@ -104,6 +104,14 @@ public class DefaultDAIAdControllerImpl implements AdController {
         }
         return null;
     }
+
+    @Override
+    public boolean isAdPlaying() {
+        if (adsProvider != null) {
+            return !adsProvider.isAdPaused();
+        }
+        return false;
+    }
 }
 
 

@@ -71,7 +71,7 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
                     }
                 }
             }
-            if (adsProvider.isAdDisplayed() && isPlaying()) {
+            if (adsProvider.isAdDisplayed() && !adsProvider.isAdPaused()) {
                 return;
             }
         }
@@ -180,9 +180,6 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
     @Override
     public boolean isPlaying() {
         log.d("AdWrapper isPlaying");
-        if (adsProvider != null && adsProvider.isAdDisplayed()) {
-            return !adsProvider.isAdPaused();
-        }
         return super.isPlaying();
     }
 

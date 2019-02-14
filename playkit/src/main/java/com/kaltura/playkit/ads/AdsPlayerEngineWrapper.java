@@ -119,9 +119,6 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     @Override
     public boolean isPlaying() {
         log.d("AdWrapper isPlaying");
-        if (adsProvider != null && adsProvider.isAdDisplayed()) {
-            return !adsProvider.isAdPaused();
-        }
         return super.isPlaying();
     }
 
