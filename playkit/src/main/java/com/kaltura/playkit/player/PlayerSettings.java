@@ -17,6 +17,8 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
 
+import static com.google.android.exoplayer2.DefaultRenderersFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS;
+
 public class PlayerSettings implements Player.Settings {
 
     private boolean useTextureView;
@@ -25,6 +27,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean mpgaAudioFormatEnabled;
     private boolean crossProtocolRedirectEnabled;
     private boolean allowClearLead = true;
+    private Long allowedVideoJoiningTimeMs = DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
@@ -60,6 +63,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean allowClearLead() {
         return allowClearLead;
+    }
+
+    public Long allowedVideoJoiningTimeMs() {
+        return allowedVideoJoiningTimeMs;
     }
 
     public boolean cea608CaptionsEnabled() {
@@ -186,6 +193,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings allowClearLead(boolean allowClearLead) {
         this.allowClearLead = allowClearLead;
+        return this;
+    }
+
+    @Override
+    public Player.Settings allowedVideoJoiningTimeMs(Long allowedVideoJoiningTimeMs) {
+        this.allowedVideoJoiningTimeMs = allowedVideoJoiningTimeMs;
         return this;
     }
 

@@ -24,26 +24,33 @@ import java.util.ArrayList;
 
 public class CustomRendererFactory extends DefaultRenderersFactory {
 
-    public CustomRendererFactory(Context context, boolean allowClearLead) {
+    private boolean allowClearLead;
+    private long allowedVideoJoiningTimeMs;
+
+    public CustomRendererFactory(Context context, boolean allowClearLead, long allowedVideoJoiningTimeMs) {
         super(context);
-        setPlayClearSamplesWithoutKeys(allowClearLead);
+        this.allowClearLead = allowClearLead;
+        this.allowedVideoJoiningTimeMs = allowedVideoJoiningTimeMs;
     }
 
     @Override
-    public DefaultRenderersFactory setPlayClearSamplesWithoutKeys(boolean playClearSamplesWithoutKeys) {
-        return super.setPlayClearSamplesWithoutKeys(playClearSamplesWithoutKeys);
+    protected void buildVideoRenderers(Context context, int extensionRendererMode, MediaCodecSelector mediaCodecSelector, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, boolean playClearSamplesWithoutKeys, Handler eventHandler, VideoRendererEventListener eventListener, long allowedVideoJoiningTimeMs, ArrayList<Renderer> out) {
+        out.add(new CustomVideoCodecRenderer(context, MediaCodecSelector.DEFAULT,
+                this.allowedVideoJoiningTimeMs, drmSessionManager, this.allowClearLead, eventHandler, eventListener,
+                MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY));
     }
 
     @Override
-    public DefaultRenderersFactory setExtensionRendererMode(int extensionRendererMode) {
-        return super.setExtensionRendererMode(extensionRendererMode);
-    }
-
-    /**
-     * Default maximum duration (5000 ms) for which a video renderer can attempt to seamlessly join an ongoing playback.
-     */
-    @Override
-    public DefaultRenderersFactory setAllowedVideoJoiningTimeMs(long allowedVideoJoiningTimeMs) {
-        return super.setAllowedVideoJoiningTimeMs(allowedVideoJoiningTimeMs);
+    protected void buildAudioRenderers(Context context, int extensionRendererMode, MediaCodecSelector mediaCodecSelector, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, boolean playClearSamplesWithoutKeys, AudioProcessor[] audioProcessors, Handler eventHandler, AudioRendererEventListener eventListener, ArrayList<Renderer> out) {
+        out.add(
+                new MediaCodecAudioRenderer(
+                        context,
+                        MediaCodecSelector.DEFAULT,
+                        drmSessionManager,
+                        this.allowClearLead,
+                        eventHandler,
+                        eventListener,
+                        AudioCapabilities.getCapabilities(context),
+                        audioProcessors));
     }
 }
