@@ -82,7 +82,7 @@ public class PlayKitProfiler {
     private static final String SEPARATOR = "\t";
 
     private static final Map<String, String> experiments = new LinkedHashMap<>();
-    public static final int PERCENTAGE_MULTIPLIER = 100;
+    private static final int PERCENTAGE_MULTIPLIER = 100;
     // Configuration
     private static String postURL = DEFAULT_POST_URL;
     private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
@@ -151,22 +151,35 @@ public class PlayKitProfiler {
 
             initialized = true;
 
-            // TODO: 17/02/2019 explain this
+            // Set the profiler factory.
+            // Convert sendPercentage from 0..100 to 0..1 (divide by 100).
+            // Math.random() returns a float between 0 and 1.
+            // Check if the number is smaller than the send percentage -- if it is, a profiler is
+            // created. If not, null is returned (and ProfilerFactory will return the NOOP profiler).
+
+            // For example, with sendPercentage = 5 (5%). Scaled to 0..1, it's 0.05. If the
+            // random number is smaller than 0.05 a profiler is created and returned.
+
+            // As a result, 5 in every 100 calls to the factory will create a real profiler.
             ProfilerFactory.setFactory(() ->
-                    Math.random() < (sendPercentage / PERCENTAGE_MULTIPLIER) ? new PlayKitProfiler().profilerImp : null);
+                    Math.random() < sendPercentage / PERCENTAGE_MULTIPLIER ? new PlayKitProfiler().profilerImp : null);
         }
     }
 
     private static String getNetworkType(Context context) {
 
         final ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (manager == null) {
+            return "Unknown";
+        }
+
         switch (manager.getActiveNetworkInfo().getType()) {
             case ConnectivityManager.TYPE_MOBILE:
-                return "mobile";
+                return "Mobile";
             case ConnectivityManager.TYPE_WIFI:
-                return "wifi";
+                return "Wifi";
             case ConnectivityManager.TYPE_ETHERNET:
-                return "ethernet";
+                return "Ethernet";
         }
         return null;
     }
