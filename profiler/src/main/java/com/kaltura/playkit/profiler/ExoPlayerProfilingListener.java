@@ -43,6 +43,7 @@ import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_INTERNAL
 import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_PERIOD_TRANSITION;
 import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK;
 import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT;
+import static com.kaltura.playkit.profiler.PlayKitProfiler.MSEC_MULTIPLIER_FLOAT;
 import static com.kaltura.playkit.profiler.PlayKitProfiler.field;
 import static com.kaltura.playkit.profiler.PlayKitProfiler.joinFields;
 import static com.kaltura.playkit.profiler.PlayKitProfiler.nullable;
@@ -331,7 +332,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         if (trackTypeString == null) {
             return;
         }
-        log("UpstreamDiscarded", field("trackType", trackTypeString), field("start", mediaLoadData.mediaStartTimeMs / 1000f), field("end", mediaLoadData.mediaEndTimeMs / 1000f));
+        log("UpstreamDiscarded", field("trackType", trackTypeString), field("start", mediaLoadData.mediaStartTimeMs / MSEC_MULTIPLIER_FLOAT), field("end", mediaLoadData.mediaEndTimeMs / MSEC_MULTIPLIER_FLOAT));
     }
 
     @Override
@@ -370,7 +371,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onDecoderInitialized(EventTime eventTime, int trackType, String decoderName, long initializationDurationMs) {
-        log("DecoderInitialized", field("name", decoderName), field("duration", initializationDurationMs / 1000f));
+        log("DecoderInitialized", field("name", decoderName), field("duration", initializationDurationMs / MSEC_MULTIPLIER_FLOAT));
     }
 
     @Override
@@ -395,7 +396,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onDroppedVideoFrames(EventTime eventTime, int droppedFrames, long elapsedMs) {
-        log("DroppedFrames", field("count", droppedFrames), field("time", elapsedMs / 1000f));
+        log("DroppedFrames", field("count", droppedFrames), field("time", elapsedMs / MSEC_MULTIPLIER_FLOAT));
     }
 
     @Override

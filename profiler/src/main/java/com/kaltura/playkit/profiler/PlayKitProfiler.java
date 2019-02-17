@@ -35,6 +35,7 @@ import com.kaltura.playkit.player.PlayerEngine;
 import com.kaltura.playkit.player.PlayerSettings;
 import com.kaltura.playkit.player.Profiler;
 import com.kaltura.playkit.player.ProfilerFactory;
+import com.kaltura.playkit.utils.Consts;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -58,28 +59,30 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import okhttp3.EventListener;
 
-// TODO: 17/02/2019 make inner class
-class ConfigFile {
-    String putLogURL;
-    float sendPercentage;
-}
-
 // TODO: 17/02/2019 magic numbers
 public class PlayKitProfiler {
 
     // Static constants
     private static final PKLog pkLog = PKLog.get("PlayKitProfiler");
 
-    private static final String SEPARATOR = "\t";
     private static final boolean devMode = true;// TODO: 17/02/2019 make sure it's false
-    private static final int SEND_INTERVAL_SEC = devMode ? 10 : 300;   // Report every 5 minutes
-    private static final float DEFAULT_SEND_PERCENTAGE = 100; // Start disabled TODO: make sure it's zero!
+
+    private static final int SEND_INTERVAL_PROD = 300;
+    private static final int SEND_INTERVAL_DEV = 10;
+    private static final int SEND_INTERVAL_SEC = devMode ? SEND_INTERVAL_DEV : SEND_INTERVAL_PROD;   // Report every 5 minutes
+
+    private static final float DEFAULT_SEND_PERCENTAGE = devMode ? 100 : 0; // Start disabled
     private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
     private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json-";
     private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
     private static final int MAX_CONFIG_SIZE = 10240;
 
+    static final float MSEC_MULTIPLIER_FLOAT = 1000f;
+
+    private static final String SEPARATOR = "\t";
+
     private static final Map<String, String> experiments = new LinkedHashMap<>();
+    public static final int PERCENTAGE_MULTIPLIER = 100;
     // Configuration
     private static String postURL = DEFAULT_POST_URL;
     private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
@@ -107,7 +110,7 @@ public class PlayKitProfiler {
                 // TODO: 17/02/2019 also send to server if more than 1000 lines
                 sendLogChunk();
 
-                ioHandler.postDelayed(this, SEND_INTERVAL_SEC * 1000);
+                ioHandler.postDelayed(this, SEND_INTERVAL_SEC * Consts.MILLISECONDS_MULTIPLIER);
             }
         });
     }
@@ -150,7 +153,7 @@ public class PlayKitProfiler {
 
             // TODO: 17/02/2019 explain this
             ProfilerFactory.setFactory(() ->
-                    Math.random() < (sendPercentage / 100) ? new PlayKitProfiler().profilerImp : null);
+                    Math.random() < (sendPercentage / PERCENTAGE_MULTIPLIER) ? new PlayKitProfiler().profilerImp : null);
         }
     }
 
@@ -286,7 +289,7 @@ public class PlayKitProfiler {
     }
 
     static String timeField(String name, long value) {
-        return value == C.TIME_UNSET ? field(name, null) : field(name, value / 1000f);
+        return value == C.TIME_UNSET ? field(name, null) : field(name, value / MSEC_MULTIPLIER_FLOAT);
     }
 
     private static void downloadConfig(Context context) {
@@ -436,8 +439,8 @@ public class PlayKitProfiler {
     }
 
     private StringBuilder startLog(String event) {
-//        pkLog.v("Profiler.startLog: " + sessionId + " " + event);
 
+        // Pre-allocate the string to something reasonable
         StringBuilder sb = new StringBuilder(100);
         sb
                 .append(SystemClock.elapsedRealtime() - sessionStartTime)
@@ -481,7 +484,9 @@ public class PlayKitProfiler {
 
     private void logServerInfo(String hostName) {
 
-        if (serversLookedUp.contains(hostName)) return;
+        if (serversLookedUp.contains(hostName)) {
+            return;
+        }
 
         String canonicalHostName = null;
         String hostIp = null;
@@ -666,4 +671,9 @@ public class PlayKitProfiler {
             return okListenerFactory;
         }
     };
+
+    private static class ConfigFile {
+        String putLogURL;
+        float sendPercentage;
+    }
 }
