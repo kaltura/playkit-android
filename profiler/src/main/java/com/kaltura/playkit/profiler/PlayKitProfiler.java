@@ -59,17 +59,16 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import okhttp3.EventListener;
 
-// TODO: 17/02/2019 magic numbers
 public class PlayKitProfiler {
 
     // Static constants
     private static final PKLog pkLog = PKLog.get("PlayKitProfiler");
 
-    private static final boolean devMode = true;// TODO: 17/02/2019 make sure it's false
+    private static final boolean devMode = false;
 
-    private static final int SEND_INTERVAL_PROD = 300;
+    private static final int SEND_INTERVAL_PROD = 120;  // 2 minutes
     private static final int SEND_INTERVAL_DEV = 10;
-    private static final int SEND_INTERVAL_SEC = devMode ? SEND_INTERVAL_DEV : SEND_INTERVAL_PROD;   // Report every 5 minutes
+    private static final int SEND_INTERVAL_SEC = devMode ? SEND_INTERVAL_DEV : SEND_INTERVAL_PROD;
 
     private static final float DEFAULT_SEND_PERCENTAGE = devMode ? 100 : 0; // Start disabled
     private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
@@ -98,6 +97,8 @@ public class PlayKitProfiler {
     private final Set<String> serversLookedUp = new HashSet<>();
     long sessionStartTime;
     private String sessionId;
+
+    // We need a reference to the player, but make sure not to keep it alive.
     @Nullable private WeakReference<ExoPlayerWrapper> playerEngine;
 
     private PlayKitProfiler() {
@@ -120,9 +121,6 @@ public class PlayKitProfiler {
      * create IO thread and handler. Must be called by the app to enable the profiler.
      */
     public static void init(Context context) {
-
-        // TODO: 17/02/2019 move this elsewhere
-        String networkType = getNetworkType(context);
 
         // This only has to happen once.
         if (initialized) {
@@ -184,8 +182,14 @@ public class PlayKitProfiler {
         return null;
     }
 
-    // Called by the app
-    // TODO: 17/02/2019 maybe call this addXXX? Add javadoc
+    /**
+     * Set an experiment key+value that will be added to the log. There's no limit to the number of
+     * experiments that can be set, but the key must be unique (using the same key again overrides
+     * the value).
+     *
+     * @param key       A unique string that describes the property being tested
+     * @param value     the value of the key, must be a string, a number or a boolean.
+     */
     public static void setExperiment(String key, Object value) {
         if (key == null) {
             pkLog.w("setExperiment: key is null");
@@ -312,7 +316,11 @@ public class PlayKitProfiler {
         try {
             bytes = Utils.executeGet(CONFIG_URL, null);
 
-            // TODO: 17/02/2019 protect bytes==null
+            if (bytes == null || bytes.length == 0) {
+                pkLog.w("Nothing returned from executeGet");
+                return;
+            }
+
             parseConfig(bytes);
 
         } catch (IOException e) {
