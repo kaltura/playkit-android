@@ -23,12 +23,12 @@ import com.google.gson.JsonObject;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,15 +39,28 @@ import java.util.Map;
  */
 
 public class Utils {
-    private static final String TAG = "Utils";
+    private static final PKLog log = PKLog.get("Utils");
 
     public static String readAssetToString(Context context, String asset) {
+        InputStream assetStream = null;
         try {
-            InputStream assetStream = context.getAssets().open(asset);
+            assetStream = context.getAssets().open(asset);
             return fullyReadInputStream(assetStream, 1024 * 1024).toString();
         } catch (IOException e) {
-            Log.e(TAG, "Failed reading asset " + asset, e);
+            log.e("Failed reading asset " + asset, e);
             return null;
+        } finally {
+            safeClose(assetStream);
+        }
+    }
+
+    public static void safeClose(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                log.e("Failed to close closeable", e);
+            }
         }
     }
 
@@ -68,7 +81,6 @@ public class Utils {
         }
         bos.flush();
         bos.close();
-        inputStream.close();
         return bos;
     }
 
@@ -118,26 +130,42 @@ public class Utils {
         return Base64.encodeToString(data, Base64.NO_WRAP);
     }
 
-    public static byte[] executePost(String url, byte[] data, Map<String, String> requestProperties)
-            throws MalformedURLException, IOException {
+    public static byte[] executePost(String url, byte[] data, Map<String, String> headers) throws IOException {
+        return executeHttpRequest(true, url, data, headers);
+    }
+
+    public static byte[] executeGet(String url, Map<String, String> headers) throws IOException {
+        return executeHttpRequest(false, url, null, headers);
+    }
+
+    private static byte[] executeHttpRequest(boolean post, String url, byte[] data, Map<String, String> headers) throws IOException {
+
         HttpURLConnection urlConnection = null;
+
         try {
             urlConnection = (HttpURLConnection) new URL(url).openConnection();
-            urlConnection.setRequestMethod("POST");
-            urlConnection.setDoOutput(data != null);
+            urlConnection.setRequestMethod(post ? "POST" : "GET");
+
+            if (data != null) {
+                urlConnection.setDoOutput(true);
+            }
+
             urlConnection.setDoInput(true);
-            if (requestProperties != null) {
-                for (Map.Entry<String, String> requestProperty : requestProperties.entrySet()) {
+            if (headers != null) {
+                for (Map.Entry<String, String> requestProperty : headers.entrySet()) {
                     urlConnection.setRequestProperty(requestProperty.getKey(), requestProperty.getValue());
                 }
             }
+
             if (data != null) {
                 OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
                 out.write(data);
                 out.close();
             }
+
             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
             return convertInputStreamToByteArray(in);
+
         } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
