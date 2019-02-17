@@ -1,6 +1,7 @@
 package com.kaltura.playkit.profiler;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -114,6 +115,8 @@ public class PlayKitProfiler {
      */
     public static void init(Context context) {
 
+        // TODO: 17/02/2019 move this elsewhere
+        String networkType = getNetworkType(context);
         // This only has to happen once.
         if (initialized) return;
 
@@ -140,6 +143,20 @@ public class PlayKitProfiler {
             ProfilerFactory.setFactory(() ->
                     Math.random() < (sendPercentage / 100) ? new PlayKitProfiler().profilerImp : null);
         }
+    }
+
+    private static String getNetworkType(Context context) {
+
+        final ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        switch (manager.getActiveNetworkInfo().getType()) {
+            case ConnectivityManager.TYPE_MOBILE:
+                return "mobile";
+            case ConnectivityManager.TYPE_WIFI:
+                return "wifi";
+            case ConnectivityManager.TYPE_ETHERNET:
+                return "ethernet";
+        }
+        return null;
     }
 
     // Called by the app
