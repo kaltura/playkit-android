@@ -27,4 +27,7 @@ public abstract class Profiler {
 
     public EventListener.Factory getOkListenerFactory() {return null;}
     public AnalyticsListener getExoAnalyticsListener() {return null;}
+
+    public void onApplicationPaused() {}
+    public void onApplicationResumed() {}
 }

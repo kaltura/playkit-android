@@ -583,6 +583,16 @@ public class PlayKitProfiler {
         }
 
         @Override
+        public void onApplicationPaused() {
+            log("ApplicationPaused");
+        }
+
+        @Override
+        public void onApplicationResumed() {
+            log("onApplicationResumed");
+        }
+
+        @Override
         public void onSetMedia(PKMediaConfig mediaConfig) {
             JsonObject json = new JsonObject();
             json.add("entry", toJSON(mediaConfig.getMediaEntry()));

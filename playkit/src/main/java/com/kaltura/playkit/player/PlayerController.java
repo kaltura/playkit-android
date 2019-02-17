@@ -483,6 +483,9 @@ public class PlayerController implements Player {
     @Override
     public void onApplicationPaused() {
         log.d("onApplicationPaused");
+
+        profiler.onApplicationPaused();
+
         if (isPlayerStopped) {
             log.e("onApplicationPaused called during player state = STOPPED - return");
             return;
@@ -500,6 +503,9 @@ public class PlayerController implements Player {
     @Override
     public void onApplicationResumed() {
         log.d("onApplicationResumed");
+
+        profiler.onApplicationResumed();
+
         if (isPlayerStopped) {
             log.e("onApplicationResumed called during player state = STOPPED - return");
             return;
