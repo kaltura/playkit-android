@@ -66,6 +66,7 @@ public class PlayerController implements Player {
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
 
+    @NonNull private Profiler profiler = ProfilerFactory.get();
 
     private PKEvent.RawListener eventListener;
     private PlayerEngine.EventListener eventTrigger = initEventListener();
@@ -157,6 +158,7 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
+
         if (sourceConfig == null) {
             log.e("source config not found. Can not prepare source.");
             return;
@@ -168,6 +170,7 @@ public class PlayerController implements Player {
         switchPlayersIfRequired(incomingPlayerType);
 
         if (assertPlayerIsNotNull("prepare()")) {
+            player.setProfiler(profiler);
             player.load(sourceConfig);
         }
     }
@@ -187,9 +190,13 @@ public class PlayerController implements Player {
         }
 
         sessionId = generateSessionId();
+
         if (playerSettings.getContentRequestAdapter() != null) {
             playerSettings.getContentRequestAdapter().updateParams(this);
         }
+
+        profiler.newSession(sessionId, playerSettings);
+        profiler.onSetMedia(mediaConfig);
 
         this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry(), playerSettings.getPreferredMediaFormat());
@@ -201,6 +208,7 @@ public class PlayerController implements Player {
 
         initSourceConfig(mediaConfig.getMediaEntry(), source);
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
+
         return true;
     }
 
@@ -485,6 +493,9 @@ public class PlayerController implements Player {
     @Override
     public void onApplicationPaused() {
         log.d("onApplicationPaused");
+
+        profiler.onApplicationPaused();
+
         if (isPlayerStopped) {
             log.e("onApplicationPaused called during player state = STOPPED - return");
             return;
@@ -502,6 +513,9 @@ public class PlayerController implements Player {
     @Override
     public void onApplicationResumed() {
         log.d("onApplicationResumed");
+
+        profiler.onApplicationResumed();
+
         if (isPlayerStopped) {
             log.e("onApplicationResumed called during player state = STOPPED - return");
             return;

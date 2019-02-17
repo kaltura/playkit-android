@@ -33,7 +33,6 @@ tasks.withType(Javadoc) {
     options.addBooleanOption('Xdoclint:none', true)
 }
 
-
 dependencies {
 
     def exoPlayerVersion = '2.9.3'
@@ -46,6 +45,9 @@ dependencies {
     api "com.google.android.exoplayer:exoplayer-hls:$exoPlayerVersion"
     api "com.google.android.exoplayer:exoplayer-ui:$exoPlayerVersion"
     api "com.google.android.exoplayer:extension-okhttp:$exoPlayerVersion"
+
+    // Ok is (optionally) used by ExoPlayer now
+    api("com.squareup.okhttp3:okhttp:3.12.1")
 
     // Tests
     testImplementation 'junit:junit:4.12'

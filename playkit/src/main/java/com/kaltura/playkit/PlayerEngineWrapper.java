@@ -6,6 +6,7 @@ import com.kaltura.playkit.player.PKMediaSourceConfig;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.PlayerEngine;
 import com.kaltura.playkit.player.PlayerView;
+import com.kaltura.playkit.player.Profiler;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 
@@ -173,6 +174,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     @Override
     public float getPlaybackRate() {
         return playerEngine.getPlaybackRate();
+    }
+
+    @Override
+    public void setProfiler(Profiler profiler) {
+        this.playerEngine.setProfiler(profiler);
     }
 
     @Override
