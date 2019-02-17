@@ -253,6 +253,13 @@ public interface Player {
     long getCurrentPosition();
 
     /**
+     * Getter for the current playback position in window.
+     *
+     * @return - position of the player in window or 0 o/w.
+     */
+    long getPositionInWindowMs();
+
+    /**
      * The current program time is milliseconds since the epoch, or {@link Consts#TIME_UNSET} if not set.
      * This value is derived from the attribute availabilityStartTime in DASH or the tag EXT-X-PROGRAM-DATE-TIME in HLS.
      * @return The current program time is milliseconds since the epoch, or {@link Consts#TIME_UNSET} if not set.

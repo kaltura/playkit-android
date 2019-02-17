@@ -342,6 +342,15 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public long getPositionInWindowMs() {
+        log.v("getPositionInWindowMs");
+        if (assertPlayerIsNotNull("getPositionInWindowMs()")) {
+            return player.getPositionInWindowMs();
+        }
+        return 0;
+    }
+
+    @Override
     public long getCurrentProgramTime() {
         if (assertPlayerIsNotNull("getCurrentProgramTime()")) {
             final long currentPosition = getCurrentPosition();

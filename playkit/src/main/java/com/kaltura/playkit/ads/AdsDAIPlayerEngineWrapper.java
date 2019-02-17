@@ -107,6 +107,11 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
         return getFakePlayerPosition();
     }
 
+    @Override
+    public long getPositionInWindowMs() {
+        return super.getPositionInWindowMs();
+    }
+
     private long getFakePlayerPosition() {
         long playerPosition = super.getCurrentPosition();
         //log.d("playerPosition = " + playerPosition);

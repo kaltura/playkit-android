@@ -146,6 +146,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
 
     private DataSource.Factory dataSourceFactory;
     private HttpDataSource.Factory httpDataSourceFactory;
+    private Timeline.Period period;
 
     ExoPlayerWrapper(Context context, PlayerSettings playerSettings) {
         this(context, new ExoPlayerView(context), playerSettings);
@@ -163,6 +164,7 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
         }
 
         bandwidthMeter = bandwidthMeterBuilder.build();
+        period = new Timeline.Period();
         this.exoPlayerView = exoPlayerView;
         this.playerSettings = playerSettings;
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
@@ -656,6 +658,19 @@ class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOu
             return player.getCurrentPosition();
         }
         return Consts.POSITION_UNSET;
+    }
+
+    @Override
+    public long getPositionInWindowMs() {
+        log.v("getPositionInWindowMs");
+        long positionInWindowMs = 0;
+        if (assertPlayerIsNotNull("getPositionInWindowMs()")) {
+            Timeline currentTimeline = player.getCurrentTimeline();
+            if (!currentTimeline.isEmpty()) {
+                return currentTimeline.getPeriod(player.getCurrentPeriodIndex(), period).getPositionInWindowMs();
+            }
+        }
+        return positionInWindowMs;
     }
 
     @Override
