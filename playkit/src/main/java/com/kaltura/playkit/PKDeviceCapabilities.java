@@ -12,7 +12,6 @@
 
 package com.kaltura.playkit;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -40,7 +39,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -118,8 +116,9 @@ public class PKDeviceCapabilities {
             reportString = getErrorReport(e);
         }
 
-        if (!sendReport(reportString))
+        if (!sendReport(reportString)) {
             return;
+        }
 
         // If we got here, save the fingerprint so we don't send again until the OS updates.
         sharedPrefs.edit().putString(PREFS_ENTRY_FINGERPRINT, FINGERPRINT).apply();

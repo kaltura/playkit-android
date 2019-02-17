@@ -5,8 +5,6 @@ import android.support.annotation.NonNull;
 import com.google.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.playkit.PKMediaConfig;
 
-import java.util.Map;
-
 import okhttp3.EventListener;
 
 public abstract class Profiler {
