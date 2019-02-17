@@ -16,7 +16,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Base64;
-import android.util.Log;
 
 import com.google.gson.JsonObject;
 
@@ -40,12 +39,14 @@ import java.util.Map;
 
 public class Utils {
     private static final PKLog log = PKLog.get("Utils");
+    private static final int ASSET_READ_LIMIT_BYTES = 1024 * 1024;
+    public static final int READ_BUFFER_SIZE = 1024;
 
     public static String readAssetToString(Context context, String asset) {
         InputStream assetStream = null;
         try {
             assetStream = context.getAssets().open(asset);
-            return fullyReadInputStream(assetStream, 1024 * 1024).toString();
+            return fullyReadInputStream(assetStream, ASSET_READ_LIMIT_BYTES).toString();
         } catch (IOException e) {
             log.e("Failed reading asset " + asset, e);
             return null;
@@ -67,7 +68,7 @@ public class Utils {
     @NonNull
     public static ByteArrayOutputStream fullyReadInputStream(InputStream inputStream, int byteLimit) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte data[] = new byte[1024];
+        byte data[] = new byte[READ_BUFFER_SIZE];
         int count;
 
         while ((count = inputStream.read(data)) != -1) {
@@ -176,7 +177,7 @@ public class Utils {
     private static byte[] convertInputStreamToByteArray(InputStream inputStream) throws IOException {
         byte[] bytes;
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte data[] = new byte[1024];
+        byte data[] = new byte[READ_BUFFER_SIZE];
         int count;
         while ((count = inputStream.read(data)) != -1) {
             bos.write(data, 0, count);

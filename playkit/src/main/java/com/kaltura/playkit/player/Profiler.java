@@ -11,21 +11,21 @@ public abstract class Profiler {
     // A no-op profiler to avoid null checks.
     @NonNull static final Profiler NOOP = new Profiler() {};
 
-    public void setPlayerEngine(PlayerEngine playerEngine) {}
+    public void setPlayerEngine(PlayerEngine playerEngine) {/*NOOP*/}
 
-    public void newSession(String sessionId, PlayerSettings playerSettings) {}
-    public void onSetMedia(PKMediaConfig mediaConfig) {}
-    public void onPrepareStarted(PKMediaSourceConfig sourceConfig) {}
-    public void onSeekRequested(long position) {}
-    public void onPauseRequested() {}
-    public void onReplayRequested() {}
-    public void onPlayRequested() {}
-    public void onSessionFinished() {}
-    public void onDurationChanged(long duration) {}
+    public void newSession(String sessionId, PlayerSettings playerSettings) {/*NOOP*/}
+    public void onSetMedia(PKMediaConfig mediaConfig) {/*NOOP*/}
+    public void onPrepareStarted(PKMediaSourceConfig sourceConfig) {/*NOOP*/}
+    public void onSeekRequested(long position) {/*NOOP*/}
+    public void onPauseRequested() {/*NOOP*/}
+    public void onReplayRequested() {/*NOOP*/}
+    public void onPlayRequested() {/*NOOP*/}
+    public void onSessionFinished() {/*NOOP*/}
+    public void onDurationChanged(long duration) {/*NOOP*/}
 
     public EventListener.Factory getOkListenerFactory() {return null;}
     public AnalyticsListener getExoAnalyticsListener() {return null;}
 
-    public void onApplicationPaused() {}
-    public void onApplicationResumed() {}
+    public void onApplicationPaused() {/*NOOP*/}
+    public void onApplicationResumed() {/*NOOP*/}
 }
