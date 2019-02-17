@@ -58,20 +58,22 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import okhttp3.EventListener;
 
+// TODO: 17/02/2019 make inner class
 class ConfigFile {
     String putLogURL;
     float sendPercentage;
 }
 
+// TODO: 17/02/2019 magic numbers
 public class PlayKitProfiler {
 
     // Static constants
     private static final PKLog pkLog = PKLog.get("PlayKitProfiler");
 
     private static final String SEPARATOR = "\t";
-    private static final boolean devMode = true;
+    private static final boolean devMode = true;// TODO: 17/02/2019 make sure it's false
     private static final int SEND_INTERVAL_SEC = devMode ? 10 : 300;   // Report every 5 minutes
-    private static final float DEFAULT_SEND_PERCENTAGE = 100; // Start disabled
+    private static final float DEFAULT_SEND_PERCENTAGE = 100; // Start disabled TODO: make sure it's zero!
     private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
     private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json-";
     private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
@@ -102,6 +104,7 @@ public class PlayKitProfiler {
             public void run() {
 
                 // Send queue content to the server
+                // TODO: 17/02/2019 also send to server if more than 1000 lines
                 sendLogChunk();
 
                 ioHandler.postDelayed(this, SEND_INTERVAL_SEC * 1000);
@@ -117,13 +120,18 @@ public class PlayKitProfiler {
 
         // TODO: 17/02/2019 move this elsewhere
         String networkType = getNetworkType(context);
+
         // This only has to happen once.
-        if (initialized) return;
+        if (initialized) {
+            return;
+        }
 
         synchronized (PlayKitProfiler.class) {
 
             // Ask again, after sync.
-            if (initialized) return;
+            if (initialized) {
+                return;
+            }
 
             final Context appContext = context.getApplicationContext();
 
@@ -140,6 +148,7 @@ public class PlayKitProfiler {
 
             initialized = true;
 
+            // TODO: 17/02/2019 explain this
             ProfilerFactory.setFactory(() ->
                     Math.random() < (sendPercentage / 100) ? new PlayKitProfiler().profilerImp : null);
         }
@@ -160,6 +169,7 @@ public class PlayKitProfiler {
     }
 
     // Called by the app
+    // TODO: 17/02/2019 maybe call this addXXX? Add javadoc
     public static void setExperiment(String key, Object value) {
         if (key == null) {
             pkLog.w("setExperiment: key is null");
@@ -286,6 +296,7 @@ public class PlayKitProfiler {
         try {
             bytes = Utils.executeGet(CONFIG_URL, null);
 
+            // TODO: 17/02/2019 protect bytes==null
             parseConfig(bytes);
 
         } catch (IOException e) {
@@ -380,6 +391,8 @@ public class PlayKitProfiler {
         } else {
             ioHandler.post(() -> postChunk(string));
         }
+
+        // TODO: 17/02/2019 what if there's no network when sending the log?
 
         if (devMode && externalFilesDir != null) {
 
