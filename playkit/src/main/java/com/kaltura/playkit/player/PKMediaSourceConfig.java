@@ -47,7 +47,7 @@ public class PKMediaSourceConfig {
         this(mediaConfig, source, playerSettings, null);
     }
 
-    Uri getUrl() {
+    public Uri getUrl() {
         Uri uri = Uri.parse(mediaSource.getUrl());
         if (playerSettings.getContentRequestAdapter() == null) {
             return uri;
