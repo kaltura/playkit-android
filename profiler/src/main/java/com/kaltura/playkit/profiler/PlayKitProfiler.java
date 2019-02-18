@@ -64,13 +64,16 @@ public class PlayKitProfiler {
     // Static constants
     private static final PKLog pkLog = PKLog.get("PlayKitProfiler");
 
+    // Dev mode: shorter logs, write to local file, always enable
     private static final boolean devMode = false;
+    private static final int SEND_INTERVAL_DEV = 10;    // in seconds
+    private static final int SEND_PERCENTAGE_DEV = 100; // always
 
     private static final int SEND_INTERVAL_PROD = 120;  // 2 minutes
-    private static final int SEND_INTERVAL_DEV = 10;
     private static final int SEND_INTERVAL_SEC = devMode ? SEND_INTERVAL_DEV : SEND_INTERVAL_PROD;
 
-    private static final float DEFAULT_SEND_PERCENTAGE = devMode ? 100 : 0; // Start disabled
+    private static final float DEFAULT_SEND_PERCENTAGE = devMode ? SEND_PERCENTAGE_DEV : 0; // Start disabled
+
     private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
     private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json-";
     private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
@@ -108,7 +111,7 @@ public class PlayKitProfiler {
             public void run() {
 
                 // Send queue content to the server
-                // TODO: 17/02/2019 also send to server if more than 1000 lines
+                // TODO: 17/02/2019 also send to server if more than 1000 lines?
                 sendLogChunk();
 
                 ioHandler.postDelayed(this, SEND_INTERVAL_SEC * Consts.MILLISECONDS_MULTIPLIER);
