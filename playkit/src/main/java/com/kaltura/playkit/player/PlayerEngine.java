@@ -231,6 +231,8 @@ public interface PlayerEngine {
 
     float getPlaybackRate();
 
+    default void setProfiler(Profiler profiler) {}
+
     /**
      * Update Subtitle Styles
      * @param subtitleStyleSettings
@@ -250,7 +252,7 @@ public interface PlayerEngine {
      * @return - the {@link PKController} instance if specified controller type exist,
      * otherwise return null.
      */
-    <T extends PKController> T getController(Class<T> type);
+    default <T extends PKController> T getController(Class<T> type) { return null; }
 
     /**
      * Must be called by application when Android onConfigurationChanged triggered by system.
