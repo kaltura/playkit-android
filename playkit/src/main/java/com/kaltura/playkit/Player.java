@@ -100,15 +100,6 @@ public interface Player {
         Settings allowClearLead(boolean allowClearLead);
 
         /**
-         * Maximum duration for which a video renderer can attempt to seamlessly join an ongoing playback.
-         * Default is 5000ms
-         *
-         * @param allowedVideoJoiningTimeMs - Time in ms
-         * @return - Player Settings.
-         */
-        Settings allowedVideoJoiningTimeMs(Long allowedVideoJoiningTimeMs);
-
-        /**
          * Decide if player should use secure rendering on the surface.
          * Known limitation - when useTextureView set to true and isSurfaceSecured set to true -
          * secure rendering will have no effect.

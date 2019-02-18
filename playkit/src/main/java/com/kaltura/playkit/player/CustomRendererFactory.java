@@ -31,26 +31,13 @@ public class CustomRendererFactory extends DefaultRenderersFactory {
         super(context);
         this.allowClearLead = allowClearLead;
         this.allowedVideoJoiningTimeMs = allowedVideoJoiningTimeMs;
+        setPlayClearSamplesWithoutKeys(allowClearLead);
     }
 
     @Override
     protected void buildVideoRenderers(Context context, int extensionRendererMode, MediaCodecSelector mediaCodecSelector, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, boolean playClearSamplesWithoutKeys, Handler eventHandler, VideoRendererEventListener eventListener, long allowedVideoJoiningTimeMs, ArrayList<Renderer> out) {
         out.add(new CustomVideoCodecRenderer(context, MediaCodecSelector.DEFAULT,
-                this.allowedVideoJoiningTimeMs, drmSessionManager, this.allowClearLead, eventHandler, eventListener,
+                this.allowedVideoJoiningTimeMs, drmSessionManager, allowClearLead, eventHandler, eventListener,
                 MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY));
-    }
-
-    @Override
-    protected void buildAudioRenderers(Context context, int extensionRendererMode, MediaCodecSelector mediaCodecSelector, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, boolean playClearSamplesWithoutKeys, AudioProcessor[] audioProcessors, Handler eventHandler, AudioRendererEventListener eventListener, ArrayList<Renderer> out) {
-        out.add(
-                new MediaCodecAudioRenderer(
-                        context,
-                        MediaCodecSelector.DEFAULT,
-                        drmSessionManager,
-                        this.allowClearLead,
-                        eventHandler,
-                        eventListener,
-                        AudioCapabilities.getCapabilities(context),
-                        audioProcessors));
     }
 }

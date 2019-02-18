@@ -27,7 +27,6 @@ public class PlayerSettings implements Player.Settings {
     private boolean mpgaAudioFormatEnabled;
     private boolean crossProtocolRedirectEnabled;
     private boolean allowClearLead = true;
-    private Long allowedVideoJoiningTimeMs = DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
@@ -65,8 +64,8 @@ public class PlayerSettings implements Player.Settings {
         return allowClearLead;
     }
 
-    public Long allowedVideoJoiningTimeMs() {
-        return allowedVideoJoiningTimeMs;
+    public long allowedVideoJoiningTimeMs() {
+        return loadControlBuffers.getAllowedVideoJoiningTimeMs();
     }
 
     public boolean cea608CaptionsEnabled() {
@@ -193,12 +192,6 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings allowClearLead(boolean allowClearLead) {
         this.allowClearLead = allowClearLead;
-        return this;
-    }
-
-    @Override
-    public Player.Settings allowedVideoJoiningTimeMs(Long allowedVideoJoiningTimeMs) {
-        this.allowedVideoJoiningTimeMs = allowedVideoJoiningTimeMs;
         return this;
     }
 

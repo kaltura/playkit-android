@@ -6,6 +6,7 @@ import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_BUFFER_FO
 import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_MAX_BUFFER_MS;
 import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_MIN_BUFFER_MS;
 import static com.google.android.exoplayer2.DefaultLoadControl.DEFAULT_RETAIN_BACK_BUFFER_FROM_KEYFRAME;
+import static com.google.android.exoplayer2.DefaultRenderersFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS;
 
 public class LoadControlBuffers {
 
@@ -15,6 +16,7 @@ public class LoadControlBuffers {
     private int minBufferAfterReBufferMs = DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS; //The default duration of media that must be buffered for playback after re-buffering
     private int backBufferDurationMs = DEFAULT_BACK_BUFFER_DURATION_MS;
     private boolean retainBackBufferFromKeyframe = DEFAULT_RETAIN_BACK_BUFFER_FROM_KEYFRAME;
+    private long allowedVideoJoiningTimeMs = DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS; //Maximum duration for which a video renderer can attempt to seamlessly join an ongoing playback. Default is 5000ms
 
     public int getMinPlayerBufferMs() {
         return minPlayerBufferMs;
@@ -76,6 +78,15 @@ public class LoadControlBuffers {
 
     public LoadControlBuffers setRetainBackBufferFromKeyframe(boolean retainBackBufferFromKeyframe) {
         this.retainBackBufferFromKeyframe = retainBackBufferFromKeyframe;
+        return this;
+    }
+
+    public long getAllowedVideoJoiningTimeMs() {
+        return allowedVideoJoiningTimeMs;
+    }
+
+    public LoadControlBuffers setAllowedVideoJoiningTimeMs(Long allowedVideoJoiningTimeMs) {
+        this.allowedVideoJoiningTimeMs = allowedVideoJoiningTimeMs;
         return this;
     }
 }
