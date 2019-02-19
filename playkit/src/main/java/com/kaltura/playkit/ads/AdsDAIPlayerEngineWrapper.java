@@ -104,6 +104,11 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
 
     @Override
     public long getCurrentPosition() {
+        AdCuePoints adCuePoints = adsProvider.getCuePoints();
+
+        if (adCuePoints.getAdCuePoints() == null || adCuePoints.getDaiAdsList() == null || adCuePoints.getAdCuePoints().size() != adCuePoints.getDaiAdsList().size()) {
+            return super.getCurrentPosition();
+        }
         return adsProvider.getFakePlayerPosition(super.getCurrentPosition());
     }
 
@@ -112,30 +117,30 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
         return super.getPositionInWindowMs();
     }
 
-    private long getFakePlayerPosition() {
-        long playerPosition = super.getCurrentPosition();
-        //log.d("playerPosition = " + playerPosition);
-        if (playerPosition == Consts.POSITION_UNSET) {
-            return 0;
-        }
-        AdCuePoints adCuePoints = adsProvider.getCuePoints();
-        if (adCuePoints.getAdCuePoints().size() != adCuePoints.getDaiAdsList().size()) {
-            return playerPosition;
-        }
-
-        long fakePos = playerPosition;
-        for (int indx = 0 ; indx < adCuePoints.getDaiAdsList().size() ; indx++) {
-            long cuePointPosition = adCuePoints.getDaiAdsList().get(indx).first;
-            if (cuePointPosition <= playerPosition) {
-                fakePos -= adCuePoints.getDaiAdsList().get(indx).second;
-            }
-        }
-        if (fakePos < 0) {
-            return 0;
-        }
-        //log.d("fakePos = " + fakePos);
-        return fakePos;
-    }
+//    private long getFakePlayerPosition() {
+//        long playerPosition = super.getCurrentPosition();
+//        //log.d("playerPosition = " + playerPosition);
+//        if (playerPosition == Consts.POSITION_UNSET) {
+//            return 0;
+//        }
+//        AdCuePoints adCuePoints = adsProvider.getCuePoints();
+//        if (adCuePoints.getAdCuePoints().size() != adCuePoints.getDaiAdsList().size()) {
+//            return playerPosition;
+//        }
+//
+//        long fakePos = playerPosition;
+//        for (int indx = 0 ; indx < adCuePoints.getDaiAdsList().size() ; indx++) {
+//            long cuePointPosition = adCuePoints.getDaiAdsList().get(indx).first;
+//            if (cuePointPosition <= playerPosition) {
+//                fakePos -= adCuePoints.getDaiAdsList().get(indx).second;
+//            }
+//        }
+//        if (fakePos < 0) {
+//            return 0;
+//        }
+//        //log.d("fakePos = " + fakePos);
+//        return fakePos;
+//    }
 
     @Override
     public long getProgramStartTime() {
