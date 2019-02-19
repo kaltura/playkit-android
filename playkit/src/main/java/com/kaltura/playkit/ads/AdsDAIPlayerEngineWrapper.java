@@ -104,7 +104,7 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
 
     @Override
     public long getCurrentPosition() {
-        return getFakePlayerPosition();
+        return adsProvider.getFakePlayerPosition(super.getCurrentPosition());
     }
 
     @Override

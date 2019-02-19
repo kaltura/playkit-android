@@ -45,6 +45,8 @@ public interface AdsProvider {
 
     long getCurrentPosition();
 
+    default long getFakePlayerPosition(long realPlayerPosition) { return 0; }
+
     void setAdProviderListener(PKAdProviderListener adProviderListener);
 
     void setAdRequested(boolean isAdRequested);
