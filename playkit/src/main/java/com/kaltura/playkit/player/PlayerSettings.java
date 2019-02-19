@@ -17,8 +17,6 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
 
-import static com.google.android.exoplayer2.DefaultRenderersFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS;
-
 public class PlayerSettings implements Player.Settings {
 
     private boolean useTextureView;
@@ -62,10 +60,6 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean allowClearLead() {
         return allowClearLead;
-    }
-
-    public long allowedVideoJoiningTimeMs() {
-        return loadControlBuffers.getAllowedVideoJoiningTimeMs();
     }
 
     public boolean cea608CaptionsEnabled() {
