@@ -106,7 +106,7 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
     public long getCurrentPosition() {
         AdCuePoints adCuePoints = adsProvider.getCuePoints();
 
-        if (adCuePoints.getAdCuePoints() == null || adCuePoints.getDaiAdsList() == null || adCuePoints.getAdCuePoints().size() != adCuePoints.getDaiAdsList().size()) {
+        if (adCuePoints.getAdCuePoints() == null || adCuePoints.getAdCuePoints().isEmpty()) {
             return super.getCurrentPosition();
         }
         return adsProvider.getFakePlayerPosition(super.getCurrentPosition());
@@ -117,31 +117,6 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
         return super.getPositionInWindowMs();
     }
 
-//    private long getFakePlayerPosition() {
-//        long playerPosition = super.getCurrentPosition();
-//        //log.d("playerPosition = " + playerPosition);
-//        if (playerPosition == Consts.POSITION_UNSET) {
-//            return 0;
-//        }
-//        AdCuePoints adCuePoints = adsProvider.getCuePoints();
-//        if (adCuePoints.getAdCuePoints().size() != adCuePoints.getDaiAdsList().size()) {
-//            return playerPosition;
-//        }
-//
-//        long fakePos = playerPosition;
-//        for (int indx = 0 ; indx < adCuePoints.getDaiAdsList().size() ; indx++) {
-//            long cuePointPosition = adCuePoints.getDaiAdsList().get(indx).first;
-//            if (cuePointPosition <= playerPosition) {
-//                fakePos -= adCuePoints.getDaiAdsList().get(indx).second;
-//            }
-//        }
-//        if (fakePos < 0) {
-//            return 0;
-//        }
-//        //log.d("fakePos = " + fakePos);
-//        return fakePos;
-//    }
-
     @Override
     public long getProgramStartTime() {
         return super.getProgramStartTime();
@@ -149,29 +124,12 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
 
     @Override
     public long getDuration() {
-        return getFakePlayerDuration();
-    }
-
-    private long getFakePlayerDuration() {
-        long duration = super.getDuration();
-        if (duration == Consts.TIME_UNSET) {
-            return 0;
-        }
         AdCuePoints adCuePoints = adsProvider.getCuePoints();
 
-        if (adCuePoints.getAdCuePoints() == null || adCuePoints.getDaiAdsList() == null || adCuePoints.getAdCuePoints().size() != adCuePoints.getDaiAdsList().size()) {
-            return duration;
+        if (adCuePoints.getAdCuePoints() == null || adCuePoints.getAdCuePoints().isEmpty()) {
+            return super.getDuration();
         }
-
-        long fakeDuration = duration;
-        for (int indx = 0 ; indx < adCuePoints.getDaiAdsList().size() ; indx++) {
-            fakeDuration -= adCuePoints.getDaiAdsList().get(indx).second;
-        }
-        if (fakeDuration < 0) {
-            return 0;
-        }
-        //log.d("fakeDuration = " + fakeDuration);
-        return fakeDuration;
+        return adsProvider.getFakePlayerDuration(super.getDuration());
     }
 
     @Override
