@@ -244,7 +244,7 @@ public class PlayerController implements Player {
 
         //Initialize new PlayerEngine.
         try {
-            player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType, playerSettings);
+            player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType, playerSettings, rootPlayerView);
             if (playerEngineWrapper != null) {
                 playerEngineWrapper.setPlayerEngine(player);
                 player = playerEngineWrapper;
@@ -254,11 +254,12 @@ public class PlayerController implements Player {
             sendErrorMessage(PKPlayerErrorType.FAILED_TO_INITIALIZE_PLAYER, e.getMessage(), e);
             if (incomingPlayerType == PlayerEngineType.VRPlayer) {
                 incomingPlayerType = PlayerEngineType.Exoplayer;
-                player = new ExoPlayerWrapper(context, playerSettings);
+                player = new ExoPlayerWrapper(context, playerSettings, rootPlayerView);
             } else {
                 return;
             }
         }
+
         //IMA workaround. In order to prevent flickering of the first frame
         //with ExoplayerEngine we should addPlayerView here for all playerEngines except Exoplayer.
         if (incomingPlayerType == PlayerEngineType.MediaPlayer) {
@@ -388,7 +389,6 @@ public class PlayerController implements Player {
     public void play() {
         log.v("play");
         if (assertPlayerIsNotNull("play()")) {
-            addPlayerView();
             player.play();
         }
     }

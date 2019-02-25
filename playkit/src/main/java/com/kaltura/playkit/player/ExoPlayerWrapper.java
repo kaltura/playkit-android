@@ -103,6 +103,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private Context context;
     private SimpleExoPlayer player;
     private BaseExoplayerView exoPlayerView;
+    private PlayerView rootView;
+    private boolean rootViewUpdated;
 
     private PKTracks tracks;
     private Timeline.Window window;
@@ -144,15 +146,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private HttpDataSource.Factory httpDataSourceFactory;
     private Timeline.Period period;
 
-    ExoPlayerWrapper(Context context, PlayerSettings playerSettings) {
-        this(context, new ExoPlayerView(context), playerSettings);
+    ExoPlayerWrapper(Context context, PlayerSettings playerSettings, PlayerView rootPlayerView) {
+        this(context, new ExoPlayerView(context), playerSettings, rootPlayerView);
     }
 
-    ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView, PlayerSettings settings) {
+    ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView, PlayerSettings settings, PlayerView rootPlayerView) {
         this.context = context;
 
         playerSettings = settings != null ? settings : new PlayerSettings();
-
+        rootView = rootPlayerView;
         DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context).setEventListener(mainHandler, this);
 
         Long initialBitrateEstimate = playerSettings.getAbrSettings().getInitialBitrateEstimate();
@@ -650,6 +652,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             if (player.getPlayWhenReady()) {
                 return;
             }
+
+            if (!rootViewUpdated) {
+                rootView.addView(getView(),0);
+                rootViewUpdated = true;
+            }
+
             sendDistinctEvent(PlayerEvent.Type.PLAY);
             if (isLiveMediaWithoutDvr()) {
                 player.seekToDefaultPosition();
