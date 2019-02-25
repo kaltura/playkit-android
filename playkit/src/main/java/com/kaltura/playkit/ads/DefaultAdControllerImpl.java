@@ -27,10 +27,8 @@ public class DefaultAdControllerImpl implements AdController {
         if (!adsProvider.isAllAdsCompleted()) {
             if (!adsProvider.isAdRequested()) {
                 adsProvider.start();
-                return;
             } else if (isAdDisplayed()) {
                 adsProvider.resume();
-                return;
             }
         }
     }

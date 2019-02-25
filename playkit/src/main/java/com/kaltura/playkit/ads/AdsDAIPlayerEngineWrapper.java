@@ -20,7 +20,6 @@ import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
-import com.kaltura.playkit.utils.Consts;
 
 /**
  * @hide
