@@ -35,7 +35,7 @@ public class PKMediaSourceConfig {
     private List<PKExternalSubtitle> externalSubtitlesList;
 
 
-    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings, VRSettings vrSettings) {
+    public PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings, VRSettings vrSettings) {
         this.mediaSource = source;
         this.mediaEntryType = (mediaConfig != null && mediaConfig.getMediaEntry() != null) ? mediaConfig.getMediaEntry().getMediaType() : PKMediaEntry.MediaEntryType.Unknown;
         this.playerSettings = playerSettings;
@@ -43,7 +43,7 @@ public class PKMediaSourceConfig {
         externalSubtitlesList = (mediaConfig != null && mediaConfig.getMediaEntry() != null && mediaConfig.getMediaEntry().getExternalSubtitleList() != null) ? mediaConfig.getMediaEntry().getExternalSubtitleList() : null;
     }
 
-    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
+    public PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
         this(mediaConfig, source, playerSettings, null);
     }
 

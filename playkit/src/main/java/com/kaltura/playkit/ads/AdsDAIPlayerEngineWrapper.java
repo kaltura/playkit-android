@@ -112,16 +112,6 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
     }
 
     @Override
-    public long getPositionInWindowMs() {
-        return super.getPositionInWindowMs();
-    }
-
-    @Override
-    public long getProgramStartTime() {
-        return super.getProgramStartTime();
-    }
-
-    @Override
     public long getDuration() {
         AdCuePoints adCuePoints = adsProvider.getCuePoints();
 
@@ -148,11 +138,6 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
     public boolean isPlaying() {
         log.d("AdWrapper isPlaying");
         return super.isPlaying();
-    }
-
-    @Override
-    public void setAnalyticsListener(AnalyticsListener analyticsListener) {
-        super.setAnalyticsListener(analyticsListener);
     }
 
     @Override

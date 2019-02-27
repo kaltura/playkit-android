@@ -12,7 +12,7 @@
 
 package com.kaltura.playkit.ads;
 
-public enum PKAdPlugin {
-    ima,
-    ima_dai
+public enum PKAdPluginType {
+    client,
+    server
 }

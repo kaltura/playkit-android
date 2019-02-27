@@ -104,6 +104,14 @@ public class DefaultDAIAdControllerImpl implements AdController {
     }
 
     @Override
+    public PKAdPluginType getAdPluginType() {
+        if (adsProvider != null) {
+            return adsProvider.getAdPluginType();
+        }
+        return null;
+    }
+
+    @Override
     public boolean isAdPlaying() {
         if (adsProvider != null) {
             return !adsProvider.isAdPaused();

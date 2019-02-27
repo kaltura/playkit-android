@@ -212,6 +212,11 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
+    public PKAdPluginType getAdPluginType() {
+        return PKAdPluginType.client;
+    }
+
+    @Override
     public <T extends PKController> T getController(Class<T> type) {
         if (type == AdEnabledPlayerController.class) {
             return (T) this;

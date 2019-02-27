@@ -13,6 +13,7 @@
 package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.ads.PKAdInfo;
+import com.kaltura.playkit.ads.PKAdPluginType;
 import com.kaltura.playkit.ads.PKAdProviderListener;
 
 
@@ -58,4 +59,6 @@ public interface AdsProvider {
     void skipAd();
 
     void seekTo(long position);
+
+    default PKAdPluginType getAdPluginType() { return PKAdPluginType.client; }
 }

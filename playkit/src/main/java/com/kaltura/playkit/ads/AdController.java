@@ -42,4 +42,6 @@ public interface AdController extends PKController {
     PKAdInfo getAdInfo();
 
     AdCuePoints getCuePoints();
+
+    PKAdPluginType getAdPluginType();
 }

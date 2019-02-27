@@ -109,6 +109,14 @@ public class DefaultAdControllerImpl implements AdController {
         }
         return null;
     }
+
+    @Override
+    public PKAdPluginType getAdPluginType() {
+        if (adsProvider != null) {
+            return adsProvider.getAdPluginType();
+        }
+        return null;
+    }
 }
 
 
