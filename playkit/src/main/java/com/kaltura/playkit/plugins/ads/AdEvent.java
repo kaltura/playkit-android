@@ -34,6 +34,7 @@ public class AdEvent implements PKEvent {
     public static final Class<AdPlaybackInfoUpdated> adPlaybackInfoUpdated = AdPlaybackInfoUpdated.class;
     public static final Class<AdClickedEvent> adClickedEvent = AdClickedEvent.class;
     public static final Class<Error> error = Error.class;
+    public static final Class<DAISourceSelected> daiSourceSelected = DAISourceSelected.class;
 
     public static final AdEvent.Type adFirstPlay = Type.AD_FIRST_PLAY;
     public static final AdEvent.Type adDisplayedAfterContentPause = Type.AD_DISPLAYED_AFTER_CONTENT_PAUSE;
@@ -202,7 +203,7 @@ public class AdEvent implements PKEvent {
         public final String sourceURL;
 
         public DAISourceSelected(String sourceURL) {
-            super(Type.DAI_SOURCE_ELECTED);
+            super(Type.DAI_SOURCE_SELECTED);
             this.sourceURL = sourceURL;
         }
     }
@@ -239,7 +240,7 @@ public class AdEvent implements PKEvent {
         AD_BUFFER_END,
         AD_PLAYBACK_INFO_UPDATED,
         ERROR,
-        DAI_SOURCE_ELECTED
+        DAI_SOURCE_SELECTED
     }
 
 
