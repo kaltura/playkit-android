@@ -42,7 +42,7 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
 
     @Override
     public void load(PKMediaSourceConfig mediaSourceConfig) {
-        if (!adsProvider.isContentPerpared() || adsProvider.isAdError()) {
+        if (!adsProvider.isContentPrepared() || adsProvider.isAdError()) {
             this.mediaSourceConfig = mediaSourceConfig;
         }
         if (adsProvider != null) {

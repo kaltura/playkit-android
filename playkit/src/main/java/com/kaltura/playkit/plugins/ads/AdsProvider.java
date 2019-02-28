@@ -62,5 +62,5 @@ public interface AdsProvider {
 
     default PKAdPluginType getAdPluginType() { return PKAdPluginType.client; }
 
-    boolean isContentPerpared();
+    boolean isContentPrepared();
 }
