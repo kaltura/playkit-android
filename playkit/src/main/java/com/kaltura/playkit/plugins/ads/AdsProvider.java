@@ -61,4 +61,6 @@ public interface AdsProvider {
     void seekTo(long position);
 
     default PKAdPluginType getAdPluginType() { return PKAdPluginType.client; }
+
+    boolean isContentPerpared();
 }
