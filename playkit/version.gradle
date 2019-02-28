@@ -2,7 +2,7 @@
 ext.playkitVersion = 'dev'
 
 // Append short commit hash to dev builds, i.e. "dev.a1b2c3d"
-if (playkitVersion == 'dev') {
+if (playkitVersion == '3.9.0') {
     def cmd = "git -C " + projectDir + " rev-parse --short HEAD"
     def proc = cmd.execute()
     def commit = proc.text.trim()
