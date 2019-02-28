@@ -42,6 +42,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public long getPositionInWindowMs() {
+        return player.getPositionInWindowMs();
+    }
+
+    @Override
     public long getCurrentProgramTime() {
         return player.getCurrentProgramTime();
     }

@@ -13,6 +13,7 @@
 package com.kaltura.playkit.plugins.ads;
 
 import com.kaltura.playkit.ads.PKAdInfo;
+import com.kaltura.playkit.ads.PKAdPluginType;
 import com.kaltura.playkit.ads.PKAdProviderListener;
 
 
@@ -45,6 +46,10 @@ public interface AdsProvider {
 
     long getCurrentPosition();
 
+    default long getFakePlayerPosition(long realPlayerPosition) { return 0; }
+
+    default long getFakePlayerDuration(long duration) { return 0; }
+
     void setAdProviderListener(PKAdProviderListener adProviderListener);
 
     void setAdRequested(boolean isAdRequested);
@@ -52,4 +57,10 @@ public interface AdsProvider {
     void removeAdProviderListener();
 
     void skipAd();
+
+    void seekTo(long position);
+
+    default PKAdPluginType getAdPluginType() { return PKAdPluginType.client; }
+
+    boolean isContentPrepared();
 }

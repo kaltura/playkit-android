@@ -175,11 +175,6 @@ public class AdInfo implements PKAdInfo {
         this.adHeight = adHeight;
     }
 
-    public String getAdContnentType() {
-        return adContnentType;
-
-    }
-
     public long getSkipTimeOffset() {
         return skipTimeOffset;
     }

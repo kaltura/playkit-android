@@ -103,6 +103,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private Context context;
     private SimpleExoPlayer player;
     private BaseExoplayerView exoPlayerView;
+    private PlayerView rootView;
+    private boolean rootViewUpdated;
 
     private PKTracks tracks;
     private Timeline.Window window;
@@ -142,16 +144,17 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private DataSource.Factory dataSourceFactory;
     private HttpDataSource.Factory httpDataSourceFactory;
+    private Timeline.Period period;
 
-    ExoPlayerWrapper(Context context, PlayerSettings playerSettings) {
-        this(context, new ExoPlayerView(context), playerSettings);
+    ExoPlayerWrapper(Context context, PlayerSettings playerSettings, PlayerView rootPlayerView) {
+        this(context, new ExoPlayerView(context), playerSettings, rootPlayerView);
     }
 
-    ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView, PlayerSettings settings) {
+    ExoPlayerWrapper(Context context, BaseExoplayerView exoPlayerView, PlayerSettings settings, PlayerView rootPlayerView) {
         this.context = context;
 
         playerSettings = settings != null ? settings : new PlayerSettings();
-
+        rootView = rootPlayerView;
         DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context).setEventListener(mainHandler, this);
 
         Long initialBitrateEstimate = playerSettings.getAbrSettings().getInitialBitrateEstimate();
@@ -161,6 +164,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         bandwidthMeter = bandwidthMeterBuilder.build();
+        period = new Timeline.Period();
         this.exoPlayerView = exoPlayerView;
 
 
@@ -648,6 +652,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             if (player.getPlayWhenReady()) {
                 return;
             }
+
+            if (!rootViewUpdated) {
+                rootView.addView(getView(),0);
+                rootViewUpdated = true;
+            }
+
             sendDistinctEvent(PlayerEvent.Type.PLAY);
             if (isLiveMediaWithoutDvr()) {
                 player.seekToDefaultPosition();
@@ -684,6 +694,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             return player.getCurrentPosition();
         }
         return Consts.POSITION_UNSET;
+    }
+
+    @Override
+    public long getPositionInWindowMs() {
+        log.v("getPositionInWindowMs");
+        long positionInWindowMs = 0;
+        if (assertPlayerIsNotNull("getPositionInWindowMs()")) {
+            Timeline currentTimeline = player.getCurrentTimeline();
+            if (!currentTimeline.isEmpty()) {
+                return currentTimeline.getPeriod(player.getCurrentPeriodIndex(), period).getPositionInWindowMs();
+            }
+        }
+        return positionInWindowMs;
     }
 
     @Override
@@ -771,7 +794,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private boolean isLiveMediaWithoutDvr() {
-        return (PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType);
+        if (sourceConfig != null) {
+            return (PKMediaEntry.MediaEntryType.Live == sourceConfig.mediaEntryType);
+        }
+        return false;
     }
 
     @Override

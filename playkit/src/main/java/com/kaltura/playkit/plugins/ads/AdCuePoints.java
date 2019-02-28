@@ -21,9 +21,18 @@ import java.util.List;
 public class AdCuePoints {
 
     private List<Long> adCuePoints;
+    private String adPluginName = "";
 
     public AdCuePoints(List<Long> adCuePoints) {
         this.adCuePoints = adCuePoints;
+    }
+
+    public String getAdPluginName() {
+        return adPluginName;
+    }
+
+    public void setAdPluginName(String adPluginName) {
+        this.adPluginName = adPluginName;
     }
 
     public List<Long> getAdCuePoints() {
