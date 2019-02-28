@@ -134,12 +134,10 @@ public class AdEvent implements PKEvent {
 
     public static class AdRequestedEvent extends AdEvent {
 
-        public final PKAdPluginType adPluginType;
         public final String adTagUrl;
 
-        public AdRequestedEvent(PKAdPluginType adPluginType, String adTagUrl) {
+        public AdRequestedEvent(String adTagUrl) {
             super(Type.AD_REQUESTED);
-            this.adPluginType = adPluginType;
             this.adTagUrl = adTagUrl;
         }
     }
