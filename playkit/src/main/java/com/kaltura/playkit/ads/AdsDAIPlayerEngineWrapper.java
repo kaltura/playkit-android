@@ -18,34 +18,37 @@ import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
+import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 
 /**
  * @hide
  */
 
-public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdProviderListener {
+public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdProviderListener {
 
-    private static final PKLog log = PKLog.get("AdsPlayerEngineWrapper");
+    private static final PKLog log = PKLog.get("DAIPlayerEngineWrapper");
 
     private Context context;
     private AdsProvider adsProvider;
     private PKMediaSourceConfig mediaSourceConfig;
-    private DefaultAdControllerImpl defaultAdController;
+    private DefaultDAIAdControllerImpl defaultDAIAdController;
 
-    public AdsPlayerEngineWrapper(final Context context, AdsProvider adsProvider) {
+    public AdsDAIPlayerEngineWrapper(final Context context, AdsProvider adsProvider) {
         this.context = context;
         this.adsProvider = adsProvider;
-        this.defaultAdController = new DefaultAdControllerImpl(adsProvider);
+        this.defaultDAIAdController = new DefaultDAIAdControllerImpl(adsProvider);
     }
 
     @Override
     public void load(PKMediaSourceConfig mediaSourceConfig) {
-        this.mediaSourceConfig = mediaSourceConfig;
+        if (!adsProvider.isContentPrepared() || adsProvider.isAdError()) {
+            this.mediaSourceConfig = mediaSourceConfig;
+        }
         if (adsProvider != null) {
             if (adsProvider.isAdRequested()) {
                 log.d("AdWrapper calling super.prepare");
-                super.load(mediaSourceConfig);
+                super.load(this.mediaSourceConfig);
             } else {
                 log.d("AdWrapper setAdProviderListener");
                 adsProvider.setAdProviderListener(this);
@@ -69,7 +72,7 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
                     }
                 }
             }
-            if (adsProvider.isAdDisplayed()) {
+            if (adsProvider.isAdDisplayed() && !adsProvider.isAdPaused()) {
                 return;
             }
         }
@@ -77,7 +80,6 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
         log.d("AdWrapper decorator Calling player play");
         getView().showVideoSurface();
         super.play();
-
     }
 
     @Override
@@ -96,35 +98,48 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     }
 
     @Override
-    public long getCurrentPosition() {
-        return super.getCurrentPosition();
+    public void replay() {
+        super.replay();
+        seekTo(0);
     }
 
     @Override
-    public long getProgramStartTime() {
-        return super.getProgramStartTime();
+    public long getCurrentPosition() {
+        AdCuePoints adCuePoints = adsProvider.getCuePoints();
+
+        if (adCuePoints.getAdCuePoints() == null || adCuePoints.getAdCuePoints().isEmpty()) {
+            return super.getCurrentPosition();
+        }
+        return adsProvider.getFakePlayerPosition(super.getCurrentPosition());
     }
 
     @Override
     public long getDuration() {
-        return super.getDuration();
+        AdCuePoints adCuePoints = adsProvider.getCuePoints();
+
+        if (adCuePoints.getAdCuePoints() == null || adCuePoints.getAdCuePoints().isEmpty()) {
+            return super.getDuration();
+        }
+        return adsProvider.getFakePlayerDuration(super.getDuration());
     }
 
     @Override
     public void seekTo(long position) {
-        log.d("AdWrapper seekTo");
-        super.seekTo(position);
+        if (adsProvider.isAdDisplayed()) {
+            log.d("seekTo is not enabled during AD playback");
+            return;
+        }
+        boolean isPlaying = isPlaying();
+        adsProvider.seekTo(position);
+        if (!isPlaying) {
+            pause();
+        }
     }
 
     @Override
     public boolean isPlaying() {
         log.d("AdWrapper isPlaying");
         return super.isPlaying();
-    }
-
-    @Override
-    public void setAnalyticsListener(AnalyticsListener analyticsListener) {
-        super.setAnalyticsListener(analyticsListener);
     }
 
     @Override
@@ -139,10 +154,10 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
 
     @Override
     public <T extends PKController> T getController(Class<T> type) {
-        if (type == AdController.class && defaultAdController != null) {
-            return (T) this.defaultAdController;
+        if (type == AdController.class && defaultDAIAdController != null) {
+            return (T) this.defaultDAIAdController;
         }
-        return super.getController(type);
+        return null;
     }
 
     @Override

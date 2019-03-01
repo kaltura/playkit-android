@@ -29,6 +29,7 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
 
@@ -243,7 +244,7 @@ public class PlayerController implements Player {
 
         //Initialize new PlayerEngine.
         try {
-            player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType, playerSettings);
+            player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType, playerSettings, rootPlayerView);
             if (playerEngineWrapper != null) {
                 playerEngineWrapper.setPlayerEngine(player);
                 player = playerEngineWrapper;
@@ -253,11 +254,12 @@ public class PlayerController implements Player {
             sendErrorMessage(PKPlayerErrorType.FAILED_TO_INITIALIZE_PLAYER, e.getMessage(), e);
             if (incomingPlayerType == PlayerEngineType.VRPlayer) {
                 incomingPlayerType = PlayerEngineType.Exoplayer;
-                player = new ExoPlayerWrapper(context, playerSettings);
+                player = new ExoPlayerWrapper(context, playerSettings, rootPlayerView);
             } else {
                 return;
             }
         }
+
         //IMA workaround. In order to prevent flickering of the first frame
         //with ExoplayerEngine we should addPlayerView here for all playerEngines except Exoplayer.
         if (incomingPlayerType == PlayerEngineType.MediaPlayer) {
@@ -349,6 +351,15 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public long getPositionInWindowMs() {
+        log.v("getPositionInWindowMs");
+        if (assertPlayerIsNotNull("getPositionInWindowMs()")) {
+            return player.getPositionInWindowMs();
+        }
+        return 0;
+    }
+
+    @Override
     public long getCurrentProgramTime() {
         if (assertPlayerIsNotNull("getCurrentProgramTime()")) {
             final long currentPosition = getCurrentPosition();
@@ -378,7 +389,6 @@ public class PlayerController implements Player {
     public void play() {
         log.v("play");
         if (assertPlayerIsNotNull("play()")) {
-            addPlayerView();
             player.play();
         }
     }
@@ -639,10 +649,13 @@ public class PlayerController implements Player {
 
         position = player.getCurrentPosition();
         duration = player.getDuration();
-        if (eventListener != null && position > 0 && duration > 0) {
-            eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
+        AdController adController = player.getController(AdController.class);
+        if (adController == null || (adController != null && !adController.isAdDisplayed())) {
+            log.v("updateProgress new position/duration = " + position + "/" + duration);
+            if (eventListener != null && position > 0 && duration > 0) {
+                eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
+            }
         }
-
         // Cancel any pending updates and schedule a new one if necessary.
         player.getView().removeCallbacks(updateProgressAction);
         player.getView().postDelayed(updateProgressAction, Consts.DEFAULT_PLAYHEAD_UPDATE_MILI);
@@ -729,13 +742,25 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.Seeking(targetSeekPosition);
                         break;
                     case VIDEO_TRACK_CHANGED:
-                        event = new PlayerEvent.VideoTrackChanged((VideoTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_VIDEO));
+                        VideoTrack videoTrack = (VideoTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_VIDEO);
+                        if (videoTrack == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.VideoTrackChanged(videoTrack);
                         break;
                     case AUDIO_TRACK_CHANGED:
-                        event = new PlayerEvent.AudioTrackChanged((AudioTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_AUDIO));
+                        AudioTrack audioTrack = (AudioTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_AUDIO);
+                        if (audioTrack == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.AudioTrackChanged(audioTrack);
                         break;
                     case TEXT_TRACK_CHANGED:
-                        event = new PlayerEvent.TextTrackChanged((TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT));
+                        TextTrack textTrack = (TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT);
+                        if (textTrack == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.TextTrackChanged(textTrack);
                         break;
                     case PLAYBACK_RATE_CHANGED:
                         event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());

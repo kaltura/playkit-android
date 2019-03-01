@@ -150,7 +150,7 @@ public interface Player {
         Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig);
 
         /**
-         * Set the Player's setPreferredMediaFormat.
+         * Set the Player's PreferredMediaFormat.
          *
          * @param preferredMediaFormat - PKMediaFormat.
          * @return - Player Settings.
@@ -251,6 +251,13 @@ public interface Player {
      * @return - position of the player or {@link Consts#POSITION_UNSET} if position is unknown or player engine is null.
      */
     long getCurrentPosition();
+
+    /**
+     * Getter for the current playback position in window.
+     *
+     * @return - position of the player in window or 0 o/w.
+     */
+    long getPositionInWindowMs();
 
     /**
      * The current program time is milliseconds since the epoch, or {@link Consts#TIME_UNSET} if not set.
