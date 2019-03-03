@@ -14,7 +14,6 @@ package com.kaltura.playkit.ads;
 
 import android.content.Context;
 
-import com.google.android.exoplayer2.C;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEngineWrapper;
