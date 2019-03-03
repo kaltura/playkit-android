@@ -14,12 +14,14 @@ package com.kaltura.playkit.ads;
 
 import android.content.Context;
 
+import com.google.android.exoplayer2.C;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
+import com.kaltura.playkit.utils.Consts;
 
 /**
  * @hide
@@ -42,16 +44,18 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
 
     @Override
     public void load(PKMediaSourceConfig mediaSourceConfig) {
-        if (!adsProvider.isContentPrepared() || adsProvider.isAdError()) {
-            this.mediaSourceConfig = mediaSourceConfig;
-        }
         if (adsProvider != null) {
-            if (adsProvider.isAdRequested()) {
-                log.d("AdWrapper calling super.prepare");
-                super.load(this.mediaSourceConfig);
-            } else {
-                log.d("AdWrapper setAdProviderListener");
-                adsProvider.setAdProviderListener(this);
+            if (!adsProvider.isContentPrepared() || adsProvider.isAdError()) {
+                this.mediaSourceConfig = mediaSourceConfig;
+            }
+            if (adsProvider != null) {
+                if (adsProvider.isAdRequested()) {
+                    log.d("AdWrapper calling super.prepare");
+                    super.load(this.mediaSourceConfig);
+                } else {
+                    log.d("AdWrapper setAdProviderListener");
+                    adsProvider.setAdProviderListener(this);
+                }
             }
         }
     }
@@ -84,13 +88,14 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
 
     @Override
     public void pause() {
-        boolean isAdDisplayed = adsProvider.isAdDisplayed();
-        log.d("AdWrapper PAUSE decorator isAdDisplayed = " + isAdDisplayed + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
-        if (isAdDisplayed && !adsProvider.isAdError()) {
-            adsProvider.pause();
-            return;
+        if (adsProvider != null) {
+            boolean isAdDisplayed = adsProvider.isAdDisplayed();
+            log.d("AdWrapper PAUSE decorator isAdDisplayed = " + isAdDisplayed + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
+            if (isAdDisplayed && !adsProvider.isAdError()) {
+                adsProvider.pause();
+                return;
+            }
         }
-
         if (super.isPlaying()) {
             log.d("AdWrapper decorator Calling content player pause");
             super.pause();
@@ -105,34 +110,42 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
 
     @Override
     public long getCurrentPosition() {
-        AdCuePoints adCuePoints = adsProvider.getCuePoints();
+        if (adsProvider != null) {
+            AdCuePoints adCuePoints = adsProvider.getCuePoints();
 
-        if (adCuePoints.getAdCuePoints() == null || adCuePoints.getAdCuePoints().isEmpty()) {
-            return super.getCurrentPosition();
+            if (adCuePoints.getAdCuePoints() == null || adCuePoints.getAdCuePoints().isEmpty()) {
+                return super.getCurrentPosition();
+            }
+            return adsProvider.getFakePlayerPosition(super.getCurrentPosition());
         }
-        return adsProvider.getFakePlayerPosition(super.getCurrentPosition());
+        return Consts.POSITION_UNSET;
     }
 
     @Override
     public long getDuration() {
-        AdCuePoints adCuePoints = adsProvider.getCuePoints();
+        if (adsProvider != null) {
+            AdCuePoints adCuePoints = adsProvider.getCuePoints();
 
-        if (adCuePoints.getAdCuePoints() == null || adCuePoints.getAdCuePoints().isEmpty()) {
-            return super.getDuration();
+            if (adCuePoints.getAdCuePoints() == null || adCuePoints.getAdCuePoints().isEmpty()) {
+                return super.getDuration();
+            }
+            return adsProvider.getFakePlayerDuration(super.getDuration());
         }
-        return adsProvider.getFakePlayerDuration(super.getDuration());
+        return Consts.TIME_UNSET;
     }
 
     @Override
     public void seekTo(long position) {
-        if (adsProvider.isAdDisplayed()) {
-            log.d("seekTo is not enabled during AD playback");
-            return;
-        }
-        boolean isPlaying = isPlaying();
-        adsProvider.seekTo(position);
-        if (!isPlaying) {
-            pause();
+        if (adsProvider != null) {
+            if (adsProvider.isAdDisplayed()) {
+                log.d("seekTo is not enabled during AD playback");
+                return;
+            }
+            boolean isPlaying = isPlaying();
+            adsProvider.seekTo(position);
+            if (!isPlaying) {
+                pause();
+            }
         }
     }
 
@@ -158,16 +171,6 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
             return (T) this.defaultDAIAdController;
         }
         return null;
-    }
-
-    @Override
-    public void destroy() {
-        if (adsProvider != null) {
-            adsProvider.setAdRequested(false);
-            adsProvider.destroyAdsManager();
-            adsProvider = null;
-        }
-        super.destroy();
     }
 
     @Override
