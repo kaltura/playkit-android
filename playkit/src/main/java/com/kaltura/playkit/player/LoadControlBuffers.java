@@ -85,7 +85,7 @@ public class LoadControlBuffers {
         return allowedVideoJoiningTimeMs;
     }
 
-    public LoadControlBuffers setAllowedVideoJoiningTimeMs(Long allowedVideoJoiningTimeMs) {
+    public LoadControlBuffers setAllowedVideoJoiningTimeMs(long allowedVideoJoiningTimeMs) {
         this.allowedVideoJoiningTimeMs = allowedVideoJoiningTimeMs;
         return this;
     }
