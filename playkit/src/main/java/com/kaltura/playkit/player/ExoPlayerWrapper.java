@@ -165,8 +165,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         bandwidthMeter = bandwidthMeterBuilder.build();
         period = new Timeline.Period();
         this.exoPlayerView = exoPlayerView;
-
-
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
             CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
         }
@@ -806,6 +804,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
         window = null;
         player = null;
+        if (exoPlayerView != null) {
+            exoPlayerView.removeAllViews();
+        }
         exoPlayerView = null;
         playerPosition = TIME_UNSET;
     }
