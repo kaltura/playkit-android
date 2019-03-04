@@ -23,6 +23,7 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerDecorator;
+import com.kaltura.playkit.PlayerEvent;
 
 /**
  * @hide
@@ -67,11 +68,8 @@ public class SamplePlugin extends PKPlugin {
         delay = ((JsonObject) config).getAsJsonPrimitive("delay").getAsInt();
         log.v("delay=" + delay);
 
-        messageBus.listen(new PKEvent.Listener() {
-            @Override
-            public void onEvent(PKEvent event) {
-                log.d("onEvent: " + event);
-            }
+        messageBus.addListener(this, PlayerEvent.stateChanged, event -> {
+            log.d("stateChanged newState = " + event.newState);
         });
     }
 

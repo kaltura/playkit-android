@@ -115,7 +115,9 @@ public class Utils {
     public static <T extends Serializable> Map<String, T> bundleToMap(Bundle input, Class<T> c) {
         Map<String, T> output = new HashMap<>();
         for (String key : input.keySet()) {
-            output.put(key, c.cast(input.getParcelable(key)));
+            if (c != null) {
+                output.put(key, c.cast(input.getParcelable(key)));
+            }
         }
         return output;
     }
