@@ -59,7 +59,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     private static final PKLog log = PKLog.get("MediaPlayerWrapper");
 
-    private static final int ILLEGAL_STATE_OPERATION= -38;
+    private static final int ILLEGAL_STATE_OPERATION = -38;
     private Context context;
     private MediaPlayer player;
     private MediaPlayerView mediaPlayerView;
