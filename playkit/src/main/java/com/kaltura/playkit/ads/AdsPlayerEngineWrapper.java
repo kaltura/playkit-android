@@ -82,11 +82,13 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
 
     @Override
     public void pause() {
-        boolean isAdDisplayed = adsProvider.isAdDisplayed();
-        log.d("AdWrapper PAUSE decorator isAdDisplayed = " + isAdDisplayed + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
-        if (isAdDisplayed && !adsProvider.isAdError()) {
-            adsProvider.pause();
-            return;
+        if (adsProvider != null) {
+            boolean isAdDisplayed = adsProvider.isAdDisplayed();
+            log.d("AdWrapper PAUSE decorator isAdDisplayed = " + isAdDisplayed + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
+            if (isAdDisplayed && !adsProvider.isAdError()) {
+                adsProvider.pause();
+                return;
+            }
         }
 
         if (super.isPlaying()) {
@@ -143,16 +145,6 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
             return (T) this.defaultAdController;
         }
         return super.getController(type);
-    }
-
-    @Override
-    public void destroy() {
-        if (adsProvider != null) {
-            adsProvider.setAdRequested(false);
-            adsProvider.destroyAdsManager();
-            adsProvider = null;
-        }
-        super.destroy();
     }
 
     @Override
