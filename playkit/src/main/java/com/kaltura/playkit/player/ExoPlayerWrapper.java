@@ -23,7 +23,6 @@ import android.support.annotation.NonNull;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
@@ -181,11 +180,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(), playerSettings.getLicenseRequestAdapter());
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener);
-
-        CustomRendererFactory renderersFactory = new CustomRendererFactory(context, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF, playerSettings.allowClearLead());
-
+        CustomRendererFactory renderersFactory = new CustomRendererFactory(context, playerSettings.allowClearLead(), playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
+      
         player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
-
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());

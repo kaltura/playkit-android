@@ -170,7 +170,9 @@ public class PKMediaEntry implements Parcelable {
             for (int i = 0; i < metadataSize; i++) {
                 String key = in.readString();
                 String value = in.readString();
-                this.metadata.put(key, value);
+                if (!TextUtils.isEmpty(key)) {
+                    this.metadata.put(key, value);
+                }
             }
         }
         externalSubtitleList = in.createTypedArrayList(PKExternalSubtitle.CREATOR);

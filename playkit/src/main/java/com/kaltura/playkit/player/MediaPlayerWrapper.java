@@ -59,8 +59,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     private static final PKLog log = PKLog.get("MediaPlayerWrapper");
 
-    private static final int ILLEGAL_STATEׁ_OPERATION = -38;
-
+    private static final int ILLEGAL_STATE_OPERATION = -38;
     private Context context;
     private MediaPlayer player;
     private MediaPlayerView mediaPlayerView;
@@ -559,7 +558,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         String errMsg = "onError what = " + what;
         log.e(errMsg);
 
-        if (what == ILLEGAL_STATEׁ_OPERATION) {
+        if (what == ILLEGAL_STATE_OPERATION) {
             release();
             player.reset();
             try {
