@@ -307,8 +307,11 @@ class TrackSelectionHelper {
         }
 
         for (int i = 0; i < trackList.size(); i++) {
-            if (trackList.get(i).getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
-                defaultTrackIndex = i;
+            if (trackList.get(i) != null) {
+                int selectionFlag = trackList.get(i).getSelectionFlag();
+                if (selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH) {
+                    defaultTrackIndex = i;
+                }
             }
         }
 
@@ -1059,7 +1062,7 @@ class TrackSelectionHelper {
         //if user set mode to AUTO and the locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
         if (preferredTextLanguageConfig != null && preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null) {
             for (TextTrack track : textTracks) {
-                if (track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG) {
+                if (track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH) {
                     preferredTrackUniqueId = track.getUniqueId();
                     break;
                 }

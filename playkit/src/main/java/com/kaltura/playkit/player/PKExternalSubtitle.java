@@ -88,7 +88,7 @@ public class PKExternalSubtitle implements Parcelable {
 
     public PKExternalSubtitle setDefault() {
         this.isDefault = true;
-        setSelectionFlags(Consts.DEFAULT_TRACK_SELECTION_FLAG);
+        setSelectionFlags(Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS);
         return this;
     }
 
