@@ -34,6 +34,7 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
     private AdsProvider adsProvider;
     private PKMediaSourceConfig mediaSourceConfig;
     private DefaultDAIAdControllerImpl defaultDAIAdController;
+    private boolean destroyLive;
 
     public AdsDAIPlayerEngineWrapper(final Context context, AdsProvider adsProvider) {
         this.context = context;
@@ -43,6 +44,11 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
 
     @Override
     public void load(PKMediaSourceConfig mediaSourceConfig) {
+        if (destroyLive) {
+            destroyLive = false;
+            return;
+        }
+
         if (adsProvider != null) {
             if (!adsProvider.isContentPrepared() || adsProvider.isAdError()) {
                 this.mediaSourceConfig = mediaSourceConfig;
@@ -81,7 +87,9 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
         }
 
         log.d("AdWrapper decorator Calling player play");
-        getView().showVideoSurface();
+        if (getView() != null) {
+            getView().showVideoSurface();
+        }
         super.play();
     }
 
@@ -112,7 +120,7 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
         if (adsProvider != null) {
             AdCuePoints adCuePoints = adsProvider.getCuePoints();
 
-            if (adCuePoints.getAdCuePoints() == null || adCuePoints.getAdCuePoints().isEmpty()) {
+            if (adCuePoints == null || adCuePoints.getAdCuePoints() == null || adCuePoints.getAdCuePoints().isEmpty()) {
                 return super.getCurrentPosition();
             }
             return adsProvider.getFakePlayerPosition(super.getCurrentPosition());
@@ -125,7 +133,7 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
         if (adsProvider != null) {
             AdCuePoints adCuePoints = adsProvider.getCuePoints();
 
-            if (adCuePoints.getAdCuePoints() == null || adCuePoints.getAdCuePoints().isEmpty()) {
+            if (adCuePoints == null || adCuePoints.getAdCuePoints() == null || adCuePoints.getAdCuePoints().isEmpty()) {
                 return super.getDuration();
             }
             return adsProvider.getFakePlayerDuration(super.getDuration());
@@ -183,5 +191,23 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
         if (adsProvider != null) {
             adsProvider.removeAdProviderListener();
         }
+    }
+
+    @Override
+    public void release() {
+        if (adsProvider != null && adsProvider.isAdDisplayed() && (adsProvider.getCuePoints() == null || (adsProvider.getCuePoints().getAdCuePoints() != null && adsProvider.getCuePoints().getAdCuePoints().isEmpty()))) {
+           adsProvider.pause();
+           destroyLive = true;
+           return;
+        }
+        super.release();
+    }
+
+    @Override
+    public void restore() {
+        if (destroyLive) {
+            return;
+        }
+        super.restore();
     }
 }

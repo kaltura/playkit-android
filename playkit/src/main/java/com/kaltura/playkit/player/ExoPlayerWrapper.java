@@ -185,8 +185,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
         window = new Timeline.Window();
         setPlayerListeners();
-        exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
-        exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
+        if (exoPlayerView != null) {
+            exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
+            exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
+        }
 
         player.setPlayWhenReady(false);
     }
