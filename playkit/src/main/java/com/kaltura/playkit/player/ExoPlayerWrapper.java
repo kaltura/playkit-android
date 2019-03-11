@@ -166,8 +166,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         bandwidthMeter = bandwidthMeterBuilder.build();
         period = new Timeline.Period();
         this.exoPlayerView = exoPlayerView;
-
-
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
             CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
         }
@@ -335,23 +333,23 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @NonNull
     private MediaSource buildExternalSubtitleSource(int subtitleId, PKExternalSubtitle pkExternalSubtitle) {
-            // Build the subtitle MediaSource.
-            Format subtitleFormat = Format.createTextContainerFormat(
-                    String.valueOf(subtitleId), // An identifier for the track. May be null.
-                    pkExternalSubtitle.getLabel(),
-                    pkExternalSubtitle.getContainerMimeType(),
-                    pkExternalSubtitle.getMimeType(), // The mime type. Must be set correctly.
-                    pkExternalSubtitle.getCodecs(),
-                    pkExternalSubtitle.getBitrate(),
-                    pkExternalSubtitle.getSelectionFlags(),
-                    pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
+        // Build the subtitle MediaSource.
+        Format subtitleFormat = Format.createTextContainerFormat(
+                String.valueOf(subtitleId), // An identifier for the track. May be null.
+                pkExternalSubtitle.getLabel(),
+                pkExternalSubtitle.getContainerMimeType(),
+                pkExternalSubtitle.getMimeType(), // The mime type. Must be set correctly.
+                pkExternalSubtitle.getCodecs(),
+                pkExternalSubtitle.getBitrate(),
+                pkExternalSubtitle.getSelectionFlags(),
+                pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
 
-            return new SingleSampleMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
+        return new SingleSampleMediaSource.Factory(dataSourceFactory)
+                .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
     }
 
     private HttpDataSource.Factory getHttpDataSourceFactory() {
-        
+
         if (httpDataSourceFactory == null) {
             final String userAgent = getUserAgent(context);
             final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
@@ -809,6 +807,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
         window = null;
         player = null;
+        if (exoPlayerView != null) {
+            exoPlayerView.removeAllViews();
+        }
         exoPlayerView = null;
         playerPosition = TIME_UNSET;
     }
@@ -990,10 +991,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private TrackSelectionHelper.TracksErrorListener initTracksErrorListener() {
         return pkError -> {
-                currentError = pkError;
-                if (eventListener != null) {
-                    eventListener.onEvent(PlayerEvent.Type.ERROR);
-                }
+            currentError = pkError;
+            if (eventListener != null) {
+                eventListener.onEvent(PlayerEvent.Type.ERROR);
+            }
         };
     }
 
