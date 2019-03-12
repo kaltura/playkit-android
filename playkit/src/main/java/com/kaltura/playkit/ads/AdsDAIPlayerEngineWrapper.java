@@ -196,9 +196,9 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
     @Override
     public void release() {
         if (adsProvider != null && adsProvider.isAdDisplayed() && (adsProvider.getCuePoints() == null || (adsProvider.getCuePoints().getAdCuePoints() != null && adsProvider.getCuePoints().getAdCuePoints().isEmpty()))) {
-           adsProvider.pause();
-           destroyLive = true;
-           return;
+            adsProvider.pause();
+            destroyLive = true;
+            return;
         }
         super.release();
     }
