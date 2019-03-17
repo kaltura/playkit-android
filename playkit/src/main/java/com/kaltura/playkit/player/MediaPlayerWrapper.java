@@ -193,7 +193,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public PlayerView getView() {
-        log.d("getView ");
+        //log.d("getView ");
         return mediaPlayerView;
     }
 
