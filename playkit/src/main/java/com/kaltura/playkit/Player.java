@@ -361,6 +361,13 @@ public interface Player {
     void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
 
     /**
+     * For lower end devices only and devices database is managed by the client.
+     * Logic is in IMAConfig (IMA Plugin)
+     * @param isRequired true means release player resource is required
+     */
+    void setReleasePlayersForLowerEndDevices(boolean isRequired);
+
+    /**
      * Add listener by event type as Class object. This generics-based method allows the caller to
      * avoid the otherwise required cast.
      *

@@ -219,4 +219,9 @@ public class PlayerDecoratorBase implements Player {
     public void removeListeners(@NonNull Object groupId) {
         player.removeListeners(groupId);
     }
+
+    @Override
+    public void setReleasePlayersForLowerEndDevices(boolean isRequired) {
+        player.setReleasePlayersForLowerEndDevices(isRequired);
+    }
 }

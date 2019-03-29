@@ -65,6 +65,7 @@ public class PlayerController implements Player {
     private long targetSeekPosition;
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
+    private boolean releasePlayersForLowerEndDevices;
 
     @NonNull private Profiler profiler = ProfilerFactory.get();
 
@@ -301,7 +302,12 @@ public class PlayerController implements Player {
         if (eventListener != null && !isPlayerStopped) {
             PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
             cancelUpdateProgress();
-            isPlayerStopped = true;
+
+            log.d("stop() releasePlayersForLowerEndDevices = " + releasePlayersForLowerEndDevices);
+            if (!releasePlayersForLowerEndDevices) {
+                isPlayerStopped = true;
+            }
+
             log.d("sending STOPPED event ");
             eventListener.onEvent(event);
             if (assertPlayerIsNotNull("stop()")) {
@@ -506,7 +512,10 @@ public class PlayerController implements Player {
             }
             cancelUpdateProgress();
             player.release();
-            togglePlayerListeners(false);
+
+            if (!releasePlayersForLowerEndDevices) {
+                togglePlayerListeners(false);
+            }
         }
     }
 
@@ -517,8 +526,10 @@ public class PlayerController implements Player {
         profiler.onApplicationResumed();
 
         if (isPlayerStopped) {
-            log.e("onApplicationResumed called during player state = STOPPED - return");
-            return;
+            if (!releasePlayersForLowerEndDevices) {
+                log.e("onApplicationResumed called during player state = STOPPED - return");
+                return;
+            }
         }
         if (assertPlayerIsNotNull("onApplicationResumed()")) {
             player.restore();
@@ -526,6 +537,12 @@ public class PlayerController implements Player {
         }
         togglePlayerListeners(true);
         prepare(mediaConfig);
+    }
+
+    @Override
+    public void setReleasePlayersForLowerEndDevices(boolean isRequired) {
+        log.v("setReleasePlayersForLowerEndDevices = " + isRequired);
+        releasePlayersForLowerEndDevices = isRequired;
     }
 
     @Override
