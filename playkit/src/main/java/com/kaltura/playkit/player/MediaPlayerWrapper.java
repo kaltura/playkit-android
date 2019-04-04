@@ -59,8 +59,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     private static final PKLog log = PKLog.get("MediaPlayerWrapper");
 
-    private static final int ILLEGAL_STATEׁ_OPERATION = -38;
-
+    private static final int ILLEGAL_STATE_OPERATION = -38;
     private Context context;
     private MediaPlayer player;
     private MediaPlayerView mediaPlayerView;
@@ -194,7 +193,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public PlayerView getView() {
-        log.d("getView ");
+        //log.d("getView ");
         return mediaPlayerView;
     }
 
@@ -293,12 +292,21 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
+    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
+        // Do Nothing
+    }
+
+    @Override
     public void seekTo(long position) {
         log.d("seekTo " + position);
         if (player == null || !PREPARED.equals(prepareState)) {
             return;
         }
-
+        if (position < 0) {
+            position = 0;
+        } else if (position > player.getDuration()) {
+            position = player.getDuration();
+        }
         player.seekTo((int) position);
         changeState(PlayerState.BUFFERING);
         sendDistinctEvent(PlayerEvent.Type.SEEKING);
@@ -550,7 +558,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         String errMsg = "onError what = " + what;
         log.e(errMsg);
 
-        if (what == ILLEGAL_STATEׁ_OPERATION) {
+        if (what == ILLEGAL_STATE_OPERATION) {
             release();
             player.reset();
             try {
@@ -599,12 +607,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public <T extends PKController> T getController(Class<T> type) {
-        //Currently no controller for MediaPlayerWrapper. So always return null.
-        return null;
-    }
-
-    @Override
     public void onOrientationChanged() {
         //Do nothing.
     }
@@ -616,7 +618,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @NonNull
     private Map<String, String> getHeadersMap() {
-        Map<String, String> headersMap = new HashMap();
+        Map<String, String> headersMap = new HashMap<>();
         headersMap.put("User-Agent", getUserAgent(context));
         return headersMap;
     }

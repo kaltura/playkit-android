@@ -1,10 +1,12 @@
 package com.kaltura.playkit;
 
 import com.kaltura.playkit.player.BaseTrack;
+import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.PlayerEngine;
 import com.kaltura.playkit.player.PlayerView;
+import com.kaltura.playkit.player.Profiler;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 
@@ -45,6 +47,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public long getPositionInWindowMs() {
+        return playerEngine.getPositionInWindowMs();
+    }
+
+    @Override
     public long getProgramStartTime() {
         return playerEngine.getProgramStartTime();
     }
@@ -72,6 +79,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     @Override
     public void changeTrack(String uniqueId) {
         playerEngine.changeTrack(uniqueId);
+    }
+
+    @Override
+    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate){
+        playerEngine.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
     }
 
     @Override
@@ -165,8 +177,18 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public void setProfiler(Profiler profiler) {
+        this.playerEngine.setProfiler(profiler);
+    }
+
+    @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         playerEngine.updateSubtitleStyle(subtitleStyleSettings);
+    }
+
+    @Override
+    public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        playerEngine.updateSurfaceAspectRatioResizeMode(resizeMode);
     }
 
     @Override

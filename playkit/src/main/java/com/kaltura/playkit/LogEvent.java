@@ -17,6 +17,9 @@ package com.kaltura.playkit;
  */
 
 public class LogEvent implements PKEvent {
+
+    public static final Class<LogEvent> logEvent = LogEvent.class;
+
     public final String log;
     public final LogType type;
     public final String request;

@@ -21,6 +21,8 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.player.vr.VRSettings;
 
+import java.util.List;
+
 /**
  * Created by Noam Tamim @ Kaltura on 29/03/2017.
  */
@@ -30,19 +32,33 @@ public class PKMediaSourceConfig {
     PKMediaEntry.MediaEntryType mediaEntryType;
     PlayerSettings playerSettings;
     private VRSettings vrSettings;
+    private List<PKExternalSubtitle> externalSubtitlesList;
+
+    public PKMediaSourceConfig(PKMediaSource source, PKMediaEntry.MediaEntryType mediaEntryType, List<PKExternalSubtitle> externalSubtitlesList, PlayerSettings playerSettings, VRSettings vrSettings) {
+        this.mediaSource = source;
+        this.mediaEntryType = (mediaEntryType != null) ? mediaEntryType : PKMediaEntry.MediaEntryType.Unknown;
+        this.playerSettings = playerSettings;
+        this.vrSettings = vrSettings;
+        this.externalSubtitlesList = externalSubtitlesList;
+    }
 
     PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings, VRSettings vrSettings) {
         this.mediaSource = source;
         this.mediaEntryType = (mediaConfig != null && mediaConfig.getMediaEntry() != null) ? mediaConfig.getMediaEntry().getMediaType() : PKMediaEntry.MediaEntryType.Unknown;
         this.playerSettings = playerSettings;
         this.vrSettings = vrSettings;
+        this.externalSubtitlesList = (mediaConfig != null && mediaConfig.getMediaEntry() != null && mediaConfig.getMediaEntry().getExternalSubtitleList() != null) ? mediaConfig.getMediaEntry().getExternalSubtitleList() : null;
+    }
+
+    public PKMediaSourceConfig(PKMediaSource source, PKMediaEntry.MediaEntryType mediaEntryType, List<PKExternalSubtitle> externalSubtitlesList, PlayerSettings playerSettings) {
+        this(source, mediaEntryType, externalSubtitlesList, playerSettings, null);
     }
 
     PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
         this(mediaConfig, source, playerSettings, null);
     }
 
-    Uri getUrl() {
+    public Uri getUrl() {
         Uri uri = Uri.parse(mediaSource.getUrl());
         if (playerSettings.getContentRequestAdapter() == null) {
             return uri;
@@ -54,6 +70,10 @@ public class PKMediaSourceConfig {
     @Nullable
     public VRSettings getVrSettings() {
         return this.vrSettings;
+    }
+
+    public List<PKExternalSubtitle> getExternalSubtitleList() {
+        return externalSubtitlesList;
     }
 
     @Override

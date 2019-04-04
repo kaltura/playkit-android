@@ -12,7 +12,6 @@
 
 package com.kaltura.playkit;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -33,13 +32,13 @@ import android.util.Base64;
 import android.util.Log;
 
 import com.google.gson.JsonObject;
+import com.kaltura.playkit.player.MediaSupport;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,7 +55,6 @@ public class PKDeviceCapabilities {
     private static final String PREFS_ENTRY_FINGERPRINT = "Build.FINGERPRINT";
     private static final String DEVICE_CAPABILITIES_URL = "https://cdnapisec.kaltura.com/api_v3/index.php?service=stats&action=reportDeviceCapabilities";
     private static final String FINGERPRINT = Build.FINGERPRINT;
-    private static final String CHIPSET = chipset();
 
     private static boolean reportSent = false;
 
@@ -118,8 +116,9 @@ public class PKDeviceCapabilities {
             reportString = getErrorReport(e);
         }
 
-        if (!sendReport(reportString))
+        if (!sendReport(reportString)) {
             return;
+        }
 
         // If we got here, save the fingerprint so we don't send again until the OS updates.
         sharedPrefs.edit().putString(PREFS_ENTRY_FINGERPRINT, FINGERPRINT).apply();
@@ -371,20 +370,6 @@ public class PKDeviceCapabilities {
         return response;
     }
 
-    private static String chipset() {
-        try {
-            @SuppressLint("PrivateApi")
-            Class<?> aClass = Class.forName("android.os.SystemProperties");
-            Method method = aClass.getMethod("get", String.class);
-            Object platform = method.invoke(null, "ro.board.platform");
-
-            return platform instanceof String ? (String) platform : "<" + platform + ">";
-
-        } catch (Exception e) {
-            return "<" + e + ">";
-        }
-    }
-
     public static JSONObject systemInfo() throws JSONException {
         JSONObject arch = new JSONObject().put("os.arch", System.getProperty("os.arch"));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -402,6 +387,6 @@ public class PKDeviceCapabilities {
                 .put("TAGS", Build.TAGS)
                 .put("FINGERPRINT", FINGERPRINT)
                 .put("ARCH", arch)
-                .put("CHIPSET", CHIPSET);
+                .put("CHIPSET", MediaSupport.DEVICE_CHIPSET);
     }
 }

@@ -75,6 +75,14 @@ public interface PlayerEngine {
      */
     long getCurrentPosition();
 
+
+    /**
+     * Getter for the current playback position in window.
+     *
+     * @return - position of the player in window or 0 o/w.
+     */
+    default long getPositionInWindowMs() { return 0; }
+
     /**
      * The program start time, as set by availabilityStartTime in DASH or the EXT-X-PROGRAM-DATE-TIME in HLS.
      * @return The program start time in milliseconds since the epoch.
@@ -113,6 +121,14 @@ public interface PlayerEngine {
      * @param uniqueId - the unique id of the new track that will play instead of the old one.
      */
     void changeTrack(String uniqueId);
+
+    /**
+     * overrideMediaDefaultABR.
+     *
+     * @param minVideoBitrate - minVideoBitrate.
+     * @param maxVideoBitrate - minVideoBitrate.
+     */
+    void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate);
 
     /**
      * Seek player to the specified position.
@@ -223,10 +239,19 @@ public interface PlayerEngine {
 
     float getPlaybackRate();
 
+    default void setProfiler(Profiler profiler) {}
+
     /**
      * Update Subtitle Styles
+     * @param subtitleStyleSettings
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
+
+     /**
+      *  update view size 
+      *  @param resizeMode
+      */
+    default void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {};
 
     /**
      * Generic getters for playkit controllers.
@@ -235,7 +260,7 @@ public interface PlayerEngine {
      * @return - the {@link PKController} instance if specified controller type exist,
      * otherwise return null.
      */
-    <T extends PKController> T getController(Class<T> type);
+    default <T extends PKController> T getController(Class<T> type) { return null; }
 
     /**
      * Must be called by application when Android onConfigurationChanged triggered by system.

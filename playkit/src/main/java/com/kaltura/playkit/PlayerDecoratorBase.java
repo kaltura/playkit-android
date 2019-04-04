@@ -15,6 +15,7 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 
@@ -38,6 +39,11 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public long getCurrentPosition() {
         return player.getCurrentPosition();
+    }
+
+    @Override
+    public long getPositionInWindowMs() {
+        return player.getPositionInWindowMs();
     }
 
     @Override
@@ -192,6 +198,11 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         player.updateSubtitleStyle(subtitleStyleSettings);
+    }
+
+    @Override
+    public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        player.updateSurfaceAspectRatioResizeMode(resizeMode);
     }
 
     @Override

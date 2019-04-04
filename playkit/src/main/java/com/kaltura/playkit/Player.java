@@ -15,12 +15,12 @@ package com.kaltura.playkit;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
+import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.utils.Consts;
-
-import java.util.Collection;
 
 @SuppressWarnings("unused")
 public interface Player {
@@ -92,6 +92,14 @@ public interface Player {
         Settings setAllowCrossProtocolRedirect(boolean crossProtocolRedirectEnabled);
 
         /**
+         * Decide if player should play clear lead content
+         *
+         * @param allowClearLead - should enable/disable clear lead playback default true (enabled)
+         * @return - Player Settings.
+         */
+        Settings allowClearLead(boolean allowClearLead);
+
+        /**
          * Decide if player should use secure rendering on the surface.
          * Known limitation - when useTextureView set to true and isSurfaceSecured set to true -
          * secure rendering will have no effect.
@@ -142,7 +150,7 @@ public interface Player {
         Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig);
 
         /**
-         * Set the Player's setPreferredMediaFormat.
+         * Set the Player's PreferredMediaFormat.
          *
          * @param preferredMediaFormat - PKMediaFormat.
          * @return - Player Settings.
@@ -156,6 +164,22 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
+
+        /**
+         *  Set the Player's ABR settings
+         *
+         * @param abrSettings ABR settings
+         * @return - Player Settings
+         */
+        Settings setABRSettings(ABRSettings abrSettings);
+
+        /**
+         *  Set the Player's AspectRatio resize Mode
+         *
+         * @param resizeMode
+         * @return - Player Settings
+         */
+        Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
     }
 
     /**
@@ -227,6 +251,13 @@ public interface Player {
      * @return - position of the player or {@link Consts#POSITION_UNSET} if position is unknown or player engine is null.
      */
     long getCurrentPosition();
+
+    /**
+     * Getter for the current playback position in window.
+     *
+     * @return - position of the player in window or 0 o/w.
+     */
+    long getPositionInWindowMs();
 
     /**
      * The current program time is milliseconds since the epoch, or {@link Consts#TIME_UNSET} if not set.
@@ -323,6 +354,11 @@ public interface Player {
      * Update Subtitle Styles
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
+
+    /**
+     * Update video size
+     */
+    void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
 
     /**
      * Add listener by event type as Class object. This generics-based method allows the caller to

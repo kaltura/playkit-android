@@ -24,10 +24,13 @@ public class PlayerSettings implements Player.Settings {
     private boolean cea608CaptionsEnabled;
     private boolean mpgaAudioFormatEnabled;
     private boolean crossProtocolRedirectEnabled;
+    private boolean allowClearLead = true;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
+    private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
+    private ABRSettings abrSettings = new ABRSettings();
 
 
     private PKTrackConfig preferredTextTrackConfig;
@@ -37,7 +40,6 @@ public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
-
 
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
@@ -54,6 +56,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean crossProtocolRedirectEnabled() {
         return crossProtocolRedirectEnabled;
+    }
+
+    public boolean allowClearLead() {
+        return allowClearLead;
     }
 
     public boolean cea608CaptionsEnabled() {
@@ -94,6 +100,14 @@ public class PlayerSettings implements Player.Settings {
 
     public SubtitleStyleSettings getSubtitleStyleSettings() {
         return subtitleStyleSettings;
+    }
+
+    public ABRSettings getAbrSettings() {
+        return abrSettings;
+    }
+
+    public PKAspectRatioResizeMode getAspectRatioResizeMode(){
+        return resizeMode;
     }
 
     @Override
@@ -170,6 +184,12 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
+    public Player.Settings allowClearLead(boolean allowClearLead) {
+        this.allowClearLead = allowClearLead;
+        return this;
+    }
+
+    @Override
     public Player.Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers) {
         this.loadControlBuffers = loadControlBuffers;
         return this;
@@ -178,6 +198,18 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         this.subtitleStyleSettings = subtitleStyleSettings;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setABRSettings(ABRSettings abrSettings) {
+        this.abrSettings = abrSettings;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        this.resizeMode = resizeMode;
         return this;
     }
 }

@@ -29,6 +29,7 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
 
@@ -65,6 +66,7 @@ public class PlayerController implements Player {
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
 
+    @NonNull private Profiler profiler = ProfilerFactory.get();
 
     private PKEvent.RawListener eventListener;
     private PlayerEngine.EventListener eventTrigger = initEventListener();
@@ -156,6 +158,7 @@ public class PlayerController implements Player {
     }
 
     public void prepare(@NonNull PKMediaConfig mediaConfig) {
+
         if (sourceConfig == null) {
             log.e("source config not found. Can not prepare source.");
             return;
@@ -167,6 +170,7 @@ public class PlayerController implements Player {
         switchPlayersIfRequired(incomingPlayerType);
 
         if (assertPlayerIsNotNull("prepare()")) {
+            player.setProfiler(profiler);
             player.load(sourceConfig);
         }
     }
@@ -186,9 +190,13 @@ public class PlayerController implements Player {
         }
 
         sessionId = generateSessionId();
+
         if (playerSettings.getContentRequestAdapter() != null) {
             playerSettings.getContentRequestAdapter().updateParams(this);
         }
+
+        profiler.newSession(sessionId, playerSettings);
+        profiler.onSetMedia(mediaConfig);
 
         this.mediaConfig = mediaConfig;
         PKMediaSource source = SourceSelector.selectSource(mediaConfig.getMediaEntry(), playerSettings.getPreferredMediaFormat());
@@ -200,6 +208,7 @@ public class PlayerController implements Player {
 
         initSourceConfig(mediaConfig.getMediaEntry(), source);
         eventTrigger.onEvent(PlayerEvent.Type.SOURCE_SELECTED);
+
         return true;
     }
 
@@ -235,7 +244,7 @@ public class PlayerController implements Player {
 
         //Initialize new PlayerEngine.
         try {
-            player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType, playerSettings);
+            player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType, playerSettings, rootPlayerView);
             if (playerEngineWrapper != null) {
                 playerEngineWrapper.setPlayerEngine(player);
                 player = playerEngineWrapper;
@@ -245,11 +254,12 @@ public class PlayerController implements Player {
             sendErrorMessage(PKPlayerErrorType.FAILED_TO_INITIALIZE_PLAYER, e.getMessage(), e);
             if (incomingPlayerType == PlayerEngineType.VRPlayer) {
                 incomingPlayerType = PlayerEngineType.Exoplayer;
-                player = new ExoPlayerWrapper(context, playerSettings);
+                player = new ExoPlayerWrapper(context, playerSettings, rootPlayerView);
             } else {
                 return;
             }
         }
+
         //IMA workaround. In order to prevent flickering of the first frame
         //with ExoplayerEngine we should addPlayerView here for all playerEngines except Exoplayer.
         if (incomingPlayerType == PlayerEngineType.MediaPlayer) {
@@ -341,6 +351,15 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public long getPositionInWindowMs() {
+        log.v("getPositionInWindowMs");
+        if (assertPlayerIsNotNull("getPositionInWindowMs()")) {
+            return player.getPositionInWindowMs();
+        }
+        return 0;
+    }
+
+    @Override
     public long getCurrentProgramTime() {
         if (assertPlayerIsNotNull("getCurrentProgramTime()")) {
             final long currentPosition = getCurrentPosition();
@@ -370,7 +389,6 @@ public class PlayerController implements Player {
     public void play() {
         log.v("play");
         if (assertPlayerIsNotNull("play()")) {
-            addPlayerView();
             player.play();
         }
     }
@@ -475,6 +493,9 @@ public class PlayerController implements Player {
     @Override
     public void onApplicationPaused() {
         log.d("onApplicationPaused");
+
+        profiler.onApplicationPaused();
+
         if (isPlayerStopped) {
             log.e("onApplicationPaused called during player state = STOPPED - return");
             return;
@@ -492,6 +513,9 @@ public class PlayerController implements Player {
     @Override
     public void onApplicationResumed() {
         log.d("onApplicationResumed");
+
+        profiler.onApplicationResumed();
+
         if (isPlayerStopped) {
             log.e("onApplicationResumed called during player state = STOPPED - return");
             return;
@@ -569,6 +593,14 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        log.v("updateSurfaceAspectRatioResizeMode");
+        if(assertPlayerIsNotNull("updateSurfaceAspectRatioResizeMode")){
+            player.updateSurfaceAspectRatioResizeMode(resizeMode);
+        }
+    }
+
+    @Override
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         Assert.shouldNeverHappen();
     }
@@ -617,10 +649,13 @@ public class PlayerController implements Player {
 
         position = player.getCurrentPosition();
         duration = player.getDuration();
-        if (eventListener != null && position > 0 && duration > 0) {
-            eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
+        AdController adController = player.getController(AdController.class);
+        if (adController == null || (adController != null && !adController.isAdDisplayed())) {
+            log.v("updateProgress new position/duration = " + position + "/" + duration);
+            if (eventListener != null && position > 0 && duration > 0) {
+                eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
+            }
         }
-
         // Cancel any pending updates and schedule a new one if necessary.
         player.getView().removeCallbacks(updateProgressAction);
         player.getView().postDelayed(updateProgressAction, Consts.DEFAULT_PLAYHEAD_UPDATE_MILI);
@@ -659,10 +694,18 @@ public class PlayerController implements Player {
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
                         if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
-                            if (mediaConfig.getStartPosition() != null &&
-                                    ((isLiveMediaWithDvr() && mediaConfig.getStartPosition() == 0) ||
-                                            mediaConfig.getStartPosition() > 0)) {
-                                startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+                            if(mediaConfig.getStartPosition() != null) {
+                                if (mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER > getDuration()) {
+                                    mediaConfig.setStartPosition(getDuration() / MILLISECONDS_MULTIPLIER);
+                                }
+                                if (mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER < 0) {
+                                    mediaConfig.setStartPosition(0L);
+                                }
+
+                                if ((isLiveMediaWithDvr() && mediaConfig.getStartPosition() == 0) ||
+                                                mediaConfig.getStartPosition() > 0) {
+                                    startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
+                                }
                             }
                             isNewEntry = false;
                             isPlayerStopped = false;
@@ -699,19 +742,34 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.Seeking(targetSeekPosition);
                         break;
                     case VIDEO_TRACK_CHANGED:
-                        event = new PlayerEvent.VideoTrackChanged((VideoTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_VIDEO));
+                        VideoTrack videoTrack = (VideoTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_VIDEO);
+                        if (videoTrack == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.VideoTrackChanged(videoTrack);
                         break;
                     case AUDIO_TRACK_CHANGED:
-                        event = new PlayerEvent.AudioTrackChanged((AudioTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_AUDIO));
+                        AudioTrack audioTrack = (AudioTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_AUDIO);
+                        if (audioTrack == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.AudioTrackChanged(audioTrack);
                         break;
                     case TEXT_TRACK_CHANGED:
-                        event = new PlayerEvent.TextTrackChanged((TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT));
+                        TextTrack textTrack = (TextTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_TEXT);
+                        if (textTrack == null) {
+                            return;
+                        }
+                        event = new PlayerEvent.TextTrackChanged(textTrack);
                         break;
                     case PLAYBACK_RATE_CHANGED:
                         event = new PlayerEvent.PlaybackRateChanged(player.getPlaybackRate());
                         break;
                     case SUBTITLE_STYLE_CHANGED:
                         event = new PlayerEvent.SubtitlesStyleChanged(playerSettings.getSubtitleStyleSettings().getStyleName());
+                        break;
+                    case ASPECT_RATIO_RESIZE_MODE_CHANGED:
+                        event = new PlayerEvent.SurfaceAspectRationResizeModeChanged(playerSettings.getAspectRatioResizeMode());
                         break;
                     default:
                         event = new PlayerEvent.Generic(eventType);
