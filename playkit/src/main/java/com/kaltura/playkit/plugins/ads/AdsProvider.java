@@ -58,7 +58,7 @@ public interface AdsProvider {
 
     void skipAd();
 
-    void seekTo(long position);
+    default void seekTo(long position) {};
 
     default PKAdPluginType getAdPluginType() { return PKAdPluginType.client; }
 
