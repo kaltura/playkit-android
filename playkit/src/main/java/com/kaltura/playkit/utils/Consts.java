@@ -19,6 +19,10 @@ package com.kaltura.playkit.utils;
 public class Consts {
 
     public static final String KALTURA = "Kaltura";
+
+    public static final int DEFAULT_KAVA_PARTNER_ID = 2504201;
+    public static final String DEFAULT_KAVA_ENTRY_ID = "1_3bwzbc9o";
+
     /**
      * Special constant representing an unset or unknown time or duration. Suitable for use in any
      * time base.
