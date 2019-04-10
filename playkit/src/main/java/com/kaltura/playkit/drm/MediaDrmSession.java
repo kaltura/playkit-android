@@ -79,6 +79,8 @@ class MediaDrmSession {
             return mMediaDrm.provideKeyResponse(mSessionId, keyResponse);
         } catch (NotProvisionedException e) {
             throw new WidevineNotSupportedException(e);
+        } catch (IllegalStateException e) {
+            throw new WidevineNotSupportedException(e);
         }
     }
 }
