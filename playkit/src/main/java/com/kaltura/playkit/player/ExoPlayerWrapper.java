@@ -246,7 +246,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
         profiler.onPrepareStarted(sourceConfig);
-        player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
         player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
 
