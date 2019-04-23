@@ -1011,9 +1011,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 }
 
                 if(tracks.getVideoTracks().size() == 0 && sourceConfig.getArtworkViewDrawable() != null && exoPlayerView != null) {
-                    exoPlayerView.showArtworkDrawable(sourceConfig.getArtworkViewDrawable());
-                } else {
-                    exoPlayerView.hideArtworkDrawable();
+                    exoPlayerView.setArtworkDrawable(sourceConfig.getArtworkViewDrawable());
                 }
             }
 

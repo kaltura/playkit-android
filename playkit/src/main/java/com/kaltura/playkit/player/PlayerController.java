@@ -99,6 +99,11 @@ public class PlayerController implements Player {
             public void showVideoSubtitles() {
                 setVideoSubtitlesVisibility(true);
             }
+
+            @Override
+            public void artworkViewVisibility(boolean visibility) {
+                setArtworkVisibility(visibility);
+            }
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         this.rootPlayerView.setLayoutParams(lp);
@@ -119,8 +124,10 @@ public class PlayerController implements Player {
         if (playerView != null) {
             if (isVisible) {
                 playerView.showVideoSurface();
+                setArtworkVisibility(true);
             } else {
                 playerView.hideVideoSurface();
+                setArtworkVisibility(false);
             }
         } else {
             log.w("Error in " + visibilityFunction + " playerView is null");
@@ -144,6 +151,29 @@ public class PlayerController implements Player {
                 playerView.showVideoSubtitles();
             } else {
                 playerView.hideVideoSubtitles();
+            }
+        } else {
+            log.w("Error in " + visibilityFunction + " playerView is null");
+        }
+    }
+
+    private void setArtworkVisibility(boolean isVisible) {
+        String visibilityFunction = "showArtwork";
+        if (!isVisible) {
+            visibilityFunction = "hideArtwork";
+        }
+
+        if (player == null) {
+            log.w("Error in " + visibilityFunction + " player is null");
+            return;
+        }
+
+        PlayerView playerView = player.getView();
+        if (playerView != null) {
+            if (isVisible && player.getPKTracks() != null && player.getPKTracks().getVideoTracks().size() == 0) {
+                playerView.artworkViewVisibility(true);
+            } else {
+                playerView.artworkViewVisibility(false);
             }
         } else {
             log.w("Error in " + visibilityFunction + " playerView is null");

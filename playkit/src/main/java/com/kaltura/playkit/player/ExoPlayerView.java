@@ -256,14 +256,13 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     @Override
-    public void showArtworkDrawable(Drawable artworkDrawable) {
-        artworkView.setVisibility(VISIBLE);
-        setArtworkDrawable(artworkDrawable);
+    public void artworkViewVisibility(boolean visibility) {
+        artworkView.setVisibility(visibility ? VISIBLE : GONE);
     }
 
     @Override
-    public void hideArtworkDrawable() {
-        artworkView.setVisibility(GONE);
+    public void setArtworkDrawable(Drawable artworkDrawable) {
+        setArtworkDrawableView(artworkDrawable);
     }
 
     @Override
@@ -296,7 +295,7 @@ class ExoPlayerView extends BaseExoplayerView {
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         artworkView.setLayoutParams(params);
         contentFrame.addView(artworkView);
-        hideArtworkDrawable();
+        artworkViewVisibility(false);
     }
 
     private void initSubtitleLayout() {
@@ -441,7 +440,7 @@ class ExoPlayerView extends BaseExoplayerView {
         return exoPlayerAspectRatioResizeMode;
     }
 
-    private void setArtworkDrawable(@Nullable Drawable drawable) {
+    private void setArtworkDrawableView(@Nullable Drawable drawable) {
         if (drawable != null) {
             int width  = drawable.getIntrinsicWidth();
             int height = drawable.getIntrinsicHeight();
@@ -450,9 +449,11 @@ class ExoPlayerView extends BaseExoplayerView {
                 onContentAspectRatioChanged(artworkAspectRatio, contentFrame, artworkView);
                 artworkView.setImageDrawable(drawable);
             } else {
+                artworkViewVisibility(false);
                 log.e("Passed drawable for artwork view is not in the proper format.");
             }
         } else {
+            artworkViewVisibility(false);
             log.e("Passed drawable for artwork view is null.");
         }
     }

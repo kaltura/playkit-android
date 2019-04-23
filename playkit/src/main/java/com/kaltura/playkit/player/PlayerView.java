@@ -45,8 +45,8 @@ public abstract class PlayerView extends FrameLayout {
 
     public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
 
-    public void showArtworkDrawable(Drawable artworkDrawable){}
+    public void setArtworkDrawable(Drawable artworkDrawable){}
 
-    public void hideArtworkDrawable(){}
+    public abstract void artworkViewVisibility(boolean visibility);
 
 }
