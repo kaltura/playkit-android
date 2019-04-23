@@ -36,7 +36,6 @@ import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.TextOutput;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SubtitleView;
-import com.google.android.exoplayer2.ui.spherical.SphericalSurfaceView;
 import com.google.android.exoplayer2.video.VideoListener;
 import com.kaltura.playkit.PKLog;
 import java.util.List;
@@ -445,8 +444,6 @@ class ExoPlayerView extends BaseExoplayerView {
             int width  = drawable.getIntrinsicWidth();
             int height = drawable.getIntrinsicHeight();
             if (width > 0 && height > 0) {
-                float artworkAspectRatio = (float) width / height;
-                onContentAspectRatioChanged(artworkAspectRatio, contentFrame, artworkView);
                 artworkView.setImageDrawable(drawable);
             } else {
                 setArtworkViewVisibility(false);
@@ -455,15 +452,6 @@ class ExoPlayerView extends BaseExoplayerView {
         } else {
             setArtworkViewVisibility(false);
             log.e("Passed drawable for artwork view is null.");
-        }
-    }
-
-    private void onContentAspectRatioChanged(float contentAspectRatio, @Nullable AspectRatioFrameLayout contentFrame, @Nullable View contentView) {
-        if (contentFrame != null) {
-            contentFrame.setAspectRatio(
-                    contentView instanceof SphericalSurfaceView ? 0 : contentAspectRatio);
-        } else {
-            log.e("Content frame is null");
         }
     }
 }
