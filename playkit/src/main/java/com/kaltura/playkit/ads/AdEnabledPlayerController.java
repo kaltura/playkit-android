@@ -107,7 +107,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
 
         log.d("IMA decorator Calling player play");
         getView().showVideoSurface();
-        getView().artworkViewVisibility(true);
+        getView().setArtworkViewVisibility(true);
         super.play();
 
     }

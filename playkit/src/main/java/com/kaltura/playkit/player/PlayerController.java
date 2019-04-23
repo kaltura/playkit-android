@@ -101,7 +101,7 @@ public class PlayerController implements Player {
             }
 
             @Override
-            public void artworkViewVisibility(boolean visibility) {
+            public void setArtworkViewVisibility(boolean visibility) {
                 setArtworkVisibility(visibility);
             }
         };
@@ -171,9 +171,9 @@ public class PlayerController implements Player {
         PlayerView playerView = player.getView();
         if (playerView != null) {
             if (isVisible && player.getPKTracks() != null && player.getPKTracks().getVideoTracks().size() == 0) {
-                playerView.artworkViewVisibility(true);
+                playerView.setArtworkViewVisibility(true);
             } else {
-                playerView.artworkViewVisibility(false);
+                playerView.setArtworkViewVisibility(false);
             }
         } else {
             log.w("Error in " + visibilityFunction + " playerView is null");

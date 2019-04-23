@@ -256,7 +256,7 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     @Override
-    public void artworkViewVisibility(boolean visibility) {
+    public void setArtworkViewVisibility(boolean visibility) {
         artworkView.setVisibility(visibility ? VISIBLE : GONE);
     }
 
@@ -295,7 +295,7 @@ class ExoPlayerView extends BaseExoplayerView {
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         artworkView.setLayoutParams(params);
         contentFrame.addView(artworkView);
-        artworkViewVisibility(false);
+        setArtworkViewVisibility(false);
     }
 
     private void initSubtitleLayout() {
@@ -449,11 +449,11 @@ class ExoPlayerView extends BaseExoplayerView {
                 onContentAspectRatioChanged(artworkAspectRatio, contentFrame, artworkView);
                 artworkView.setImageDrawable(drawable);
             } else {
-                artworkViewVisibility(false);
+                setArtworkViewVisibility(false);
                 log.e("Passed drawable for artwork view is not in the proper format.");
             }
         } else {
-            artworkViewVisibility(false);
+            setArtworkViewVisibility(false);
             log.e("Passed drawable for artwork view is null.");
         }
     }

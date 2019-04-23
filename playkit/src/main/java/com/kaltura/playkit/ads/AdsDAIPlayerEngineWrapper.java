@@ -82,7 +82,7 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
 
         log.d("AdWrapper decorator Calling player play");
         getView().showVideoSurface();
-        getView().artworkViewVisibility(true);
+        getView().setArtworkViewVisibility(true);
         super.play();
     }
 
