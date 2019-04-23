@@ -18,7 +18,9 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.SurfaceView;
@@ -26,6 +28,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -33,9 +36,9 @@ import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.TextOutput;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SubtitleView;
+import com.google.android.exoplayer2.ui.spherical.SphericalSurfaceView;
 import com.google.android.exoplayer2.video.VideoListener;
 import com.kaltura.playkit.PKLog;
-
 import java.util.List;
 
 /**
@@ -51,13 +54,13 @@ class ExoPlayerView extends BaseExoplayerView {
     private View videoSurface;
     private SubtitleView subtitleView;
     private AspectRatioFrameLayout contentFrame;
+    private ImageView artworkView;
 
     private SimpleExoPlayer player;
     private ComponentListener componentListener;
     private Player.EventListener playerEventListener;
     private int textureViewRotation;
     private @AspectRatioFrameLayout.ResizeMode int resizeMode;
-
 
 
     ExoPlayerView(Context context) {
@@ -73,6 +76,7 @@ class ExoPlayerView extends BaseExoplayerView {
         componentListener = new ComponentListener();
         playerEventListener = getPlayerEventListener();
         initContentFrame();
+        initArtworkView();
         initSubtitleLayout();
         initPosterView();
     }
@@ -250,7 +254,18 @@ class ExoPlayerView extends BaseExoplayerView {
     public SubtitleView getSubtitleView() {
         return subtitleView;
     }
-    
+
+    @Override
+    public void showArtworkDrawable(Drawable artworkDrawable) {
+        artworkView.setVisibility(VISIBLE);
+        setArtworkDrawable(artworkDrawable);
+    }
+
+    @Override
+    public void hideArtworkDrawable() {
+        artworkView.setVisibility(GONE);
+    }
+
     @Override
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
@@ -274,6 +289,14 @@ class ExoPlayerView extends BaseExoplayerView {
         shutterView.setLayoutParams(params);
         shutterView.setBackgroundColor(Color.BLACK);
         contentFrame.addView(shutterView);
+    }
+
+    private void initArtworkView() {
+        artworkView = new ImageView(getContext());
+        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        artworkView.setLayoutParams(params);
+        contentFrame.addView(artworkView);
+        hideArtworkDrawable();
     }
 
     private void initSubtitleLayout() {
@@ -416,6 +439,31 @@ class ExoPlayerView extends BaseExoplayerView {
                 break;
         }
         return exoPlayerAspectRatioResizeMode;
+    }
+
+    private void setArtworkDrawable(@Nullable Drawable drawable) {
+        if (drawable != null) {
+            int width  = drawable.getIntrinsicWidth();
+            int height = drawable.getIntrinsicHeight();
+            if (width > 0 && height > 0) {
+                float artworkAspectRatio = (float) width / height;
+                onContentAspectRatioChanged(artworkAspectRatio, contentFrame, artworkView);
+                artworkView.setImageDrawable(drawable);
+            } else {
+                log.e("Passed drawable for artwork view is not in the proper format.");
+            }
+        } else {
+            log.e("Passed drawable for artwork view is null.");
+        }
+    }
+
+    private void onContentAspectRatioChanged(float contentAspectRatio, @Nullable AspectRatioFrameLayout contentFrame, @Nullable View contentView) {
+        if (contentFrame != null) {
+            contentFrame.setAspectRatio(
+                    contentView instanceof SphericalSurfaceView ? 0 : contentAspectRatio);
+        } else {
+            log.e("Content frame is null");
+        }
     }
 }
 

@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.player;
 
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 
@@ -33,6 +34,7 @@ public class PKMediaSourceConfig {
     PlayerSettings playerSettings;
     private VRSettings vrSettings;
     private List<PKExternalSubtitle> externalSubtitlesList;
+    private Drawable artworkViewDrawable;
 
     public PKMediaSourceConfig(PKMediaSource source, PKMediaEntry.MediaEntryType mediaEntryType, List<PKExternalSubtitle> externalSubtitlesList, PlayerSettings playerSettings, VRSettings vrSettings) {
         this.mediaSource = source;
@@ -42,20 +44,21 @@ public class PKMediaSourceConfig {
         this.externalSubtitlesList = externalSubtitlesList;
     }
 
-    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings, VRSettings vrSettings) {
+    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings, VRSettings vrSettings, Drawable artworkViewDrawable) {
         this.mediaSource = source;
         this.mediaEntryType = (mediaConfig != null && mediaConfig.getMediaEntry() != null) ? mediaConfig.getMediaEntry().getMediaType() : PKMediaEntry.MediaEntryType.Unknown;
         this.playerSettings = playerSettings;
         this.vrSettings = vrSettings;
         this.externalSubtitlesList = (mediaConfig != null && mediaConfig.getMediaEntry() != null && mediaConfig.getMediaEntry().getExternalSubtitleList() != null) ? mediaConfig.getMediaEntry().getExternalSubtitleList() : null;
+        this.artworkViewDrawable = artworkViewDrawable;
     }
 
     public PKMediaSourceConfig(PKMediaSource source, PKMediaEntry.MediaEntryType mediaEntryType, List<PKExternalSubtitle> externalSubtitlesList, PlayerSettings playerSettings) {
         this(source, mediaEntryType, externalSubtitlesList, playerSettings, null);
     }
 
-    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
-        this(mediaConfig, source, playerSettings, null);
+    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings, Drawable artworkViewDrawable) {
+        this(mediaConfig, source, playerSettings, null, artworkViewDrawable);
     }
 
     public Uri getUrl() {
@@ -74,6 +77,10 @@ public class PKMediaSourceConfig {
 
     public List<PKExternalSubtitle> getExternalSubtitleList() {
         return externalSubtitlesList;
+    }
+
+    public Drawable getArtworkViewDrawable() {
+        return artworkViewDrawable;
     }
 
     @Override

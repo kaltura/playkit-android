@@ -13,6 +13,7 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
@@ -42,5 +43,10 @@ public abstract class PlayerView extends FrameLayout {
 
     public abstract void showVideoSubtitles();
 
-    public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {};
+    public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
+
+    public void showArtworkDrawable(Drawable artworkDrawable){}
+
+    public void hideArtworkDrawable(){}
+
 }

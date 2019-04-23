@@ -251,7 +251,7 @@ public interface PlayerEngine {
       *  update view size 
       *  @param resizeMode
       */
-    default void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {};
+    default void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
 
     /**
      * Generic getters for playkit controllers.

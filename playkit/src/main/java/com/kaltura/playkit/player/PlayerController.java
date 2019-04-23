@@ -93,13 +93,11 @@ public class PlayerController implements Player {
             @Override
             public void hideVideoSubtitles() {
                 setVideoSubtitlesVisibility(false);
-
             }
 
             @Override
             public void showVideoSubtitles() {
                 setVideoSubtitlesVisibility(true);
-
             }
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -215,9 +213,9 @@ public class PlayerController implements Player {
     private void initSourceConfig(PKMediaEntry mediaEntry, PKMediaSource source) {
         if (mediaEntry instanceof VRPKMediaEntry) {
             VRPKMediaEntry vrEntry = (VRPKMediaEntry) mediaEntry;
-            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings, vrEntry.getVrSettings());
+            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings, vrEntry.getVrSettings(), null);
         } else {
-            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
+            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings, mediaEntry.getArtworkDrawable());
         }
     }
 

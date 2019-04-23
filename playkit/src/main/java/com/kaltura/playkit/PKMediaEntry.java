@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit;
 
+import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
@@ -33,6 +34,7 @@ public class PKMediaEntry implements Parcelable {
     private MediaEntryType mediaType;
     private Map<String, String> metadata;
     private List<PKExternalSubtitle> externalSubtitleList;
+    private Drawable artworkDrawable;
 
     public PKMediaEntry() {
     }
@@ -117,6 +119,15 @@ public class PKMediaEntry implements Parcelable {
             }
         }
 
+        return this;
+    }
+
+    public Drawable getArtworkDrawable() {
+        return artworkDrawable;
+    }
+
+    public PKMediaEntry setArtworkDrawable(Drawable artworkDrawable) {
+        this.artworkDrawable = artworkDrawable;
         return this;
     }
 
