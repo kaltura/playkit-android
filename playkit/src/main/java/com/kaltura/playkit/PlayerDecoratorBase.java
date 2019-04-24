@@ -220,8 +220,4 @@ public class PlayerDecoratorBase implements Player {
         player.removeListeners(groupId);
     }
 
-    @Override
-    public void setReleasePlayersForLowerEndDevices(boolean isRequired) {
-        player.setReleasePlayersForLowerEndDevices(isRequired);
-    }
 }

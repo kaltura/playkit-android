@@ -65,7 +65,6 @@ public class PlayerController implements Player {
     private long targetSeekPosition;
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
-    private boolean releasePlayersForLowerEndDevices;
 
     @NonNull private Profiler profiler = ProfilerFactory.get();
 
@@ -303,8 +302,8 @@ public class PlayerController implements Player {
             PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
             cancelUpdateProgress();
 
-            log.d("stop() releasePlayersForLowerEndDevices = " + releasePlayersForLowerEndDevices);
-            if (!releasePlayersForLowerEndDevices) {
+            log.d("stop() releasePlayersForLowerEndDevices = " + playerSettings.isSetPrepareAfterAd());
+            if (!playerSettings.isSetPrepareAfterAd()) {
                 isPlayerStopped = true;
             }
 
@@ -513,7 +512,8 @@ public class PlayerController implements Player {
             cancelUpdateProgress();
             player.release();
 
-            if (!releasePlayersForLowerEndDevices) {
+            log.d("onApplicationPaused releasePlayersForLowerEndDevices = " + playerSettings.isSetPrepareAfterAd());
+            if (!playerSettings.isSetPrepareAfterAd()) {
                 togglePlayerListeners(false);
             }
         }
@@ -526,8 +526,10 @@ public class PlayerController implements Player {
         profiler.onApplicationResumed();
 
         if (isPlayerStopped) {
-            if (!releasePlayersForLowerEndDevices) {
-                log.e("onApplicationResumed called during player state = STOPPED - return");
+            log.e("onApplicationResumed called during player state = STOPPED");
+
+            if (!playerSettings.isSetPrepareAfterAd()) {
+                log.d("onApplicationResumed called during player state = STOPPED - return, releasePlayersForLowerEndDevices = " + playerSettings.isSetPrepareAfterAd());
                 return;
             }
         }
@@ -537,12 +539,6 @@ public class PlayerController implements Player {
         }
         togglePlayerListeners(true);
         prepare(mediaConfig);
-    }
-
-    @Override
-    public void setReleasePlayersForLowerEndDevices(boolean isRequired) {
-        log.v("setReleasePlayersForLowerEndDevices = " + isRequired);
-        releasePlayersForLowerEndDevices = isRequired;
     }
 
     @Override

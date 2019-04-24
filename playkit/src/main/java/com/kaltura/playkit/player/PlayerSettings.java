@@ -31,7 +31,7 @@ public class PlayerSettings implements Player.Settings {
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
     private ABRSettings abrSettings = new ABRSettings();
-
+    private boolean setPrepareAfterAd = false;
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -108,6 +108,10 @@ public class PlayerSettings implements Player.Settings {
 
     public PKAspectRatioResizeMode getAspectRatioResizeMode(){
         return resizeMode;
+    }
+
+    public boolean isSetPrepareAfterAd() {
+        return setPrepareAfterAd;
     }
 
     @Override
@@ -210,6 +214,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         this.resizeMode = resizeMode;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setPrepareAfterAd(boolean doNotPrepare) {
+        this.setPrepareAfterAd = doNotPrepare;
         return this;
     }
 }

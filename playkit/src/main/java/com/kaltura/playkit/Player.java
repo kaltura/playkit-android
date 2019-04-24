@@ -176,10 +176,18 @@ public interface Player {
         /**
          *  Set the Player's AspectRatio resize Mode
          *
-         * @param resizeMode
+         * @param resizeMode Resize mode
          * @return - Player Settings
          */
         Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
+
+        /**
+         * For lower end devices, don't prepare the content player when the Ad starts; instead play it when content_resume_requested is called.
+         * No need to release content player unless app sets this boolean to True
+         * @param doNotPrepare Content player prepare
+         * @return - Player Settings
+         */
+        Settings setPrepareAfterAd(boolean doNotPrepare);
     }
 
     /**
@@ -359,13 +367,6 @@ public interface Player {
      * Update video size
      */
     void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
-
-    /**
-     * For lower end devices only and devices database is managed by the client.
-     * Logic is in IMAConfig (IMA Plugin)
-     * @param isRequired true means release player resource is required
-     */
-    void setReleasePlayersForLowerEndDevices(boolean isRequired);
 
     /**
      * Add listener by event type as Class object. This generics-based method allows the caller to
