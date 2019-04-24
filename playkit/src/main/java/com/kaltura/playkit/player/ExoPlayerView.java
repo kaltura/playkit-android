@@ -36,6 +36,7 @@ import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.TextOutput;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SubtitleView;
+import com.google.android.exoplayer2.ui.spherical.SphericalSurfaceView;
 import com.google.android.exoplayer2.video.VideoListener;
 import com.kaltura.playkit.PKLog;
 import java.util.List;
@@ -444,6 +445,8 @@ class ExoPlayerView extends BaseExoplayerView {
             int width  = drawable.getIntrinsicWidth();
             int height = drawable.getIntrinsicHeight();
             if (width > 0 && height > 0) {
+                float artworkAspectRatio = (float) width / height;
+                onContentAspectRatioChanged(artworkAspectRatio);
                 artworkView.setImageDrawable(drawable);
             } else {
                 setArtworkViewVisibility(false);
@@ -452,6 +455,26 @@ class ExoPlayerView extends BaseExoplayerView {
         } else {
             setArtworkViewVisibility(false);
             log.e("Passed drawable for artwork view is null.");
+        }
+    }
+
+    /**
+     * Required to fit the artwork view to the content frame based on aspect ratio.
+     * If this function is not there then the artwork view will fit and take the aspect ratio
+     * of last content frame.
+     *
+     * Called when there's a change in the aspect ratio of the content being displayed. The default
+     * implementation sets the aspect ratio of the content frame to that of the content, unless the
+     * content view is a {@link SphericalSurfaceView} in which case the frame's aspect ratio is
+     * cleared [SphericalSurfaceView is used for VR]
+     *
+     * @param contentAspectRatio The aspect ratio of the content
+     */
+    private void onContentAspectRatioChanged(float contentAspectRatio) {
+        if (contentFrame != null) {
+            contentFrame.setAspectRatio(contentAspectRatio);
+        } else {
+            log.e("Content frame is null");
         }
     }
 }
