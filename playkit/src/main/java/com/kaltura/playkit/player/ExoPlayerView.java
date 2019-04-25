@@ -55,6 +55,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private SubtitleView subtitleView;
     private AspectRatioFrameLayout contentFrame;
     private ImageView artworkView;
+    private Drawable artworkDrawable;
 
     private SimpleExoPlayer player;
     private ComponentListener componentListener;
@@ -92,7 +93,12 @@ class ExoPlayerView extends BaseExoplayerView {
                         if (playWhenReady) {
                             log.d("ExoPlayerView READY. playWhenReady => " + playWhenReady);
                             shutterView.setVisibility(INVISIBLE);
-                        }
+                            if (artworkDrawable != null) {
+                                setArtworkViewVisibility(true);
+                            } else {
+                                setArtworkViewVisibility(false);
+                            }
+                         }
                         break;
                     default:
                         break;
@@ -257,11 +263,19 @@ class ExoPlayerView extends BaseExoplayerView {
 
     @Override
     public void setArtworkViewVisibility(boolean visibility) {
-        artworkView.setVisibility(visibility ? VISIBLE : GONE);
+        if (artworkDrawable != null) {
+            artworkView.setVisibility(visibility ? VISIBLE : GONE);
+        } else {
+            artworkView.setVisibility(GONE);
+        }
+        if (shutterView != null) {
+            shutterView.setVisibility(GONE);
+        }
     }
 
     @Override
     public void setArtworkDrawable(Drawable artworkDrawable) {
+        this.artworkDrawable = artworkDrawable;
         setArtworkDrawableView(artworkDrawable);
     }
 

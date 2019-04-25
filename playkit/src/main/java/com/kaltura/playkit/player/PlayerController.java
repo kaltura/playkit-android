@@ -552,6 +552,12 @@ public class PlayerController implements Player {
             player.restore();
             updateProgress();
         }
+
+        AdController adController = player.getController(AdController.class);
+        if (adController == null || (adController != null && !adController.isAdDisplayed())) {
+            player.getView().setArtworkViewVisibility(true);
+        }
+
         togglePlayerListeners(true);
         prepare(mediaConfig);
     }
