@@ -39,6 +39,7 @@ import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.ui.spherical.SphericalSurfaceView;
 import com.google.android.exoplayer2.video.VideoListener;
 import com.kaltura.playkit.PKLog;
+
 import java.util.List;
 
 /**
@@ -61,7 +62,8 @@ class ExoPlayerView extends BaseExoplayerView {
     private ComponentListener componentListener;
     private Player.EventListener playerEventListener;
     private int textureViewRotation;
-    private @AspectRatioFrameLayout.ResizeMode int resizeMode;
+    private @AspectRatioFrameLayout.ResizeMode
+    int resizeMode;
 
 
     ExoPlayerView(Context context) {
@@ -88,18 +90,18 @@ class ExoPlayerView extends BaseExoplayerView {
             @Override
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
                 switch (playbackState) {
-
                     case Player.STATE_READY:
                         if (playWhenReady) {
-                            log.d("ExoPlayerView READY. playWhenReady => " + playWhenReady);
+                            log.d("ExoPlayerView READY. playWhenReady => " + true);
                             shutterView.setVisibility(INVISIBLE);
                             if (artworkDrawable != null) {
                                 setArtworkViewVisibility(true);
                             } else {
                                 setArtworkViewVisibility(false);
                             }
-                         }
+                        }
                         break;
+
                     default:
                         break;
 
@@ -432,8 +434,10 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     public static @AspectRatioFrameLayout.ResizeMode int getExoPlayerAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
-        @AspectRatioFrameLayout.ResizeMode int exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
-        switch(resizeMode) {
+
+        @AspectRatioFrameLayout.ResizeMode int exoPlayerAspectRatioResizeMode;
+
+        switch (resizeMode) {
             case fixedWidth:
                 exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH;
                 break;
@@ -456,7 +460,7 @@ class ExoPlayerView extends BaseExoplayerView {
 
     private void setArtworkDrawableView(@Nullable Drawable drawable) {
         if (drawable != null) {
-            int width  = drawable.getIntrinsicWidth();
+            int width = drawable.getIntrinsicWidth();
             int height = drawable.getIntrinsicHeight();
             if (width > 0 && height > 0) {
                 float artworkAspectRatio = (float) width / height;
@@ -476,7 +480,6 @@ class ExoPlayerView extends BaseExoplayerView {
      * Required to fit the artwork view to the content frame based on aspect ratio.
      * If this function is not there then the artwork view will fit and take the aspect ratio
      * of last content frame.
-     *
      * Called when there's a change in the aspect ratio of the content being displayed. The default
      * implementation sets the aspect ratio of the content frame to that of the content, unless the
      * content view is a {@link SphericalSurfaceView} in which case the frame's aspect ratio is
