@@ -471,7 +471,7 @@ class ExoPlayerView extends BaseExoplayerView {
             }
         } else {
             setArtworkViewVisibility(false);
-            log.e("Passed drawable for artwork view is null.");
+            log.d("Passed drawable for artwork view is null.");
         }
     }
 

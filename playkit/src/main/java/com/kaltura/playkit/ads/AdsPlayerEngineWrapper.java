@@ -76,7 +76,6 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
 
         log.d("AdWrapper decorator Calling player play");
         getView().showVideoSurface();
-        getView().setArtworkViewVisibility(true);
         super.play();
 
     }
