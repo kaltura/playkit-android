@@ -62,8 +62,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private ComponentListener componentListener;
     private Player.EventListener playerEventListener;
     private int textureViewRotation;
-    private @AspectRatioFrameLayout.ResizeMode
-    int resizeMode;
+    private @AspectRatioFrameLayout.ResizeMode int resizeMode;
 
 
     ExoPlayerView(Context context) {
