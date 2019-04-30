@@ -263,13 +263,14 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     @Override
-    public void setArtworkViewVisibility(boolean visibility) {
+    public void setArtworkViewVisibility(boolean isVisible) {
         if (artworkDrawable != null) {
-            artworkView.setVisibility(visibility ? VISIBLE : GONE);
+            artworkView.setVisibility(isVisible ? VISIBLE : GONE);
         } else {
             artworkView.setVisibility(GONE);
         }
-        if (shutterView != null) {
+
+        if (shutterView != null && shutterView.getVisibility() == VISIBLE) {
             shutterView.setVisibility(GONE);
         }
     }

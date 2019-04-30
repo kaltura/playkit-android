@@ -101,8 +101,8 @@ public class PlayerController implements Player {
             }
 
             @Override
-            public void setArtworkViewVisibility(boolean visibility) {
-                setArtworkVisibility(visibility);
+            public void setArtworkViewVisibility(boolean isVisible) {
+                setArtworkVisibility(isVisible);
             }
         };
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);

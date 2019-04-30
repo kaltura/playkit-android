@@ -47,6 +47,6 @@ public abstract class PlayerView extends FrameLayout {
 
     public void setArtworkDrawable(Drawable artworkDrawable){}
 
-    public abstract void setArtworkViewVisibility(boolean visibility);
+    public abstract void setArtworkViewVisibility(boolean isVisible);
 
 }

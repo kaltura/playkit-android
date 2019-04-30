@@ -112,7 +112,7 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
     }
 
     @Override
-    public void setArtworkViewVisibility(boolean visibility) {
+    public void setArtworkViewVisibility(boolean isVisible) {
 
     }
 }
