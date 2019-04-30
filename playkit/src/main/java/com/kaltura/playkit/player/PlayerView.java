@@ -43,9 +43,13 @@ public abstract class PlayerView extends FrameLayout {
 
     public abstract void showVideoSubtitles();
 
-    public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
+    public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        // Do Nothing
+    }
 
-    public void setArtworkDrawable(Drawable artworkDrawable){}
+    public void setArtworkDrawable(Drawable artworkDrawable){
+        // Do Nothing
+    }
 
     public abstract void setArtworkViewVisibility(boolean isVisible);
 

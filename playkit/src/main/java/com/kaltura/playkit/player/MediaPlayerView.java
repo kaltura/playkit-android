@@ -103,16 +103,16 @@ public class MediaPlayerView extends PlayerView implements SurfaceHolder.Callbac
 
     @Override
     public void hideVideoSubtitles() {
-
+        // Do Nothing
     }
 
     @Override
     public void showVideoSubtitles() {
-
+        // Do Nothing
     }
 
     @Override
     public void setArtworkViewVisibility(boolean isVisible) {
-
+        // Do Nothing
     }
 }
