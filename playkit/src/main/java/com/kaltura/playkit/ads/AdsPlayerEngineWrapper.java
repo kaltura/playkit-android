@@ -43,7 +43,7 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     public void load(PKMediaSourceConfig mediaSourceConfig) {
         this.mediaSourceConfig = mediaSourceConfig;
         if (adsProvider != null) {
-            if (adsProvider.isAdRequested()) {
+            if (adsProvider.isAdRequested() || adsProvider.isAllAdsCompleted()) {
                 log.d("AdWrapper calling super.prepare");
                 super.load(mediaSourceConfig);
             } else {
