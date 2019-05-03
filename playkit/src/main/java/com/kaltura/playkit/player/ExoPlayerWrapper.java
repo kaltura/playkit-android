@@ -1010,7 +1010,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     preferredLanguageWasSelected = true;
                 }
 
-                if (sourceConfig.getArtworkViewDrawable() != null && tracks.getVideoTracks().size() == 0 && exoPlayerView != null) {
+                if (sourceConfig.getArtworkViewDrawable() != null && tracks.getVideoTracks().isEmpty() && exoPlayerView != null) {
                     exoPlayerView.setArtworkDrawable(sourceConfig.getArtworkViewDrawable());
                 } else {
                     exoPlayerView.setArtworkDrawable(null);
