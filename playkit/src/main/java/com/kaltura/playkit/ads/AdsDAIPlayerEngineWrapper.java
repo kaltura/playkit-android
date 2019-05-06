@@ -48,7 +48,7 @@ public class AdsDAIPlayerEngineWrapper extends PlayerEngineWrapper implements PK
                 this.mediaSourceConfig = mediaSourceConfig;
             }
             if (adsProvider != null) {
-                if (adsProvider.isAdRequested()) {
+                if (adsProvider.isAdRequested() || adsProvider.isAllAdsCompleted()) {
                     log.d("AdWrapper calling super.prepare");
                     super.load(this.mediaSourceConfig);
                 } else {

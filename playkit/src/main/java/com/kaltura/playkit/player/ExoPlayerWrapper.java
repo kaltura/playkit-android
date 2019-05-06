@@ -416,7 +416,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private void sendEvent(PlayerEvent.Type event) {
-        if (shouldRestorePlayerToPreviousState) {
+        if (shouldRestorePlayerToPreviousState && event != PlayerEvent.Type.DURATION_CHANGE) {
             log.i("Trying to send event " + event.name() + ". Should be blocked from sending now, because the player is restoring to the previous state.");
             return;
         }
