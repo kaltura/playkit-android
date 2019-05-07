@@ -959,6 +959,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (trackSelectionHelper != null) {
             trackSelectionHelper.stop();
         }
+
+        playerPosition = TIME_UNSET;
+
         if (assertPlayerIsNotNull("stop()")) {
             player.setPlayWhenReady(false);
             player.stop(true);
