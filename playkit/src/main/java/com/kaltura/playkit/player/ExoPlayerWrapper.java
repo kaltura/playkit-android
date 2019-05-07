@@ -124,6 +124,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private boolean shouldResetPlayerPosition;
     private boolean preferredLanguageWasSelected;
     private boolean shouldRestorePlayerToPreviousState;
+    private boolean isPlayerReleased;
 
     private int playerWindow;
     private long playerPosition = TIME_UNSET;
@@ -768,6 +769,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             trackSelectionHelper.release();
             trackSelectionHelper = null;
         }
+        isPlayerReleased = true;
         shouldRestorePlayerToPreviousState = true;
     }
 
@@ -783,8 +785,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (playerPosition == TIME_UNSET || isLiveMediaWithoutDvr()) {
             player.seekToDefaultPosition();
         } else {
-            player.seekTo(playerWindow, playerPosition);
+            if (isPlayerReleased) {
+                player.seekTo(playerWindow, playerPosition);
+            } else {
+                playerPosition = TIME_UNSET;
+            }
         }
+
+        isPlayerReleased = false;
     }
 
     private boolean isLiveMediaWithoutDvr() {
@@ -959,6 +967,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (trackSelectionHelper != null) {
             trackSelectionHelper.stop();
         }
+
+        playerPosition = TIME_UNSET;
+
         if (assertPlayerIsNotNull("stop()")) {
             player.setPlayWhenReady(false);
             player.stop(true);
