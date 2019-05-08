@@ -17,6 +17,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.player.PlayerController;
+import com.kaltura.playkit.player.PlayerSettings;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 
 import java.util.ArrayList;
@@ -115,12 +116,18 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     @Override
     public void onApplicationResumed() {
-        getPlayer().onApplicationResumed();
+        if (!isPlayerReleaseIsRequired()) {
+            getPlayer().onApplicationResumed();
+        }
+
         for (Map.Entry<String, LoadedPlugin> stringLoadedPluginEntry : loadedPlugins.entrySet()) {
             stringLoadedPluginEntry.getValue().plugin.onApplicationResumed();
         }
     }
 
+    private boolean isPlayerReleaseIsRequired() {
+        return getPlayer().getSettings() instanceof PlayerSettings && ((PlayerSettings) getPlayer().getSettings()).isSetPrepareAfterAd();
+    }
 
     @Override
     public void onApplicationPaused() {
