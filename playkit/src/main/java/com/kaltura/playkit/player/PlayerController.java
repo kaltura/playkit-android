@@ -66,7 +66,8 @@ public class PlayerController implements Player {
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
 
-    @NonNull private Profiler profiler = ProfilerFactory.get();
+    @NonNull
+    private Profiler profiler = ProfilerFactory.get();
 
     private PKEvent.RawListener eventListener;
     private PlayerEngine.EventListener eventTrigger = initEventListener();
@@ -449,10 +450,10 @@ public class PlayerController implements Player {
 
                     @Override
                     public void onLoadError(IOException error, boolean wasCanceled) {
-                        String errorStr =  "onLoadError Player Load error: " + PKPlayerErrorType.LOAD_ERROR;
+                        String errorStr = "onLoadError Player Load error: " + PKPlayerErrorType.LOAD_ERROR;
                         log.e(errorStr);
                         PKError loadError = new PKError(PKPlayerErrorType.LOAD_ERROR, PKError.Severity.Recoverable, errorStr, error);
-                            eventListener.onEvent(new PlayerEvent.Error(loadError));
+                        eventListener.onEvent(new PlayerEvent.Error(loadError));
                     }
                 });
             } else {
@@ -533,6 +534,17 @@ public class PlayerController implements Player {
                 return;
             }
         }
+
+        if (playerSettings.isSetPrepareAfterAd()) {
+            if (isAdNotDisplaying()) {
+                resumePlayer();
+            }
+        } else {
+            resumePlayer();
+        }
+    }
+
+    private void resumePlayer() {
         if (assertPlayerIsNotNull("onApplicationResumed()")) {
             player.restore();
             updateProgress();
@@ -608,7 +620,7 @@ public class PlayerController implements Player {
     @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         log.v("updateSurfaceAspectRatioResizeMode");
-        if(assertPlayerIsNotNull("updateSurfaceAspectRatioResizeMode")){
+        if (assertPlayerIsNotNull("updateSurfaceAspectRatioResizeMode")) {
             player.updateSurfaceAspectRatioResizeMode(resizeMode);
         }
     }
@@ -662,8 +674,8 @@ public class PlayerController implements Player {
 
         position = player.getCurrentPosition();
         duration = player.getDuration();
-        AdController adController = player.getController(AdController.class);
-        if (adController == null || (adController != null && !adController.isAdDisplayed())) {
+
+        if (isAdNotDisplaying()) {
             log.v("updateProgress new position/duration = " + position + "/" + duration);
             if (eventListener != null && position > 0 && duration > 0) {
                 eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
@@ -673,6 +685,11 @@ public class PlayerController implements Player {
         player.getView().removeCallbacks(updateProgressAction);
         player.getView().postDelayed(updateProgressAction, Consts.DEFAULT_PLAYHEAD_UPDATE_MILI);
 
+    }
+
+    private boolean isAdNotDisplaying() {
+        AdController adController = player.getController(AdController.class);
+        return adController == null || (adController != null && !adController.isAdDisplayed());
     }
 
     private Runnable initProgressAction() {
@@ -707,7 +724,7 @@ public class PlayerController implements Player {
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
                         if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
-                            if(mediaConfig.getStartPosition() != null) {
+                            if (mediaConfig.getStartPosition() != null) {
                                 if (mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER > getDuration()) {
                                     mediaConfig.setStartPosition(getDuration() / MILLISECONDS_MULTIPLIER);
                                 }
@@ -716,7 +733,7 @@ public class PlayerController implements Player {
                                 }
 
                                 if ((isLiveMediaWithDvr() && mediaConfig.getStartPosition() == 0) ||
-                                                mediaConfig.getStartPosition() > 0) {
+                                        mediaConfig.getStartPosition() > 0) {
                                     startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                                 }
                             }

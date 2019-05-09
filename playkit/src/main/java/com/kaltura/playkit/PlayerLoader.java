@@ -91,6 +91,11 @@ class PlayerLoader extends PlayerDecoratorBase {
         playerController.setPlayerEngineWrapper(playerEngineWrapper);
 
         setPlayer(player);
+
+        PlayerSettings playerSettings = getPlayerSettings();
+        if (!loadedPlugins.containsKey("IMA") && playerSettings != null) {
+            playerSettings.setIMAPluginEnable(false);
+        }
     }
 
     @Override
@@ -116,17 +121,11 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     @Override
     public void onApplicationResumed() {
-        if (!isPlayerReleaseIsRequired()) {
-            getPlayer().onApplicationResumed();
-        }
+        getPlayer().onApplicationResumed();
 
         for (Map.Entry<String, LoadedPlugin> stringLoadedPluginEntry : loadedPlugins.entrySet()) {
             stringLoadedPluginEntry.getValue().plugin.onApplicationResumed();
         }
-    }
-
-    private boolean isPlayerReleaseIsRequired() {
-        return getPlayer().getSettings() instanceof PlayerSettings && ((PlayerSettings) getPlayer().getSettings()).isSetPrepareAfterAd();
     }
 
     @Override
@@ -135,6 +134,14 @@ class PlayerLoader extends PlayerDecoratorBase {
             stringLoadedPluginEntry.getValue().plugin.onApplicationPaused();
         }
         getPlayer().onApplicationPaused();
+    }
+
+    private PlayerSettings getPlayerSettings() {
+        if (getPlayer().getSettings() instanceof PlayerSettings) {
+            return ((PlayerSettings) getPlayer().getSettings());
+        }
+
+        return null;
     }
 
     private void releasePlayer() {

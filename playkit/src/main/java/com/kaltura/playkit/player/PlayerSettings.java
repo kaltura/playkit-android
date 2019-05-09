@@ -27,6 +27,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean allowClearLead = true;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
+    private boolean isIMAPluginEnable = true;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
@@ -112,6 +113,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isSetPrepareAfterAd() {
         return setPrepareAfterAd;
+    }
+
+    public void setIMAPluginEnable(boolean isIMAPluginEnable) {
+        this.isIMAPluginEnable = isIMAPluginEnable;
     }
 
     @Override
@@ -219,7 +224,9 @@ public class PlayerSettings implements Player.Settings {
 
     @Override
     public Player.Settings setPrepareAfterAd(boolean doNotPrepare) {
-        this.setPrepareAfterAd = doNotPrepare;
+        if (doNotPrepare && isIMAPluginEnable) {
+            this.setPrepareAfterAd = true;
+        }
         return this;
     }
 }
