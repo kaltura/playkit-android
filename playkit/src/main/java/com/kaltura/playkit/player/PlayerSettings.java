@@ -27,12 +27,12 @@ public class PlayerSettings implements Player.Settings {
     private boolean allowClearLead = true;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
-    private boolean isIMAPluginEnable = true;
+    private boolean isIMAPluginEnabled = true;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
     private ABRSettings abrSettings = new ABRSettings();
-    private boolean setPrepareAfterAd = false;
+    private boolean isContentPrepareAfterAdsPrepare = false;
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -111,12 +111,12 @@ public class PlayerSettings implements Player.Settings {
         return resizeMode;
     }
 
-    public boolean isSetPrepareAfterAd() {
-        return setPrepareAfterAd;
+    public boolean isContentPrepareAfterAdsPrepare() {
+        return isContentPrepareAfterAdsPrepare;
     }
 
-    public void setIMAPluginEnable(boolean isIMAPluginEnable) {
-        this.isIMAPluginEnable = isIMAPluginEnable;
+    public void setIMAPluginEnabled(boolean isIMAPluginEnabled) {
+        this.isIMAPluginEnabled = isIMAPluginEnabled;
     }
 
     @Override
@@ -223,9 +223,9 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setPrepareAfterAd(boolean doNotPrepare) {
-        if (doNotPrepare && isIMAPluginEnable) {
-            this.setPrepareAfterAd = true;
+    public Player.Settings setContentPrepareAfterAdsPrepare(boolean isPrepared) {
+        if (isPrepared && isIMAPluginEnabled) {
+            this.isContentPrepareAfterAdsPrepare = true;
         }
         return this;
     }

@@ -303,8 +303,8 @@ public class PlayerController implements Player {
             PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
             cancelUpdateProgress();
 
-            log.d("stop() releasePlayersForLowerEndDevices = " + playerSettings.isSetPrepareAfterAd());
-            if (!playerSettings.isSetPrepareAfterAd()) {
+            log.d("stop() releasePlayersForLowerEndDevices = " + playerSettings.isContentPrepareAfterAdsPrepare());
+            if (!playerSettings.isContentPrepareAfterAdsPrepare()) {
                 isPlayerStopped = true;
             }
 
@@ -513,8 +513,8 @@ public class PlayerController implements Player {
             cancelUpdateProgress();
             player.release();
 
-            log.d("onApplicationPaused releasePlayersForLowerEndDevices = " + playerSettings.isSetPrepareAfterAd());
-            if (!playerSettings.isSetPrepareAfterAd()) {
+            log.d("onApplicationPaused releasePlayersForLowerEndDevices = " + playerSettings.isContentPrepareAfterAdsPrepare());
+            if (!playerSettings.isContentPrepareAfterAdsPrepare()) {
                 togglePlayerListeners(false);
             }
         }
@@ -529,13 +529,13 @@ public class PlayerController implements Player {
         if (isPlayerStopped) {
             log.e("onApplicationResumed called during player state = STOPPED");
 
-            if (!playerSettings.isSetPrepareAfterAd()) {
-                log.d("onApplicationResumed called during player state = STOPPED - return, releasePlayersForLowerEndDevices = " + playerSettings.isSetPrepareAfterAd());
+            if (!playerSettings.isContentPrepareAfterAdsPrepare()) {
+                log.d("onApplicationResumed called during player state = STOPPED - return, releasePlayersForLowerEndDevices = " + playerSettings.isContentPrepareAfterAdsPrepare());
                 return;
             }
         }
 
-        if (playerSettings.isSetPrepareAfterAd()) {
+        if (playerSettings.isContentPrepareAfterAdsPrepare()) {
             if (isAdNotDisplaying()) {
                 resumePlayer();
             }

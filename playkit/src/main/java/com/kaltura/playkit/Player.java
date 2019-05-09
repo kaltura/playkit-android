@@ -184,10 +184,10 @@ public interface Player {
         /**
          * For lower end devices, don't prepare the content player when the Ad starts; instead play it when content_resume_requested is called.
          * No need to release content player unless app sets this boolean to True
-         * @param doNotPrepare Content player prepare
+         * @param isPrepared Content player prepare
          * @return - Player Settings
          */
-        Settings setPrepareAfterAd(boolean doNotPrepare);
+        Settings setContentPrepareAfterAdsPrepare(boolean isPrepared);
     }
 
     /**

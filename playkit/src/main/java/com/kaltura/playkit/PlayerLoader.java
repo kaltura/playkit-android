@@ -94,7 +94,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         PlayerSettings playerSettings = getPlayerSettings();
         if (!loadedPlugins.containsKey("IMA") && playerSettings != null) {
-            playerSettings.setIMAPluginEnable(false);
+            playerSettings.setIMAPluginEnabled(false);
         }
     }
 
