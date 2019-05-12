@@ -112,6 +112,7 @@ class WidevineModularAdapter extends DrmAdapter {
             try {
                 keyResponse = executeKeyRequest(licenseUri, keyRequest);
                 log.d("registerAsset: response data (b64): " + toBase64(keyResponse));
+
             } catch (Exception e) {
                 throw new RegisterException("Can't send key request for registration", e);
             }
@@ -120,14 +121,18 @@ class WidevineModularAdapter extends DrmAdapter {
             try {
                 byte[] offlineKeyId = session.provideKeyResponse(keyResponse);
                 localDataStore.save(toBase64(initData), offlineKeyId);
+
             } catch (DeniedByServerException e) {
                 throw new RegisterException("Request denied by server", e);
             }
+
         } catch (WidevineNotSupportedException e) {
             throw new RegisterException("Can't execute KeyRequest", e);
+
+        } finally {
+            session.close();
         }
 
-        session.close();
 
         return true;
     }
