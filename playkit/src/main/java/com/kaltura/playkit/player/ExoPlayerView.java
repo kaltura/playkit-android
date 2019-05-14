@@ -163,6 +163,8 @@ class ExoPlayerView extends BaseExoplayerView {
 
         contentFrame.addView(videoSurface, 0);
 
+        isArtworkVisible = isArtworkViewEnabled;
+
         if (isArtworkViewEnabled) {
             videoSurface.setVisibility(GONE);
             shutterView.setVisibility(GONE);
