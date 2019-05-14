@@ -180,6 +180,12 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
+
+        /**
+         * Set the flag which handles the video view
+         * @param hide video surface visibility
+         */
+        Settings setHideVideoViews(boolean hide);
     }
 
     /**
