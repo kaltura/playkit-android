@@ -182,8 +182,8 @@ public interface Player {
         Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
 
         /**
-         * Set the flag which handles the video view based on the Artwork view (from client app)
-         * @param hide artwork is visible on client app level view
+         * Set the flag which handles the video view
+         * @param hide video surface visibility
          */
         Settings setHideVideoViews(boolean hide);
     }

@@ -45,8 +45,8 @@ public abstract class PlayerView extends FrameLayout {
     public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
 
     /**
-     * Method call is being handled from update the artwork(ExoPlayerWrapper) from client app
-     * @param isVisible videoSurface visibility based on artwork view's visibility
+     * Method call is being handled from update the video view(ExoPlayerWrapper) from client app
+     * @param isVisible videoSurface visibility
      */
     public void toggleVideoViewVisibility(boolean isVisible) {}
 }
