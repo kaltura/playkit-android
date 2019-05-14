@@ -183,9 +183,9 @@ public interface Player {
 
         /**
          * Set the flag which handles the video view based on the Artwork view (from client app)
-         * @param isArtworkVisible artwork is visible on client app level view
+         * @param hide artwork is visible on client app level view
          */
-        Settings setAudioOnlyArtworkVisibility(boolean isArtworkVisible);
+        Settings setHideVideoViews(boolean hide);
     }
 
     /**
@@ -360,12 +360,6 @@ public interface Player {
      * Update Subtitle Styles
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
-
-    /**
-     * Update the flag which handles the video view based on the Artwork view (from client app)
-     * @param isArtworkVisible artwork is visible on client app level view
-     */
-    void updateAudioOnlyArtworkVisibility(boolean isArtworkVisible);
 
     /**
      * Update video size

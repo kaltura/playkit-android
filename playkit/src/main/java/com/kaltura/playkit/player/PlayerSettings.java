@@ -27,7 +27,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean allowClearLead = true;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
-    private boolean audioOnlyArtworkEnabled;
+    private boolean isVideoViewHidden;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
@@ -83,8 +83,8 @@ public class PlayerSettings implements Player.Settings {
         return vrPlayerEnabled;
     }
 
-    public boolean isAudioOnlyArtworkEnabled() {
-        return audioOnlyArtworkEnabled;
+    public boolean isVideoViewHidden() {
+        return isVideoViewHidden;
     }
 
     public PKTrackConfig getPreferredTextTrackConfig() {
@@ -219,8 +219,8 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setAudioOnlyArtworkVisibility(boolean isArtworkVisible) {
-        this.audioOnlyArtworkEnabled = isArtworkVisible;
+    public Player.Settings setHideVideoViews(boolean hide) {
+        isVideoViewHidden = hide;
         return this;
     }
 }

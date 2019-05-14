@@ -201,11 +201,6 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void updateAudioOnlyArtworkVisibility(boolean isArtworkVisible) {
-        player.updateAudioOnlyArtworkVisibility(isArtworkVisible);
-    }
-
-    @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         player.updateSurfaceAspectRatioResizeMode(resizeMode);
     }

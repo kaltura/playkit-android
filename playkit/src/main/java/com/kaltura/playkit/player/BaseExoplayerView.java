@@ -20,9 +20,9 @@ public abstract class BaseExoplayerView extends PlayerView {
         super(context, attrs);
     }
 
-    public abstract void setPlayer(SimpleExoPlayer player, boolean useTextureView, boolean isSurfaceSecured, boolean isArtworkViewEnabled);
+    public abstract void setPlayer(SimpleExoPlayer player, boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews);
 
-    public abstract void setVideoSurfaceProperties(boolean useTextureView, boolean isSurfaceSecured, boolean isArtworkViewEnabled);
+    public abstract void setVideoSurfaceProperties(boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews);
 
     public abstract SubtitleView getSubtitleView();
 

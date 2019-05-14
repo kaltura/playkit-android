@@ -187,7 +187,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
-        exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured, playerSettings.isAudioOnlyArtworkEnabled());
+        exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured, playerSettings.isVideoViewHidden());
 
         player.setPlayWhenReady(false);
     }
@@ -623,6 +623,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private void maybeChangePlayerRenderView() {
         // no need to swap video surface if no change was done in surface settings
         if (this.useTextureView == playerSettings.useTextureView() && this.isSurfaceSecured == playerSettings.isSurfaceSecured()) {
+            exoPlayerView.toggleVideoViewVisibility(playerSettings.isVideoViewHidden());
             return;
         }
         if (playerSettings.useTextureView() && playerSettings.isSurfaceSecured()) {
@@ -631,7 +632,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         this.useTextureView = playerSettings.useTextureView();
         this.isSurfaceSecured = playerSettings.isSurfaceSecured();
-        exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured(), playerSettings.isAudioOnlyArtworkEnabled());
+        exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured(), playerSettings.isVideoViewHidden());
     }
 
     @Override
@@ -1142,12 +1143,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             configureSubtitleView();
             sendEvent(PlayerEvent.Type.SUBTITLE_STYLE_CHANGED);
         }
-    }
-
-    @Override
-    public void updateAudioOnlyArtworkVisibility(boolean isArtworkVisible) {
-        playerSettings.setAudioOnlyArtworkVisibility(isArtworkVisible);
-        exoPlayerView.toggleVideoSurfaceForArtwork(isArtworkVisible);
     }
 
     @Override

@@ -46,7 +46,7 @@ public abstract class PlayerView extends FrameLayout {
 
     /**
      * Method call is being handled from update the artwork(ExoPlayerWrapper) from client app
-     * @param isArtworkVisible videoSurface visibility based on artwork view's visibility
+     * @param isVisible videoSurface visibility based on artwork view's visibility
      */
-    public void toggleVideoSurfaceForArtwork(boolean isArtworkVisible) {}
+    public void toggleVideoViewVisibility(boolean isVisible) {}
 }
