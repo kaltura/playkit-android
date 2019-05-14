@@ -42,11 +42,11 @@ public abstract class PlayerView extends FrameLayout {
 
     public abstract void showVideoSubtitles();
 
-    public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {};
+    public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
 
     /**
      * Method call is being handled from update the artwork(ExoPlayerWrapper) from client app
      * @param isArtworkVisible videoSurface visibility based on artwork view's visibility
      */
-    public void toggleVideoSurfaceForArtwork(boolean isArtworkVisible){}
+    public void toggleVideoSurfaceForArtwork(boolean isArtworkVisible) {}
 }
