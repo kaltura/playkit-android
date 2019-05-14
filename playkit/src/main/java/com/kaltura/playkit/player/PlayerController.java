@@ -232,14 +232,18 @@ public class PlayerController implements Player {
     private void switchPlayersIfRequired(PlayerEngineType incomingPlayerType) {
 
         //If incomingPlayerType of the same type as current - we are good, so do nothing.
-        if (currentPlayerType == incomingPlayerType) {
+        if (currentPlayerType == incomingPlayerType && currentPlayerType != PlayerEngineType.VRPlayer) {
             return;
         }
 
         //Clear previous PlayerEngine.
         if (currentPlayerType != PlayerEngineType.Unknown) {
-            removePlayerView();
-            player.destroy();
+            if(isPlayerStopped) {
+                removePlayerView();
+                player.destroy();
+            } else {
+                return;
+            }
         }
 
         //Initialize new PlayerEngine.
