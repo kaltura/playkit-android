@@ -247,11 +247,11 @@ public interface PlayerEngine {
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
 
-     /**
+    /**
       *  update view size 
       *  @param resizeMode
       */
-    default void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {};
+    default void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
 
     /**
      * Generic getters for playkit controllers.

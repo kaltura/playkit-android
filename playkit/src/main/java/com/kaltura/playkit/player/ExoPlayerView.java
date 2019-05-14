@@ -57,8 +57,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private Player.EventListener playerEventListener;
     private int textureViewRotation;
     private @AspectRatioFrameLayout.ResizeMode int resizeMode;
-
-
+    private boolean isVideoViewVisible;
 
     ExoPlayerView(Context context) {
         this(context, null);
@@ -106,7 +105,7 @@ class ExoPlayerView extends BaseExoplayerView {
      * @param isSurfaceSecured - should allow secure rendering of the surface
      */
     @Override
-    public void setPlayer(SimpleExoPlayer player, boolean useTextureView, boolean isSurfaceSecured) {
+    public void setPlayer(SimpleExoPlayer player, boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews) {
         if (this.player == player) {
             return;
         }
@@ -115,7 +114,7 @@ class ExoPlayerView extends BaseExoplayerView {
             removeVideoSurface();
         }
         this.player = player;
-        addVideoSurface(useTextureView, isSurfaceSecured);
+        addVideoSurface(useTextureView, isSurfaceSecured, hideVideoViews);
     }
 
     /**
@@ -125,10 +124,10 @@ class ExoPlayerView extends BaseExoplayerView {
      * @param isSurfaceSecured - should allow secure rendering of the surface
      */
     @Override
-    public void setVideoSurfaceProperties(boolean useTextureView, boolean isSurfaceSecured) {
+    public void setVideoSurfaceProperties(boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews) {
         if (player != null) {
             removeVideoSurface();
-            addVideoSurface(useTextureView, isSurfaceSecured);
+            addVideoSurface(useTextureView, isSurfaceSecured, hideVideoViews);
         }
     }
 
@@ -138,7 +137,7 @@ class ExoPlayerView extends BaseExoplayerView {
      * @param isSurfaceSecured - should allow secure rendering of the surface
      */
     @TargetApi(17)
-    private void addVideoSurface(boolean useTextureView, boolean isSurfaceSecured) {
+    private void addVideoSurface(boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews) {
         resetViews();
         createVideoSurface(useTextureView);
 
@@ -163,13 +162,19 @@ class ExoPlayerView extends BaseExoplayerView {
         }
 
         contentFrame.addView(videoSurface, 0);
+
+        isVideoViewVisible = hideVideoViews;
+
+        if (hideVideoViews) {
+            videoSurface.setVisibility(GONE);
+            shutterView.setVisibility(GONE);
+        }
     }
 
     /**
      * Clear all the listeners and detach Surface from view hierarchy.
      */
     private void removeVideoSurface() {
-
         Player.VideoComponent oldVideoComponent = player.getVideoComponent();
         Player.TextComponent oldTextComponent = player.getTextComponent();
         if (playerEventListener != null) {
@@ -193,7 +198,6 @@ class ExoPlayerView extends BaseExoplayerView {
         }
 
         contentFrame.removeView(videoSurface);
-
     }
 
     /**
@@ -229,8 +233,11 @@ class ExoPlayerView extends BaseExoplayerView {
         if (videoSurface == null || subtitleView == null) {
             return;
         }
-        videoSurface.setVisibility(VISIBLE);
-        subtitleView.setVisibility(VISIBLE);
+
+        if (!isVideoViewVisible) {
+            videoSurface.setVisibility(VISIBLE);
+            subtitleView.setVisibility(VISIBLE);
+        }
     }
 
     @Override
@@ -239,6 +246,14 @@ class ExoPlayerView extends BaseExoplayerView {
             return;
         }
         subtitleView.setVisibility(GONE);
+    }
+
+    @Override
+    public void toggleVideoViewVisibility(boolean isVisible) {
+        this.isVideoViewVisible = isVisible;
+        if (videoSurface != null) {
+            videoSurface.setVisibility(isVisible ? GONE : VISIBLE);
+        }
     }
 
     @Override
