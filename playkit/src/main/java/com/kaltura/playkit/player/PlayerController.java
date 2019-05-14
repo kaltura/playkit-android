@@ -593,6 +593,14 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void updateAudioOnlyArtworkVisibility(boolean isArtworkVisible) {
+        log.v("updateAudioOnlyArtworkVisibility");
+        if (assertPlayerIsNotNull("updateAudioOnlyArtworkVisibility")) {
+            player.updateAudioOnlyArtworkVisibility(isArtworkVisible);
+        }
+    }
+
+    @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         log.v("updateSurfaceAspectRatioResizeMode");
         if(assertPlayerIsNotNull("updateSurfaceAspectRatioResizeMode")){

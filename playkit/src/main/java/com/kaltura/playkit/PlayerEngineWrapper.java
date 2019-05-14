@@ -187,6 +187,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public void updateAudioOnlyArtworkVisibility(boolean isArtworkVisible) {
+        playerEngine.updateAudioOnlyArtworkVisibility(isArtworkVisible);
+    }
+
+    @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         playerEngine.updateSurfaceAspectRatioResizeMode(resizeMode);
     }

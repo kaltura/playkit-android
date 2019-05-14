@@ -180,6 +180,12 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
+
+        /**
+         * Set the flag which handles the video view based on the Artwork view (from client app)
+         * @param isArtworkVisible artwork is visible on client app level view
+         */
+        Settings setAudioOnlyArtworkVisibility(boolean isArtworkVisible);
     }
 
     /**
@@ -354,6 +360,12 @@ public interface Player {
      * Update Subtitle Styles
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
+
+    /**
+     * Update the flag which handles the video view based on the Artwork view (from client app)
+     * @param isArtworkVisible artwork is visible on client app level view
+     */
+    void updateAudioOnlyArtworkVisibility(boolean isArtworkVisible);
 
     /**
      * Update video size

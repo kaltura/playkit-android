@@ -187,7 +187,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
-        exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
+        exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured, playerSettings.isAudioOnlyArtworkEnabled());
 
         player.setPlayWhenReady(false);
     }
@@ -631,7 +631,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         this.useTextureView = playerSettings.useTextureView();
         this.isSurfaceSecured = playerSettings.isSurfaceSecured();
-        exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured());
+        exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured(), playerSettings.isAudioOnlyArtworkEnabled());
     }
 
     @Override
@@ -1012,7 +1012,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 if (playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE) {
                     overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
                 }
-                //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
+                //when the track info is ready, cache it in ExoPlayerWrapper. And send event that tracks are available.
                 tracks = tracksReady;
                 shouldRestorePlayerToPreviousState = false;
                 sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
@@ -1142,6 +1142,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             configureSubtitleView();
             sendEvent(PlayerEvent.Type.SUBTITLE_STYLE_CHANGED);
         }
+    }
+
+    @Override
+    public void updateAudioOnlyArtworkVisibility(boolean isArtworkVisible) {
+        playerSettings.setAudioOnlyArtworkVisibility(isArtworkVisible);
+        exoPlayerView.toggleVideoSurfaceForArtwork(isArtworkVisible);
     }
 
     @Override

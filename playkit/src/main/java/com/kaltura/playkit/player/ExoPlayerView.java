@@ -57,8 +57,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private Player.EventListener playerEventListener;
     private int textureViewRotation;
     private @AspectRatioFrameLayout.ResizeMode int resizeMode;
-
-
+    private boolean isArtworkVisible;
 
     ExoPlayerView(Context context) {
         this(context, null);
@@ -106,7 +105,7 @@ class ExoPlayerView extends BaseExoplayerView {
      * @param isSurfaceSecured - should allow secure rendering of the surface
      */
     @Override
-    public void setPlayer(SimpleExoPlayer player, boolean useTextureView, boolean isSurfaceSecured) {
+    public void setPlayer(SimpleExoPlayer player, boolean useTextureView, boolean isSurfaceSecured, boolean isArtworkViewEnabled) {
         if (this.player == player) {
             return;
         }
@@ -115,7 +114,7 @@ class ExoPlayerView extends BaseExoplayerView {
             removeVideoSurface();
         }
         this.player = player;
-        addVideoSurface(useTextureView, isSurfaceSecured);
+        addVideoSurface(useTextureView, isSurfaceSecured, isArtworkViewEnabled);
     }
 
     /**
@@ -125,10 +124,10 @@ class ExoPlayerView extends BaseExoplayerView {
      * @param isSurfaceSecured - should allow secure rendering of the surface
      */
     @Override
-    public void setVideoSurfaceProperties(boolean useTextureView, boolean isSurfaceSecured) {
+    public void setVideoSurfaceProperties(boolean useTextureView, boolean isSurfaceSecured, boolean isArtworkViewEnabled) {
         if (player != null) {
             removeVideoSurface();
-            addVideoSurface(useTextureView, isSurfaceSecured);
+            addVideoSurface(useTextureView, isSurfaceSecured, isArtworkViewEnabled);
         }
     }
 
@@ -138,7 +137,7 @@ class ExoPlayerView extends BaseExoplayerView {
      * @param isSurfaceSecured - should allow secure rendering of the surface
      */
     @TargetApi(17)
-    private void addVideoSurface(boolean useTextureView, boolean isSurfaceSecured) {
+    private void addVideoSurface(boolean useTextureView, boolean isSurfaceSecured, boolean isArtworkViewEnabled) {
         resetViews();
         createVideoSurface(useTextureView);
 
@@ -163,13 +162,17 @@ class ExoPlayerView extends BaseExoplayerView {
         }
 
         contentFrame.addView(videoSurface, 0);
+
+        if (isArtworkViewEnabled) {
+            videoSurface.setVisibility(GONE);
+            shutterView.setVisibility(GONE);
+        }
     }
 
     /**
      * Clear all the listeners and detach Surface from view hierarchy.
      */
     private void removeVideoSurface() {
-
         Player.VideoComponent oldVideoComponent = player.getVideoComponent();
         Player.TextComponent oldTextComponent = player.getTextComponent();
         if (playerEventListener != null) {
@@ -193,7 +196,6 @@ class ExoPlayerView extends BaseExoplayerView {
         }
 
         contentFrame.removeView(videoSurface);
-
     }
 
     /**
@@ -229,8 +231,11 @@ class ExoPlayerView extends BaseExoplayerView {
         if (videoSurface == null || subtitleView == null) {
             return;
         }
-        videoSurface.setVisibility(VISIBLE);
-        subtitleView.setVisibility(VISIBLE);
+
+        if (!isArtworkVisible) {
+            videoSurface.setVisibility(VISIBLE);
+            subtitleView.setVisibility(VISIBLE);
+        }
     }
 
     @Override
@@ -239,6 +244,14 @@ class ExoPlayerView extends BaseExoplayerView {
             return;
         }
         subtitleView.setVisibility(GONE);
+    }
+
+    @Override
+    public void toggleVideoSurfaceForArtwork(boolean isArtworkVisible) {
+        this.isArtworkVisible = isArtworkVisible;
+        if (videoSurface != null) {
+            videoSurface.setVisibility(isArtworkVisible ? GONE : VISIBLE);
+        }
     }
 
     @Override
