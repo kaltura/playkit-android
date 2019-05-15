@@ -28,6 +28,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private boolean isIMAPluginEnabled = true;
+    private boolean isVideoViewHidden;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
@@ -85,6 +86,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isVRPlayerEnabled() {
         return vrPlayerEnabled;
+    }
+
+    public boolean isVideoViewHidden() {
+        return isVideoViewHidden;
     }
 
     public PKTrackConfig getPreferredTextTrackConfig() {
@@ -229,6 +234,11 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings useSinglePlayerInstance(boolean isRequired) {
         useSinglePlayerInstance = isRequired && isIMAPluginEnabled;
+    }
+  
+    @Override
+    public Player.Settings setHideVideoViews(boolean hide) {
+        isVideoViewHidden = hide;
         return this;
     }
 }
