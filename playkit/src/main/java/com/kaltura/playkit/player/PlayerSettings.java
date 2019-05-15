@@ -32,7 +32,11 @@ public class PlayerSettings implements Player.Settings {
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
     private ABRSettings abrSettings = new ABRSettings();
-    private boolean isContentPrepareAfterAdsPrepare = false;
+    /**
+     * Flag helping to check if client app wants to use a single player instance at a time
+     * Only if IMA plugin is there then only this flag is set to true.
+     */
+    private boolean useSinglePlayerInstance = false;
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -111,8 +115,8 @@ public class PlayerSettings implements Player.Settings {
         return resizeMode;
     }
 
-    public boolean isContentPrepareAfterAdsPrepare() {
-        return isContentPrepareAfterAdsPrepare;
+    public boolean isUseSinglePlayerInstance() {
+        return useSinglePlayerInstance;
     }
 
     public void setIMAPluginEnabled(boolean isIMAPluginEnabled) {
@@ -223,10 +227,8 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setContentPrepareAfterAdsPrepare(boolean isPrepared) {
-        if (isPrepared && isIMAPluginEnabled) {
-            this.isContentPrepareAfterAdsPrepare = true;
-        }
+    public Player.Settings useSinglePlayerInstance(boolean isRequired) {
+        useSinglePlayerInstance = isRequired && isIMAPluginEnabled;
         return this;
     }
 }

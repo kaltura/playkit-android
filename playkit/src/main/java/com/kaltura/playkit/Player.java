@@ -182,12 +182,15 @@ public interface Player {
         Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
 
         /**
-         * For lower end devices, don't prepare the content player when the Ad starts; instead play it when content_resume_requested is called.
-         * No need to release content player unless app sets this boolean to True
-         * @param isPrepared Content player prepare
+         * Do not prepare the content player when the Ad starts(if exists); instead content player will be prepared
+         * when content_resume_requested is called.
+         *
+         * Default value is set to 'false'.
+         *
+         * @param isRequired Do not prepare the content player while Ad is playing
          * @return - Player Settings
          */
-        Settings setContentPrepareAfterAdsPrepare(boolean isPrepared);
+        Settings useSinglePlayerInstance(boolean isRequired);
     }
 
     /**

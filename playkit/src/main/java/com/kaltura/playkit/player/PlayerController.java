@@ -303,8 +303,8 @@ public class PlayerController implements Player {
             PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
             cancelUpdateProgress();
 
-            log.d("stop() releasePlayersForLowerEndDevices = " + playerSettings.isContentPrepareAfterAdsPrepare());
-            if (!playerSettings.isContentPrepareAfterAdsPrepare()) {
+            log.d("stop() isUseSinglePlayerInstance = " + playerSettings.isUseSinglePlayerInstance());
+            if (!playerSettings.isUseSinglePlayerInstance()) {
                 isPlayerStopped = true;
             }
 
@@ -513,8 +513,8 @@ public class PlayerController implements Player {
             cancelUpdateProgress();
             player.release();
 
-            log.d("onApplicationPaused releasePlayersForLowerEndDevices = " + playerSettings.isContentPrepareAfterAdsPrepare());
-            if (!playerSettings.isContentPrepareAfterAdsPrepare()) {
+            log.d("onApplicationPaused isUseSinglePlayerInstance = " + playerSettings.isUseSinglePlayerInstance());
+            if (!playerSettings.isUseSinglePlayerInstance()) {
                 togglePlayerListeners(false);
             }
         }
@@ -529,13 +529,13 @@ public class PlayerController implements Player {
         if (isPlayerStopped) {
             log.e("onApplicationResumed called during player state = STOPPED");
 
-            if (!playerSettings.isContentPrepareAfterAdsPrepare()) {
-                log.d("onApplicationResumed called during player state = STOPPED - return, releasePlayersForLowerEndDevices = " + playerSettings.isContentPrepareAfterAdsPrepare());
+            if (!playerSettings.isUseSinglePlayerInstance()) {
+                log.d("onApplicationResumed called during player state = STOPPED - return, isUseSinglePlayerInstance = " + playerSettings.isUseSinglePlayerInstance());
                 return;
             }
         }
 
-        if (playerSettings.isContentPrepareAfterAdsPrepare()) {
+        if (playerSettings.isUseSinglePlayerInstance()) {
             if (isAdNotDisplaying()) {
                 resumePlayer();
             }

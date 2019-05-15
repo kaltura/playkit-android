@@ -92,6 +92,8 @@ class PlayerLoader extends PlayerDecoratorBase {
 
         setPlayer(player);
 
+        // Checking if IMA plugin is there from client app.
+        // This flag 'setIMAPluginEnabled' is helping to set 'useSinglePlayerInstance' in PlayerSettings.
         PlayerSettings playerSettings = getPlayerSettings();
         if (!loadedPlugins.containsKey("IMA") && playerSettings != null) {
             playerSettings.setIMAPluginEnabled(false);
