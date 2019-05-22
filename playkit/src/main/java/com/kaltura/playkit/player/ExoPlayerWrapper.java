@@ -19,7 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -155,7 +155,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         playerSettings = settings != null ? settings : new PlayerSettings();
         rootView = rootPlayerView;
-        DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context).setEventListener(mainHandler, this);
+      //  DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context).setEventListener(mainHandler, this);
+        DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context);
 
         Long initialBitrateEstimate = playerSettings.getAbrSettings().getInitialBitrateEstimate();
 
@@ -339,6 +340,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     pkExternalSubtitle.getCodecs(),
                     pkExternalSubtitle.getBitrate(),
                     pkExternalSubtitle.getSelectionFlags(),
+                    C.ROLE_FLAG_SUBTITLE, // FIXME :: Check what is the purpose of this.
                     pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
 
             return new SingleSampleMediaSource.Factory(dataSourceFactory)

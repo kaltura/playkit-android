@@ -2,7 +2,7 @@ package com.kaltura.playkit.player;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.google.android.exoplayer2.Format;
 import com.kaltura.playkit.PKSubtitleFormat;

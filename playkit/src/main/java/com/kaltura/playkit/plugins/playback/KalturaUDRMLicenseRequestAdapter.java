@@ -12,7 +12,7 @@
 
 package com.kaltura.playkit.plugins.playback;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;

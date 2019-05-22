@@ -13,7 +13,7 @@
 package com.kaltura.playkit.drm;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.LocalDataStore;

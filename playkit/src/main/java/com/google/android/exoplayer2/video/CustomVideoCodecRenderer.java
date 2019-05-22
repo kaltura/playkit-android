@@ -26,10 +26,11 @@ import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.support.annotation.CallSuper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.Surface;
+
+import androidx.annotation.CallSuper;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -225,7 +226,7 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
                 mediaCodecSelector,
                 drmSessionManager,
                 playClearSamplesWithoutKeys,
-                /* assumedMinimumCodecOperatingRate= */ 30);
+                /* assumedMinimumCodecOperatingRate= */ true, 30);
         this.allowedJoiningTimeMs = allowedJoiningTimeMs;
         this.maxDroppedFramesToNotify = maxDroppedFramesToNotify;
         this.context = context.getApplicationContext();
@@ -261,11 +262,11 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
             }
         }
         List<MediaCodecInfo> decoderInfos =
-                mediaCodecSelector.getDecoderInfos(format.sampleMimeType, requiresSecureDecryption);
+                mediaCodecSelector.getDecoderInfos(format.sampleMimeType, requiresSecureDecryption, true);
         if (decoderInfos.isEmpty()) {
             return requiresSecureDecryption
                     && !mediaCodecSelector
-                    .getDecoderInfos(format.sampleMimeType, /* requiresSecureDecoder= */ false)
+                    .getDecoderInfos(format.sampleMimeType, /* requiresSecureDecoder= */ false, true) // FIXME: CHeck what is tunneling decoder functionality
                     .isEmpty()
                     ? FORMAT_UNSUPPORTED_DRM
                     : FORMAT_UNSUPPORTED_SUBTYPE;
@@ -283,6 +284,11 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
         int tunnelingSupport = decoderInfo.tunneling ? TUNNELING_SUPPORTED : TUNNELING_NOT_SUPPORTED;
         int formatSupport = isFormatSupported ? FORMAT_HANDLED : FORMAT_EXCEEDS_CAPABILITIES;
         return adaptiveSupport | tunnelingSupport | formatSupport;
+    }
+
+    @Override
+    protected List<MediaCodecInfo> getDecoderInfos(MediaCodecSelector mediaCodecSelector, Format format, boolean requiresSecureDecoder) throws DecoderQueryException {
+        return null; // FIXME: WHat is this.
     }
 
     @Override
@@ -523,7 +529,7 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
         }
     }
 
-    @CallSuper
+   /* @CallSuper
     @Override
     protected void flushCodec() throws ExoPlaybackException {
         super.flushCodec();
@@ -543,7 +549,7 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
             }
         }
         return maxFrameRate == -1 ? CODEC_OPERATING_RATE_UNSET : (maxFrameRate * operatingRate);
-    }
+    }*/
 
     @Override
     protected void onCodecInitialized(String name, long initializedTimestampMs,
@@ -864,7 +870,7 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
         // We dropped some buffers to catch up, so update the decoder counters and flush the codec,
         // which releases all pending buffers buffers including the current output buffer.
         updateDroppedBufferCounters(buffersInCodecCount + droppedSourceBufferCount);
-        flushCodec();
+      //  flushCodec();
         return true;
     }
 
