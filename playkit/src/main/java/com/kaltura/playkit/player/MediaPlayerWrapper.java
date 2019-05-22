@@ -85,7 +85,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     MediaPlayerWrapper(Context context) {
         this.context = context;
         player = new MediaPlayer();
-        log.e("MediaPlayerView created");
         mediaPlayerView = new MediaPlayerView(context);
         initDrmClient();
     }
@@ -365,7 +364,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         }
     }
 
-   /* @Override
+    @Override
     public void restore() {
         log.d("restore prepareState = " + prepareState.name());
         appInBackground = false;
@@ -377,25 +376,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
             }
             pause();
-        } else {
-            destroy();
-            log.e("Error restore while player is not prepared");
-            sendDistinctEvent(PlayerEvent.Type.ERROR);
-        }
-    }*/
-
-    @Override
-    public void restore() {
-        log.d("restore prepareState = " + prepareState.name());
-        appInBackground = false;
-        if (player != null && prepareState == PREPARED) {
-            //play();
-            if (playerPosition != 0) {
-                seekTo(playerPosition);
-                shouldRestorePlayerToPreviousState = false;
-
-            }
-            //pause();
         } else {
             destroy();
             log.e("Error restore while player is not prepared");
@@ -493,7 +473,6 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        player = mp;
         prepareState = PREPARED;
         log.d("onPrepared " + prepareState + " isPlayAfterPrepare = " + isPlayAfterPrepare + " appInBackground = " + appInBackground);
         mp.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {

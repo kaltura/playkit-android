@@ -226,7 +226,7 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
                 mediaCodecSelector,
                 drmSessionManager,
                 playClearSamplesWithoutKeys,
-                /* assumedMinimumCodecOperatingRate= */ true, 30);
+                /* assumedMinimumCodecOperatingRate= */ true, 30); // FIXME:
         this.allowedJoiningTimeMs = allowedJoiningTimeMs;
         this.maxDroppedFramesToNotify = maxDroppedFramesToNotify;
         this.context = context.getApplicationContext();

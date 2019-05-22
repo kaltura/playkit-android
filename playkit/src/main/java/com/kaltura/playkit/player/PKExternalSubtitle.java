@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.kaltura.playkit.PKSubtitleFormat;
 import com.kaltura.playkit.utils.Consts;
@@ -14,6 +15,11 @@ public class PKExternalSubtitle implements Parcelable {
     private String id;
     private String mimeType;
     private int selectionFlags = Consts.TRACK_UNSELECTED_FLAG;
+    /**
+     * Indicates the track contains subtitles. This flag may be set on video tracks to indicate the
+     * presence of burned in subtitles.
+     */
+    private int roleFlag = C.ROLE_FLAG_SUBTITLE;
     private String language;
     private String label;
     private String containerMimeType = null;
@@ -62,6 +68,10 @@ public class PKExternalSubtitle implements Parcelable {
 
     public boolean isDefault() {
         return isDefault;
+    }
+
+    public int getRoleFlag() {
+        return roleFlag;
     }
 
     public PKExternalSubtitle setMimeType(PKSubtitleFormat subtitleFormat) {

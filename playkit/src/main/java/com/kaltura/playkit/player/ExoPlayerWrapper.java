@@ -155,8 +155,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         playerSettings = settings != null ? settings : new PlayerSettings();
         rootView = rootPlayerView;
-      //  DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context).setEventListener(mainHandler, this);
-        DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context);
+       // DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context).setEventListener(mainHandler, this);
+        DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context); // FIXME
 
         Long initialBitrateEstimate = playerSettings.getAbrSettings().getInitialBitrateEstimate();
 
@@ -340,7 +340,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     pkExternalSubtitle.getCodecs(),
                     pkExternalSubtitle.getBitrate(),
                     pkExternalSubtitle.getSelectionFlags(),
-                    C.ROLE_FLAG_SUBTITLE, // FIXME :: Check what is the purpose of this.
+                    pkExternalSubtitle.getRoleFlag(), // FIXED :: Check what is the purpose of this.
                     pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
 
             return new SingleSampleMediaSource.Factory(dataSourceFactory)
