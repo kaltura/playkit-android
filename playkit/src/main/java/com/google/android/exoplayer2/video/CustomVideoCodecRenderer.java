@@ -51,6 +51,8 @@ import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.TraceUtil;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.VideoRendererEventListener.EventDispatcher;
+import com.kaltura.playkit.player.DummySurfaceWorkaroundTest;
+
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
@@ -70,7 +72,7 @@ import java.util.List;
  *       a {@link android.view.SurfaceView}.
  * </ul>
  */
-public class CustomVideoCodecRenderer extends MediaCodecRenderer {
+public class CustomVideoCodecRenderer extends CustomMediaCodecRenderer {
 
     private static final String TAG = "CustomVideoCodecRenderer";
     private static final String KEY_CROP_LEFT = "crop-left";
@@ -440,12 +442,6 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
 
     @Override
     protected void onDisabled() {
-        //FIXME
-        currentWidth = Format.NO_VALUE;
-        currentHeight = Format.NO_VALUE;
-        currentPixelWidthHeightRatio = Format.NO_VALUE;
-        pendingPixelWidthHeightRatio = Format.NO_VALUE;
-
         lastInputTimeUs = C.TIME_UNSET;
         outputStreamOffsetUs = C.TIME_UNSET;
         pendingOutputStreamOffsetCount = 0;
@@ -454,13 +450,9 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
         frameReleaseTimeHelper.disable();
         tunnelingOnFrameRenderedListener = null;
 
-        //FIXME
-        tunneling = false;
-
         try {
             super.onDisabled();
         } finally {
-            decoderCounters.ensureUpdated();
             eventDispatcher.disabled(decoderCounters);
         }
     }
@@ -585,7 +577,7 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
     }
 
     @Override
-    protected int canKeepCodec(
+    protected @KeepCodecResult int canKeepCodec(
             MediaCodec codec, MediaCodecInfo codecInfo, Format oldFormat, Format newFormat) {
         if (codecInfo.isSeamlessAdaptationSupported(
                 oldFormat, newFormat, /* isNewFormatComplete= */ true)
@@ -1388,7 +1380,6 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
     }
 
     /*
-     * TODO:
      *
      * 1. Validate that Android device certification now ensures correct behavior, and add a
      *    corresponding SDK_INT upper bound for applying the workaround (probably SDK_INT < 26).
@@ -1410,10 +1401,15 @@ public class CustomVideoCodecRenderer extends MediaCodecRenderer {
      *     incorrectly.
      */
     protected boolean codecNeedsSetOutputSurfaceWorkaround(String name) {
-        if (Util.SDK_INT >= 27 || name.startsWith("OMX.google")) {
+        if (name.startsWith("OMX.google")) {
             // Devices running API level 27 or later should also be unaffected. Google OMX decoders are
             // not known to have this issue on any API level.
             return false;
+        }
+
+        //boolean decoderRequires = "OMX.qcom.video.decoder.avc".equals(name) || "OMX.MTK.VIDEO.DECODER.AVC".equals(name) || "OMX.k3.video.decoder.avc".equals(name) || "OMX.IMG.MSVDX.Decoder.AVC".equals(name);		// https://github.com/google/ExoPlayer/issues/5312.
+        if (DummySurfaceWorkaroundTest.workaroundRequired) {
+            return true;
         }
 
         synchronized (CustomVideoCodecRenderer.class) {
