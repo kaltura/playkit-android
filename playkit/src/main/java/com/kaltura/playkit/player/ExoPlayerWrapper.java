@@ -175,7 +175,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
-        log.d("Gourav");
         sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
     }
 
