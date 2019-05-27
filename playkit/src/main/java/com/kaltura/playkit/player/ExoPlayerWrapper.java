@@ -155,8 +155,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         playerSettings = settings != null ? settings : new PlayerSettings();
         rootView = rootPlayerView;
-       // DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context).setEventListener(mainHandler, this);
-        DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context); // FIXME
+        DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context);
 
         Long initialBitrateEstimate = playerSettings.getAbrSettings().getInitialBitrateEstimate();
 
@@ -165,6 +164,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         bandwidthMeter = bandwidthMeterBuilder.build();
+        bandwidthMeter.addEventListener(mainHandler, this);
+
         period = new Timeline.Period();
         this.exoPlayerView = exoPlayerView;
         if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
@@ -174,6 +175,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
+        log.d("Gourav");
         sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
     }
 
