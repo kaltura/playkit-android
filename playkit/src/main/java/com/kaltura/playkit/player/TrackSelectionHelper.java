@@ -170,8 +170,12 @@ class TrackSelectionHelper {
                 for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
                     // the format of the current trackGroup.
                     format = trackGroup.getFormat(trackIndex);
+
+                    // Adding bitrate which is adaptive and selectable
                     if (maybeAddAdaptiveTrack(rendererIndex, groupIndex, trackIndex, format)) {
-                        continue;
+                        if (rendererIndex != TRACK_TYPE_VIDEO) {
+                            continue;
+                        }
                     }
 
                     //filter all the unsupported and unknown formats.
@@ -358,11 +362,8 @@ class TrackSelectionHelper {
         if (isAdaptive(rendererIndex, groupIndex) && !adaptiveTrackAlreadyExist(uniqueId, rendererIndex)) {
             switch (rendererIndex) {
                 case TRACK_TYPE_VIDEO:
-                    String nonAdaptiveUniqueId = getUniqueId(rendererIndex, groupIndex, trackIndex);
                     videoTracks.add(new VideoTrack(uniqueId, 0, 0, 0, format.selectionFlags, true));
-
-                    videoTracks.add(new VideoTrack(nonAdaptiveUniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false));
-                    return true;
+                    return false;
                 case TRACK_TYPE_AUDIO:
                     audioTracks.add(new AudioTrack(uniqueId, format.language, format.label, 0, format.channelCount, format.selectionFlags, true));
                     return true;

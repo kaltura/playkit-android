@@ -35,9 +35,9 @@ import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
 import com.google.android.exoplayer2.source.BehindLiveWindowException;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.MergingMediaSource;
+import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.source.SingleSampleMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
@@ -296,7 +296,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
-                ExtractorMediaSource extractorMediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
+                ProgressiveMediaSource extractorMediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(uri);
                 return new MergingMediaSource(buildMediaSourceList(extractorMediaSource, externalSubtitleList));
 
