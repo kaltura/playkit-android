@@ -58,7 +58,6 @@ class TrackSelectionHelper {
     private static final int GROUP_INDEX = 1;
     private static final int TRACK_INDEX = 2;
     private static final int TRACK_RENDERERS_AMOUNT = 3;
-    private static final int MAX_SUPPORTED_BITRATE = 5000000; // in Gbps
 
     static final String NONE = "none";
     private static final String ADAPTIVE = "adaptive";
@@ -171,17 +170,13 @@ class TrackSelectionHelper {
                 for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
                     // the format of the current trackGroup.
                     format = trackGroup.getFormat(trackIndex);
-                    if (maybeAddAdaptiveTrack(rendererIndex, groupIndex, format)) {
+                    if (maybeAddAdaptiveTrack(rendererIndex, groupIndex, trackIndex, format)) {
                         continue;
                     }
 
                     //filter all the unsupported and unknown formats.
-                    if (isFormatSupported(rendererIndex, groupIndex, trackIndex) || (PKCodecSupport.isFormatSupported(format, trackType) && format.bitrate < MAX_SUPPORTED_BITRATE)) {
+                    if (isFormatSupported(rendererIndex, groupIndex, trackIndex)) {
                         String uniqueId = getUniqueId(rendererIndex, groupIndex, trackIndex);
-
-                        if (adaptiveTrackAlreadyExist(uniqueId, rendererIndex)) {
-                            continue;
-                        }
 
                         switch (rendererIndex) {
                             case TRACK_TYPE_VIDEO:
@@ -354,14 +349,19 @@ class TrackSelectionHelper {
      *
      * @param rendererIndex - the index of the renderer that this adaptive object refer.
      * @param groupIndex    - the index of the group this adaptive object refer.
+     * @param trackIndex    - the index of the track this adaptive object refer.
      * @param format        - the actual format of the adaptive object.
      */
-    private boolean maybeAddAdaptiveTrack(int rendererIndex, int groupIndex, Format format) {
+    private boolean maybeAddAdaptiveTrack(int rendererIndex, int groupIndex, int trackIndex, Format format) {
         String uniqueId = getUniqueId(rendererIndex, groupIndex, TRACK_ADAPTIVE);
+
         if (isAdaptive(rendererIndex, groupIndex) && !adaptiveTrackAlreadyExist(uniqueId, rendererIndex)) {
             switch (rendererIndex) {
                 case TRACK_TYPE_VIDEO:
+                    String nonAdaptiveUniqueId = getUniqueId(rendererIndex, groupIndex, trackIndex);
                     videoTracks.add(new VideoTrack(uniqueId, 0, 0, 0, format.selectionFlags, true));
+
+                    videoTracks.add(new VideoTrack(nonAdaptiveUniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false));
                     return true;
                 case TRACK_TYPE_AUDIO:
                     audioTracks.add(new AudioTrack(uniqueId, format.language, format.label, 0, format.channelCount, format.selectionFlags, true));
@@ -751,7 +751,7 @@ class TrackSelectionHelper {
         }
 
         for (BaseTrack track : trackList) {
-            if (track.getUniqueId().equals(uniqueId)) {
+            if (track.isAdaptive()) {
                 return true;
             }
         }
