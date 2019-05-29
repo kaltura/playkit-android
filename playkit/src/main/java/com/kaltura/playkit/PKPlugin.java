@@ -14,12 +14,6 @@ package com.kaltura.playkit;
 
 import android.content.Context;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import java.util.HashMap;
-import java.util.Map;
-
 public abstract class PKPlugin {
 
     public interface Factory {

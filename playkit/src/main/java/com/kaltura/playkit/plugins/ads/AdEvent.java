@@ -16,7 +16,6 @@ import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
-import com.kaltura.playkit.ads.PKAdPluginType;
 
 @SuppressWarnings("unused")
 public class AdEvent implements PKEvent {
