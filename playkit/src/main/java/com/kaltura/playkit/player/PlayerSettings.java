@@ -234,6 +234,7 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings useSinglePlayerInstance(boolean isRequired) {
         useSinglePlayerInstance = isRequired && isIMAPluginEnabled;
+        return this;
     }
   
     @Override
