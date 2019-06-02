@@ -12,10 +12,16 @@
 
 package com.kaltura.playkit.player;
 
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
+
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.player.vr.VRInteractionMode;
+import com.kaltura.playkit.player.vr.VRSettings;
 
 public class PlayerSettings implements Player.Settings {
 
@@ -32,7 +38,7 @@ public class PlayerSettings implements Player.Settings {
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
     private ABRSettings abrSettings = new ABRSettings();
-
+    private VRSettings vrSettings;
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -41,7 +47,6 @@ public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
-
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
@@ -113,6 +118,10 @@ public class PlayerSettings implements Player.Settings {
 
     public PKAspectRatioResizeMode getAspectRatioResizeMode(){
         return resizeMode;
+    }
+
+    public VRSettings getVRSettings() {
+        return vrSettings;
     }
 
     @Override
@@ -222,5 +231,33 @@ public class PlayerSettings implements Player.Settings {
     public Player.Settings setHideVideoViews(boolean hide) {
         isVideoViewHidden = hide;
         return this;
+    }
+
+    @Override
+    public Player.Settings setVRSettings(VRSettings vrSettings) {
+        this.vrSettings = vrSettings;
+        return this;
+    }
+
+    private boolean isVRModeSupported(Context context, VRInteractionMode mode) {
+        switch (mode) {
+            case Touch:
+                //Always supported
+                return true;
+            case Motion:
+            case MotionWithTouch:
+                SensorManager motionSensorManager = (SensorManager) context
+                        .getSystemService(Context.SENSOR_SERVICE);
+                return motionSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) != null;
+            case CardboardMotion:
+            case CardboardMotionWithTouch:
+                SensorManager cardboardSensorManager = (SensorManager) context
+                        .getSystemService(Context.SENSOR_SERVICE);
+                Sensor accelerometerSensor = cardboardSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+                Sensor gyroSensor = cardboardSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+                return accelerometerSensor != null && gyroSensor != null;
+            default:
+                return true;
+        }
     }
 }

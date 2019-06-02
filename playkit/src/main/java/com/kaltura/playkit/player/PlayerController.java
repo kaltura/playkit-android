@@ -213,12 +213,7 @@ public class PlayerController implements Player {
     }
 
     private void initSourceConfig(PKMediaEntry mediaEntry, PKMediaSource source) {
-        if (mediaEntry instanceof VRPKMediaEntry) {
-            VRPKMediaEntry vrEntry = (VRPKMediaEntry) mediaEntry;
-            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings, vrEntry.getVrSettings());
-        } else {
-            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
-        }
+        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
     }
 
     private String generateSessionId() {
@@ -447,7 +442,7 @@ public class PlayerController implements Player {
                         String errorStr =  "onLoadError Player Load error: " + PKPlayerErrorType.LOAD_ERROR;
                         log.e(errorStr);
                         PKError loadError = new PKError(PKPlayerErrorType.LOAD_ERROR, PKError.Severity.Recoverable, errorStr, error);
-                            eventListener.onEvent(new PlayerEvent.Error(loadError));
+                        eventListener.onEvent(new PlayerEvent.Error(loadError));
                     }
                 });
             } else {
@@ -703,7 +698,7 @@ public class PlayerController implements Player {
                                 }
 
                                 if ((isLiveMediaWithDvr() && mediaConfig.getStartPosition() == 0) ||
-                                                mediaConfig.getStartPosition() > 0) {
+                                        mediaConfig.getStartPosition() > 0) {
                                     startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                                 }
                             }
