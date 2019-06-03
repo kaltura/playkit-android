@@ -163,6 +163,7 @@ class TrackSelectionHelper {
 
             //run through the all track groups in current renderer.
             for (int groupIndex = 0; groupIndex < trackGroupArray.length; groupIndex++) {
+
                 // the track group of the current trackGroupArray.
                 trackGroup = trackGroupArray.get(groupIndex);
 
@@ -170,18 +171,11 @@ class TrackSelectionHelper {
                 for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
                     // the format of the current trackGroup.
                     format = trackGroup.getFormat(trackIndex);
-
-                    // Adding bitrate which is adaptive and selectable
-                    if (maybeAddAdaptiveTrack(rendererIndex, groupIndex, trackIndex, format)) {
-                        if (rendererIndex != TRACK_TYPE_VIDEO) {
-                            continue;
-                        }
-                    }
+                    maybeAddAdaptiveTrack(rendererIndex, groupIndex, format);
 
                     //filter all the unsupported and unknown formats.
-                    if (isFormatSupported(rendererIndex, groupIndex, trackIndex)) {
+                    if (isFormatSupported(rendererIndex, groupIndex, trackIndex) || PKCodecSupport.isFormatSupported(format, trackType)) {
                         String uniqueId = getUniqueId(rendererIndex, groupIndex, trackIndex);
-
                         switch (rendererIndex) {
                             case TRACK_TYPE_VIDEO:
                                 if (format.bitrate == -1 && format.codecs == null) {
@@ -353,27 +347,23 @@ class TrackSelectionHelper {
      *
      * @param rendererIndex - the index of the renderer that this adaptive object refer.
      * @param groupIndex    - the index of the group this adaptive object refer.
-     * @param trackIndex    - the index of the track this adaptive object refer.
      * @param format        - the actual format of the adaptive object.
      */
-    private boolean maybeAddAdaptiveTrack(int rendererIndex, int groupIndex, int trackIndex, Format format) {
+    private void maybeAddAdaptiveTrack(int rendererIndex, int groupIndex, Format format) {
         String uniqueId = getUniqueId(rendererIndex, groupIndex, TRACK_ADAPTIVE);
-
         if (isAdaptive(rendererIndex, groupIndex) && !adaptiveTrackAlreadyExist(uniqueId, rendererIndex)) {
             switch (rendererIndex) {
                 case TRACK_TYPE_VIDEO:
                     videoTracks.add(new VideoTrack(uniqueId, 0, 0, 0, format.selectionFlags, true));
-                    return false;
+                    break;
                 case TRACK_TYPE_AUDIO:
                     audioTracks.add(new AudioTrack(uniqueId, format.language, format.label, 0, format.channelCount, format.selectionFlags, true));
-                    return true;
+                    break;
                 case TRACK_TYPE_TEXT:
                     textTracks.add(new TextTrack(uniqueId, format.language, format.label, format.selectionFlags));
-                    return true;
+                    break;
             }
         }
-
-        return false;
     }
 
     /**
@@ -434,7 +424,7 @@ class TrackSelectionHelper {
 
         int[] uniqueTrackId = validateUniqueId(uniqueId);
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
-        int trackIndex = uniqueTrackId[TRACK_INDEX];
+
         requestedChangeTrackIds[rendererIndex] = uniqueId;
 
         DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
@@ -445,7 +435,7 @@ class TrackSelectionHelper {
 
 
         SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
-        overrideTrack(trackIndex, rendererIndex, override, parametersBuilder);
+        overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
     public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
@@ -458,7 +448,6 @@ class TrackSelectionHelper {
 
         int[] uniqueTrackId = validateUniqueId(uniqueIds.get(0));
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
-        int trackIndex = uniqueTrackId[TRACK_INDEX];
 
         requestedChangeTrackIds[rendererIndex] = uniqueIds.get(0);
 
@@ -466,7 +455,7 @@ class TrackSelectionHelper {
 
 
         SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
-        overrideTrack(trackIndex, rendererIndex, override, parametersBuilder);
+        overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
     private List<String> getABRUniqueIds(long minVideoBitrate, long maxVideoBitrate) {
@@ -717,8 +706,8 @@ class TrackSelectionHelper {
      * @param rendererIndex - renderer index on which we want to apply the change.
      * @param override      - the new selection with which we want to override the currently active track.
      */
-    private void overrideTrack(int trackIndex, int rendererIndex, SelectionOverride override, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
-        if (override != null && trackIndex != TRACK_ADAPTIVE) {
+    private void overrideTrack(int rendererIndex, SelectionOverride override, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
+        if (override != null) {
             //actually change track.
             TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(rendererIndex);
             parametersBuilder.setSelectionOverride(rendererIndex, trackGroups, override);
@@ -752,7 +741,7 @@ class TrackSelectionHelper {
         }
 
         for (BaseTrack track : trackList) {
-            if (track.isAdaptive()) {
+            if (track.getUniqueId().equals(uniqueId)) {
                 return true;
             }
         }
