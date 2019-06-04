@@ -536,7 +536,7 @@ public class PlayerController implements Player {
         }
 
         if (playerSettings.isUseSinglePlayerInstance()) {
-            if (isAdNotDisplaying()) {
+            if (!isAdDisplayed()) {
                 resumePlayer();
             }
         } else {
@@ -675,7 +675,7 @@ public class PlayerController implements Player {
         position = player.getCurrentPosition();
         duration = player.getDuration();
 
-        if (isAdNotDisplaying()) {
+        if (!isAdDisplayed()) {
             log.v("updateProgress new position/duration = " + position + "/" + duration);
             if (eventListener != null && position > 0 && duration > 0) {
                 eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
@@ -687,9 +687,9 @@ public class PlayerController implements Player {
 
     }
 
-    private boolean isAdNotDisplaying() {
+    private boolean isAdDisplayed() {
         AdController adController = player.getController(AdController.class);
-        return adController == null || (adController != null && !adController.isAdDisplayed());
+        return adController != null && adController.isAdDisplayed();
     }
 
     private Runnable initProgressAction() {
