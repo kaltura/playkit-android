@@ -176,16 +176,28 @@ public interface Player {
         /**
          *  Set the Player's AspectRatio resize Mode
          *
-         * @param resizeMode
+         * @param resizeMode Resize mode
          * @return - Player Settings
          */
         Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
 
         /**
+         * Do not prepare the content player when the Ad starts(if exists); instead content player will be prepared
+         * when content_resume_requested is called.
+         *
+         * Default value is set to 'false'.
+         *
+         * @param isRequired Do not prepare the content player while Ad is playing
+         * @return - Player Settings
+         */
+        Settings useSinglePlayerInstance(boolean isRequired);
+      
+        /**
          * Set the flag which handles the video view
          * @param hide video surface visibility
          */
         Settings setHideVideoViews(boolean hide);
+
     }
 
     /**
