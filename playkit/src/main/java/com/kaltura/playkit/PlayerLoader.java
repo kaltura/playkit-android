@@ -16,6 +16,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
 import com.kaltura.playkit.player.PlayerController;
 import com.kaltura.playkit.player.PlayerSettings;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
@@ -95,7 +96,7 @@ class PlayerLoader extends PlayerDecoratorBase {
         // Checking if IMA plugin is there from client app.
         // This flag 'setIMAPluginEnabled' is helping to set 'useSinglePlayerInstance' in PlayerSettings.
         PlayerSettings playerSettings = getPlayerSettings();
-        if (!loadedPlugins.containsKey("IMA") && playerSettings != null) {
+        if (!(playerEngineWrapper instanceof AdsPlayerEngineWrapper) && playerSettings != null) {
             playerSettings.setIMAPluginEnabled(false);
         }
     }

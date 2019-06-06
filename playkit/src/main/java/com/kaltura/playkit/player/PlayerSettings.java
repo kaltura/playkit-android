@@ -27,7 +27,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean allowClearLead = true;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
-    private boolean isIMAPluginEnabled = true;
+    private boolean isIMAPluginEnabled = true; // Flag required on `PlayerLoader` level because `useSinglePlayerInstance` flag can be set later by client app
     private boolean isVideoViewHidden;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
