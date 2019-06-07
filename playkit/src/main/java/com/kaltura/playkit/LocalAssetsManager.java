@@ -43,7 +43,6 @@ public class LocalAssetsManager {
 
     private final Context context;
     private LocalDataStore localDataStore;
-    //private PKRequestParams.Adapter requestParamsAdapter;
     private PKRequestParams.Adapter licenseRequestParamAdapter;
 
     private Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -51,10 +50,6 @@ public class LocalAssetsManager {
     public void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
         this.licenseRequestParamAdapter = licenseRequestAdapter;
     }
-
-    //public void setRequestParamsAdapter(PKRequestParams.Adapter requestParamsAdapter) {
-    //    this.requestParamsAdapter = requestParamsAdapter;
-    //}
 
     /**
      * Listener that notify about the result when registration flow is ended.
