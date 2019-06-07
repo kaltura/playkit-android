@@ -457,7 +457,6 @@ public class PlayerController implements Player {
                         String errorStr = "onLoadError Player Load error: " + PKPlayerErrorType.LOAD_ERROR;
                         log.e(errorStr);
                         PKError loadError = new PKError(PKPlayerErrorType.LOAD_ERROR, PKError.Severity.Recoverable, errorStr, error);
-
                         if (eventListener != null) {
                             eventListener.onEvent(new PlayerEvent.Error(loadError));
                         }
