@@ -21,7 +21,6 @@ import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKRequestParams;
 
-import java.io.IOException;
 
 /**
  * Created by anton.afanasiev on 13/12/2016.
