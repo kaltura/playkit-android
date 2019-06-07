@@ -19,8 +19,7 @@ package com.kaltura.playkit.utils;
 public class Consts {
 
     public static final String KALTURA = "Kaltura";
-
-
+    
 
     /**
      * Special constant representing an unset or unknown time or duration. Suitable for use in any
