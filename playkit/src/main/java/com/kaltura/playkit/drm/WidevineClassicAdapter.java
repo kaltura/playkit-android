@@ -19,6 +19,9 @@ import android.drm.DrmInfoEvent;
 
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKRequestParams;
+
+import java.io.IOException;
 
 /**
  * Created by anton.afanasiev on 13/12/2016.
@@ -45,7 +48,7 @@ class WidevineClassicAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean registerAsset(final String localAssetPath, String assetId, String licenseUri, final LocalAssetsManager.AssetRegistrationListener listener) {
+    public boolean registerAsset(final String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener) {
         WidevineClassicDrm widevineClassicDrm = new WidevineClassicDrm(context);
         widevineClassicDrm.setEventListener(new WidevineClassicDrm.EventListener() {
             @Override
@@ -75,8 +78,8 @@ class WidevineClassicAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, LocalAssetsManager.AssetRegistrationListener listener) {
-        return registerAsset(localAssetPath, assetId, licenseUri, listener);
+    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter,LocalAssetsManager.AssetRegistrationListener listener) {
+        return registerAsset(localAssetPath, assetId, licenseUri,  null, listener);
     }
 
     @Override
