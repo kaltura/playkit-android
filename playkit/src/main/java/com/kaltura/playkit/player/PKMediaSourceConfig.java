@@ -19,7 +19,6 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
-import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.player.vr.VRSettings;
 
 import java.util.List;
@@ -43,18 +42,20 @@ public class PKMediaSourceConfig {
         this.externalSubtitlesList = externalSubtitlesList;
     }
 
-    public PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
+    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings, VRSettings vrSettings) {
         this.mediaSource = source;
         this.mediaEntryType = (mediaConfig != null && mediaConfig.getMediaEntry() != null) ? mediaConfig.getMediaEntry().getMediaType() : PKMediaEntry.MediaEntryType.Unknown;
         this.playerSettings = playerSettings;
-        if (mediaConfig != null && mediaConfig.getMediaEntry() != null && mediaConfig.getMediaEntry() instanceof VRPKMediaEntry) {
-            this.vrSettings = playerSettings.getVRSettings() != null ? playerSettings.getVRSettings() : new VRSettings();
-        }
+        this.vrSettings = vrSettings;
         this.externalSubtitlesList = (mediaConfig != null && mediaConfig.getMediaEntry() != null && mediaConfig.getMediaEntry().getExternalSubtitleList() != null) ? mediaConfig.getMediaEntry().getExternalSubtitleList() : null;
     }
 
     public PKMediaSourceConfig(PKMediaSource source, PKMediaEntry.MediaEntryType mediaEntryType, List<PKExternalSubtitle> externalSubtitlesList, PlayerSettings playerSettings) {
         this(source, mediaEntryType, externalSubtitlesList, playerSettings, null);
+    }
+
+    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
+        this(mediaConfig, source, playerSettings, null);
     }
 
     public Uri getUrl() {
