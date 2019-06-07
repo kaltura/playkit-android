@@ -214,7 +214,12 @@ public class PlayerController implements Player {
     }
 
     private void initSourceConfig(PKMediaEntry mediaEntry, PKMediaSource source) {
-        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
+        if (mediaEntry instanceof VRPKMediaEntry) {
+            VRPKMediaEntry vrEntry = (VRPKMediaEntry) mediaEntry;
+            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings, vrEntry.getVrSettings());
+        } else {
+            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
+        }
     }
 
     private String generateSessionId() {
