@@ -341,9 +341,7 @@ class WidevineModularAdapter extends DrmAdapter {
         }
         return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest);
     }
-      //setKeyRequest add customdata here
-    //aap property on local asset manager to get license drrequest adapter
-    //in player there is call to adapt in
+
     private HttpDataSource.Factory buildDataSourceFactory() {
         return new DefaultHttpDataSourceFactory(getUserAgent(context), null);
     }
