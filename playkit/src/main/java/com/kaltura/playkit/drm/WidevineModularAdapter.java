@@ -325,15 +325,18 @@ class WidevineModularAdapter extends DrmAdapter {
 
     private byte[] executeKeyRequest(String licenseUrl, ExoMediaDrm.KeyRequest keyRequest, PKRequestParams.Adapter adapter) throws Exception {
 
-        PKRequestParams params = new PKRequestParams(Uri.parse(licenseUrl), new HashMap<>());
 
-        if (adapter != null) {
-            params = adapter.adapt(params);
-        }
+
         HttpMediaDrmCallback httpMediaDrmCallback = new HttpMediaDrmCallback(licenseUrl, buildDataSourceFactory());
-        for (Map.Entry<String, String> entry : params.headers.entrySet()) {
-            if (entry != null) {
-                httpMediaDrmCallback.setKeyRequestProperty(entry.getKey(), entry.getValue());
+        if (adapter != null) {
+            PKRequestParams params = new PKRequestParams(Uri.parse(licenseUrl), new HashMap<>());
+            params = adapter.adapt(params);
+            if (params != null && params.headers != null) {
+                for (Map.Entry<String, String> entry : params.headers.entrySet()) {
+                    if (entry != null) {
+                        httpMediaDrmCallback.setKeyRequestProperty(entry.getKey(), entry.getValue());
+                    }
+                }
             }
         }
         return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest);
