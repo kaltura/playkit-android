@@ -197,7 +197,6 @@ public interface Player {
          * @param hide video surface visibility
          */
         Settings setHideVideoViews(boolean hide);
-
     }
 
     /**
