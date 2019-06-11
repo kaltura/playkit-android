@@ -139,7 +139,7 @@ public class PKMediaEntry implements Parcelable {
         if (sources != null) {
             dest.writeTypedList(this.sources);
         } else {
-            dest.writeTypedList(Collections.EMPTY_LIST);
+            dest.writeTypedList(Collections.emptyList());
         }
         dest.writeLong(this.duration);
         dest.writeInt(this.mediaType == null ? -1 : this.mediaType.ordinal());
