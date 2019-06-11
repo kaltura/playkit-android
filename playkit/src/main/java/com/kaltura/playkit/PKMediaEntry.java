@@ -31,6 +31,7 @@ public class PKMediaEntry implements Parcelable {
     private List<PKMediaSource> sources;
     private long duration; //in milliseconds
     private MediaEntryType mediaType;
+    private boolean isVRMediaType;
     private Map<String, String> metadata;
     private List<PKExternalSubtitle> externalSubtitleList;
 
@@ -45,6 +46,11 @@ public class PKMediaEntry implements Parcelable {
 
     public PKMediaEntry setName(String name) {
         this.name = name;
+        return this;
+    }
+
+    public PKMediaEntry setIsVRMediaType(boolean isVRMediaType) {
+        this.isVRMediaType = isVRMediaType;
         return this;
     }
 
@@ -64,6 +70,10 @@ public class PKMediaEntry implements Parcelable {
     public PKMediaEntry setSources(List<PKMediaSource> sources) {
         this.sources = sources;
         return this;
+    }
+
+    public boolean isVRMediaType() {
+        return isVRMediaType;
     }
 
     public List<PKMediaSource> getSources() {
