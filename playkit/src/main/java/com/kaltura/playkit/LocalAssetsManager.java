@@ -43,8 +43,13 @@ public class LocalAssetsManager {
 
     private final Context context;
     private LocalDataStore localDataStore;
+    private PKRequestParams.Adapter licenseRequestParamAdapter;
 
     private Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    public void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
+        this.licenseRequestParamAdapter = licenseRequestAdapter;
+    }
 
     /**
      * Listener that notify about the result when registration flow is ended.
@@ -153,7 +158,7 @@ public class LocalAssetsManager {
                     DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(drmParams.getScheme(), context, localDataStore);
                     String licenseUri = drmParams.getLicenseUri();
 
-                    boolean isRegistered = drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, listener);
+                    boolean isRegistered = drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, licenseRequestParamAdapter, listener);
                     if (isRegistered) {
                         localDataStore.save(buildAssetKey(assetId), buildMediaFormatValueAsByteArray(mediaFormat, drmParams.getScheme()));
                     }
