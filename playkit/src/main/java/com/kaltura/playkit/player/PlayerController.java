@@ -30,6 +30,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
+import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
