@@ -30,6 +30,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
+import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
 import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
 
@@ -165,6 +166,11 @@ public class PlayerController implements Player {
             return;
         }
 
+        // Checking if no plugin is there from client app do make sure use single if false.
+        if (!(playerEngineWrapper instanceof AdsPlayerEngineWrapper) && playerSettings != null) {
+            playerSettings.useSinglePlayerInstance(false);
+        }
+        
         boolean is360Supported = mediaConfig.getMediaEntry() instanceof VRPKMediaEntry && playerSettings.isVRPlayerEnabled();
         PlayerEngineType incomingPlayerType = PlayerEngineFactory.selectPlayerType(sourceConfig.mediaSource.getMediaFormat(), is360Supported);
 
