@@ -110,11 +110,6 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     @Override
     public void destroy() {
-        PlayerSettings playerSettings = getPlayerSettings();
-        if (playerSettings != null) {
-            playerSettings.setIMAPluginEnabled(true);
-        }
-
         stop();
         releasePlugins();
         releasePlayer();
