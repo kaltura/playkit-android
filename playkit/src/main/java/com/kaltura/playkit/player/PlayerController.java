@@ -547,7 +547,7 @@ public class PlayerController implements Player {
             }
         }
 
-        if (playerSettings.isUseSinglePlayerInstance()) {
+        if (player != null && playerSettings.isUseSinglePlayerInstance()) {
             if (!isAdDisplayed()) {
                 resumePlayer();
             }
