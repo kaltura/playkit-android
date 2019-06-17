@@ -188,10 +188,10 @@ public interface Player {
          *
          * Default value is set to 'false'.
          *
-         * @param isRequired Do not prepare the content player while Ad is playing
+         * @param forceSinglePlayerEngine Do not prepare the content player while Ad is playing
          * @return - Player Settings
          */
-        Settings useSinglePlayerInstance(boolean isRequired);
+        Settings forceSinglePlayerEngine(boolean forceSinglePlayerEngine);
       
         /**
          * Set the flag which handles the video view

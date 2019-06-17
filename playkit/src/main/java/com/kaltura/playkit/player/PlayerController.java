@@ -30,6 +30,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
+import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
@@ -162,6 +163,11 @@ public class PlayerController implements Player {
         if (sourceConfig == null) {
             log.e("source config not found. Can not prepare source.");
             return;
+        }
+
+        // Checking if AdsPlayerEngineWrapper is not there then make sure use force single if false.
+        if (!(playerEngineWrapper instanceof AdsPlayerEngineWrapper)) {
+            playerSettings.forceSinglePlayerEngine(false);
         }
 
         boolean is360Supported = mediaConfig.getMediaEntry().isVRMediaType() && playerSettings.isVRPlayerEnabled();
@@ -297,8 +303,8 @@ public class PlayerController implements Player {
             PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
             cancelUpdateProgress();
 
-            log.d("stop() isUseSinglePlayerInstance = " + playerSettings.isUseSinglePlayerInstance());
-            if (!playerSettings.isUseSinglePlayerInstance()) {
+            log.d("stop() isForceSinglePlayerEngine = " + playerSettings.isForceSinglePlayerEngine());
+            if (!playerSettings.isForceSinglePlayerEngine()) {
                 isPlayerStopped = true;
             }
 
@@ -514,8 +520,8 @@ public class PlayerController implements Player {
             cancelUpdateProgress();
             player.release();
 
-            log.d("onApplicationPaused isUseSinglePlayerInstance = " + playerSettings.isUseSinglePlayerInstance());
-            if (!playerSettings.isUseSinglePlayerInstance()) {
+            log.d("onApplicationPaused isForceSinglePlayerEngine = " + playerSettings.isForceSinglePlayerEngine());
+            if (!playerSettings.isForceSinglePlayerEngine()) {
                 togglePlayerListeners(false);
             }
         }
@@ -530,13 +536,13 @@ public class PlayerController implements Player {
         if (isPlayerStopped) {
             log.e("onApplicationResumed called during player state = STOPPED");
 
-            if (!playerSettings.isUseSinglePlayerInstance()) {
-                log.d("onApplicationResumed called during player state = STOPPED - return, isUseSinglePlayerInstance = " + playerSettings.isUseSinglePlayerInstance());
+            if (!playerSettings.isForceSinglePlayerEngine()) {
+                log.d("onApplicationResumed called during player state = STOPPED - return, isForceSinglePlayerEngine = " + playerSettings.isForceSinglePlayerEngine());
                 return;
             }
         }
 
-        if (playerSettings.isUseSinglePlayerInstance()) {
+        if (player != null && playerSettings.isForceSinglePlayerEngine()) {
             if (!isAdDisplayed()) {
                 resumePlayer();
             }
