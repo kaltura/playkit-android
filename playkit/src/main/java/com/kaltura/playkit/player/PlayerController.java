@@ -168,7 +168,7 @@ public class PlayerController implements Player {
 
         // Checking if no plugin is there from client app do make sure use single if false.
         if (!(playerEngineWrapper instanceof AdsPlayerEngineWrapper) && playerSettings != null) {
-            playerSettings.useSinglePlayerInstance(false);
+            playerSettings.preperContentAfterAd(false);
         }
         
         boolean is360Supported = mediaConfig.getMediaEntry() instanceof VRPKMediaEntry && playerSettings.isVRPlayerEnabled();
@@ -309,8 +309,8 @@ public class PlayerController implements Player {
             PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
             cancelUpdateProgress();
 
-            log.d("stop() isUseSinglePlayerInstance = " + playerSettings.isUseSinglePlayerInstance());
-            if (!playerSettings.isUseSinglePlayerInstance()) {
+            log.d("stop() isPreperContentAfterAd = " + playerSettings.isPreperContentAfterAd());
+            if (!playerSettings.isPreperContentAfterAd()) {
                 isPlayerStopped = true;
             }
 
@@ -525,8 +525,8 @@ public class PlayerController implements Player {
             cancelUpdateProgress();
             player.release();
 
-            log.d("onApplicationPaused isUseSinglePlayerInstance = " + playerSettings.isUseSinglePlayerInstance());
-            if (!playerSettings.isUseSinglePlayerInstance()) {
+            log.d("onApplicationPaused isPreperContentAfterAd = " + playerSettings.isPreperContentAfterAd());
+            if (!playerSettings.isPreperContentAfterAd()) {
                 togglePlayerListeners(false);
             }
         }
@@ -541,13 +541,13 @@ public class PlayerController implements Player {
         if (isPlayerStopped) {
             log.e("onApplicationResumed called during player state = STOPPED");
 
-            if (!playerSettings.isUseSinglePlayerInstance()) {
-                log.d("onApplicationResumed called during player state = STOPPED - return, isUseSinglePlayerInstance = " + playerSettings.isUseSinglePlayerInstance());
+            if (!playerSettings.isPreperContentAfterAd()) {
+                log.d("onApplicationResumed called during player state = STOPPED - return, isPreperContentAfterAd = " + playerSettings.isPreperContentAfterAd());
                 return;
             }
         }
 
-        if (player != null && playerSettings.isUseSinglePlayerInstance()) {
+        if (player != null && playerSettings.isPreperContentAfterAd()) {
             if (!isAdDisplayed()) {
                 resumePlayer();
             }

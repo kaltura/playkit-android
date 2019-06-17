@@ -36,7 +36,7 @@ public class PlayerSettings implements Player.Settings {
      * Flag helping to check if client app wants to use a single player instance at a time
      * Only if IMA plugin is there then only this flag is set to true.
      */
-    private boolean useSinglePlayerInstance = false;
+    private boolean preperContentAfterAd = false;
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -119,8 +119,8 @@ public class PlayerSettings implements Player.Settings {
         return resizeMode;
     }
 
-    public boolean isUseSinglePlayerInstance() {
-        return useSinglePlayerInstance;
+    public boolean isPreperContentAfterAd() {
+        return preperContentAfterAd;
     }
 
     @Override
@@ -227,8 +227,8 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings useSinglePlayerInstance(boolean isRequired) {
-        useSinglePlayerInstance = isRequired;
+    public Player.Settings preperContentAfterAd(boolean preperContentAfterAd) {
+        preperContentAfterAd = preperContentAfterAd;
         return this;
     }
   
