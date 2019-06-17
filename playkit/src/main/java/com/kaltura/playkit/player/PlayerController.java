@@ -519,11 +519,7 @@ public class PlayerController implements Player {
             }
             cancelUpdateProgress();
             player.release();
-
-            log.d("onApplicationPaused isForceSinglePlayerEngine = " + playerSettings.isForceSinglePlayerEngine());
-            if (!playerSettings.isForceSinglePlayerEngine()) {
-                togglePlayerListeners(false);
-            }
+            togglePlayerListeners(false);
         }
     }
 
