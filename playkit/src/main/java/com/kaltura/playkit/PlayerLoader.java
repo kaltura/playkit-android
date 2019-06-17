@@ -132,14 +132,6 @@ class PlayerLoader extends PlayerDecoratorBase {
         getPlayer().onApplicationPaused();
     }
 
-    private PlayerSettings getPlayerSettings() {
-        if (getPlayer().getSettings() instanceof PlayerSettings) {
-            return ((PlayerSettings) getPlayer().getSettings());
-        }
-
-        return null;
-    }
-
     private void releasePlayer() {
         getPlayer().destroy();
     }
