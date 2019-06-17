@@ -27,7 +27,6 @@ public class PlayerSettings implements Player.Settings {
     private boolean allowClearLead = true;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
-    private boolean isIMAPluginEnabled = true; // Flag required on `PlayerLoader` level because `useSinglePlayerInstance` flag can be set later by client app
     private boolean isVideoViewHidden;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
@@ -37,7 +36,7 @@ public class PlayerSettings implements Player.Settings {
      * Flag helping to check if client app wants to use a single player instance at a time
      * Only if IMA plugin is there then only this flag is set to true.
      */
-    private boolean useSinglePlayerInstance = false;
+    private boolean forceSinglePlayerEngine = false;
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -120,12 +119,8 @@ public class PlayerSettings implements Player.Settings {
         return resizeMode;
     }
 
-    public boolean isUseSinglePlayerInstance() {
-        return useSinglePlayerInstance;
-    }
-
-    public void setIMAPluginEnabled(boolean isIMAPluginEnabled) {
-        this.isIMAPluginEnabled = isIMAPluginEnabled;
+    public boolean isForceSinglePlayerEngine() {
+        return forceSinglePlayerEngine;
     }
 
     @Override
@@ -232,8 +227,8 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings useSinglePlayerInstance(boolean isRequired) {
-        useSinglePlayerInstance = isRequired && isIMAPluginEnabled;
+    public Player.Settings forceSinglePlayerEngine(boolean forceSinglePlayerEngine) {
+        this.forceSinglePlayerEngine = forceSinglePlayerEngine;
         return this;
     }
   
