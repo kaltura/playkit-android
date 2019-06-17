@@ -309,8 +309,8 @@ public class PlayerController implements Player {
             PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
             cancelUpdateProgress();
 
-            log.d("stop() isPreperContentAfterAd = " + playerSettings.isPreperContentAfterAd());
-            if (!playerSettings.isPreperContentAfterAd()) {
+            log.d("stop() isForceSinglePlayerEngine = " + playerSettings.isForceSinglePlayerEngine());
+            if (!playerSettings.isForceSinglePlayerEngine()) {
                 isPlayerStopped = true;
             }
 
@@ -525,8 +525,8 @@ public class PlayerController implements Player {
             cancelUpdateProgress();
             player.release();
 
-            log.d("onApplicationPaused isPreperContentAfterAd = " + playerSettings.isPreperContentAfterAd());
-            if (!playerSettings.isPreperContentAfterAd()) {
+            log.d("onApplicationPaused isForceSinglePlayerEngine = " + playerSettings.isForceSinglePlayerEngine());
+            if (!playerSettings.isForceSinglePlayerEngine()) {
                 togglePlayerListeners(false);
             }
         }
@@ -541,13 +541,13 @@ public class PlayerController implements Player {
         if (isPlayerStopped) {
             log.e("onApplicationResumed called during player state = STOPPED");
 
-            if (!playerSettings.isPreperContentAfterAd()) {
-                log.d("onApplicationResumed called during player state = STOPPED - return, isPreperContentAfterAd = " + playerSettings.isPreperContentAfterAd());
+            if (!playerSettings.isForceSinglePlayerEngine()) {
+                log.d("onApplicationResumed called during player state = STOPPED - return, isForceSinglePlayerEngine = " + playerSettings.isForceSinglePlayerEngine());
                 return;
             }
         }
 
-        if (player != null && playerSettings.isPreperContentAfterAd()) {
+        if (player != null && playerSettings.isForceSinglePlayerEngine()) {
             if (!isAdDisplayed()) {
                 resumePlayer();
             }
