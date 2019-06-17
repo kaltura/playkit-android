@@ -190,7 +190,7 @@ public interface Player {
          * @param preperContentAfterAd Do not prepare the content player while Ad is playing
          * @return - Player Settings
          */
-        Settings preperContentAfterAd(boolean preperContentAfterAd);
+        Settings forceSinglePlayerEngine(boolean preperContentAfterAd);
       
         /**
          * Set the flag which handles the video view

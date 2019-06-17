@@ -227,8 +227,8 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings preperContentAfterAd(boolean preperContentAfterAd) {
-        preperContentAfterAd = preperContentAfterAd;
+    public Player.Settings forceSinglePlayerEngine(boolean forceSinglePlayerEngine) {
+        this.forceSinglePlayerEngine = forceSinglePlayerEngine;
         return this;
     }
   

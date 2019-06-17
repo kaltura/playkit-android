@@ -168,7 +168,7 @@ public class PlayerController implements Player {
 
         // Checking if no plugin is there from client app do make sure use single if false.
         if (!(playerEngineWrapper instanceof AdsPlayerEngineWrapper) && playerSettings != null) {
-            playerSettings.preperContentAfterAd(false);
+            playerSettings.forceSinglePlayerEngine(false);
         }
         
         boolean is360Supported = mediaConfig.getMediaEntry() instanceof VRPKMediaEntry && playerSettings.isVRPlayerEnabled();
