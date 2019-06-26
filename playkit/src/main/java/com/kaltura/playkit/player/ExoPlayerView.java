@@ -236,8 +236,8 @@ class ExoPlayerView extends BaseExoplayerView {
 
         if (!isVideoViewVisible) {
             videoSurface.setVisibility(VISIBLE);
-            subtitleView.setVisibility(VISIBLE);
         }
+        subtitleView.setVisibility(VISIBLE);
     }
 
     @Override
