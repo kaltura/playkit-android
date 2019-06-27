@@ -112,18 +112,20 @@ public class PKMediaEntry implements Parcelable {
 
     public PKMediaEntry setExternalSubtitleList(List<PKExternalSubtitle> externalSubtitleList) {
         this.externalSubtitleList = externalSubtitleList;
-        ListIterator<PKExternalSubtitle> externalSubtitleListIterator = externalSubtitleList.listIterator();
+        if (externalSubtitleList != null) {
+            ListIterator<PKExternalSubtitle> externalSubtitleListIterator = externalSubtitleList.listIterator();
 
-        while (externalSubtitleListIterator.hasNext()) {
-            PKExternalSubtitle pkExternalSubtitle = externalSubtitleListIterator.next();
-            PKSubtitleFormat urlFormat = PKSubtitleFormat.valueOfUrl(pkExternalSubtitle.getUrl());
+            while (externalSubtitleListIterator.hasNext()) {
+                PKExternalSubtitle pkExternalSubtitle = externalSubtitleListIterator.next();
+                PKSubtitleFormat urlFormat = PKSubtitleFormat.valueOfUrl(pkExternalSubtitle.getUrl());
 
-            if (urlFormat != null && pkExternalSubtitle.getMimeType() == null) {
-                pkExternalSubtitle.setMimeType(urlFormat);
-            }
+                if (urlFormat != null && pkExternalSubtitle.getMimeType() == null) {
+                    pkExternalSubtitle.setMimeType(urlFormat);
+                }
 
-            if (TextUtils.isEmpty(pkExternalSubtitle.getUrl()) || (urlFormat != null && !urlFormat.mimeType.equals(pkExternalSubtitle.getMimeType()))) {
-                externalSubtitleListIterator.remove();
+                if (TextUtils.isEmpty(pkExternalSubtitle.getUrl()) || (urlFormat != null && !urlFormat.mimeType.equals(pkExternalSubtitle.getMimeType()))) {
+                    externalSubtitleListIterator.remove();
+                }
             }
         }
 
