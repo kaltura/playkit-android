@@ -132,7 +132,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         if (assetUri != null) {
             isFirstPlayback = false;
         }
-        assetUri = mediaSourceConfig.getUrl().toString();
+        assetUri = mediaSourceConfig.getRequestParams().url.toString();
 
         String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
         String playbackUri = getWidevineAssetPlaybackUri(assetUri);

@@ -58,6 +58,7 @@ import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
@@ -73,6 +74,7 @@ import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -179,10 +181,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private void initializePlayer() {
         DefaultTrackSelector trackSelector = initializeTrackSelector();
 
-        final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(), playerSettings.getLicenseRequestAdapter());
+        final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener);
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context, playerSettings.allowClearLead(), playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
-      
+
         player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
         window = new Timeline.Window();
         setPlayerListeners();
@@ -272,9 +274,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             return null;
         }
 
-        Uri uri = sourceConfig.getUrl();
+        PKRequestParams requestParams = sourceConfig.getRequestParams();
+        Uri uri = requestParams.url;
 
-        final DataSource.Factory dataSourceFactory = getDataSourceFactory();
+        final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
 
         switch (format) {
             case dash:
@@ -330,23 +333,23 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @NonNull
     private MediaSource buildExternalSubtitleSource(int subtitleId, PKExternalSubtitle pkExternalSubtitle) {
-            // Build the subtitle MediaSource.
-            Format subtitleFormat = Format.createTextContainerFormat(
-                    String.valueOf(subtitleId), // An identifier for the track. May be null.
-                    pkExternalSubtitle.getLabel(),
-                    pkExternalSubtitle.getContainerMimeType(),
-                    pkExternalSubtitle.getMimeType(), // The mime type. Must be set correctly.
-                    pkExternalSubtitle.getCodecs(),
-                    pkExternalSubtitle.getBitrate(),
-                    pkExternalSubtitle.getSelectionFlags(),
-                    pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
+        // Build the subtitle MediaSource.
+        Format subtitleFormat = Format.createTextContainerFormat(
+                String.valueOf(subtitleId), // An identifier for the track. May be null.
+                pkExternalSubtitle.getLabel(),
+                pkExternalSubtitle.getContainerMimeType(),
+                pkExternalSubtitle.getMimeType(), // The mime type. Must be set correctly.
+                pkExternalSubtitle.getCodecs(),
+                pkExternalSubtitle.getBitrate(),
+                pkExternalSubtitle.getSelectionFlags(),
+                pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
 
-            return new SingleSampleMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
+        return new SingleSampleMediaSource.Factory(dataSourceFactory)
+                .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
     }
 
-    private HttpDataSource.Factory getHttpDataSourceFactory() {
-        
+    private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
+
         if (httpDataSourceFactory == null) {
             final String userAgent = getUserAgent(context);
             final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
@@ -365,7 +368,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 }
 
                 httpDataSourceFactory = new OkHttpDataSourceFactory(builder.build(), userAgent);
-
             } else {
 
                 httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent,
@@ -374,14 +376,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             }
         }
 
+        if (headers != null) {
+            HttpDataSource.RequestProperties defaultRequestProperties = httpDataSourceFactory.getDefaultRequestProperties();
+
+            for (Map.Entry<String, String> headerEntry : headers.entrySet()) {
+                defaultRequestProperties.remove(headerEntry.getKey());
+                defaultRequestProperties.set(headerEntry.getKey(), headerEntry.getValue());
+            }
+        }
         return httpDataSourceFactory;
     }
 
-    private DataSource.Factory getDataSourceFactory() {
-        if (dataSourceFactory == null) {
-            dataSourceFactory = new DefaultDataSourceFactory(context, getHttpDataSourceFactory());
-        }
-        return dataSourceFactory;
+    private DataSource.Factory getDataSourceFactory(Map<String, String> headers) {
+        return new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
     }
 
     private static String getUserAgent(Context context) {
@@ -999,10 +1006,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private TrackSelectionHelper.TracksErrorListener initTracksErrorListener() {
         return pkError -> {
-                currentError = pkError;
-                if (eventListener != null) {
-                    eventListener.onEvent(PlayerEvent.Type.ERROR);
-                }
+            currentError = pkError;
+            if (eventListener != null) {
+                eventListener.onEvent(PlayerEvent.Type.ERROR);
+            }
         };
     }
 
