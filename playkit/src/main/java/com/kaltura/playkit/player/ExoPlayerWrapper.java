@@ -388,8 +388,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private DataSource.Factory getDataSourceFactory(Map<String, String> headers) {
-        return new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
-    }
+        dataSourceFactory = new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
+        return dataSourceFactory;    }
 
     private static String getUserAgent(Context context) {
         String applicationName;
