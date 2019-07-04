@@ -20,6 +20,7 @@ import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
 
 @SuppressWarnings("unused")
@@ -187,16 +188,22 @@ public interface Player {
          *
          * Default value is set to 'false'.
          *
-         * @param preperContentAfterAd Do not prepare the content player while Ad is playing
+         * @param forceSinglePlayerEngine Do not prepare the content player while Ad is playing
          * @return - Player Settings
          */
-        Settings forceSinglePlayerEngine(boolean preperContentAfterAd);
+        Settings forceSinglePlayerEngine(boolean forceSinglePlayerEngine);
       
         /**
          * Set the flag which handles the video view
          * @param hide video surface visibility
          */
         Settings setHideVideoViews(boolean hide);
+
+        /**
+         * Set VR Settings on the player
+         * @param vrSettings vr configuration
+         */
+        Settings setVRSettings(VRSettings vrSettings);
     }
 
     /**

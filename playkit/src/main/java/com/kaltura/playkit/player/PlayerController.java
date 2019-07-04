@@ -31,7 +31,6 @@ import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
-import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
@@ -166,12 +165,12 @@ public class PlayerController implements Player {
             return;
         }
 
-        // Checking if no plugin is there from client app do make sure use single if false.
-        if (!(playerEngineWrapper instanceof AdsPlayerEngineWrapper) && playerSettings != null) {
+        // Checking if AdsPlayerEngineWrapper is not there then make sure use force single if false.
+        if (!(playerEngineWrapper instanceof AdsPlayerEngineWrapper)) {
             playerSettings.forceSinglePlayerEngine(false);
         }
-        
-        boolean is360Supported = mediaConfig.getMediaEntry() instanceof VRPKMediaEntry && playerSettings.isVRPlayerEnabled();
+
+        boolean is360Supported = mediaConfig.getMediaEntry().isVRMediaType() && playerSettings.isVRPlayerEnabled();
         PlayerEngineType incomingPlayerType = PlayerEngineFactory.selectPlayerType(sourceConfig.mediaSource.getMediaFormat(), is360Supported);
 
         switchPlayersIfRequired(incomingPlayerType);
@@ -220,12 +219,7 @@ public class PlayerController implements Player {
     }
 
     private void initSourceConfig(PKMediaEntry mediaEntry, PKMediaSource source) {
-        if (mediaEntry instanceof VRPKMediaEntry) {
-            VRPKMediaEntry vrEntry = (VRPKMediaEntry) mediaEntry;
-            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings, vrEntry.getVrSettings());
-        } else {
-            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
-        }
+        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
     }
 
     private String generateSessionId() {
@@ -463,6 +457,7 @@ public class PlayerController implements Player {
                         String errorStr = "onLoadError Player Load error: " + PKPlayerErrorType.LOAD_ERROR;
                         log.e(errorStr);
                         PKError loadError = new PKError(PKPlayerErrorType.LOAD_ERROR, PKError.Severity.Recoverable, errorStr, error);
+
                         if (eventListener != null) {
                             eventListener.onEvent(new PlayerEvent.Error(loadError));
                         }

@@ -31,6 +31,7 @@ public class PKMediaEntry implements Parcelable {
     private List<PKMediaSource> sources;
     private long duration; //in milliseconds
     private MediaEntryType mediaType;
+    private boolean isVRMediaType;
     private Map<String, String> metadata;
     private List<PKExternalSubtitle> externalSubtitleList;
 
@@ -45,6 +46,11 @@ public class PKMediaEntry implements Parcelable {
 
     public PKMediaEntry setName(String name) {
         this.name = name;
+        return this;
+    }
+
+    public PKMediaEntry setIsVRMediaType(boolean isVRMediaType) {
+        this.isVRMediaType = isVRMediaType;
         return this;
     }
 
@@ -64,6 +70,10 @@ public class PKMediaEntry implements Parcelable {
     public PKMediaEntry setSources(List<PKMediaSource> sources) {
         this.sources = sources;
         return this;
+    }
+
+    public boolean isVRMediaType() {
+        return isVRMediaType;
     }
 
     public List<PKMediaSource> getSources() {
@@ -102,18 +112,20 @@ public class PKMediaEntry implements Parcelable {
 
     public PKMediaEntry setExternalSubtitleList(List<PKExternalSubtitle> externalSubtitleList) {
         this.externalSubtitleList = externalSubtitleList;
-        ListIterator<PKExternalSubtitle> externalSubtitleListIterator = externalSubtitleList.listIterator();
+        if (externalSubtitleList != null) {
+            ListIterator<PKExternalSubtitle> externalSubtitleListIterator = externalSubtitleList.listIterator();
 
-        while (externalSubtitleListIterator.hasNext()) {
-            PKExternalSubtitle pkExternalSubtitle = externalSubtitleListIterator.next();
-            PKSubtitleFormat urlFormat = PKSubtitleFormat.valueOfUrl(pkExternalSubtitle.getUrl());
+            while (externalSubtitleListIterator.hasNext()) {
+                PKExternalSubtitle pkExternalSubtitle = externalSubtitleListIterator.next();
+                PKSubtitleFormat urlFormat = PKSubtitleFormat.valueOfUrl(pkExternalSubtitle.getUrl());
 
-            if (urlFormat != null && pkExternalSubtitle.getMimeType() == null) {
-                pkExternalSubtitle.setMimeType(urlFormat);
-            }
+                if (urlFormat != null && pkExternalSubtitle.getMimeType() == null) {
+                    pkExternalSubtitle.setMimeType(urlFormat);
+                }
 
-            if (TextUtils.isEmpty(pkExternalSubtitle.getUrl()) || (urlFormat != null && !urlFormat.mimeType.equals(pkExternalSubtitle.getMimeType()))) {
-                externalSubtitleListIterator.remove();
+                if (TextUtils.isEmpty(pkExternalSubtitle.getUrl()) || (urlFormat != null && !urlFormat.mimeType.equals(pkExternalSubtitle.getMimeType()))) {
+                    externalSubtitleListIterator.remove();
+                }
             }
         }
 
@@ -139,10 +151,11 @@ public class PKMediaEntry implements Parcelable {
         if (sources != null) {
             dest.writeTypedList(this.sources);
         } else {
-            dest.writeTypedList(Collections.EMPTY_LIST);
+            dest.writeTypedList(Collections.emptyList());
         }
         dest.writeLong(this.duration);
         dest.writeInt(this.mediaType == null ? -1 : this.mediaType.ordinal());
+        dest.writeByte(this.isVRMediaType ? (byte) 1 : (byte) 0);
         if (this.metadata != null) {
             dest.writeInt(this.metadata.size());
             for (Map.Entry<String, String> entry : this.metadata.entrySet()) {
@@ -152,7 +165,7 @@ public class PKMediaEntry implements Parcelable {
         } else {
             dest.writeInt(-1);
         }
-        dest.writeTypedList(externalSubtitleList);
+        dest.writeTypedList(this.externalSubtitleList);
     }
 
     protected PKMediaEntry(Parcel in) {
@@ -162,11 +175,12 @@ public class PKMediaEntry implements Parcelable {
         this.duration = in.readLong();
         int tmpMediaType = in.readInt();
         this.mediaType = tmpMediaType == -1 ? null : MediaEntryType.values()[tmpMediaType];
+        this.isVRMediaType = in.readByte() != 0;
         int metadataSize = in.readInt();
         if (metadataSize == -1) {
             this.metadata = null;
         } else {
-            this.metadata = new HashMap<>(metadataSize);
+            this.metadata = new HashMap<String, String>(metadataSize);
             for (int i = 0; i < metadataSize; i++) {
                 String key = in.readString();
                 String value = in.readString();
@@ -175,7 +189,7 @@ public class PKMediaEntry implements Parcelable {
                 }
             }
         }
-        externalSubtitleList = in.createTypedArrayList(PKExternalSubtitle.CREATOR);
+        this.externalSubtitleList = in.createTypedArrayList(PKExternalSubtitle.CREATOR);
     }
 
     public static final Creator<PKMediaEntry> CREATOR = new Creator<PKMediaEntry>() {

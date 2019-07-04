@@ -12,10 +12,16 @@
 
 package com.kaltura.playkit.player;
 
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
+
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.player.vr.VRInteractionMode;
+import com.kaltura.playkit.player.vr.VRSettings;
 
 public class PlayerSettings implements Player.Settings {
 
@@ -32,6 +38,7 @@ public class PlayerSettings implements Player.Settings {
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
     private ABRSettings abrSettings = new ABRSettings();
+    private VRSettings vrSettings;
     /**
      * Flag helping to check if client app wants to use a single player instance at a time
      * Only if IMA plugin is there then only this flag is set to true.
@@ -45,7 +52,6 @@ public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
-
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
@@ -117,6 +123,10 @@ public class PlayerSettings implements Player.Settings {
 
     public PKAspectRatioResizeMode getAspectRatioResizeMode(){
         return resizeMode;
+    }
+
+    public VRSettings getVRSettings() {
+        return vrSettings;
     }
 
     public boolean isForceSinglePlayerEngine() {
@@ -235,6 +245,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setHideVideoViews(boolean hide) {
         isVideoViewHidden = hide;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setVRSettings(VRSettings vrSettings) {
+        this.vrSettings = vrSettings;
         return this;
     }
 }
