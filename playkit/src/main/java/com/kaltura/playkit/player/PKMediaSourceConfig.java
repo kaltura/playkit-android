@@ -42,11 +42,13 @@ public class PKMediaSourceConfig {
         this.externalSubtitlesList = externalSubtitlesList;
     }
 
-    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings, VRSettings vrSettings) {
+    public PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
         this.mediaSource = source;
         this.mediaEntryType = (mediaConfig != null && mediaConfig.getMediaEntry() != null) ? mediaConfig.getMediaEntry().getMediaType() : PKMediaEntry.MediaEntryType.Unknown;
         this.playerSettings = playerSettings;
-        this.vrSettings = vrSettings;
+        if (mediaConfig != null && mediaConfig.getMediaEntry() != null && mediaConfig.getMediaEntry().isVRMediaType()) {
+            this.vrSettings = playerSettings.getVRSettings() != null ? playerSettings.getVRSettings() : new VRSettings();
+        }
         this.externalSubtitlesList = (mediaConfig != null && mediaConfig.getMediaEntry() != null && mediaConfig.getMediaEntry().getExternalSubtitleList() != null) ? mediaConfig.getMediaEntry().getExternalSubtitleList() : null;
     }
 
@@ -54,16 +56,12 @@ public class PKMediaSourceConfig {
         this(source, mediaEntryType, externalSubtitlesList, playerSettings, null);
     }
 
-    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
-        this(mediaConfig, source, playerSettings, null);
-    }
-
-    public PKRequestParams getRequestParams() {
+    public Uri getUrl() {
         Uri uri = Uri.parse(mediaSource.getUrl());
         if (playerSettings.getContentRequestAdapter() == null) {
-            return new PKRequestParams(uri, null);
+            return uri;
         } else {
-            return playerSettings.getContentRequestAdapter().adapt(new PKRequestParams(uri, null));
+            return playerSettings.getContentRequestAdapter().adapt(new PKRequestParams(uri, null)).url;
         }
     }
 

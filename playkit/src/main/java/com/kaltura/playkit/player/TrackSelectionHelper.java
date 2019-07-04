@@ -174,7 +174,7 @@ class TrackSelectionHelper {
                     maybeAddAdaptiveTrack(rendererIndex, groupIndex, format);
 
                     //filter all the unsupported and unknown formats.
-                    if (isFormatSupported(rendererIndex, groupIndex, trackIndex) || PKCodecSupport.isFormatSupported(format, trackType)) {
+                    if (isFormatSupported(rendererIndex, groupIndex, trackIndex)) {
                         String uniqueId = getUniqueId(rendererIndex, groupIndex, trackIndex);
                         switch (rendererIndex) {
                             case TRACK_TYPE_VIDEO:
