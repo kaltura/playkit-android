@@ -56,12 +56,12 @@ public class PKMediaSourceConfig {
         this(source, mediaEntryType, externalSubtitlesList, playerSettings, null);
     }
 
-    public Uri getUrl() {
+    public PKRequestParams getRequestParams() {
         Uri uri = Uri.parse(mediaSource.getUrl());
         if (playerSettings.getContentRequestAdapter() == null) {
-            return uri;
+            return new PKRequestParams(uri, null);
         } else {
-            return playerSettings.getContentRequestAdapter().adapt(new PKRequestParams(uri, null)).url;
+            return playerSettings.getContentRequestAdapter().adapt(new PKRequestParams(uri, null));
         }
     }
 

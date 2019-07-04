@@ -144,8 +144,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private PKMediaSourceConfig sourceConfig;
     @NonNull private Profiler profiler = Profiler.NOOP;
 
-    private DataSource.Factory dataSourceFactory;
-    private HttpDataSource.Factory httpDataSourceFactory;
     private Timeline.Period period;
 
     ExoPlayerWrapper(Context context, PlayerSettings playerSettings, PlayerView rootPlayerView) {
@@ -344,43 +342,39 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 pkExternalSubtitle.getSelectionFlags(),
                 pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
 
-        return new SingleSampleMediaSource.Factory(dataSourceFactory)
+        return new SingleSampleMediaSource.Factory(getDataSourceFactory(null))
                 .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
     }
 
     private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
+        HttpDataSource.Factory httpDataSourceFactory;
+        final String userAgent = getUserAgent(context);
+        final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
 
-        if (httpDataSourceFactory == null) {
-            final String userAgent = getUserAgent(context);
-            final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
+        if (PKHttpClientManager.useOkHttp()) {
 
-            if (PKHttpClientManager.useOkHttp()) {
+            final OkHttpClient.Builder builder = PKHttpClientManager.newClientBuilder()
+                    .followRedirects(true)
+                    .followSslRedirects(crossProtocolRedirectEnabled)
+                    .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                    .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
 
-                final OkHttpClient.Builder builder = PKHttpClientManager.newClientBuilder()
-                        .followRedirects(true)
-                        .followSslRedirects(crossProtocolRedirectEnabled)
-                        .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-                        .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
-
-                final okhttp3.EventListener.Factory okListenerFactory = profiler.getOkListenerFactory();
-                if (okListenerFactory != null) {
-                    builder.eventListenerFactory(okListenerFactory);
-                }
-
-                httpDataSourceFactory = new OkHttpDataSourceFactory(builder.build(), userAgent);
-            } else {
-
-                httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent,
-                        DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                        DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
+            final okhttp3.EventListener.Factory okListenerFactory = profiler.getOkListenerFactory();
+            if (okListenerFactory != null) {
+                builder.eventListenerFactory(okListenerFactory);
             }
+
+            httpDataSourceFactory = new OkHttpDataSourceFactory(builder.build(), userAgent);
+        } else {
+
+            httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent,
+                    DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                    DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
         }
 
         if (headers != null) {
             HttpDataSource.RequestProperties defaultRequestProperties = httpDataSourceFactory.getDefaultRequestProperties();
-
             for (Map.Entry<String, String> headerEntry : headers.entrySet()) {
-                defaultRequestProperties.remove(headerEntry.getKey());
                 defaultRequestProperties.set(headerEntry.getKey(), headerEntry.getValue());
             }
         }
@@ -388,8 +382,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private DataSource.Factory getDataSourceFactory(Map<String, String> headers) {
-        dataSourceFactory = new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
-        return dataSourceFactory;    }
+        return new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
+    }
 
     private static String getUserAgent(Context context) {
         String applicationName;
