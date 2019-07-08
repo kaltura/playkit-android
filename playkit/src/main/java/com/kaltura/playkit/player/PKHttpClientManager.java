@@ -2,8 +2,12 @@ package com.kaltura.playkit.player;
 
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayKitManager;
+import com.kaltura.playkit.utils.HurlCookieJar;
 
 import java.io.InputStream;
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookieStore;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -16,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.ConnectionPool;
+import okhttp3.CookieJar;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 import okhttp3.Request;
@@ -37,6 +42,8 @@ public class PKHttpClientManager {
 
     private static String httpProviderId;
 
+    static CookieManager sharedCookieManager = new CookieManager();
+
 
     private static final OkHttpClient okClient = new OkHttpClient.Builder()
             .followRedirects(false)     // Only warm up explicitly specified URLs
@@ -51,13 +58,27 @@ public class PKHttpClientManager {
         return okClient.newBuilder().followRedirects(true);
     }
 
+    static CookieJar newOkHttpCookieJar() {
+        final CookieHandler cookieHandler = CookieHandler.getDefault();
+        final CookieStore cookieStore;
+
+        if (cookieHandler instanceof CookieManager) {
+            cookieStore = ((CookieManager) cookieHandler).getCookieStore();
+        } else {
+            cookieStore = new CookieManager().getCookieStore();
+        }
+
+        return new HurlCookieJar(cookieStore);
+    }
+
+
     // Called by the player
     static boolean useOkHttp() {
         return HTTP_PROVIDER_OK.equalsIgnoreCase(httpProviderId);
     }
 
     /**
-     * Set the http provider. Valid options are "system" (use the build-in {@linkplain java.net.HttpURLConnection})
+     * Set the http provider. Valid options are "system" (use the build-in java.net.HttpURLConnection)
      * and "okhttp" (use Square's <a href="https://square.github.io/okhttp/">OkHttp</a> library).
      * @param providerId "system" (default) or "okhttp".
      */
