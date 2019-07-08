@@ -19,6 +19,7 @@ import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.LocalDataStore;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKRequestParams;
 
 import java.io.IOException;
 
@@ -51,9 +52,9 @@ public abstract class DrmAdapter {
         return new NullDrmAdapter();
     }
 
-    public abstract boolean registerAsset(final String localAssetPath, final String assetId, final String licenseUri, final LocalAssetsManager.AssetRegistrationListener listener) throws IOException;
+    public abstract boolean registerAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener) throws IOException;
 
-    public abstract boolean refreshAsset(final String localAssetPath, final String assetId, final String licenseUri, final LocalAssetsManager.AssetRegistrationListener listener);
+    public abstract boolean refreshAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener);
 
     public abstract boolean unregisterAsset(final String localAssetPath, final String assetId, final LocalAssetsManager.AssetRemovalListener listener);
 
@@ -69,7 +70,7 @@ public abstract class DrmAdapter {
         }
 
         @Override
-        public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, LocalAssetsManager.AssetRegistrationListener listener) {
+        public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener) {
             if (listener != null) {
                 listener.onRegistered(localAssetPath);
             }
@@ -77,8 +78,8 @@ public abstract class DrmAdapter {
         }
 
         @Override
-        public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, LocalAssetsManager.AssetRegistrationListener listener) {
-            return registerAsset(localAssetPath, assetId, licenseUri, listener);
+        public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener) {
+            return registerAsset(localAssetPath, assetId, licenseUri, adapter, listener);
         }
 
         @Override

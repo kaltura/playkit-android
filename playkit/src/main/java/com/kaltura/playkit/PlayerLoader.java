@@ -92,13 +92,6 @@ class PlayerLoader extends PlayerDecoratorBase {
         playerController.setPlayerEngineWrapper(playerEngineWrapper);
 
         setPlayer(player);
-
-        // Checking if IMA plugin is there from client app.
-        // This flag 'setIMAPluginEnabled' is helping to set 'useSinglePlayerInstance' in PlayerSettings.
-        PlayerSettings playerSettings = getPlayerSettings();
-        if (!(playerEngineWrapper instanceof AdsPlayerEngineWrapper) && playerSettings != null) {
-            playerSettings.setIMAPluginEnabled(false);
-        }
     }
 
     @Override
@@ -137,14 +130,6 @@ class PlayerLoader extends PlayerDecoratorBase {
             stringLoadedPluginEntry.getValue().plugin.onApplicationPaused();
         }
         getPlayer().onApplicationPaused();
-    }
-
-    private PlayerSettings getPlayerSettings() {
-        if (getPlayer().getSettings() instanceof PlayerSettings) {
-            return ((PlayerSettings) getPlayer().getSettings());
-        }
-
-        return null;
     }
 
     private void releasePlayer() {

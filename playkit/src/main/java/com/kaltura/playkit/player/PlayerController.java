@@ -30,7 +30,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
-import com.kaltura.playkit.player.vr.VRPKMediaEntry;
+import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
@@ -165,7 +165,12 @@ public class PlayerController implements Player {
             return;
         }
 
-        boolean is360Supported = mediaConfig.getMediaEntry() instanceof VRPKMediaEntry && playerSettings.isVRPlayerEnabled();
+        // Checking if AdsPlayerEngineWrapper is not there then make sure use force single if false.
+        if (!(playerEngineWrapper instanceof AdsPlayerEngineWrapper)) {
+            playerSettings.forceSinglePlayerEngine(false);
+        }
+
+        boolean is360Supported = mediaConfig.getMediaEntry().isVRMediaType() && playerSettings.isVRPlayerEnabled();
         PlayerEngineType incomingPlayerType = PlayerEngineFactory.selectPlayerType(sourceConfig.mediaSource.getMediaFormat(), is360Supported);
 
         switchPlayersIfRequired(incomingPlayerType);
@@ -214,12 +219,7 @@ public class PlayerController implements Player {
     }
 
     private void initSourceConfig(PKMediaEntry mediaEntry, PKMediaSource source) {
-        if (mediaEntry instanceof VRPKMediaEntry) {
-            VRPKMediaEntry vrEntry = (VRPKMediaEntry) mediaEntry;
-            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings, vrEntry.getVrSettings());
-        } else {
-            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
-        }
+        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
     }
 
     private String generateSessionId() {
@@ -303,8 +303,8 @@ public class PlayerController implements Player {
             PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
             cancelUpdateProgress();
 
-            log.d("stop() isUseSinglePlayerInstance = " + playerSettings.isUseSinglePlayerInstance());
-            if (!playerSettings.isUseSinglePlayerInstance()) {
+            log.d("stop() isForceSinglePlayerEngine = " + playerSettings.isForceSinglePlayerEngine());
+            if (!playerSettings.isForceSinglePlayerEngine()) {
                 isPlayerStopped = true;
             }
 
@@ -440,12 +440,16 @@ public class PlayerController implements Player {
                 player.setAnalyticsListener(new PlayerEngine.AnalyticsListener() {
                     @Override
                     public void onDroppedFrames(long droppedVideoFrames, long droppedVideoFramesPeriod, long totalDroppedVideoFrames) {
-                        eventListener.onEvent(new PlayerEvent.VideoFramesDropped(droppedVideoFrames, droppedVideoFramesPeriod, totalDroppedVideoFrames));
+                        if (eventListener != null) {
+                            eventListener.onEvent(new PlayerEvent.VideoFramesDropped(droppedVideoFrames, droppedVideoFramesPeriod, totalDroppedVideoFrames));
+                        }
                     }
 
                     @Override
                     public void onBytesLoaded(long bytesLoaded, long totalBytesLoaded) {
-                        eventListener.onEvent(new PlayerEvent.BytesLoaded(bytesLoaded, totalBytesLoaded));
+                        if (eventListener != null) {
+                            eventListener.onEvent(new PlayerEvent.BytesLoaded(bytesLoaded, totalBytesLoaded));
+                        }
                     }
 
                     @Override
@@ -453,7 +457,10 @@ public class PlayerController implements Player {
                         String errorStr = "onLoadError Player Load error: " + PKPlayerErrorType.LOAD_ERROR;
                         log.e(errorStr);
                         PKError loadError = new PKError(PKPlayerErrorType.LOAD_ERROR, PKError.Severity.Recoverable, errorStr, error);
-                        eventListener.onEvent(new PlayerEvent.Error(loadError));
+
+                        if (eventListener != null) {
+                            eventListener.onEvent(new PlayerEvent.Error(loadError));
+                        }
                     }
                 });
             } else {
@@ -512,11 +519,7 @@ public class PlayerController implements Player {
             }
             cancelUpdateProgress();
             player.release();
-
-            log.d("onApplicationPaused isUseSinglePlayerInstance = " + playerSettings.isUseSinglePlayerInstance());
-            if (!playerSettings.isUseSinglePlayerInstance()) {
-                togglePlayerListeners(false);
-            }
+            togglePlayerListeners(false);
         }
     }
 
@@ -529,13 +532,13 @@ public class PlayerController implements Player {
         if (isPlayerStopped) {
             log.e("onApplicationResumed called during player state = STOPPED");
 
-            if (!playerSettings.isUseSinglePlayerInstance()) {
-                log.d("onApplicationResumed called during player state = STOPPED - return, isUseSinglePlayerInstance = " + playerSettings.isUseSinglePlayerInstance());
+            if (!playerSettings.isForceSinglePlayerEngine()) {
+                log.d("onApplicationResumed called during player state = STOPPED - return, isForceSinglePlayerEngine = " + playerSettings.isForceSinglePlayerEngine());
                 return;
             }
         }
 
-        if (playerSettings.isUseSinglePlayerInstance()) {
+        if (player != null && playerSettings.isForceSinglePlayerEngine()) {
             if (!isAdDisplayed()) {
                 resumePlayer();
             }
