@@ -87,8 +87,6 @@ import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
-    private static final CookieManager cookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER);
-
 
     private DefaultBandwidthMeter bandwidthMeter;
     @NonNull private PlayerSettings playerSettings;
