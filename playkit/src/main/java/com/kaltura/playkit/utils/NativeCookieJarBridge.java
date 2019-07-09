@@ -19,19 +19,19 @@ import okhttp3.HttpUrl;
 
 // Bridge between OkHttp's CookieJar and HTTPURLConnection's CookieHandler
 @SuppressWarnings({"ConstantConditions", "NullableProblems"})
-public class HurlCookieJar implements CookieJar {
+public class NativeCookieJarBridge implements CookieJar {
 
 
-    public static final HurlCookieJar sharedCookieJar = new HurlCookieJar();
+    public static final NativeCookieJarBridge sharedCookieJar = new NativeCookieJarBridge();
 
     @Nullable
     private CookieStore explicitCookieStore;
 
-    public HurlCookieJar(@NonNull CookieStore explicitCookieStore) {
+    public NativeCookieJarBridge(@NonNull CookieStore explicitCookieStore) {
         this.explicitCookieStore = explicitCookieStore;
     }
 
-    private HurlCookieJar() {}
+    private NativeCookieJarBridge() {}
 
     private CookieStore cookieStore() {
 

@@ -67,7 +67,7 @@ import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.playkit.utils.HurlCookieJar;
+import com.kaltura.playkit.utils.NativeCookieJarBridge;
 
 import java.net.CookieHandler;
 import java.net.CookieManager;
@@ -352,7 +352,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             if (PKHttpClientManager.useOkHttp()) {
 
                 final OkHttpClient.Builder builder = PKHttpClientManager.newClientBuilder()
-                        .cookieJar(HurlCookieJar.sharedCookieJar)
+                        .cookieJar(NativeCookieJarBridge.sharedCookieJar)
                         .followRedirects(true)
                         .followSslRedirects(crossProtocolRedirectEnabled)
                         .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
