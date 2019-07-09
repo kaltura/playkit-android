@@ -14,8 +14,6 @@ script:
   - ./gradlew playkit:build
 after_failure:
   - cat playkit/build/reports/lint-results.xml
-after_success:
-  - ./travis-push-to-bintray.sh
 notifications:
   email:
     recipients:
