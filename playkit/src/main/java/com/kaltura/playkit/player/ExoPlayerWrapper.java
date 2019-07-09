@@ -341,13 +341,18 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private HttpDataSource.Factory getHttpDataSourceFactory() {
         
         if (httpDataSourceFactory == null) {
+
+            if (CookieHandler.getDefault() == null) {
+                CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER));
+            }
+
             final String userAgent = getUserAgent(context);
             final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
 
             if (PKHttpClientManager.useOkHttp()) {
 
                 final OkHttpClient.Builder builder = PKHttpClientManager.newClientBuilder()
-                        .cookieJar(PKHttpClientManager.newOkHttpCookieJar())
+                        .cookieJar(HurlCookieJar.sharedCookieJar)
                         .followRedirects(true)
                         .followSslRedirects(crossProtocolRedirectEnabled)
                         .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
@@ -361,10 +366,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 httpDataSourceFactory = new OkHttpDataSourceFactory(builder.build(), userAgent);
 
             } else {
-
-                if (CookieHandler.getDefault() == null) {
-                    CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER));
-                }
 
                 httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent,
                         DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,

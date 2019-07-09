@@ -2,8 +2,11 @@ package com.kaltura.playkit.utils;
 
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import java.net.CookieHandler;
+import java.net.CookieManager;
 import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.util.ArrayList;
@@ -13,21 +16,43 @@ import java.util.List;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
-import okhttp3.internal.annotations.EverythingIsNonNull;
 
 // Bridge between OkHttp's CookieJar and HTTPURLConnection's CookieHandler
 @SuppressWarnings({"ConstantConditions", "NullableProblems"})
 public class HurlCookieJar implements CookieJar {
 
-    @NonNull
-    private CookieStore cookieStore;
 
-    public HurlCookieJar(@NonNull CookieStore cookieStore) {
-        this.cookieStore = cookieStore;
+    public static final HurlCookieJar sharedCookieJar = new HurlCookieJar();
+
+    @Nullable
+    private CookieStore explicitCookieStore;
+
+    public HurlCookieJar(@NonNull CookieStore explicitCookieStore) {
+        this.explicitCookieStore = explicitCookieStore;
+    }
+
+    private HurlCookieJar() {}
+
+    private CookieStore cookieStore() {
+
+        if (explicitCookieStore != null) {
+            return explicitCookieStore;
+        }
+
+        final CookieHandler cookieHandler = CookieHandler.getDefault();
+
+        return cookieHandler instanceof CookieManager ?
+                ((CookieManager) cookieHandler).getCookieStore() :
+                null;
     }
 
     @Override
     public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+
+        final CookieStore cookieStore = cookieStore();
+        if (cookieStore == null) {
+            return;
+        }
 
         //noinspection ConstantConditions
         if (url == null || cookies == null || cookies.isEmpty()) {
@@ -64,6 +89,11 @@ public class HurlCookieJar implements CookieJar {
 
     @Override
     public List<Cookie> loadForRequest(HttpUrl url) {
+
+        final CookieStore cookieStore = cookieStore();
+        if (cookieStore == null) {
+            return Collections.emptyList();
+        }
 
         final List<HttpCookie> httpCookies = cookieStore.get(url.uri());
         if (httpCookies == null || httpCookies.isEmpty()) {

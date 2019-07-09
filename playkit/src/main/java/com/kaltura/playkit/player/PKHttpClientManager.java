@@ -58,20 +58,6 @@ public class PKHttpClientManager {
         return okClient.newBuilder().followRedirects(true);
     }
 
-    static CookieJar newOkHttpCookieJar() {
-        final CookieHandler cookieHandler = CookieHandler.getDefault();
-        final CookieStore cookieStore;
-
-        if (cookieHandler instanceof CookieManager) {
-            cookieStore = ((CookieManager) cookieHandler).getCookieStore();
-        } else {
-            cookieStore = new CookieManager().getCookieStore();
-        }
-
-        return new HurlCookieJar(cookieStore);
-    }
-
-
     // Called by the player
     static boolean useOkHttp() {
         return HTTP_PROVIDER_OK.equalsIgnoreCase(httpProviderId);
