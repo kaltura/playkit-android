@@ -49,13 +49,13 @@ public class NativeCookieJarBridge implements CookieJar {
     @Override
     public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
 
-        final CookieStore cookieStore = cookieStore();
-        if (cookieStore == null) {
+        //noinspection ConstantConditions
+        if (url == null || cookies == null || cookies.isEmpty()) {
             return;
         }
 
-        //noinspection ConstantConditions
-        if (url == null || cookies == null || cookies.isEmpty()) {
+        final CookieStore cookieStore = cookieStore();
+        if (cookieStore == null) {
             return;
         }
 
@@ -89,6 +89,10 @@ public class NativeCookieJarBridge implements CookieJar {
 
     @Override
     public List<Cookie> loadForRequest(HttpUrl url) {
+
+        if (url == null) {
+            return Collections.emptyList();
+        }
 
         final CookieStore cookieStore = cookieStore();
         if (cookieStore == null) {
