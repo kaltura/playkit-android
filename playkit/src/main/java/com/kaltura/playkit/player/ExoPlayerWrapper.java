@@ -67,6 +67,7 @@ import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.NativeCookieJarBridge;
 
 import java.net.CookieHandler;
 import java.net.CookieManager;
@@ -86,12 +87,6 @@ import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
-    private static final CookieManager DEFAULT_COOKIE_MANAGER;
-
-    static {
-        DEFAULT_COOKIE_MANAGER = new CookieManager();
-        DEFAULT_COOKIE_MANAGER.setCookiePolicy(CookiePolicy.ACCEPT_ORIGINAL_SERVER);
-    }
 
     private DefaultBandwidthMeter bandwidthMeter;
     @NonNull private PlayerSettings playerSettings;
@@ -168,9 +163,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         period = new Timeline.Period();
         this.exoPlayerView = exoPlayerView;
-        if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
-            CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
-        }
+
     }
 
     @Override
@@ -353,12 +346,18 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private HttpDataSource.Factory getHttpDataSourceFactory() {
         
         if (httpDataSourceFactory == null) {
+
+            if (CookieHandler.getDefault() == null) {
+                CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER));
+            }
+
             final String userAgent = getUserAgent(context);
             final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
 
             if (PKHttpClientManager.useOkHttp()) {
 
                 final OkHttpClient.Builder builder = PKHttpClientManager.newClientBuilder()
+                        .cookieJar(NativeCookieJarBridge.sharedCookieJar)
                         .followRedirects(true)
                         .followSslRedirects(crossProtocolRedirectEnabled)
                         .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
@@ -375,7 +374,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
                 httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent,
                         DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                        DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
+                        DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
+                        crossProtocolRedirectEnabled);
             }
         }
 

@@ -170,7 +170,7 @@ public class PlayerController implements Player {
             playerSettings.forceSinglePlayerEngine(false);
         }
 
-        boolean is360Supported = mediaConfig.getMediaEntry().isVRMediaType() && playerSettings.isVRPlayerEnabled();
+        boolean is360Supported = sourceConfig.getVrSettings() != null && playerSettings.isVRPlayerEnabled();
         PlayerEngineType incomingPlayerType = PlayerEngineFactory.selectPlayerType(sourceConfig.mediaSource.getMediaFormat(), is360Supported);
 
         switchPlayersIfRequired(incomingPlayerType);
