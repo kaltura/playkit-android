@@ -38,9 +38,6 @@ public class PKHttpClientManager {
 
     private static String httpProviderId;
 
-    static CookieManager sharedCookieManager = new CookieManager();
-
-
     private static final OkHttpClient okClient = new OkHttpClient.Builder()
             .followRedirects(false)     // Only warm up explicitly specified URLs
             .connectionPool(new ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_DURATION, TimeUnit.MINUTES))
