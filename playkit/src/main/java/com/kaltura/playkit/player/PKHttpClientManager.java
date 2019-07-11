@@ -4,6 +4,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayKitManager;
 
 import java.io.InputStream;
+import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -37,7 +38,6 @@ public class PKHttpClientManager {
 
     private static String httpProviderId;
 
-
     private static final OkHttpClient okClient = new OkHttpClient.Builder()
             .followRedirects(false)     // Only warm up explicitly specified URLs
             .connectionPool(new ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_DURATION, TimeUnit.MINUTES))
@@ -57,7 +57,7 @@ public class PKHttpClientManager {
     }
 
     /**
-     * Set the http provider. Valid options are "system" (use the build-in {@linkplain java.net.HttpURLConnection})
+     * Set the http provider. Valid options are "system" (use the build-in java.net.HttpURLConnection)
      * and "okhttp" (use Square's <a href="https://square.github.io/okhttp/">OkHttp</a> library).
      * @param providerId "system" (default) or "okhttp".
      */
