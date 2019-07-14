@@ -2,10 +2,10 @@ package com.kaltura.playkit.drm;
 
 import android.net.Uri;
 
-import com.google.android.exoplayer2.drm.ExoMediaDrm;
-import com.google.android.exoplayer2.drm.HttpMediaDrmCallback;
-import com.google.android.exoplayer2.drm.MediaDrmCallback;
-import com.google.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.android.exoplayer2.drm.ExoMediaDrm;
+import com.kaltura.android.exoplayer2.drm.HttpMediaDrmCallback;
+import com.kaltura.android.exoplayer2.drm.MediaDrmCallback;
+import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKRequestParams;
 
