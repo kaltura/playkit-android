@@ -16,9 +16,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
 import com.kaltura.playkit.player.PlayerController;
-import com.kaltura.playkit.player.PlayerSettings;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 
 import java.util.ArrayList;

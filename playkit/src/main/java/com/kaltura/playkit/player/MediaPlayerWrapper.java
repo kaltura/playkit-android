@@ -24,7 +24,6 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.view.SurfaceHolder;
 
-import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;

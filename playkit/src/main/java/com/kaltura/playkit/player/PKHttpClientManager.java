@@ -4,7 +4,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayKitManager;
 
 import java.io.InputStream;
-import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
