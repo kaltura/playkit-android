@@ -251,6 +251,7 @@ public class MediaSupport {
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private static void provisionWidevine() throws Exception {
         MediaDrm mediaDrm = null;
         try {
