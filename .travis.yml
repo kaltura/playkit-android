@@ -6,7 +6,7 @@ jdk:
 android:
   components:
     - tools
-    - build-tools-28.0.0
+    - build-tools-28.0.3
     - android-28
 before_script:
   - curl https://kaltura.github.io/fe-tools/android/license.sh | sh
