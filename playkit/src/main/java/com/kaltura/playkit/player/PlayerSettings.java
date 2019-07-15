@@ -12,15 +12,10 @@
 
 package com.kaltura.playkit.player;
 
-import android.content.Context;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
-
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.player.vr.VRInteractionMode;
 import com.kaltura.playkit.player.vr.VRSettings;
 
 public class PlayerSettings implements Player.Settings {
