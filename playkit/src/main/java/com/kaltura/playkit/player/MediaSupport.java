@@ -13,6 +13,7 @@
 package com.kaltura.playkit.player;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.drm.DrmManagerClient;
 import android.media.MediaDrm;
@@ -249,7 +250,7 @@ public class MediaSupport {
         return Boolean.FALSE;   // Not yet.
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private static void provisionWidevine() throws Exception {
         MediaDrm mediaDrm = null;
         try {
