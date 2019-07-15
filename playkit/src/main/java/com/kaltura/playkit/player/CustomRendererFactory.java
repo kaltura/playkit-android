@@ -2,7 +2,8 @@ package com.kaltura.playkit.player;
 
 import android.content.Context;
 import android.os.Handler;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
+
 
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.Renderer;
@@ -28,4 +29,5 @@ public class CustomRendererFactory extends DefaultRenderersFactory {
                 allowedVideoJoiningTimeMs, drmSessionManager, playClearSamplesWithoutKeys, eventHandler, eventListener,
                 MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY));
     }
+
 }

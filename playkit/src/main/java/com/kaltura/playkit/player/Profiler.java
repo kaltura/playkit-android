@@ -1,6 +1,6 @@
 package com.kaltura.playkit.player;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.google.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.playkit.PKMediaConfig;

@@ -23,7 +23,7 @@ import android.media.MediaDrmException;
 import android.media.NotProvisionedException;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.google.android.exoplayer2.drm.ExoMediaDrm;

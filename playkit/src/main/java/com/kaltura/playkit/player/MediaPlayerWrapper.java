@@ -21,7 +21,7 @@ import android.drm.DrmEvent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.view.SurfaceHolder;
 
 import com.kaltura.playkit.PKDrmParams;

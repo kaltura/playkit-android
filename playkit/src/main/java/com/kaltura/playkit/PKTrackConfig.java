@@ -12,7 +12,7 @@
 
 package com.kaltura.playkit;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
