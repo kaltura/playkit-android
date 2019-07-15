@@ -4,7 +4,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayKitManager;
 
 import java.io.InputStream;
-import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -37,9 +36,6 @@ public class PKHttpClientManager {
     private static final int WARMUP_TIMES = 2;
 
     private static String httpProviderId;
-
-    static CookieManager sharedCookieManager = new CookieManager();
-
 
     private static final OkHttpClient okClient = new OkHttpClient.Builder()
             .followRedirects(false)     // Only warm up explicitly specified URLs
