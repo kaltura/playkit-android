@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.android.exoplayer2.video;
+package com.kaltura.android.exoplayer2.video;
 
 import android.annotation.TargetApi;
 import android.media.MediaCodec;
@@ -28,27 +28,27 @@ import android.os.SystemClock;
 import androidx.annotation.CheckResult;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
-import com.google.android.exoplayer2.BaseRenderer;
-import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.FormatHolder;
-import com.google.android.exoplayer2.decoder.DecoderCounters;
-import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
-import com.google.android.exoplayer2.drm.DrmSession;
-import com.google.android.exoplayer2.drm.DrmSession.DrmSessionException;
-import com.google.android.exoplayer2.drm.DrmSessionManager;
-import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
-import com.google.android.exoplayer2.mediacodec.MediaCodecInfo;
-import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
-import com.google.android.exoplayer2.mediacodec.MediaCodecUtil.DecoderQueryException;
-import com.google.android.exoplayer2.source.MediaPeriod;
-import com.google.android.exoplayer2.util.Assertions;
-import com.google.android.exoplayer2.util.Log;
-import com.google.android.exoplayer2.util.NalUnitUtil;
-import com.google.android.exoplayer2.util.TimedValueQueue;
-import com.google.android.exoplayer2.util.TraceUtil;
-import com.google.android.exoplayer2.util.Util;
+import com.kaltura.android.exoplayer2.BaseRenderer;
+import com.kaltura.android.exoplayer2.C;
+import com.kaltura.android.exoplayer2.ExoPlaybackException;
+import com.kaltura.android.exoplayer2.Format;
+import com.kaltura.android.exoplayer2.FormatHolder;
+import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
+import com.kaltura.android.exoplayer2.decoder.DecoderInputBuffer;
+import com.kaltura.android.exoplayer2.drm.DrmSession;
+import com.kaltura.android.exoplayer2.drm.DrmSession.DrmSessionException;
+import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
+import com.kaltura.android.exoplayer2.drm.FrameworkMediaCrypto;
+import com.kaltura.android.exoplayer2.mediacodec.MediaCodecInfo;
+import com.kaltura.android.exoplayer2.mediacodec.MediaCodecSelector;
+import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil.DecoderQueryException;
+import com.kaltura.android.exoplayer2.source.MediaPeriod;
+import com.kaltura.android.exoplayer2.util.Assertions;
+import com.kaltura.android.exoplayer2.util.Log;
+import com.kaltura.android.exoplayer2.util.NalUnitUtil;
+import com.kaltura.android.exoplayer2.util.TimedValueQueue;
+import com.kaltura.android.exoplayer2.util.TraceUtil;
+import com.kaltura.android.exoplayer2.util.Util;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
