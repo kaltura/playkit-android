@@ -101,8 +101,7 @@ public interface Player {
         Settings allowClearLead(boolean allowClearLead);
 
         /**
-         * Decide whether to enable fallback to lower-priority decoders if decoder
-         *    *     initialization fails
+         * Decide whether to enable fallback to lower-priority decoders if decoder initialization fails
          *
          * @param enableDecoderFallback - should enable/disable enableDecoderFallback default true (enabled)
          * @return - Player Settings.
