@@ -281,7 +281,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public PKTracks getPKTracks() {
-        return new PKTracks(new ArrayList<VideoTrack>(), new ArrayList<AudioTrack>(), new ArrayList<TextTrack>(),
+        return new PKTracks(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
                 0, 0, 0);
     }
 
@@ -474,16 +474,13 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     public void onPrepared(MediaPlayer mp) {
         prepareState = PREPARED;
         log.d("onPrepared " + prepareState + " isPlayAfterPrepare = " + isPlayAfterPrepare + " appInBackground = " + appInBackground);
-        mp.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-            @Override
-            public void onSeekComplete(MediaPlayer mp) {
-                log.d("onSeekComplete");
-                if (getCurrentPosition() < getDuration()) {
-                    sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
-                    changeState(PlayerState.READY);
-                    if (mp.isPlaying()) {
-                        sendDistinctEvent(PlayerEvent.Type.PLAYING);
-                    }
+        mp.setOnSeekCompleteListener(mp1 -> {
+            log.d("onSeekComplete");
+            if (getCurrentPosition() < getDuration()) {
+                sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
+                changeState(PlayerState.READY);
+                if (mp1.isPlaying()) {
+                    sendDistinctEvent(PlayerEvent.Type.PLAYING);
                 }
             }
         });

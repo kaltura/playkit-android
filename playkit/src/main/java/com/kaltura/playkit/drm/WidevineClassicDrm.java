@@ -143,33 +143,24 @@ public class WidevineClassicDrm {
         }
 
         mDeviceId = DeviceUuidFactory.getDeviceUuid(context).toString();
-        mDrmManager.setOnInfoListener(new DrmManagerClient.OnInfoListener() {
-            @Override
-            public void onInfo(DrmManagerClient client, DrmInfoEvent event) {
-                logEvent(event);
-                if (mEventListener != null) {
-                    mEventListener.onEvent(event);
-                }
+        mDrmManager.setOnInfoListener((client, event) -> {
+            logEvent(event);
+            if (mEventListener != null) {
+                mEventListener.onEvent(event);
             }
         });
 
-        mDrmManager.setOnEventListener(new DrmManagerClient.OnEventListener() {
-            @Override
-            public void onEvent(DrmManagerClient client, DrmEvent event) {
-                logEvent(event);
-                if (mEventListener != null) {
-                    mEventListener.onEvent(event);
-                }
+        mDrmManager.setOnEventListener((client, event) -> {
+            logEvent(event);
+            if (mEventListener != null) {
+                mEventListener.onEvent(event);
             }
         });
 
-        mDrmManager.setOnErrorListener(new DrmManagerClient.OnErrorListener() {
-            @Override
-            public void onError(DrmManagerClient client, DrmErrorEvent event) {
-                logEvent(event);
-                if (mEventListener != null) {
-                    mEventListener.onError(event);
-                }
+        mDrmManager.setOnErrorListener((client, event) -> {
+            logEvent(event);
+            if (mEventListener != null) {
+                mEventListener.onError(event);
             }
         });
 

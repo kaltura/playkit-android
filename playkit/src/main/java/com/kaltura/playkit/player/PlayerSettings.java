@@ -26,6 +26,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean mpgaAudioFormatEnabled;
     private boolean crossProtocolRedirectEnabled;
     private boolean allowClearLead = true;
+    private boolean enableDecoderFallback = true;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
@@ -66,6 +67,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean allowClearLead() {
         return allowClearLead;
+    }
+
+    public boolean enableDecoderFallback() {
+        return enableDecoderFallback;
     }
 
     public boolean cea608CaptionsEnabled() {
@@ -204,6 +209,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings allowClearLead(boolean allowClearLead) {
         this.allowClearLead = allowClearLead;
+        return this;
+    }
+
+    @Override
+    public Player.Settings enableDecoderFallback(boolean enableDecoderFallback) {
+        this.enableDecoderFallback = enableDecoderFallback;
         return this;
     }
 

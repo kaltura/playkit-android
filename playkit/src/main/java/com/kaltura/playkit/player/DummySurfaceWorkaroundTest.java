@@ -132,31 +132,28 @@ public class DummySurfaceWorkaroundTest {
         }
 
         // Do everything else in a thread.
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                String reportString;
-                try {
-                    JSONObject jsonObject = new JSONObject()
-                            .put("reportType", "DummySurfaceWorkaround")
-                            .put("playkitVersion", PlayKitManager.VERSION_STRING)
-                            .put("system", PKDeviceCapabilities.systemInfo())
-                            .put("exoPlayerVersion", ExoPlayerLibraryInfo.VERSION)
-                            .put("dummySurfaceWorkaroundRequired", true);
+        AsyncTask.execute(() -> {
+            String reportString;
+            try {
+                JSONObject jsonObject = new JSONObject()
+                        .put("reportType", "DummySurfaceWorkaround")
+                        .put("playkitVersion", PlayKitManager.VERSION_STRING)
+                        .put("system", PKDeviceCapabilities.systemInfo())
+                        .put("exoPlayerVersion", ExoPlayerLibraryInfo.VERSION)
+                        .put("dummySurfaceWorkaroundRequired", true);
 
-                    reportString = jsonObject.toString();
-                } catch (Exception e) {
-                    Log.e(TAG, "Failed to get report", e);
-                    reportString = PKDeviceCapabilities.getErrorReport(e);
-                }
-
-                if (!PKDeviceCapabilities.sendReport(reportString))
-                    return;
-
-                // If we got here, save the fingerprint so we don't send again until the OS updates.
-                sharedPrefs.edit().putString(PREFS_ENTRY_FINGERPRINT, Build.FINGERPRINT).apply();
-                reportSent = true;
+                reportString = jsonObject.toString();
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to get report", e);
+                reportString = PKDeviceCapabilities.getErrorReport(e);
             }
+
+            if (!PKDeviceCapabilities.sendReport(reportString))
+                return;
+
+            // If we got here, save the fingerprint so we don't send again until the OS updates.
+            sharedPrefs.edit().putString(PREFS_ENTRY_FINGERPRINT, Build.FINGERPRINT).apply();
+            reportSent = true;
         });
     }
 }

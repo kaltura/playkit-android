@@ -101,6 +101,14 @@ public interface Player {
         Settings allowClearLead(boolean allowClearLead);
 
         /**
+         * Decide whether to enable fallback to lower-priority decoders if decoder
+         *    *     initialization fails
+         *
+         * @param enableDecoderFallback - should enable/disable enableDecoderFallback default true (enabled)
+         * @return - Player Settings.
+         */
+        Settings enableDecoderFallback(boolean enableDecoderFallback);
+        /**
          * Decide if player should use secure rendering on the surface.
          * Known limitation - when useTextureView set to true and isSurfaceSecured set to true -
          * secure rendering will have no effect.

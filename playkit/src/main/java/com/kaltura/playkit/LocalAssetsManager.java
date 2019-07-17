@@ -151,27 +151,19 @@ public class LocalAssetsManager {
      * @param listener       - notify about the success/fail after the completion of the registration process.
      */
     private void registerDrmAsset(final String localAssetPath, final String assetId, final PKMediaFormat mediaFormat, final PKDrmParams drmParams, final AssetRegistrationListener listener) {
-        doInBackground(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(drmParams.getScheme(), context, localDataStore);
-                    String licenseUri = drmParams.getLicenseUri();
+        doInBackground(() -> {
+            try {
+                DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(drmParams.getScheme(), context, localDataStore);
+                String licenseUri = drmParams.getLicenseUri();
 
-                    boolean isRegistered = drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, licenseRequestParamAdapter, listener);
-                    if (isRegistered) {
-                        localDataStore.save(buildAssetKey(assetId), buildMediaFormatValueAsByteArray(mediaFormat, drmParams.getScheme()));
-                    }
-                } catch (final IOException e) {
-                    log.e("Error", e);
-                    if (listener != null) {
-                        mainHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.onFailed(localAssetPath, e);
-                            }
-                        });
-                    }
+                boolean isRegistered = drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, licenseRequestParamAdapter, listener);
+                if (isRegistered) {
+                    localDataStore.save(buildAssetKey(assetId), buildMediaFormatValueAsByteArray(mediaFormat, drmParams.getScheme()));
+                }
+            } catch (final IOException e) {
+                log.e("Error", e);
+                if (listener != null) {
+                    mainHandler.post(() -> listener.onFailed(localAssetPath, e));
                 }
             }
         });
@@ -211,22 +203,7 @@ public class LocalAssetsManager {
 
         final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(scheme, context, localDataStore);
 
-        doInBackground(new Runnable() {
-            @Override
-            public void run() {
-                drmAdapter.unregisterAsset(localAssetPath, assetId, new AssetRemovalListener() {
-                    @Override
-                    public void onRemoved(final String localAssetPath) {
-                        mainHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                removeAsset(localAssetPath, assetId, listener);
-                            }
-                        });
-                    }
-                });
-            }
-        });
+        doInBackground(() -> drmAdapter.unregisterAsset(localAssetPath, assetId, localAssetPath1 -> mainHandler.post(() -> removeAsset(localAssetPath1, assetId, listener))));
     }
 
     public void refreshAsset(@NonNull final PKMediaSource mediaSource, @NonNull final String localAssetPath,
@@ -262,24 +239,11 @@ public class LocalAssetsManager {
 
         final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(scheme, context, localDataStore);
 
-        doInBackground(new Runnable() {
-            @Override
-            public void run() {
-                drmAdapter.checkAssetStatus(localAssetPath, assetId, new AssetStatusListener() {
-                    @Override
-                    public void onStatus(final String localAssetPath, final long expiryTimeSeconds, final long availableTimeSeconds, final boolean isRegistered) {
-                        if (listener != null) {
-                            mainHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    listener.onStatus(localAssetPath, expiryTimeSeconds, availableTimeSeconds, isRegistered);
-                                }
-                            });
-                        }
-                    }
-                });
+        doInBackground(() -> drmAdapter.checkAssetStatus(localAssetPath, assetId, (localAssetPath1, expiryTimeSeconds, availableTimeSeconds, isRegistered) -> {
+            if (listener != null) {
+                mainHandler.post(() -> listener.onStatus(localAssetPath1, expiryTimeSeconds, availableTimeSeconds, isRegistered));
             }
-        });
+        }));
     }
 
     private void checkClearAssetStatus(String localAssetPath, String assetId, AssetStatusListener listener) {

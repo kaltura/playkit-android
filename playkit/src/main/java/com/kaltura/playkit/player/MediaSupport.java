@@ -96,18 +96,15 @@ public class MediaSupport {
 
         } catch (DrmNotProvisionedException e) {
             log.d("Widevine Modular needs provisioning");
-            AsyncTask.execute(new Runnable() {
-                @Override
-                public void run() {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                        try {
-                            provisionWidevine();
-                            runCallback(drmInitCallback, true, null);
-                        } catch (Exception e) {
-                            // Send any exception to the callback
-                            log.e("Widevine provisioning has failed", e);
-                            runCallback(drmInitCallback, true, e);
-                        }
+            AsyncTask.execute(() -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    try {
+                        provisionWidevine();
+                        runCallback(drmInitCallback, true, null);
+                    } catch (Exception e1) {
+                        // Send any exception to the callback
+                        log.e("Widevine provisioning has failed", e1);
+                        runCallback(drmInitCallback, true, e1);
                     }
                 }
             });
