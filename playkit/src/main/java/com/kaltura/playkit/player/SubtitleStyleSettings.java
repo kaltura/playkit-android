@@ -16,7 +16,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.TextUtils;
 
-import com.google.android.exoplayer2.text.CaptionStyleCompat;
+import com.kaltura.android.exoplayer2.text.CaptionStyleCompat;
 
 public class SubtitleStyleSettings {
 
@@ -42,7 +42,7 @@ public class SubtitleStyleSettings {
     private int subtitleTextColor = Color.WHITE;
     private int subtitleBackgroundColor = Color.BLACK;
     // Recommended fraction values is  1f < subtitleTextSizeFraction < 2.5f with 0.25f Multiplier
-    // Subtitle TextSize fraction, Default is 1.0f ; {@link com.google.android.exoplayer2.ui.SubtitleView}
+    // Subtitle TextSize fraction, Default is 1.0f ; {@link com.kaltura.android.exoplayer2.ui.SubtitleView}
     private float subtitleTextSizeFraction = fraction100;
     private int subtitleWindowColor = Color.TRANSPARENT;
     private int subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;

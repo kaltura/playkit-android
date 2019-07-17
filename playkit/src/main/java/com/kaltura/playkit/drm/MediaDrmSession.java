@@ -20,8 +20,8 @@ import android.media.NotProvisionedException;
 import android.os.Build;
 import androidx.annotation.NonNull;
 
-import com.google.android.exoplayer2.drm.DrmInitData;
-import com.google.android.exoplayer2.drm.FrameworkMediaDrm;
+import com.kaltura.android.exoplayer2.drm.DrmInitData;
+import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.kaltura.playkit.player.MediaSupport;
 
 import java.util.Collections;

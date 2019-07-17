@@ -27,13 +27,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.text.Cue;
-import com.google.android.exoplayer2.text.TextOutput;
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
-import com.google.android.exoplayer2.ui.SubtitleView;
-import com.google.android.exoplayer2.video.VideoListener;
+import com.kaltura.android.exoplayer2.Player;
+import com.kaltura.android.exoplayer2.SimpleExoPlayer;
+import com.kaltura.android.exoplayer2.text.Cue;
+import com.kaltura.android.exoplayer2.text.TextOutput;
+import com.kaltura.android.exoplayer2.ui.AspectRatioFrameLayout;
+import com.kaltura.android.exoplayer2.ui.SubtitleView;
+import com.kaltura.android.exoplayer2.video.VideoListener;
 import com.kaltura.playkit.PKLog;
 
 import java.util.List;

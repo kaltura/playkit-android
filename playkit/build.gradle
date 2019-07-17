@@ -39,12 +39,8 @@ dependencies {
 
     api 'com.google.code.gson:gson:2.8.2'
 
-    // ExoPlayer
-    api "com.google.android.exoplayer:exoplayer-core:$exoPlayerVersion"
-    api "com.google.android.exoplayer:exoplayer-dash:$exoPlayerVersion"
-    api "com.google.android.exoplayer:exoplayer-hls:$exoPlayerVersion"
-    api "com.google.android.exoplayer:exoplayer-ui:$exoPlayerVersion"
-    api "com.google.android.exoplayer:extension-okhttp:$exoPlayerVersion"
+    // KExoPlayer
+    api "com.kaltura.playkit:kexoplayer:$exoPlayerVersion"
 
     implementation 'androidx.annotation:annotation:1.0.2'
 
