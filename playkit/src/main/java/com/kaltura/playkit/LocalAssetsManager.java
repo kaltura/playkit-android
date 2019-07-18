@@ -203,7 +203,13 @@ public class LocalAssetsManager {
 
         final DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(scheme, context, localDataStore);
 
-        doInBackground(() -> drmAdapter.unregisterAsset(localAssetPath, assetId, localAssetPath1 -> mainHandler.post(() -> removeAsset(localAssetPath1, assetId, listener))));
+        doInBackground(() -> {
+            drmAdapter.unregisterAsset(localAssetPath, assetId, localAssetPath1 -> {
+                mainHandler.post(() -> {
+                    removeAsset(localAssetPath1, assetId, listener);
+                });
+            });
+        });
     }
 
     public void refreshAsset(@NonNull final PKMediaSource mediaSource, @NonNull final String localAssetPath,
@@ -241,7 +247,9 @@ public class LocalAssetsManager {
 
         doInBackground(() -> drmAdapter.checkAssetStatus(localAssetPath, assetId, (localAssetPath1, expiryTimeSeconds, availableTimeSeconds, isRegistered) -> {
             if (listener != null) {
-                mainHandler.post(() -> listener.onStatus(localAssetPath1, expiryTimeSeconds, availableTimeSeconds, isRegistered));
+                mainHandler.post(() ->  {
+                    listener.onStatus(localAssetPath1, expiryTimeSeconds, availableTimeSeconds, isRegistered);
+                });
             }
         }));
     }

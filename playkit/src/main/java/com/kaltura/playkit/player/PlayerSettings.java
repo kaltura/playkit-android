@@ -25,8 +25,8 @@ public class PlayerSettings implements Player.Settings {
     private boolean cea608CaptionsEnabled;
     private boolean mpgaAudioFormatEnabled;
     private boolean crossProtocolRedirectEnabled;
+    private boolean enableDecoderFallback;
     private boolean allowClearLead = true;
-    private boolean enableDecoderFallback = true;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
@@ -247,7 +247,7 @@ public class PlayerSettings implements Player.Settings {
         this.forceSinglePlayerEngine = forceSinglePlayerEngine;
         return this;
     }
-  
+
     @Override
     public Player.Settings setHideVideoViews(boolean hide) {
         isVideoViewHidden = hide;
