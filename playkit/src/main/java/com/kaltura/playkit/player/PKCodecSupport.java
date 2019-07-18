@@ -21,8 +21,8 @@ public class PKCodecSupport {
     }
 
     static {
-        cache.put(TrackType.VIDEO, new HashMap<String, Boolean>());
-        cache.put(TrackType.AUDIO, new HashMap<String, Boolean>());
+        cache.put(TrackType.VIDEO, new HashMap<>());
+        cache.put(TrackType.AUDIO, new HashMap<>());
     }
 
     private static boolean isCodecSupportedInternal(String codec, TrackType type) {

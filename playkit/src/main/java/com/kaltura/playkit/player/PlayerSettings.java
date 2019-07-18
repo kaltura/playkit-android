@@ -25,6 +25,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean cea608CaptionsEnabled;
     private boolean mpgaAudioFormatEnabled;
     private boolean crossProtocolRedirectEnabled;
+    private boolean enableDecoderFallback;
     private boolean allowClearLead = true;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
@@ -66,6 +67,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean allowClearLead() {
         return allowClearLead;
+    }
+
+    public boolean enableDecoderFallback() {
+        return enableDecoderFallback;
     }
 
     public boolean cea608CaptionsEnabled() {
@@ -208,6 +213,12 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
+    public Player.Settings enableDecoderFallback(boolean enableDecoderFallback) {
+        this.enableDecoderFallback = enableDecoderFallback;
+        return this;
+    }
+
+    @Override
     public Player.Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers) {
         this.loadControlBuffers = loadControlBuffers;
         return this;
@@ -236,7 +247,7 @@ public class PlayerSettings implements Player.Settings {
         this.forceSinglePlayerEngine = forceSinglePlayerEngine;
         return this;
     }
-  
+
     @Override
     public Player.Settings setHideVideoViews(boolean hide) {
         isVideoViewHidden = hide;
