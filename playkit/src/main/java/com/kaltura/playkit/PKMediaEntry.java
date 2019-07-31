@@ -18,6 +18,7 @@ import android.text.TextUtils;
 
 import com.kaltura.playkit.player.PKExternalSubtitle;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +70,11 @@ public class PKMediaEntry implements Parcelable {
 
     public PKMediaEntry setSources(List<PKMediaSource> sources) {
         this.sources = sources;
+        return this;
+    }
+
+    public PKMediaEntry setSources(PKMediaSource[] sources) {
+        this.sources = Arrays.asList(sources);
         return this;
     }
 

@@ -51,7 +51,7 @@ import static com.kaltura.playkit.Utils.toBase64;
  */
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-class WidevineModularAdapter extends DrmAdapter {
+public class WidevineModularAdapter extends DrmAdapter {
 
     private static final PKLog log = PKLog.get("WidevineModularAdapter");
 
@@ -59,7 +59,7 @@ class WidevineModularAdapter extends DrmAdapter {
     private final LocalDataStore localDataStore;
 
 
-    WidevineModularAdapter(Context context, LocalDataStore localDataStore) {
+    public WidevineModularAdapter(Context context, LocalDataStore localDataStore) {
         this.context = context;
         this.localDataStore = localDataStore;
     }
@@ -81,7 +81,7 @@ class WidevineModularAdapter extends DrmAdapter {
         }
     }
 
-    private boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter) throws RegisterException {
+    private boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter requestParamsAdapter) throws RegisterException {
 
         // obtain the dash manifest.
         SimpleDashParser dash = parseDash(localAssetPath, assetId);
@@ -94,6 +94,26 @@ class WidevineModularAdapter extends DrmAdapter {
         String mimeType = dash.format.containerMimeType;
         byte[] initData = dash.widevineInitData;
 
+        registerAsset(licenseUri, requestParamsAdapter, mimeType, initData);
+
+        return true;
+    }
+
+    private void registerAsset(String licenseUri, PKRequestParams.Adapter requestParamsAdapter, String mimeType, byte[] initData) throws RegisterException {
+        final byte[] offlineKeyId = downloadOfflineLicense(licenseUri, requestParamsAdapter, mimeType, initData);
+        localDataStore.save(toBase64(initData), offlineKeyId);
+    }
+
+    public void registerAsset(byte[] initData, String mimeType, String licenseUri, PKRequestParams.Adapter requestParamsAdapter, LocalAssetsManager.AssetRegistrationListener listener) {
+        try {
+            registerAsset(licenseUri, requestParamsAdapter, mimeType, initData);
+            listener.onRegistered(null);
+        } catch (RegisterException e) {
+            listener.onFailed(null, e);
+        }
+    }
+
+    private byte[] downloadOfflineLicense(String licenseUri, PKRequestParams.Adapter requestParamsAdapter, String mimeType, byte[] initData) throws RegisterException {
         MediaDrmSession session;
         FrameworkMediaDrm mediaDrm = createMediaDrm();
         try {
@@ -113,7 +133,7 @@ class WidevineModularAdapter extends DrmAdapter {
             // Send request to server
             byte[] keyResponse;
             try {
-                keyResponse = executeKeyRequest(licenseUri, keyRequest, adapter);
+                keyResponse = executeKeyRequest(licenseUri, keyRequest, requestParamsAdapter);
                 log.d("registerAsset: response data (b64): " + toBase64(keyResponse));
 
             } catch (Exception e) {
@@ -122,8 +142,7 @@ class WidevineModularAdapter extends DrmAdapter {
 
             // Provide keyResponse
             try {
-                byte[] offlineKeyId = session.provideKeyResponse(keyResponse);
-                localDataStore.save(toBase64(initData), offlineKeyId);
+                return session.provideKeyResponse(keyResponse);
 
             } catch (DeniedByServerException e) {
                 throw new RegisterException("Request denied by server", e);
@@ -135,9 +154,6 @@ class WidevineModularAdapter extends DrmAdapter {
         } finally {
             session.close();
         }
-
-
-        return true;
     }
 
     @Override

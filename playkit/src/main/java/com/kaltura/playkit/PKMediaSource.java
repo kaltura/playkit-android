@@ -14,6 +14,7 @@ package com.kaltura.playkit;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import com.kaltura.android.exoplayer2.source.MediaSource;
 
 import java.util.Collections;
 import java.util.List;
@@ -128,4 +129,16 @@ public class PKMediaSource implements Parcelable {
         result = 31 * result + url.hashCode();
         return result;
     }
+
+//    public static class Cached extends PKMediaSource {
+//        private MediaSource exoMediaSource;
+//
+//        public Cached(MediaSource exoMediaSource) {
+//            this.exoMediaSource = exoMediaSource;
+//        }
+//
+//        public MediaSource getExoMediaSource() {
+//            return exoMediaSource;
+//        }
+//    }
 }

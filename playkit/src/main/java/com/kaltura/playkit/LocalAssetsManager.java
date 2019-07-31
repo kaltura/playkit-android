@@ -16,13 +16,17 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.util.Base64;
 
+import com.kaltura.android.exoplayer2.source.MediaSource;
 import com.kaltura.playkit.drm.DrmAdapter;
+import com.kaltura.playkit.drm.WidevineModularAdapter;
 import com.kaltura.playkit.player.MediaSupport;
 
 import java.io.FileNotFoundException;
@@ -139,6 +143,14 @@ public class LocalAssetsManager {
         } else {
             registerClearAsset(localAssetPath, assetId, mediaFormat, listener);
         }
+    }
+
+    public void registerDrmAsset(byte[] drmInitData, String mimeType, final String assetId, final PKMediaFormat mediaFormat, String licenseUri, final AssetRegistrationListener listener) {
+        doInBackground(() -> {
+            final WidevineModularAdapter widevine = new WidevineModularAdapter(context, localDataStore);
+            widevine.registerAsset(drmInitData, mimeType, licenseUri, licenseRequestParamAdapter, listener);
+            localDataStore.save(buildAssetKey(assetId), buildMediaFormatValueAsByteArray(mediaFormat, PKDrmParams.Scheme.WidevineCENC));
+        });
     }
 
     /**
@@ -316,6 +328,15 @@ public class LocalAssetsManager {
     }
 
     /**
+     * @param assetId        - the id of the asset.
+//     * @param exoMediaSource - the actual url of the video that should be played.
+     * @return - the {@link PKMediaSource} that should be passed to the player.
+     */
+    public PKMediaSource getLocalMediaSource(@NonNull final String assetId, @NonNull final MediaSource exoMediaSource) {
+        return new LocalExoMediaSource(localDataStore, exoMediaSource, assetId);
+    }
+
+    /**
      * Will check if passed parameters are valid.
      *
      * @param url            - url of the media.
@@ -343,15 +364,15 @@ public class LocalAssetsManager {
     /**
      * check the passed String.
      *
-     * @param obj  - String to check.
+     * @param str  - String to check.
      * @param name - the descriptive name of the String.
      */
-    private void checkNotEmpty(String obj, String name) {
-        checkArg(obj == null || obj.length() == 0, name + " must not be empty");
+    private void checkNotEmpty(String str, String name) {
+        checkArg(TextUtils.isEmpty(str), name + " must not be empty");
     }
 
     private void doInBackground(Runnable runnable) {
-        new Thread(runnable).start();
+        AsyncTask.execute(runnable);
     }
 
     /**
@@ -385,12 +406,13 @@ public class LocalAssetsManager {
     /**
      * The local media source that should be passed to the player
      * when offline(locally stored) media want to be played.
-     * Created by anton.afanasiev on 18/12/2016.
      */
     public static class LocalMediaSource extends PKMediaSource {
 
         private PKDrmParams.Scheme scheme;
         private LocalDataStore localDataStore;
+
+
 
         /**
          * @param localDataStore - the storage from where drm keySetId is stored.
@@ -423,6 +445,25 @@ public class LocalAssetsManager {
         }
     }
 
+    public static class LocalExoMediaSource extends LocalMediaSource {
+        private MediaSource exoMediaSource;
+
+        /**
+         * @param localDataStore - the storage from where drm keySetId is stored.
+         * @param assetId        - the id of the media.
+         */
+        LocalExoMediaSource(LocalDataStore localDataStore, @NonNull MediaSource exoMediaSource, String assetId) {
+            super(localDataStore, null, assetId);
+
+            this.exoMediaSource = exoMediaSource;
+        }
+
+        public MediaSource getExoMediaSource() {
+            return exoMediaSource;
+        }
+
+    }
+
     /**
      * Default implementation of the {@link LocalDataStore}. Actually doing the basic save/load/remove actions
      * to the {@link SharedPreferences}.
@@ -437,6 +478,8 @@ public class LocalAssetsManager {
         private final SharedPreferences sharedPreferences;
 
         public DefaultLocalDataStore(Context context) {
+
+            log.d("context: " + context);
             sharedPreferences = context.getSharedPreferences(LOCAL_SHARED_PREFERENCE_STORAGE, 0);
         }
 

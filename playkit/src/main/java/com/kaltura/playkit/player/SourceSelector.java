@@ -29,15 +29,20 @@ import java.util.List;
  * Created by Noam Tamim @ Kaltura on 29/11/2016.
  */
 
-class SourceSelector {
+public class SourceSelector {
 
     private static final PKLog log = PKLog.get("SourceSelector");
     private final PKMediaEntry mediaEntry;
     private final PKMediaFormat preferredMediaFormat;
 
-    public SourceSelector(PKMediaEntry mediaEntry, PKMediaFormat preferredMdieaFormat) {
+    private PKMediaSource selectedSource;
+    private PKDrmParams selectedDrmParams;
+
+    public SourceSelector(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat) {
         this.mediaEntry = mediaEntry;
-        this.preferredMediaFormat = preferredMdieaFormat;
+        this.preferredMediaFormat = preferredMediaFormat;
+
+        selectSource();
     }
 
     @Nullable
@@ -52,17 +57,27 @@ class SourceSelector {
         return null;
     }
 
-    @Nullable
-    PKMediaSource getPreferredSource() {
+
+    public PKMediaSource getSelectedSource() {
+        return selectedSource;
+    }
+
+    public PKDrmParams getSelectedDrmParams() {
+        return selectedDrmParams;
+    }
+
+    private void selectSource() {
+
+        selectedSource = null;
+        selectedDrmParams = null;
 
         // If PKMediaSource is local, there is no need to look for the preferred source,
         // because it is only one.
         PKMediaSource localMediaSource = getLocalSource();
         if (localMediaSource != null) {
-            return localMediaSource;
+            selectedSource = localMediaSource;
+            return;
         }
-
-        // Default preference: DASH, HLS, WVM, MP4, MP3
 
         List<PKMediaFormat> formatsPriorityList = getFormatsPriorityList();
 
@@ -72,19 +87,23 @@ class SourceSelector {
                 continue;
             }
 
-            List<PKDrmParams> drmParams = source.getDrmData();
-            if (drmParams != null && !drmParams.isEmpty()) {
+            if (source.hasDrmParams()) {
+                List<PKDrmParams> drmParams = source.getDrmData();
                 for (PKDrmParams params : drmParams) {
                     if (params.isSchemeSupported()) {
-                        return source;
+                        selectedSource = source;
+                        selectedDrmParams = params;
+                        return;
                     }
                 }
                 // This source doesn't have supported params
-                continue;
+
+            } else {
+                selectedSource = source;
+                selectedDrmParams = null;   // clear
+                return;
             }
-            return source;
         }
-        return null;
     }
 
     @NonNull
@@ -110,12 +129,14 @@ class SourceSelector {
     }
 
     public static PKMediaSource selectSource(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat) {
-        return new SourceSelector(mediaEntry, preferredMediaFormat).getPreferredSource();
+        final SourceSelector sourceSelector = new SourceSelector(mediaEntry, preferredMediaFormat);
+        return sourceSelector.selectedSource;
     }
 
     private PKMediaSource getLocalSource() {
         if (mediaEntry != null && mediaEntry.getSources() != null) {
             for (PKMediaSource source : mediaEntry.getSources()) {
+
                 if (source instanceof LocalAssetsManager.LocalMediaSource) {
                     return source;
                 }
