@@ -21,24 +21,27 @@ import android.media.MediaCryptoException;
 import android.media.MediaDrm;
 import android.media.MediaDrmException;
 import android.media.NotProvisionedException;
+import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
-import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
-import com.google.android.exoplayer2.drm.ExoMediaDrm;
-import com.google.android.exoplayer2.drm.FrameworkMediaDrm;
-import com.google.android.exoplayer2.drm.HttpMediaDrmCallback;
-import com.google.android.exoplayer2.drm.UnsupportedDrmException;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
-import com.google.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
+import com.kaltura.android.exoplayer2.drm.ExoMediaDrm;
+import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
+import com.kaltura.android.exoplayer2.drm.HttpMediaDrmCallback;
+import com.kaltura.android.exoplayer2.drm.UnsupportedDrmException;
+import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.LocalDataStore;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.player.MediaSupport;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.kaltura.playkit.Utils.toBase64;
@@ -62,10 +65,10 @@ class WidevineModularAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, LocalAssetsManager.AssetRegistrationListener listener) {
+    public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener) {
 
         try {
-            boolean result = registerAsset(localAssetPath, assetId, licenseUri);
+            boolean result = registerAsset(localAssetPath, assetId, licenseUri, adapter);
             if (listener != null) {
                 listener.onRegistered(localAssetPath);
             }
@@ -78,7 +81,7 @@ class WidevineModularAdapter extends DrmAdapter {
         }
     }
 
-    private boolean registerAsset(String localAssetPath, String assetId, String licenseUri) throws RegisterException {
+    private boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter) throws RegisterException {
 
         // obtain the dash manifest.
         SimpleDashParser dash = parseDash(localAssetPath, assetId);
@@ -110,8 +113,9 @@ class WidevineModularAdapter extends DrmAdapter {
             // Send request to server
             byte[] keyResponse;
             try {
-                keyResponse = executeKeyRequest(licenseUri, keyRequest);
+                keyResponse = executeKeyRequest(licenseUri, keyRequest, adapter);
                 log.d("registerAsset: response data (b64): " + toBase64(keyResponse));
+
             } catch (Exception e) {
                 throw new RegisterException("Can't send key request for registration", e);
             }
@@ -120,14 +124,18 @@ class WidevineModularAdapter extends DrmAdapter {
             try {
                 byte[] offlineKeyId = session.provideKeyResponse(keyResponse);
                 localDataStore.save(toBase64(initData), offlineKeyId);
+
             } catch (DeniedByServerException e) {
                 throw new RegisterException("Request denied by server", e);
             }
+
         } catch (WidevineNotSupportedException e) {
             throw new RegisterException("Can't execute KeyRequest", e);
+
+        } finally {
+            session.close();
         }
 
-        session.close();
 
         return true;
     }
@@ -182,9 +190,9 @@ class WidevineModularAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, LocalAssetsManager.AssetRegistrationListener listener) {
+    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener) {
         // TODO -- verify that we just need to register again
-        return registerAsset(localAssetPath, assetId, licenseUri, listener);
+        return registerAsset(localAssetPath, assetId, licenseUri, adapter, listener);
     }
 
     @Override
@@ -315,8 +323,22 @@ class WidevineModularAdapter extends DrmAdapter {
         return session;
     }
 
-    private byte[] executeKeyRequest(String licenseUrl, ExoMediaDrm.KeyRequest keyRequest) throws Exception {
+    private byte[] executeKeyRequest(String licenseUrl, ExoMediaDrm.KeyRequest keyRequest, PKRequestParams.Adapter adapter) throws Exception {
+
+
+
         HttpMediaDrmCallback httpMediaDrmCallback = new HttpMediaDrmCallback(licenseUrl, buildDataSourceFactory());
+        if (adapter != null) {
+            PKRequestParams params = new PKRequestParams(Uri.parse(licenseUrl), new HashMap<>());
+            params = adapter.adapt(params);
+            if (params != null && params.headers != null) {
+                for (Map.Entry<String, String> entry : params.headers.entrySet()) {
+                    if (entry != null) {
+                        httpMediaDrmCallback.setKeyRequestProperty(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
+        }
         return httpMediaDrmCallback.executeKeyRequest(MediaSupport.WIDEVINE_UUID, keyRequest);
     }
 

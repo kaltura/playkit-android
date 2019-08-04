@@ -37,7 +37,6 @@ public class PKHttpClientManager {
 
     private static String httpProviderId;
 
-
     private static final OkHttpClient okClient = new OkHttpClient.Builder()
             .followRedirects(false)     // Only warm up explicitly specified URLs
             .connectionPool(new ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_DURATION, TimeUnit.MINUTES))
@@ -57,7 +56,7 @@ public class PKHttpClientManager {
     }
 
     /**
-     * Set the http provider. Valid options are "system" (use the build-in {@linkplain java.net.HttpURLConnection})
+     * Set the http provider. Valid options are "system" (use the build-in java.net.HttpURLConnection)
      * and "okhttp" (use Square's <a href="https://square.github.io/okhttp/">OkHttp</a> library).
      * @param providerId "system" (default) or "okhttp".
      */

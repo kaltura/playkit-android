@@ -17,7 +17,6 @@ import android.content.Context;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.MessageBus;
-import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;

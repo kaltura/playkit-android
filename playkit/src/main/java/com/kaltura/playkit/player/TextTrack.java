@@ -12,7 +12,7 @@
 
 package com.kaltura.playkit.player;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 /**
  * Text track data holder.

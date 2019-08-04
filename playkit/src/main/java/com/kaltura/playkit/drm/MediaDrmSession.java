@@ -18,10 +18,10 @@ import android.media.MediaDrm;
 import android.media.MediaDrmException;
 import android.media.NotProvisionedException;
 import android.os.Build;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
-import com.google.android.exoplayer2.drm.DrmInitData;
-import com.google.android.exoplayer2.drm.FrameworkMediaDrm;
+import com.kaltura.android.exoplayer2.drm.DrmInitData;
+import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.kaltura.playkit.player.MediaSupport;
 
 import java.util.Collections;
@@ -78,6 +78,8 @@ class MediaDrmSession {
         try {
             return mMediaDrm.provideKeyResponse(mSessionId, keyResponse);
         } catch (NotProvisionedException e) {
+            throw new WidevineNotSupportedException(e);
+        } catch (IllegalStateException e) {
             throw new WidevineNotSupportedException(e);
         }
     }

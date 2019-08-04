@@ -12,7 +12,7 @@
 
 package com.kaltura.playkit.ads;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKLog;

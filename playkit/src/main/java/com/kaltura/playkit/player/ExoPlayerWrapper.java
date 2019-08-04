@@ -19,45 +19,46 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
-import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
-import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.PlaybackParameters;
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
-import com.google.android.exoplayer2.metadata.Metadata;
-import com.google.android.exoplayer2.metadata.MetadataOutput;
-import com.google.android.exoplayer2.source.BehindLiveWindowException;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.MergingMediaSource;
-import com.google.android.exoplayer2.source.SingleSampleMediaSource;
-import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.source.dash.DashMediaSource;
-import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
-import com.google.android.exoplayer2.source.hls.HlsMediaSource;
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.ui.SubtitleView;
-import com.google.android.exoplayer2.upstream.BandwidthMeter;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
-import com.google.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.android.exoplayer2.C;
+import com.kaltura.android.exoplayer2.DefaultLoadControl;
+import com.kaltura.android.exoplayer2.ExoPlaybackException;
+import com.kaltura.android.exoplayer2.ExoPlayerFactory;
+import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
+import com.kaltura.android.exoplayer2.Format;
+import com.kaltura.android.exoplayer2.PlaybackParameters;
+import com.kaltura.android.exoplayer2.Player;
+import com.kaltura.android.exoplayer2.SimpleExoPlayer;
+import com.kaltura.android.exoplayer2.Timeline;
+import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
+import com.kaltura.android.exoplayer2.metadata.Metadata;
+import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
+import com.kaltura.android.exoplayer2.source.BehindLiveWindowException;
+import com.kaltura.android.exoplayer2.source.MediaSource;
+import com.kaltura.android.exoplayer2.source.MergingMediaSource;
+import com.kaltura.android.exoplayer2.source.ProgressiveMediaSource;
+import com.kaltura.android.exoplayer2.source.SingleSampleMediaSource;
+import com.kaltura.android.exoplayer2.source.TrackGroupArray;
+import com.kaltura.android.exoplayer2.source.dash.DashMediaSource;
+import com.kaltura.android.exoplayer2.source.dash.DefaultDashChunkSource;
+import com.kaltura.android.exoplayer2.source.hls.HlsMediaSource;
+import com.kaltura.android.exoplayer2.trackselection.AdaptiveTrackSelection;
+import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.kaltura.android.exoplayer2.ui.SubtitleView;
+import com.kaltura.android.exoplayer2.upstream.BandwidthMeter;
+import com.kaltura.android.exoplayer2.upstream.DataSource;
+import com.kaltura.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
+import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
@@ -67,12 +68,14 @@ import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.NativeCookieJarBridge;
 
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -86,12 +89,6 @@ import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
-    private static final CookieManager DEFAULT_COOKIE_MANAGER;
-
-    static {
-        DEFAULT_COOKIE_MANAGER = new CookieManager();
-        DEFAULT_COOKIE_MANAGER.setCookiePolicy(CookiePolicy.ACCEPT_ORIGINAL_SERVER);
-    }
 
     private DefaultBandwidthMeter bandwidthMeter;
     @NonNull private PlayerSettings playerSettings;
@@ -124,6 +121,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private boolean shouldResetPlayerPosition;
     private boolean preferredLanguageWasSelected;
     private boolean shouldRestorePlayerToPreviousState;
+    private boolean isPlayerReleased;
 
     private int playerWindow;
     private long playerPosition = TIME_UNSET;
@@ -141,8 +139,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private PKMediaSourceConfig sourceConfig;
     @NonNull private Profiler profiler = Profiler.NOOP;
 
-    private DataSource.Factory dataSourceFactory;
-    private HttpDataSource.Factory httpDataSourceFactory;
     private Timeline.Period period;
 
     ExoPlayerWrapper(Context context, PlayerSettings playerSettings, PlayerView rootPlayerView) {
@@ -154,7 +150,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         playerSettings = settings != null ? settings : new PlayerSettings();
         rootView = rootPlayerView;
-        DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context).setEventListener(mainHandler, this);
+        DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context);
 
         Long initialBitrateEstimate = playerSettings.getAbrSettings().getInitialBitrateEstimate();
 
@@ -163,11 +159,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         bandwidthMeter = bandwidthMeterBuilder.build();
+        bandwidthMeter.addEventListener(mainHandler, this);
+
         period = new Timeline.Period();
         this.exoPlayerView = exoPlayerView;
-        if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
-            CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
-        }
     }
 
     @Override
@@ -178,15 +173,17 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private void initializePlayer() {
         DefaultTrackSelector trackSelector = initializeTrackSelector();
 
-        final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(), playerSettings.getLicenseRequestAdapter());
+        final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener);
-        CustomRendererFactory renderersFactory = new CustomRendererFactory(context, playerSettings.allowClearLead(), playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
-      
+        CustomRendererFactory renderersFactory = new CustomRendererFactory(context, playerSettings.allowClearLead(), playerSettings.enableDecoderFallback(), playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
+
         player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
+        player.setForegroundMode(true); // Making sure the stop() call is not removing the decoders on change media.
+
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
-        exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured);
+        exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured, playerSettings.isVideoViewHidden());
 
         player.setPlayWhenReady(false);
     }
@@ -211,7 +208,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             player.addListener(this);
             player.addMetadataOutput(this);
             player.addAnalyticsListener(analyticsAggregator);
-            final com.google.android.exoplayer2.analytics.AnalyticsListener exoAnalyticsListener = profiler.getExoAnalyticsListener();
+            final com.kaltura.android.exoplayer2.analytics.AnalyticsListener exoAnalyticsListener = profiler.getExoAnalyticsListener();
             if (exoAnalyticsListener != null) {
                 player.addAnalyticsListener(exoAnalyticsListener);
             }
@@ -246,7 +243,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
         profiler.onPrepareStarted(sourceConfig);
-        player.prepare(mediaSource, shouldResetPlayerPosition, shouldResetPlayerPosition);
         boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
         player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
 
@@ -272,9 +268,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             return null;
         }
 
-        Uri uri = sourceConfig.getUrl();
+        PKRequestParams requestParams = sourceConfig.getRequestParams();
+        Uri uri = requestParams.url;
 
-        final DataSource.Factory dataSourceFactory = getDataSourceFactory();
+        final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
 
         switch (format) {
             case dash:
@@ -292,7 +289,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
-                ExtractorMediaSource extractorMediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
+                ProgressiveMediaSource extractorMediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(uri);
                 return new MergingMediaSource(buildMediaSourceList(extractorMediaSource, externalSubtitleList));
 
@@ -330,58 +327,66 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @NonNull
     private MediaSource buildExternalSubtitleSource(int subtitleId, PKExternalSubtitle pkExternalSubtitle) {
-            // Build the subtitle MediaSource.
-            Format subtitleFormat = Format.createTextContainerFormat(
-                    String.valueOf(subtitleId), // An identifier for the track. May be null.
-                    pkExternalSubtitle.getLabel(),
-                    pkExternalSubtitle.getContainerMimeType(),
-                    pkExternalSubtitle.getMimeType(), // The mime type. Must be set correctly.
-                    pkExternalSubtitle.getCodecs(),
-                    pkExternalSubtitle.getBitrate(),
-                    pkExternalSubtitle.getSelectionFlags(),
-                    pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
+        // Build the subtitle MediaSource.
+        Format subtitleFormat = Format.createTextContainerFormat(
+                String.valueOf(subtitleId), // An identifier for the track. May be null.
+                pkExternalSubtitle.getLabel(),
+                pkExternalSubtitle.getContainerMimeType(),
+                pkExternalSubtitle.getMimeType(), // The mime type. Must be set correctly.
+                pkExternalSubtitle.getCodecs(),
+                pkExternalSubtitle.getBitrate(),
+                pkExternalSubtitle.getSelectionFlags(),
+                pkExternalSubtitle.getRoleFlag(),
+                pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
 
-            return new SingleSampleMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
+        return new SingleSampleMediaSource.Factory(getDataSourceFactory(null))
+                .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
     }
 
-    private HttpDataSource.Factory getHttpDataSourceFactory() {
-        
-        if (httpDataSourceFactory == null) {
-            final String userAgent = getUserAgent(context);
-            final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
+    private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
+        HttpDataSource.Factory httpDataSourceFactory;
+        final String userAgent = getUserAgent(context);
+        final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
 
-            if (PKHttpClientManager.useOkHttp()) {
-
-                final OkHttpClient.Builder builder = PKHttpClientManager.newClientBuilder()
-                        .followRedirects(true)
-                        .followSslRedirects(crossProtocolRedirectEnabled)
-                        .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-                        .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
-
-                final okhttp3.EventListener.Factory okListenerFactory = profiler.getOkListenerFactory();
-                if (okListenerFactory != null) {
-                    builder.eventListenerFactory(okListenerFactory);
-                }
-
-                httpDataSourceFactory = new OkHttpDataSourceFactory(builder.build(), userAgent);
-
-            } else {
-
-                httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent,
-                        DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                        DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, crossProtocolRedirectEnabled);
-            }
+        if (CookieHandler.getDefault() == null) {
+            CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER));
         }
 
+        if (PKHttpClientManager.useOkHttp()) {
+
+            final OkHttpClient.Builder builder = PKHttpClientManager.newClientBuilder()
+                    .cookieJar(NativeCookieJarBridge.sharedCookieJar)
+                    .followRedirects(true)
+                    .followSslRedirects(crossProtocolRedirectEnabled)
+                    .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                    .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+
+            final okhttp3.EventListener.Factory okListenerFactory = profiler.getOkListenerFactory();
+            if (okListenerFactory != null) {
+                builder.eventListenerFactory(okListenerFactory);
+            }
+
+            httpDataSourceFactory = new OkHttpDataSourceFactory(builder.build(), userAgent);
+
+        } else {
+
+            httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent,
+                    DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                    DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
+                    crossProtocolRedirectEnabled);
+        }
+
+        if (headers != null) {
+            HttpDataSource.RequestProperties defaultRequestProperties = httpDataSourceFactory.getDefaultRequestProperties();
+            for (Map.Entry<String, String> headerEntry : headers.entrySet()) {
+                defaultRequestProperties.set(headerEntry.getKey(), headerEntry.getValue());
+            }
+        }
         return httpDataSourceFactory;
     }
 
-    private DataSource.Factory getDataSourceFactory() {
-        if (dataSourceFactory == null) {
-            dataSourceFactory = new DefaultDataSourceFactory(context, getHttpDataSourceFactory());
-        }
-        return dataSourceFactory;
+    private DataSource.Factory getDataSourceFactory(Map<String, String> headers) {
+        return new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
     }
 
     private static String getUserAgent(Context context) {
@@ -417,7 +422,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private void sendEvent(PlayerEvent.Type event) {
-        if (shouldRestorePlayerToPreviousState) {
+        if (shouldRestorePlayerToPreviousState && event != PlayerEvent.Type.DURATION_CHANGE) {
             log.i("Trying to send event " + event.name() + ". Should be blocked from sending now, because the player is restoring to the previous state.");
             return;
         }
@@ -623,6 +628,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private void maybeChangePlayerRenderView() {
         // no need to swap video surface if no change was done in surface settings
         if (this.useTextureView == playerSettings.useTextureView() && this.isSurfaceSecured == playerSettings.isSurfaceSecured()) {
+            exoPlayerView.toggleVideoViewVisibility(playerSettings.isVideoViewHidden());
             return;
         }
         if (playerSettings.useTextureView() && playerSettings.isSurfaceSecured()) {
@@ -631,7 +637,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         this.useTextureView = playerSettings.useTextureView();
         this.isSurfaceSecured = playerSettings.isSurfaceSecured();
-        exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured());
+        exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured(), playerSettings.isVideoViewHidden());
     }
 
     @Override
@@ -769,6 +775,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             trackSelectionHelper.release();
             trackSelectionHelper = null;
         }
+        isPlayerReleased = true;
         shouldRestorePlayerToPreviousState = true;
     }
 
@@ -784,8 +791,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (playerPosition == TIME_UNSET || isLiveMediaWithoutDvr()) {
             player.seekToDefaultPosition();
         } else {
-            player.seekTo(playerWindow, playerPosition);
+            if (isPlayerReleased) {
+                player.seekTo(playerWindow, playerPosition);
+            } else {
+                playerPosition = TIME_UNSET;
+            }
         }
+
+        isPlayerReleased = false;
     }
 
     private boolean isLiveMediaWithoutDvr() {
@@ -960,6 +973,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (trackSelectionHelper != null) {
             trackSelectionHelper.stop();
         }
+
+        playerPosition = TIME_UNSET;
+
         if (assertPlayerIsNotNull("stop()")) {
             player.setPlayWhenReady(false);
             player.stop(true);
@@ -988,10 +1004,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private TrackSelectionHelper.TracksErrorListener initTracksErrorListener() {
         return pkError -> {
-                currentError = pkError;
-                if (eventListener != null) {
-                    eventListener.onEvent(PlayerEvent.Type.ERROR);
-                }
+            currentError = pkError;
+            if (eventListener != null) {
+                eventListener.onEvent(PlayerEvent.Type.ERROR);
+            }
         };
     }
 
@@ -1002,7 +1018,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 if (playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE) {
                     overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
                 }
-                //when the track info is ready, cache it in ExoplayerWrapper. And send event that tracks are available.
+                //when the track info is ready, cache it in ExoPlayerWrapper. And send event that tracks are available.
                 tracks = tracksReady;
                 shouldRestorePlayerToPreviousState = false;
                 sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);

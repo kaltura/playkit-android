@@ -26,7 +26,7 @@ import android.media.MediaDrm;
 import android.media.UnsupportedSchemeException;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -86,12 +86,7 @@ public class PKDeviceCapabilities {
         }
 
         // Do everything else in a thread.
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                sendReport(context, sharedPrefs);
-            }
-        });
+        AsyncTask.execute(() -> sendReport(context, sharedPrefs));
     }
 
     public static String getErrorReport(Exception e) {
@@ -313,16 +308,13 @@ public class PKDeviceCapabilities {
 
         final JSONArray mediaDrmEvents = new JSONArray();
 
-        mediaDrm.setOnEventListener(new MediaDrm.OnEventListener() {
-            @Override
-            public void onEvent(@NonNull MediaDrm md, byte[] sessionId, int event, int extra, byte[] data) {
-                try {
-                    String encodedData = data == null ? null : Base64.encodeToString(data, Base64.NO_WRAP);
+        mediaDrm.setOnEventListener((md, sessionId, event, extra, data) -> {
+            try {
+                String encodedData = data == null ? null : Base64.encodeToString(data, Base64.NO_WRAP);
 
-                    mediaDrmEvents.put(new JSONObject().put("event", event).put("extra", extra).put("data", encodedData));
-                } catch (JSONException e) {
-                    log.e("JSONError", e);
-                }
+                mediaDrmEvents.put(new JSONObject().put("event", event).put("extra", extra).put("data", encodedData));
+            } catch (JSONException e) {
+                log.e("JSONError", e);
             }
         });
 

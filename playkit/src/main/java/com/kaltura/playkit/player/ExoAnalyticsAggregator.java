@@ -1,7 +1,7 @@
 package com.kaltura.playkit.player;
 
-import com.google.android.exoplayer2.analytics.AnalyticsListener;
-import com.google.android.exoplayer2.source.MediaSourceEventListener;
+import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
+import com.kaltura.android.exoplayer2.source.MediaSourceEventListener;
 
 import java.io.IOException;
 

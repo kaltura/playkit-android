@@ -13,8 +13,8 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.view.ViewGroup;
 
 import com.kaltura.playkit.Assert;
@@ -30,7 +30,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
-import com.kaltura.playkit.player.vr.VRPKMediaEntry;
+import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
@@ -66,7 +66,8 @@ public class PlayerController implements Player {
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
 
-    @NonNull private Profiler profiler = ProfilerFactory.get();
+    @NonNull
+    private Profiler profiler = ProfilerFactory.get();
 
     private PKEvent.RawListener eventListener;
     private PlayerEngine.EventListener eventTrigger = initEventListener();
@@ -164,7 +165,12 @@ public class PlayerController implements Player {
             return;
         }
 
-        boolean is360Supported = mediaConfig.getMediaEntry() instanceof VRPKMediaEntry && playerSettings.isVRPlayerEnabled();
+        // Checking if AdsPlayerEngineWrapper is not there then make sure use force single if false.
+        if (!(playerEngineWrapper instanceof AdsPlayerEngineWrapper)) {
+            playerSettings.forceSinglePlayerEngine(false);
+        }
+
+        boolean is360Supported = sourceConfig.getVrSettings() != null && playerSettings.isVRPlayerEnabled();
         PlayerEngineType incomingPlayerType = PlayerEngineFactory.selectPlayerType(sourceConfig.mediaSource.getMediaFormat(), is360Supported);
 
         switchPlayersIfRequired(incomingPlayerType);
@@ -213,12 +219,7 @@ public class PlayerController implements Player {
     }
 
     private void initSourceConfig(PKMediaEntry mediaEntry, PKMediaSource source) {
-        if (mediaEntry instanceof VRPKMediaEntry) {
-            VRPKMediaEntry vrEntry = (VRPKMediaEntry) mediaEntry;
-            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings, vrEntry.getVrSettings());
-        } else {
-            this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
-        }
+        this.sourceConfig = new PKMediaSourceConfig(mediaConfig, source, playerSettings);
     }
 
     private String generateSessionId() {
@@ -301,7 +302,12 @@ public class PlayerController implements Player {
         if (eventListener != null && !isPlayerStopped) {
             PlayerEvent event = new PlayerEvent.Generic(PlayerEvent.Type.STOPPED);
             cancelUpdateProgress();
-            isPlayerStopped = true;
+
+            log.d("stop() isForceSinglePlayerEngine = " + playerSettings.isForceSinglePlayerEngine());
+            if (!playerSettings.isForceSinglePlayerEngine()) {
+                isPlayerStopped = true;
+            }
+
             log.d("sending STOPPED event ");
             eventListener.onEvent(event);
             if (assertPlayerIsNotNull("stop()")) {
@@ -434,20 +440,27 @@ public class PlayerController implements Player {
                 player.setAnalyticsListener(new PlayerEngine.AnalyticsListener() {
                     @Override
                     public void onDroppedFrames(long droppedVideoFrames, long droppedVideoFramesPeriod, long totalDroppedVideoFrames) {
-                        eventListener.onEvent(new PlayerEvent.VideoFramesDropped(droppedVideoFrames, droppedVideoFramesPeriod, totalDroppedVideoFrames));
+                        if (eventListener != null) {
+                            eventListener.onEvent(new PlayerEvent.VideoFramesDropped(droppedVideoFrames, droppedVideoFramesPeriod, totalDroppedVideoFrames));
+                        }
                     }
 
                     @Override
                     public void onBytesLoaded(long bytesLoaded, long totalBytesLoaded) {
-                        eventListener.onEvent(new PlayerEvent.BytesLoaded(bytesLoaded, totalBytesLoaded));
+                        if (eventListener != null) {
+                            eventListener.onEvent(new PlayerEvent.BytesLoaded(bytesLoaded, totalBytesLoaded));
+                        }
                     }
 
                     @Override
                     public void onLoadError(IOException error, boolean wasCanceled) {
-                        String errorStr =  "onLoadError Player Load error: " + PKPlayerErrorType.LOAD_ERROR;
+                        String errorStr = "onLoadError Player Load error: " + PKPlayerErrorType.LOAD_ERROR;
                         log.e(errorStr);
                         PKError loadError = new PKError(PKPlayerErrorType.LOAD_ERROR, PKError.Severity.Recoverable, errorStr, error);
+
+                        if (eventListener != null) {
                             eventListener.onEvent(new PlayerEvent.Error(loadError));
+                        }
                     }
                 });
             } else {
@@ -517,9 +530,24 @@ public class PlayerController implements Player {
         profiler.onApplicationResumed();
 
         if (isPlayerStopped) {
-            log.e("onApplicationResumed called during player state = STOPPED - return");
-            return;
+            log.e("onApplicationResumed called during player state = STOPPED");
+
+            if (!playerSettings.isForceSinglePlayerEngine()) {
+                log.d("onApplicationResumed called during player state = STOPPED - return, isForceSinglePlayerEngine = " + playerSettings.isForceSinglePlayerEngine());
+                return;
+            }
         }
+
+        if (player != null && playerSettings.isForceSinglePlayerEngine()) {
+            if (!isAdDisplayed()) {
+                resumePlayer();
+            }
+        } else {
+            resumePlayer();
+        }
+    }
+
+    private void resumePlayer() {
         if (assertPlayerIsNotNull("onApplicationResumed()")) {
             player.restore();
             updateProgress();
@@ -595,7 +623,7 @@ public class PlayerController implements Player {
     @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         log.v("updateSurfaceAspectRatioResizeMode");
-        if(assertPlayerIsNotNull("updateSurfaceAspectRatioResizeMode")){
+        if (assertPlayerIsNotNull("updateSurfaceAspectRatioResizeMode")) {
             player.updateSurfaceAspectRatioResizeMode(resizeMode);
         }
     }
@@ -649,8 +677,8 @@ public class PlayerController implements Player {
 
         position = player.getCurrentPosition();
         duration = player.getDuration();
-        AdController adController = player.getController(AdController.class);
-        if (adController == null || (adController != null && !adController.isAdDisplayed())) {
+
+        if (!isAdDisplayed()) {
             log.v("updateProgress new position/duration = " + position + "/" + duration);
             if (eventListener != null && position > 0 && duration > 0) {
                 eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
@@ -660,6 +688,11 @@ public class PlayerController implements Player {
         player.getView().removeCallbacks(updateProgressAction);
         player.getView().postDelayed(updateProgressAction, Consts.DEFAULT_PLAYHEAD_UPDATE_MILI);
 
+    }
+
+    private boolean isAdDisplayed() {
+        AdController adController = player.getController(AdController.class);
+        return adController != null && adController.isAdDisplayed();
     }
 
     private Runnable initProgressAction() {
@@ -694,7 +727,7 @@ public class PlayerController implements Player {
                     case DURATION_CHANGE:
                         event = new PlayerEvent.DurationChanged(getDuration());
                         if (getDuration() != Consts.TIME_UNSET && isNewEntry) {
-                            if(mediaConfig.getStartPosition() != null) {
+                            if (mediaConfig.getStartPosition() != null) {
                                 if (mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER > getDuration()) {
                                     mediaConfig.setStartPosition(getDuration() / MILLISECONDS_MULTIPLIER);
                                 }
@@ -703,7 +736,7 @@ public class PlayerController implements Player {
                                 }
 
                                 if ((isLiveMediaWithDvr() && mediaConfig.getStartPosition() == 0) ||
-                                                mediaConfig.getStartPosition() > 0) {
+                                        mediaConfig.getStartPosition() > 0) {
                                     startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                                 }
                             }

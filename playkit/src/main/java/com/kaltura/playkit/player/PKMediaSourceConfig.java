@@ -13,7 +13,7 @@
 package com.kaltura.playkit.player;
 
 import android.net.Uri;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
@@ -42,11 +42,13 @@ public class PKMediaSourceConfig {
         this.externalSubtitlesList = externalSubtitlesList;
     }
 
-    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings, VRSettings vrSettings) {
+    public PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
         this.mediaSource = source;
         this.mediaEntryType = (mediaConfig != null && mediaConfig.getMediaEntry() != null) ? mediaConfig.getMediaEntry().getMediaType() : PKMediaEntry.MediaEntryType.Unknown;
         this.playerSettings = playerSettings;
-        this.vrSettings = vrSettings;
+        if (mediaConfig != null && mediaConfig.getMediaEntry() != null && mediaConfig.getMediaEntry().isVRMediaType()) {
+            this.vrSettings = playerSettings.getVRSettings() != null ? playerSettings.getVRSettings() : new VRSettings();
+        }
         this.externalSubtitlesList = (mediaConfig != null && mediaConfig.getMediaEntry() != null && mediaConfig.getMediaEntry().getExternalSubtitleList() != null) ? mediaConfig.getMediaEntry().getExternalSubtitleList() : null;
     }
 
@@ -54,16 +56,12 @@ public class PKMediaSourceConfig {
         this(source, mediaEntryType, externalSubtitlesList, playerSettings, null);
     }
 
-    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
-        this(mediaConfig, source, playerSettings, null);
-    }
-
-    public Uri getUrl() {
+    public PKRequestParams getRequestParams() {
         Uri uri = Uri.parse(mediaSource.getUrl());
         if (playerSettings.getContentRequestAdapter() == null) {
-            return uri;
+            return new PKRequestParams(uri, null);
         } else {
-            return playerSettings.getContentRequestAdapter().adapt(new PKRequestParams(uri, null)).url;
+            return playerSettings.getContentRequestAdapter().adapt(new PKRequestParams(uri, null));
         }
     }
 
