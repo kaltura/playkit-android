@@ -33,7 +33,7 @@ public class PKHttpClientManager {
 
     private static final int MAX_IDLE_CONNECTIONS = 10;
     private static final int KEEP_ALIVE_DURATION = 5;
-    private static final int WARMUP_TIMES = 2;
+    private static final int WARMUP_TIMES = 1;
 
     private static String httpProviderId;
 
