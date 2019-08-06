@@ -75,6 +75,14 @@ public interface PlayerEngine {
      */
     long getCurrentPosition();
 
+
+    /**
+     * Getter for the current playback position in window.
+     *
+     * @return - position of the player in window or 0 o/w.
+     */
+    default long getPositionInWindowMs() { return 0; }
+
     /**
      * The program start time, as set by availabilityStartTime in DASH or the EXT-X-PROGRAM-DATE-TIME in HLS.
      * @return The program start time in milliseconds since the epoch.
@@ -239,11 +247,11 @@ public interface PlayerEngine {
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
 
-     /**
+    /**
       *  update view size 
       *  @param resizeMode
       */
-    default void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {};
+    default void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
 
     /**
      * Generic getters for playkit controllers.

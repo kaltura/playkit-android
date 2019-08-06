@@ -14,12 +14,6 @@ package com.kaltura.playkit;
 
 import android.content.Context;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import java.util.HashMap;
-import java.util.Map;
-
 public abstract class PKPlugin {
 
     public interface Factory {
@@ -50,23 +44,5 @@ public abstract class PKPlugin {
 
     protected PlayerDecorator getPlayerDecorator() {
         return null;
-    }
-
-    public static JsonObject replaceKeysInPluginConfig(PKMediaEntry mediaEntry, JsonObject pluginConfig) {
-        String configStr = pluginConfig.getAsJsonObject().toString();
-        if (mediaEntry == null || mediaEntry.getMetadata() == null) {
-            return pluginConfig;
-        }
-        Map<String, String> metadataMap = mediaEntry.getMetadata();
-        Map<String, String> replacementMap = new HashMap<>();
-        for (Map.Entry<String, String> metadataEntry : metadataMap.entrySet()) {
-            replacementMap.put("\\{\\{" + metadataEntry.getKey() + "\\}\\}", metadataEntry.getValue());
-        }
-
-        for (Map.Entry<String, String> replacementEntry : replacementMap.entrySet()) {
-            configStr = configStr.replaceAll(replacementEntry.getKey(), replacementEntry.getValue());
-        }
-        JsonParser parser = new JsonParser();
-        return parser.parse(configStr).getAsJsonObject();
     }
 }

@@ -13,14 +13,16 @@
 package com.kaltura.playkit.player;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.drm.DrmManagerClient;
 import android.media.MediaDrm;
 import android.media.NotProvisionedException;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+
 import android.util.Base64;
 import android.util.Log;
 
@@ -94,18 +96,15 @@ public class MediaSupport {
 
         } catch (DrmNotProvisionedException e) {
             log.d("Widevine Modular needs provisioning");
-            AsyncTask.execute(new Runnable() {
-                @Override
-                public void run() {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                        try {
-                            provisionWidevine();
-                            runCallback(drmInitCallback, true, null);
-                        } catch (Exception e) {
-                            // Send any exception to the callback
-                            log.e("Widevine provisioning has failed", e);
-                            runCallback(drmInitCallback, true, e);
-                        }
+            AsyncTask.execute(() -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    try {
+                        provisionWidevine();
+                        runCallback(drmInitCallback, true, null);
+                    } catch (Exception e1) {
+                        // Send any exception to the callback
+                        log.e("Widevine provisioning has failed", e1);
+                        runCallback(drmInitCallback, true, e1);
                     }
                 }
             });
@@ -248,6 +247,7 @@ public class MediaSupport {
         return Boolean.FALSE;   // Not yet.
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private static void provisionWidevine() throws Exception {
         MediaDrm mediaDrm = null;

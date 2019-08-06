@@ -4,11 +4,11 @@ import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdsProvider;
 import com.kaltura.playkit.utils.Consts;
 
-public class DefaultAdControllerImpl implements AdController {
+public class DefaultDAIAdControllerImpl implements AdController {
 
     private AdsProvider adsProvider;
 
-    public DefaultAdControllerImpl(AdsProvider adsProvider) {
+    public DefaultDAIAdControllerImpl(AdsProvider adsProvider) {
         this.adsProvider = adsProvider;
     }
 
@@ -59,6 +59,7 @@ public class DefaultAdControllerImpl implements AdController {
         if (adsProvider != null && adsProvider.getDuration() != Consts.TIME_UNSET && isAdDisplayed()) {
             return Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
         }
+
         return Consts.TIME_UNSET;
     }
 
@@ -66,14 +67,6 @@ public class DefaultAdControllerImpl implements AdController {
     public boolean isAdDisplayed() {
         if (adsProvider != null) {
             return adsProvider.isAdDisplayed();
-        }
-        return false;
-    }
-
-    @Override
-    public boolean isAdPlaying() {
-        if (adsProvider != null) {
-            return adsProvider.isAdDisplayed() && !adsProvider.isAdPaused();
         }
         return false;
     }
@@ -116,6 +109,14 @@ public class DefaultAdControllerImpl implements AdController {
             return adsProvider.getAdPluginType();
         }
         return null;
+    }
+
+    @Override
+    public boolean isAdPlaying() {
+        if (adsProvider != null) {
+            return !adsProvider.isAdPaused();
+        }
+        return false;
     }
 }
 

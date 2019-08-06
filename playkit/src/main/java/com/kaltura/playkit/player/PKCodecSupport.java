@@ -2,10 +2,11 @@ package com.kaltura.playkit.player;
 
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
-import android.support.annotation.NonNull;
 
-import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.util.MimeTypes;
+import androidx.annotation.NonNull;
+
+import com.kaltura.android.exoplayer2.Format;
+import com.kaltura.android.exoplayer2.util.MimeTypes;
 import com.kaltura.playkit.PKLog;
 
 import java.util.HashMap;
@@ -20,8 +21,8 @@ public class PKCodecSupport {
     }
 
     static {
-        cache.put(TrackType.VIDEO, new HashMap<String, Boolean>());
-        cache.put(TrackType.AUDIO, new HashMap<String, Boolean>());
+        cache.put(TrackType.VIDEO, new HashMap<>());
+        cache.put(TrackType.AUDIO, new HashMap<>());
     }
 
     private static boolean isCodecSupportedInternal(String codec, TrackType type) {

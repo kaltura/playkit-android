@@ -16,6 +16,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.player.vr.VRSettings;
 
 public class PlayerSettings implements Player.Settings {
 
@@ -24,14 +25,21 @@ public class PlayerSettings implements Player.Settings {
     private boolean cea608CaptionsEnabled;
     private boolean mpgaAudioFormatEnabled;
     private boolean crossProtocolRedirectEnabled;
+    private boolean enableDecoderFallback;
     private boolean allowClearLead = true;
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
+    private boolean isVideoViewHidden;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
     private ABRSettings abrSettings = new ABRSettings();
-
+    private VRSettings vrSettings;
+    /**
+     * Flag helping to check if client app wants to use a single player instance at a time
+     * Only if IMA plugin is there then only this flag is set to true.
+     */
+    private boolean forceSinglePlayerEngine = false;
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -40,7 +48,6 @@ public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
-
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
@@ -62,6 +69,10 @@ public class PlayerSettings implements Player.Settings {
         return allowClearLead;
     }
 
+    public boolean enableDecoderFallback() {
+        return enableDecoderFallback;
+    }
+
     public boolean cea608CaptionsEnabled() {
         return cea608CaptionsEnabled;
     }
@@ -80,6 +91,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isVRPlayerEnabled() {
         return vrPlayerEnabled;
+    }
+
+    public boolean isVideoViewHidden() {
+        return isVideoViewHidden;
     }
 
     public PKTrackConfig getPreferredTextTrackConfig() {
@@ -108,6 +123,14 @@ public class PlayerSettings implements Player.Settings {
 
     public PKAspectRatioResizeMode getAspectRatioResizeMode(){
         return resizeMode;
+    }
+
+    public VRSettings getVRSettings() {
+        return vrSettings;
+    }
+
+    public boolean isForceSinglePlayerEngine() {
+        return forceSinglePlayerEngine;
     }
 
     @Override
@@ -190,6 +213,12 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
+    public Player.Settings enableDecoderFallback(boolean enableDecoderFallback) {
+        this.enableDecoderFallback = enableDecoderFallback;
+        return this;
+    }
+
+    @Override
     public Player.Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers) {
         this.loadControlBuffers = loadControlBuffers;
         return this;
@@ -210,6 +239,24 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         this.resizeMode = resizeMode;
+        return this;
+    }
+
+    @Override
+    public Player.Settings forceSinglePlayerEngine(boolean forceSinglePlayerEngine) {
+        this.forceSinglePlayerEngine = forceSinglePlayerEngine;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setHideVideoViews(boolean hide) {
+        isVideoViewHidden = hide;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setVRSettings(VRSettings vrSettings) {
+        this.vrSettings = vrSettings;
         return this;
     }
 }

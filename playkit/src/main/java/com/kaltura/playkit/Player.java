@@ -12,14 +12,15 @@
 
 package com.kaltura.playkit;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
 
 @SuppressWarnings("unused")
@@ -100,6 +101,13 @@ public interface Player {
         Settings allowClearLead(boolean allowClearLead);
 
         /**
+         * Decide whether to enable fallback to lower-priority decoders if decoder initialization fails
+         *
+         * @param enableDecoderFallback - should enable/disable enableDecoderFallback default true (enabled)
+         * @return - Player Settings.
+         */
+        Settings enableDecoderFallback(boolean enableDecoderFallback);
+        /**
          * Decide if player should use secure rendering on the surface.
          * Known limitation - when useTextureView set to true and isSurfaceSecured set to true -
          * secure rendering will have no effect.
@@ -150,7 +158,7 @@ public interface Player {
         Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig);
 
         /**
-         * Set the Player's setPreferredMediaFormat.
+         * Set the Player's PreferredMediaFormat.
          *
          * @param preferredMediaFormat - PKMediaFormat.
          * @return - Player Settings.
@@ -176,10 +184,33 @@ public interface Player {
         /**
          *  Set the Player's AspectRatio resize Mode
          *
-         * @param resizeMode
+         * @param resizeMode Resize mode
          * @return - Player Settings
          */
         Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
+
+        /**
+         * Do not prepare the content player when the Ad starts(if exists); instead content player will be prepared
+         * when content_resume_requested is called.
+         *
+         * Default value is set to 'false'.
+         *
+         * @param forceSinglePlayerEngine Do not prepare the content player while Ad is playing
+         * @return - Player Settings
+         */
+        Settings forceSinglePlayerEngine(boolean forceSinglePlayerEngine);
+      
+        /**
+         * Set the flag which handles the video view
+         * @param hide video surface visibility
+         */
+        Settings setHideVideoViews(boolean hide);
+
+        /**
+         * Set VR Settings on the player
+         * @param vrSettings vr configuration
+         */
+        Settings setVRSettings(VRSettings vrSettings);
     }
 
     /**
@@ -251,6 +282,13 @@ public interface Player {
      * @return - position of the player or {@link Consts#POSITION_UNSET} if position is unknown or player engine is null.
      */
     long getCurrentPosition();
+
+    /**
+     * Getter for the current playback position in window.
+     *
+     * @return - position of the player in window or 0 o/w.
+     */
+    long getPositionInWindowMs();
 
     /**
      * The current program time is milliseconds since the epoch, or {@link Consts#TIME_UNSET} if not set.

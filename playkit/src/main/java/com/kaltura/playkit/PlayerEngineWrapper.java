@@ -47,6 +47,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public long getPositionInWindowMs() {
+        return playerEngine.getPositionInWindowMs();
+    }
+
+    @Override
     public long getProgramStartTime() {
         return playerEngine.getProgramStartTime();
     }

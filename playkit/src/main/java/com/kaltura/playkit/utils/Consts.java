@@ -19,6 +19,7 @@ package com.kaltura.playkit.utils;
 public class Consts {
 
     public static final String KALTURA = "Kaltura";
+
     /**
      * Special constant representing an unset or unknown time or duration. Suitable for use in any
      * time base.
@@ -62,7 +63,8 @@ public class Consts {
      * Flag that indicates, that this specified track will be
      * selected by the player as default track.
      */
-    public static final int DEFAULT_TRACK_SELECTION_FLAG = 5;
+    public static final int DEFAULT_TRACK_SELECTION_FLAG_HLS = 5;
+    public static final int DEFAULT_TRACK_SELECTION_FLAG_DASH = 1;
 
     /**
      * Flag that indicates, that this specified track will not

@@ -6,7 +6,7 @@ jdk:
 android:
   components:
     - tools
-    - build-tools-27.0.3
+    - build-tools-28.0.3
     - android-28
 before_script:
   - curl https://kaltura.github.io/fe-tools/android/license.sh | sh
@@ -15,8 +15,6 @@ script:
 after_failure:
   - cat playkit/build/reports/lint-results.xml
   - cat profiler/build/reports/lint-results.xml
-after_success:
-  - ./travis-push-to-bintray.sh
 notifications:
   email:
     recipients:

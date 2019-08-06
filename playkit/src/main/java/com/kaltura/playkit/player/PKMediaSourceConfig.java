@@ -13,7 +13,7 @@
 package com.kaltura.playkit.player;
 
 import android.net.Uri;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
@@ -34,25 +34,34 @@ public class PKMediaSourceConfig {
     private VRSettings vrSettings;
     private List<PKExternalSubtitle> externalSubtitlesList;
 
+    public PKMediaSourceConfig(PKMediaSource source, PKMediaEntry.MediaEntryType mediaEntryType, List<PKExternalSubtitle> externalSubtitlesList, PlayerSettings playerSettings, VRSettings vrSettings) {
+        this.mediaSource = source;
+        this.mediaEntryType = (mediaEntryType != null) ? mediaEntryType : PKMediaEntry.MediaEntryType.Unknown;
+        this.playerSettings = playerSettings;
+        this.vrSettings = vrSettings;
+        this.externalSubtitlesList = externalSubtitlesList;
+    }
 
-    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings, VRSettings vrSettings) {
+    public PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
         this.mediaSource = source;
         this.mediaEntryType = (mediaConfig != null && mediaConfig.getMediaEntry() != null) ? mediaConfig.getMediaEntry().getMediaType() : PKMediaEntry.MediaEntryType.Unknown;
         this.playerSettings = playerSettings;
-        this.vrSettings = vrSettings;
-        externalSubtitlesList = (mediaConfig != null && mediaConfig.getMediaEntry() != null && mediaConfig.getMediaEntry().getExternalSubtitleList() != null) ? mediaConfig.getMediaEntry().getExternalSubtitleList() : null;
+        if (mediaConfig != null && mediaConfig.getMediaEntry() != null && mediaConfig.getMediaEntry().isVRMediaType()) {
+            this.vrSettings = playerSettings.getVRSettings() != null ? playerSettings.getVRSettings() : new VRSettings();
+        }
+        this.externalSubtitlesList = (mediaConfig != null && mediaConfig.getMediaEntry() != null && mediaConfig.getMediaEntry().getExternalSubtitleList() != null) ? mediaConfig.getMediaEntry().getExternalSubtitleList() : null;
     }
 
-    PKMediaSourceConfig(PKMediaConfig mediaConfig, PKMediaSource source, PlayerSettings playerSettings) {
-        this(mediaConfig, source, playerSettings, null);
+    public PKMediaSourceConfig(PKMediaSource source, PKMediaEntry.MediaEntryType mediaEntryType, List<PKExternalSubtitle> externalSubtitlesList, PlayerSettings playerSettings) {
+        this(source, mediaEntryType, externalSubtitlesList, playerSettings, null);
     }
 
-    public Uri getUrl() {
+    public PKRequestParams getRequestParams() {
         Uri uri = Uri.parse(mediaSource.getUrl());
         if (playerSettings.getContentRequestAdapter() == null) {
-            return uri;
+            return new PKRequestParams(uri, null);
         } else {
-            return playerSettings.getContentRequestAdapter().adapt(new PKRequestParams(uri, null)).url;
+            return playerSettings.getContentRequestAdapter().adapt(new PKRequestParams(uri, null));
         }
     }
 

@@ -12,7 +12,7 @@
 
 package com.kaltura.playkit;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 /**
  * Created by Noam Tamim @ Kaltura on 22/02/2017.

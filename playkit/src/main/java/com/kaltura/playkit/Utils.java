@@ -14,7 +14,7 @@ package com.kaltura.playkit;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Base64;
 
 import com.google.gson.JsonObject;
@@ -70,7 +70,7 @@ public class Utils {
     @NonNull
     public static ByteArrayOutputStream fullyReadInputStream(InputStream inputStream, int byteLimit) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte data[] = new byte[READ_BUFFER_SIZE];
+        byte[] data = new byte[READ_BUFFER_SIZE];
         int count;
 
         while ((count = inputStream.read(data)) != -1) {
@@ -117,7 +117,9 @@ public class Utils {
     public static <T extends Serializable> Map<String, T> bundleToMap(Bundle input, Class<T> c) {
         Map<String, T> output = new HashMap<>();
         for (String key : input.keySet()) {
-            output.put(key, c.cast(input.getParcelable(key)));
+            if (c != null) {
+                output.put(key, c.cast(input.getParcelable(key)));
+            }
         }
         return output;
     }
@@ -179,7 +181,7 @@ public class Utils {
     private static byte[] convertInputStreamToByteArray(InputStream inputStream) throws IOException {
         byte[] bytes;
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte data[] = new byte[READ_BUFFER_SIZE];
+        byte[] data = new byte[READ_BUFFER_SIZE];
         int count;
         while ((count = inputStream.read(data)) != -1) {
             bos.write(data, 0, count);

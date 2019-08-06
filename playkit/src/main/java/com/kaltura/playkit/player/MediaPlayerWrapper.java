@@ -21,10 +21,9 @@ import android.drm.DrmEvent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.view.SurfaceHolder;
 
-import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -59,8 +58,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     private static final PKLog log = PKLog.get("MediaPlayerWrapper");
 
-    private static final int ILLEGAL_STATEׁ_OPERATION = -38;
-
+    private static final int ILLEGAL_STATE_OPERATION = -38;
     private Context context;
     private MediaPlayer player;
     private MediaPlayerView mediaPlayerView;
@@ -133,7 +131,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         if (assetUri != null) {
             isFirstPlayback = false;
         }
-        assetUri = mediaSourceConfig.getUrl().toString();
+        assetUri = mediaSourceConfig.getRequestParams().url.toString();
 
         String assetAcquireUri = getWidevineAssetAcquireUri(assetUri);
         String playbackUri = getWidevineAssetPlaybackUri(assetUri);
@@ -194,7 +192,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public PlayerView getView() {
-        log.d("getView ");
+        //log.d("getView ");
         return mediaPlayerView;
     }
 
@@ -283,7 +281,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public PKTracks getPKTracks() {
-        return new PKTracks(new ArrayList<VideoTrack>(), new ArrayList<AudioTrack>(), new ArrayList<TextTrack>(),
+        return new PKTracks(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
                 0, 0, 0);
     }
 
@@ -476,16 +474,13 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     public void onPrepared(MediaPlayer mp) {
         prepareState = PREPARED;
         log.d("onPrepared " + prepareState + " isPlayAfterPrepare = " + isPlayAfterPrepare + " appInBackground = " + appInBackground);
-        mp.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-            @Override
-            public void onSeekComplete(MediaPlayer mp) {
-                log.d("onSeekComplete");
-                if (getCurrentPosition() < getDuration()) {
-                    sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
-                    changeState(PlayerState.READY);
-                    if (mp.isPlaying()) {
-                        sendDistinctEvent(PlayerEvent.Type.PLAYING);
-                    }
+        mp.setOnSeekCompleteListener(mp1 -> {
+            log.d("onSeekComplete");
+            if (getCurrentPosition() < getDuration()) {
+                sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
+                changeState(PlayerState.READY);
+                if (mp1.isPlaying()) {
+                    sendDistinctEvent(PlayerEvent.Type.PLAYING);
                 }
             }
         });
@@ -559,7 +554,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         String errMsg = "onError what = " + what;
         log.e(errMsg);
 
-        if (what == ILLEGAL_STATEׁ_OPERATION) {
+        if (what == ILLEGAL_STATE_OPERATION) {
             release();
             player.reset();
             try {

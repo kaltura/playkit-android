@@ -12,7 +12,7 @@
 
 package com.kaltura.playkit.ads;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKLog;
@@ -136,9 +136,6 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public boolean isPlaying() {
         log.d("AdEnabled isPlaying");
-        if (adsProvider != null && adsProvider.isAdDisplayed()) {
-            return !adsProvider.isAdPaused();
-        }
         return super.isPlaying();
     }
 
@@ -175,6 +172,14 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
+    public boolean isAdPlaying() {
+        if (adsProvider != null) {
+            return !adsProvider.isAdPaused();
+        }
+        return false;
+    }
+
+    @Override
     public boolean isAdError() {
         if (adsProvider != null) {
             return adsProvider.isAdError();
@@ -204,6 +209,11 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
             return adsProvider.getCuePoints();
         }
         return null;
+    }
+
+    @Override
+    public PKAdPluginType getAdPluginType() {
+        return PKAdPluginType.client;
     }
 
     @Override
