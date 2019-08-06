@@ -9,17 +9,18 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
-import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.analytics.AnalyticsListener;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.kaltura.android.exoplayer2.C;
+import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
@@ -102,7 +103,8 @@ public class PlayKitProfiler {
     private String sessionId;
 
     // We need a reference to the player, but make sure not to keep it alive.
-    @Nullable private WeakReference<ExoPlayerWrapper> playerEngine;
+    @Nullable
+    private WeakReference<ExoPlayerWrapper> playerEngine;
 
     private PlayKitProfiler() {
 
@@ -563,7 +565,7 @@ public class PlayKitProfiler {
         @Override
         public void onPrepareStarted(final PKMediaSourceConfig sourceConfig) {
 
-            final Uri sourceUrl = sourceConfig.getUrl();
+            final Uri sourceUrl = sourceConfig.getRequestParams().url;
 
             log("PrepareStarted",
                     field("engine", playerEngine.get().getClass().getSimpleName()),

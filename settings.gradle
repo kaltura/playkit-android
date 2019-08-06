@@ -1,2 +1,2 @@
 include ':playkit'
-include ':profiler'
+

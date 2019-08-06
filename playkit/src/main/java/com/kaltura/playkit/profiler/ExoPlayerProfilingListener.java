@@ -1,48 +1,51 @@
 package com.kaltura.playkit.profiler;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
 import android.view.Surface;
 
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.PlaybackParameters;
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.analytics.AnalyticsListener;
-import com.google.android.exoplayer2.decoder.DecoderCounters;
-import com.google.android.exoplayer2.metadata.Metadata;
-import com.google.android.exoplayer2.source.MediaSourceEventListener;
-import com.google.android.exoplayer2.source.TrackGroup;
-import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.kaltura.android.exoplayer2.ExoPlaybackException;
+import com.kaltura.android.exoplayer2.Format;
+import com.kaltura.android.exoplayer2.PlaybackParameters;
+import com.kaltura.android.exoplayer2.Player;
+import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
+import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
+import com.kaltura.android.exoplayer2.metadata.Metadata;
+import com.kaltura.android.exoplayer2.source.MediaSourceEventListener;
+import com.kaltura.android.exoplayer2.source.TrackGroup;
+import com.kaltura.android.exoplayer2.source.TrackGroupArray;
+import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
+import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 
 import java.io.IOException;
 import java.util.LinkedHashSet;
 
-import static com.google.android.exoplayer2.C.DATA_TYPE_AD;
-import static com.google.android.exoplayer2.C.DATA_TYPE_DRM;
-import static com.google.android.exoplayer2.C.DATA_TYPE_MANIFEST;
-import static com.google.android.exoplayer2.C.DATA_TYPE_MEDIA;
-import static com.google.android.exoplayer2.C.DATA_TYPE_MEDIA_INITIALIZATION;
-import static com.google.android.exoplayer2.C.DATA_TYPE_TIME_SYNCHRONIZATION;
-import static com.google.android.exoplayer2.C.DATA_TYPE_UNKNOWN;
-import static com.google.android.exoplayer2.C.SELECTION_REASON_ADAPTIVE;
-import static com.google.android.exoplayer2.C.SELECTION_REASON_INITIAL;
-import static com.google.android.exoplayer2.C.SELECTION_REASON_MANUAL;
-import static com.google.android.exoplayer2.C.SELECTION_REASON_TRICK_PLAY;
-import static com.google.android.exoplayer2.C.SELECTION_REASON_UNKNOWN;
-import static com.google.android.exoplayer2.C.TRACK_TYPE_AUDIO;
-import static com.google.android.exoplayer2.C.TRACK_TYPE_DEFAULT;
-import static com.google.android.exoplayer2.C.TRACK_TYPE_TEXT;
-import static com.google.android.exoplayer2.C.TRACK_TYPE_VIDEO;
-import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_AD_INSERTION;
-import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_INTERNAL;
-import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_PERIOD_TRANSITION;
-import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK;
-import static com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT;
+import static com.kaltura.android.exoplayer2.C.DATA_TYPE_AD;
+import static com.kaltura.android.exoplayer2.C.DATA_TYPE_DRM;
+import static com.kaltura.android.exoplayer2.C.DATA_TYPE_MANIFEST;
+import static com.kaltura.android.exoplayer2.C.DATA_TYPE_MEDIA;
+import static com.kaltura.android.exoplayer2.C.DATA_TYPE_MEDIA_INITIALIZATION;
+import static com.kaltura.android.exoplayer2.C.DATA_TYPE_TIME_SYNCHRONIZATION;
+import static com.kaltura.android.exoplayer2.C.DATA_TYPE_UNKNOWN;
+import static com.kaltura.android.exoplayer2.C.SELECTION_REASON_ADAPTIVE;
+import static com.kaltura.android.exoplayer2.C.SELECTION_REASON_INITIAL;
+import static com.kaltura.android.exoplayer2.C.SELECTION_REASON_MANUAL;
+import static com.kaltura.android.exoplayer2.C.SELECTION_REASON_TRICK_PLAY;
+import static com.kaltura.android.exoplayer2.C.SELECTION_REASON_UNKNOWN;
+import static com.kaltura.android.exoplayer2.C.TRACK_TYPE_AUDIO;
+import static com.kaltura.android.exoplayer2.C.TRACK_TYPE_DEFAULT;
+import static com.kaltura.android.exoplayer2.C.TRACK_TYPE_TEXT;
+import static com.kaltura.android.exoplayer2.C.TRACK_TYPE_VIDEO;
+import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_AD_INSERTION;
+import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_INTERNAL;
+import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_PERIOD_TRANSITION;
+import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK;
+import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT;
+
 import static com.kaltura.playkit.profiler.PlayKitProfiler.MSEC_MULTIPLIER_FLOAT;
 import static com.kaltura.playkit.profiler.PlayKitProfiler.field;
 import static com.kaltura.playkit.profiler.PlayKitProfiler.joinFields;
@@ -51,7 +54,8 @@ import static com.kaltura.playkit.profiler.PlayKitProfiler.timeField;
 
 class ExoPlayerProfilingListener implements AnalyticsListener {
 
-    @NonNull private final PlayKitProfiler profiler;
+    @NonNull
+    private final PlayKitProfiler profiler;
 
     ExoPlayerProfilingListener(@NonNull PlayKitProfiler profiler) {
         this.profiler = profiler;
