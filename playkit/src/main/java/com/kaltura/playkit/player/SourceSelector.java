@@ -23,6 +23,8 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -37,6 +39,9 @@ public class SourceSelector {
 
     private PKMediaSource selectedSource;
     private PKDrmParams selectedDrmParams;
+
+    private static final List<PKMediaFormat> defaultFormatPriority = Collections.unmodifiableList(
+            Arrays.asList(PKMediaFormat.dash, PKMediaFormat.hls, PKMediaFormat.wvm, PKMediaFormat.mp4, PKMediaFormat.mp3));
 
     public SourceSelector(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat) {
         this.mediaEntry = mediaEntry;
@@ -73,7 +78,7 @@ public class SourceSelector {
 
         // If PKMediaSource is local, there is no need to look for the preferred source,
         // because it is only one.
-        PKMediaSource localMediaSource = getLocalSource();
+        PKMediaSource localMediaSource = findLocalSource();
         if (localMediaSource != null) {
             selectedSource = localMediaSource;
             return;
@@ -108,32 +113,29 @@ public class SourceSelector {
 
     @NonNull
     private List<PKMediaFormat> getFormatsPriorityList() {
+
+        if (preferredMediaFormat == null || preferredMediaFormat == defaultFormatPriority.get(0)) {
+            return defaultFormatPriority;
+        }
+
         List<PKMediaFormat> formatsPriorityList = new ArrayList<>();
 
-        formatsPriorityList.add(PKMediaFormat.dash);
-        formatsPriorityList.add(PKMediaFormat.hls);
-        formatsPriorityList.add(PKMediaFormat.wvm);
-        formatsPriorityList.add(PKMediaFormat.mp4);
-        formatsPriorityList.add(PKMediaFormat.mp3);
-
-        if (preferredMediaFormat == PKMediaFormat.dash) {
-            return formatsPriorityList;
+        formatsPriorityList.add(preferredMediaFormat);
+        for (PKMediaFormat format : defaultFormatPriority) {
+            if (format != preferredMediaFormat) {
+                formatsPriorityList.add(format);
+            }
         }
 
-        int preferredMediaFormatIndex = formatsPriorityList.indexOf(preferredMediaFormat);
-        if (preferredMediaFormatIndex > 0) {
-            formatsPriorityList.remove(preferredMediaFormatIndex);
-            formatsPriorityList.add(0, preferredMediaFormat);
-        }
         return formatsPriorityList;
     }
 
-    public static PKMediaSource selectSource(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat) {
+    static PKMediaSource selectSource(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat) {
         final SourceSelector sourceSelector = new SourceSelector(mediaEntry, preferredMediaFormat);
         return sourceSelector.selectedSource;
     }
 
-    private PKMediaSource getLocalSource() {
+    private PKMediaSource findLocalSource() {
         if (mediaEntry != null && mediaEntry.getSources() != null) {
             for (PKMediaSource source : mediaEntry.getSources()) {
 
