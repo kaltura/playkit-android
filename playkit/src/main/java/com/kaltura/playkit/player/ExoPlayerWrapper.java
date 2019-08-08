@@ -255,8 +255,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         final MediaSource mediaSource;
 
-        if (sourceConfig.mediaSource instanceof LocalAssetsManager.LocalExoMediaSource) {
-            final LocalAssetsManager.LocalExoMediaSource pkMediaSource = (LocalAssetsManager.LocalExoMediaSource) sourceConfig.mediaSource;
+        if (sourceConfig.mediaSource instanceof LocalAssetsManagerExo.LocalExoMediaSource) {
+            final LocalAssetsManagerExo.LocalExoMediaSource pkMediaSource = (LocalAssetsManagerExo.LocalExoMediaSource) sourceConfig.mediaSource;
             mediaSource = pkMediaSource.getExoMediaSource();
 
         } else {

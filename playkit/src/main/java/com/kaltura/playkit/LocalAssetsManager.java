@@ -14,24 +14,13 @@ package com.kaltura.playkit;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Looper;
-import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.util.Base64;
 
 import com.kaltura.android.exoplayer2.source.MediaSource;
-import com.kaltura.playkit.drm.DrmAdapter;
-import com.kaltura.playkit.drm.WidevineModularAdapter;
-import com.kaltura.playkit.player.MediaSupport;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -45,8 +34,6 @@ import java.util.Map;
 public abstract class LocalAssetsManager {
 
     static final PKLog log = PKLog.get("LocalAssetsManager");
-
-    public abstract void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
 
     /**
      * Listener that notify about the result when registration flow is ended.
@@ -142,24 +129,6 @@ public abstract class LocalAssetsManager {
 
         @Override
         public abstract List<PKDrmParams> getDrmData();
-    }
-
-    public static class LocalExoMediaSource extends LocalAssetsManagerImp.LocalMediaSourceImp {
-        private MediaSource exoMediaSource;
-
-        /**
-         * @param localDataStore - the storage from where drm keySetId is stored.
-         * @param assetId        - the id of the media.
-         */
-        LocalExoMediaSource(LocalDataStore localDataStore, @NonNull MediaSource exoMediaSource, String assetId) {
-            super(localDataStore, null, assetId);
-
-            this.exoMediaSource = exoMediaSource;
-        }
-
-        public MediaSource getExoMediaSource() {
-            return exoMediaSource;
-        }
     }
 
     /**
