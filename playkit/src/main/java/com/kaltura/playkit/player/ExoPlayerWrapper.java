@@ -23,12 +23,14 @@ import androidx.annotation.NonNull;
 
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.DefaultLoadControl;
+import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.ExoPlayerFactory;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
+import com.kaltura.android.exoplayer2.RenderersFactory;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
@@ -104,6 +106,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private PKTracks tracks;
     private Timeline.Window window;
+
     private TrackSelectionHelper trackSelectionHelper;
     private DeferredDrmSessionManager drmSessionManager;
 
@@ -175,9 +178,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener);
-        CustomRendererFactory renderersFactory = new CustomRendererFactory(context, playerSettings.allowClearLead(), playerSettings.enableDecoderFallback(), playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
-
-        player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
+        player = ExoPlayerFactory.newSimpleInstance(context, buildRenderersFactory(playerSettings.allowClearLead(), playerSettings.enableDecoderFallback(), playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs()), trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
         player.setForegroundMode(true); // Making sure the stop() call is not removing the decoders on change media.
 
         window = new Timeline.Window();
@@ -216,7 +217,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private DefaultTrackSelector initializeTrackSelector() {
-
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory());
         DefaultTrackSelector.ParametersBuilder parametersBuilder = new DefaultTrackSelector.ParametersBuilder();
         parametersBuilder.setViewportSizeToPhysicalDisplaySize(context, true);
@@ -383,6 +383,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             }
         }
         return httpDataSourceFactory;
+    }
+
+    private RenderersFactory buildRenderersFactory(boolean allowClearLead, boolean enableDecoderFallback, long allowedVideoJoiningTimeMs) {
+        return new DefaultRenderersFactory(context)
+        .setAllowedVideoJoiningTimeMs(allowedVideoJoiningTimeMs)
+        .setPlayClearSamplesWithoutKeys(allowClearLead)
+        .setEnableDecoderFallback(enableDecoderFallback);
     }
 
     private DataSource.Factory getDataSourceFactory(Map<String, String> headers) {
@@ -577,7 +584,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
 
         log.d("onTracksChanged");
-        //if onOnTracksChanged happened when application went background, do not update the tracks.
+        //if onTracksChanged happened when application went background, do not update the tracks.
         if (trackSelectionHelper == null) {
             return;
         }
