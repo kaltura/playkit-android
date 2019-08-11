@@ -69,7 +69,7 @@ public class WidevineModularAdapter extends DrmAdapter {
                 listener.onRegistered(localAssetPath);
             }
             return result;
-        } catch (LocalAssetsManagerImp.RegisterException e) {
+        } catch (LocalAssetsManager.RegisterException e) {
             if (listener != null) {
                 listener.onFailed(localAssetPath, e);
             }
@@ -77,7 +77,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         }
     }
 
-    private boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter requestParamsAdapter) throws LocalAssetsManagerImp.RegisterException {
+    private boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter requestParamsAdapter) throws LocalAssetsManager.RegisterException {
 
         // obtain the dash manifest.
         SimpleDashParser dash = parseDash(localAssetPath, assetId);
@@ -95,18 +95,18 @@ public class WidevineModularAdapter extends DrmAdapter {
         return true;
     }
 
-    public void registerAsset(byte[] initData, String mimeType, String licenseUri, PKRequestParams.Adapter requestParamsAdapter) throws LocalAssetsManagerImp.RegisterException {
+    public void registerAsset(byte[] initData, String mimeType, String licenseUri, PKRequestParams.Adapter requestParamsAdapter) throws LocalAssetsManager.RegisterException {
         final byte[] offlineKeyId = downloadOfflineLicense(licenseUri, requestParamsAdapter, mimeType, initData);
         localDataStore.save(toBase64(initData), offlineKeyId);
     }
 
-    private byte[] downloadOfflineLicense(String licenseUri, PKRequestParams.Adapter requestParamsAdapter, String mimeType, byte[] initData) throws LocalAssetsManagerImp.RegisterException {
+    private byte[] downloadOfflineLicense(String licenseUri, PKRequestParams.Adapter requestParamsAdapter, String mimeType, byte[] initData) throws LocalAssetsManager.RegisterException {
         MediaDrmSession session;
         FrameworkMediaDrm mediaDrm = createMediaDrm();
         try {
             session = MediaDrmSession.open(mediaDrm);
         } catch (MediaDrmException e) {
-            throw new LocalAssetsManagerImp.RegisterException("Can't open session", e);
+            throw new LocalAssetsManager.RegisterException("Can't open session", e);
         }
 
         // Get keyRequest
@@ -124,7 +124,7 @@ public class WidevineModularAdapter extends DrmAdapter {
                 log.d("registerAsset: response data (b64): " + toBase64(keyResponse));
 
             } catch (Exception e) {
-                throw new LocalAssetsManagerImp.RegisterException("Can't send key request for registration", e);
+                throw new LocalAssetsManager.RegisterException("Can't send key request for registration", e);
             }
 
             // Provide keyResponse
@@ -132,11 +132,11 @@ public class WidevineModularAdapter extends DrmAdapter {
                 return session.provideKeyResponse(keyResponse);
 
             } catch (DeniedByServerException e) {
-                throw new LocalAssetsManagerImp.RegisterException("Request denied by server", e);
+                throw new LocalAssetsManager.RegisterException("Request denied by server", e);
             }
 
         } catch (WidevineNotSupportedException e) {
-            throw new LocalAssetsManagerImp.RegisterException("Can't execute KeyRequest", e);
+            throw new LocalAssetsManager.RegisterException("Can't execute KeyRequest", e);
 
         } finally {
             session.close();
@@ -149,7 +149,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         try {
             unregisterAsset(localAssetPath, assetId);
             return true;
-        } catch (LocalAssetsManagerImp.RegisterException e) {
+        } catch (LocalAssetsManager.RegisterException e) {
             log.e("Failed to unregister", e);
             return false;
         } finally {
@@ -159,7 +159,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         }
     }
 
-    private boolean unregisterAsset(String localAssetPath, String assetId) throws LocalAssetsManagerImp.RegisterException {
+    private boolean unregisterAsset(String localAssetPath, String assetId) throws LocalAssetsManager.RegisterException {
 
         SimpleDashParser dash = parseDash(localAssetPath, assetId);
         if (!dash.hasContentProtection) {
@@ -174,7 +174,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         try {
             keySetId = localDataStore.load(key);
         } catch (FileNotFoundException e) {
-            throw new LocalAssetsManagerImp.RegisterException("Can't unregister -- keySetId not found", e);
+            throw new LocalAssetsManager.RegisterException("Can't unregister -- keySetId not found", e);
         }
 
         FrameworkMediaDrm mediaDrm = createMediaDrm();
@@ -228,7 +228,7 @@ public class WidevineModularAdapter extends DrmAdapter {
                 listener.onStatus(localAssetPath, -1, -1, false);
             }
             return false;
-        } catch (LocalAssetsManagerImp.RegisterException e) {
+        } catch (LocalAssetsManager.RegisterException e) {
             if (listener != null) {
                 listener.onStatus(localAssetPath, 0, 0, false);
             }
@@ -243,7 +243,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         return true;
     }
 
-    private Map<String, String> checkAssetStatus(String localAssetPath, String assetId) throws LocalAssetsManagerImp.RegisterException {
+    private Map<String, String> checkAssetStatus(String localAssetPath, String assetId) throws LocalAssetsManager.RegisterException {
         SimpleDashParser dash = parseDash(localAssetPath, assetId);
 
         //no content protection, so there could not be any status info, so return null.
@@ -255,14 +255,18 @@ public class WidevineModularAdapter extends DrmAdapter {
             throw new NoWidevinePSSHException("No Widevine PSSH in media", null);
         }
 
+        return checkAssetStatus(dash.widevineInitData);
+    }
+
+    public Map<String, String> checkAssetStatus(byte[] widevineInitData) throws LocalAssetsManager.RegisterException {
         FrameworkMediaDrm mediaDrm = createMediaDrm();
 
         MediaDrmSession session;
         try {
-            String key = toBase64(dash.widevineInitData);
+            String key = toBase64(widevineInitData);
             session = openSessionWithKeys(mediaDrm, key);
         } catch (MediaDrmException | FileNotFoundException | MediaCryptoException e) {
-            throw new LocalAssetsManagerImp.RegisterException("Can't open session with keys", e);
+            throw new LocalAssetsManager.RegisterException("Can't open session with keys", e);
         }
 
 
@@ -276,7 +280,7 @@ public class WidevineModularAdapter extends DrmAdapter {
     }
 
     @NonNull
-    private FrameworkMediaDrm createMediaDrm() throws LocalAssetsManagerImp.RegisterException {
+    private FrameworkMediaDrm createMediaDrm() throws LocalAssetsManager.RegisterException {
         FrameworkMediaDrm mediaDrm = null;
         try {
             mediaDrm = FrameworkMediaDrm.newInstance(MediaSupport.WIDEVINE_UUID);
@@ -285,7 +289,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         }
 
         if (mediaDrm == null) {
-            throw new LocalAssetsManagerImp.RegisterException("Could not create MediaDrm instance ", null);
+            throw new LocalAssetsManager.RegisterException("Could not create MediaDrm instance ", null);
         }
 
         return mediaDrm;
@@ -297,20 +301,20 @@ public class WidevineModularAdapter extends DrmAdapter {
      * @param localPath - file from which to parse the dash manifest.
      * @param assetId   - the asset id.
      * @return - {@link SimpleDashParser} which contains the manifest data we need.
-     * @throws LocalAssetsManagerImp.RegisterException - {@link LocalAssetsManagerImp.RegisterException}
+     * @throws LocalAssetsManager.RegisterException - {@link LocalAssetsManager.RegisterException}
      */
-    private SimpleDashParser parseDash(String localPath, String assetId) throws LocalAssetsManagerImp.RegisterException {
+    private SimpleDashParser parseDash(String localPath, String assetId) throws LocalAssetsManager.RegisterException {
         SimpleDashParser dashParser;
         try {
             dashParser = new SimpleDashParser().parse(localPath, assetId);
             if (dashParser.format == null) {
-                throw new LocalAssetsManagerImp.RegisterException("Unknown format", null);
+                throw new LocalAssetsManager.RegisterException("Unknown format", null);
             }
             if (dashParser.hasContentProtection && dashParser.widevineInitData == null) {
                 throw new NoWidevinePSSHException("No Widevine PSSH in media", null);
             }
         } catch (IOException e) {
-            throw new LocalAssetsManagerImp.RegisterException("Can't parse local dash", e);
+            throw new LocalAssetsManager.RegisterException("Can't parse local dash", e);
         }
 
         return dashParser;
@@ -365,7 +369,7 @@ public class WidevineModularAdapter extends DrmAdapter {
                 + ") " + "ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
     }
 
-    private class NoWidevinePSSHException extends LocalAssetsManagerImp.RegisterException {
+    private class NoWidevinePSSHException extends LocalAssetsManager.RegisterException {
         NoWidevinePSSHException(String detailMessage, Throwable throwable) {
             super(detailMessage, throwable);
         }

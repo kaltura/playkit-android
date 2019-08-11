@@ -47,6 +47,9 @@ public class LocalAssetsManagerHelper {
      */
     boolean isOnline() {
         ConnectivityManager conMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (conMgr == null) {
+            return false;
+        }
         NetworkInfo netInfo = conMgr.getActiveNetworkInfo();
         return !(netInfo == null || !netInfo.isConnected() || !netInfo.isAvailable());
     }
@@ -57,6 +60,9 @@ public class LocalAssetsManagerHelper {
         try {
             String mediaFormatValue = new String(localDataStore.load(buildAssetKey(assetId)));
             String[] splitFormatValue = mediaFormatValue.split(":");
+            if (splitFormatValue.length < 2) {
+                return null;
+            }
             String schemeName = splitFormatValue[1];
             if (schemeName.equals("null")) {
                 return null;
