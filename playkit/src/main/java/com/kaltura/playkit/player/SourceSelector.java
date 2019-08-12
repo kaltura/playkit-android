@@ -15,17 +15,9 @@ package com.kaltura.playkit.player;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.playkit.LocalAssetsManager;
-import com.kaltura.playkit.PKDrmParams;
-import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PKMediaFormat;
-import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Noam Tamim @ Kaltura on 29/11/2016.
@@ -37,6 +29,8 @@ public class SourceSelector {
     private final PKMediaEntry mediaEntry;
     private final PKMediaFormat preferredMediaFormat;
 
+    private String preferredSourceId;
+
     private PKMediaSource selectedSource;
     private PKDrmParams selectedDrmParams;
 
@@ -46,8 +40,11 @@ public class SourceSelector {
     public SourceSelector(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat) {
         this.mediaEntry = mediaEntry;
         this.preferredMediaFormat = preferredMediaFormat;
+    }
 
-        selectSource();
+    public void setPreferredSourceId(String preferredSourceId) {
+        this.preferredSourceId = preferredSourceId;
+        this.selectedSource = null;
     }
 
     @Nullable
@@ -64,17 +61,20 @@ public class SourceSelector {
 
 
     public PKMediaSource getSelectedSource() {
+        selectSource();
         return selectedSource;
     }
 
     public PKDrmParams getSelectedDrmParams() {
+        selectSource();
         return selectedDrmParams;
     }
 
     private void selectSource() {
 
-        selectedSource = null;
-        selectedDrmParams = null;
+        if (selectedSource != null) {
+            return;
+        }
 
         // If PKMediaSource is local, there is no need to look for the preferred source,
         // because it is only one.
@@ -84,6 +84,19 @@ public class SourceSelector {
             return;
         }
 
+
+        // If preferredSourceId is set, first to to select that source
+        if (preferredSourceId != null) {
+            for (PKMediaSource source : mediaEntry.getSources()) {
+                if (preferredSourceId.equals(source.getId())) {
+                    if (selectIfSupported(source)) {
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Otherwise, select the first playable source given the priority
         List<PKMediaFormat> formatsPriorityList = getFormatsPriorityList();
 
         for (PKMediaFormat format : formatsPriorityList) {
@@ -92,23 +105,30 @@ public class SourceSelector {
                 continue;
             }
 
-            if (source.hasDrmParams()) {
-                List<PKDrmParams> drmParams = source.getDrmData();
-                for (PKDrmParams params : drmParams) {
-                    if (params.isSchemeSupported()) {
-                        selectedSource = source;
-                        selectedDrmParams = params;
-                        return;
-                    }
-                }
-                // This source doesn't have supported params
-
-            } else {
-                selectedSource = source;
-                selectedDrmParams = null;   // clear
+            if (selectIfSupported(source)) {
                 return;
             }
         }
+    }
+
+    private boolean selectIfSupported(PKMediaSource source) {
+        if (source.hasDrmParams()) {
+            List<PKDrmParams> drmParams = source.getDrmData();
+            for (PKDrmParams params : drmParams) {
+                if (params.isSchemeSupported()) {
+                    selectedSource = source;
+                    selectedDrmParams = params;
+                    return true;
+                }
+            }
+            // This source doesn't have supported params
+
+        } else {
+            selectedSource = source;
+            selectedDrmParams = null;   // clear
+            return true;
+        }
+        return false;
     }
 
     @NonNull
