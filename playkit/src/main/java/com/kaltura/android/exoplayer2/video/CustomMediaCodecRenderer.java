@@ -55,7 +55,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -331,14 +330,16 @@ public abstract class CustomMediaCodecRenderer extends BaseRenderer {
     private int inputIndex;
     private int outputIndex;
     private ByteBuffer outputBuffer;
-    private boolean shouldSkipOutputBuffer;
+    private boolean isDecodeOnlyOutputBuffer;
+    private boolean isLastOutputBuffer;
     private boolean codecReconfigured;
     @ReconfigurationState private int codecReconfigurationState;
     @DrainState private int codecDrainState;
     @DrainAction private int codecDrainAction;
     private boolean codecReceivedBuffers;
     private boolean codecReceivedEos;
-
+    private long lastBufferInStreamPresentationTimeUs;
+    private long largestQueuedPresentationTimeUs;
     private boolean inputStreamEnded;
     private boolean outputStreamEnded;
     private boolean waitingForKeys;
@@ -456,15 +457,13 @@ public abstract class CustomMediaCodecRenderer extends BaseRenderer {
      * @param crypto For drm protected playbacks, a {@link MediaCrypto} to use for decryption.
      * @param codecOperatingRate The codec operating rate, or {@link #CODEC_OPERATING_RATE_UNSET} if
      *     no codec operating rate should be set.
-     * @throws DecoderQueryException If an error occurs querying {@code codecInfo}.
      */
     protected abstract void configureCodec(
             MediaCodecInfo codecInfo,
             MediaCodec codec,
             Format format,
             MediaCrypto crypto,
-            float codecOperatingRate)
-            throws DecoderQueryException;
+            float codecOperatingRate);
 
     protected final void maybeInitCodec() throws ExoPlaybackException {
         if (codec != null || inputFormat == null) {
@@ -603,6 +602,8 @@ public abstract class CustomMediaCodecRenderer extends BaseRenderer {
         waitingForKeys = false;
         codecHotswapDeadlineMs = C.TIME_UNSET;
         decodeOnlyPresentationTimestamps.clear();
+        largestQueuedPresentationTimeUs = C.TIME_UNSET;
+        lastBufferInStreamPresentationTimeUs = C.TIME_UNSET;
         try {
             if (codec != null) {
                 decoderCounters.decoderReleaseCount++;
@@ -709,10 +710,13 @@ public abstract class CustomMediaCodecRenderer extends BaseRenderer {
         waitingForFirstSyncSample = true;
         codecNeedsAdaptationWorkaroundBuffer = false;
         shouldSkipAdaptationWorkaroundOutputBuffer = false;
-        shouldSkipOutputBuffer = false;
+        isDecodeOnlyOutputBuffer = false;
+        isLastOutputBuffer = false;
 
         waitingForKeys = false;
         decodeOnlyPresentationTimestamps.clear();
+        largestQueuedPresentationTimeUs = C.TIME_UNSET;
+        lastBufferInStreamPresentationTimeUs = C.TIME_UNSET;
         codecDrainState = DRAIN_STATE_NONE;
         codecDrainAction = DRAIN_ACTION_NONE;
         // Reconfiguration data sent shortly before the flush may not have been processed by the
@@ -744,11 +748,11 @@ public abstract class CustomMediaCodecRenderer extends BaseRenderer {
             try {
                 List<MediaCodecInfo> allAvailableCodecInfos =
                         getAvailableCodecInfos(mediaCryptoRequiresSecureDecoder);
+                availableCodecInfos = new ArrayDeque<>();
                 if (enableDecoderFallback) {
-                    availableCodecInfos = new ArrayDeque<>(allAvailableCodecInfos);
-                } else {
-                    availableCodecInfos =
-                            new ArrayDeque<>(Collections.singletonList(allAvailableCodecInfos.get(0)));
+                    availableCodecInfos.addAll(allAvailableCodecInfos);
+                } else if (!allAvailableCodecInfos.isEmpty()) {
+                    availableCodecInfos.add(allAvailableCodecInfos.get(0));
                 }
                 preferredDecoderInitializationException = null;
             } catch (DecoderQueryException e) {
@@ -886,7 +890,8 @@ public abstract class CustomMediaCodecRenderer extends BaseRenderer {
         codecDrainAction = DRAIN_ACTION_NONE;
         codecNeedsAdaptationWorkaroundBuffer = false;
         shouldSkipAdaptationWorkaroundOutputBuffer = false;
-        shouldSkipOutputBuffer = false;
+        isDecodeOnlyOutputBuffer = false;
+        isLastOutputBuffer = false;
         waitingForFirstSyncSample = true;
 
         decoderCounters.decoderInitCount++;
@@ -1021,6 +1026,11 @@ public abstract class CustomMediaCodecRenderer extends BaseRenderer {
             result = readSource(formatHolder, buffer, false);
         }
 
+        if (hasReadStreamToEnd()) {
+            // Notify output queue of the last buffer's timestamp.
+            lastBufferInStreamPresentationTimeUs = largestQueuedPresentationTimeUs;
+        }
+
         if (result == C.RESULT_NOTHING_READ) {
             return false;
         }
@@ -1093,6 +1103,8 @@ public abstract class CustomMediaCodecRenderer extends BaseRenderer {
                 formatQueue.add(presentationTimeUs, inputFormat);
                 waitingForFirstSampleInFormat = false;
             }
+            largestQueuedPresentationTimeUs =
+                    Math.max(largestQueuedPresentationTimeUs, presentationTimeUs);
 
             buffer.flip();
             onQueueInputBuffer(buffer);
@@ -1463,7 +1475,9 @@ public abstract class CustomMediaCodecRenderer extends BaseRenderer {
                 outputBuffer.position(outputBufferInfo.offset);
                 outputBuffer.limit(outputBufferInfo.offset + outputBufferInfo.size);
             }
-            shouldSkipOutputBuffer = shouldSkipOutputBuffer(outputBufferInfo.presentationTimeUs);
+            isDecodeOnlyOutputBuffer = isDecodeOnlyBuffer(outputBufferInfo.presentationTimeUs);
+            isLastOutputBuffer =
+                    lastBufferInStreamPresentationTimeUs == outputBufferInfo.presentationTimeUs;
             updateOutputFormatForTime(outputBufferInfo.presentationTimeUs);
         }
 
@@ -1479,7 +1493,8 @@ public abstract class CustomMediaCodecRenderer extends BaseRenderer {
                                 outputIndex,
                                 outputBufferInfo.flags,
                                 outputBufferInfo.presentationTimeUs,
-                                shouldSkipOutputBuffer,
+                                isDecodeOnlyOutputBuffer,
+                                isLastOutputBuffer,
                                 outputFormat);
             } catch (IllegalStateException e) {
                 processEndOfStream();
@@ -1499,7 +1514,8 @@ public abstract class CustomMediaCodecRenderer extends BaseRenderer {
                             outputIndex,
                             outputBufferInfo.flags,
                             outputBufferInfo.presentationTimeUs,
-                            shouldSkipOutputBuffer,
+                            isDecodeOnlyOutputBuffer,
+                            isLastOutputBuffer,
                             outputFormat);
         }
 
@@ -1566,7 +1582,9 @@ public abstract class CustomMediaCodecRenderer extends BaseRenderer {
      * @param bufferIndex The index of the output buffer.
      * @param bufferFlags The flags attached to the output buffer.
      * @param bufferPresentationTimeUs The presentation time of the output buffer in microseconds.
-     * @param shouldSkip Whether the buffer should be skipped (i.e. not rendered).
+     * @param isDecodeOnlyBuffer Whether the buffer was marked with {@link C#BUFFER_FLAG_DECODE_ONLY}
+     *     by the source.
+     * @param isLastBuffer Whether the buffer is the last sample of the current stream.
      * @param format The format associated with the buffer.
      * @return Whether the output buffer was fully processed (e.g. rendered or skipped).
      * @throws ExoPlaybackException If an error occurs processing the output buffer.
@@ -1579,7 +1597,8 @@ public abstract class CustomMediaCodecRenderer extends BaseRenderer {
             int bufferIndex,
             int bufferFlags,
             long bufferPresentationTimeUs,
-            boolean shouldSkip,
+            boolean isDecodeOnlyBuffer,
+            boolean isLastBuffer,
             Format format)
             throws ExoPlaybackException;
 
@@ -1659,7 +1678,7 @@ public abstract class CustomMediaCodecRenderer extends BaseRenderer {
         codecDrainAction = DRAIN_ACTION_NONE;
     }
 
-    private boolean shouldSkipOutputBuffer(long presentationTimeUs) {
+    private boolean isDecodeOnlyBuffer(long presentationTimeUs) {
         // We avoid using decodeOnlyPresentationTimestamps.remove(presentationTimeUs) because it would
         // box presentationTimeUs, creating a Long object that would need to be garbage collected.
         int size = decodeOnlyPresentationTimestamps.size();
