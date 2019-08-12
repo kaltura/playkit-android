@@ -31,6 +31,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -191,5 +192,15 @@ public class Utils {
         inputStream.close();
         bytes = bos.toByteArray();
         return bytes;
+    }
+
+    @SuppressWarnings("EqualsReplaceableByObjectsCall") // Objects.equals() is only supported from API 19
+    public static boolean equals(Object a, Object b) {
+        return (a == b) || (a != null && a.equals(b));
+    }
+
+    // Safe String.format() without having to specify the Locale
+    public static String format(String format, Object... args) {
+        return String.format(Locale.ROOT, format, args);
     }
 }
