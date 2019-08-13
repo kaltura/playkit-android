@@ -42,6 +42,7 @@ public class SourceSelector {
         this.preferredMediaFormat = preferredMediaFormat;
     }
 
+    // Should not normally be used.
     public void setPreferredSourceId(String preferredSourceId) {
         this.preferredSourceId = preferredSourceId;
         this.selectedSource = null;
@@ -84,8 +85,7 @@ public class SourceSelector {
             return;
         }
 
-
-        // If preferredSourceId is set, first to to select that source
+        // If preferredSourceId is set, first try to select that source
         if (preferredSourceId != null) {
             for (PKMediaSource source : mediaEntry.getSources()) {
                 if (preferredSourceId.equals(source.getId())) {
