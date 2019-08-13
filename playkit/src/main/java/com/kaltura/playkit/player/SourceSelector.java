@@ -31,8 +31,8 @@ public class SourceSelector {
 
     private String preferredSourceId;
 
-    private PKMediaSource selectedSource;
-    private PKDrmParams selectedDrmParams;
+    @Nullable private PKMediaSource selectedSource;
+    @Nullable private PKDrmParams selectedDrmParams;
 
     private static final List<PKMediaFormat> defaultFormatPriority = Collections.unmodifiableList(
             Arrays.asList(PKMediaFormat.dash, PKMediaFormat.hls, PKMediaFormat.wvm, PKMediaFormat.mp4, PKMediaFormat.mp3));
@@ -61,12 +61,12 @@ public class SourceSelector {
     }
 
 
-    public PKMediaSource getSelectedSource() {
+    @Nullable public PKMediaSource getSelectedSource() {
         selectSource();
         return selectedSource;
     }
 
-    public PKDrmParams getSelectedDrmParams() {
+    @Nullable public PKDrmParams getSelectedDrmParams() {
         selectSource();
         return selectedDrmParams;
     }
