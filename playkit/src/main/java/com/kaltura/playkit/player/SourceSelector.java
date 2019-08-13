@@ -152,7 +152,7 @@ public class SourceSelector {
 
     static PKMediaSource selectSource(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat) {
         final SourceSelector sourceSelector = new SourceSelector(mediaEntry, preferredMediaFormat);
-        return sourceSelector.selectedSource;
+        return sourceSelector.getSelectedSource();
     }
 
     private PKMediaSource findLocalSource() {
