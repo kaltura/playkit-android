@@ -27,6 +27,7 @@ import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.ExoPlayerFactory;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.kaltura.android.exoplayer2.Format;
+import com.kaltura.android.exoplayer2.LoadControl;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
@@ -90,7 +91,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
 
-    private DefaultBandwidthMeter bandwidthMeter;
+    private BandwidthMeter bandwidthMeter;
     @NonNull private PlayerSettings playerSettings;
     private EventListener eventListener;
     private StateChangedListener stateChangedListener;
@@ -150,16 +151,20 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         playerSettings = settings != null ? settings : new PlayerSettings();
         rootView = rootPlayerView;
-        DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context);
+        if (playerSettings.getCustomBandwidthMeter() != null) {
+            bandwidthMeter = playerSettings.getCustomBandwidthMeter();
+        } else {
+            DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context);
 
-        Long initialBitrateEstimate = playerSettings.getAbrSettings().getInitialBitrateEstimate();
+            Long initialBitrateEstimate = playerSettings.getAbrSettings().getInitialBitrateEstimate();
 
-        if (initialBitrateEstimate != null && initialBitrateEstimate > 0) {
-            bandwidthMeterBuilder.setInitialBitrateEstimate(initialBitrateEstimate);
+            if (initialBitrateEstimate != null && initialBitrateEstimate > 0) {
+                bandwidthMeterBuilder.setInitialBitrateEstimate(initialBitrateEstimate);
+            }
+
+            bandwidthMeter = bandwidthMeterBuilder.build();
+            bandwidthMeter.addEventListener(mainHandler, this);
         }
-
-        bandwidthMeter = bandwidthMeterBuilder.build();
-        bandwidthMeter.addEventListener(mainHandler, this);
 
         period = new Timeline.Period();
         this.exoPlayerView = exoPlayerView;
@@ -189,17 +194,21 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @NonNull
-    private DefaultLoadControl getUpdatedLoadControl() {
-        final LoadControlBuffers loadControl = playerSettings.getLoadControlBuffers();
-        int backBufferDurationMs = loadControl.getBackBufferDurationMs();
-        boolean retainBackBufferFromKeyframe = loadControl.getRetainBackBufferFromKeyframe();
-        return new DefaultLoadControl.Builder().
-                setBufferDurationsMs(
-                        loadControl.getMinPlayerBufferMs(),
-                        loadControl.getMaxPlayerBufferMs(),
-                        loadControl.getMinBufferAfterInteractionMs(),
-                        loadControl.getMinBufferAfterReBufferMs()).
-                setBackBuffer(backBufferDurationMs, retainBackBufferFromKeyframe).createDefaultLoadControl();
+    private LoadControl getUpdatedLoadControl() {
+        if (playerSettings.getCustomLoadControl() != null) {
+            return playerSettings.getCustomLoadControl();
+        } else {
+            final LoadControlBuffers loadControl = playerSettings.getLoadControlBuffers();
+            int backBufferDurationMs = loadControl.getBackBufferDurationMs();
+            boolean retainBackBufferFromKeyframe = loadControl.getRetainBackBufferFromKeyframe();
+            return new DefaultLoadControl.Builder().
+                    setBufferDurationsMs(
+                            loadControl.getMinPlayerBufferMs(),
+                            loadControl.getMaxPlayerBufferMs(),
+                            loadControl.getMinBufferAfterInteractionMs(),
+                            loadControl.getMinBufferAfterReBufferMs()).
+                    setBackBuffer(backBufferDurationMs, retainBackBufferFromKeyframe).createDefaultLoadControl();
+        }
     }
 
     private void setPlayerListeners() {
