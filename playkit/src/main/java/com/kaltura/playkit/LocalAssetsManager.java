@@ -365,7 +365,7 @@ public class LocalAssetsManager {
          * @param assetId        - the id of the media.
          * @param scheme
          */
-        LocalMediaSource(LocalDataStore localDataStore, String localPath, String assetId, PKDrmParams.Scheme scheme) {
+        public LocalMediaSource(LocalDataStore localDataStore, String localPath, String assetId, PKDrmParams.Scheme scheme) {
             this.scheme = scheme;
             setId(assetId);
             setUrl(localPath);

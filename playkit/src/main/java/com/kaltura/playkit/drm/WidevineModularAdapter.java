@@ -306,7 +306,7 @@ public class WidevineModularAdapter extends DrmAdapter {
     private SimpleDashParser parseDash(String localPath, String assetId) throws LocalAssetsManager.RegisterException {
         SimpleDashParser dashParser;
         try {
-            dashParser = new SimpleDashParser().parse(localPath, assetId);
+            dashParser = new SimpleDashParser().parse(localPath);
             if (dashParser.format == null) {
                 throw new LocalAssetsManager.RegisterException("Unknown format", null);
             }

@@ -64,6 +64,11 @@ public class LocalAssetsManagerExo {
         return new LocalExoMediaSource(helper.localDataStore, exoMediaSource, assetId, helper.getLocalAssetScheme(assetId));
     }
 
+    public PKMediaSource getLocalMediaSource(@NonNull final String assetId, @NonNull final String localAssetPath) {
+        return new LocalAssetsManager.LocalMediaSource(helper.localDataStore, localAssetPath, assetId, helper.getLocalAssetScheme(assetId));
+    }
+
+
     public LocalAssetsManager.AssetStatus getDrmStatus(String assetId, byte[] drmInitData) {
         final PKDrmParams.Scheme scheme = helper.getLocalAssetScheme(assetId);
         if (scheme != PKDrmParams.Scheme.WidevineCENC) {
