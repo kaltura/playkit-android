@@ -1,5 +1,6 @@
 package com.kaltura.playkit.player;
 
+import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayKitManager;
 
@@ -33,20 +34,20 @@ public class PKHttpClientManager {
 
     private static final int MAX_IDLE_CONNECTIONS = 10;
     private static final int KEEP_ALIVE_DURATION = 5;
-    private static final int WARMUP_TIMES = 2;
+    private static final int WARMUP_TIMES = 1;
 
     private static String httpProviderId;
 
     private static final OkHttpClient okClient = new OkHttpClient.Builder()
             .followRedirects(false)     // Only warm up explicitly specified URLs
             .connectionPool(new ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_DURATION, TimeUnit.MINUTES))
-            .connectTimeout(3, TimeUnit.SECONDS)
-            .readTimeout(3, TimeUnit.SECONDS)
+            .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+            .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
             .protocols(Collections.singletonList(Protocol.HTTP_1_1))    // Avoid http/2 due to https://github.com/google/ExoPlayer/issues/4078
             .build();
 
     // Called by the player
-    static OkHttpClient.Builder newClientBuilder() {
+    public static OkHttpClient.Builder newClientBuilder() {
         return okClient.newBuilder().followRedirects(true);
     }
 

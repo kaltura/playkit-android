@@ -39,6 +39,7 @@ import java.util.Map;
 
 public class Utils {
     private static final PKLog log = PKLog.get("Utils");
+
     private static final int ASSET_READ_LIMIT_BYTES = 1024 * 1024;
     public static final int READ_BUFFER_SIZE = 1024;
 
@@ -47,6 +48,7 @@ public class Utils {
         try {
             assetStream = context.getAssets().open(asset);
             return fullyReadInputStream(assetStream, ASSET_READ_LIMIT_BYTES).toString();
+
         } catch (IOException e) {
             log.e("Failed reading asset " + asset, e);
             return null;
