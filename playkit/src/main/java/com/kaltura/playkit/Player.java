@@ -15,8 +15,6 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.LoadControl;
-import com.kaltura.android.exoplayer2.upstream.BandwidthMeter;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -215,16 +213,10 @@ public interface Player {
         Settings setVRSettings(VRSettings vrSettings);
 
         /**
-         * Set custom BandwidthMeter instance
-         * @param bandwidthMeter custom pre-built BandwidthMeter
+         * Set custom load control strategy
+         * @param loadControlStrategy object implementing LoadControlStrategy interface
          */
-        Settings setCustomBandwidthMeter(BandwidthMeter bandwidthMeter);
-
-        /**
-         * Set custom LoadControl instance
-         * @param loadControl custom pre-built LoadControl
-         */
-        Settings setCustomLoadControl(LoadControl loadControl);
+        Settings setCustomLoadControlStrategy(Object loadControlStrategy);
     }
 
     /**

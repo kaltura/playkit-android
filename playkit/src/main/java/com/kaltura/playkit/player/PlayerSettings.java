@@ -12,8 +12,6 @@
 
 package com.kaltura.playkit.player;
 
-import com.kaltura.android.exoplayer2.LoadControl;
-import com.kaltura.android.exoplayer2.upstream.BandwidthMeter;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
@@ -54,8 +52,7 @@ public class PlayerSettings implements Player.Settings {
     /**
      * Streamroot-added settings
      */
-    private BandwidthMeter customBandwidthMeter = null;
-    private LoadControl customLoadControl = null;
+    private Object customLoadControlStrategy = null;
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
@@ -141,12 +138,8 @@ public class PlayerSettings implements Player.Settings {
         return forceSinglePlayerEngine;
     }
 
-    public BandwidthMeter getCustomBandwidthMeter() {
-        return customBandwidthMeter;
-    }
-
-    public LoadControl getCustomLoadControl() {
-        return customLoadControl;
+    public Object getCustomLoadControlStrategy() {
+        return customLoadControlStrategy;
     }
 
     @Override
@@ -277,14 +270,8 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setCustomBandwidthMeter(BandwidthMeter bandwidthMeter) {
-        this.customBandwidthMeter = bandwidthMeter;
-        return this;
-    }
-
-    @Override
-    public Player.Settings setCustomLoadControl(LoadControl loadControl) {
-        this.customLoadControl = loadControl;
+    public Player.Settings setCustomLoadControlStrategy(Object customLoadControlStrategy) {
+        this.customLoadControlStrategy = customLoadControlStrategy;
         return this;
     }
 }

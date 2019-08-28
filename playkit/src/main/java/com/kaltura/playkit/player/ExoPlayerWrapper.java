@@ -88,6 +88,10 @@ import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
 
 public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
+    public interface LoadControlStrategy {
+        LoadControl getCustomLoadControl();
+        BandwidthMeter getCustomBandwidthMeter();
+    }
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
 
@@ -151,8 +155,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         playerSettings = settings != null ? settings : new PlayerSettings();
         rootView = rootPlayerView;
-        if (playerSettings.getCustomBandwidthMeter() != null) {
-            bandwidthMeter = playerSettings.getCustomBandwidthMeter();
+
+        LoadControlStrategy customLoadControlStrategy = (LoadControlStrategy) playerSettings.getCustomLoadControlStrategy();
+        if (customLoadControlStrategy != null && customLoadControlStrategy.getCustomBandwidthMeter() != null) {
+            bandwidthMeter = customLoadControlStrategy.getCustomBandwidthMeter();
         } else {
             DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context);
 
@@ -195,8 +201,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @NonNull
     private LoadControl getUpdatedLoadControl() {
-        if (playerSettings.getCustomLoadControl() != null) {
-            return playerSettings.getCustomLoadControl();
+        LoadControlStrategy customLoadControlStrategy = (LoadControlStrategy) playerSettings.getCustomLoadControlStrategy();
+        if (customLoadControlStrategy != null && customLoadControlStrategy.getCustomLoadControl() != null) {
+            return customLoadControlStrategy.getCustomLoadControl();
         } else {
             final LoadControlBuffers loadControl = playerSettings.getLoadControlBuffers();
             int backBufferDurationMs = loadControl.getBackBufferDurationMs();
