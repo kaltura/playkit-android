@@ -26,7 +26,7 @@ import com.kaltura.playkit.plugins.ads.AdsProvider;
 
 public class FBAdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdProviderListener {
 
-    private static final PKLog log = PKLog.get("AdsPlayerEngineWrapper");
+    private static final PKLog log = PKLog.get("FBAdsPlayerEngineWrapper");
 
     private Context context;
     private AdsProvider adsProvider;
@@ -97,10 +97,13 @@ public class FBAdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKA
     @Override
     public long getCurrentPosition() {
 //        long currpos;
-//        if (adsProvider.isAdDisplayed()) {
+        log.d("FB  -> getCurrentPosition isAdDisplayed = " + adsProvider.isAdDisplayed());
+        if (adsProvider.isAdDisplayed()) {
 //            currpos = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
-//            //log.d("IMA -> getCurrentPosition = " + currpos);
-//        } else {
+            log.d("FB  -> getCurrentPosition = " + adsProvider.getCurrentPosition());
+            adsProvider.getCurrentPosition();
+        }
+//        else {
 //            currpos = super.getCurrentPosition();
 //            //log.d("PLAYER -> getCurrentPosition = " + currpos);
 //        }
