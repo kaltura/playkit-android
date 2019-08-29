@@ -24,6 +24,7 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import android.view.SurfaceHolder;
 
+import com.kaltura.playkit.PKCodec;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -292,6 +293,16 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
+        // Do Nothing
+    }
+
+    @Override
+    public void overrideMediaVideoCodec(PKCodec codec) {
+        // Do Nothing
+    }
+
+    @Override
+    public void overrideMediaVideoCodecWithABR(PKCodec codec, long minVideoBitrate, long maxVideoBitrate) {
         // Do Nothing
     }
 

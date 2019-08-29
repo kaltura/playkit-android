@@ -24,13 +24,14 @@ public class VideoTrack extends BaseTrack implements Comparable<VideoTrack> {
     private int width;
     private int height;
     private long bitrate;
+    private String codec;
 
-
-    VideoTrack(String uniqueId, long bitrate, int width, int height, int selectionFlag, boolean isAdaptive) {
+    VideoTrack(String uniqueId, long bitrate, int width, int height, int selectionFlag, boolean isAdaptive, String codec) {
         super(uniqueId, selectionFlag, isAdaptive);
         this.bitrate = bitrate;
         this.width = width;
         this.height = height;
+        this.codec = codec;
     }
 
     /**
@@ -63,8 +64,19 @@ public class VideoTrack extends BaseTrack implements Comparable<VideoTrack> {
         return height;
     }
 
+    /**
+     * Getter for the track codec.
+     * Can be null if unknown or not applicable.
+     *
+     * @return - the codec of the track.
+     */
+    public String getCodec() {
+        return codec;
+    }
+
     @Override
     public int compareTo(@NonNull VideoTrack track) {
         return Integer.compare((int)this.getBitrate(), (int)track.getBitrate());
     }
+
 }
