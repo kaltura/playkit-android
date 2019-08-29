@@ -49,9 +49,6 @@ public class PlayerSettings implements Player.Settings {
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
 
-    /**
-     * Streamroot-added settings
-     */
     private Object customLoadControlStrategy = null;
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
