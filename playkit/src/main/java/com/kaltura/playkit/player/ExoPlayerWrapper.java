@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+
 import androidx.annotation.NonNull;
 
 import com.kaltura.android.exoplayer2.C;
@@ -54,12 +55,12 @@ import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
-import com.kaltura.playkit.PKCodec;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.PKVideoCodec;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
@@ -856,7 +857,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void overrideMediaVideoCodec(PKCodec codec) {
+    public void overrideMediaVideoCodec(PKVideoCodec codec) {
         if (trackSelectionHelper == null) {
             log.w("Attempt to invoke 'overrideMediaVideoCodec()' on null instance of the TracksSelectionHelper");
             return;
@@ -866,7 +867,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void overrideMediaVideoCodecWithABR(PKCodec codec, long minVideoBitrate, long maxVideoBitrate) {
+    public void overrideMediaVideoCodecWithABR(PKVideoCodec codec, long minVideoBitrate, long maxVideoBitrate) {
         if (trackSelectionHelper == null) {
             log.w("Attempt to invoke 'overrideMediaVideoCodec()' on null instance of the TracksSelectionHelper");
             return;
@@ -1036,18 +1037,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return new TrackSelectionHelper.TracksInfoListener() {
             @Override
             public void onTracksInfoReady(PKTracks tracksReady) {
+                PKVideoCodec preferredVideoCodec = playerSettings.getPreferredVideoCodec();
+                boolean isABREnabled = playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE;
 
-                if (playerSettings.getSpecificVideoCodec() != null &&
-                        (playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE)) {
-                    overrideMediaVideoCodecWithABR(playerSettings.getSpecificVideoCodec(), playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
-                }
-
-                if (playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE) {
+                if (preferredVideoCodec != null && !isABREnabled) {
+                    overrideMediaVideoCodec(playerSettings.getPreferredVideoCodec());
+                } else if(preferredVideoCodec == null && isABREnabled) {
                     overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
-                }
-
-                if (playerSettings.getSpecificVideoCodec() != null) {
-                    overrideMediaVideoCodec(playerSettings.getSpecificVideoCodec());
+                } else if(preferredVideoCodec != null) {
+                    overrideMediaVideoCodecWithABR(playerSettings.getPreferredVideoCodec(), playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
                 }
 
                 //when the track info is ready, cache it in ExoPlayerWrapper. And send event that tracks are available.

@@ -12,7 +12,7 @@
 
 package com.kaltura.playkit.player;
 
-import com.kaltura.playkit.PKCodec;
+import com.kaltura.playkit.PKVideoCodec;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
@@ -31,7 +31,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
-    private PKCodec specificVideoCodec;
+    private PKVideoCodec preferredVideoCodec;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
@@ -135,8 +135,8 @@ public class PlayerSettings implements Player.Settings {
         return forceSinglePlayerEngine;
     }
 
-    public PKCodec getSpecificVideoCodec() {
-        return specificVideoCodec;
+    public PKVideoCodec getPreferredVideoCodec() {
+        return preferredVideoCodec;
     }
 
     @Override
@@ -267,8 +267,8 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setSpecificCodecPlayback(PKCodec videoCodec) {
-        this.specificVideoCodec = videoCodec;
+    public Player.Settings setPreferredVideoCodecPlayback(PKVideoCodec videoCodec) {
+        this.preferredVideoCodec = videoCodec;
         return this;
     }
 }

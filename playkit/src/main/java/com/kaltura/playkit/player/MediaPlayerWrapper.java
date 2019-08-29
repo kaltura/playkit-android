@@ -24,7 +24,7 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import android.view.SurfaceHolder;
 
-import com.kaltura.playkit.PKCodec;
+import com.kaltura.playkit.PKVideoCodec;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -297,12 +297,12 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public void overrideMediaVideoCodec(PKCodec codec) {
+    public void overrideMediaVideoCodec(PKVideoCodec codec) {
         // Do Nothing
     }
 
     @Override
-    public void overrideMediaVideoCodecWithABR(PKCodec codec, long minVideoBitrate, long maxVideoBitrate) {
+    public void overrideMediaVideoCodecWithABR(PKVideoCodec codec, long minVideoBitrate, long maxVideoBitrate) {
         // Do Nothing
     }
 

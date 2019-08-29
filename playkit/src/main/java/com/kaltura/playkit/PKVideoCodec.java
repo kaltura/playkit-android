@@ -1,6 +1,6 @@
 package com.kaltura.playkit;
 
-public enum PKCodec {
+public enum PKVideoCodec {
     HEVC("hev1"),
    // hvc1("hvc1"),
     AVC("avc1");
@@ -8,7 +8,7 @@ public enum PKCodec {
 
     public String codecName;
 
-    PKCodec(String codecName){
+    PKVideoCodec(String codecName){
         this.codecName = codecName;
     }
 }

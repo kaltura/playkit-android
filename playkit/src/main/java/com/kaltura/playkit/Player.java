@@ -212,7 +212,7 @@ public interface Player {
          */
         Settings setVRSettings(VRSettings vrSettings);
 
-        Settings setSpecificCodecPlayback(PKCodec videoCodec);
+        Settings setPreferredVideoCodecPlayback(PKVideoCodec videoCodec);
     }
 
     /**

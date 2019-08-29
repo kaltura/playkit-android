@@ -25,7 +25,7 @@ import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector.Select
 import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.kaltura.playkit.PKCodec;
+import com.kaltura.playkit.PKVideoCodec;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKTrackConfig;
@@ -462,7 +462,7 @@ class TrackSelectionHelper {
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
-    protected void overrideMediaVideoCodec(PKCodec codec) {
+    protected void overrideMediaVideoCodec(PKVideoCodec codec) {
 
         List<String> uniqueIds = getCodecUniqueIds(codec);
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
@@ -482,7 +482,7 @@ class TrackSelectionHelper {
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
-    protected void overrideMediaVideoCodecWithABR(PKCodec codec, long minVideoBitrate, long maxVideoBitrate) {
+    protected void overrideMediaVideoCodecWithABR(PKVideoCodec codec, long minVideoBitrate, long maxVideoBitrate) {
 
         List<String> uniqueIds = getCodecUniqueIdsWithABR(codec, minVideoBitrate, maxVideoBitrate);
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
@@ -533,7 +533,7 @@ class TrackSelectionHelper {
         return uniqueIds;
     }
 
-    private List<String> getCodecUniqueIds(PKCodec codec) {
+    private List<String> getCodecUniqueIds(PKVideoCodec codec) {
         List<String> uniqueIds = new ArrayList<>();
         if (videoTracks != null) {
             Collections.sort(videoTracks);
@@ -546,7 +546,7 @@ class TrackSelectionHelper {
         return uniqueIds;
     }
 
-    private List<String> getCodecUniqueIdsWithABR(PKCodec codec, long minVideoBitrate, long maxVideoBitrate) {
+    private List<String> getCodecUniqueIdsWithABR(PKVideoCodec codec, long minVideoBitrate, long maxVideoBitrate) {
         List<String> uniqueIds = new ArrayList<>();
         boolean isValidABRRange = true;
         if (videoTracks != null) {
