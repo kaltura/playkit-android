@@ -212,6 +212,11 @@ public interface Player {
          */
         Settings setVRSettings(VRSettings vrSettings);
 
+        /**
+         * Set Preferred codec for video track
+         * @param videoCodec Use {@link PKVideoCodec}
+         */
+
         Settings setPreferredVideoCodecPlayback(PKVideoCodec videoCodec);
     }
 
