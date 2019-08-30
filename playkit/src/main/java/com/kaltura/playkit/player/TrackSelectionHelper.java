@@ -175,6 +175,8 @@ class TrackSelectionHelper {
                     // the format of the current trackGroup.
                     format = trackGroup.getFormat(trackIndex);
 
+                    String codec = format.codecs != null ? format.codecs : PKVideoCodec.AVC.codecName;
+
                     maybeAddAdaptiveTrack(rendererIndex, groupIndex, format);
 
                     //filter all the unsupported and unknown formats.
@@ -185,7 +187,7 @@ class TrackSelectionHelper {
                                 if (format.bitrate == -1 && format.codecs == null) {
                                     continue;
                                 }
-                                videoTracks.add(new VideoTrack(uniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false, format.codecs));
+                                videoTracks.add(new VideoTrack(uniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false, codec));
                                 break;
                             case TRACK_TYPE_AUDIO:
                                 if (format.language == null && format.codecs == null) {
@@ -355,10 +357,11 @@ class TrackSelectionHelper {
      */
     private void maybeAddAdaptiveTrack(int rendererIndex, int groupIndex, Format format) {
         String uniqueId = getUniqueId(rendererIndex, groupIndex, TRACK_ADAPTIVE);
+        String codec = format.codecs != null ? format.codecs : PKVideoCodec.AVC.codecName;
         if (isAdaptive(rendererIndex, groupIndex) && !adaptiveTrackAlreadyExist(uniqueId, rendererIndex)) {
             switch (rendererIndex) {
                 case TRACK_TYPE_VIDEO:
-                    videoTracks.add(new VideoTrack(uniqueId, 0, 0, 0, format.selectionFlags, true, format.codecs));
+                    videoTracks.add(new VideoTrack(uniqueId, 0, 0, 0, format.selectionFlags, true, codec));
                     break;
                 case TRACK_TYPE_AUDIO:
                     audioTracks.add(new AudioTrack(uniqueId, format.language, format.label, 0, format.channelCount, format.selectionFlags, true));

@@ -1040,12 +1040,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 PKVideoCodec preferredVideoCodec = playerSettings.getPreferredVideoCodec();
                 boolean isABREnabled = playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE;
 
-                if (preferredVideoCodec != null && !isABREnabled) {
-                    overrideMediaVideoCodec(playerSettings.getPreferredVideoCodec());
-                } else if(preferredVideoCodec == null && isABREnabled) {
+                if (preferredVideoCodec != null && isABREnabled) {
+                    overrideMediaVideoCodecWithABR(playerSettings.getPreferredVideoCodec(), playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+                } else if(isABREnabled) {
                     overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
                 } else if(preferredVideoCodec != null) {
-                    overrideMediaVideoCodecWithABR(playerSettings.getPreferredVideoCodec(), playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+                    overrideMediaVideoCodec(playerSettings.getPreferredVideoCodec());
                 }
 
                 //when the track info is ready, cache it in ExoPlayerWrapper. And send event that tracks are available.
