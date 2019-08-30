@@ -13,6 +13,8 @@
 package com.kaltura.playkit.player;
 
 
+import android.os.Build;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -175,7 +177,7 @@ class TrackSelectionHelper {
                     // the format of the current trackGroup.
                     format = trackGroup.getFormat(trackIndex);
 
-                    String codec = format.codecs != null ? format.codecs : PKVideoCodec.AVC.codecName;
+                    String codec = rendererIndex == TRACK_TYPE_VIDEO ? getSupportedCodec(format) : null;
 
                     maybeAddAdaptiveTrack(rendererIndex, groupIndex, format);
 
@@ -357,7 +359,7 @@ class TrackSelectionHelper {
      */
     private void maybeAddAdaptiveTrack(int rendererIndex, int groupIndex, Format format) {
         String uniqueId = getUniqueId(rendererIndex, groupIndex, TRACK_ADAPTIVE);
-        String codec = format.codecs != null ? format.codecs : PKVideoCodec.AVC.codecName;
+        String codec = getSupportedCodec(format);
         if (isAdaptive(rendererIndex, groupIndex) && !adaptiveTrackAlreadyExist(uniqueId, rendererIndex)) {
             switch (rendererIndex) {
                 case TRACK_TYPE_VIDEO:
@@ -467,6 +469,11 @@ class TrackSelectionHelper {
 
     protected void overrideMediaVideoCodec(PKVideoCodec codec) {
 
+        if (codec == null) {
+            log.w("overrideMediaVideoCodec codec is null");
+            return;
+        }
+
         List<String> uniqueIds = getCodecUniqueIds(codec);
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null || uniqueIds.isEmpty()) {
@@ -486,6 +493,11 @@ class TrackSelectionHelper {
     }
 
     protected void overrideMediaVideoCodecWithABR(PKVideoCodec codec, long minVideoBitrate, long maxVideoBitrate) {
+
+        if (codec == null) {
+            log.w("overrideMediaVideoCodecWithABR codec is null");
+            return;
+        }
 
         List<String> uniqueIds = getCodecUniqueIdsWithABR(codec, minVideoBitrate, maxVideoBitrate);
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
@@ -541,7 +553,7 @@ class TrackSelectionHelper {
         if (videoTracks != null) {
             Collections.sort(videoTracks);
             for (VideoTrack currentVideoTrack : videoTracks) {
-                if (currentVideoTrack.getCodec().startsWith(codec.codecName)) {
+                if (currentVideoTrack.getCodec() != null && currentVideoTrack.getCodec().startsWith(codec.codecName)) {
                     uniqueIds.add(currentVideoTrack.getUniqueId());
                 }
             }
@@ -566,14 +578,16 @@ class TrackSelectionHelper {
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
             while (videoTrackIterator.hasNext()) {
                 VideoTrack currentVideoTrack = videoTrackIterator.next();
-                if (currentVideoTrack.getCodec().startsWith(codec.codecName) &&
-                        (currentVideoTrack.isAdaptive() || (currentVideoTrack.getBitrate() >= minVideoBitrate && currentVideoTrack.getBitrate() <= maxVideoBitrate))) {
-                    uniqueIds.add(currentVideoTrack.getUniqueId());
-                } else {
-                    if (currentVideoTrack.getCodec().startsWith(codec.codecName) && !isValidABRRange) {
+                if (currentVideoTrack.getCodec() != null) {
+                    if (currentVideoTrack.getCodec().startsWith(codec.codecName) &&
+                            (currentVideoTrack.isAdaptive() || (currentVideoTrack.getBitrate() >= minVideoBitrate && currentVideoTrack.getBitrate() <= maxVideoBitrate))) {
                         uniqueIds.add(currentVideoTrack.getUniqueId());
                     } else {
-                        videoTrackIterator.remove();
+                        if (currentVideoTrack.getCodec().startsWith(codec.codecName) && !isValidABRRange) {
+                            uniqueIds.add(currentVideoTrack.getUniqueId());
+                        } else {
+                            videoTrackIterator.remove();
+                        }
                     }
                 }
             }
@@ -1190,6 +1204,24 @@ class TrackSelectionHelper {
             }
         }
         return preferredTrackUniqueId;
+    }
+
+    /**
+     * Check if the device support HEVC codec or not
+     * @param format video format
+     * @return is supported
+     */
+    private String getSupportedCodec(Format format) {
+        String codec = format.codecs;
+        if (codec != null && codec.startsWith(PKVideoCodec.HEVC.codecName) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            if (PKCodecSupport.isCodecSupported(codec, PKCodecSupport.TrackType.VIDEO)) {
+                return codec;
+            } else {
+                return null;
+            }
+        }
+
+        return codec;
     }
 
     private boolean isValidPreferredAudioConfig() {
