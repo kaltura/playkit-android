@@ -43,7 +43,7 @@ public class FBAdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKA
     public void load(PKMediaSourceConfig mediaSourceConfig) {
         this.mediaSourceConfig = mediaSourceConfig;
         if (adsProvider != null) {
-            if (adsProvider.isAdDisplayed() || adsProvider.isAdRequested() && adsProvider.getCuePoints() != null && (!adsProvider.getCuePoints().hasPreRoll() || getCurrentPosition() > 0)) {
+            if (preparePlayerForPlayback()) {
                 log.d("FB calling super.prepare");
                 super.load(mediaSourceConfig);
             } else {
@@ -51,6 +51,12 @@ public class FBAdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKA
                 adsProvider.setAdProviderListener(this);
             }
         }
+    }
+
+    private boolean preparePlayerForPlayback() {
+        return adsProvider.isAdDisplayed() ||
+                adsProvider.isAdRequested() && adsProvider.getCuePoints() != null && (!adsProvider.getCuePoints().hasPreRoll() || getCurrentPosition() > 0) ||
+                adsProvider.getPlaybackStartPosition() != null && adsProvider.getPlaybackStartPosition() > 0 && !adsProvider.isAlwaysStartWithPreroll();
     }
 
     @Override
