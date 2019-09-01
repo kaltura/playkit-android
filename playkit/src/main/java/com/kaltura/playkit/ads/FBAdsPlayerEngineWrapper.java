@@ -54,7 +54,7 @@ public class FBAdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKA
     }
 
     private boolean preparePlayerForPlayback() {
-        return adsProvider.isAdDisplayed() ||
+        return adsProvider.isAdError() || adsProvider.isAdDisplayed() ||
                 adsProvider.isAdRequested() && adsProvider.getCuePoints() != null && (!adsProvider.getCuePoints().hasPreRoll() || getCurrentPosition() > 0) ||
                 adsProvider.getPlaybackStartPosition() != null && adsProvider.getPlaybackStartPosition() > 0 && !adsProvider.isAlwaysStartWithPreroll();
     }
