@@ -102,18 +102,11 @@ public class FBAdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKA
 
     @Override
     public long getCurrentPosition() {
-//        long currpos;
-        log.d("FB  -> getCurrentPosition isAdDisplayed = " + adsProvider.isAdDisplayed());
+        //log.d("FB  -> getCurrentPosition isAdDisplayed = " + adsProvider.isAdDisplayed());
         if (adsProvider.isAdDisplayed()) {
-//            currpos = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getCurrentPosition();
-            log.d("FB  -> getCurrentPosition = " + adsProvider.getCurrentPosition());
+            //log.d("FB  -> getCurrentPosition = " + adsProvider.getCurrentPosition());
             adsProvider.getCurrentPosition();
         }
-//        else {
-//            currpos = super.getCurrentPosition();
-//            //log.d("PLAYER -> getCurrentPosition = " + currpos);
-//        }
-//        return currpos;
         return super.getCurrentPosition();
     }
 
