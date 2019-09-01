@@ -672,7 +672,7 @@ public class PlayerController implements Player {
     }
 
     private void updateProgress() {
-        log.d("Start updateProgress");
+        //log.d("Start updateProgress");
         long position;
         long duration;
 
