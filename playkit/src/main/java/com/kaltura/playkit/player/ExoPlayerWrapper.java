@@ -156,7 +156,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         playerSettings = settings != null ? settings : new PlayerSettings();
         rootView = rootPlayerView;
 
-        LoadControlStrategy customLoadControlStrategy = (LoadControlStrategy) playerSettings.getCustomLoadControlStrategy();
+        LoadControlStrategy customLoadControlStrategy = getCustomLoadControlStrategy();
         if (customLoadControlStrategy != null && customLoadControlStrategy.getCustomBandwidthMeter() != null) {
             bandwidthMeter = customLoadControlStrategy.getCustomBandwidthMeter();
         } else {
@@ -174,6 +174,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         period = new Timeline.Period();
         this.exoPlayerView = exoPlayerView;
+    }
+
+    private LoadControlStrategy getCustomLoadControlStrategy() {
+        Object loadControlStrategyObj = playerSettings.getCustomLoadControlStrategy();
+        if (loadControlStrategyObj != null && loadControlStrategyObj instanceof LoadControlStrategy) {
+            return ((LoadControlStrategy) loadControlStrategyObj);
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -201,7 +210,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @NonNull
     private LoadControl getUpdatedLoadControl() {
-        LoadControlStrategy customLoadControlStrategy = (LoadControlStrategy) playerSettings.getCustomLoadControlStrategy();
+        LoadControlStrategy customLoadControlStrategy = getCustomLoadControlStrategy();
         if (customLoadControlStrategy != null && customLoadControlStrategy.getCustomLoadControl() != null) {
             return customLoadControlStrategy.getCustomLoadControl();
         } else {
