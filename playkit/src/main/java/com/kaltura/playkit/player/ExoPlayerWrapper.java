@@ -169,8 +169,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             }
 
             bandwidthMeter = bandwidthMeterBuilder.build();
-            bandwidthMeter.addEventListener(mainHandler, this);
         }
+        bandwidthMeter.addEventListener(mainHandler, this);
 
         period = new Timeline.Period();
         this.exoPlayerView = exoPlayerView;
