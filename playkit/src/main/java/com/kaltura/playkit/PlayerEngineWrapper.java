@@ -82,8 +82,13 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
-    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate){
-        playerEngine.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
+    public void overrideMediaVideoCodec(PKVideoCodec codec) {
+        playerEngine.overrideMediaVideoCodec(codec);
+    }
+
+    @Override
+    public void overrideMediaVideoCodecWithABR(PKVideoCodec codec, long minVideoBitrate, long maxVideoBitrate) {
+        playerEngine.overrideMediaVideoCodecWithABR(codec, minVideoBitrate, maxVideoBitrate);
     }
 
     @Override

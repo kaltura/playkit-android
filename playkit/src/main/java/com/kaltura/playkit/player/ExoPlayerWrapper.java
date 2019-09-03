@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+
 import androidx.annotation.NonNull;
 
 import com.kaltura.android.exoplayer2.C;
@@ -59,6 +60,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.PKVideoCodec;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
@@ -175,7 +177,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
         drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener);
-        CustomRendererFactory renderersFactory = new CustomRendererFactory(context, playerSettings.allowClearLead(), playerSettings.enableDecoderFallback(), playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
+        CustomRendererFactory renderersFactory = new CustomRendererFactory(context, playerSettings.allowClearLead(), true, playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
 
         player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
         player.setForegroundMode(true); // Making sure the stop() call is not removing the decoders on change media.
@@ -838,20 +840,40 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
     }
 
+//    @Override
+//    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
+//        if (trackSelectionHelper == null) {
+//            log.w("Attempt to invoke 'overrideMediaDefaultABR()' on null instance of the TracksSelectionHelper");
+//            return;
+//        }
+//
+//        if (minVideoBitrate > maxVideoBitrate || maxVideoBitrate <= 0) {
+//            minVideoBitrate = Long.MIN_VALUE;
+//            maxVideoBitrate = Long.MAX_VALUE;
+//            String errorMessage = "given maxVideoBitrate is not greater than the minVideoBitrate";
+//            sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
+//        }
+//        trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
+//    }
+
     @Override
-    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
+    public void overrideMediaVideoCodec(PKVideoCodec codec) {
         if (trackSelectionHelper == null) {
-            log.w("Attempt to invoke 'overrideMediaDefaultABR()' on null instance of the TracksSelectionHelper");
+            log.w("Attempt to invoke 'overrideMediaVideoCodec()' on null instance of the TracksSelectionHelper");
             return;
         }
 
-        if (minVideoBitrate > maxVideoBitrate || maxVideoBitrate <= 0) {
-            minVideoBitrate = Long.MIN_VALUE;
-            maxVideoBitrate = Long.MAX_VALUE;
-            String errorMessage = "given maxVideoBitrate is not greater than the minVideoBitrate";
-            sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
+        trackSelectionHelper.overrideMediaVideoCodec(codec);
+    }
+
+    @Override
+    public void overrideMediaVideoCodecWithABR(PKVideoCodec codec, long minVideoBitrate, long maxVideoBitrate) {
+        if (trackSelectionHelper == null) {
+            log.w("Attempt to invoke 'overrideMediaVideoCodec()' on null instance of the TracksSelectionHelper");
+            return;
         }
-        trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
+
+        trackSelectionHelper.overrideMediaVideoCodecWithABR(codec, minVideoBitrate, maxVideoBitrate);
     }
 
     private void sendTrackSelectionError(String uniqueId, IllegalArgumentException invalidUniqueIdException) {
@@ -1015,9 +1037,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return new TrackSelectionHelper.TracksInfoListener() {
             @Override
             public void onTracksInfoReady(PKTracks tracksReady) {
-                if (playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE) {
-                    overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+                PKVideoCodec preferredVideoCodec = playerSettings.getPreferredVideoCodec();
+                boolean isABREnabled = playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE;
+
+                if (preferredVideoCodec != null && isABREnabled) {
+                    overrideMediaVideoCodecWithABR(playerSettings.getPreferredVideoCodec(), playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+                } else if(isABREnabled) {
+                    overrideMediaVideoCodecWithABR(PKVideoCodec.HEVC, playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+                } else if(preferredVideoCodec != null) {
+                    overrideMediaVideoCodec(playerSettings.getPreferredVideoCodec());
+                } else {
+                    overrideMediaVideoCodec(PKVideoCodec.HEVC); // if HEVC Exists means it is supported and we preffer it by default.
                 }
+
                 //when the track info is ready, cache it in ExoPlayerWrapper. And send event that tracks are available.
                 tracks = tracksReady;
                 shouldRestorePlayerToPreviousState = false;
