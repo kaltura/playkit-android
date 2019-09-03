@@ -1,4 +1,3 @@
-/*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
  *
@@ -11,9 +10,6 @@
  */
 
 package com.kaltura.playkit.player;
-
-
-import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -36,9 +32,11 @@ import com.kaltura.playkit.utils.Consts;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.MissingResourceException;
 
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
@@ -80,12 +78,14 @@ class TrackSelectionHelper {
     private List<VideoTrack> videoTracks = new ArrayList<>();
     private List<AudioTrack> audioTracks = new ArrayList<>();
     private List<TextTrack> textTracks = new ArrayList<>();
+    Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
 
     private String[] lastSelectedTrackIds;
     private String[] requestedChangeTrackIds;
 
     private PKTrackConfig preferredAudioLanguageConfig;
     private PKTrackConfig preferredTextLanguageConfig;
+    private PKVideoCodec preferredVideoCodecConfig;
 
     private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
 
@@ -158,8 +158,6 @@ class TrackSelectionHelper {
         TrackGroupArray trackGroupArray;
         TrackGroup trackGroup;
         Format format;
-        boolean isHevcCodec;
-
         //run through the all renders.
         for (int rendererIndex = 0; rendererIndex < TRACK_RENDERERS_AMOUNT; rendererIndex++) {
             PKCodecSupport.TrackType trackType = getTrackType(rendererIndex);
@@ -176,20 +174,26 @@ class TrackSelectionHelper {
                 for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
                     // the format of the current trackGroup.
                     format = trackGroup.getFormat(trackIndex);
-
-                    String codec = rendererIndex == TRACK_TYPE_VIDEO ? getSupportedCodec(format) : null;
-
-                    maybeAddAdaptiveTrack(rendererIndex, groupIndex, format);
-
+                    boolean isFormatSupported = isFormatSupported(rendererIndex, groupIndex, trackIndex);
+                    if (isFormatSupported) {
+                        maybeAddAdaptiveTrack(rendererIndex, groupIndex, format);
+                    }
                     //filter all the unsupported and unknown formats.
-                    if (isFormatSupported(rendererIndex, groupIndex, trackIndex)) {
+                    if (isFormatSupported) {
                         String uniqueId = getUniqueId(rendererIndex, groupIndex, trackIndex);
                         switch (rendererIndex) {
                             case TRACK_TYPE_VIDEO:
                                 if (format.bitrate == -1 && format.codecs == null) {
                                     continue;
                                 }
-                                videoTracks.add(new VideoTrack(uniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false, codec));
+                                PKVideoCodec currentVideoTrackCodec = getVideoCodec(format);
+                                VideoTrack currentVideoTrack = new VideoTrack(uniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false, currentVideoTrackCodec);
+
+                                if (!videoTracksCodecsMap.containsKey(currentVideoTrackCodec)) {
+                                    videoTracksCodecsMap.put(currentVideoTrackCodec, new ArrayList<>());
+                                }
+                                videoTracksCodecsMap.get(currentVideoTrackCodec).add(currentVideoTrack);
+
                                 break;
                             case TRACK_TYPE_AUDIO:
                                 if (format.language == null && format.codecs == null) {
@@ -219,6 +223,7 @@ class TrackSelectionHelper {
 
         //add disable option to the text tracks.
         maybeAddDisabledTextTrack();
+        videoTracks = filterVideoTracks();
         //Leave only adaptive audio tracks for user selection.
         ArrayList<AudioTrack> filteredAudioTracks = filterAdaptiveAudioTracks();
 
@@ -254,6 +259,19 @@ class TrackSelectionHelper {
             return LANGUAGE_UNKNOWN;
         }
         return format.language;
+    }
+
+    private List<VideoTrack> filterVideoTracks() {
+        if (preferredVideoCodecConfig != null && videoTracksCodecsMap.containsKey(preferredVideoCodecConfig)) {
+            return videoTracksCodecsMap.get(preferredVideoCodecConfig);
+        }
+        if (videoTracksCodecsMap.containsKey(PKVideoCodec.HEVC)) {
+            return videoTracksCodecsMap.get(PKVideoCodec.HEVC);
+        } else if (videoTracksCodecsMap.containsKey(PKVideoCodec.AVC)) {
+            return  videoTracksCodecsMap.get(PKVideoCodec.AVC);
+        } else {
+            return videoTracks;
+        }
     }
 
     /**
@@ -359,11 +377,17 @@ class TrackSelectionHelper {
      */
     private void maybeAddAdaptiveTrack(int rendererIndex, int groupIndex, Format format) {
         String uniqueId = getUniqueId(rendererIndex, groupIndex, TRACK_ADAPTIVE);
-        String codec = getSupportedCodec(format);
         if (isAdaptive(rendererIndex, groupIndex) && !adaptiveTrackAlreadyExist(uniqueId, rendererIndex)) {
             switch (rendererIndex) {
                 case TRACK_TYPE_VIDEO:
-                    videoTracks.add(new VideoTrack(uniqueId, 0, 0, 0, format.selectionFlags, true, codec));
+                    PKVideoCodec currentVideoTrackCodec = getVideoCodec(format);
+                    VideoTrack adaptiveVideoTrack = new VideoTrack(uniqueId, 0, 0, 0, format.selectionFlags, true, currentVideoTrackCodec);
+
+                    if (!videoTracksCodecsMap.containsKey(currentVideoTrackCodec)) {
+                        videoTracksCodecsMap.put(currentVideoTrackCodec, new ArrayList<>());
+                    }
+                    videoTracksCodecsMap.get(currentVideoTrackCodec).add(adaptiveVideoTrack);
+
                     break;
                 case TRACK_TYPE_AUDIO:
                     audioTracks.add(new AudioTrack(uniqueId, format.language, format.label, 0, format.channelCount, format.selectionFlags, true));
@@ -447,26 +471,6 @@ class TrackSelectionHelper {
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
-    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
-
-        List<String> uniqueIds = getABRUniqueIds(minVideoBitrate, maxVideoBitrate);
-        mappedTrackInfo = selector.getCurrentMappedTrackInfo();
-        if (mappedTrackInfo == null || uniqueIds.isEmpty()) {
-            return;
-        }
-
-        int[] uniqueTrackId = validateUniqueId(uniqueIds.get(0));
-        int rendererIndex = uniqueTrackId[RENDERER_INDEX];
-
-        requestedChangeTrackIds[rendererIndex] = uniqueIds.get(0);
-
-        DefaultTrackSelector.ParametersBuilder parametersBuilder = selector.getParameters().buildUpon();
-
-
-        SelectionOverride override = retrieveOverrideSelectionList(validateAndBuildUniqueIds(uniqueIds));
-        overrideTrack(rendererIndex, override, parametersBuilder);
-    }
-
     protected void overrideMediaVideoCodec(PKVideoCodec codec) {
 
         if (codec == null) {
@@ -475,8 +479,15 @@ class TrackSelectionHelper {
         }
 
         List<String> uniqueIds = getCodecUniqueIds(codec);
+        if (uniqueIds.isEmpty() && PKVideoCodec.HEVC.equals(codec)) {
+            uniqueIds = getCodecUniqueIds(PKVideoCodec.AVC);
+        }
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null || uniqueIds.isEmpty()) {
+            return;
+        }
+
+        if (uniqueIds.isEmpty()) {
             return;
         }
 
@@ -500,8 +511,15 @@ class TrackSelectionHelper {
         }
 
         List<String> uniqueIds = getCodecUniqueIdsWithABR(codec, minVideoBitrate, maxVideoBitrate);
+        if (uniqueIds.isEmpty() && PKVideoCodec.HEVC.equals(codec)) {
+            uniqueIds = getCodecUniqueIds(PKVideoCodec.AVC);
+        }
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null || uniqueIds.isEmpty()) {
+            return;
+        }
+
+        if (uniqueIds.isEmpty()) {
             return;
         }
 
@@ -517,43 +535,12 @@ class TrackSelectionHelper {
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
 
-    private List<String> getABRUniqueIds(long minVideoBitrate, long maxVideoBitrate) {
-        List<String> uniqueIds = new ArrayList<>();
-        boolean isValidABRRange = true;
-        if (videoTracks != null) {
-            Collections.sort(videoTracks);
-            if (videoTracks.size() >= 2) {
-                if ((minVideoBitrate < videoTracks.get(1).getBitrate() && maxVideoBitrate <  videoTracks.get(1).getBitrate()) ||
-                        (minVideoBitrate > videoTracks.get(videoTracks.size() - 1).getBitrate() && maxVideoBitrate  > videoTracks.get(videoTracks.size() - 1).getBitrate())) {
-                    isValidABRRange = false;
-                    String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
-                    PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
-                    tracksErrorListener.onTracksOverrideABRError(currentError);
-                }
-            }
-            Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
-            while (videoTrackIterator.hasNext()) {
-                VideoTrack currentVideoTrack = videoTrackIterator.next();
-                if (currentVideoTrack.isAdaptive() || (currentVideoTrack.getBitrate() >= minVideoBitrate && currentVideoTrack.getBitrate() <= maxVideoBitrate)) {
-                    uniqueIds.add(currentVideoTrack.getUniqueId());
-                } else {
-                    if (!isValidABRRange) {
-                        uniqueIds.add(currentVideoTrack.getUniqueId());
-                    } else {
-                        videoTrackIterator.remove();
-                    }
-                }
-            }
-        }
-        return uniqueIds;
-    }
-
     private List<String> getCodecUniqueIds(PKVideoCodec codec) {
         List<String> uniqueIds = new ArrayList<>();
         if (videoTracks != null) {
             Collections.sort(videoTracks);
             for (VideoTrack currentVideoTrack : videoTracks) {
-                if (currentVideoTrack.getCodec() != null && currentVideoTrack.getCodec().startsWith(codec.codecName)) {
+                if (currentVideoTrack.getCodec() != null && currentVideoTrack.getCodec().equals(codec)) {
                     uniqueIds.add(currentVideoTrack.getUniqueId());
                 }
             }
@@ -563,27 +550,36 @@ class TrackSelectionHelper {
 
     private List<String> getCodecUniqueIdsWithABR(PKVideoCodec codec, long minVideoBitrate, long maxVideoBitrate) {
         List<String> uniqueIds = new ArrayList<>();
+        if (!videoTracksCodecsMap.containsKey(codec)) {
+            codec = PKVideoCodec.AVC;
+        }
         boolean isValidABRRange = true;
+
         if (videoTracks != null) {
+
             Collections.sort(videoTracks);
             if (videoTracks.size() >= 2) {
-                if ((minVideoBitrate < videoTracks.get(1).getBitrate() && maxVideoBitrate <  videoTracks.get(1).getBitrate()) ||
-                        (minVideoBitrate > videoTracks.get(videoTracks.size() - 1).getBitrate() && maxVideoBitrate  > videoTracks.get(videoTracks.size() - 1).getBitrate())) {
+
+                long firstBitrate = videoTracks.get(1).getBitrate();
+                long lastBitrate = videoTracks.get(videoTracks.size() - 1).getBitrate();
+
+                if ((minVideoBitrate < firstBitrate && maxVideoBitrate < firstBitrate) || (minVideoBitrate > lastBitrate && maxVideoBitrate  > lastBitrate)) {
                     isValidABRRange = false;
                     String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
                     PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
                     tracksErrorListener.onTracksOverrideABRError(currentError);
                 }
             }
+
             Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
             while (videoTrackIterator.hasNext()) {
                 VideoTrack currentVideoTrack = videoTrackIterator.next();
                 if (currentVideoTrack.getCodec() != null) {
-                    if (currentVideoTrack.getCodec().startsWith(codec.codecName) &&
+                    if (currentVideoTrack.getCodec().equals(codec) &&
                             (currentVideoTrack.isAdaptive() || (currentVideoTrack.getBitrate() >= minVideoBitrate && currentVideoTrack.getBitrate() <= maxVideoBitrate))) {
                         uniqueIds.add(currentVideoTrack.getUniqueId());
                     } else {
-                        if (currentVideoTrack.getCodec().startsWith(codec.codecName) && !isValidABRRange) {
+                        if (currentVideoTrack.getCodec().equals(codec) && !isValidABRRange) {
                             uniqueIds.add(currentVideoTrack.getUniqueId());
                         } else {
                             videoTrackIterator.remove();
@@ -836,7 +832,13 @@ class TrackSelectionHelper {
         List<? extends BaseTrack> trackList = new ArrayList<>();
         switch (rendererIndex) {
             case TRACK_TYPE_VIDEO:
-                trackList = videoTracks;
+                List<VideoTrack> allVideoTracks = new ArrayList<>();
+                for (Map.Entry<PKVideoCodec,List<VideoTrack>> videoTrackEntry : videoTracksCodecsMap.entrySet()) {
+                    for (VideoTrack track : videoTrackEntry.getValue()) {
+                        allVideoTracks.add(track);
+                    }
+                }
+                trackList = allVideoTracks;
                 break;
             case TRACK_TYPE_AUDIO:
                 trackList = audioTracks;
@@ -976,6 +978,11 @@ class TrackSelectionHelper {
         videoTracks.clear();
         audioTracks.clear();
         textTracks.clear();
+        for (Map.Entry<PKVideoCodec,List<VideoTrack>> videoTrackEntry : videoTracksCodecsMap.entrySet()) {
+            videoTrackEntry.getValue().clear();
+        }
+        videoTracksCodecsMap.clear();
+
     }
 
     protected void release() {
@@ -1206,22 +1213,20 @@ class TrackSelectionHelper {
         return preferredTrackUniqueId;
     }
 
-    /**
-     * Check if the device support HEVC codec or not
-     * @param format video format
-     * @return is supported
-     */
-    private String getSupportedCodec(Format format) {
+    private PKVideoCodec getVideoCodec(Format format) {
         String codec = format.codecs;
-        if (codec != null && codec.startsWith(PKVideoCodec.HEVC.codecName) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (PKCodecSupport.isCodecSupported(codec, PKCodecSupport.TrackType.VIDEO)) {
-                return codec;
-            } else {
-                return null;
+        if (codec != null) {
+            if (codec.startsWith("hev1") || codec.startsWith("hvc1")) {
+                return PKVideoCodec.HEVC;
+            } else {  /*if (codec.startsWith("avc") */
+                return PKVideoCodec.AVC;
             }
         }
-
-        return codec;
+        if ("video/hevc".equals(format.sampleMimeType)) {
+            return PKVideoCodec.HEVC;
+        } else {
+            return PKVideoCodec.AVC;
+        }
     }
 
     private boolean isValidPreferredAudioConfig() {
@@ -1242,5 +1247,6 @@ class TrackSelectionHelper {
         this.cea608CaptionsEnabled  = settings.cea608CaptionsEnabled();
         this.preferredAudioLanguageConfig = settings.getPreferredAudioTrackConfig();
         this.preferredTextLanguageConfig  = settings.getPreferredTextTrackConfig();
+        this.preferredVideoCodecConfig = settings.getPreferredVideoCodec();
     }
 }

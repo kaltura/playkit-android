@@ -124,12 +124,20 @@ public interface PlayerEngine {
     void changeTrack(String uniqueId);
 
     /**
-     * overrideMediaDefaultABR.
+     * Override given codec for video tracks
      *
+     * @param codec video codec.
+     */
+    void overrideMediaVideoCodec(PKVideoCodec codec);
+
+    /**
+     * Override given codec for video tracks with ABR
+     *
+     * @param codec video codec
      * @param minVideoBitrate - minVideoBitrate.
      * @param maxVideoBitrate - maxVideoBitrate.
      */
-    void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate);
+    void overrideMediaVideoCodecWithABR(PKVideoCodec codec, long minVideoBitrate, long maxVideoBitrate);
 
     /**
      * Override given codec for video tracks

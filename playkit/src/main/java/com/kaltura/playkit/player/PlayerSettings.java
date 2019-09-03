@@ -267,7 +267,7 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setPreferredVideoCodecPlayback(PKVideoCodec videoCodec) {
+    public Player.Settings setPreferredVideoCodec(PKVideoCodec videoCodec) {
         this.preferredVideoCodec = videoCodec;
         return this;
     }

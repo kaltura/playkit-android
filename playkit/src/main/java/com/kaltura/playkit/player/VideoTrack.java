@@ -14,6 +14,8 @@ package com.kaltura.playkit.player;
 
 import androidx.annotation.NonNull;
 
+import com.kaltura.playkit.PKVideoCodec;
+
 
 /**
  * Video track data holder.
@@ -24,9 +26,9 @@ public class VideoTrack extends BaseTrack implements Comparable<VideoTrack> {
     private int width;
     private int height;
     private long bitrate;
-    private String codec;
+    private PKVideoCodec codec;
 
-    VideoTrack(String uniqueId, long bitrate, int width, int height, int selectionFlag, boolean isAdaptive, String codec) {
+    VideoTrack(String uniqueId, long bitrate, int width, int height, int selectionFlag, boolean isAdaptive, PKVideoCodec codec) {
         super(uniqueId, selectionFlag, isAdaptive);
         this.bitrate = bitrate;
         this.width = width;
@@ -70,7 +72,7 @@ public class VideoTrack extends BaseTrack implements Comparable<VideoTrack> {
      *
      * @return - the codec of the track.
      */
-    public String getCodec() {
+    public PKVideoCodec getCodec() {
         return codec;
     }
 

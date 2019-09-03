@@ -841,22 +841,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
-        if (trackSelectionHelper == null) {
-            log.w("Attempt to invoke 'overrideMediaDefaultABR()' on null instance of the TracksSelectionHelper");
-            return;
-        }
-
-        if (minVideoBitrate > maxVideoBitrate || maxVideoBitrate <= 0) {
-            minVideoBitrate = Long.MIN_VALUE;
-            maxVideoBitrate = Long.MAX_VALUE;
-            String errorMessage = "given maxVideoBitrate is not greater than the minVideoBitrate";
-            sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
-        }
-        trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
-    }
-
-    @Override
     public void overrideMediaVideoCodec(PKVideoCodec codec) {
         if (trackSelectionHelper == null) {
             log.w("Attempt to invoke 'overrideMediaVideoCodec()' on null instance of the TracksSelectionHelper");
@@ -1043,9 +1027,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 if (preferredVideoCodec != null && isABREnabled) {
                     overrideMediaVideoCodecWithABR(playerSettings.getPreferredVideoCodec(), playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
                 } else if(isABREnabled) {
-                    overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+                    overrideMediaVideoCodecWithABR(PKVideoCodec.HEVC, playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
                 } else if(preferredVideoCodec != null) {
                     overrideMediaVideoCodec(playerSettings.getPreferredVideoCodec());
+                } else {
+                    overrideMediaVideoCodec(PKVideoCodec.HEVC); // if HEVC Exists means it is supported and we preffer it by default.
                 }
 
                 //when the track info is ready, cache it in ExoPlayerWrapper. And send event that tracks are available.

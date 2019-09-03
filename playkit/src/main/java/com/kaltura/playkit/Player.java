@@ -217,7 +217,7 @@ public interface Player {
          * @param videoCodec Use {@link PKVideoCodec}
          */
 
-        Settings setPreferredVideoCodecPlayback(PKVideoCodec videoCodec);
+        Settings setPreferredVideoCodec(PKVideoCodec videoCodec);
     }
 
     /**
