@@ -140,22 +140,6 @@ public interface PlayerEngine {
     void overrideMediaVideoCodecWithABR(PKVideoCodec codec, long minVideoBitrate, long maxVideoBitrate);
 
     /**
-     * Override given codec for video tracks
-     *
-     * @param codec video codec.
-     */
-    void overrideMediaVideoCodec(PKVideoCodec codec);
-
-    /**
-     * Override given codec for video tracks with ABR
-     *
-     * @param codec video codec
-     * @param minVideoBitrate - minVideoBitrate.
-     * @param maxVideoBitrate - maxVideoBitrate.
-     */
-    void overrideMediaVideoCodecWithABR(PKVideoCodec codec, long minVideoBitrate, long maxVideoBitrate);
-
-    /**
      * Seek player to the specified position.
      *
      * @param position - desired position.
