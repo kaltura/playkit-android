@@ -547,7 +547,7 @@
          }
          boolean isValidABRRange = true;
 
-         if (videoTracks != null) {
+         if (videoTracks != null && !videoTracks.isEmpty()) {
 
              Collections.sort(videoTracks);
              if (videoTracks.size() >= 2) {
