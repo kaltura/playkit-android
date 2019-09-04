@@ -487,10 +487,6 @@ class TrackSelectionHelper {
             return;
         }
 
-        if (uniqueIds.isEmpty()) {
-            return;
-        }
-
         int[] uniqueTrackId = validateUniqueId(uniqueIds.get(0));
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
@@ -518,11 +514,7 @@ class TrackSelectionHelper {
         if (mappedTrackInfo == null || uniqueIds.isEmpty()) {
             return;
         }
-
-        if (uniqueIds.isEmpty()) {
-            return;
-        }
-
+        
         int[] uniqueTrackId = validateUniqueId(uniqueIds.get(0));
         int rendererIndex = uniqueTrackId[RENDERER_INDEX];
 
