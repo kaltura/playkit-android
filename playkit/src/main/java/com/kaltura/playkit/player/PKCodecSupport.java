@@ -16,7 +16,7 @@ public class PKCodecSupport {
     private static final PKLog log = PKLog.get("PKCodecSupport");
     private static HashMap<TrackType, HashMap<String, Boolean>> cache = new HashMap<>();
 
-    public enum TrackType {
+    enum TrackType {
         UNKNOWN, VIDEO, AUDIO, TEXT
     }
 
@@ -41,7 +41,7 @@ public class PKCodecSupport {
         return false;
     }
 
-    public static boolean isCodecSupported(@NonNull String codec, @NonNull TrackType type) {
+    private static boolean isCodecSupported(@NonNull String codec, @NonNull TrackType type) {
         if (type == TrackType.UNKNOWN) {
             return false;
         }
