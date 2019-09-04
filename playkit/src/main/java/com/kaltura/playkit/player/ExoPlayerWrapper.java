@@ -841,23 +841,23 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void overrideMediaVideoCodec(PKVideoCodec codec) {
+    public void overrideMediaVideoCodec() {
         if (trackSelectionHelper == null) {
             log.w("Attempt to invoke 'overrideMediaVideoCodec()' on null instance of the TracksSelectionHelper");
             return;
         }
 
-        trackSelectionHelper.overrideMediaVideoCodec(codec);
+        trackSelectionHelper.overrideMediaVideoCodec();
     }
 
     @Override
-    public void overrideMediaVideoCodecWithABR(PKVideoCodec codec, long minVideoBitrate, long maxVideoBitrate) {
+    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
         if (trackSelectionHelper == null) {
             log.w("Attempt to invoke 'overrideMediaVideoCodec()' on null instance of the TracksSelectionHelper");
             return;
         }
 
-        trackSelectionHelper.overrideMediaVideoCodecWithABR(codec, minVideoBitrate, maxVideoBitrate);
+        trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
     }
 
     private void sendTrackSelectionError(String uniqueId, IllegalArgumentException invalidUniqueIdException) {
@@ -1021,17 +1021,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return new TrackSelectionHelper.TracksInfoListener() {
             @Override
             public void onTracksInfoReady(PKTracks tracksReady) {
-                PKVideoCodec preferredVideoCodec = playerSettings.getPreferredVideoCodec();
                 boolean isABREnabled = playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE;
 
-                if (preferredVideoCodec != null && isABREnabled) {
-                    overrideMediaVideoCodecWithABR(playerSettings.getPreferredVideoCodec(), playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
-                } else if(isABREnabled) {
-                    overrideMediaVideoCodecWithABR(PKVideoCodec.HEVC, playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
-                } else if(preferredVideoCodec != null) {
-                    overrideMediaVideoCodec(playerSettings.getPreferredVideoCodec());
+                if(isABREnabled) {
+                    overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
                 } else {
-                    overrideMediaVideoCodec(PKVideoCodec.HEVC); // if HEVC Exists means it is supported and we preffer it by default.
+                    overrideMediaVideoCodec();
                 }
 
                 //when the track info is ready, cache it in ExoPlayerWrapper. And send event that tracks are available.

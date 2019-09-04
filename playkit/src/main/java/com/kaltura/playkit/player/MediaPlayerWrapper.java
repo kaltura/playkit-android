@@ -292,12 +292,12 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
-    public void overrideMediaVideoCodec(PKVideoCodec codec) {
+    public void overrideMediaVideoCodec() {
         // Do Nothing
     }
 
     @Override
-    public void overrideMediaVideoCodecWithABR(PKVideoCodec codec, long minVideoBitrate, long maxVideoBitrate) {
+    public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
         // Do Nothing
     }
 

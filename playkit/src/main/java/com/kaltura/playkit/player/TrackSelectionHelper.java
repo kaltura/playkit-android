@@ -471,17 +471,10 @@
          overrideTrack(rendererIndex, override, parametersBuilder);
      }
 
-     protected void overrideMediaVideoCodec(PKVideoCodec codec) {
+     protected void overrideMediaVideoCodec() {
 
-         if (codec == null) {
-             log.w("overrideMediaVideoCodec codec is null");
-             return;
-         }
+         List<String> uniqueIds = getVideoTracksUniqueIds();
 
-         List<String> uniqueIds = getCodecUniqueIds(codec);
-         if (uniqueIds.isEmpty() && PKVideoCodec.HEVC.equals(codec)) {
-             uniqueIds = getCodecUniqueIds(PKVideoCodec.AVC);
-         }
          mappedTrackInfo = selector.getCurrentMappedTrackInfo();
          if (mappedTrackInfo == null || uniqueIds.isEmpty()) {
              return;
@@ -499,17 +492,10 @@
          overrideTrack(rendererIndex, override, parametersBuilder);
      }
 
-     protected void overrideMediaVideoCodecWithABR(PKVideoCodec codec, long minVideoBitrate, long maxVideoBitrate) {
+     protected void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
 
-         if (codec == null) {
-             log.w("overrideMediaVideoCodecWithABR codec is null");
-             return;
-         }
+         List<String> uniqueIds = getCodecUniqueIdsWithABR(minVideoBitrate, maxVideoBitrate);
 
-         List<String> uniqueIds = getCodecUniqueIdsWithABR(codec, minVideoBitrate, maxVideoBitrate);
-         if (uniqueIds.isEmpty() && PKVideoCodec.HEVC.equals(codec)) {
-             uniqueIds = getCodecUniqueIds(PKVideoCodec.AVC);
-         }
          mappedTrackInfo = selector.getCurrentMappedTrackInfo();
          if (mappedTrackInfo == null || uniqueIds.isEmpty()) {
              return;
@@ -527,24 +513,20 @@
          overrideTrack(rendererIndex, override, parametersBuilder);
      }
 
-     private List<String> getCodecUniqueIds(PKVideoCodec codec) {
+     private List<String> getVideoTracksUniqueIds() {
          List<String> uniqueIds = new ArrayList<>();
          if (videoTracks != null) {
              Collections.sort(videoTracks);
              for (VideoTrack currentVideoTrack : videoTracks) {
-                 if (currentVideoTrack.getCodec() != null && currentVideoTrack.getCodec().equals(codec)) {
-                     uniqueIds.add(currentVideoTrack.getUniqueId());
-                 }
+                 uniqueIds.add(currentVideoTrack.getUniqueId());
              }
          }
          return uniqueIds;
      }
 
-     private List<String> getCodecUniqueIdsWithABR(PKVideoCodec codec, long minVideoBitrate, long maxVideoBitrate) {
+     private List<String> getCodecUniqueIdsWithABR(long minVideoBitrate, long maxVideoBitrate) {
          List<String> uniqueIds = new ArrayList<>();
-         if (!videoTracksCodecsMap.containsKey(codec)) {
-             codec = PKVideoCodec.AVC;
-         }
+
          boolean isValidABRRange = true;
 
          if (videoTracks != null && !videoTracks.isEmpty()) {
@@ -566,11 +548,10 @@
              Iterator<VideoTrack> videoTrackIterator = videoTracks.iterator();
              while (videoTrackIterator.hasNext()) {
                  VideoTrack currentVideoTrack = videoTrackIterator.next();
-                 if (currentVideoTrack.getCodec().equals(codec) &&
-                         (currentVideoTrack.isAdaptive() || (currentVideoTrack.getBitrate() >= minVideoBitrate && currentVideoTrack.getBitrate() <= maxVideoBitrate))) {
+                 if ((currentVideoTrack.getBitrate() >= minVideoBitrate && currentVideoTrack.getBitrate() <= maxVideoBitrate)) {
                      uniqueIds.add(currentVideoTrack.getUniqueId());
                  } else {
-                     if (currentVideoTrack.getCodec().equals(codec) && !isValidABRRange) {
+                     if (currentVideoTrack.isAdaptive() || !isValidABRRange) {
                          uniqueIds.add(currentVideoTrack.getUniqueId());
                      } else {
                          videoTrackIterator.remove();
