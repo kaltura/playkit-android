@@ -129,16 +129,4 @@ public class PKMediaSource implements Parcelable {
         result = 31 * result + url.hashCode();
         return result;
     }
-
-//    public static class Cached extends PKMediaSource {
-//        private MediaSource exoMediaSource;
-//
-//        public Cached(MediaSource exoMediaSource) {
-//            this.exoMediaSource = exoMediaSource;
-//        }
-//
-//        public MediaSource getExoMediaSource() {
-//            return exoMediaSource;
-//        }
-//    }
 }
