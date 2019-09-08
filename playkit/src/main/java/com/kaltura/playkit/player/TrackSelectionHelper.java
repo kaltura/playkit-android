@@ -23,6 +23,7 @@
  import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
  import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
  import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
+ import com.kaltura.playkit.PKAudioCodec;
  import com.kaltura.playkit.PKVideoCodec;
  import com.kaltura.playkit.PKError;
  import com.kaltura.playkit.PKLog;
@@ -198,10 +199,10 @@
                              case TRACK_TYPE_AUDIO:
                                  if (format.language == null && format.codecs == null) {
                                      if (mpgaAudioFormatEnabled && format.id != null && format.id.matches("\\d+/\\d+")) {
-                                         audioTracks.add(new AudioTrack(uniqueId, format.id, format.label, format.bitrate, format.channelCount, format.selectionFlags, false));
+                                         audioTracks.add(new AudioTrack(uniqueId, format.id, format.label, format.bitrate, format.channelCount, format.selectionFlags, false, PKAudioCodec.MP4A));
                                      }
                                  } else {
-                                     audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), format.label, format.bitrate, format.channelCount, format.selectionFlags, false));
+                                     audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), format.label, format.bitrate, format.channelCount, format.selectionFlags, false, getAudioCodec(format)));
                                  }
                                  break;
                              case TRACK_TYPE_TEXT:
@@ -225,10 +226,10 @@
          maybeAddDisabledTextTrack();
          videoTracks = filterVideoTracks();
          //Leave only adaptive audio tracks for user selection.
-         ArrayList<AudioTrack> filteredAudioTracks = filterAdaptiveAudioTracks();
+         List<AudioTrack> filteredAudioTracks = filterAdaptiveAudioTracks();
 
          int defaultVideoTrackIndex = getDefaultTrackIndex(videoTracks, lastSelectedTrackIds[TRACK_TYPE_VIDEO]);
-         int defaultAudioTrackIndex = getDefaultTrackIndex(audioTracks, lastSelectedTrackIds[TRACK_TYPE_AUDIO]);
+         int defaultAudioTrackIndex = getDefaultTrackIndex(filteredAudioTracks, lastSelectedTrackIds[TRACK_TYPE_AUDIO]);
          int defaultTextTrackIndex = getDefaultTrackIndex(textTracks, lastSelectedTrackIds[TRACK_TYPE_TEXT]);
 
          return new PKTracks(videoTracks, filteredAudioTracks, textTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex);
@@ -279,8 +280,11 @@
       * PKTracks will expose only adaptive option
       * and hide all the bitrate variants.
       */
-     private ArrayList<AudioTrack> filterAdaptiveAudioTracks() {
-         ArrayList<AudioTrack> filteredAudioTracks = new ArrayList<>();
+     private List<AudioTrack> filterAdaptiveAudioTracks() {
+         List<AudioTrack> filteredAudioTracks = new ArrayList<>();
+         if (isSingleLanguageInAudioTracks()) {
+             return getAudioTracksWithCodes();
+         }
 
          AudioTrack audioTrack;
          int[] parsedUniqueId;
@@ -288,6 +292,9 @@
 
          for (int i = 0; i < audioTracks.size(); i++) {
              audioTrack = audioTracks.get(i);
+             if ("und".equals(audioTrack.getLabel()) || "```".equals(audioTrack.getLanguage())) {
+                 continue;
+             }
              parsedUniqueId = parseUniqueId(audioTrack.getUniqueId());
 
              if (parsedUniqueId[TRACK_INDEX] == TRACK_ADAPTIVE) {
@@ -300,6 +307,61 @@
          }
 
          return filteredAudioTracks;
+     }
+
+     private boolean isSingleLanguageInAudioTracks() {
+         Map<String, Integer> langLabels = new HashMap<>();
+         for (AudioTrack audioTrack : audioTracks) {
+             String label = audioTrack.getLabel() == null ? "default" : audioTrack.getLabel();
+             if (!langLabels.containsKey(label)) {
+                 langLabels.put(label, 1);
+             } else {
+                 langLabels.put(label, langLabels.get(label) + 1);
+             }
+         }
+         if (langLabels.keySet().size() <= 1) {
+             return true;
+         } else {
+             return false;
+         }
+     }
+
+     private List<AudioTrack> getAudioTracksWithCodes() {
+
+         Map<PKAudioCodec, List<AudioTrack>> codesMap = new HashMap<>();
+         for (AudioTrack audioTrack : audioTracks) {
+             if ("und".equals(audioTrack.getLabel()) || "```".equals(audioTrack.getLanguage())) {
+                 continue;
+             }
+
+             if (codesMap.containsKey(audioTrack.getAudioCodec())) {
+                 codesMap.get(audioTrack.getAudioCodec()).add(audioTrack);
+             } else {
+                 List<AudioTrack> audioTracks = new ArrayList<>();
+                 audioTracks.add(audioTrack);
+                 codesMap.put(audioTrack.getAudioCodec(), audioTracks);
+             }
+         }
+         return mergeCodecsMap(codesMap);
+     }
+
+     private List<AudioTrack> mergeCodecsMap(Map<PKAudioCodec, List<AudioTrack>> codesMap) {
+         List<AudioTrack> audioTracksWithCodes = new ArrayList<>();
+         if (codesMap.keySet().size() == 1) {
+             for (Map.Entry<PKAudioCodec,List<AudioTrack>> audioTrackEntry : codesMap.entrySet()) {
+                 audioTracksWithCodes.add(audioTrackEntry.getValue().get(0));
+             }
+             return audioTracksWithCodes;
+         }
+
+         for (Map.Entry<PKAudioCodec,List<AudioTrack>> audioTrackEntry : codesMap.entrySet()) {
+             if (audioTrackEntry.getValue().size() == 2) {
+                 audioTracksWithCodes.add(audioTrackEntry.getValue().get(0));
+             } else {
+                 audioTracksWithCodes.addAll(audioTrackEntry.getValue());
+             }
+         }
+         return audioTracksWithCodes;
      }
 
      /**
@@ -390,7 +452,7 @@
 
                      break;
                  case TRACK_TYPE_AUDIO:
-                     audioTracks.add(new AudioTrack(uniqueId, format.language, format.label, 0, format.channelCount, format.selectionFlags, true));
+                     audioTracks.add(new AudioTrack(uniqueId, format.language, format.label, 0, format.channelCount, format.selectionFlags, true, getAudioCodec(format)));
                      break;
                  case TRACK_TYPE_TEXT:
                      textTracks.add(new TextTrack(uniqueId, format.language, format.label, format.selectionFlags));
@@ -709,7 +771,10 @@
                              TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(TRACK_TYPE_AUDIO).get(audioGroupIndex);
                              if (trackGroup != null) {
                                  for (int ind = 0 ; ind < trackGroup.length ; ind++) {
-                                     adaptiveTrackIndexesList.add(ind);
+                                     if (audioTrack.getAudioCodec().equals(getAudioCodec(trackGroup.getFormat(ind)))) {
+                                         adaptiveTrackIndexesList.add(ind);
+                                         break;
+                                     }
                                  }
                              }
                          }
@@ -1198,6 +1263,20 @@
          } else {
              return PKVideoCodec.AVC;
          }
+     }
+
+     private PKAudioCodec getAudioCodec(Format format) {
+         String codec = format.codecs;
+         if (codec != null) {
+             if (codec.startsWith("mp4a")) {
+                 return PKAudioCodec.MP4A;
+             } else if (codec.startsWith("ac")) {
+                 return PKAudioCodec.AC3;
+             } else if (codec.startsWith("ec")) {
+                 return PKAudioCodec.EC3;
+             }
+         }
+         return PKAudioCodec.MP4A;
      }
 
      private boolean isValidPreferredAudioConfig() {
