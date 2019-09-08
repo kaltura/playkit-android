@@ -14,7 +14,6 @@ package com.kaltura.playkit;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import com.kaltura.android.exoplayer2.source.MediaSource;
 
 import java.util.Collections;
 import java.util.List;
