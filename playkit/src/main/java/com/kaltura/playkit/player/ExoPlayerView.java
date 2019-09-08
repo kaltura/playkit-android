@@ -19,6 +19,8 @@ import android.graphics.Matrix;
 import android.graphics.RectF;
 
 import androidx.annotation.NonNull;
+
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.SurfaceView;
@@ -136,7 +138,7 @@ class ExoPlayerView extends BaseExoplayerView {
      *
      * @param isSurfaceSecured - should allow secure rendering of the surface
      */
-    @TargetApi(17)
+
     private void addVideoSurface(boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews) {
         resetViews();
         createVideoSurface(useTextureView);
@@ -150,7 +152,9 @@ class ExoPlayerView extends BaseExoplayerView {
             if (videoSurface instanceof TextureView) {
                 newVideoComponent.setVideoTextureView((TextureView) videoSurface);
             } else {
-                ((SurfaceView) videoSurface).setSecure(isSurfaceSecured);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                    ((SurfaceView) videoSurface).setSecure(isSurfaceSecured);
+                }
                 newVideoComponent.setVideoSurfaceView((SurfaceView) videoSurface);
             }
             //Set listeners
