@@ -292,7 +292,7 @@
 
          for (int i = 0; i < audioTracks.size(); i++) {
              audioTrack = audioTracks.get(i);
-             if ("und".equals(audioTrack.getLabel()) || "```".equals(audioTrack.getLanguage())) {
+             if (audioTrack.getLanguage() == null && ("und".equals(audioTrack.getLanguage()) || "```".equals(audioTrack.getLanguage()))) {
                  continue;
              }
              parsedUniqueId = parseUniqueId(audioTrack.getUniqueId());
@@ -312,7 +312,7 @@
      private boolean isSingleLanguageInAudioTracks() {
          Map<String, Integer> langLabels = new HashMap<>();
          for (AudioTrack audioTrack : audioTracks) {
-             String label = audioTrack.getLabel() == null ? "default" : audioTrack.getLabel();
+             String label = (isDefaultStreamLang(audioTrack)) ? "default" : audioTrack.getLabel();
              if (!langLabels.containsKey(label)) {
                  langLabels.put(label, 1);
              } else {
@@ -330,7 +330,7 @@
 
          Map<PKAudioCodec, List<AudioTrack>> codesMap = new HashMap<>();
          for (AudioTrack audioTrack : audioTracks) {
-             if ("und".equals(audioTrack.getLabel()) || "```".equals(audioTrack.getLanguage())) {
+             if (isDefaultStreamLang(audioTrack)) {
                  continue;
              }
 
@@ -343,6 +343,11 @@
              }
          }
          return mergeCodecsMap(codesMap);
+     }
+
+     private boolean isDefaultStreamLang(AudioTrack audioTrack) {
+         return (audioTrack.getLabel() == null &&  audioTrack.getLanguage() == null) ||
+                (audioTrack.getLabel() == null && ("und".equals(audioTrack.getLanguage()) || "```".equals(audioTrack.getLanguage())));
      }
 
      private List<AudioTrack> mergeCodecsMap(Map<PKAudioCodec, List<AudioTrack>> codesMap) {
