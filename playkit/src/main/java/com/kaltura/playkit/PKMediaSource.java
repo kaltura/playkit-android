@@ -91,7 +91,7 @@ public class PKMediaSource implements Parcelable {
         if (drmData != null) {
             dest.writeTypedList(drmData);
         } else {
-            dest.writeTypedList(Collections.EMPTY_LIST);
+            dest.writeTypedList(Collections.emptyList());
         }
     }
 
