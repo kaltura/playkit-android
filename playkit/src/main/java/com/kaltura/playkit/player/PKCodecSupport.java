@@ -1,5 +1,6 @@
 package com.kaltura.playkit.player;
 
+import android.annotation.TargetApi;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.os.Build;
@@ -8,6 +9,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.util.MimeTypes;
@@ -68,7 +70,7 @@ public class PKCodecSupport {
 
             final boolean isHardware;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                isHardware = codecInfo.isHardwareAccelerated();
+                isHardware = isHardwareCodecV29(codecInfo);
             } else {
                 isHardware = !name.startsWith("OMX.google.");
             }
@@ -77,6 +79,12 @@ public class PKCodecSupport {
             final Set<String> set = isHardware ? hardware : software;
             set.addAll(supportedCodecs);
         }
+    }
+
+    @TargetApi(Build.VERSION_CODES.Q)
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private static boolean isHardwareCodecV29(MediaCodecInfo codecInfo) {
+        return codecInfo.isHardwareAccelerated();
     }
 
     public static boolean hasDecoder(String codec, boolean isMimeType, boolean allowSoftware) {
