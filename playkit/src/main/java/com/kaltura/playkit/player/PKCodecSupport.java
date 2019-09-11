@@ -1,73 +1,106 @@
 package com.kaltura.playkit.player;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
+import android.os.Build;
+import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.util.MimeTypes;
 import com.kaltura.playkit.PKLog;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class PKCodecSupport {
 
     private static final PKLog log = PKLog.get("PKCodecSupport");
-    private static HashMap<TrackType, HashMap<String, Boolean>> cache = new HashMap<>();
 
-    enum TrackType {
-        UNKNOWN, VIDEO, AUDIO, TEXT
-    }
+    private static final Set<String> softwareCodecs, hardwareCodecs;
+
+    // This is not a bullet-proof way to detect emulators, but it's good enough for this purpose.
+    private static boolean deviceIsEmulator = Build.PRODUCT.equals("sdk") || Build.PRODUCT.startsWith("sdk_") || Build.PRODUCT.endsWith("_sdk");
+
 
     static {
-        cache.put(TrackType.VIDEO, new HashMap<>());
-        cache.put(TrackType.AUDIO, new HashMap<>());
+        Set<String> hardware = new HashSet<>();
+        Set<String> software = new HashSet<>();
+
+        populateCodecSupport(hardware, software);
+
+        softwareCodecs = Collections.unmodifiableSet(software);
+        hardwareCodecs = Collections.unmodifiableSet(hardware);
     }
 
-    private static boolean isCodecSupportedInternal(String codec, TrackType type) {
-        String mimeType = (type == TrackType.AUDIO) ? MimeTypes.getAudioMediaMimeType(codec) :
-                MimeTypes.getVideoMediaMimeType(codec);
+    private static void populateCodecSupport(Set<String> hardware, Set<String> software) {
 
-        for (int i = 0, codecCount = MediaCodecList.getCodecCount(); i < codecCount; i++) {
-            final MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(i);
-            for (String supportedType : codecInfo.getSupportedTypes()) {
-                if (supportedType.equalsIgnoreCase(mimeType)) {
-                    // TODO: also verify the attributes
-                    return true;
+        ArrayList<MediaCodecInfo> decoders = new ArrayList<>();
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            MediaCodecList mediaCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS);
+            MediaCodecInfo[] codecInfos = mediaCodecList.getCodecInfos();
+
+            for (MediaCodecInfo codecInfo : codecInfos) {
+                if (!codecInfo.isEncoder()) {
+                    decoders.add(codecInfo);
+                }
+            }
+        } else {
+            for (int i = 0, n = MediaCodecList.getCodecCount(); i < n; i++) {
+                final MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(i);
+                if (!codecInfo.isEncoder()) {
+                    decoders.add(codecInfo);
                 }
             }
         }
-        return false;
-    }
 
-    private static boolean isCodecSupported(@NonNull String codec, @NonNull TrackType type) {
-        if (type == TrackType.UNKNOWN) {
-            return false;
-        }
-        final HashMap<String, Boolean> typeCache = cache.get(type);
-        if (typeCache != null && typeCache.containsKey(codec)) {
-            final Boolean cachedValue = typeCache.get(codec);
-            if (cachedValue != null) {
-                return cachedValue;
+        for (MediaCodecInfo codecInfo : decoders) {
+            final String name = codecInfo.getName();
+
+            final boolean isHardware;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                isHardware = isHardwareCodecV29(codecInfo);
+            } else {
+                isHardware = !name.startsWith("OMX.google.");
             }
-        }
 
-        final boolean sup = isCodecSupportedInternal(codec, type);
-        typeCache.put(codec, sup);
-        return sup;
+            final List<String> supportedCodecs = Arrays.asList(codecInfo.getSupportedTypes());
+            final Set<String> set = isHardware ? hardware : software;
+            set.addAll(supportedCodecs);
+        }
     }
 
-    public static boolean isFormatSupported(@NonNull Format format, @NonNull TrackType type) {
+    @TargetApi(Build.VERSION_CODES.Q)
+    @RequiresApi(Build.VERSION_CODES.Q)
+    @SuppressLint("NewApi")
+    private static boolean isHardwareCodecV29(MediaCodecInfo codecInfo) {
+        return codecInfo.isHardwareAccelerated();
+    }
 
-        if (type == TrackType.TEXT) {
-            return true;    // always supported
+    public static boolean hasDecoder(String codec, boolean isMimeType, boolean allowSoftware) {
+
+        if (deviceIsEmulator) {
+            // Emulators have no hardware codecs, but we still need to play.
+            allowSoftware = true;
         }
 
-        if (format.codecs == null) {
-            log.w("isFormatSupported: codecs==null, assuming supported");
+        final String mimeType = isMimeType ? codec : MimeTypes.getMediaMimeType(codec);
+        if (hardwareCodecs.contains(mimeType)) {
             return true;
         }
-        return isCodecSupported(format.codecs, type);
+
+        return allowSoftware && softwareCodecs.contains(mimeType);
     }
 }

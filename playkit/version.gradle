@@ -16,11 +16,11 @@ try {
     publish {
         // If project name is "profiler", publish as "playkit-profiler"
         artifactId = project.name == 'playkit' ? 'playkit' : 'playkit-' + project.name
-        description = 'PlayKit: Kaltura Player SDK'
+        desc = 'PlayKit: Kaltura Player SDK'
         repoName = 'android'
         userOrg = 'kaltura'
         groupId = 'com.kaltura.playkit'
-        version = playkitVersion
+        publishVersion = playkitVersion
         autoPublish = true
     }
 } catch (UnknownPluginException ignored) {
