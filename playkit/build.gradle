@@ -9,7 +9,7 @@ android {
     }
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionName playkitVersion  // defined in version.gradle
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

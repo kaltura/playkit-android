@@ -1,5 +1,6 @@
 package com.kaltura.playkit.player;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
@@ -83,6 +84,7 @@ public class PKCodecSupport {
 
     @TargetApi(Build.VERSION_CODES.Q)
     @RequiresApi(Build.VERSION_CODES.Q)
+    @SuppressLint("NewApi")
     private static boolean isHardwareCodecV29(MediaCodecInfo codecInfo) {
         return codecInfo.isHardwareAccelerated();
     }
