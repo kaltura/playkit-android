@@ -1,7 +1,8 @@
 package com.kaltura.playkit;
 
 public enum PKAudioCodec {
-    MP4A,
+    AAC,
     AC3,
-    EC3;
+    E_AC3,
+    OPUS
 }

@@ -199,7 +199,7 @@
                              case TRACK_TYPE_AUDIO:
                                  if (format.language == null && format.codecs == null) {
                                      if (mpgaAudioFormatEnabled && format.id != null && format.id.matches("\\d+/\\d+")) {
-                                         audioTracks.add(new AudioTrack(uniqueId, format.id, format.label, format.bitrate, format.channelCount, format.selectionFlags, false, PKAudioCodec.MP4A));
+                                         audioTracks.add(new AudioTrack(uniqueId, format.id, format.label, format.bitrate, format.channelCount, format.selectionFlags, false, PKAudioCodec.AAC));
                                      }
                                  } else {
                                      audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), format.label, format.bitrate, format.channelCount, format.selectionFlags, false, getAudioCodec(format)));
@@ -1274,14 +1274,16 @@
          String codec = format.codecs;
          if (codec != null) {
              if (codec.startsWith("mp4a")) {
-                 return PKAudioCodec.MP4A;
-             } else if (codec.startsWith("ac")) {
+                 return PKAudioCodec.AAC;
+             } else if (codec.startsWith("ac-3") || codec.startsWith("dac3")) {
                  return PKAudioCodec.AC3;
-             } else if (codec.startsWith("ec")) {
-                 return PKAudioCodec.EC3;
+             } else if (codec.startsWith("ec-3") || codec.startsWith("dec3")) {
+                 return PKAudioCodec.E_AC3;
+             } else if (codec.startsWith("opus")) {
+                 return PKAudioCodec.OPUS;
              }
          }
-         return PKAudioCodec.MP4A;
+         return PKAudioCodec.AAC;
      }
 
      private boolean isValidPreferredAudioConfig() {
