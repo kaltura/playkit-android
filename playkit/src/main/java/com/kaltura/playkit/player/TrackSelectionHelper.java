@@ -11,6 +11,8 @@
 
  package com.kaltura.playkit.player;
 
+ import android.text.TextUtils;
+
  import androidx.annotation.NonNull;
  import androidx.annotation.Nullable;
 
@@ -114,6 +116,10 @@
          void onTracksOverrideABRError(PKError pkError);
      }
 
+     enum TrackType {
+         UNKNOWN, VIDEO, AUDIO, TEXT
+     }
+
      /**
       * @param selector             The track selector.
       * @param lastSelectedTrackIds - last selected track id`s.
@@ -161,7 +167,8 @@
          Format format;
          //run through the all renders.
          for (int rendererIndex = 0; rendererIndex < TRACK_RENDERERS_AMOUNT; rendererIndex++) {
-             PKCodecSupport.TrackType trackType = getTrackType(rendererIndex);
+
+             TrackType trackType = getTrackType(rendererIndex);
              //the trackGroupArray of the current renderer.
              trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
 
@@ -236,20 +243,20 @@
      }
 
      @NonNull
-     private PKCodecSupport.TrackType getTrackType(int rendererIndex) {
-         PKCodecSupport.TrackType trackType;
+     private TrackType getTrackType(int rendererIndex) {
+         TrackType trackType;
          switch (rendererIndex) {
              case TRACK_TYPE_VIDEO:
-                 trackType = PKCodecSupport.TrackType.VIDEO;
+                 trackType = TrackType.VIDEO;
                  break;
              case TRACK_TYPE_AUDIO:
-                 trackType = PKCodecSupport.TrackType.AUDIO;
+                 trackType = TrackType.AUDIO;
                  break;
              case TRACK_TYPE_TEXT:
-                 trackType = PKCodecSupport.TrackType.TEXT;
+                 trackType = TrackType.TEXT;
                  break;
              default:
-                 trackType = PKCodecSupport.TrackType.UNKNOWN;
+                 trackType = TrackType.UNKNOWN;
                  break;
          }
          return trackType;
@@ -1306,4 +1313,33 @@
          this.preferredTextLanguageConfig  = settings.getPreferredTextTrackConfig();
          this.preferredVideoCodecConfig = settings.getPreferredVideoCodec();
      }
+
+     public static boolean isFormatSupported(@NonNull Format format, @Nullable TrackType type) {
+
+         if (type == TrackType.TEXT) {
+             return true;    // always supported
+         }
+
+         if (format.codecs == null) {
+             log.w("isFormatSupported: codecs==null, assuming supported");
+             return true;
+         }
+
+         if (type == null) {
+             // type==null: HLS muxed track with a <video,audio> tuple
+             final String[] split = TextUtils.split(format.codecs, ",");
+             boolean result = true;
+             switch (split.length) {
+                 case 0: return false;
+                 case 2: result = PKCodecSupport.hasDecoder(split[1], false, true);
+                     // fallthrough
+                 case 1: result &= PKCodecSupport.hasDecoder(split[0], false, true);
+             }
+             return result;
+
+         } else {
+             return PKCodecSupport.hasDecoder(format.codecs, false, true);
+         }
+     }
+
  }

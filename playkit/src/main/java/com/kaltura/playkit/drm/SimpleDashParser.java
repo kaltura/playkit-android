@@ -48,7 +48,7 @@ import java.util.UUID;
  * Currently only reads the first Representation of the video AdaptationSet of the first Period.
  */
 
-class SimpleDashParser {
+public class SimpleDashParser {
 
     private static final PKLog log = PKLog.get("SimpleDashParser");
 
@@ -57,7 +57,8 @@ class SimpleDashParser {
     private DrmInitData drmInitData;
     boolean hasContentProtection;
 
-    SimpleDashParser parse(String localPath, String assetId) throws IOException {
+
+    public SimpleDashParser parse(String localPath) throws IOException {
 
         InputStream inputStream = new BufferedInputStream(new FileInputStream(localPath));
 
@@ -85,7 +86,7 @@ class SimpleDashParser {
             if (format != null) {
                 drmInitData = format.drmInitData;
             }
-            
+
             if (drmInitData != null && drmInitData.schemeDataCount > 0) {
                 hasContentProtection = true;
                 loadDrmInitData(representation);
@@ -94,6 +95,10 @@ class SimpleDashParser {
             }
         }
         return this;
+    }
+
+    public byte[] getWidevineInitData() {
+        return widevineInitData;
     }
 
     private void loadDrmInitData(Representation representation) throws IOException {
