@@ -354,7 +354,9 @@ class ExoPlayerView extends BaseExoplayerView {
 
 
             contentFrame.setResizeMode(resizeMode);
-            contentFrame.setAspectRatio(videoAspectRatio);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) { // FEM-2651
+                contentFrame.setAspectRatio(videoAspectRatio);
+            }
         }
 
         @Override
