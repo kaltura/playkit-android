@@ -20,6 +20,7 @@ import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
 
@@ -214,10 +215,10 @@ public interface Player {
 
         /**
          * Set Preferred codec for video track
-         * @param videoCodec Use {@link PKVideoCodec}
+         * @param videoCodecSettings Use {@link VideoCodecSettings}
          */
 
-        Settings setPreferredVideoCodec(PKVideoCodec videoCodec);
+        Settings setPreferredVideoCodecSettings(VideoCodecSettings videoCodecSettings);
     }
 
     /**

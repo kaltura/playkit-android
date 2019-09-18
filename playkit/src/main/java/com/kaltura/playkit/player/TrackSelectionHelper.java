@@ -88,7 +88,7 @@
 
      private PKTrackConfig preferredAudioLanguageConfig;
      private PKTrackConfig preferredTextLanguageConfig;
-     private PKVideoCodec preferredVideoCodecConfig;
+     private VideoCodecSettings videoCodecSettings;
 
      private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
 
@@ -195,11 +195,15 @@
                                      continue;
                                  }
                                  PKVideoCodec currentVideoTrackCodec = getVideoCodec(format);
+                                 if (PKVideoCodec.HEVC.equals(currentVideoTrackCodec) && !isCodecSupported(format, TrackType.VIDEO, videoCodecSettings.isSoftwareDecoderEnabled())) {
+                                    continue;
+                                 }
                                  VideoTrack currentVideoTrack = new VideoTrack(uniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false, currentVideoTrackCodec);
 
                                  if (!videoTracksCodecsMap.containsKey(currentVideoTrackCodec)) {
                                      videoTracksCodecsMap.put(currentVideoTrackCodec, new ArrayList<>());
                                  }
+
                                  videoTracksCodecsMap.get(currentVideoTrackCodec).add(currentVideoTrack);
 
                                  break;
@@ -270,9 +274,10 @@
      }
 
      private List<VideoTrack> filterVideoTracks() {
-         if (preferredVideoCodecConfig != null && videoTracksCodecsMap.containsKey(preferredVideoCodecConfig)) {
-             return videoTracksCodecsMap.get(preferredVideoCodecConfig);
+         if (videoTracksCodecsMap.containsKey(videoCodecSettings.getVideoCodec())) {
+             return videoTracksCodecsMap.get(videoCodecSettings.getVideoCodec());
          }
+
          if (videoTracksCodecsMap.containsKey(PKVideoCodec.HEVC)) {
              return videoTracksCodecsMap.get(PKVideoCodec.HEVC);
          } else if (videoTracksCodecsMap.containsKey(PKVideoCodec.AVC)) {
@@ -455,8 +460,11 @@
              switch (rendererIndex) {
                  case TRACK_TYPE_VIDEO:
                      PKVideoCodec currentVideoTrackCodec = getVideoCodec(format);
-                     VideoTrack adaptiveVideoTrack = new VideoTrack(uniqueId, 0, 0, 0, format.selectionFlags, true, currentVideoTrackCodec);
+                     if (PKVideoCodec.HEVC.equals(currentVideoTrackCodec) && !isCodecSupported(format, TrackType.VIDEO, videoCodecSettings.isSoftwareDecoderEnabled())) {
+                         return;
+                     }
 
+                     VideoTrack adaptiveVideoTrack = new VideoTrack(uniqueId, 0, 0, 0, format.selectionFlags, true, currentVideoTrackCodec);
                      if (!videoTracksCodecsMap.containsKey(currentVideoTrackCodec)) {
                          videoTracksCodecsMap.put(currentVideoTrackCodec, new ArrayList<>());
                      }
@@ -1311,10 +1319,10 @@
          this.cea608CaptionsEnabled  = settings.cea608CaptionsEnabled();
          this.preferredAudioLanguageConfig = settings.getPreferredAudioTrackConfig();
          this.preferredTextLanguageConfig  = settings.getPreferredTextTrackConfig();
-         this.preferredVideoCodecConfig = settings.getPreferredVideoCodec();
+         this.videoCodecSettings = settings.getPreferredVideoCodecSettings();
      }
 
-     public static boolean isFormatSupported(@NonNull Format format, @Nullable TrackType type) {
+     public static boolean isCodecSupported(@NonNull Format format, @Nullable TrackType type, boolean allowSoftware) {
 
          if (type == TrackType.TEXT) {
              return true;    // always supported
@@ -1331,14 +1339,14 @@
              boolean result = true;
              switch (split.length) {
                  case 0: return false;
-                 case 2: result = PKCodecSupport.hasDecoder(split[1], false, true);
+                 case 2: result = PKCodecSupport.hasDecoder(split[1], false, allowSoftware);
                      // fallthrough
-                 case 1: result &= PKCodecSupport.hasDecoder(split[0], false, true);
+                 case 1: result &= PKCodecSupport.hasDecoder(split[0], false, allowSoftware);
              }
              return result;
 
          } else {
-             return PKCodecSupport.hasDecoder(format.codecs, false, true);
+             return PKCodecSupport.hasDecoder(format.codecs, false, allowSoftware);
          }
      }
 

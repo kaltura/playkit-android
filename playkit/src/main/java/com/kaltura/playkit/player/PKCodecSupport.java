@@ -73,13 +73,27 @@ public class PKCodecSupport {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 isHardware = isHardwareCodecV29(codecInfo);
             } else {
-                isHardware = !name.startsWith("OMX.google.");
+                isHardware = !isSoftwareOnly(name);
             }
 
             final List<String> supportedCodecs = Arrays.asList(codecInfo.getSupportedTypes());
             final Set<String> set = isHardware ? hardware : software;
             set.addAll(supportedCodecs);
         }
+    }
+
+    private static boolean isSoftwareOnly(String codecName) {
+        String codecNameLowerCase = codecName.toLowerCase();
+        if (codecNameLowerCase.startsWith("arc.")) { // App Runtime for Chrome (ARC) codecs
+            return false;
+        }
+        return codecNameLowerCase.startsWith("omx.google.")
+                || codecNameLowerCase.startsWith("omx.ffmpeg.")
+                || (codecNameLowerCase.startsWith("omx.sec.") && codecNameLowerCase.contains(".sw."))
+                || codecNameLowerCase.equals("omx.qcom.video.decoder.hevcswvdec")
+                || codecNameLowerCase.startsWith("c2.android.")
+                || codecNameLowerCase.startsWith("c2.google.")
+                || (!codecNameLowerCase.startsWith("omx.") && !codecNameLowerCase.startsWith("c2."));
     }
 
     @TargetApi(Build.VERSION_CODES.Q)

@@ -31,7 +31,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
-    private PKVideoCodec preferredVideoCodec;
+    private VideoCodecSettings preferredVideoCodecSettings = new VideoCodecSettings();
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
@@ -135,8 +135,8 @@ public class PlayerSettings implements Player.Settings {
         return forceSinglePlayerEngine;
     }
 
-    public PKVideoCodec getPreferredVideoCodec() {
-        return preferredVideoCodec;
+    public VideoCodecSettings getPreferredVideoCodecSettings() {
+        return preferredVideoCodecSettings;
     }
 
     @Override
@@ -267,8 +267,8 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setPreferredVideoCodec(PKVideoCodec videoCodec) {
-        this.preferredVideoCodec = videoCodec;
+    public Player.Settings setPreferredVideoCodecSettings(VideoCodecSettings preferredVideoCodecSettings) {
+        this.preferredVideoCodecSettings = preferredVideoCodecSettings;
         return this;
     }
 }
