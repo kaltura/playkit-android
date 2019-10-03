@@ -27,6 +27,7 @@ import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.ExoPlayerFactory;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.kaltura.android.exoplayer2.Format;
+import com.kaltura.android.exoplayer2.LoadControl;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
@@ -79,10 +80,14 @@ import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
 
 public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
+    public interface LoadControlStrategy {
+        LoadControl getCustomLoadControl();
+        BandwidthMeter getCustomBandwidthMeter();
+    }
 
     private static final PKLog log = PKLog.get("ExoPlayerWrapper");
 
-    private DefaultBandwidthMeter bandwidthMeter;
+    private BandwidthMeter bandwidthMeter;
     @NonNull private PlayerSettings playerSettings;
     private EventListener eventListener;
     private StateChangedListener stateChangedListener;
@@ -142,19 +147,36 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         playerSettings = settings != null ? settings : new PlayerSettings();
         rootView = rootPlayerView;
-        DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context);
 
-        Long initialBitrateEstimate = playerSettings.getAbrSettings().getInitialBitrateEstimate();
+        LoadControlStrategy customLoadControlStrategy = getCustomLoadControlStrategy();
+        if (customLoadControlStrategy != null && customLoadControlStrategy.getCustomBandwidthMeter() != null) {
+            bandwidthMeter = customLoadControlStrategy.getCustomBandwidthMeter();
+        } else {
+            DefaultBandwidthMeter.Builder bandwidthMeterBuilder = new DefaultBandwidthMeter.Builder(context);
 
-        if (initialBitrateEstimate != null && initialBitrateEstimate > 0) {
-            bandwidthMeterBuilder.setInitialBitrateEstimate(initialBitrateEstimate);
+            Long initialBitrateEstimate = playerSettings.getAbrSettings().getInitialBitrateEstimate();
+
+            if (initialBitrateEstimate != null && initialBitrateEstimate > 0) {
+                bandwidthMeterBuilder.setInitialBitrateEstimate(initialBitrateEstimate);
+            }
+
+            bandwidthMeter = bandwidthMeterBuilder.build();
         }
-
-        bandwidthMeter = bandwidthMeterBuilder.build();
-        bandwidthMeter.addEventListener(mainHandler, this);
+        if (bandwidthMeter != null) {
+            bandwidthMeter.addEventListener(mainHandler, this);
+        }
 
         period = new Timeline.Period();
         this.exoPlayerView = exoPlayerView;
+    }
+
+    private LoadControlStrategy getCustomLoadControlStrategy() {
+        Object loadControlStrategyObj = playerSettings.getCustomLoadControlStrategy();
+        if (loadControlStrategyObj != null && loadControlStrategyObj instanceof LoadControlStrategy) {
+            return ((LoadControlStrategy) loadControlStrategyObj);
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -170,7 +192,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context, playerSettings.allowClearLead(), playerSettings.enableDecoderFallback(), playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
 
         player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
-        player.setForegroundMode(true); // Making sure the stop() call is not removing the decoders on change media.
 
         window = new Timeline.Window();
         setPlayerListeners();
@@ -181,17 +202,22 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @NonNull
-    private DefaultLoadControl getUpdatedLoadControl() {
-        final LoadControlBuffers loadControl = playerSettings.getLoadControlBuffers();
-        int backBufferDurationMs = loadControl.getBackBufferDurationMs();
-        boolean retainBackBufferFromKeyframe = loadControl.getRetainBackBufferFromKeyframe();
-        return new DefaultLoadControl.Builder().
-                setBufferDurationsMs(
-                        loadControl.getMinPlayerBufferMs(),
-                        loadControl.getMaxPlayerBufferMs(),
-                        loadControl.getMinBufferAfterInteractionMs(),
-                        loadControl.getMinBufferAfterReBufferMs()).
-                setBackBuffer(backBufferDurationMs, retainBackBufferFromKeyframe).createDefaultLoadControl();
+    private LoadControl getUpdatedLoadControl() {
+        LoadControlStrategy customLoadControlStrategy = getCustomLoadControlStrategy();
+        if (customLoadControlStrategy != null && customLoadControlStrategy.getCustomLoadControl() != null) {
+            return customLoadControlStrategy.getCustomLoadControl();
+        } else {
+            final LoadControlBuffers loadControl = playerSettings.getLoadControlBuffers();
+            int backBufferDurationMs = loadControl.getBackBufferDurationMs();
+            boolean retainBackBufferFromKeyframe = loadControl.getRetainBackBufferFromKeyframe();
+            return new DefaultLoadControl.Builder().
+                    setBufferDurationsMs(
+                            loadControl.getMinPlayerBufferMs(),
+                            loadControl.getMaxPlayerBufferMs(),
+                            loadControl.getMinBufferAfterInteractionMs(),
+                            loadControl.getMinBufferAfterReBufferMs()).
+                    setBackBuffer(backBufferDurationMs, retainBackBufferFromKeyframe).createDefaultLoadControl();
+        }
     }
 
     private void setPlayerListeners() {
@@ -212,6 +238,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory());
         DefaultTrackSelector.ParametersBuilder parametersBuilder = new DefaultTrackSelector.ParametersBuilder();
         parametersBuilder.setViewportSizeToPhysicalDisplaySize(context, true);
+        if (playerSettings.isTunneledAudioPlayback()) {
+            parametersBuilder.setTunnelingAudioSessionId(C.generateAudioSessionIdV21(context));
+        }
         trackSelector.setParameters(parametersBuilder.build());
 
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, lastSelectedTrackIds);
