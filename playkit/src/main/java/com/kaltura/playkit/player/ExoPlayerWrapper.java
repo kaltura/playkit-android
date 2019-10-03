@@ -170,7 +170,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context, playerSettings.allowClearLead(), playerSettings.enableDecoderFallback(), playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
 
         player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
-        player.setForegroundMode(true); // Making sure the stop() call is not removing the decoders on change media.
 
         window = new Timeline.Window();
         setPlayerListeners();
