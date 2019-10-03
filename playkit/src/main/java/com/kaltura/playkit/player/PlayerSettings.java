@@ -30,7 +30,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
-    private boolean isTunneledPlayback;
+    private boolean isTunneledAudioPlayback;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
@@ -134,8 +134,8 @@ public class PlayerSettings implements Player.Settings {
         return forceSinglePlayerEngine;
     }
 
-    public boolean isTunneledPlayback() {
-        return isTunneledPlayback;
+    public boolean isTunneledAudioPlayback() {
+        return isTunneledAudioPlayback;
     }
 
     @Override
@@ -266,8 +266,8 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setTunneledPlayback(boolean isTunneledPlayback) {
-        this.isTunneledPlayback = isTunneledPlayback;
+    public Player.Settings setTunneledAudioPlayback(boolean isTunneledAudioPlayback) {
+        this.isTunneledAudioPlayback = isTunneledAudioPlayback;
         return this;
     }
 }
