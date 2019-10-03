@@ -72,6 +72,7 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 
+import static com.kaltura.android.exoplayer2.Player.PLAYBACK_SUPPRESSION_REASON_NONE;
 import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
 import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
@@ -453,6 +454,17 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
+    public void onIsPlayingChanged(boolean isPlaying) {
+        if (isPlaying) {
+            sendDistinctEvent(PlayerEvent.Type.PLAYING);
+        } else {
+            if (player != null && player.getPlaybackSuppressionReason() == Player.PLAYBACK_SUPPRESSION_REASON_AUDIO_FOCUS_LOSS) {
+
+            }
+        }
+    }
+
+    @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         switch (playbackState) {
             case Player.STATE_IDLE:
@@ -479,10 +491,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
                 if (!previousState.equals(PlayerState.READY)) {
                     sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
-                }
-
-                if (playWhenReady) {
-                    sendDistinctEvent(PlayerEvent.Type.PLAYING);
                 }
                 break;
 
@@ -952,7 +960,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public boolean isPlaying() {
         log.v("isPlaying");
         if (assertPlayerIsNotNull("isPlaying()")) {
-            return player.getPlayWhenReady() && (currentState == PlayerState.READY || currentState == PlayerState.BUFFERING);
+            return player.getPlayWhenReady() && (currentState == PlayerState.READY || currentState == PlayerState.BUFFERING)
+                    && player.getPlaybackSuppressionReason() == PLAYBACK_SUPPRESSION_REASON_NONE;
         }
         return false;
     }
