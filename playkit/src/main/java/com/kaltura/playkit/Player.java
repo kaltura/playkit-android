@@ -217,8 +217,19 @@ public interface Player {
          * Set Preferred codec for video track
          * @param videoCodecSettings Use {@link VideoCodecSettings}
          */
-
         Settings setPreferredVideoCodecSettings(VideoCodecSettings videoCodecSettings);
+
+        /**
+         * Set custom load control strategy
+         * @param loadControlStrategy object implementing LoadControlStrategy interface
+         */
+        Settings setCustomLoadControlStrategy(Object loadControlStrategy);
+      
+        /**
+         * Set Tunneled Audio Playback
+         * @param isTunneledAudioPlayback audio tunnelling enabled
+         */
+        Settings setTunneledAudioPlayback(boolean isTunneledAudioPlayback);
     }
 
     /**

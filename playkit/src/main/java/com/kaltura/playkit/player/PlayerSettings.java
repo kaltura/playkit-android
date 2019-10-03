@@ -32,6 +32,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
     private VideoCodecSettings preferredVideoCodecSettings = new VideoCodecSettings();
+    private boolean isTunneledAudioPlayback;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
@@ -50,6 +51,8 @@ public class PlayerSettings implements Player.Settings {
 
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
+
+    private Object customLoadControlStrategy = null;
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
@@ -137,6 +140,14 @@ public class PlayerSettings implements Player.Settings {
 
     public VideoCodecSettings getPreferredVideoCodecSettings() {
         return preferredVideoCodecSettings;
+    }
+
+    public Object getCustomLoadControlStrategy() {
+        return customLoadControlStrategy;
+    }
+
+    public boolean isTunneledAudioPlayback() {
+        return isTunneledAudioPlayback;
     }
 
     @Override
@@ -269,6 +280,17 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setPreferredVideoCodecSettings(VideoCodecSettings preferredVideoCodecSettings) {
         this.preferredVideoCodecSettings = preferredVideoCodecSettings;
+        return this;
+    }
+
+    public Player.Settings setCustomLoadControlStrategy(Object customLoadControlStrategy) {
+        this.customLoadControlStrategy = customLoadControlStrategy;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setTunneledAudioPlayback(boolean isTunneledAudioPlayback) {
+        this.isTunneledAudioPlayback = isTunneledAudioPlayback;
         return this;
     }
 }
