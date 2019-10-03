@@ -211,6 +211,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory());
         DefaultTrackSelector.ParametersBuilder parametersBuilder = new DefaultTrackSelector.ParametersBuilder();
         parametersBuilder.setViewportSizeToPhysicalDisplaySize(context, true);
+        if (playerSettings.isTunneledPlayback()) {
+            parametersBuilder.setTunnelingAudioSessionId(C.generateAudioSessionIdV21(context));
+        }
         trackSelector.setParameters(parametersBuilder.build());
 
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, lastSelectedTrackIds);

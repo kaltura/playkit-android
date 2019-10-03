@@ -211,6 +211,12 @@ public interface Player {
          * @param vrSettings vr configuration
          */
         Settings setVRSettings(VRSettings vrSettings);
+
+        /**
+         * Set tunneled Audio Playback
+         * @param isTunneledPlayback isTunneledPlayback enabled
+         */
+        Settings setTunneledPlayback(boolean isTunneledPlayback);
     }
 
     /**
