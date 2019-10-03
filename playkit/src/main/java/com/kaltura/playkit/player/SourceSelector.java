@@ -15,29 +15,37 @@ package com.kaltura.playkit.player;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.playkit.LocalAssetsManager;
-import com.kaltura.playkit.PKDrmParams;
-import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PKMediaFormat;
-import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Noam Tamim @ Kaltura on 29/11/2016.
  */
 
-class SourceSelector {
+public class SourceSelector {
 
     private static final PKLog log = PKLog.get("SourceSelector");
     private final PKMediaEntry mediaEntry;
     private final PKMediaFormat preferredMediaFormat;
 
-    public SourceSelector(PKMediaEntry mediaEntry, PKMediaFormat preferredMdieaFormat) {
+    private String preferredSourceId;
+
+    @Nullable private PKMediaSource selectedSource;
+    @Nullable private PKDrmParams selectedDrmParams;
+
+    private static final List<PKMediaFormat> defaultFormatPriority = Collections.unmodifiableList(
+            Arrays.asList(PKMediaFormat.dash, PKMediaFormat.hls, PKMediaFormat.wvm, PKMediaFormat.mp4, PKMediaFormat.mp3));
+
+    public SourceSelector(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat) {
         this.mediaEntry = mediaEntry;
-        this.preferredMediaFormat = preferredMdieaFormat;
+        this.preferredMediaFormat = preferredMediaFormat;
+    }
+
+    // Should not normally be used.
+    public void setPreferredSourceId(String preferredSourceId) {
+        this.preferredSourceId = preferredSourceId;
+        this.selectedSource = null;
     }
 
     @Nullable
@@ -52,18 +60,43 @@ class SourceSelector {
         return null;
     }
 
-    @Nullable
-    PKMediaSource getPreferredSource() {
+
+    @Nullable public PKMediaSource getSelectedSource() {
+        selectSource();
+        return selectedSource;
+    }
+
+    @Nullable public PKDrmParams getSelectedDrmParams() {
+        selectSource();
+        return selectedDrmParams;
+    }
+
+    private void selectSource() {
+
+        if (selectedSource != null) {
+            return;
+        }
 
         // If PKMediaSource is local, there is no need to look for the preferred source,
         // because it is only one.
-        PKMediaSource localMediaSource = getLocalSource();
+        PKMediaSource localMediaSource = findLocalSource();
         if (localMediaSource != null) {
-            return localMediaSource;
+            selectedSource = localMediaSource;
+            return;
         }
 
-        // Default preference: DASH, HLS, WVM, MP4, MP3
+        // If preferredSourceId is set, first try to select that source
+        if (preferredSourceId != null) {
+            for (PKMediaSource source : mediaEntry.getSources()) {
+                if (preferredSourceId.equals(source.getId())) {
+                    if (selectIfSupported(source)) {
+                        return;
+                    }
+                }
+            }
+        }
 
+        // Otherwise, select the first playable source given the priority
         List<PKMediaFormat> formatsPriorityList = getFormatsPriorityList();
 
         for (PKMediaFormat format : formatsPriorityList) {
@@ -72,50 +105,60 @@ class SourceSelector {
                 continue;
             }
 
-            List<PKDrmParams> drmParams = source.getDrmData();
-            if (drmParams != null && !drmParams.isEmpty()) {
-                for (PKDrmParams params : drmParams) {
-                    if (params.isSchemeSupported()) {
-                        return source;
-                    }
-                }
-                // This source doesn't have supported params
-                continue;
+            if (selectIfSupported(source)) {
+                return;
             }
-            return source;
         }
-        return null;
+    }
+
+    private boolean selectIfSupported(PKMediaSource source) {
+        if (source.hasDrmParams()) {
+            List<PKDrmParams> drmParams = source.getDrmData();
+            for (PKDrmParams params : drmParams) {
+                if (params.isSchemeSupported()) {
+                    selectedSource = source;
+                    selectedDrmParams = params;
+                    return true;
+                }
+            }
+            // This source doesn't have supported params
+
+        } else {
+            selectedSource = source;
+            selectedDrmParams = null;   // clear
+            return true;
+        }
+        return false;
     }
 
     @NonNull
     private List<PKMediaFormat> getFormatsPriorityList() {
+
+        if (preferredMediaFormat == null || preferredMediaFormat == defaultFormatPriority.get(0)) {
+            return defaultFormatPriority;
+        }
+
         List<PKMediaFormat> formatsPriorityList = new ArrayList<>();
 
-        formatsPriorityList.add(PKMediaFormat.dash);
-        formatsPriorityList.add(PKMediaFormat.hls);
-        formatsPriorityList.add(PKMediaFormat.wvm);
-        formatsPriorityList.add(PKMediaFormat.mp4);
-        formatsPriorityList.add(PKMediaFormat.mp3);
-
-        if (preferredMediaFormat == PKMediaFormat.dash) {
-            return formatsPriorityList;
+        formatsPriorityList.add(preferredMediaFormat);
+        for (PKMediaFormat format : defaultFormatPriority) {
+            if (format != preferredMediaFormat) {
+                formatsPriorityList.add(format);
+            }
         }
 
-        int preferredMediaFormatIndex = formatsPriorityList.indexOf(preferredMediaFormat);
-        if (preferredMediaFormatIndex > 0) {
-            formatsPriorityList.remove(preferredMediaFormatIndex);
-            formatsPriorityList.add(0, preferredMediaFormat);
-        }
         return formatsPriorityList;
     }
 
-    public static PKMediaSource selectSource(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat) {
-        return new SourceSelector(mediaEntry, preferredMediaFormat).getPreferredSource();
+    static PKMediaSource selectSource(PKMediaEntry mediaEntry, PKMediaFormat preferredMediaFormat) {
+        final SourceSelector sourceSelector = new SourceSelector(mediaEntry, preferredMediaFormat);
+        return sourceSelector.getSelectedSource();
     }
 
-    private PKMediaSource getLocalSource() {
+    private PKMediaSource findLocalSource() {
         if (mediaEntry != null && mediaEntry.getSources() != null) {
             for (PKMediaSource source : mediaEntry.getSources()) {
+
                 if (source instanceof LocalAssetsManager.LocalMediaSource) {
                     return source;
                 }

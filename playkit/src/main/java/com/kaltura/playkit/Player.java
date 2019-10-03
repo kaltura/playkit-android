@@ -217,6 +217,12 @@ public interface Player {
          * @param loadControlStrategy object implementing LoadControlStrategy interface
          */
         Settings setCustomLoadControlStrategy(Object loadControlStrategy);
+      
+        /**
+         * Set Tunneled Audio Playback
+         * @param isTunneledAudioPlayback audio tunnelling enabled
+         */
+        Settings setTunneledAudioPlayback(boolean isTunneledAudioPlayback);
     }
 
     /**

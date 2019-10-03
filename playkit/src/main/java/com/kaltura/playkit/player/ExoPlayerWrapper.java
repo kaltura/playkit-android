@@ -55,15 +55,7 @@ import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
-import com.kaltura.playkit.PKError;
-import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PKMediaFormat;
-import com.kaltura.playkit.PKRequestParams;
-import com.kaltura.playkit.PlayKitManager;
-import com.kaltura.playkit.PlaybackInfo;
-import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
@@ -200,7 +192,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context, playerSettings.allowClearLead(), playerSettings.enableDecoderFallback(), playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
 
         player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
-        player.setForegroundMode(true); // Making sure the stop() call is not removing the decoders on change media.
 
         window = new Timeline.Window();
         setPlayerListeners();
@@ -247,6 +238,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory());
         DefaultTrackSelector.ParametersBuilder parametersBuilder = new DefaultTrackSelector.ParametersBuilder();
         parametersBuilder.setViewportSizeToPhysicalDisplaySize(context, true);
+        if (playerSettings.isTunneledAudioPlayback()) {
+            parametersBuilder.setTunnelingAudioSessionId(C.generateAudioSessionIdV21(context));
+        }
         trackSelector.setParameters(parametersBuilder.build());
 
         trackSelectionHelper = new TrackSelectionHelper(trackSelector, lastSelectedTrackIds);
@@ -281,14 +275,33 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig) {
-        PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
-
         List<PKExternalSubtitle> externalSubtitleList = null;
 
         if (sourceConfig.getExternalSubtitleList() != null) {
             externalSubtitleList = sourceConfig.getExternalSubtitleList().size() > 0 ?
                     sourceConfig.getExternalSubtitleList() : null;
         }
+
+        final MediaSource mediaSource;
+
+        if (sourceConfig.mediaSource instanceof LocalAssetsManagerExo.LocalExoMediaSource) {
+            final LocalAssetsManagerExo.LocalExoMediaSource pkMediaSource = (LocalAssetsManagerExo.LocalExoMediaSource) sourceConfig.mediaSource;
+            mediaSource = pkMediaSource.getExoMediaSource();
+
+        } else {
+            mediaSource = buildInternalExoMediaSource(sourceConfig);
+        }
+
+        if (externalSubtitleList == null || externalSubtitleList.isEmpty()) {
+            return mediaSource;
+        } else {
+            return new MergingMediaSource(buildMediaSourceList(mediaSource, externalSubtitleList));
+        }
+    }
+
+    private MediaSource buildInternalExoMediaSource(PKMediaSourceConfig sourceConfig) {
+        MediaSource mediaSource;
+        PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
 
         if (format == null) {
             // TODO: error?
@@ -302,27 +315,26 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         switch (format) {
             case dash:
-                DashMediaSource dashDataSource = new DashMediaSource.Factory(
-                        new DefaultDashChunkSource.Factory(dataSourceFactory),
-                        dataSourceFactory)
-                        .createMediaSource(uri);
-                return new MergingMediaSource(buildMediaSourceList(dashDataSource, externalSubtitleList));
+                mediaSource = new DashMediaSource.Factory(
+                        new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory).createMediaSource(uri);
+                break;
 
             case hls:
-                HlsMediaSource hlsMediaSource = new HlsMediaSource.Factory(dataSourceFactory)
+                mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(uri);
-                return new MergingMediaSource(buildMediaSourceList(hlsMediaSource, externalSubtitleList));
+                break;
 
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
-                ProgressiveMediaSource extractorMediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(uri);
-                return new MergingMediaSource(buildMediaSourceList(extractorMediaSource, externalSubtitleList));
+                break;
 
             default:
                 throw new IllegalStateException("Unsupported type: " + format);
         }
+        return mediaSource;
     }
 
     /**
