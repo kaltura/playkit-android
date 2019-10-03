@@ -50,6 +50,8 @@ public class PlayerSettings implements Player.Settings {
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
 
+    private Object customLoadControlStrategy = null;
+
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
     }
@@ -134,6 +136,10 @@ public class PlayerSettings implements Player.Settings {
         return forceSinglePlayerEngine;
     }
 
+    public Object getCustomLoadControlStrategy() {
+        return customLoadControlStrategy;
+    }
+  
     public boolean isTunneledAudioPlayback() {
         return isTunneledAudioPlayback;
     }
@@ -265,6 +271,12 @@ public class PlayerSettings implements Player.Settings {
         return this;
     }
 
+    @Override
+    public Player.Settings setCustomLoadControlStrategy(Object customLoadControlStrategy) {
+        this.customLoadControlStrategy = customLoadControlStrategy;
+        return this;
+    }
+  
     @Override
     public Player.Settings setTunneledAudioPlayback(boolean isTunneledAudioPlayback) {
         this.isTunneledAudioPlayback = isTunneledAudioPlayback;
