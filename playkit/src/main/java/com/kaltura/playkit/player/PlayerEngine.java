@@ -124,18 +124,18 @@ public interface PlayerEngine {
     void changeTrack(String uniqueId);
 
     /**
-     * Override codec for video tracks when more than 1 codec is available.
-     *
-     */
-    void overrideMediaVideoCodec();
-
-    /**
      * Override media for video tracks with ABR
      *
      * @param minVideoBitrate - minVideoBitrate.
      * @param maxVideoBitrate - maxVideoBitrate.
      */
     void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate);
+
+    /**
+     * Override codec for video tracks when more than 1 codec is available.
+     *
+     */
+    void overrideMediaVideoCodec();
 
     /**
      * Seek player to the specified position.
