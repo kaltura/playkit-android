@@ -879,16 +879,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void overrideMediaVideoCodec() {
-        if (trackSelectionHelper == null) {
-            log.w("Attempt to invoke 'overrideMediaVideoCodec()' on null instance of the TracksSelectionHelper");
-            return;
-        }
-
-        trackSelectionHelper.overrideMediaVideoCodec();
-    }
-
-    @Override
     public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
         if (trackSelectionHelper == null) {
             log.w("Attempt to invoke 'overrideMediaVideoCodec()' on null instance of the TracksSelectionHelper");
@@ -896,6 +886,16 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
+    }
+
+    @Override
+    public void overrideMediaVideoCodec() {
+        if (trackSelectionHelper == null) {
+            log.w("Attempt to invoke 'overrideMediaVideoCodec()' on null instance of the TracksSelectionHelper");
+            return;
+        }
+
+        trackSelectionHelper.overrideMediaVideoCodec();
     }
 
     private void sendTrackSelectionError(String uniqueId, IllegalArgumentException invalidUniqueIdException) {
