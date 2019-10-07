@@ -38,7 +38,7 @@ public interface Player {
          * @param contentRequestAdapter - request adapter.
          * @return - Player Settings.
          */
-        Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter);
+        Settings setContentRequestAdapter(@NonNull PKRequestParams.Adapter contentRequestAdapter);
 
         /**
          * Set the Player's licenseRequestAdapter.
@@ -46,7 +46,7 @@ public interface Player {
          * @param licenseRequestAdapter - request adapter.
          * @return - Player Settings.
          */
-        Settings setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
+        Settings setLicenseRequestAdapter(@NonNull PKRequestParams.Adapter licenseRequestAdapter);
 
         /**
          * Enable/disable cea-608 text tracks.
@@ -132,7 +132,7 @@ public interface Player {
          * @param loadControlBuffers LoadControlBuffers
          * @return Player Settings
          */
-        Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers);
+        Settings setPlayerBuffers(@NonNull LoadControlBuffers loadControlBuffers);
 
         /**
          * Set the Player's VR/360 support
@@ -148,7 +148,7 @@ public interface Player {
          * @param preferredAudioTrackConfig - AudioTrackConfig.
          * @return - Player Settings.
          */
-        Settings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig);
+        Settings setPreferredAudioTrack(@NonNull PKTrackConfig preferredAudioTrackConfig);
 
         /**
          * Set the Player's preferredTextTrackConfig.
@@ -156,7 +156,7 @@ public interface Player {
          * @param preferredTextTrackConfig - TextTrackConfig.
          * @return - Player Settings.
          */
-        Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig);
+        Settings setPreferredTextTrack(@NonNull PKTrackConfig preferredTextTrackConfig);
 
         /**
          * Set the Player's PreferredMediaFormat.
@@ -164,7 +164,7 @@ public interface Player {
          * @param preferredMediaFormat - PKMediaFormat.
          * @return - Player Settings.
          */
-        Settings setPreferredMediaFormat(PKMediaFormat preferredMediaFormat);
+        Settings setPreferredMediaFormat(@NonNull PKMediaFormat preferredMediaFormat);
 
         /**
          * Set the Player's Subtitles
@@ -172,7 +172,7 @@ public interface Player {
          * @param subtitleStyleSettings - SubtitleStyleSettings
          * @return - Player Settings
          */
-        Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
+        Settings setSubtitleStyle(@NonNull SubtitleStyleSettings subtitleStyleSettings);
 
         /**
          *  Set the Player's ABR settings
@@ -180,7 +180,7 @@ public interface Player {
          * @param abrSettings ABR settings
          * @return - Player Settings
          */
-        Settings setABRSettings(ABRSettings abrSettings);
+        Settings setABRSettings(@NonNull ABRSettings abrSettings);
 
         /**
          *  Set the Player's AspectRatio resize Mode
@@ -188,7 +188,7 @@ public interface Player {
          * @param resizeMode Resize mode
          * @return - Player Settings
          */
-        Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode);
+        Settings setSurfaceAspectRatioResizeMode(@NonNull PKAspectRatioResizeMode resizeMode);
 
         /**
          * Do not prepare the content player when the Ad starts(if exists); instead content player will be prepared
@@ -211,19 +211,19 @@ public interface Player {
          * Set VR Settings on the player
          * @param vrSettings vr configuration
          */
-        Settings setVRSettings(VRSettings vrSettings);
+        Settings setVRSettings(@NonNull VRSettings vrSettings);
 
         /**
          * Set Preferred codec for video track
          * @param videoCodecSettings Use {@link VideoCodecSettings}
          */
-        Settings setPreferredVideoCodecSettings(VideoCodecSettings videoCodecSettings);
+        Settings setPreferredVideoCodecSettings(@NonNull VideoCodecSettings videoCodecSettings);
 
         /**
          * Set custom load control strategy
          * @param loadControlStrategy object implementing LoadControlStrategy interface
          */
-        Settings setCustomLoadControlStrategy(Object loadControlStrategy);
+        Settings setCustomLoadControlStrategy(@NonNull Object loadControlStrategy);
       
         /**
          * Set Tunneled Audio Playback

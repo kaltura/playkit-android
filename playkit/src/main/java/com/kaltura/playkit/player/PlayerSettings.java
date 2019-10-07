@@ -12,7 +12,8 @@
 
 package com.kaltura.playkit.player;
 
-import com.kaltura.playkit.PKVideoCodec;
+import androidx.annotation.NonNull;
+
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
@@ -157,13 +158,13 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
+    public Player.Settings setContentRequestAdapter(@NonNull PKRequestParams.Adapter contentRequestAdapter) {
         this.contentRequestAdapter = contentRequestAdapter;
         return this;
     }
 
     @Override
-    public Player.Settings setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
+    public Player.Settings setLicenseRequestAdapter(@NonNull PKRequestParams.Adapter licenseRequestAdapter) {
         this.licenseRequestAdapter = licenseRequestAdapter;
         return this;
     }
@@ -199,19 +200,19 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
+    public Player.Settings setPreferredAudioTrack(@NonNull PKTrackConfig preferredAudioTrackConfig) {
         this.preferredAudioTrackConfig = preferredAudioTrackConfig;
         return this;
     }
 
     @Override
-    public Player.Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
+    public Player.Settings setPreferredTextTrack(@NonNull PKTrackConfig preferredTextTrackConfig) {
         this.preferredTextTrackConfig = preferredTextTrackConfig;
         return this;
     }
 
     @Override
-    public Player.Settings setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
+    public Player.Settings setPreferredMediaFormat(@NonNull PKMediaFormat preferredMediaFormat) {
         this.preferredMediaFormat = preferredMediaFormat;
         return this;
     }
@@ -236,25 +237,25 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers) {
+    public Player.Settings setPlayerBuffers(@NonNull LoadControlBuffers loadControlBuffers) {
         this.loadControlBuffers = loadControlBuffers;
         return this;
     }
 
     @Override
-    public Player.Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
+    public Player.Settings setSubtitleStyle(@NonNull SubtitleStyleSettings subtitleStyleSettings) {
         this.subtitleStyleSettings = subtitleStyleSettings;
         return this;
     }
 
     @Override
-    public Player.Settings setABRSettings(ABRSettings abrSettings) {
+    public Player.Settings setABRSettings(@NonNull ABRSettings abrSettings) {
         this.abrSettings = abrSettings;
         return this;
     }
 
     @Override
-    public Player.Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+    public Player.Settings setSurfaceAspectRatioResizeMode(@NonNull PKAspectRatioResizeMode resizeMode) {
         this.resizeMode = resizeMode;
         return this;
     }
@@ -272,18 +273,18 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setVRSettings(VRSettings vrSettings) {
+    public Player.Settings setVRSettings(@NonNull VRSettings vrSettings) {
         this.vrSettings = vrSettings;
         return this;
     }
 
     @Override
-    public Player.Settings setPreferredVideoCodecSettings(VideoCodecSettings preferredVideoCodecSettings) {
+    public Player.Settings setPreferredVideoCodecSettings(@NonNull VideoCodecSettings preferredVideoCodecSettings) {
         this.preferredVideoCodecSettings = preferredVideoCodecSettings;
         return this;
     }
 
-    public Player.Settings setCustomLoadControlStrategy(Object customLoadControlStrategy) {
+    public Player.Settings setCustomLoadControlStrategy(@NonNull Object customLoadControlStrategy) {
         this.customLoadControlStrategy = customLoadControlStrategy;
         return this;
     }
