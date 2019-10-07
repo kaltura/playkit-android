@@ -25,6 +25,7 @@
  import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
  import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
  import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
+ import com.kaltura.android.exoplayer2.util.MimeTypes;
  import com.kaltura.playkit.PKAudioCodec;
  import com.kaltura.playkit.PKVideoCodec;
  import com.kaltura.playkit.PKError;
@@ -196,7 +197,7 @@
                                  }
                                  PKVideoCodec currentVideoTrackCodec = getVideoCodec(format);
                                  if (PKVideoCodec.HEVC.equals(currentVideoTrackCodec) && !isCodecSupported(format, TrackType.VIDEO, videoCodecSettings.isSoftwareDecoderEnabled())) {
-                                    continue;
+                                     continue;
                                  }
                                  VideoTrack currentVideoTrack = new VideoTrack(uniqueId, format.bitrate, format.width, format.height, format.selectionFlags, false, currentVideoTrackCodec);
 
@@ -280,6 +281,12 @@
 
          if (videoTracksCodecsMap.containsKey(PKVideoCodec.HEVC)) {
              return videoTracksCodecsMap.get(PKVideoCodec.HEVC);
+         } else if (videoTracksCodecsMap.containsKey(PKVideoCodec.AV1)) {
+             return  videoTracksCodecsMap.get(PKVideoCodec.AV1);
+         } else if (videoTracksCodecsMap.containsKey(PKVideoCodec.VP9)) {
+             return  videoTracksCodecsMap.get(PKVideoCodec.VP9);
+         } else if (videoTracksCodecsMap.containsKey(PKVideoCodec.VP8)) {
+             return  videoTracksCodecsMap.get(PKVideoCodec.VP8);
          } else if (videoTracksCodecsMap.containsKey(PKVideoCodec.AVC)) {
              return  videoTracksCodecsMap.get(PKVideoCodec.AVC);
          } else {
@@ -359,7 +366,7 @@
 
      private boolean isDefaultStreamLang(AudioTrack audioTrack) {
          return (audioTrack.getLabel() == null &&  audioTrack.getLanguage() == null) ||
-                (audioTrack.getLabel() == null && ("und".equals(audioTrack.getLanguage()) || "```".equals(audioTrack.getLanguage())));
+                 (audioTrack.getLabel() == null && ("und".equals(audioTrack.getLanguage()) || "```".equals(audioTrack.getLanguage())));
      }
 
      private List<AudioTrack> mergeCodecsMap(Map<PKAudioCodec, List<AudioTrack>> codesMap) {
@@ -1274,15 +1281,26 @@
          if (codec != null) {
              if (codec.startsWith("hev1") || codec.startsWith("hvc1")) {
                  return PKVideoCodec.HEVC;
-             } else {  /*if (codec.startsWith("avc") */
-                 return PKVideoCodec.AVC;
+             }  else if (codec.startsWith("vp9") || codec.startsWith("vp09")) {
+                 return PKVideoCodec.VP9;
+             } else if (codec.startsWith("vp8") || codec.startsWith("vp08")) {
+                 return PKVideoCodec.VP8;
+             } else if (codec.startsWith("av01")) {
+                 return PKVideoCodec.AV1;
              }
          }
-         if ("video/hevc".equals(format.sampleMimeType)) {
+
+         if (MimeTypes.VIDEO_H265.equals(format.sampleMimeType)) {
              return PKVideoCodec.HEVC;
-         } else {
-             return PKVideoCodec.AVC;
+         } else if (MimeTypes.VIDEO_VP8.equals(format.sampleMimeType)) {
+             return PKVideoCodec.VP8;
+         } else if (MimeTypes.VIDEO_VP9.equals(format.sampleMimeType)) {
+             return PKVideoCodec.VP9;
+         } else if (MimeTypes.VIDEO_AV1.equals(format.sampleMimeType)) {
+             return PKVideoCodec.AV1;
          }
+
+         return PKVideoCodec.AVC;
      }
 
      private PKAudioCodec getAudioCodec(Format format) {
