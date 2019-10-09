@@ -486,10 +486,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void onIsPlayingChanged(boolean isPlaying) {
         if (isPlaying) {
             sendDistinctEvent(PlayerEvent.Type.PLAYING);
-        } else {
-            if (player != null && player.getPlaybackSuppressionReason() == Player.PLAYBACK_SUPPRESSION_REASON_AUDIO_FOCUS_LOSS) {
-
-            }
         }
     }
 
