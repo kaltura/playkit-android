@@ -211,6 +211,18 @@ public interface Player {
          * @param vrSettings vr configuration
          */
         Settings setVRSettings(VRSettings vrSettings);
+
+        /**
+         * Set custom load control strategy
+         * @param loadControlStrategy object implementing LoadControlStrategy interface
+         */
+        Settings setCustomLoadControlStrategy(Object loadControlStrategy);
+      
+        /**
+         * Set Tunneled Audio Playback
+         * @param isTunneledAudioPlayback audio tunnelling enabled
+         */
+        Settings setTunneledAudioPlayback(boolean isTunneledAudioPlayback);
     }
 
     /**
