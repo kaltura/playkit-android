@@ -239,6 +239,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory());
         DefaultTrackSelector.ParametersBuilder parametersBuilder = new DefaultTrackSelector.ParametersBuilder();
         parametersBuilder.setViewportSizeToPhysicalDisplaySize(context, true);
+        if (playerSettings.getPreferredVideoCodecSettings().getAllowVideoMixedMimeTypeAdaptiveness()) {
+            parametersBuilder.setAllowVideoMixedMimeTypeAdaptiveness(true);
+        }
+
         if (playerSettings.isTunneledAudioPlayback()) {
             parametersBuilder.setTunnelingAudioSessionId(C.generateAudioSessionIdV21(context));
         }
@@ -1047,10 +1051,22 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private TrackSelectionHelper.TracksErrorListener initTracksErrorListener() {
-        return pkError -> {
-            currentError = pkError;
-            if (eventListener != null) {
-                eventListener.onEvent(PlayerEvent.Type.ERROR);
+        return new TrackSelectionHelper.TracksErrorListener() {
+            @Override
+            public void onTracksOverrideABRError(PKError pkError) {
+                currentError = pkError;
+                if (eventListener != null) {
+                    eventListener.onEvent(PlayerEvent.Type.ERROR);
+                }
+            }
+
+            @Override
+            public void onUnsupportedVideoTracksError(PKError pkError) {
+
+                currentError = pkError;
+                if (eventListener != null) {
+                    eventListener.onEvent(PlayerEvent.Type.ERROR);
+                }
             }
         };
     }

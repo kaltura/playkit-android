@@ -13,6 +13,7 @@
 package com.kaltura.playkit.player;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.PKVideoCodec;
 
@@ -26,14 +27,16 @@ public class VideoTrack extends BaseTrack implements Comparable<VideoTrack> {
     private int width;
     private int height;
     private long bitrate;
-    private PKVideoCodec codec;
+    private PKVideoCodec codecType;
+    private String codecName;
 
-    VideoTrack(String uniqueId, long bitrate, int width, int height, int selectionFlag, boolean isAdaptive, PKVideoCodec codec) {
+    VideoTrack(String uniqueId, long bitrate, int width, int height, int selectionFlag, boolean isAdaptive, PKVideoCodec codecType, String codecName) {
         super(uniqueId, selectionFlag, isAdaptive);
         this.bitrate = bitrate;
         this.width = width;
         this.height = height;
-        this.codec = codec;
+        this.codecType = codecType;
+        this.codecName = codecName;
     }
 
     /**
@@ -67,13 +70,24 @@ public class VideoTrack extends BaseTrack implements Comparable<VideoTrack> {
     }
 
     /**
-     * Getter for the track codec.
+     * Getter for the track codecType.
      * Can be null if unknown or not applicable.
      *
-     * @return - the codec of the track.
+     * @return - the codecType of the track.
      */
-    public PKVideoCodec getCodec() {
-        return codec;
+    @Nullable public PKVideoCodec getCodecType() {
+        return codecType;
+    }
+
+    /**
+     * Getter for the track codecName.
+     * Can be null if unknown or not applicable.
+     *
+     * @return - the codec name of the track.
+     */
+
+    @Nullable public String getCodecName() {
+        return codecName;
     }
 
     @Override

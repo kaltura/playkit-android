@@ -26,15 +26,17 @@ public class AudioTrack extends BaseTrack {
     private String label;
     private String language;
     private int channelCount;
-    private PKAudioCodec audioCodec;
+    private PKAudioCodec codecType;
+    private String codecName;
 
-    AudioTrack(String uniqueId, String language, String label, long bitrate, int channelCount, int selectionFlag, boolean isAdaptive, PKAudioCodec audioCodec) {
+    AudioTrack(String uniqueId, String language, String label, long bitrate, int channelCount, int selectionFlag, boolean isAdaptive, PKAudioCodec codecType, String codecName) {
         super(uniqueId, selectionFlag, isAdaptive);
         this.label = label;
         this.bitrate = bitrate;
         this.language = language;
         this.channelCount = channelCount;
-        this.audioCodec  = audioCodec;
+        this.codecType = codecType;
+        this.codecName = codecName;
     }
 
     /**
@@ -43,8 +45,7 @@ public class AudioTrack extends BaseTrack {
      *
      * @return - the language of the track.
      */
-    public @Nullable
-    String getLanguage() {
+    @Nullable public String getLanguage() {
         return language;
     }
 
@@ -64,8 +65,7 @@ public class AudioTrack extends BaseTrack {
      *
      * @return - the label of the track.
      */
-    public @Nullable
-    String getLabel() {
+    @Nullable public String getLabel() {
         return label;
     }
 
@@ -84,7 +84,17 @@ public class AudioTrack extends BaseTrack {
      *
      * @return - the audio codec type.
      */
-    public PKAudioCodec getAudioCodec() {
-        return audioCodec;
+    @Nullable public PKAudioCodec getCodecType() {
+        return codecType;
+    }
+
+    /**
+     * Getter for the track codec name.
+     *
+     * @return - the audio codec name
+     */
+
+    @Nullable public String getCodecName() {
+        return codecName;
     }
 }
