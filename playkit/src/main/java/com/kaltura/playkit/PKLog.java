@@ -63,7 +63,7 @@ public class PKLog {
 
     @NonNull
     public final String tag;
-    private int level = VERBOSE;
+    private int level = Integer.MAX_VALUE;
 
     public enum Level {
         verbose(VERBOSE), debug(DEBUG), info(INFO), warn(WARN), error(ERROR), off(Integer.MAX_VALUE);
@@ -75,7 +75,7 @@ public class PKLog {
         }
     }
 
-    private static int globalLevel = DEBUG;
+    private static int globalLevel = Integer.MAX_VALUE;
 
     @NonNull
     private static String shortenTag(String tag) {
