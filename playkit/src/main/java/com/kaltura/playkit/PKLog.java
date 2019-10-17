@@ -147,19 +147,19 @@ public class PKLog {
     // INFO
 
     public void i(String msg) {
-        if (level <= INFO && globalLevel <= INFO) {
+        if (level <= INFO && globalLevel <= INFO && BuildConfig.DEBUG) {
             Log.i(tag, msg);
         }
     }
 
     public void i(String msg, Throwable tr) {
-        if (level <= INFO && globalLevel <= INFO) {
+        if (level <= INFO && globalLevel <= INFO && BuildConfig.DEBUG) {
             Log.i(tag, msg, tr);
         }
     }
 
     public static void i(String tag, String msg) {
-        if (globalLevel <= INFO) {
+        if (globalLevel <= INFO && BuildConfig.DEBUG) {
             Log.i(tag, msg);
         }
     }
@@ -168,19 +168,19 @@ public class PKLog {
     // WARN
 
     public void w(String msg) {
-        if (level <= WARN && globalLevel <= WARN) {
+        if (level <= WARN && globalLevel <= WARN && BuildConfig.DEBUG) {
             Log.w(tag, msg);
         }
     }
 
     public void w(String msg, Throwable tr) {
-        if (level <= WARN && globalLevel <= WARN) {
+        if (level <= WARN && globalLevel <= WARN && BuildConfig.DEBUG) {
             Log.w(tag, msg, tr);
         }
     }
 
     public static void w(String tag, String msg) {
-        if (globalLevel <= WARN) {
+        if (globalLevel <= WARN && BuildConfig.DEBUG) {
             Log.w(tag, msg);
         }
     }
