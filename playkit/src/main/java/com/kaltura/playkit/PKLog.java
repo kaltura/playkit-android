@@ -63,7 +63,7 @@ public class PKLog {
 
     @NonNull
     public final String tag;
-    private int level = Integer.MAX_VALUE;
+    private int level = VERBOSE;
 
     public enum Level {
         verbose(VERBOSE), debug(DEBUG), info(INFO), warn(WARN), error(ERROR), off(Integer.MAX_VALUE);
@@ -75,7 +75,7 @@ public class PKLog {
         }
     }
 
-    private static int globalLevel = Integer.MAX_VALUE;
+    private static int globalLevel = DEBUG;
 
     @NonNull
     private static String shortenTag(String tag) {
@@ -107,19 +107,19 @@ public class PKLog {
     // VERBOSE
 
     public void v(String msg) {
-        if (level <= VERBOSE && globalLevel <= VERBOSE) {
+        if (level <= VERBOSE && globalLevel <= VERBOSE && BuildConfig.DEBUG) {
             Log.v(tag, msg);
         }
     }
 
     public void v(String msg, Throwable tr) {
-        if (level <= VERBOSE && globalLevel <= VERBOSE) {
+        if (level <= VERBOSE && globalLevel <= VERBOSE && BuildConfig.DEBUG) {
             Log.v(tag, msg, tr);
         }
     }
 
     public static void v(String tag, String msg) {
-        if (globalLevel <= VERBOSE) {
+        if (globalLevel <= VERBOSE && BuildConfig.DEBUG) {
             Log.v(tag, msg);
         }
     }
@@ -127,19 +127,19 @@ public class PKLog {
     // DEBUG
 
     public void d(String msg) {
-        if (level <= DEBUG && globalLevel <= DEBUG) {
+        if (level <= DEBUG && globalLevel <= DEBUG && BuildConfig.DEBUG) {
             Log.d(tag, msg);
         }
     }
 
     public void d(String msg, Throwable tr) {
-        if (level <= DEBUG && globalLevel <= DEBUG) {
+        if (level <= DEBUG && globalLevel <= DEBUG && BuildConfig.DEBUG) {
             Log.d(tag, msg, tr);
         }
     }
 
     public static void d(String tag, String msg) {
-        if (globalLevel <= DEBUG) {
+        if (globalLevel <= DEBUG && BuildConfig.DEBUG) {
             Log.d(tag, msg);
         }
     }
