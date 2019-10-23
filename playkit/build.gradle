@@ -35,7 +35,7 @@ tasks.withType(Javadoc) {
 
 dependencies {
 
-    def exoPlayerVersion = '2.10.3'
+    def exoPlayerVersion = '2.10.6'
     api "com.kaltura.playkit:kexoplayer:$exoPlayerVersion"
     api 'com.google.code.gson:gson:2.8.2'
     implementation 'androidx.annotation:annotation:1.0.2'
