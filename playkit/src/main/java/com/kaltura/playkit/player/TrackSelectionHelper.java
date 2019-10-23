@@ -296,13 +296,8 @@
              return videoTracks;
          }
 
-         boolean atLeastOneCodecSupportedInHardware  = videoCodecsSupportedInHardware();
 
-
-//         if (videoTracksCodecsMap.keySet() != null && videoTracksCodecsMap.keySet().size() == 1) {
-//             Map.Entry<PKVideoCodec,List<VideoTrack>> singleCodecEntry = videoTracksCodecsMap.entrySet().iterator().next();
-//             return singleCodecEntry.getValue();
-//         }
+         boolean atLeastOneCodecSupportedInHardware = videoCodecsSupportedInHardware(); // if no hardware decoders play with the software
 
          if (videoCodecSettings.getAllowVideoMixedMimeTypeAdaptiveness()) {
              populateAllCodecTracks(atLeastOneCodecSupportedInHardware);
@@ -327,6 +322,18 @@
              }
          }
 
+         if (videoTracksCodecsMap.containsKey(PKVideoCodec.HEVC)) {
+             return  videoTracksCodecsMap.get(PKVideoCodec.HEVC);
+         }
+         if (videoTracksCodecsMap.containsKey(PKVideoCodec.AV1)) {
+             return  videoTracksCodecsMap.get(PKVideoCodec.AV1);
+         }
+         if (videoTracksCodecsMap.containsKey(PKVideoCodec.VP9)) {
+             return  videoTracksCodecsMap.get(PKVideoCodec.VP9);
+         }
+         if (videoTracksCodecsMap.containsKey(PKVideoCodec.VP8)) {
+             return  videoTracksCodecsMap.get(PKVideoCodec.VP8);
+         }
          if (videoTracksCodecsMap.containsKey(PKVideoCodec.AVC)) {
              return  videoTracksCodecsMap.get(PKVideoCodec.AVC);
          } else {
