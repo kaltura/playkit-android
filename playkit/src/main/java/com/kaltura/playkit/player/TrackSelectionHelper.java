@@ -324,17 +324,13 @@
 
          if (videoTracksCodecsMap.containsKey(PKVideoCodec.HEVC)) {
              return  videoTracksCodecsMap.get(PKVideoCodec.HEVC);
-         }
-         if (videoTracksCodecsMap.containsKey(PKVideoCodec.AV1)) {
+         } else if (videoTracksCodecsMap.containsKey(PKVideoCodec.AV1)) {
              return  videoTracksCodecsMap.get(PKVideoCodec.AV1);
-         }
-         if (videoTracksCodecsMap.containsKey(PKVideoCodec.VP9)) {
+         } else if (videoTracksCodecsMap.containsKey(PKVideoCodec.VP9)) {
              return  videoTracksCodecsMap.get(PKVideoCodec.VP9);
-         }
-         if (videoTracksCodecsMap.containsKey(PKVideoCodec.VP8)) {
+         } else if (videoTracksCodecsMap.containsKey(PKVideoCodec.VP8)) {
              return  videoTracksCodecsMap.get(PKVideoCodec.VP8);
-         }
-         if (videoTracksCodecsMap.containsKey(PKVideoCodec.AVC)) {
+         } else if (videoTracksCodecsMap.containsKey(PKVideoCodec.AVC)) {
              return  videoTracksCodecsMap.get(PKVideoCodec.AVC);
          } else {
              return videoTracks;
