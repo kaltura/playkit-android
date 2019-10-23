@@ -73,7 +73,6 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 
-import static com.kaltura.android.exoplayer2.Player.PLAYBACK_SUPPRESSION_REASON_NONE;
 import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
 import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
@@ -462,7 +461,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private void sendEvent(PlayerEvent.Type event) {
-        if (shouldRestorePlayerToPreviousState && event != PlayerEvent.Type.DURATION_CHANGE) {
+        if (shouldRestorePlayerToPreviousState && event != PlayerEvent.Type.DURATION_CHANGE &&
+                !(currentEvent == PlayerEvent.Type.PAUSE && event == PlayerEvent.Type.PLAY)) {
             log.i("Trying to send event " + event.name() + ". Should be blocked from sending now, because the player is restoring to the previous state.");
             return;
         }
@@ -487,6 +487,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (isPlaying) {
             sendDistinctEvent(PlayerEvent.Type.PLAYING);
         }
+    }
+
+    @Override
+    public void onPlaybackSuppressionReasonChanged(int playbackSuppressionReason) {
+        log.d("onPlaybackSuppressionReasonChanged. playbackSuppressionReason => " + playbackSuppressionReason);
     }
 
     @Override
@@ -985,8 +990,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public boolean isPlaying() {
         log.v("isPlaying");
         if (assertPlayerIsNotNull("isPlaying()")) {
-            return player.getPlayWhenReady() && (currentState == PlayerState.READY || currentState == PlayerState.BUFFERING)
-                    && player.getPlaybackSuppressionReason() == PLAYBACK_SUPPRESSION_REASON_NONE;
+            return player.isPlaying() || (player.getPlayWhenReady() && (currentState == PlayerState.READY || currentState == PlayerState.BUFFERING));
         }
         return false;
     }
