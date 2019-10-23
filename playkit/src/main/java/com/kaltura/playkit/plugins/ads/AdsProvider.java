@@ -49,8 +49,7 @@ public interface AdsProvider {
     Long getPlaybackStartPosition();
 
     boolean isAlwaysStartWithPreroll();
-
-
+    
     default long getFakePlayerPosition(long realPlayerPosition) { return 0; }
 
     default long getFakePlayerDuration(long duration) { return 0; }
