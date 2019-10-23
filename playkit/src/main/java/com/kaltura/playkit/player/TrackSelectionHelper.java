@@ -445,14 +445,13 @@
      }
 
      private List<AudioTrack> mergeCodecsMap(Map<PKAudioCodec, List<AudioTrack>> codesMap) {
-         List<AudioTrack> audioTracksWithCodes = new ArrayList<>();
          if (codesMap.keySet().size() == 1) {
              for (Map.Entry<PKAudioCodec,List<AudioTrack>> audioTrackEntry : codesMap.entrySet()) {
-                 audioTracksWithCodes.add(audioTrackEntry.getValue().get(0));
+                 return audioTrackEntry.getValue();
              }
-             return audioTracksWithCodes;
          }
 
+         List<AudioTrack> audioTracksWithCodes = new ArrayList<>();
          for (Map.Entry<PKAudioCodec,List<AudioTrack>> audioTrackEntry : codesMap.entrySet()) {
              if (audioTrackEntry.getValue().size() == 2) {
                  audioTracksWithCodes.add(audioTrackEntry.getValue().get(0));
