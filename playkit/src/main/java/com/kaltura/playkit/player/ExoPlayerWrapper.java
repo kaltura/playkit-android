@@ -466,7 +466,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private void sendEvent(PlayerEvent.Type event) {
-        if (shouldRestorePlayerToPreviousState && event != PlayerEvent.Type.DURATION_CHANGE) {
+        if (shouldRestorePlayerToPreviousState && event != PlayerEvent.Type.DURATION_CHANGE &&
+                !(currentEvent == PlayerEvent.Type.PAUSE && event == PlayerEvent.Type.PLAY)) {
             log.i("Trying to send event " + event.name() + ". Should be blocked from sending now, because the player is restoring to the previous state.");
             return;
         }
@@ -484,6 +485,18 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     @Override
     public void onLoadingChanged(boolean isLoading) {
         log.d("onLoadingChanged. isLoading => " + isLoading);
+    }
+
+    @Override
+    public void onIsPlayingChanged(boolean isPlaying) {
+        if (isPlaying) {
+            sendDistinctEvent(PlayerEvent.Type.PLAYING);
+        }
+    }
+
+    @Override
+    public void onPlaybackSuppressionReasonChanged(int playbackSuppressionReason) {
+        log.d("onPlaybackSuppressionReasonChanged. playbackSuppressionReason => " + playbackSuppressionReason);
     }
 
     @Override
@@ -513,10 +526,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
                 if (!previousState.equals(PlayerState.READY)) {
                     sendDistinctEvent(PlayerEvent.Type.CAN_PLAY);
-                }
-
-                if (playWhenReady) {
-                    sendDistinctEvent(PlayerEvent.Type.PLAYING);
                 }
                 break;
 
@@ -990,7 +999,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public boolean isPlaying() {
         log.v("isPlaying");
         if (assertPlayerIsNotNull("isPlaying()")) {
-            return player.getPlayWhenReady() && (currentState == PlayerState.READY || currentState == PlayerState.BUFFERING);
+            return player.isPlaying() || (player.getPlayWhenReady() && (currentState == PlayerState.READY || currentState == PlayerState.BUFFERING));
         }
         return false;
     }
