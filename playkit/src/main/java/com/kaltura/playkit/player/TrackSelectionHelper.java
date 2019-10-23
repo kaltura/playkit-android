@@ -423,6 +423,7 @@
      private List<AudioTrack> getAudioTracksWithCodes() {
 
          Map<PKAudioCodec, List<AudioTrack>> codesMap = new HashMap<>();
+         //build codecs map with tist of audio tracks
          for (AudioTrack audioTrack : audioTracks) {
              if (isDefaultStreamLang(audioTrack)) {
                  continue;
@@ -447,7 +448,9 @@
      private List<AudioTrack> mergeCodecsMap(Map<PKAudioCodec, List<AudioTrack>> codesMap) {
          List<AudioTrack> audioTracksWithCodes = new ArrayList<>();
          if (codesMap.keySet().size() == 1) {
+             //in case of one codec only
              for (Map.Entry<PKAudioCodec,List<AudioTrack>> audioTrackEntry : codesMap.entrySet()) {
+                 //take the adaptive track only
                  audioTracksWithCodes.add(audioTrackEntry.getValue().get(0));
              }
              return audioTracksWithCodes;
@@ -455,6 +458,7 @@
 
          for (Map.Entry<PKAudioCodec,List<AudioTrack>> audioTrackEntry : codesMap.entrySet()) {
              if (audioTrackEntry.getValue().size() == 2) {
+                 //take only the adaptive track in case more than codec contains multiple audio tracks in same codec
                  audioTracksWithCodes.add(audioTrackEntry.getValue().get(0));
              } else {
                  audioTracksWithCodes.addAll(audioTrackEntry.getValue());
