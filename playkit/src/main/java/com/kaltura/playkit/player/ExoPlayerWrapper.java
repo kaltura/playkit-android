@@ -243,6 +243,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             parametersBuilder.setAllowVideoMixedMimeTypeAdaptiveness(true);
         }
 
+        if (playerSettings.getPreferredAudioCodecSettings().getAllowAudioMixedMimeTypeAdaptiveness()) {
+            parametersBuilder.setAllowAudioMixedMimeTypeAdaptiveness(true);
+        }
+
         if (playerSettings.isTunneledAudioPlayback()) {
             parametersBuilder.setTunnelingAudioSessionId(C.generateAudioSessionIdV21(context));
         }

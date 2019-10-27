@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.player.ABRSettings;
+import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
@@ -218,6 +219,12 @@ public interface Player {
          * @param videoCodecSettings Use {@link VideoCodecSettings}
          */
         Settings setPreferredVideoCodecSettings(@NonNull VideoCodecSettings videoCodecSettings);
+
+        /**
+         * Set Preferred codec for audio track
+         * @param audioCodecSettings Use {@link VideoCodecSettings}
+         */
+        Settings setPreferredAudioCodecSettings(@NonNull AudioCodecSettings audioCodecSettings);
 
         /**
          * Set custom load control strategy

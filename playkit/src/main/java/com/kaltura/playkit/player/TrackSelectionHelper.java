@@ -25,7 +25,6 @@
  import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
  import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
  import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
- import com.kaltura.android.exoplayer2.util.MimeTypes;
  import com.kaltura.playkit.PKAudioCodec;
  import com.kaltura.playkit.PKVideoCodec;
  import com.kaltura.playkit.PKError;
@@ -95,6 +94,7 @@
      private PKTrackConfig preferredAudioLanguageConfig;
      private PKTrackConfig preferredTextLanguageConfig;
      private VideoCodecSettings videoCodecSettings;
+     private AudioCodecSettings audioCodecSettings;
 
      private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
 
@@ -300,7 +300,7 @@
          boolean atLeastOneCodecSupportedInHardware = videoCodecsSupportedInHardware(); // if no hardware decoders play with the software
 
          if (videoCodecSettings.getAllowVideoMixedMimeTypeAdaptiveness()) {
-             populateAllCodecTracks(atLeastOneCodecSupportedInHardware);
+             populateAllVideoCodecTracks(atLeastOneCodecSupportedInHardware);
              return videoTracks;
          }
 
@@ -355,7 +355,7 @@
          return false;
      }
 
-     private void populateAllCodecTracks(boolean atleastOneCodecSupportedInHardware) {
+     private void populateAllVideoCodecTracks(boolean atleastOneCodecSupportedInHardware) {
          for (Map.Entry<PKVideoCodec, List<VideoTrack>> multipleCodecEntry  : videoTracksCodecsMap.entrySet()) {
              for (VideoTrack codecVideoTrack : multipleCodecEntry.getValue()) {
                  if (isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
@@ -1413,6 +1413,7 @@
          this.preferredAudioLanguageConfig = settings.getPreferredAudioTrackConfig();
          this.preferredTextLanguageConfig  = settings.getPreferredTextTrackConfig();
          this.videoCodecSettings = settings.getPreferredVideoCodecSettings();
+         this.audioCodecSettings = settings.getPreferredAudioCodecSettings();
      }
 
      public static boolean isCodecSupported(@NonNull String codecs, @Nullable TrackType type, boolean allowSoftware) {
