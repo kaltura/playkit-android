@@ -43,6 +43,11 @@ public class FBAdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKA
     public void load(PKMediaSourceConfig mediaSourceConfig) {
         this.mediaSourceConfig = mediaSourceConfig;
         if (adsProvider != null) {
+            //incase no ads provided - need to prepare so treating as ad was requested
+            if (adsProvider.getCuePoints() != null && adsProvider.getCuePoints().getAdCuePoints() != null && adsProvider.getCuePoints().getAdCuePoints().size() == 0) {
+                adsProvider.setAdRequested(true); // need to prepare immeidatly
+            }
+
             if (preparePlayerForPlayback()) {
                 log.d("FB calling super.prepare");
                 super.load(mediaSourceConfig);
