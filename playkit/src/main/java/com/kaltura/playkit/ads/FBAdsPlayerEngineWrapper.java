@@ -92,26 +92,23 @@ public class FBAdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKA
 
     @Override
     public void pause() {
-        boolean isAdDisplayed = adsProvider.isAdDisplayed();
-        log.d("PAUSE FB decorator isAdDisplayed = " + isAdDisplayed + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
-        if (isAdDisplayed && !adsProvider.isAdError()) {
-            adsProvider.pause();
-            return;
+        if (adsProvider != null) {
+            boolean isAdDisplayed = adsProvider.isAdDisplayed();
+            log.d("PAUSE FB decorator isAdDisplayed = " + isAdDisplayed + " isAdPaused = " + adsProvider.isAdPaused() + " isAllAdsCompleted " + adsProvider.isAllAdsCompleted());
+            if (isAdDisplayed && !adsProvider.isAdError()) {
+                adsProvider.pause();
+                return;
+            }
         }
 
         if (super.isPlaying()) {
-            log.d("IMA decorator Calling content player pause");
+            log.d("FB decorator Calling content player pause");
             super.pause();
         }
     }
 
     @Override
     public long getCurrentPosition() {
-        //log.d("FB  -> getCurrentPosition isAdDisplayed = " + adsProvider.isAdDisplayed());
-        if (adsProvider.isAdDisplayed()) {
-            //log.d("FB  -> getCurrentPosition = " + adsProvider.getCurrentPosition());
-            adsProvider.getCurrentPosition();
-        }
         return super.getCurrentPosition();
     }
 
@@ -122,24 +119,11 @@ public class FBAdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKA
 
     @Override
     public long getDuration() {
-//        long playbackDuration;
-//        if (adsProvider.isAdDisplayed()) {
-//            playbackDuration = Consts.MILLISECONDS_MULTIPLIER * adsProvider.getDuration();
-//            //log.d("IMA -> getDuration = " + playbackDuration);
-//        } else {
-//            playbackDuration = super.getDuration();
-//            //log.d("PLAYER -> getDuration = " + playbackDuration);
-//        }
-//        return playbackDuration;
         return super.getDuration();
     }
 
     @Override
     public void seekTo(long position) {
-//        if (adsProvider.isAdDisplayed()) {
-//            log.d("seekTo is not enabled during AD playback");
-//            return;
-//        }
         super.seekTo(position);
     }
 
