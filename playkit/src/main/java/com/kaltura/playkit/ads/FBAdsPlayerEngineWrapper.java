@@ -130,9 +130,6 @@ public class FBAdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKA
     @Override
     public boolean isPlaying() {
         log.d("AdEnabled isPlaying");
-        if (adsProvider != null && adsProvider.isAdDisplayed()) {
-            return !adsProvider.isAdPaused();
-        }
         return super.isPlaying();
     }
 
@@ -156,7 +153,7 @@ public class FBAdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKA
         if (type == AdController.class && defaultAdController != null) {
             return (T) this.defaultAdController;
         }
-        return null;
+        return super.getController(type);
     }
 
     @Override
@@ -173,7 +170,7 @@ public class FBAdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKA
     public void onAdLoadingFinished() {
         log.d("onAdLoadingFinished pkPrepareReason");
         if (mediaSourceConfig == null) {
-            log.e("IMA onAdLoadingFinished mediaSourceConfig == null");
+            log.e("AdEnabled FB onAdLoadingFinished mediaSourceConfig == null");
             return;
         }
         load(mediaSourceConfig);
