@@ -155,17 +155,7 @@ public class FBAdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKA
         }
         return super.getController(type);
     }
-
-    @Override
-    public void destroy() {
-        if (adsProvider != null) {
-            adsProvider.setAdRequested(false);
-            adsProvider.destroyAdsManager();
-            adsProvider = null;
-        }
-        super.destroy();
-    }
-
+    
     @Override
     public void onAdLoadingFinished() {
         log.d("onAdLoadingFinished pkPrepareReason");
