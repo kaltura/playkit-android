@@ -51,11 +51,13 @@ import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.android.exoplayer2.upstream.BandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.DataSource;
+import com.kaltura.android.exoplayer2.upstream.DefaultAllocator;
 import com.kaltura.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
@@ -209,15 +211,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             return customLoadControlStrategy.getCustomLoadControl();
         } else {
             final LoadControlBuffers loadControl = playerSettings.getLoadControlBuffers();
-            int backBufferDurationMs = loadControl.getBackBufferDurationMs();
-            boolean retainBackBufferFromKeyframe = loadControl.getRetainBackBufferFromKeyframe();
-            return new DefaultLoadControl.Builder().
-                    setBufferDurationsMs(
-                            loadControl.getMinPlayerBufferMs(),
-                            loadControl.getMaxPlayerBufferMs(),
-                            loadControl.getMinBufferAfterInteractionMs(),
-                            loadControl.getMinBufferAfterReBufferMs()).
-                    setBackBuffer(backBufferDurationMs, retainBackBufferFromKeyframe).createDefaultLoadControl();
+            if (!loadControl.isDefaultValuesModified()) {
+                return new DefaultLoadControl();
+            }
+            return new CustomLoadControl(new DefaultAllocator(/* trimOnReset= */ true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
+                    loadControl.getMinPlayerBufferMs(),
+                    loadControl.getMaxPlayerBufferMs(), // minBufferVideoMs is set same as the maxBufferMs due to issue in exo player FEM-2707
+                    loadControl.getMaxPlayerBufferMs(),
+                    loadControl.getMinBufferAfterInteractionMs(),
+                    loadControl.getMinBufferAfterReBufferMs(),
+                    DefaultLoadControl.DEFAULT_TARGET_BUFFER_BYTES,
+                    DefaultLoadControl.DEFAULT_PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS,
+                    loadControl.getBackBufferDurationMs(),
+                    loadControl.getRetainBackBufferFromKeyframe());
         }
     }
 
@@ -243,7 +249,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             parametersBuilder.setAllowVideoMixedMimeTypeAdaptiveness(true);
         }
 
-        if (playerSettings.isTunneledAudioPlayback()) {
+        if (playerSettings.isTunneledAudioPlayback() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             parametersBuilder.setTunnelingAudioSessionId(C.generateAudioSessionIdV21(context));
         }
         trackSelector.setParameters(parametersBuilder.build());
