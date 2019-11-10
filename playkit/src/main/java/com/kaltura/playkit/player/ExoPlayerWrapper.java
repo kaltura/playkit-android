@@ -211,28 +211,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         } else {
             final LoadControlBuffers loadControl = playerSettings.getLoadControlBuffers();
 
-
-//            private int minPlayerBufferMs = DEFAULT_MIN_BUFFER_MS; //The default minimum duration of media that the player will attempt to ensure is buffered at all
-//            private int maxPlayerBufferMs = DEFAULT_MAX_BUFFER_MS; //The default maximum duration of media that the player will attempt to buffer
-//            private int minBufferAfterInteractionMs = DEFAULT_BUFFER_FOR_PLAYBACK_MS; //The default duration of media that must be buffered for playback to start or resume following a user action such as a seek
-//            private int minBufferAfterReBufferMs = DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS; //The default duration of media that must be buffered for playback after re-buffering
-//            private int backBufferDurationMs = DEFAULT_BACK_BUFFER_DURATION_MS;
-//            private boolean retainBackBufferFromKeyframe = DEFAULT_RETAIN_BACK_BUFFER_FROM_KEYFRAME;
-//            private long allowedVideoJoiningTimeMs = DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS; //Maximum duration for which a video renderer can attempt to seamlessly join an ongoing playback. Default is 5000ms
-
-//            int minBufferAudioMs,
-//            int minBufferVideoMs,
-//            int maxBufferMs,
-//            int bufferForPlaybackMs,
-//            int bufferForPlaybackAfterRebufferMs,
-//            int targetBufferBytes,
-//            boolean prioritizeTimeOverSizeThresholds,
-//            int backBufferDurationMs,
-//            boolean retainBackBufferFromKeyframe
-
             return new CustomLoadControl(new DefaultAllocator(/* trimOnReset= */ true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
                     loadControl.getMinPlayerBufferMs(),
-                    loadControl.getMaxPlayerBufferMs(),
+                    loadControl.getMaxPlayerBufferMs(), // minBufferVideoMs is set same as the maxBufferMs due to issue in exo player FEM-2707
                     loadControl.getMaxPlayerBufferMs(),
                     loadControl.getMinBufferAfterInteractionMs(),
                     loadControl.getMinBufferAfterReBufferMs(),
@@ -240,15 +221,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     DefaultLoadControl.DEFAULT_PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS,
                     loadControl.getBackBufferDurationMs(),
                     loadControl.getRetainBackBufferFromKeyframe());
-
-            
-//            return new DefaultLoadControl.Builder().
-//                    setBufferDurationsMs(
-//                            loadControl.getMinPlayerBufferMs(),
-//                            loadControl.getMaxPlayerBufferMs(),
-//                            loadControl.getMinBufferAfterInteractionMs(),
-//                            loadControl.getMinBufferAfterReBufferMs()).
-//                    setBackBuffer(backBufferDurationMs, retainBackBufferFromKeyframe).createDefaultLoadControl();
         }
     }
 
