@@ -50,11 +50,13 @@ import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.android.exoplayer2.upstream.BandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.DataSource;
+import com.kaltura.android.exoplayer2.upstream.DefaultAllocator;
 import com.kaltura.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
@@ -208,15 +210,45 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             return customLoadControlStrategy.getCustomLoadControl();
         } else {
             final LoadControlBuffers loadControl = playerSettings.getLoadControlBuffers();
-            int backBufferDurationMs = loadControl.getBackBufferDurationMs();
-            boolean retainBackBufferFromKeyframe = loadControl.getRetainBackBufferFromKeyframe();
-            return new DefaultLoadControl.Builder().
-                    setBufferDurationsMs(
-                            loadControl.getMinPlayerBufferMs(),
-                            loadControl.getMaxPlayerBufferMs(),
-                            loadControl.getMinBufferAfterInteractionMs(),
-                            loadControl.getMinBufferAfterReBufferMs()).
-                    setBackBuffer(backBufferDurationMs, retainBackBufferFromKeyframe).createDefaultLoadControl();
+
+
+//            private int minPlayerBufferMs = DEFAULT_MIN_BUFFER_MS; //The default minimum duration of media that the player will attempt to ensure is buffered at all
+//            private int maxPlayerBufferMs = DEFAULT_MAX_BUFFER_MS; //The default maximum duration of media that the player will attempt to buffer
+//            private int minBufferAfterInteractionMs = DEFAULT_BUFFER_FOR_PLAYBACK_MS; //The default duration of media that must be buffered for playback to start or resume following a user action such as a seek
+//            private int minBufferAfterReBufferMs = DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS; //The default duration of media that must be buffered for playback after re-buffering
+//            private int backBufferDurationMs = DEFAULT_BACK_BUFFER_DURATION_MS;
+//            private boolean retainBackBufferFromKeyframe = DEFAULT_RETAIN_BACK_BUFFER_FROM_KEYFRAME;
+//            private long allowedVideoJoiningTimeMs = DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS; //Maximum duration for which a video renderer can attempt to seamlessly join an ongoing playback. Default is 5000ms
+
+//            int minBufferAudioMs,
+//            int minBufferVideoMs,
+//            int maxBufferMs,
+//            int bufferForPlaybackMs,
+//            int bufferForPlaybackAfterRebufferMs,
+//            int targetBufferBytes,
+//            boolean prioritizeTimeOverSizeThresholds,
+//            int backBufferDurationMs,
+//            boolean retainBackBufferFromKeyframe
+
+            return new CustomLoadControl(new DefaultAllocator(/* trimOnReset= */ true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
+                    loadControl.getMinPlayerBufferMs(),
+                    loadControl.getMaxPlayerBufferMs(),
+                    loadControl.getMaxPlayerBufferMs(),
+                    loadControl.getMinBufferAfterInteractionMs(),
+                    loadControl.getMinBufferAfterReBufferMs(),
+                    DefaultLoadControl.DEFAULT_TARGET_BUFFER_BYTES,
+                    DefaultLoadControl.DEFAULT_PRIORITIZE_TIME_OVER_SIZE_THRESHOLDS,
+                    loadControl.getBackBufferDurationMs(),
+                    loadControl.getRetainBackBufferFromKeyframe());
+
+            
+//            return new DefaultLoadControl.Builder().
+//                    setBufferDurationsMs(
+//                            loadControl.getMinPlayerBufferMs(),
+//                            loadControl.getMaxPlayerBufferMs(),
+//                            loadControl.getMinBufferAfterInteractionMs(),
+//                            loadControl.getMinBufferAfterReBufferMs()).
+//                    setBackBuffer(backBufferDurationMs, retainBackBufferFromKeyframe).createDefaultLoadControl();
         }
     }
 
