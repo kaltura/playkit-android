@@ -210,7 +210,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             return customLoadControlStrategy.getCustomLoadControl();
         } else {
             final LoadControlBuffers loadControl = playerSettings.getLoadControlBuffers();
-
+            if (loadControl.isDefaultLoadControl()) {
+                return new DefaultLoadControl();
+            }
             return new CustomLoadControl(new DefaultAllocator(/* trimOnReset= */ true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
                     loadControl.getMinPlayerBufferMs(),
                     loadControl.getMaxPlayerBufferMs(), // minBufferVideoMs is set same as the maxBufferMs due to issue in exo player FEM-2707
