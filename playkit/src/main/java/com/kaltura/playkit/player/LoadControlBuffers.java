@@ -90,7 +90,7 @@ public class LoadControlBuffers {
         return this;
     }
 
-    public boolean isDefaultLoadControl() {
+    public boolean isDefaultValuesModified() {
         if (minPlayerBufferMs == DEFAULT_MIN_BUFFER_MS &&
                 maxPlayerBufferMs == DEFAULT_MAX_BUFFER_MS &&
                 minBufferAfterInteractionMs == DEFAULT_BUFFER_FOR_PLAYBACK_MS &&
@@ -98,9 +98,9 @@ public class LoadControlBuffers {
                 backBufferDurationMs == DEFAULT_BACK_BUFFER_DURATION_MS &&
                 retainBackBufferFromKeyframe == DEFAULT_RETAIN_BACK_BUFFER_FROM_KEYFRAME &&
                 allowedVideoJoiningTimeMs == DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS) {
-            return true;
-        } else {
             return false;
+        } else {
+            return true;
         }
     }
 }

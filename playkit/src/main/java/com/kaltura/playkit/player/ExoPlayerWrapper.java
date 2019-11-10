@@ -210,7 +210,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             return customLoadControlStrategy.getCustomLoadControl();
         } else {
             final LoadControlBuffers loadControl = playerSettings.getLoadControlBuffers();
-            if (loadControl.isDefaultLoadControl()) {
+            if (!loadControl.isDefaultValuesModified()) {
                 return new DefaultLoadControl();
             }
             return new CustomLoadControl(new DefaultAllocator(/* trimOnReset= */ true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
