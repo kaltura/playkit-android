@@ -397,7 +397,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER));
         }
 
-        if (PKHttpClientManager.useOkHttp()) {
+        if (!PKHttpClientManager.useSystem()) {
 
             final OkHttpClient.Builder builder = PKHttpClientManager.newClientBuilder()
                     .cookieJar(NativeCookieJarBridge.sharedCookieJar)
@@ -406,9 +406,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
                     .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
 
-            final okhttp3.EventListener.Factory okListenerFactory = profiler.getOkListenerFactory();
-            if (okListenerFactory != null) {
-                builder.eventListenerFactory(okListenerFactory);
+            if (profiler != Profiler.NOOP) {
+                final okhttp3.EventListener.Factory okListenerFactory = profiler.getOkListenerFactory();
+                if (okListenerFactory != null) {
+                    builder.eventListenerFactory(okListenerFactory);
+                }
+            } else {
+                builder.eventListener(analyticsAggregator);
             }
 
             httpDataSourceFactory = new OkHttpDataSourceFactory(builder.build(), userAgent);

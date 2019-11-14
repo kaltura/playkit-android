@@ -446,9 +446,16 @@ public class PlayerController implements Player {
                     }
 
                     @Override
-                    public void onBytesLoaded(long bytesLoaded, long totalBytesLoaded) {
+                    public void onBytesLoaded(int trackType, int dataType, long bytesLoaded, long loadDuration, long totalBytesLoaded) {
                         if (eventListener != null) {
-                            eventListener.onEvent(new PlayerEvent.BytesLoaded(bytesLoaded, totalBytesLoaded));
+                            eventListener.onEvent(new PlayerEvent.BytesLoaded(trackType, dataType, bytesLoaded, loadDuration, totalBytesLoaded));
+                        }
+                    }
+
+                    @Override
+                    public void onConnectionAcquired(long connectDurationMs) {
+                        if (eventListener != null) {
+                            eventListener.onEvent(new PlayerEvent.ConnectionAcquired(connectDurationMs));
                         }
                     }
 

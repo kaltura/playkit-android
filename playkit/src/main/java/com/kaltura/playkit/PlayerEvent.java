@@ -42,6 +42,7 @@ public class PlayerEvent implements PKEvent {
     public static final Class<PlaybackRateChanged> playbackRateChanged = PlaybackRateChanged.class;
     public static final Class<SubtitlesStyleChanged> subtitlesStyleChanged = SubtitlesStyleChanged.class;
     public static final Class<VideoFramesDropped> videoFramesDropped = VideoFramesDropped.class;
+    public static final Class<ConnectionAcquired> connectionAcquired = ConnectionAcquired.class;
     public static final Class<BytesLoaded> bytesLoaded = BytesLoaded.class;
     public static final Class<SurfaceAspectRationResizeModeChanged> surfaceAspectRationSizeModeChanged = SurfaceAspectRationResizeModeChanged.class;
 
@@ -253,13 +254,52 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class ConnectionAcquired extends PlayerEvent {
+
+        public final long connectDurationMs;
+
+        public ConnectionAcquired(long connectDurationMs) {
+            super(Type.CONNECTION_ACQUIRED);
+            this.connectDurationMs = connectDurationMs;
+        }
+    }
+
     public static class BytesLoaded extends PlayerEvent {
+
+        /*
+        TRACK_TYPE_UNKNOWN = -1;
+        TRACK_TYPE_DEFAULT = 0;
+        TRACK_TYPE_AUDIO = 1;
+        TRACK_TYPE_VIDEO = 2;
+        TRACK_TYPE_TEXT = 3;
+        TRACK_TYPE_METADATA = 4;
+        TRACK_TYPE_CAMERA_MOTION = 5;
+        TRACK_TYPE_NONE = 6;
+*/
+        public final int trackType;
+/*
+        DATA_TYPE_UNKNOWN = 0;
+        DATA_TYPE_MEDIA = 1;
+        DATA_TYPE_MEDIA_INITIALIZATION = 2;
+        DATA_TYPE_DRM = 3;
+        DATA_TYPE_MANIFEST = 4;
+        DATA_TYPE_TIME_SYNCHRONIZATION = 5;
+        DATA_TYPE_AD = 6;
+        DATA_TYPE_MEDIA_PROGRESSIVE_LIVE = 7;
+
+ */
+        public final int dataType;
+
         public final long bytesLoaded;
+        public final long loadDuration;
         public final long totalBytesLoaded;
 
-        public BytesLoaded(long bytesLoaded, long totalBytesLoaded) {
+        public BytesLoaded(int trackType, int dataType, long bytesLoaded, long loadDuration, long totalBytesLoaded) {
             super(Type.BYTES_LOADED);
+            this.trackType = trackType;
+            this.dataType = dataType;
             this.bytesLoaded = bytesLoaded;
+            this.loadDuration = loadDuration;
             this.totalBytesLoaded = totalBytesLoaded;
         }
 
@@ -298,6 +338,7 @@ public class PlayerEvent implements PKEvent {
         AUDIO_TRACK_CHANGED,
         TEXT_TRACK_CHANGED,
         PLAYBACK_RATE_CHANGED,
+        CONNECTION_ACQUIRED,
         VIDEO_FRAMES_DROPPED,   // Video frames were dropped, see PlayerEvent.VideoFramesDropped
         BYTES_LOADED,           // Bytes were downloaded from the network
         SUBTITLE_STYLE_CHANGED,  // Subtitle style is changed.

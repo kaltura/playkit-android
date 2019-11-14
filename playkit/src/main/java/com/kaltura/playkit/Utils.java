@@ -13,8 +13,14 @@
 package com.kaltura.playkit;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
+import android.net.NetworkRequest;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+
+import android.telephony.TelephonyManager;
 import android.util.Base64;
 
 import com.google.gson.JsonObject;
@@ -34,11 +40,15 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_GET;
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
+
 /**
  * @hide
  */
 
 public class Utils {
+
     private static final PKLog log = PKLog.get("Utils");
 
     private static final int ASSET_READ_LIMIT_BYTES = 1024 * 1024;
@@ -150,7 +160,7 @@ public class Utils {
 
         try {
             urlConnection = (HttpURLConnection) new URL(url).openConnection();
-            urlConnection.setRequestMethod(post ? "POST" : "GET");
+            urlConnection.setRequestMethod(post ? HTTP_METHOD_POST : HTTP_METHOD_GET);
 
             if (data != null) {
                 urlConnection.setDoOutput(true);
@@ -202,5 +212,49 @@ public class Utils {
     // Safe String.format() without having to specify the Locale
     public static String format(String format, Object... args) {
         return String.format(Locale.ROOT, format, args);
+    }
+
+    public static String getNetworkClass(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = cm.getActiveNetworkInfo();
+
+        if (info == null || !info.isConnected()) {
+            return "OFF"; // not connected
+        } else if (info.getType() == ConnectivityManager.TYPE_ETHERNET) {
+            return "ETHERNET";
+        } else if (info.getType() == ConnectivityManager.TYPE_WIFI) {
+            return "WIFI";
+        } else if (info.getType() == ConnectivityManager.TYPE_MOBILE) {
+            int networkType = info.getSubtype();
+            switch (networkType) {
+                case TelephonyManager.NETWORK_TYPE_GPRS:
+                case TelephonyManager.NETWORK_TYPE_EDGE:
+                case TelephonyManager.NETWORK_TYPE_CDMA:
+                case TelephonyManager.NETWORK_TYPE_1xRTT:
+                case TelephonyManager.NETWORK_TYPE_IDEN:
+                case TelephonyManager.NETWORK_TYPE_GSM:
+                    return "2G";
+                case TelephonyManager.NETWORK_TYPE_UMTS:
+                case TelephonyManager.NETWORK_TYPE_EVDO_0:
+                case TelephonyManager.NETWORK_TYPE_EVDO_A:
+                case TelephonyManager.NETWORK_TYPE_HSDPA:
+                case TelephonyManager.NETWORK_TYPE_HSUPA:
+                case TelephonyManager.NETWORK_TYPE_HSPA:
+                case TelephonyManager.NETWORK_TYPE_EVDO_B:
+                case TelephonyManager.NETWORK_TYPE_EHRPD:
+                case TelephonyManager.NETWORK_TYPE_HSPAP:
+                case TelephonyManager.NETWORK_TYPE_TD_SCDMA:
+                    return "3G";
+                case TelephonyManager.NETWORK_TYPE_LTE:
+                case TelephonyManager.NETWORK_TYPE_IWLAN:
+                case 19: // LTE_CA
+                    return "4G";
+                case TelephonyManager.NETWORK_TYPE_NR:
+                    return "5G";
+                default:
+                    return "UNKNOWN";
+            }
+        }
+        return "UNKNOWN";
     }
 }

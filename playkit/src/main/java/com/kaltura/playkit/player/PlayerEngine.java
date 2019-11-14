@@ -277,7 +277,8 @@ public interface PlayerEngine {
 
     interface AnalyticsListener {
         void onDroppedFrames(long droppedVideoFrames, long droppedVideoFramesPeriod, long totalDroppedVideoFrames);
-        void onBytesLoaded(long bytesLoaded, long totalBytesLoaded);
+        void onBytesLoaded(int trackType, int dataType, long bytesLoaded, long loadDuration, long totalBytesLoaded);
+        void onConnectionAcquired(long connectDurationMs);
         void onLoadError(IOException error, boolean wasCanceled);
     }
 }
