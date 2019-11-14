@@ -469,6 +469,13 @@ public class PlayerController implements Player {
                             eventListener.onEvent(new PlayerEvent.Error(loadError));
                         }
                     }
+
+                    @Override
+                    public void onDecoderDisabled(int skippedOutputBufferCount, int renderedOutputBufferCount) {
+                        if (eventListener != null) {
+                            eventListener.onEvent(new PlayerEvent.OutputBufferCountUpdate(skippedOutputBufferCount, renderedOutputBufferCount));
+                        }
+                    }
                 });
             } else {
                 player.setEventListener(null);

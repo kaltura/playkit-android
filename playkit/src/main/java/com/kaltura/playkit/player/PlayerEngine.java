@@ -280,5 +280,6 @@ public interface PlayerEngine {
         void onBytesLoaded(int trackType, int dataType, long bytesLoaded, long loadDuration, long totalBytesLoaded);
         void onConnectionAcquired(long connectDurationMs);
         void onLoadError(IOException error, boolean wasCanceled);
+        void onDecoderDisabled(int skippedOutputBufferCount, int renderedOutputBufferCount);
     }
 }

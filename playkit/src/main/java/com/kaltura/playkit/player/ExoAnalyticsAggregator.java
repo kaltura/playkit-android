@@ -24,14 +24,16 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     private final Map<String, Long>  domainCallStartRelTimeMap = new ConcurrentHashMap<>();
     private long totalDroppedFrames;
     private long totalBytesLoaded;
-    private long totalVideodFramesRendered;
+    private int renderedOutputBufferCount;
+    private int skippedOutputBufferCount;
 
     private PlayerEngine.AnalyticsListener listener;
 
     void reset() {
         totalDroppedFrames = 0;
         totalBytesLoaded = 0;
-        totalVideodFramesRendered = 0;
+        renderedOutputBufferCount = 0;
+        skippedOutputBufferCount = 0;
     }
 
     @Override
@@ -44,8 +46,10 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
 
     @Override
     public void onDecoderDisabled(EventTime eventTime, int trackType, DecoderCounters decoderCounters) {
-        if (trackType == C.TRACK_TYPE_VIDEO) {
-            totalVideodFramesRendered += decoderCounters.renderedOutputBufferCount;
+        if (trackType == C.TRACK_TYPE_VIDEO || trackType == C.TRACK_TYPE_DEFAULT ) {
+            skippedOutputBufferCount  = decoderCounters.skippedOutputBufferCount;
+            renderedOutputBufferCount = decoderCounters.renderedOutputBufferCount;
+            listener.onDecoderDisabled(skippedOutputBufferCount, renderedOutputBufferCount);
         }
     }
 

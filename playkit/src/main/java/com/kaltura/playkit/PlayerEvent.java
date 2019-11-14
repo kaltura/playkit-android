@@ -42,6 +42,7 @@ public class PlayerEvent implements PKEvent {
     public static final Class<PlaybackRateChanged> playbackRateChanged = PlaybackRateChanged.class;
     public static final Class<SubtitlesStyleChanged> subtitlesStyleChanged = SubtitlesStyleChanged.class;
     public static final Class<VideoFramesDropped> videoFramesDropped = VideoFramesDropped.class;
+    public static final Class<OutputBufferCountUpdate> outputBufferCountUpdate = OutputBufferCountUpdate.class;
     public static final Class<ConnectionAcquired> connectionAcquired = ConnectionAcquired.class;
     public static final Class<BytesLoaded> bytesLoaded = BytesLoaded.class;
     public static final Class<SurfaceAspectRationResizeModeChanged> surfaceAspectRationSizeModeChanged = SurfaceAspectRationResizeModeChanged.class;
@@ -264,6 +265,17 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class OutputBufferCountUpdate extends PlayerEvent {
+        public final int skippedOutputBufferCount;
+        public final int renderedOutputBufferCount;
+
+        public OutputBufferCountUpdate(int skippedOutputBufferCount, int renderedOutputBufferCount) {
+            super(Type.OUTPUT_BUFFER_COUNT_UPDATE);
+            this.skippedOutputBufferCount = skippedOutputBufferCount;
+            this.renderedOutputBufferCount = renderedOutputBufferCount;
+        }
+    }
+
     public static class BytesLoaded extends PlayerEvent {
 
         /*
@@ -340,6 +352,7 @@ public class PlayerEvent implements PKEvent {
         PLAYBACK_RATE_CHANGED,
         CONNECTION_ACQUIRED,
         VIDEO_FRAMES_DROPPED,   // Video frames were dropped, see PlayerEvent.VideoFramesDropped
+        OUTPUT_BUFFER_COUNT_UPDATE,
         BYTES_LOADED,           // Bytes were downloaded from the network
         SUBTITLE_STYLE_CHANGED,  // Subtitle style is changed.
         ASPECT_RATIO_RESIZE_MODE_CHANGED //Send when updating the Surface Vide Aspect Ratio size mode.
