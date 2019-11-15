@@ -49,7 +49,9 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
         if (trackType == C.TRACK_TYPE_VIDEO || trackType == C.TRACK_TYPE_DEFAULT ) {
             skippedOutputBufferCount  = decoderCounters.skippedOutputBufferCount;
             renderedOutputBufferCount = decoderCounters.renderedOutputBufferCount;
-            listener.onDecoderDisabled(skippedOutputBufferCount, renderedOutputBufferCount);
+            if (listener != null) {
+                listener.onDecoderDisabled(skippedOutputBufferCount, renderedOutputBufferCount);
+            }
         }
     }
 
@@ -82,7 +84,7 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     public void setListener(PlayerEngine.AnalyticsListener listener) {
         this.listener = listener;
     }
-    
+
     @Override // EXO
     public void onLoadStarted(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
         String loadedURL = loadEventInfo.uri.toString();
@@ -125,9 +127,9 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
         log.v("connectionReleased = " + loadedURL);
         if (domainCallStartRelTimeMap.containsKey(loadedURL)) {
             Long callDiffTime = domainCallStartRelTimeMap.get(loadedURL);
-            if (callDiffTime != null) {
-                    listener.onConnectionAcquired(callDiffTime);
-                    //log.v("connectionReleased SEND EVENT = " + callDiffTime + " url = " + loadedURL);
+            if (listener != null && callDiffTime != null) {
+                listener.onConnectionAcquired(callDiffTime);
+                //log.v("connectionReleased SEND EVENT = " + callDiffTime + " url = " + loadedURL);
             }
             domainCallStartRelTimeMap.remove(loadedURL);
         }
