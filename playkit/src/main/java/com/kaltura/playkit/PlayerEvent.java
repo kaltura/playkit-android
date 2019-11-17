@@ -143,11 +143,13 @@ public class PlayerEvent implements PKEvent {
     public static class PlayheadUpdated extends PlayerEvent {
 
         public final long position;
+        public final long bufferPosition;
         public final long duration;
 
-        public PlayheadUpdated(long position, long duration) {
+        public PlayheadUpdated(long position, long bufferPosition, long duration) {
             super(Type.PLAYHEAD_UPDATED);
             this.position = position;
+            this.bufferPosition = bufferPosition;
             this.duration = duration;
         }
     }

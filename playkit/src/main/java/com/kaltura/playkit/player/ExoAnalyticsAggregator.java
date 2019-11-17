@@ -85,17 +85,17 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
         this.listener = listener;
     }
 
-    @Override // EXO
-    public void onLoadStarted(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
-        String loadedURL = loadEventInfo.uri.toString();
-        log.v("onLoadStarted = " + eventTime.realtimeMs + " url = " + loadedURL);
-        if (domainCallStartRelTimeMap != null && mediaLoadData.trackType != C.TRACK_TYPE_VIDEO && domainCallStartRelTimeMap != null && mediaLoadData.trackType != C.TRACK_TYPE_AUDIO && mediaLoadData.trackType != C.TRACK_TYPE_DEFAULT) {
-            if (domainCallStartRelTimeMap.containsKey(loadedURL)) {
-                domainCallStartRelTimeMap.remove(loadedURL);
-                //log.v("onLoadStarted ignore url = " + loadedURL);
-            }
-        }
-    }
+//    @Override // EXO = > no need to remove from calculation other types
+//    public void onLoadStarted(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
+//        String loadedURL = loadEventInfo.uri.toString();
+//        log.v("onLoadStarted = " + eventTime.realtimeMs + " url = " + loadedURL);
+//        if (domainCallStartRelTimeMap != null && mediaLoadData.trackType != C.TRACK_TYPE_VIDEO && domainCallStartRelTimeMap != null && mediaLoadData.trackType != C.TRACK_TYPE_AUDIO && mediaLoadData.trackType != C.TRACK_TYPE_DEFAULT) {
+//            if (domainCallStartRelTimeMap.containsKey(loadedURL)) {
+//                domainCallStartRelTimeMap.remove(loadedURL);
+//                //log.v("onLoadStarted ignore url = " + loadedURL);
+//            }
+//        }
+//    }
 
     @Override // OKHTTTP
     public void callStart(Call call) {

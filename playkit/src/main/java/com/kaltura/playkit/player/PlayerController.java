@@ -683,6 +683,7 @@ public class PlayerController implements Player {
     private void updateProgress() {
 
         long position;
+        long bufferPosition;
         long duration;
 
         if (player == null || player.getView() == null) {
@@ -690,12 +691,13 @@ public class PlayerController implements Player {
         }
 
         position = player.getCurrentPosition();
+        bufferPosition = player.getBufferedPosition();
         duration = player.getDuration();
 
         if (!isAdDisplayed()) {
             log.v("updateProgress new position/duration = " + position + "/" + duration);
             if (eventListener != null && position > 0 && duration > 0) {
-                eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
+                eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, bufferPosition, duration));
             }
         }
         // Cancel any pending updates and schedule a new one if necessary.
