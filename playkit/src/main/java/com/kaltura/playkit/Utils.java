@@ -219,11 +219,11 @@ public class Utils {
         NetworkInfo info = cm.getActiveNetworkInfo();
 
         if (info == null || !info.isConnected()) {
-            return "OFF"; // not connected
+            return "off"; // not connected
         } else if (info.getType() == ConnectivityManager.TYPE_ETHERNET) {
-            return "ETHERNET";
+            return "ethernet";
         } else if (info.getType() == ConnectivityManager.TYPE_WIFI) {
-            return "WIFI";
+            return "wifi";
         } else if (info.getType() == ConnectivityManager.TYPE_MOBILE) {
             int networkType = info.getSubtype();
             switch (networkType) {
@@ -233,7 +233,7 @@ public class Utils {
                 case TelephonyManager.NETWORK_TYPE_1xRTT:
                 case TelephonyManager.NETWORK_TYPE_IDEN:
                 case TelephonyManager.NETWORK_TYPE_GSM:
-                    return "2G";
+                    return "2g";
                 case TelephonyManager.NETWORK_TYPE_UMTS:
                 case TelephonyManager.NETWORK_TYPE_EVDO_0:
                 case TelephonyManager.NETWORK_TYPE_EVDO_A:
@@ -244,15 +244,15 @@ public class Utils {
                 case TelephonyManager.NETWORK_TYPE_EHRPD:
                 case TelephonyManager.NETWORK_TYPE_HSPAP:
                 case TelephonyManager.NETWORK_TYPE_TD_SCDMA:
-                    return "3G";
+                    return "3g";
                 case TelephonyManager.NETWORK_TYPE_LTE:
                 case TelephonyManager.NETWORK_TYPE_IWLAN:
                 case 19: // LTE_CA
-                    return "4G";
+                    return "4g";
                 case TelephonyManager.NETWORK_TYPE_NR:
-                    return "5G";
+                    return "5g";
                 default:
-                    return "UNKNOWN";
+                    return "unknown";
             }
         }
         return "UNKNOWN";
