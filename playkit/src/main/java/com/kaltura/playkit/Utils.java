@@ -255,6 +255,6 @@ public class Utils {
                     return "unknown";
             }
         }
-        return "UNKNOWN";
+        return "unknown";
     }
 }
