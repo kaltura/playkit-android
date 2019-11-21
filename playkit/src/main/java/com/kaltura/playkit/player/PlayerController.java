@@ -31,6 +31,7 @@ import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
+import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
@@ -453,9 +454,9 @@ public class PlayerController implements Player {
                     }
 
                     @Override
-                    public void onConnectionAcquired(long connectDurationMs) {
+                    public void onConnectionAcquired(URIConnectionAcquiredInfo uriConnectionAcquiredInfo) {
                         if (eventListener != null) {
-                            eventListener.onEvent(new PlayerEvent.ConnectionAcquired(connectDurationMs));
+                            eventListener.onEvent(new PlayerEvent.ConnectionAcquired(uriConnectionAcquiredInfo));
                         }
                     }
 

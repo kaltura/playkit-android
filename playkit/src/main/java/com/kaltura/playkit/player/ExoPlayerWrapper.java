@@ -405,14 +405,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     .followSslRedirects(crossProtocolRedirectEnabled)
                     .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
                     .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
-
+            builder.eventListener(analyticsAggregator);
             if (profiler != Profiler.NOOP) {
                 final okhttp3.EventListener.Factory okListenerFactory = profiler.getOkListenerFactory();
                 if (okListenerFactory != null) {
                     builder.eventListenerFactory(okListenerFactory);
                 }
-            } else {
-                builder.eventListener(analyticsAggregator);
             }
 
             httpDataSourceFactory = new OkHttpDataSourceFactory(builder.build(), userAgent);
@@ -439,17 +437,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private static String getUserAgent(Context context) {
-        String applicationName;
-        try {
-            String packageName = context.getPackageName();
-            PackageInfo info = context.getPackageManager().getPackageInfo(packageName, 0);
-            applicationName = packageName + "/" + info.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            applicationName = "?";
-        }
-
-        return PlayKitManager.CLIENT_TAG + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE
-                + ") " + "ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
+        return Utils.getUserAgent(context) + " ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
     }
 
     private void changeState(PlayerState newState) {

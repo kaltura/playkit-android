@@ -7,21 +7,25 @@ import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
 import com.kaltura.android.exoplayer2.source.MediaSourceEventListener;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import okhttp3.Call;
 import okhttp3.Connection;
 import okhttp3.EventListener;
+import okhttp3.Handshake;
 
 import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_GET;
 
 class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener {
 
     private static final PKLog log = PKLog.get("ExoAnalyticsAggregator");
-    private final Map<String, Long>  domainCallStartRelTimeMap = new ConcurrentHashMap<>();
+    private final Map<String, URIConnectionAcquiredInfo> urlCallTimeMap = new ConcurrentHashMap<>();
     private long totalDroppedFrames;
     private long totalBytesLoaded;
     private int renderedOutputBufferCount;
@@ -85,24 +89,15 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
         this.listener = listener;
     }
 
-//    @Override // EXO = > no need to remove from calculation other types
-//    public void onLoadStarted(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
-//        String loadedURL = loadEventInfo.uri.toString();
-//        log.v("onLoadStarted = " + eventTime.realtimeMs + " url = " + loadedURL);
-//        if (domainCallStartRelTimeMap != null && mediaLoadData.trackType != C.TRACK_TYPE_VIDEO && domainCallStartRelTimeMap != null && mediaLoadData.trackType != C.TRACK_TYPE_AUDIO && mediaLoadData.trackType != C.TRACK_TYPE_DEFAULT) {
-//            if (domainCallStartRelTimeMap.containsKey(loadedURL)) {
-//                domainCallStartRelTimeMap.remove(loadedURL);
-//                //log.v("onLoadStarted ignore url = " + loadedURL);
-//            }
-//        }
-//    }
-
     @Override // OKHTTTP
     public void callStart(Call call) {
         String loadedURL = call.request().url().toString();
         log.v("callStart = " + loadedURL);
         if (HTTP_METHOD_GET.equals(call.request().method())) {
-            domainCallStartRelTimeMap.put(loadedURL, SystemClock.elapsedRealtime());
+            URIConnectionAcquiredInfo connectionInfo = new URIConnectionAcquiredInfo();
+            connectionInfo.connectDurationMs = SystemClock.elapsedRealtime();
+            connectionInfo.url = loadedURL;
+            urlCallTimeMap.put(loadedURL, connectionInfo);
             //log.v("callStart put = " + SystemClock.elapsedRealtime() + " url = " + loadedURL);
         }
     }
@@ -111,13 +106,8 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     public void connectionAcquired(Call call, Connection connection) {
         String loadedURL = call.request().url().toString();
         log.v("connectionAcquired = " + loadedURL);
-        if (domainCallStartRelTimeMap.containsKey(loadedURL)) {
-            Long callStartTime = domainCallStartRelTimeMap.get(loadedURL);
-            if (callStartTime != null) {
-                long acquireTime = SystemClock.elapsedRealtime();
-                //log.v("connectionAcquired update " + " url = " + loadedURL);
-                domainCallStartRelTimeMap.put(loadedURL, (acquireTime - callStartTime));
-            }
+        if (urlCallTimeMap.containsKey(loadedURL) && urlCallTimeMap.get(loadedURL) != null) {
+            urlCallTimeMap.get(loadedURL).connectDurationMs = (SystemClock.elapsedRealtime() - urlCallTimeMap.get(loadedURL).connectDurationMs);
         }
     }
 
@@ -125,13 +115,51 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     public void connectionReleased(Call call, Connection connection) {
         String loadedURL = call.request().url().toString();
         log.v("connectionReleased = " + loadedURL);
-        if (domainCallStartRelTimeMap.containsKey(loadedURL)) {
-            Long callDiffTime = domainCallStartRelTimeMap.get(loadedURL);
-            if (listener != null && callDiffTime != null) {
-                listener.onConnectionAcquired(callDiffTime);
-                //log.v("connectionReleased SEND EVENT = " + callDiffTime + " url = " + loadedURL);
+        if (urlCallTimeMap.containsKey(loadedURL) && urlCallTimeMap.get(loadedURL) != null) {
+            if (listener != null) {
+                listener.onConnectionAcquired(urlCallTimeMap.get(loadedURL));
+                log.e("connectionReleased SEND EVENT " + urlCallTimeMap.get(loadedURL).toString());
             }
-            domainCallStartRelTimeMap.remove(loadedURL);
+
+            urlCallTimeMap.remove(loadedURL);
+        }
+    }
+
+    @Override
+    public void dnsStart(Call call, String domainName) {
+        log.v("dnsStart");
+        String loadedURL = call.request().url().toString();
+        if (urlCallTimeMap.containsKey(loadedURL) && urlCallTimeMap.get(loadedURL) != null) {
+            if (urlCallTimeMap.containsKey(loadedURL)) {
+                urlCallTimeMap.get(loadedURL).dnsDurationMs = SystemClock.elapsedRealtime();
+            }
+        }
+    }
+
+    @Override
+    public void dnsEnd(Call call, String domainName, List<InetAddress> inetAddressList) {
+        log.v("dnsEnd");
+        String loadedURL = call.request().url().toString();
+        if (urlCallTimeMap.containsKey(loadedURL) && urlCallTimeMap.get(loadedURL) != null) {
+            urlCallTimeMap.get(loadedURL).dnsDurationMs = (SystemClock.elapsedRealtime() - urlCallTimeMap.get(loadedURL).dnsDurationMs);
+        }
+    }
+
+    @Override
+    public void secureConnectStart(Call call) {
+        log.v("secureConnectStart");
+        String loadedURL = call.request().url().toString();
+        if (urlCallTimeMap.containsKey(loadedURL) && urlCallTimeMap.get(loadedURL) != null) {
+            urlCallTimeMap.get(loadedURL).tlsDurationMs = SystemClock.elapsedRealtime();
+        }
+    }
+
+    @Override
+    public void secureConnectEnd(Call call, Handshake handshake) {
+        log.v("secureConnectEnd");
+        String loadedURL = call.request().url().toString();
+        if (urlCallTimeMap.containsKey(loadedURL) && urlCallTimeMap.get(loadedURL) != null) {
+            urlCallTimeMap.get(loadedURL).tlsDurationMs = (SystemClock.elapsedRealtime() - urlCallTimeMap.get(loadedURL).tlsDurationMs);
         }
     }
 }

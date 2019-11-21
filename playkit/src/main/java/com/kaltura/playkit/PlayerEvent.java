@@ -20,6 +20,7 @@ import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
 import com.kaltura.playkit.player.VideoTrack;
 import com.kaltura.playkit.player.metadata.PKMetadata;
+import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
 
 import java.util.List;
 
@@ -259,11 +260,11 @@ public class PlayerEvent implements PKEvent {
 
     public static class ConnectionAcquired extends PlayerEvent {
 
-        public final long connectDurationMs;
+        public final URIConnectionAcquiredInfo uriConnectionAcquiredInfo;
 
-        public ConnectionAcquired(long connectDurationMs) {
+        public ConnectionAcquired(URIConnectionAcquiredInfo uriConnectionAcquiredInfo) {
             super(Type.CONNECTION_ACQUIRED);
-            this.connectDurationMs = connectDurationMs;
+            this.uriConnectionAcquiredInfo = uriConnectionAcquiredInfo;
         }
     }
 

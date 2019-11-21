@@ -12,11 +12,13 @@
 
 package com.kaltura.playkit;
 
+import android.app.UiModeManager;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.net.ConnectivityManager;
-import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
-import android.net.NetworkRequest;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 
@@ -40,6 +42,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import static android.content.Context.UI_MODE_SERVICE;
 import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_GET;
 import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
 
@@ -217,7 +220,6 @@ public class Utils {
     public static String getNetworkClass(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo info = cm.getActiveNetworkInfo();
-
         if (info == null || !info.isConnected()) {
             return "off"; // not connected
         } else if (info.getType() == ConnectivityManager.TYPE_ETHERNET) {
@@ -256,5 +258,31 @@ public class Utils {
             }
         }
         return "unknown";
+    }
+
+    public static String getUserAgent(Context context) {
+        String applicationName;
+        try {
+            String packageName = context.getPackageName();
+            PackageInfo info = context.getPackageManager().getPackageInfo(packageName, 0);
+            applicationName = packageName + "/" + info.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            applicationName = "?";
+        }
+        return  PlayKitManager.CLIENT_TAG + " " + applicationName + " " + System.getProperty("http.agent") + " " + Utils.getDeviceType(context);
+    }
+
+    public static String getDeviceType(Context context) {
+        UiModeManager uiModeManager = (UiModeManager) context.getSystemService(UI_MODE_SERVICE);
+        if (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
+            return "TV";
+        } else {
+            TelephonyManager manager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            if (manager.getPhoneType() == TelephonyManager.PHONE_TYPE_NONE) {
+                return "Tablet";
+            } else {
+                return "Mobile";
+            }
+        }
     }
 }
