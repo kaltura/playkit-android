@@ -18,6 +18,7 @@ import com.kaltura.playkit.PlaybackInfo;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.player.metadata.PKMetadata;
+import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
@@ -277,7 +278,9 @@ public interface PlayerEngine {
 
     interface AnalyticsListener {
         void onDroppedFrames(long droppedVideoFrames, long droppedVideoFramesPeriod, long totalDroppedVideoFrames);
-        void onBytesLoaded(long bytesLoaded, long totalBytesLoaded);
+        void onBytesLoaded(int trackType, int dataType, long bytesLoaded, long loadDuration, long totalBytesLoaded);
+        void onConnectionAcquired(URIConnectionAcquiredInfo uriConnectionAcquiredInfo);
         void onLoadError(IOException error, boolean wasCanceled);
+        void onDecoderDisabled(int skippedOutputBufferCount, int renderedOutputBufferCount);
     }
 }

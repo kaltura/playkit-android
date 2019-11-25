@@ -101,4 +101,8 @@ public class Consts {
     // won't change the actual behavior in ExoPlayer. It's only provided as reference.
     // 60 is the number of seconds set in ExoPlayer 2.10.3.
     public static final int MIN_OFFLINE_LICENSE_DURATION_TO_PLAY = 60;
+
+    public static final String HTTP_METHOD_POST = "POST";
+
+    public static final String HTTP_METHOD_GET = "GET";
 }
