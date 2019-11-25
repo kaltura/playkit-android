@@ -20,6 +20,7 @@ import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
 import com.kaltura.playkit.player.VideoTrack;
 import com.kaltura.playkit.player.metadata.PKMetadata;
+import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
 
 import java.util.List;
 
@@ -42,6 +43,8 @@ public class PlayerEvent implements PKEvent {
     public static final Class<PlaybackRateChanged> playbackRateChanged = PlaybackRateChanged.class;
     public static final Class<SubtitlesStyleChanged> subtitlesStyleChanged = SubtitlesStyleChanged.class;
     public static final Class<VideoFramesDropped> videoFramesDropped = VideoFramesDropped.class;
+    public static final Class<OutputBufferCountUpdate> outputBufferCountUpdate = OutputBufferCountUpdate.class;
+    public static final Class<ConnectionAcquired> connectionAcquired = ConnectionAcquired.class;
     public static final Class<BytesLoaded> bytesLoaded = BytesLoaded.class;
     public static final Class<SurfaceAspectRationResizeModeChanged> surfaceAspectRationSizeModeChanged = SurfaceAspectRationResizeModeChanged.class;
 
@@ -141,11 +144,13 @@ public class PlayerEvent implements PKEvent {
     public static class PlayheadUpdated extends PlayerEvent {
 
         public final long position;
+        public final long bufferPosition;
         public final long duration;
 
-        public PlayheadUpdated(long position, long duration) {
+        public PlayheadUpdated(long position, long bufferPosition, long duration) {
             super(Type.PLAYHEAD_UPDATED);
             this.position = position;
+            this.bufferPosition = bufferPosition;
             this.duration = duration;
         }
     }
@@ -253,13 +258,63 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
+    public static class ConnectionAcquired extends PlayerEvent {
+
+        public final URIConnectionAcquiredInfo uriConnectionAcquiredInfo;
+
+        public ConnectionAcquired(URIConnectionAcquiredInfo uriConnectionAcquiredInfo) {
+            super(Type.CONNECTION_ACQUIRED);
+            this.uriConnectionAcquiredInfo = uriConnectionAcquiredInfo;
+        }
+    }
+
+    public static class OutputBufferCountUpdate extends PlayerEvent {
+        public final int skippedOutputBufferCount;
+        public final int renderedOutputBufferCount;
+
+        public OutputBufferCountUpdate(int skippedOutputBufferCount, int renderedOutputBufferCount) {
+            super(Type.OUTPUT_BUFFER_COUNT_UPDATE);
+            this.skippedOutputBufferCount = skippedOutputBufferCount;
+            this.renderedOutputBufferCount = renderedOutputBufferCount;
+        }
+    }
+
     public static class BytesLoaded extends PlayerEvent {
+
+        /*
+        TRACK_TYPE_UNKNOWN = -1;
+        TRACK_TYPE_DEFAULT = 0;
+        TRACK_TYPE_AUDIO = 1;
+        TRACK_TYPE_VIDEO = 2;
+        TRACK_TYPE_TEXT = 3;
+        TRACK_TYPE_METADATA = 4;
+        TRACK_TYPE_CAMERA_MOTION = 5;
+        TRACK_TYPE_NONE = 6;
+*/
+        public final int trackType;
+/*
+        DATA_TYPE_UNKNOWN = 0;
+        DATA_TYPE_MEDIA = 1;
+        DATA_TYPE_MEDIA_INITIALIZATION = 2;
+        DATA_TYPE_DRM = 3;
+        DATA_TYPE_MANIFEST = 4;
+        DATA_TYPE_TIME_SYNCHRONIZATION = 5;
+        DATA_TYPE_AD = 6;
+        DATA_TYPE_MEDIA_PROGRESSIVE_LIVE = 7;
+
+ */
+        public final int dataType;
+
         public final long bytesLoaded;
+        public final long loadDuration;
         public final long totalBytesLoaded;
 
-        public BytesLoaded(long bytesLoaded, long totalBytesLoaded) {
+        public BytesLoaded(int trackType, int dataType, long bytesLoaded, long loadDuration, long totalBytesLoaded) {
             super(Type.BYTES_LOADED);
+            this.trackType = trackType;
+            this.dataType = dataType;
             this.bytesLoaded = bytesLoaded;
+            this.loadDuration = loadDuration;
             this.totalBytesLoaded = totalBytesLoaded;
         }
 
@@ -298,7 +353,9 @@ public class PlayerEvent implements PKEvent {
         AUDIO_TRACK_CHANGED,
         TEXT_TRACK_CHANGED,
         PLAYBACK_RATE_CHANGED,
+        CONNECTION_ACQUIRED,
         VIDEO_FRAMES_DROPPED,   // Video frames were dropped, see PlayerEvent.VideoFramesDropped
+        OUTPUT_BUFFER_COUNT_UPDATE,
         BYTES_LOADED,           // Bytes were downloaded from the network
         SUBTITLE_STYLE_CHANGED,  // Subtitle style is changed.
         ASPECT_RATIO_RESIZE_MODE_CHANGED //Send when updating the Surface Vide Aspect Ratio size mode.
