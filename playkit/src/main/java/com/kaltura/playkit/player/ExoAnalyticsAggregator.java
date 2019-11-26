@@ -118,7 +118,7 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
         if (urlCallTimeMap.containsKey(loadedURL) && urlCallTimeMap.get(loadedURL) != null) {
             if (listener != null) {
                 listener.onConnectionAcquired(urlCallTimeMap.get(loadedURL));
-                log.e("connectionReleased SEND EVENT " + urlCallTimeMap.get(loadedURL).toString());
+                log.v("connectionReleased SEND EVENT " + urlCallTimeMap.get(loadedURL).toString());
             }
 
             urlCallTimeMap.remove(loadedURL);
