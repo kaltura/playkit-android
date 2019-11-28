@@ -12,7 +12,6 @@
 
 package com.kaltura.playkit.player;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Matrix;

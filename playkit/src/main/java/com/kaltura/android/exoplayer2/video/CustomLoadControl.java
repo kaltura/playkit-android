@@ -1,6 +1,5 @@
 package com.kaltura.android.exoplayer2.video;
 
-import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.DefaultLoadControl;
 import com.kaltura.android.exoplayer2.upstream.DefaultAllocator;
 

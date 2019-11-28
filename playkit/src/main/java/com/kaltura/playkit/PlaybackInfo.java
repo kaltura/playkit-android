@@ -71,11 +71,10 @@ public class PlaybackInfo {
 
     @Override
     public String toString() {
-        String sb = "videoBitrate =" + videoBitrate + System.getProperty("line.separator") +
+        return "videoBitrate =" + videoBitrate + System.getProperty("line.separator") +
                 "audioBitrate =" + audioBitrate + System.getProperty("line.separator") +
                 "videoThroughput =" + videoThroughput + System.getProperty("line.separator") +
                 "videoWidth =" + videoWidth + System.getProperty("line.separator") +
                 "videoHeight =" + videoHeight + System.getProperty("line.separator");
-        return sb;
     }
 }

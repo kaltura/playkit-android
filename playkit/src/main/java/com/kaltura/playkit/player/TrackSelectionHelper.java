@@ -14,7 +14,6 @@ package com.kaltura.playkit.player;
 
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

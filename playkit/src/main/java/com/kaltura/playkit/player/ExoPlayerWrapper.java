@@ -13,10 +13,7 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.NonNull;
@@ -590,6 +587,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             case ExoPlaybackException.TYPE_UNEXPECTED:
             default:
                 errorType = PKPlayerErrorType.UNEXPECTED;
+                break;
+            case ExoPlaybackException.TYPE_OUT_OF_MEMORY:
+                errorType = PKPlayerErrorType.OUT_OF_MEMORY;
+                break;
+            case ExoPlaybackException.TYPE_REMOTE:
+                errorType = PKPlayerErrorType.REMOTE_COMPONENT_ERROR;
                 break;
         }
 
