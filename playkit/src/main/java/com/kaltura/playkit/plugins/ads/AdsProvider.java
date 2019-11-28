@@ -46,6 +46,10 @@ public interface AdsProvider {
 
     long getCurrentPosition();
 
+    Long getPlaybackStartPosition();
+
+    boolean isAlwaysStartWithPreroll();
+    
     default long getFakePlayerPosition(long realPlayerPosition) { return 0; }
 
     default long getFakePlayerDuration(long duration) { return 0; }
@@ -58,7 +62,7 @@ public interface AdsProvider {
 
     void skipAd();
 
-    void seekTo(long position);
+    default void seekTo(long position) {};
 
     default PKAdPluginType getAdPluginType() { return PKAdPluginType.client; }
 

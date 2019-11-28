@@ -64,34 +64,22 @@ public class DefaultAdControllerImpl implements AdController {
 
     @Override
     public boolean isAdDisplayed() {
-        if (adsProvider != null) {
-            return adsProvider.isAdDisplayed();
-        }
-        return false;
+        return adsProvider != null && adsProvider.isAdDisplayed();
     }
 
     @Override
     public boolean isAdPlaying() {
-        if (adsProvider != null) {
-            return adsProvider.isAdDisplayed() && !adsProvider.isAdPaused();
-        }
-        return false;
+        return adsProvider != null && adsProvider.isAdDisplayed() && !adsProvider.isAdPaused();
     }
 
     @Override
     public boolean isAdError() {
-        if (adsProvider != null) {
-            return adsProvider.isAdError();
-        }
-        return false;
+        return adsProvider != null && adsProvider.isAdError();
     }
 
     @Override
     public boolean isAllAdsCompleted() {
-        if (adsProvider != null) {
-            return adsProvider.isAllAdsCompleted();
-        }
-        return false;
+        return adsProvider != null && adsProvider.isAllAdsCompleted();
     }
 
     @Override

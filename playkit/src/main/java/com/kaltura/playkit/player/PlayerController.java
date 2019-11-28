@@ -13,9 +13,12 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.view.ViewGroup;
 
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKController;
@@ -66,6 +69,8 @@ public class PlayerController implements Player {
     private long targetSeekPosition;
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
+
+    private Handler handler = new Handler(Looper.getMainLooper());
 
     @NonNull
     private Profiler profiler = ProfilerFactory.get();
@@ -682,7 +687,7 @@ public class PlayerController implements Player {
     }
 
     private void updateProgress() {
-
+        //log.d("Start updateProgress");
         long position;
         long bufferPosition;
         long duration;
@@ -702,8 +707,8 @@ public class PlayerController implements Player {
             }
         }
         // Cancel any pending updates and schedule a new one if necessary.
-        player.getView().removeCallbacks(updateProgressAction);
-        player.getView().postDelayed(updateProgressAction, Consts.DEFAULT_PLAYHEAD_UPDATE_MILI);
+        handler.removeCallbacks(updateProgressAction);
+        handler.postDelayed(updateProgressAction, Consts.DEFAULT_PLAYHEAD_UPDATE_MILI);
 
     }
 
@@ -718,7 +723,7 @@ public class PlayerController implements Player {
 
     private void cancelUpdateProgress() {
         if (player != null && player.getView() != null) {
-            player.getView().removeCallbacks(updateProgressAction);
+            handler.removeCallbacks(updateProgressAction);
         }
     }
 

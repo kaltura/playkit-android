@@ -175,6 +175,13 @@ public class AdInfo implements PKAdInfo {
         this.adHeight = adHeight;
     }
 
+    public void setAdSkipOffset(long skipTimeOffset) {
+        this.skipTimeOffset = skipTimeOffset;
+        if (this.skipTimeOffset > 0) {
+            isAdSkippable = true;
+        }
+    }
+
     public long getSkipTimeOffset() {
         return skipTimeOffset;
     }

@@ -43,7 +43,12 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     public void load(PKMediaSourceConfig mediaSourceConfig) {
         this.mediaSourceConfig = mediaSourceConfig;
         if (adsProvider != null) {
-            if (adsProvider.isAdRequested() || adsProvider.isAllAdsCompleted()) {
+            //incase no ads provided - need to prepare so treating load state as ad was requested
+            if (adsProvider.getCuePoints() != null && adsProvider.getCuePoints().getAdCuePoints() != null && adsProvider.getCuePoints().getAdCuePoints().size() == 0) {
+                adsProvider.setAdRequested(true); // need to prepare immeidatly
+            }
+
+            if (preparePlayerForPlayback()) {
                 log.d("AdWrapper calling super.prepare");
                 super.load(mediaSourceConfig);
             } else {
@@ -51,6 +56,14 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
                 adsProvider.setAdProviderListener(this);
             }
         }
+    }
+
+    private boolean preparePlayerForPlayback() {
+
+        return (adsProvider.isAdRequested() && (adsProvider.getCuePoints() == null || adsProvider.getAdInfo() == null)) || adsProvider.isAllAdsCompleted() ||
+                adsProvider.isAdError() || adsProvider.isAdDisplayed() ||
+                adsProvider.isAdRequested() && adsProvider.getCuePoints() != null && (!adsProvider.getCuePoints().hasPreRoll() || getCurrentPosition() > 0) ||
+                adsProvider.getPlaybackStartPosition() != null && adsProvider.getPlaybackStartPosition() > 0 && !adsProvider.isAlwaysStartWithPreroll();
     }
 
     @Override
@@ -77,7 +90,6 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
         log.d("AdWrapper decorator Calling player play");
         getView().showVideoSurface();
         super.play();
-
     }
 
     @Override
@@ -151,7 +163,7 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     public void onAdLoadingFinished() {
         log.d("onAdLoadingFinished pkPrepareReason");
         if (mediaSourceConfig == null) {
-            log.d("AdWrapper onAdLoadingFinished mediaSourceConfig == null");
+            log.e("AdWrapper onAdLoadingFinished mediaSourceConfig == null");
             return;
         }
         load(mediaSourceConfig);
