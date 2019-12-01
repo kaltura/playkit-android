@@ -584,15 +584,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             case ExoPlaybackException.TYPE_RENDERER:
                 errorType = PKPlayerErrorType.RENDERER_ERROR;
                 break;
-            case ExoPlaybackException.TYPE_UNEXPECTED:
-            default:
-                errorType = PKPlayerErrorType.UNEXPECTED;
-                break;
             case ExoPlaybackException.TYPE_OUT_OF_MEMORY:
                 errorType = PKPlayerErrorType.OUT_OF_MEMORY;
                 break;
             case ExoPlaybackException.TYPE_REMOTE:
                 errorType = PKPlayerErrorType.REMOTE_COMPONENT_ERROR;
+                break;
+            case ExoPlaybackException.TYPE_UNEXPECTED:
+            default:
+                errorType = PKPlayerErrorType.UNEXPECTED;
                 break;
         }
 
