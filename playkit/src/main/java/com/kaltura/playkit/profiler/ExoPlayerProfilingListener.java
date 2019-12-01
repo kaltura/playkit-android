@@ -219,6 +219,12 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             case ExoPlaybackException.TYPE_UNEXPECTED:
                 type = "UnexpectedError";
                 break;
+            case ExoPlaybackException.TYPE_OUT_OF_MEMORY:
+                type = "OutOfMemoryError";
+                break;
+            case ExoPlaybackException.TYPE_REMOTE:
+                type = "remoteComponentError";
+                break;
         }
 
         log("PlayerError", field("type", type), "cause={" + error.getCause() + "}");

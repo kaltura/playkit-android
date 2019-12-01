@@ -25,7 +25,9 @@ public enum PKPlayerErrorType {
     FAILED_TO_INITIALIZE_PLAYER(7004),
     DRM_ERROR(7005),
     TRACK_SELECTION_FAILED(7006),
-    LOAD_ERROR(7007);
+    LOAD_ERROR(7007),
+    OUT_OF_MEMORY(7008),
+    REMOTE_COMPONENT_ERROR(7009);
 
     public final int errorCode;
 

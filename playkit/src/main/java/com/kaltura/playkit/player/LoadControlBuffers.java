@@ -91,16 +91,12 @@ public class LoadControlBuffers {
     }
 
     public boolean isDefaultValuesModified() {
-        if (minPlayerBufferMs == DEFAULT_MIN_BUFFER_MS &&
-                maxPlayerBufferMs == DEFAULT_MAX_BUFFER_MS &&
-                minBufferAfterInteractionMs == DEFAULT_BUFFER_FOR_PLAYBACK_MS &&
-                minBufferAfterReBufferMs == DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS &&
-                backBufferDurationMs == DEFAULT_BACK_BUFFER_DURATION_MS &&
-                retainBackBufferFromKeyframe == DEFAULT_RETAIN_BACK_BUFFER_FROM_KEYFRAME &&
-                allowedVideoJoiningTimeMs == DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS) {
-            return false;
-        } else {
-            return true;
-        }
+        return minPlayerBufferMs != DEFAULT_MIN_BUFFER_MS ||
+                maxPlayerBufferMs != DEFAULT_MAX_BUFFER_MS ||
+                minBufferAfterInteractionMs != DEFAULT_BUFFER_FOR_PLAYBACK_MS ||
+                minBufferAfterReBufferMs != DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS ||
+                backBufferDurationMs != DEFAULT_BACK_BUFFER_DURATION_MS ||
+                retainBackBufferFromKeyframe != DEFAULT_RETAIN_BACK_BUFFER_FROM_KEYFRAME ||
+                allowedVideoJoiningTimeMs != DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS;
     }
 }

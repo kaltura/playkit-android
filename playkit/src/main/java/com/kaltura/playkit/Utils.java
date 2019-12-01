@@ -219,6 +219,10 @@ public class Utils {
 
     public static String getNetworkClass(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) {
+            return "unknown";
+        }
+
         NetworkInfo info = cm.getActiveNetworkInfo();
         if (info == null || !info.isConnected()) {
             return "off"; // not connected
@@ -273,16 +277,20 @@ public class Utils {
     }
 
     public static String getDeviceType(Context context) {
+        String deviceType = "Mobile";
+
         UiModeManager uiModeManager = (UiModeManager) context.getSystemService(UI_MODE_SERVICE);
+        if (uiModeManager == null) {
+            return deviceType;
+        }
         if (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
-            return "TV";
+            deviceType = "TV";
         } else {
             TelephonyManager manager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-            if (manager.getPhoneType() == TelephonyManager.PHONE_TYPE_NONE) {
-                return "Tablet";
-            } else {
-                return "Mobile";
+            if (manager != null && manager.getPhoneType() == TelephonyManager.PHONE_TYPE_NONE) {
+                deviceType = "Tablet";
             }
         }
+        return deviceType;
     }
 }
