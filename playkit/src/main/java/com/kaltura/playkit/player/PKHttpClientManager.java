@@ -52,8 +52,8 @@ public class PKHttpClientManager {
     }
 
     // Called by the player
-    static boolean useOkHttp() {
-        return HTTP_PROVIDER_OK.equalsIgnoreCase(httpProviderId);
+    static boolean useSystem() {
+        return HTTP_PROVIDER_SYSTEM.equalsIgnoreCase(httpProviderId);
     }
 
     /**
@@ -79,7 +79,7 @@ public class PKHttpClientManager {
 
         List<Callable<Void>> calls = new ArrayList<>(urls.length);
         for (String url : urls) {
-            final Callable<Void> callable = useOkHttp() ? getOkCallable(url) : getSystemCallable(url);
+            final Callable<Void> callable = useSystem() ? getSystemCallable(url) : getOkCallable(url);
 
             for (int i = 0; i < WARMUP_TIMES; i++) {
                 calls.add(callable);

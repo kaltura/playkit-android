@@ -12,9 +12,17 @@
 
 package com.kaltura.playkit;
 
+import android.app.UiModeManager;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+
+import android.telephony.TelephonyManager;
 import android.util.Base64;
 
 import com.google.gson.JsonObject;
@@ -34,11 +42,16 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import static android.content.Context.UI_MODE_SERVICE;
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_GET;
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
+
 /**
  * @hide
  */
 
 public class Utils {
+
     private static final PKLog log = PKLog.get("Utils");
 
     private static final int ASSET_READ_LIMIT_BYTES = 1024 * 1024;
@@ -150,7 +163,7 @@ public class Utils {
 
         try {
             urlConnection = (HttpURLConnection) new URL(url).openConnection();
-            urlConnection.setRequestMethod(post ? "POST" : "GET");
+            urlConnection.setRequestMethod(post ? HTTP_METHOD_POST : HTTP_METHOD_GET);
 
             if (data != null) {
                 urlConnection.setDoOutput(true);
@@ -202,5 +215,82 @@ public class Utils {
     // Safe String.format() without having to specify the Locale
     public static String format(String format, Object... args) {
         return String.format(Locale.ROOT, format, args);
+    }
+
+    public static String getNetworkClass(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) {
+            return "unknown";
+        }
+
+        NetworkInfo info = cm.getActiveNetworkInfo();
+        if (info == null || !info.isConnected()) {
+            return "off"; // not connected
+        } else if (info.getType() == ConnectivityManager.TYPE_ETHERNET) {
+            return "ethernet";
+        } else if (info.getType() == ConnectivityManager.TYPE_WIFI) {
+            return "wifi";
+        } else if (info.getType() == ConnectivityManager.TYPE_MOBILE) {
+            int networkType = info.getSubtype();
+            switch (networkType) {
+                case TelephonyManager.NETWORK_TYPE_GPRS:
+                case TelephonyManager.NETWORK_TYPE_EDGE:
+                case TelephonyManager.NETWORK_TYPE_CDMA:
+                case TelephonyManager.NETWORK_TYPE_1xRTT:
+                case TelephonyManager.NETWORK_TYPE_IDEN:
+                case TelephonyManager.NETWORK_TYPE_GSM:
+                    return "2g";
+                case TelephonyManager.NETWORK_TYPE_UMTS:
+                case TelephonyManager.NETWORK_TYPE_EVDO_0:
+                case TelephonyManager.NETWORK_TYPE_EVDO_A:
+                case TelephonyManager.NETWORK_TYPE_HSDPA:
+                case TelephonyManager.NETWORK_TYPE_HSUPA:
+                case TelephonyManager.NETWORK_TYPE_HSPA:
+                case TelephonyManager.NETWORK_TYPE_EVDO_B:
+                case TelephonyManager.NETWORK_TYPE_EHRPD:
+                case TelephonyManager.NETWORK_TYPE_HSPAP:
+                case TelephonyManager.NETWORK_TYPE_TD_SCDMA:
+                    return "3g";
+                case TelephonyManager.NETWORK_TYPE_LTE:
+                case TelephonyManager.NETWORK_TYPE_IWLAN:
+                case 19: // LTE_CA
+                    return "4g";
+                case TelephonyManager.NETWORK_TYPE_NR:
+                    return "5g";
+                default:
+                    return "unknown";
+            }
+        }
+        return "unknown";
+    }
+
+    public static String getUserAgent(Context context) {
+        String applicationName;
+        try {
+            String packageName = context.getPackageName();
+            PackageInfo info = context.getPackageManager().getPackageInfo(packageName, 0);
+            applicationName = packageName + "/" + info.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            applicationName = "?";
+        }
+        return  PlayKitManager.CLIENT_TAG + " " + applicationName + " " + System.getProperty("http.agent") + " " + Utils.getDeviceType(context);
+    }
+
+    public static String getDeviceType(Context context) {
+        String deviceType = "Mobile";
+
+        UiModeManager uiModeManager = (UiModeManager) context.getSystemService(UI_MODE_SERVICE);
+        if (uiModeManager == null) {
+            return deviceType;
+        }
+        if (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
+            deviceType = "TV";
+        } else {
+            TelephonyManager manager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            if (manager != null && manager.getPhoneType() == TelephonyManager.PHONE_TYPE_NONE) {
+                deviceType = "Tablet";
+            }
+        }
+        return deviceType;
     }
 }

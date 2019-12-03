@@ -13,9 +13,12 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.view.ViewGroup;
 
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKController;
@@ -31,6 +34,7 @@ import com.kaltura.playkit.PlayerEngineWrapper;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.ads.AdsPlayerEngineWrapper;
+import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
@@ -65,6 +69,8 @@ public class PlayerController implements Player {
     private long targetSeekPosition;
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
+
+    private Handler handler = new Handler(Looper.getMainLooper());
 
     @NonNull
     private Profiler profiler = ProfilerFactory.get();
@@ -446,9 +452,16 @@ public class PlayerController implements Player {
                     }
 
                     @Override
-                    public void onBytesLoaded(long bytesLoaded, long totalBytesLoaded) {
+                    public void onBytesLoaded(int trackType, int dataType, long bytesLoaded, long loadDuration, long totalBytesLoaded) {
                         if (eventListener != null) {
-                            eventListener.onEvent(new PlayerEvent.BytesLoaded(bytesLoaded, totalBytesLoaded));
+                            eventListener.onEvent(new PlayerEvent.BytesLoaded(trackType, dataType, bytesLoaded, loadDuration, totalBytesLoaded));
+                        }
+                    }
+
+                    @Override
+                    public void onConnectionAcquired(URIConnectionAcquiredInfo uriConnectionAcquiredInfo) {
+                        if (eventListener != null) {
+                            eventListener.onEvent(new PlayerEvent.ConnectionAcquired(uriConnectionAcquiredInfo));
                         }
                     }
 
@@ -460,6 +473,13 @@ public class PlayerController implements Player {
 
                         if (eventListener != null) {
                             eventListener.onEvent(new PlayerEvent.Error(loadError));
+                        }
+                    }
+
+                    @Override
+                    public void onDecoderDisabled(int skippedOutputBufferCount, int renderedOutputBufferCount) {
+                        if (eventListener != null) {
+                            eventListener.onEvent(new PlayerEvent.OutputBufferCountUpdate(skippedOutputBufferCount, renderedOutputBufferCount));
                         }
                     }
                 });
@@ -667,8 +687,9 @@ public class PlayerController implements Player {
     }
 
     private void updateProgress() {
-
+        //log.d("Start updateProgress");
         long position;
+        long bufferPosition;
         long duration;
 
         if (player == null || player.getView() == null) {
@@ -676,17 +697,18 @@ public class PlayerController implements Player {
         }
 
         position = player.getCurrentPosition();
+        bufferPosition = player.getBufferedPosition();
         duration = player.getDuration();
 
         if (!isAdDisplayed()) {
             log.v("updateProgress new position/duration = " + position + "/" + duration);
             if (eventListener != null && position > 0 && duration > 0) {
-                eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, duration));
+                eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, bufferPosition, duration));
             }
         }
         // Cancel any pending updates and schedule a new one if necessary.
-        player.getView().removeCallbacks(updateProgressAction);
-        player.getView().postDelayed(updateProgressAction, Consts.DEFAULT_PLAYHEAD_UPDATE_MILI);
+        handler.removeCallbacks(updateProgressAction);
+        handler.postDelayed(updateProgressAction, Consts.DEFAULT_PLAYHEAD_UPDATE_MILI);
 
     }
 
@@ -701,7 +723,7 @@ public class PlayerController implements Player {
 
     private void cancelUpdateProgress() {
         if (player != null && player.getView() != null) {
-            player.getView().removeCallbacks(updateProgressAction);
+            handler.removeCallbacks(updateProgressAction);
         }
     }
 

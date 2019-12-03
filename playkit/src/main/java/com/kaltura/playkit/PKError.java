@@ -46,6 +46,6 @@ public class PKError {
     }
     public enum Severity {
         Recoverable,
-        Fatal;
+        Fatal
     }
 }

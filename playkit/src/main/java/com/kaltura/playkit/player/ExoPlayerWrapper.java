@@ -13,10 +13,7 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -402,7 +399,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER));
         }
 
-        if (PKHttpClientManager.useOkHttp()) {
+        if (!PKHttpClientManager.useSystem()) {
 
             final OkHttpClient.Builder builder = PKHttpClientManager.newClientBuilder()
                     .cookieJar(NativeCookieJarBridge.sharedCookieJar)
@@ -410,10 +407,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     .followSslRedirects(crossProtocolRedirectEnabled)
                     .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
                     .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
-
-            final okhttp3.EventListener.Factory okListenerFactory = profiler.getOkListenerFactory();
-            if (okListenerFactory != null) {
-                builder.eventListenerFactory(okListenerFactory);
+            builder.eventListener(analyticsAggregator);
+            if (profiler != Profiler.NOOP) {
+                final okhttp3.EventListener.Factory okListenerFactory = profiler.getOkListenerFactory();
+                if (okListenerFactory != null) {
+                    builder.eventListenerFactory(okListenerFactory);
+                }
             }
 
             httpDataSourceFactory = new OkHttpDataSourceFactory(builder.build(), userAgent);
@@ -440,17 +439,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private static String getUserAgent(Context context) {
-        String applicationName;
-        try {
-            String packageName = context.getPackageName();
-            PackageInfo info = context.getPackageManager().getPackageInfo(packageName, 0);
-            applicationName = packageName + "/" + info.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            applicationName = "?";
-        }
-
-        return PlayKitManager.CLIENT_TAG + " " + applicationName + " (Linux;Android " + Build.VERSION.RELEASE
-                + ") " + "ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
+        return Utils.getUserAgent(context) + " ExoPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
     }
 
     private void changeState(PlayerState newState) {
@@ -599,6 +588,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 break;
             case ExoPlaybackException.TYPE_RENDERER:
                 errorType = PKPlayerErrorType.RENDERER_ERROR;
+                break;
+            case ExoPlaybackException.TYPE_OUT_OF_MEMORY:
+                errorType = PKPlayerErrorType.OUT_OF_MEMORY;
+                break;
+            case ExoPlaybackException.TYPE_REMOTE:
+                errorType = PKPlayerErrorType.REMOTE_COMPONENT_ERROR;
                 break;
             case ExoPlaybackException.TYPE_UNEXPECTED:
             default:
