@@ -258,9 +258,9 @@ public class MediaSupport {
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-    public static class WidevineModularUtil {
+    private static class WidevineModularUtil {
 
-        public static Boolean checkWidevineModular(Boolean widevineModular) throws MediaSupport.DrmNotProvisionedException {
+        private static Boolean checkWidevineModular(Boolean widevineModular) throws MediaSupport.DrmNotProvisionedException {
 
             if (widevineModular != null) {
                 return widevineModular;
