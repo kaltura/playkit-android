@@ -42,6 +42,7 @@ import java.util.MissingResourceException;
 
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_UNKNOWN;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
 
 /**
@@ -329,38 +330,41 @@ class TrackSelectionHelper {
     private int getUpdatedDefaultTrackIndex(List<? extends BaseTrack> trackList, int defaultTrackIndex) {
 
         if (!trackList.isEmpty()) {
+            int trackType = TRACK_TYPE_UNKNOWN;
             if (trackList.get(0) instanceof AudioTrack) {
-                defaultTrackIndex = findDefaultTrackIndex(TRACK_TYPE_AUDIO, trackList, defaultTrackIndex);
+                trackType = TRACK_TYPE_AUDIO;
             } else if (trackList.get(0) instanceof TextTrack) {
-                defaultTrackIndex = findDefaultTrackIndex(TRACK_TYPE_TEXT, trackList, defaultTrackIndex);
+                trackType = TRACK_TYPE_TEXT;
             }
-        }
 
-        return defaultTrackIndex;
-    }
-
-    private int findDefaultTrackIndex(int trackType, List<? extends BaseTrack> trackList, int defaultTrackIndex) {
-        if (trackList == null) {
-            return  defaultTrackIndex;
-        }
-
-        for (int i = 0; i < trackList.size(); i++) {
-            if (trackSelectionArray != null && trackSelectionArray.length >= trackType) {
+            if (trackType != TRACK_TYPE_UNKNOWN && trackSelectionArray != null && trackSelectionArray.length >= trackType) {
                 TrackSelection trackSelection = trackSelectionArray.get(trackType);
                 if (trackSelection != null) {
-                    Format selectedFormat = trackSelection.getSelectedFormat();
-                    if (selectedFormat != null) {
-                        if (selectedFormat.language != null && trackList.get(i) != null && selectedFormat.language.equals(trackList.get(i).getTrackLanguage())) {
-                            defaultTrackIndex = i;
-                            break;
-                        }
-                    }
+                    defaultTrackIndex = findDefaultTrackIndex(trackSelection, trackList, defaultTrackIndex);
                 }
             }
         }
 
         return defaultTrackIndex;
     }
+
+    private int findDefaultTrackIndex(TrackSelection trackSelection, List<? extends BaseTrack> trackList, int defaultTrackIndex) {
+        if (trackList == null || trackSelection == null) {
+            return defaultTrackIndex;
+        }
+
+        for (int i = 0; i < trackList.size(); i++) {
+            Format selectedFormat = trackSelection.getSelectedFormat();
+            if (selectedFormat != null) {
+                if (selectedFormat.language != null && trackList.get(i) != null && selectedFormat.language.equals(trackList.get(i).getLanguage())) {
+                    defaultTrackIndex = i;
+                    break;
+                }
+            }
+        }
+
+        return defaultTrackIndex;
+}
 
 
     /**

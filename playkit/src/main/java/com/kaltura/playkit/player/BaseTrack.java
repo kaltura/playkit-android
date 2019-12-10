@@ -60,7 +60,7 @@ public abstract class BaseTrack {
         return selectionFlag;
     }
 
-    String getTrackLanguage() {
+    String getLanguage() {
         return null;
     }
 }
