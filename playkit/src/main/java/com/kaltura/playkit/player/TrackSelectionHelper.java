@@ -324,43 +324,48 @@ class TrackSelectionHelper {
         }
 
         if (!trackList.isEmpty()) {
-            if (trackList.get(0) instanceof AudioTrack) {
-                for (int i = 0; i < trackList.size(); i++) {
-                    AudioTrack audioTrack = (AudioTrack) trackList.get(i);
-                    if (trackSelectionArray != null && trackSelectionArray.length >= TRACK_TYPE_AUDIO) {
-                        TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_AUDIO);
-                        if (trackSelection != null) {
-                            Format selectedFormat = trackSelection.getSelectedFormat();
-                            if (selectedFormat != null) {
-                                if (selectedFormat.language != null && selectedFormat.language.equals(audioTrack.getLanguage())) {
-                                    defaultTrackIndex = i;
-                                    break;
-                                }
+            defaultTrackIndex = getUpdatedDefaultTrackIndex(trackList, defaultTrackIndex);
+        }
+
+        return restoreLastSelectedTrack(trackList, lastSelectedTrackId, defaultTrackIndex);
+    }
+
+    private int getUpdatedDefaultTrackIndex(List<? extends BaseTrack> trackList, int defaultTrackIndex) {
+        if (trackList.get(0) instanceof AudioTrack) {
+            defaultTrackIndex = findDefaultTrackIndex(TRACK_TYPE_AUDIO, trackList, defaultTrackIndex);
+        } else if (trackList.get(0) instanceof TextTrack) {
+            defaultTrackIndex = findDefaultTrackIndex(TRACK_TYPE_TEXT, trackList, defaultTrackIndex);
+        }
+        return defaultTrackIndex;
+    }
+
+    private int findDefaultTrackIndex(int trackType, List<? extends BaseTrack> trackList, int defaultTrackIndex) {
+        for (int i = 0; i < trackList.size(); i++) {
+            if (trackSelectionArray != null && trackSelectionArray.length >= trackType) {
+                TrackSelection trackSelection = trackSelectionArray.get(trackType);
+                if (trackSelection != null) {
+                    Format selectedFormat = trackSelection.getSelectedFormat();
+                    if (selectedFormat != null) {
+                        if (trackType == TRACK_TYPE_AUDIO) {
+                            AudioTrack audioTrack = (AudioTrack) trackList.get(i);
+                            if (selectedFormat.language != null && audioTrack != null && selectedFormat.language.equals(audioTrack.getLanguage())) {
+                                defaultTrackIndex = i;
+                                break;
                             }
-                        }
-                    }
-                }
-            } else if (trackList.get(0) instanceof TextTrack) {
-                if (trackSelectionArray != null && trackSelectionArray.length >= TRACK_TYPE_TEXT) {
-                    TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_TEXT);
-                    if (trackSelection != null) {
-                        Format selectedFormat = trackSelection.getSelectedFormat();
-                        if (selectedFormat != null) {
-                            for (int i = 0; i < trackList.size(); i++) {
-                                TextTrack textTrack = (TextTrack) trackList.get(i);
-                                if (selectedFormat.language != null && selectedFormat.language.equals(textTrack.getLanguage())) {
-                                    defaultTrackIndex = i;
-                                    break;
-                                }
+                        } else if (trackType == TRACK_TYPE_TEXT) {
+                            TextTrack textTrack = (TextTrack) trackList.get(i);
+                            if (selectedFormat.language != null && textTrack != null && selectedFormat.language.equals(textTrack.getLanguage())) {
+                                defaultTrackIndex = i;
+                                break;
                             }
                         }
                     }
                 }
             }
         }
-
-        return restoreLastSelectedTrack(trackList, lastSelectedTrackId, defaultTrackIndex);
+        return defaultTrackIndex;
     }
+
 
     /**
      * Will restore last selected track, only if there was actual selection and it is
