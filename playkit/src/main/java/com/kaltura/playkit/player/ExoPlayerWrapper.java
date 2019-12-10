@@ -632,7 +632,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
         //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
         if (shouldGetTracksInfo) {
-            shouldGetTracksInfo = !trackSelectionHelper.prepareTracks();
+            shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(trackSelections);
         }
 
         trackSelectionHelper.notifyAboutTrackChange(trackSelections);
