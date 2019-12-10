@@ -340,7 +340,7 @@ class TrackSelectionHelper {
                         }
                     }
                 }
-            } else if (trackList.get(0) instanceof AudioTrack) {
+            } else if (trackList.get(0) instanceof TextTrack) {
                 if (trackSelectionArray != null && trackSelectionArray.length >= TRACK_TYPE_TEXT) {
                     TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_TEXT);
                     if (trackSelection != null) {
