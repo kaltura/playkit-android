@@ -340,6 +340,9 @@ class TrackSelectionHelper {
     }
 
     private int findDefaultTrackIndex(int trackType, List<? extends BaseTrack> trackList, int defaultTrackIndex) {
+        if (trackList == null) {
+            return  defaultTrackIndex;
+        }
 
         for (int i = 0; i < trackList.size(); i++) {
             if (trackSelectionArray != null && trackSelectionArray.length >= trackType) {
