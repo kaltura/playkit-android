@@ -337,7 +337,7 @@ class TrackSelectionHelper {
                 trackType = TRACK_TYPE_TEXT;
             }
 
-            if (trackType != TRACK_TYPE_UNKNOWN && trackSelectionArray != null && trackSelectionArray.length >= trackType) {
+            if (trackType != TRACK_TYPE_UNKNOWN && trackSelectionArray != null && trackType < trackSelectionArray.length) {
                 TrackSelection trackSelection = trackSelectionArray.get(trackType);
                 if (trackSelection != null && trackSelection.getSelectedFormat() != null) {
                     defaultTrackIndex = findDefaultTrackIndex(trackSelection.getSelectedFormat().language, trackList, defaultTrackIndex);
