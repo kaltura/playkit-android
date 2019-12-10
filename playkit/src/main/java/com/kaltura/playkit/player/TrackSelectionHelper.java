@@ -339,8 +339,8 @@ class TrackSelectionHelper {
 
             if (trackType != TRACK_TYPE_UNKNOWN && trackSelectionArray != null && trackSelectionArray.length >= trackType) {
                 TrackSelection trackSelection = trackSelectionArray.get(trackType);
-                if (trackSelection != null) {
-                    defaultTrackIndex = findDefaultTrackIndex(trackSelection, trackList, defaultTrackIndex);
+                if (trackSelection != null && trackSelection.getSelectedFormat() != null) {
+                    defaultTrackIndex = findDefaultTrackIndex(trackSelection.getSelectedFormat().language, trackList, defaultTrackIndex);
                 }
             }
         }
@@ -348,24 +348,19 @@ class TrackSelectionHelper {
         return defaultTrackIndex;
     }
 
-    private int findDefaultTrackIndex(TrackSelection trackSelection, List<? extends BaseTrack> trackList, int defaultTrackIndex) {
-        if (trackList == null || trackSelection == null) {
-            return defaultTrackIndex;
-        }
+    private int findDefaultTrackIndex(String selectedFormatLanguage, List<? extends BaseTrack> trackList, int defaultTrackIndex) {
+        if (trackList != null && selectedFormatLanguage != null) {
 
-        for (int i = 0; i < trackList.size(); i++) {
-            Format selectedFormat = trackSelection.getSelectedFormat();
-            if (selectedFormat != null) {
-                if (selectedFormat.language != null && trackList.get(i) != null && selectedFormat.language.equals(trackList.get(i).getLanguage())) {
-                    defaultTrackIndex = i;
-                    break;
-                }
+            for (int i = 0; i < trackList.size(); i++) {
+                    if (trackList.get(i) != null && selectedFormatLanguage.equals(trackList.get(i).getLanguage())) {
+                        defaultTrackIndex = i;
+                        break;
+                    }
             }
         }
 
         return defaultTrackIndex;
-}
-
+    }
 
     /**
      * Will restore last selected track, only if there was actual selection and it is
