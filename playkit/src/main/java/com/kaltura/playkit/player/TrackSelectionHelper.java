@@ -134,8 +134,7 @@ class TrackSelectionHelper {
      *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
-    protected boolean prepareTracks(TrackSelectionArray trackSelections) {
-        this.trackSelectionArray = trackSelections;
+    protected boolean prepareTracks() {
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
             log.w("Trying to get current MappedTrackInfo returns null");
@@ -318,42 +317,6 @@ class TrackSelectionHelper {
                 int selectionFlag = trackList.get(i).getSelectionFlag();
                 if (selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH) {
                     defaultTrackIndex = i;
-                }
-            }
-        }
-
-        if (!trackList.isEmpty()) {
-            if (trackList.get(0) instanceof AudioTrack) {
-                for (int i = 0; i < trackList.size(); i++) {
-                    AudioTrack audioTrack = (AudioTrack) trackList.get(i);
-                    if (trackSelectionArray != null && trackSelectionArray.length >= TRACK_TYPE_AUDIO) {
-                        TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_AUDIO);
-                        if (trackSelection != null) {
-                            Format selectedFormat = trackSelection.getSelectedFormat();
-                            if (selectedFormat != null) {
-                                if (selectedFormat.language != null && selectedFormat.language.equals(audioTrack.getLanguage())) {
-                                    defaultTrackIndex = i;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            } else if (trackList.get(0) instanceof AudioTrack) {
-                if (trackSelectionArray != null && trackSelectionArray.length >= TRACK_TYPE_TEXT) {
-                    TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_TEXT);
-                    if (trackSelection != null) {
-                        Format selectedFormat = trackSelection.getSelectedFormat();
-                        if (selectedFormat != null) {
-                            for (int i = 0; i < trackList.size(); i++) {
-                                TextTrack textTrack = (TextTrack) trackList.get(i);
-                                if (selectedFormat.language != null && selectedFormat.language.equals(textTrack.getLanguage())) {
-                                    defaultTrackIndex = i;
-                                    break;
-                                }
-                            }
-                        }
-                    }
                 }
             }
         }
