@@ -131,6 +131,7 @@ class TrackSelectionHelper {
      * Prepare {@link PKTracks} object for application.
      * When the object is created, notify {@link ExoPlayerWrapper} about that,
      * and pass the {@link PKTracks} as parameter.
+     * @param trackSelections the selected tracks.
      *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
