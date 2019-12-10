@@ -59,4 +59,8 @@ public abstract class BaseTrack {
     int getSelectionFlag() {
         return selectionFlag;
     }
+
+    String getTrackLanguage() {
+        return null;
+    }
 }

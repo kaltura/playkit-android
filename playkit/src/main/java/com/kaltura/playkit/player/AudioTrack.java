@@ -74,4 +74,9 @@ public class AudioTrack extends BaseTrack {
     public int getChannelCount() {
         return channelCount;
     }
+
+    @Override
+    String getTrackLanguage() {
+        return language;
+    }
 }

@@ -323,46 +323,39 @@ class TrackSelectionHelper {
             }
         }
 
-        if (!trackList.isEmpty()) {
-            defaultTrackIndex = getUpdatedDefaultTrackIndex(trackList, defaultTrackIndex);
-        }
-
-        return restoreLastSelectedTrack(trackList, lastSelectedTrackId, defaultTrackIndex);
+        return restoreLastSelectedTrack(trackList, lastSelectedTrackId, getUpdatedDefaultTrackIndex(trackList, defaultTrackIndex));
     }
 
     private int getUpdatedDefaultTrackIndex(List<? extends BaseTrack> trackList, int defaultTrackIndex) {
-        if (trackList.get(0) instanceof AudioTrack) {
-            defaultTrackIndex = findDefaultTrackIndex(TRACK_TYPE_AUDIO, trackList, defaultTrackIndex);
-        } else if (trackList.get(0) instanceof TextTrack) {
-            defaultTrackIndex = findDefaultTrackIndex(TRACK_TYPE_TEXT, trackList, defaultTrackIndex);
+
+        if (!trackList.isEmpty()) {
+            if (trackList.get(0) instanceof AudioTrack) {
+                defaultTrackIndex = findDefaultTrackIndex(TRACK_TYPE_AUDIO, trackList, defaultTrackIndex);
+            } else if (trackList.get(0) instanceof TextTrack) {
+                defaultTrackIndex = findDefaultTrackIndex(TRACK_TYPE_TEXT, trackList, defaultTrackIndex);
+            }
         }
+
         return defaultTrackIndex;
     }
 
     private int findDefaultTrackIndex(int trackType, List<? extends BaseTrack> trackList, int defaultTrackIndex) {
+
         for (int i = 0; i < trackList.size(); i++) {
             if (trackSelectionArray != null && trackSelectionArray.length >= trackType) {
                 TrackSelection trackSelection = trackSelectionArray.get(trackType);
                 if (trackSelection != null) {
                     Format selectedFormat = trackSelection.getSelectedFormat();
                     if (selectedFormat != null) {
-                        if (trackType == TRACK_TYPE_AUDIO) {
-                            AudioTrack audioTrack = (AudioTrack) trackList.get(i);
-                            if (selectedFormat.language != null && audioTrack != null && selectedFormat.language.equals(audioTrack.getLanguage())) {
-                                defaultTrackIndex = i;
-                                break;
-                            }
-                        } else if (trackType == TRACK_TYPE_TEXT) {
-                            TextTrack textTrack = (TextTrack) trackList.get(i);
-                            if (selectedFormat.language != null && textTrack != null && selectedFormat.language.equals(textTrack.getLanguage())) {
-                                defaultTrackIndex = i;
-                                break;
-                            }
+                        if (selectedFormat.language != null && trackList.get(i) != null && selectedFormat.language.equals(trackList.get(i).getTrackLanguage())) {
+                            defaultTrackIndex = i;
+                            break;
                         }
                     }
                 }
             }
         }
+
         return defaultTrackIndex;
     }
 

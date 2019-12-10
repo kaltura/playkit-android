@@ -52,4 +52,8 @@ public class TextTrack extends BaseTrack {
         return label;
     }
 
+    @Override
+    String getTrackLanguage() {
+        return language;
+    }
 }
