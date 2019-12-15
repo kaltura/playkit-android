@@ -1,0 +1,155 @@
+package com.kaltura.playkit;
+
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class PKPlaylistMedia implements Parcelable {
+
+
+    private String id;
+    private String name;
+    private String tags;
+    private String dataUrl;
+    private String description;
+    private String thumbnailUrl;
+    private String flavorParamsIds;
+    private PKMediaEntry.MediaEntryType type;
+    private int msDuration;
+    private Integer dvrStatus; // 1-LIVE DVR  0-LIVE
+
+    public PKPlaylistMedia() { }
+
+    public int getMsDuration() { return msDuration; }
+
+    public Integer getDvrStatus() {
+        return dvrStatus;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public String getDataUrl() {
+        return dataUrl;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public String getFlavorParamsIds() {
+        return flavorParamsIds;
+    }
+
+    public PKMediaEntry.MediaEntryType getType() {
+        return type;
+    }
+
+    public PKPlaylistMedia setMsDuration(int msDuration) {
+        this.msDuration = msDuration;
+        return this;
+    }
+
+    public PKPlaylistMedia setDvrStatus(Integer dvrStatus) {
+        this.dvrStatus = dvrStatus;
+        return this;
+    }
+
+    public PKPlaylistMedia setId(String id) {
+        this.id = id;
+        return this;
+    }
+
+    public PKPlaylistMedia setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public PKPlaylistMedia setTags(String tags) {
+        this.tags = tags;
+        return this;
+    }
+
+    public PKPlaylistMedia setDataUrl(String dataUrl) {
+        this.dataUrl = dataUrl;
+        return this;
+    }
+
+    public PKPlaylistMedia setDescription(String description) {
+        this.description = description;
+        return this;
+    }
+
+    public PKPlaylistMedia setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
+        return this;
+    }
+
+    public PKPlaylistMedia setFlavorParamsIds(String flavorParamsIds) {
+        this.flavorParamsIds = flavorParamsIds;
+        return this;
+    }
+
+    public PKPlaylistMedia setType(PKMediaEntry.MediaEntryType type) {
+        this.type = type;
+        return this;
+    }
+
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.id);
+        dest.writeString(this.name);
+        dest.writeString(this.tags);
+        dest.writeString(this.dataUrl);
+        dest.writeString(this.description);
+        dest.writeString(this.thumbnailUrl);
+        dest.writeString(this.flavorParamsIds);
+        dest.writeInt(this.type == null ? -1 : this.type.ordinal());
+        dest.writeInt(this.msDuration);
+        dest.writeValue(this.dvrStatus);
+    }
+
+    protected PKPlaylistMedia(Parcel in) {
+        this.id = in.readString();
+        this.name = in.readString();
+        this.tags = in.readString();
+        this.dataUrl = in.readString();
+        this.description = in.readString();
+        this.thumbnailUrl = in.readString();
+        this.flavorParamsIds = in.readString();
+        int tmpType = in.readInt();
+        this.type = tmpType == -1 ? null : PKMediaEntry.MediaEntryType.values()[tmpType];
+        this.msDuration = in.readInt();
+        this.dvrStatus = (Integer) in.readValue(Integer.class.getClassLoader());
+    }
+
+    public static final Creator<PKPlaylistMedia> CREATOR = new Creator<PKPlaylistMedia>() {
+        @Override
+        public PKPlaylistMedia createFromParcel(Parcel source) {
+            return new PKPlaylistMedia(source);
+        }
+
+        @Override
+        public PKPlaylistMedia[] newArray(int size) {
+            return new PKPlaylistMedia[size];
+        }
+    };
+}
