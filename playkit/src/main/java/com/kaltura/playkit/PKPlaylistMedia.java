@@ -3,6 +3,9 @@ package com.kaltura.playkit;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class PKPlaylistMedia implements Parcelable {
 
 
@@ -14,12 +17,13 @@ public class PKPlaylistMedia implements Parcelable {
     private String thumbnailUrl;
     private String flavorParamsIds;
     private PKMediaEntry.MediaEntryType type;
-    private int msDuration;
+    private long msDuration;
     private Integer dvrStatus; // 1-LIVE DVR  0-LIVE
+    public Map<String, String> metadata;
 
     public PKPlaylistMedia() { }
 
-    public int getMsDuration() { return msDuration; }
+    public long getMsDuration() { return msDuration; }
 
     public Integer getDvrStatus() {
         return dvrStatus;
@@ -57,7 +61,11 @@ public class PKPlaylistMedia implements Parcelable {
         return type;
     }
 
-    public PKPlaylistMedia setMsDuration(int msDuration) {
+    public Map<String,String> getMetadata() {
+        return metadata;
+    }
+
+    public PKPlaylistMedia setMsDuration(long msDuration) {
         this.msDuration = msDuration;
         return this;
     }
@@ -107,6 +115,10 @@ public class PKPlaylistMedia implements Parcelable {
         return this;
     }
 
+    public PKPlaylistMedia setMetadata(Map<String,String> metadata) {
+        this.metadata = metadata;
+        return this;
+    }
 
     @Override
     public int describeContents() {
@@ -123,8 +135,13 @@ public class PKPlaylistMedia implements Parcelable {
         dest.writeString(this.thumbnailUrl);
         dest.writeString(this.flavorParamsIds);
         dest.writeInt(this.type == null ? -1 : this.type.ordinal());
-        dest.writeInt(this.msDuration);
+        dest.writeLong(this.msDuration);
         dest.writeValue(this.dvrStatus);
+        dest.writeInt(this.metadata.size());
+        for (Map.Entry<String, String> entry : this.metadata.entrySet()) {
+            dest.writeString(entry.getKey());
+            dest.writeString(entry.getValue());
+        }
     }
 
     protected PKPlaylistMedia(Parcel in) {
@@ -137,8 +154,15 @@ public class PKPlaylistMedia implements Parcelable {
         this.flavorParamsIds = in.readString();
         int tmpType = in.readInt();
         this.type = tmpType == -1 ? null : PKMediaEntry.MediaEntryType.values()[tmpType];
-        this.msDuration = in.readInt();
+        this.msDuration = in.readLong();
         this.dvrStatus = (Integer) in.readValue(Integer.class.getClassLoader());
+        int metadataSize = in.readInt();
+        this.metadata = new HashMap<String, String>(metadataSize);
+        for (int i = 0; i < metadataSize; i++) {
+            String key = in.readString();
+            String value = in.readString();
+            this.metadata.put(key, value);
+        }
     }
 
     public static final Creator<PKPlaylistMedia> CREATOR = new Creator<PKPlaylistMedia>() {
