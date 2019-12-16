@@ -14,7 +14,7 @@ public class PKPlaylist implements Parcelable {
     private String thumbnailUrl;
     private PKPlaylistType playlistType;
     private Integer duration;
-    List<PKPlaylistMedia> playlistMediaList;
+    List<PKPlaylistMedia> mediaList;
 
 
     public PKPlaylist() {
@@ -48,8 +48,8 @@ public class PKPlaylist implements Parcelable {
         return duration;
     }
 
-    public List<PKPlaylistMedia> getPlaylistMediaList() {
-        return playlistMediaList;
+    public List<PKPlaylistMedia> getMediaList() {
+        return mediaList;
     }
 
     public PKPlaylist setKs(String ks) {
@@ -87,8 +87,8 @@ public class PKPlaylist implements Parcelable {
         return this;
     }
 
-    public PKPlaylist setPlaylistMediaList(List<PKPlaylistMedia> playlistMediaList) {
-        this.playlistMediaList = playlistMediaList;
+    public PKPlaylist setMediaList(List<PKPlaylistMedia> mediaList) {
+        this.mediaList = mediaList;
         return this;
     }
 
@@ -106,7 +106,7 @@ public class PKPlaylist implements Parcelable {
         dest.writeString(this.thumbnailUrl);
         dest.writeInt(this.playlistType == null ? -1 : this.playlistType.ordinal());
         dest.writeValue(this.duration);
-        dest.writeTypedList(this.playlistMediaList);
+        dest.writeTypedList(this.mediaList);
     }
 
     protected PKPlaylist(Parcel in) {
@@ -118,7 +118,7 @@ public class PKPlaylist implements Parcelable {
         int tmpPlaylistType = in.readInt();
         this.playlistType = tmpPlaylistType == -1 ? null : PKPlaylistType.values()[tmpPlaylistType];
         this.duration = (Integer) in.readValue(Integer.class.getClassLoader());
-        this.playlistMediaList = in.createTypedArrayList(PKPlaylistMedia.CREATOR);
+        this.mediaList = in.createTypedArrayList(PKPlaylistMedia.CREATOR);
     }
 
     public static final Creator<PKPlaylist> CREATOR = new Creator<PKPlaylist>() {
