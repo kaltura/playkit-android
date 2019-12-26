@@ -12,6 +12,10 @@
 
 package com.kaltura.playkit;
 
+import android.view.Surface;
+import android.view.SurfaceView;
+import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -280,6 +284,10 @@ public interface Player {
      * Replay the media.
      */
     void replay();
+
+    void setVideoSurfaceView(SurfaceView surfaceView);
+
+    void setVideoSurface(Surface surface);
 
     /**
      * The Player's View.

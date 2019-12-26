@@ -10,6 +10,7 @@ public class PKPlaylistMedia implements Parcelable {
 
 
     private String id;
+    private String ks;
     private String name;
     private String tags;
     private String dataUrl;
@@ -23,15 +24,11 @@ public class PKPlaylistMedia implements Parcelable {
 
     public PKPlaylistMedia() { }
 
-    public long getMsDuration() { return msDuration; }
-
-    public Integer getDvrStatus() {
-        return dvrStatus;
-    }
-
     public String getId() {
         return id;
     }
+
+    public String getKs() { return ks; }
 
     public String getName() {
         return name;
@@ -65,18 +62,19 @@ public class PKPlaylistMedia implements Parcelable {
         return metadata;
     }
 
-    public PKPlaylistMedia setMsDuration(long msDuration) {
-        this.msDuration = msDuration;
-        return this;
-    }
+    public long getMsDuration() { return msDuration; }
 
-    public PKPlaylistMedia setDvrStatus(Integer dvrStatus) {
-        this.dvrStatus = dvrStatus;
-        return this;
+    public Integer getDvrStatus() {
+        return dvrStatus;
     }
 
     public PKPlaylistMedia setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public PKPlaylistMedia setKs(String ks) {
+        this.ks = ks;
         return this;
     }
 
@@ -115,6 +113,16 @@ public class PKPlaylistMedia implements Parcelable {
         return this;
     }
 
+    public PKPlaylistMedia setMsDuration(long msDuration) {
+        this.msDuration = msDuration;
+        return this;
+    }
+
+    public PKPlaylistMedia setDvrStatus(Integer dvrStatus) {
+        this.dvrStatus = dvrStatus;
+        return this;
+    }
+
     public PKPlaylistMedia setMetadata(Map<String,String> metadata) {
         this.metadata = metadata;
         return this;
@@ -128,6 +136,7 @@ public class PKPlaylistMedia implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.id);
+        dest.writeString(this.ks);
         dest.writeString(this.name);
         dest.writeString(this.tags);
         dest.writeString(this.dataUrl);
@@ -146,6 +155,7 @@ public class PKPlaylistMedia implements Parcelable {
 
     protected PKPlaylistMedia(Parcel in) {
         this.id = in.readString();
+        this.ks = in.readString();
         this.name = in.readString();
         this.tags = in.readString();
         this.dataUrl = in.readString();

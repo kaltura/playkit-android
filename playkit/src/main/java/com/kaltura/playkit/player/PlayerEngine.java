@@ -12,6 +12,10 @@
 
 package com.kaltura.playkit.player;
 
+import android.view.Surface;
+import android.view.SurfaceView;
+import android.view.View;
+
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PlaybackInfo;
@@ -69,6 +73,9 @@ public interface PlayerEngine {
      */
     void replay();
 
+    default void setVideoSurfaceView(SurfaceView surfaceView) {}
+
+    default void setVideoSurface(Surface surface) {}
     /**
      * Getter for the current playback position.
      *

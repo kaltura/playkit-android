@@ -15,6 +15,9 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Surface;
+import android.view.SurfaceView;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -417,6 +420,22 @@ public class PlayerController implements Player {
         log.v("replay");
         if (assertPlayerIsNotNull("replay()")) {
             player.replay();
+        }
+    }
+
+    @Override
+    public void setVideoSurfaceView(SurfaceView surfaceView) {
+        log.v("setVideoSurfaceView");
+        if (assertPlayerIsNotNull("setVideoSurfaceView()")) {
+            player.setVideoSurfaceView(surfaceView);
+        }
+    }
+
+    @Override
+    public void setVideoSurface(Surface surface) {
+        log.v("setVideoSurface");
+        if (assertPlayerIsNotNull("setVideoSurface()")) {
+            player.setVideoSurface(surface);
         }
     }
 

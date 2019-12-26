@@ -16,6 +16,13 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.TextureView;
+import android.view.View;
+import android.widget.ListView;
+
 import androidx.annotation.NonNull;
 
 import com.kaltura.android.exoplayer2.C;
@@ -957,6 +964,22 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             player.seekTo(0);
             player.setPlayWhenReady(true);
             sendDistinctEvent(PlayerEvent.Type.REPLAY);
+        }
+    }
+
+    @Override
+    public void setVideoSurfaceView(SurfaceView surfaceView) {
+        log.v("setVideoSurfaceView");
+        if (assertPlayerIsNotNull("setVideoSurfaceView()")) {
+                player.setVideoSurfaceView(surfaceView);
+        }
+    }
+
+    @Override
+    public void setVideoSurface(Surface surface) {
+        log.v("setVideoSurface");
+        if (assertPlayerIsNotNull("setVideoSurface()")) {
+            player.setVideoSurface(surface);
         }
     }
 
