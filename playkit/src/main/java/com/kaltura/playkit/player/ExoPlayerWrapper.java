@@ -937,6 +937,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             isSeeking = false;
             playerPosition = position;
             player.seekTo(position);
+            player.getVideoComponent();
         }
     }
 
@@ -971,7 +972,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void setVideoSurfaceView(SurfaceView surfaceView) {
         log.v("setVideoSurfaceView");
         if (assertPlayerIsNotNull("setVideoSurfaceView()")) {
-                player.setVideoSurfaceView(surfaceView);
+                exoPlayerView.setVideoSurfaceView(surfaceView);
+                exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured(), playerSettings.isVideoViewHidden());
+                //player.setVideoSurfaceView(surfaceView);
         }
     }
 

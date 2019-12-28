@@ -49,6 +49,7 @@ import java.util.List;
 class ExoPlayerView extends BaseExoplayerView {
     private static final PKLog log = PKLog.get("ExoPlayerView");
     private View shutterView;
+
     private View videoSurface;
     private SubtitleView subtitleView;
     private AspectRatioFrameLayout contentFrame;
@@ -210,8 +211,21 @@ class ExoPlayerView extends BaseExoplayerView {
      */
     private void createVideoSurface(boolean useTextureView) {
         if (useTextureView) {
-            videoSurface = new TextureView(getContext());
+             new TextureView(getContext());
         } else {
+            videoSurface = new SurfaceView(getContext());
+        }
+
+        //Set view size to match the parent.
+        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT);
+        videoSurface.setLayoutParams(params);
+    }
+
+
+    private void createVideoSurface(SurfaceView surfaceView) {
+        if (videoSurface == null) {
             videoSurface = new SurfaceView(getContext());
         }
 
@@ -268,7 +282,12 @@ class ExoPlayerView extends BaseExoplayerView {
     public SubtitleView getSubtitleView() {
         return subtitleView;
     }
-    
+
+    @Override
+    public void setVideoSurfaceView(SurfaceView surfaceView) {
+        createVideoSurface(surfaceView);
+    }
+
     @Override
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
