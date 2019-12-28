@@ -2,6 +2,7 @@ package com.kaltura.playkit.player;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.Surface;
 import android.view.SurfaceView;
 
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
@@ -23,7 +24,7 @@ public abstract class BaseExoplayerView extends PlayerView {
 
     public abstract void setPlayer(SimpleExoPlayer player, boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews);
 
-    public abstract void setVideoSurfaceProperties(boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews);
+    public abstract void setVideoSurfaceProperties(boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews, Surface surface);
 
     public abstract SubtitleView getSubtitleView();
 

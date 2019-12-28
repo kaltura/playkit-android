@@ -693,7 +693,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         this.useTextureView = playerSettings.useTextureView();
         this.isSurfaceSecured = playerSettings.isSurfaceSecured();
-        exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured(), playerSettings.isVideoViewHidden());
+        exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured(), playerSettings.isVideoViewHidden(), null);
     }
 
     @Override
@@ -973,7 +973,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         log.v("setVideoSurfaceView");
         if (assertPlayerIsNotNull("setVideoSurfaceView()")) {
                 exoPlayerView.setVideoSurfaceView(surfaceView);
-                exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured(), playerSettings.isVideoViewHidden());
+                exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured(), playerSettings.isVideoViewHidden(), null);
                 //player.setVideoSurfaceView(surfaceView);
         }
     }
@@ -982,7 +982,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void setVideoSurface(Surface surface) {
         log.v("setVideoSurface");
         if (assertPlayerIsNotNull("setVideoSurface()")) {
-            player.setVideoSurface(surface);
+            //player.setVideoSurface(surface);
+            exoPlayerView.setVideoSurfaceProperties(playerSettings.useTextureView(), playerSettings.isSurfaceSecured(), playerSettings.isVideoViewHidden(), surface);
+
         }
     }
 

@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
@@ -49,7 +50,7 @@ import java.util.List;
 class ExoPlayerView extends BaseExoplayerView {
     private static final PKLog log = PKLog.get("ExoPlayerView");
     private View shutterView;
-
+    private Surface surface;
     private View videoSurface;
     private SubtitleView subtitleView;
     private AspectRatioFrameLayout contentFrame;
@@ -116,7 +117,7 @@ class ExoPlayerView extends BaseExoplayerView {
             removeVideoSurface();
         }
         this.player = player;
-        addVideoSurface(useTextureView, isSurfaceSecured, hideVideoViews);
+        addVideoSurface(useTextureView, isSurfaceSecured, hideVideoViews, null);
     }
 
     /**
@@ -126,10 +127,10 @@ class ExoPlayerView extends BaseExoplayerView {
      * @param isSurfaceSecured - should allow secure rendering of the surface
      */
     @Override
-    public void setVideoSurfaceProperties(boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews) {
+    public void setVideoSurfaceProperties(boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews, Surface surface) {
         if (player != null) {
             removeVideoSurface();
-            addVideoSurface(useTextureView, isSurfaceSecured, hideVideoViews);
+            addVideoSurface(useTextureView, isSurfaceSecured, hideVideoViews, surface);
         }
     }
 
@@ -139,7 +140,7 @@ class ExoPlayerView extends BaseExoplayerView {
      * @param isSurfaceSecured - should allow secure rendering of the surface
      */
 
-    private void addVideoSurface(boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews) {
+    private void addVideoSurface(boolean useTextureView, boolean isSurfaceSecured, boolean hideVideoViews, Surface surface) {
         resetViews();
         createVideoSurface(useTextureView);
 
@@ -149,7 +150,10 @@ class ExoPlayerView extends BaseExoplayerView {
 
         //Decide which type of videoSurface should be set.
         if (newVideoComponent != null) {
-            if (videoSurface instanceof TextureView) {
+            if (surface != null) {
+                this.surface = surface;
+                newVideoComponent.setVideoSurface(surface);
+            } else if (videoSurface instanceof TextureView) {
                 newVideoComponent.setVideoTextureView((TextureView) videoSurface);
             } else {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
