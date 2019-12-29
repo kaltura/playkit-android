@@ -106,12 +106,12 @@ public class PlayerDecoratorBase implements Player {
 
     @Override
     public void setVideoSurfaceView(SurfaceView surfaceView) {
-
+        player.setVideoSurfaceView(surfaceView);
     }
 
     @Override
     public void setVideoSurface(Surface surface) {
-
+        player.setVideoSurface(surface);
     }
 
     @Override
