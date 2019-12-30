@@ -12,9 +12,6 @@
 
 package com.kaltura.playkit;
 
-import android.view.Surface;
-import android.view.SurfaceView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -102,16 +99,6 @@ public class PlayerDecoratorBase implements Player {
     @Override
     public void replay() {
         player.replay();
-    }
-
-    @Override
-    public void setVideoSurfaceView(SurfaceView surfaceView) {
-
-    }
-
-    @Override
-    public void setVideoSurface(Surface surface) {
-
     }
 
     @Override
