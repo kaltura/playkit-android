@@ -12,33 +12,61 @@
 
 package com.kaltura.playkit.plugins.playback;
 
+import android.net.Uri;
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.Player;
 
+import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
+
 public class KalturaUDRMLicenseRequestAdapter implements PKRequestParams.Adapter {
 
+    private final String KALTURA_COM_LICENSE_IDENTIFITER = ".kaltura.com";
     private final String applicationName;
+    private String playSessionId;
 
     public static void install(Player player, String applicationName) {
-        KalturaUDRMLicenseRequestAdapter decorator = new KalturaUDRMLicenseRequestAdapter(applicationName);
+        KalturaUDRMLicenseRequestAdapter decorator = new KalturaUDRMLicenseRequestAdapter(applicationName, player);
         player.getSettings().setLicenseRequestAdapter(decorator);
     }
 
-    private KalturaUDRMLicenseRequestAdapter(String applicationName) {
+    private KalturaUDRMLicenseRequestAdapter(String applicationName, Player player) {
         this.applicationName = applicationName;
+        updateParams(player);
+
     }
 
     @NonNull
     @Override
     public PKRequestParams adapt(PKRequestParams requestParams) {
-        requestParams.headers.put("Referrer", applicationName);
+
+        boolean isEmptyApplicationName = TextUtils.isEmpty(applicationName);
+        if (!isEmptyApplicationName) {
+            requestParams.headers.put("Referrer", applicationName);
+        }
+
+        Uri licenseUrl = requestParams.url;
+        if (licenseUrl != null && licenseUrl.getAuthority().contains(KALTURA_COM_LICENSE_IDENTIFITER)) {
+            Uri alt = licenseUrl.buildUpon()
+                    .appendQueryParameter("sessionId", playSessionId)
+                    .appendQueryParameter("clientTag", CLIENT_TAG).build();
+
+            if (!isEmptyApplicationName) {
+                alt = alt.buildUpon().appendQueryParameter("referrer", applicationName).build();
+            }
+
+            return new PKRequestParams(alt, requestParams.headers);
+        }
+
         return requestParams;
     }
 
     @Override
     public void updateParams(Player player) {
+        this.playSessionId = player.getSessionId();
     }
 
     @Override

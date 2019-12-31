@@ -13,11 +13,14 @@
 package com.kaltura.playkit;
 
 import android.content.Context;
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.player.PlayerController;
 import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
+import com.kaltura.playkit.plugins.playback.KalturaUDRMLicenseRequestAdapter;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -56,7 +59,9 @@ class PlayerLoader extends PlayerDecoratorBase {
         playerController = new PlayerController(context);
 
         // By default, set Kaltura decorator.
-        KalturaPlaybackRequestAdapter.install(playerController, context.getPackageName());
+
+        KalturaPlaybackRequestAdapter.install(playerController, getDefaultReferrer());
+        KalturaUDRMLicenseRequestAdapter.install(playerController, getDefaultReferrer());
 
         playerController.setEventListener(messageBus::post);
 
@@ -90,6 +95,10 @@ class PlayerLoader extends PlayerDecoratorBase {
         playerController.setPlayerEngineWrapper(playerEngineWrapper);
 
         setPlayer(player);
+    }
+
+    private String getDefaultReferrer() {
+        return new Uri.Builder().scheme("app").authority(context.getPackageName()).toString();
     }
 
     @Override
