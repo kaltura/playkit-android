@@ -43,14 +43,20 @@ public class KalturaUDRMLicenseRequestAdapter implements PKRequestParams.Adapter
     @Override
     public PKRequestParams adapt(PKRequestParams requestParams) {
 
-        requestParams.headers.put("Referrer", applicationName);
+        boolean isEmptyApplicationName = TextUtils.isEmpty(applicationName);
+        if (!isEmptyApplicationName) {
+            requestParams.headers.put("Referrer", applicationName);
+        }
 
         Uri licenseUrl = requestParams.url;
         if (licenseUrl != null && licenseUrl.getAuthority().contains(KALTURA_COM_LICENSE_IDENTIFITER)) {
             Uri alt = licenseUrl.buildUpon()
                     .appendQueryParameter("sessionId", playSessionId)
-                    .appendQueryParameter("referrer", applicationName)
                     .appendQueryParameter("clientTag", CLIENT_TAG).build();
+
+            if (!isEmptyApplicationName) {
+                alt = alt.buildUpon().appendQueryParameter("referrer", applicationName).build();
+            }
 
             return new PKRequestParams(alt, requestParams.headers);
         }
