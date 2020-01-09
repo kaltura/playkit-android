@@ -38,7 +38,7 @@ public enum PKAdErrorType {
     ADS_REQUEST_NETWORK_ERROR(2016),
     INVALID_ARGUMENTS(2017),
     PLAYLIST_NO_CONTENT_TRACKING(2018),
-    QUIET_LOG_ERROR(2019),;
+    QUIET_LOG_ERROR(2019);
 
     public final int errorCode;
 

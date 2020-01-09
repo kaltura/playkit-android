@@ -14,7 +14,6 @@ public class PKPlaylist implements Parcelable {
     private String thumbnailUrl;
     List<PKPlaylistMedia> mediaList;
 
-
     public PKPlaylist() {
     }
 
