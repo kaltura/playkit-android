@@ -66,8 +66,8 @@ public class PlayKitProfiler {
     private static final PKLog pkLog = PKLog.get("PlayKitProfiler");
 
     // Dev mode: shorter logs, write to local file, always enable
-    private static final boolean devMode = false;
-    private static final int SEND_INTERVAL_DEV = 10;    // in seconds
+    private static final boolean devMode = true;
+    private static final int SEND_INTERVAL_DEV = 60;    // in seconds
     private static final int SEND_PERCENTAGE_DEV = 100; // always
 
     private static final int SEND_INTERVAL_PROD = 120;  // 2 minutes
@@ -101,6 +101,8 @@ public class PlayKitProfiler {
     private final Set<String> serversLookedUp = new HashSet<>();
     long sessionStartTime;
     private String sessionId;
+
+    private int chunkCount = 0;
 
     // We need a reference to the player, but make sure not to keep it alive.
     @Nullable
@@ -319,6 +321,7 @@ public class PlayKitProfiler {
 
         // Download
         try {
+            if (true) throw new IOException();
             bytes = Utils.executeGet(CONFIG_URL, null);
 
             if (bytes == null || bytes.length == 0) {
@@ -375,7 +378,7 @@ public class PlayKitProfiler {
         try {
             final ConfigFile configFile = new Gson().fromJson(new String(bytes), ConfigFile.class);
             postURL = configFile.putLogURL;
-            sendPercentage = configFile.sendPercentage;
+//            sendPercentage = configFile.sendPercentage;
         } catch (JsonParseException e) {
             pkLog.e("Failed to parse config", e);
         }
@@ -415,10 +418,13 @@ public class PlayKitProfiler {
 
         final String string = sb.toString();
 
+        int chunkIndex = chunkCount;
+        chunkCount++;
+
         if (Looper.myLooper() == ioHandler.getLooper()) {
-            postChunk(string);
+            postChunk(string, chunkIndex);
         } else {
-            ioHandler.post(() -> postChunk(string));
+            ioHandler.post(() -> postChunk(string, chunkIndex));
         }
 
         // TODO: 17/02/2019 what if there's no network when sending the log?
@@ -443,14 +449,14 @@ public class PlayKitProfiler {
         }
     }
 
-    private void postChunk(String string) {
+    private void postChunk(String string, int chunkIndex) {
         if (postURL == null) {
             pkLog.w("No POST URL");
             return;
         }
 
         try {
-            Utils.executePost(postURL + "?mode=addChunk&sessionId=" + sessionId, string.getBytes(), null);
+            Utils.executePost(postURL + "?mode=addChunk&sessionId=" + sessionId + "&index=" + chunkIndex, string.getBytes(), null);
         } catch (IOException e) {
             // FIXME: 03/09/2018 Is it bad that we lost this log chunk?
             pkLog.e("Failed sending log", e);
@@ -458,7 +464,7 @@ public class PlayKitProfiler {
         }
     }
 
-    void log(String event, String... strings) {
+    public void log(String event, String... strings) {
         StringBuilder sb = startLog(event);
         logPayload(sb, strings);
         endLog(sb);
@@ -577,12 +583,16 @@ public class PlayKitProfiler {
         @Override
         public void newSession(final String sessionId, PlayerSettings playerSettings) {
 
+            pkLog.e("New session " + sessionId);
+
+
             if (sessionId != null) {
                 // close current session
                 closeSession();
             }
 
             PlayKitProfiler.this.sessionId = sessionId;
+            PlayKitProfiler.this.chunkCount = 0;
             if (sessionId == null) {
                 return;     // the null profiler
             }
@@ -651,6 +661,11 @@ public class PlayKitProfiler {
         @Override
         public void onApplicationResumed() {
             log("onApplicationResumed");
+        }
+
+        @Override
+        public void logCustom(String event, String... strings) {
+            log(event, strings);
         }
 
         @Override

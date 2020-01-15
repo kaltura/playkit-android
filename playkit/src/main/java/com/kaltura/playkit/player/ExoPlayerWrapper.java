@@ -16,7 +16,10 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.DefaultLoadControl;
@@ -48,12 +51,14 @@ import com.kaltura.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.android.exoplayer2.upstream.BandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.DataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultAllocator;
+import com.kaltura.android.exoplayer2.upstream.DataSpec;
 import com.kaltura.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
+import com.kaltura.android.exoplayer2.upstream.TransferListener;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
@@ -66,6 +71,7 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -159,7 +165,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 bandwidthMeterBuilder.setInitialBitrateEstimate(initialBitrateEstimate);
             }
 
-            bandwidthMeter = bandwidthMeterBuilder.build();
+            bandwidthMeter = new MyBandwidthMeter(bandwidthMeterBuilder.build());
+
         }
         if (bandwidthMeter != null) {
             bandwidthMeter.addEventListener(mainHandler, this);
@@ -1219,5 +1226,83 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         String nullPlayerMsgFormat = "Attempt to invoke '%s' on null instance of the player engine";
         log.w(String.format(nullPlayerMsgFormat, methodName));
         return false;
+    }
+
+    private class MyBandwidthMeter implements BandwidthMeter, TransferListener {
+
+        PKLog log = PKLog.get("ExoWrapperMeter");
+
+        DefaultBandwidthMeter exoMeter;
+        Map<DataSource, Long> sizes = new HashMap<>();
+        Map<DataSource, Long> starts = new HashMap<>();
+
+        MyBandwidthMeter(DefaultBandwidthMeter defaultBandwidthMeter) {
+            exoMeter = defaultBandwidthMeter;
+        }
+
+        @Override
+        public long getBitrateEstimate() {
+            return exoMeter.getBitrateEstimate();
+        }
+
+        @Override
+        @Nullable
+        public TransferListener getTransferListener() {
+            return this;
+        }
+
+        @Override
+        public void addEventListener(Handler eventHandler, EventListener eventListener) {
+            exoMeter.addEventListener(eventHandler, eventListener);
+        }
+
+        @Override
+        public void removeEventListener(EventListener eventListener) {
+            exoMeter.removeEventListener(eventListener);
+        }
+
+        @Override
+        public void onTransferInitializing(DataSource source, DataSpec dataSpec, boolean isNetwork) {
+            exoMeter.onTransferInitializing(source, dataSpec, isNetwork);
+        }
+
+        @Override
+        public void onTransferStart(DataSource source, DataSpec dataSpec, boolean isNetwork) {
+            exoMeter.onTransferStart(source, dataSpec, isNetwork);
+            sizes.put(source, 0L);
+            starts.put(source, SystemClock.elapsedRealtime());
+        }
+
+        @Override
+        public void onBytesTransferred(DataSource source, DataSpec dataSpec, boolean isNetwork, int bytesTransferred) {
+            exoMeter.onBytesTransferred(source, dataSpec, isNetwork, bytesTransferred);
+            final Long aLong = sizes.get(source);
+            if (aLong != null) {
+                sizes.put(source, aLong + bytesTransferred);
+            }
+        }
+
+        @Override
+        public void onTransferEnd(DataSource source, DataSpec dataSpec, boolean isNetwork) {
+            exoMeter.onTransferEnd(source, dataSpec, isNetwork);
+
+            final Long totalSize = sizes.get(source);
+            if (totalSize == null) {
+                return;
+            }
+
+            final Long startTime = starts.get(source);
+            if (startTime == null) {
+                return;
+            }
+
+            final long totalTime = SystemClock.elapsedRealtime() - startTime;
+            float bytesPerSecond = totalSize / (totalTime / 1000f);
+
+            final long exoBytesPerSecond = exoMeter.getBitrateEstimate() / 8;
+            PKLog.d("CSVMeter", bytesPerSecond + "," + exoBytesPerSecond);
+
+            profiler.logCustom("MeterReading", "csv={" + bytesPerSecond + "," + exoBytesPerSecond + "}");
+        }
     }
 }
