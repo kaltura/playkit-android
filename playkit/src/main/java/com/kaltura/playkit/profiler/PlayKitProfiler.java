@@ -664,11 +664,6 @@ public class PlayKitProfiler {
         }
 
         @Override
-        public void logCustom(String event, String... strings) {
-            log(event, strings);
-        }
-
-        @Override
         public void onSetMedia(PKMediaConfig mediaConfig) {
             JsonObject json = new JsonObject();
             json.add("entry", toJSON(mediaConfig.getMediaEntry()));

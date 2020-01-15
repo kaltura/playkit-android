@@ -28,6 +28,4 @@ public abstract class Profiler {
 
     public void onApplicationPaused() {/*NOOP*/}
     public void onApplicationResumed() {/*NOOP*/}
-
-    public void logCustom(String event, String... strings) {/*NOOP*/}
 }
