@@ -41,6 +41,10 @@ public class PKPlaylist implements Parcelable {
         return mediaList;
     }
 
+    public int getMediaListSize() {
+        return mediaList != null ? mediaList.size() : 0;
+    }
+
     public PKPlaylist setKs(String ks) {
         this.ks = ks;
         return this;
