@@ -167,10 +167,12 @@ public class PlayerEvent implements PKEvent {
 
     public static class Seeking extends PlayerEvent {
 
+        public final long currentPosition;
         public final long targetPosition;
 
-        public Seeking(long targetPosition) {
+        public Seeking(long currentPosition, long targetPosition) {
             super(Type.SEEKING);
+            this.currentPosition = currentPosition;
             this.targetPosition = targetPosition;
         }
     }
