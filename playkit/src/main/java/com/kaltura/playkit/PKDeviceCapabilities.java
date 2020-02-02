@@ -144,6 +144,7 @@ public class PKDeviceCapabilities {
             JSONObject root = this.root;
             root.put("reportType", "DeviceCapabilities");
             root.put("playkitVersion", PlayKitManager.VERSION_STRING);
+            root.put("kalturaPlayer", isKalturaPlayerAvailable());
             root.put("host", hostInfo());
             root.put("system", systemInfo());
             root.put("drm", drmInfo());
@@ -155,6 +156,15 @@ public class PKDeviceCapabilities {
         }
 
         return root;
+    }
+
+    private boolean isKalturaPlayerAvailable() {
+        try {
+            Class.forName( "com.kaltura.tvplayer.KalturaPlayer" );
+            return true;
+        } catch( ClassNotFoundException e ) {
+            return false;
+        }
     }
 
     private JSONObject hostInfo() throws JSONException {
