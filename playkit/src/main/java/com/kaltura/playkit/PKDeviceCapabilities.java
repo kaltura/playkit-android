@@ -162,7 +162,7 @@ public class PKDeviceCapabilities {
         try {
             Class.forName( "com.kaltura.tvplayer.KalturaPlayer" );
             return true;
-        } catch( ClassNotFoundException e ) {
+        } catch (Exception e) {
             return false;
         }
     }
