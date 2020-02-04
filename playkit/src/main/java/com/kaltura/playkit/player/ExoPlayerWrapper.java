@@ -1076,6 +1076,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     selectPreferredTracksLanguage();
                     preferredLanguageWasSelected = true;
                 }
+
+                if (tracksReady.getVideoTracks().size() == 0) {
+                    exoPlayerView.hideVideoSurface();
+                }
             }
 
             @Override
