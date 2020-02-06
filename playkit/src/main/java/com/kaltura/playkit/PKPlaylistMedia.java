@@ -19,7 +19,6 @@ public class PKPlaylistMedia implements Parcelable {
     private String flavorParamsIds;
     private PKMediaEntry.MediaEntryType type;
     private long msDuration;
-    private Integer dvrStatus; // 1-LIVE DVR  0-LIVE
     public Map<String, String> metadata;
 
     public PKPlaylistMedia() { }
@@ -67,10 +66,6 @@ public class PKPlaylistMedia implements Parcelable {
     }
 
     public long getMsDuration() { return msDuration; }
-
-    public Integer getDvrStatus() {
-        return dvrStatus;
-    }
 
 
     public PKPlaylistMedia setMediaIndex(Integer mediaIndex) {
@@ -128,11 +123,6 @@ public class PKPlaylistMedia implements Parcelable {
         return this;
     }
 
-    public PKPlaylistMedia setDvrStatus(Integer dvrStatus) {
-        this.dvrStatus = dvrStatus;
-        return this;
-    }
-
     public PKPlaylistMedia setMetadata(Map<String,String> metadata) {
         this.metadata = metadata;
         return this;
@@ -157,7 +147,6 @@ public class PKPlaylistMedia implements Parcelable {
         dest.writeString(this.flavorParamsIds);
         dest.writeInt(this.type == null ? -1 : this.type.ordinal());
         dest.writeLong(this.msDuration);
-        dest.writeValue(this.dvrStatus);
         dest.writeInt(this.metadata.size());
         for (Map.Entry<String, String> entry : this.metadata.entrySet()) {
             dest.writeString(entry.getKey());
@@ -178,7 +167,6 @@ public class PKPlaylistMedia implements Parcelable {
         int tmpType = in.readInt();
         this.type = tmpType == -1 ? null : PKMediaEntry.MediaEntryType.values()[tmpType];
         this.msDuration = in.readLong();
-        this.dvrStatus = (Integer) in.readValue(Integer.class.getClassLoader());
         int metadataSize = in.readInt();
         this.metadata = new HashMap<String, String>(metadataSize);
         for (int i = 0; i < metadataSize; i++) {
