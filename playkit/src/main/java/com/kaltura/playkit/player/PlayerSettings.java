@@ -31,16 +31,17 @@ public class PlayerSettings implements Player.Settings {
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
     private boolean isTunneledAudioPlayback;
-    private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
-    private SubtitleStyleSettings subtitleStyleSettings;
-    private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
-    private ABRSettings abrSettings = new ABRSettings();
-    private VRSettings vrSettings;
     /**
      * Flag helping to check if client app wants to use a single player instance at a time
      * Only if IMA plugin is there then only this flag is set to true.
      */
     private boolean forceSinglePlayerEngine = false;
+    private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
+    private SubtitleStyleSettings subtitleStyleSettings;
+    private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
+    private ABRSettings abrSettings = new ABRSettings();
+    private PKMaxVideoSize pkMaxVideoSize = new PKMaxVideoSize();
+    private VRSettings vrSettings;
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -142,6 +143,10 @@ public class PlayerSettings implements Player.Settings {
   
     public boolean isTunneledAudioPlayback() {
         return isTunneledAudioPlayback;
+    }
+
+    public PKMaxVideoSize getPkMaxVideoSize() {
+        return pkMaxVideoSize;
     }
 
     @Override
@@ -280,6 +285,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setTunneledAudioPlayback(boolean isTunneledAudioPlayback) {
         this.isTunneledAudioPlayback = isTunneledAudioPlayback;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setMaxVideoSize(PKMaxVideoSize pkMaxVideoSize) {
+        this.pkMaxVideoSize = pkMaxVideoSize;
         return this;
     }
 }

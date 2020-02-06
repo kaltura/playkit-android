@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
@@ -203,26 +204,37 @@ public interface Player {
         /**
          * Set the flag which handles the video view
          * @param hide video surface visibility
+         * @return - Player Settings
          */
         Settings setHideVideoViews(boolean hide);
 
         /**
          * Set VR Settings on the player
          * @param vrSettings vr configuration
+         * @return - Player Settings
          */
         Settings setVRSettings(VRSettings vrSettings);
 
         /**
          * Set custom load control strategy
          * @param loadControlStrategy object implementing LoadControlStrategy interface
+         * @return - Player Settings
          */
         Settings setCustomLoadControlStrategy(Object loadControlStrategy);
       
         /**
          * Set Tunneled Audio Playback
          * @param isTunneledAudioPlayback audio tunnelling enabled
+         * @return - Player Settings
          */
         Settings setTunneledAudioPlayback(boolean isTunneledAudioPlayback);
+
+        /**
+         * Sets the maximum allowed video width and height.
+         * @param pkMaxVideoSize - Max allowed video width and height
+         * @return - Player Settings
+         */
+        Settings setMaxVideoSize(@NonNull PKMaxVideoSize pkMaxVideoSize);
     }
 
     /**
