@@ -56,7 +56,11 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     PlayerLoader(Context context, MessageBus messageBus) {
         this.context = context;
-        this.messageBus = messageBus;
+        if (messageBus != null) {
+            this.messageBus = messageBus;
+        } else {
+            this.messageBus = new MessageBus();
+        }
     }
 
     public void load(@NonNull PKPluginConfigs pluginsConfig) {

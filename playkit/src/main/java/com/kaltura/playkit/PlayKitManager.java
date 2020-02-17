@@ -68,15 +68,7 @@ public class PlayKitManager {
 
     public static Player loadPlayer(Context context, @Nullable PKPluginConfigs pluginConfigs) {
 
-        MediaSupport.initializeDrm(context, null);
-
-        if (shouldSendDeviceCapabilitiesReport) {
-            PKDeviceCapabilities.maybeSendReport(context);
-        }
-
-        PlayerLoader playerLoader = new PlayerLoader(context);
-        playerLoader.load(pluginConfigs != null ? pluginConfigs : new PKPluginConfigs());
-        return playerLoader;
+        return loadPlayer(context, pluginConfigs, null);
     }
 
 
