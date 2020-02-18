@@ -49,9 +49,13 @@ class PlayerLoader extends PlayerDecoratorBase {
     private Map<String, LoadedPlugin> loadedPlugins = new LinkedHashMap<>();
     private PlayerController playerController;
 
-    PlayerLoader(Context context) {
+    PlayerLoader(Context context, MessageBus messageBus) {
         this.context = context;
-        this.messageBus = new MessageBus();
+        if (messageBus != null) {
+            this.messageBus = messageBus;
+        } else {
+            this.messageBus = new MessageBus();
+        }
     }
 
     public void load(@NonNull PKPluginConfigs pluginsConfig) {

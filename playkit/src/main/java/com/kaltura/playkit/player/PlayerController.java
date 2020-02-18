@@ -15,6 +15,7 @@ package com.kaltura.playkit.player;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -797,7 +798,7 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.SourceSelected(sourceConfig.mediaSource);
                         break;
                     case SEEKING:
-                        event = new PlayerEvent.Seeking(targetSeekPosition);
+                        event = new PlayerEvent.Seeking(player.getCurrentPosition(), targetSeekPosition);
                         break;
                     case VIDEO_TRACK_CHANGED:
                         VideoTrack videoTrack = (VideoTrack) player.getLastSelectedTrack(Consts.TRACK_TYPE_VIDEO);

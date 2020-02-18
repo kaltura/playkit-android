@@ -16,6 +16,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+
 import androidx.annotation.NonNull;
 
 import com.kaltura.android.exoplayer2.C;
@@ -1074,6 +1075,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 if (!preferredLanguageWasSelected) {
                     selectPreferredTracksLanguage();
                     preferredLanguageWasSelected = true;
+                }
+
+                if (tracksReady.getVideoTracks().size() == 0) {
+                    exoPlayerView.hideVideoSurface();
                 }
             }
 

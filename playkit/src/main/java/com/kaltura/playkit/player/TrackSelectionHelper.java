@@ -509,7 +509,7 @@ class TrackSelectionHelper {
             Collections.sort(videoTracks);
             if (videoTracks.size() >= 2) {
                 if ((minVideoBitrate < videoTracks.get(1).getBitrate() && maxVideoBitrate <  videoTracks.get(1).getBitrate()) ||
-                        (minVideoBitrate > videoTracks.get(videoTracks.size() - 1).getBitrate() && maxVideoBitrate  > videoTracks.get(videoTracks.size() - 1).getBitrate())) {
+                        (minVideoBitrate > videoTracks.get(videoTracks.size() - 1).getBitrate() && maxVideoBitrate > videoTracks.get(videoTracks.size() - 1).getBitrate())) {
                     isValidABRRange = false;
                     String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
                     PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
