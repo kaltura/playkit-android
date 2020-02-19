@@ -23,9 +23,9 @@ import java.util.List;
 
 public class PKTracks {
 
-    private int defaultVideoTrackIndex;
-    private int defaultAudioTrackIndex;
-    private int defaultTextTrackIndex;
+    protected int defaultVideoTrackIndex;
+    protected int defaultAudioTrackIndex;
+    protected int defaultTextTrackIndex;
 
     private List<VideoTrack> videoTracks;
     private List<AudioTrack> audioTracks;
