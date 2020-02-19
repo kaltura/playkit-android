@@ -1071,12 +1071,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 //when the track info is ready, cache it in ExoPlayerWrapper. And send event that tracks are available.
                 tracks = tracksReady;
                 shouldRestorePlayerToPreviousState = false;
-                sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
+
                 if (!preferredLanguageWasSelected) {
-                    selectPreferredTracksLanguage();
+                    selectPreferredTracksLanguage(tracksReady);
                     preferredLanguageWasSelected = true;
                 }
-
+                sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
                 if (tracksReady.getVideoTracks().size() == 0) {
                     exoPlayerView.hideVideoSurface();
                 }
@@ -1161,13 +1161,32 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         //Do nothing.
     }
 
-    private void selectPreferredTracksLanguage() {
+    private void selectPreferredTracksLanguage(PKTracks tracksReady) {
 
         for (int trackType : new int[]{TRACK_TYPE_AUDIO, TRACK_TYPE_TEXT}) {
             String preferredLanguageId = trackSelectionHelper.getPreferredTrackId(trackType);
             if (preferredLanguageId != null) {
+                log.d("preferred language selected for track type = " + trackType + " preferredLanguageId = " + preferredLanguageId);
                 changeTrack(preferredLanguageId);
-                log.d("preferred language selected for track type = " + trackType);
+                updateDefaultSelectionIndex(tracksReady, trackType, preferredLanguageId);
+            }
+        }
+    }
+
+    private void updateDefaultSelectionIndex(PKTracks tracksReady, int trackType, String preferredLanguageId) {
+        if (trackType == TRACK_TYPE_AUDIO) {
+            for (int i = 0; i < tracksReady.getAudioTracks().size(); i++) {
+                if (tracksReady.getAudioTracks().get(i) != null && preferredLanguageId.equals(tracksReady.getAudioTracks().get(i).getUniqueId())) {
+                    tracksReady.defaultAudioTrackIndex = i;
+                    break;
+                }
+            }
+        } else if (trackType == TRACK_TYPE_TEXT) {
+            for (int i = 0; i < tracksReady.getTextTracks().size(); i++) {
+                if (tracksReady.getTextTracks().get(i) != null && preferredLanguageId.equals(tracksReady.getTextTracks().get(i).getUniqueId())) {
+                    tracksReady.defaultTextTrackIndex = i;
+                    break;
+                }
             }
         }
     }
