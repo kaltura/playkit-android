@@ -16,12 +16,14 @@ import android.annotation.TargetApi;
 import android.os.Build;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import com.kaltura.playkit.PKLog;
 
 import java.io.FileDescriptor;
 import java.lang.reflect.Method;
 
+@RequiresApi(api = Build.VERSION_CODES.KITKAT)
 class WidevineClassicCompat {
 
     private static final PKLog log = PKLog.get("WidevineClassicCompat");
