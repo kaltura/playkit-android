@@ -312,7 +312,7 @@ public class PKDeviceCapabilities {
         MediaDrm mediaDrm;
         try {
             mediaDrm = new MediaDrm(WIDEVINE_UUID);
-        } catch (UnsupportedSchemeException e) {
+        } catch (Exception e) {
             return null;
         }
 
