@@ -1,7 +1,6 @@
 package com.kaltura.playkit.profiler;
 
 import android.content.Context;
-import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -12,20 +11,14 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
-import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
-import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.player.ExoPlayerWrapper;
@@ -40,8 +33,6 @@ import com.kaltura.playkit.utils.Consts;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -53,12 +44,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import okhttp3.EventListener;
+
+import static com.kaltura.playkit.profiler.ProfilerUtil.SEPARATOR;
+import static com.kaltura.playkit.profiler.ProfilerUtil.field;
+import static com.kaltura.playkit.profiler.ProfilerUtil.timeField;
+import static com.kaltura.playkit.profiler.ProfilerUtil.toJSON;
 
 public class PlayKitProfiler {
 
@@ -73,22 +68,15 @@ public class PlayKitProfiler {
     private static final int SEND_INTERVAL_PROD = 120;  // 2 minutes
     private static final int SEND_INTERVAL_SEC = devMode ? SEND_INTERVAL_DEV : SEND_INTERVAL_PROD;
 
-    private static final float DEFAULT_SEND_PERCENTAGE = devMode ? SEND_PERCENTAGE_DEV : 0; // Start disabled
-
-    private static final String CONFIG_CACHE_FILENAME = "profilerConfig.json";
-    private static final String CONFIG_URL = "https://s3.amazonaws.com/player-profiler/config.json";
-    private static final String DEFAULT_POST_URL = "https://3vbje2fyag.execute-api.us-east-1.amazonaws.com/default/profilog";
-    private static final int MAX_CONFIG_SIZE = 10240;
-
-    static final float MSEC_MULTIPLIER_FLOAT = 1000f;
-
-    private static final String SEPARATOR = "\t";
+    private static final String CONFIG_BASE_URL = "https://player-profiler.s3.amazonaws.com/configs/";
 
     private static final Map<String, String> experiments = new LinkedHashMap<>();
     private static final int PERCENTAGE_MULTIPLIER = 100;
+
     // Configuration
-    private static String postURL = DEFAULT_POST_URL;
-    private static float sendPercentage = DEFAULT_SEND_PERCENTAGE;
+    private static String postURL;
+    private static float sendPercentage = devMode ? SEND_PERCENTAGE_DEV : 0;
+
     // Static setup
     private static Handler ioHandler;
     private static boolean initialized;
@@ -129,7 +117,7 @@ public class PlayKitProfiler {
      * Initialize the static part of the profiler -- load the config and store it,
      * create IO thread and handler. Must be called by the app to enable the profiler.
      */
-    public static void init(Context context) {
+    public static void init(Context context, String token) {
 
         // This only has to happen once.
         if (initialized) {
@@ -145,14 +133,11 @@ public class PlayKitProfiler {
 
             final Context appContext = context.getApplicationContext();
 
-            // Load cached config. Will load from network later, in a handler thread.
-            loadCachedConfig(appContext);
-
             HandlerThread handlerThread = new HandlerThread("ProfilerIO", Process.THREAD_PRIORITY_BACKGROUND);
             handlerThread.start();
             ioHandler = new Handler(handlerThread.getLooper());
 
-            ioHandler.post(() -> downloadConfig(appContext));
+            ioHandler.post(() -> downloadConfig(token));
 
             initMembers(appContext);
 
@@ -171,24 +156,6 @@ public class PlayKitProfiler {
             ProfilerFactory.setFactory(() ->
                     Math.random() < sendPercentage / PERCENTAGE_MULTIPLIER ? new PlayKitProfiler().profilerImp : null);
         }
-    }
-
-    private static String getNetworkType(Context context) {
-
-        final ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (manager == null) {
-            return "Unknown";
-        }
-
-        switch (manager.getActiveNetworkInfo().getType()) {
-            case ConnectivityManager.TYPE_MOBILE:
-                return "Mobile";
-            case ConnectivityManager.TYPE_WIFI:
-                return "Wifi";
-            case ConnectivityManager.TYPE_ETHERNET:
-                return "Ethernet";
-        }
-        return null;
     }
 
     /**
@@ -247,86 +214,12 @@ public class PlayKitProfiler {
         }
     }
 
-    private static String toString(Enum e) {
-        if (e == null) {
-            return "null";
-        }
-        return e.name();
-    }
-
-    private static JsonObject toJSON(PKMediaEntry entry) {
-
-        if (entry == null) {
-            return null;
-        }
-
-        JsonObject json = new JsonObject();
-
-        json.addProperty("id", entry.getId());
-        json.addProperty("duration", entry.getDuration());
-        json.addProperty("type", toString(entry.getMediaType()));
-
-        if (entry.hasSources()) {
-            JsonArray array = new JsonArray();
-            for (PKMediaSource source : entry.getSources()) {
-                array.add(toJSON(source));
-            }
-            json.add("sources", array);
-        }
-
-        return json;
-    }
-
-    private static JsonObject toJSON(PKMediaSource source) {
-        JsonObject json = new JsonObject();
-
-        json.addProperty("id", source.getId());
-        json.addProperty("format", source.getMediaFormat().name());
-        json.addProperty("url", source.getUrl());
-
-        if (source.hasDrmParams()) {
-            JsonArray array = new JsonArray();
-            for (PKDrmParams params : source.getDrmData()) {
-                PKDrmParams.Scheme scheme = params.getScheme();
-                if (scheme != null) {
-                    array.add(scheme.name());
-                }
-            }
-            json.add("drm", array);
-        }
-
-        return json;
-    }
-
-    static String field(String name, String value) {
-        if (value == null) {
-            return null;
-        }
-        return name + "={" + value + "}";
-    }
-
-    static String field(String name, long value) {
-        return name + "=" + value;
-    }
-
-    static String field(String name, boolean value) {
-        return name + "=" + value;
-    }
-
-    static String field(String name, float value) {
-        return String.format(Locale.US, "%s=%.03f", name, value);
-    }
-
-    static String timeField(String name, long value) {
-        return value == C.TIME_UNSET ? field(name, null) : field(name, value / MSEC_MULTIPLIER_FLOAT);
-    }
-
-    private static void downloadConfig(Context context) {
+    private static void downloadConfig(String token) {
         final byte[] bytes;
 
         // Download
         try {
-            bytes = Utils.executeGet(CONFIG_URL, null);
+            bytes = Utils.executeGet(CONFIG_BASE_URL + token + ".json", null);
 
             if (bytes == null || bytes.length == 0) {
                 pkLog.w("Nothing returned from executeGet");
@@ -337,67 +230,17 @@ public class PlayKitProfiler {
 
         } catch (IOException e) {
             pkLog.w("Failed to download config", e);
-            return;
         }
-
-        // Save to cache
-        final File cachedConfigFile = getCachedConfigFile(context);
-        if (cachedConfigFile.getParentFile().canWrite()) {
-            FileOutputStream outputStream = null;
-            try {
-                outputStream = new FileOutputStream(cachedConfigFile);
-                outputStream.write(bytes);
-            } catch (IOException e) {
-                pkLog.e("Failed to save config to cache", e);
-            } finally {
-                Utils.safeClose(outputStream);
-            }
-        }
-    }
-
-    private static void loadCachedConfig(Context context) {
-        final File configFile = getCachedConfigFile(context);
-
-        if (configFile.canRead()) {
-            FileInputStream inputStream = null;
-            try {
-                inputStream = new FileInputStream(configFile);
-                parseConfig(Utils.fullyReadInputStream(inputStream, MAX_CONFIG_SIZE).toByteArray());
-
-            } catch (IOException e) {
-                pkLog.e("Failed to read cached config file", e);
-
-            } finally {
-                Utils.safeClose(inputStream);
-            }
-        }
-    }
-
-    @NonNull
-    private static File getCachedConfigFile(Context context) {
-        return new File(context.getFilesDir(), CONFIG_CACHE_FILENAME);
     }
 
     private static void parseConfig(byte[] bytes) {
         try {
-            final ConfigFile configFile = new Gson().fromJson(new String(bytes), ConfigFile.class);
-            postURL = configFile.putLogURL;
-            sendPercentage = configFile.sendPercentage;
+            Config config = new Gson().fromJson(new String(bytes), Config.class);
+            sendPercentage = config.sendPercentage;
+            postURL = config.postURL;
         } catch (JsonParseException e) {
             pkLog.e("Failed to parse config", e);
         }
-    }
-
-    static String nullable(String name, String value) {
-        if (value == null) {
-            return name + "=null";
-        }
-
-        return field(name, value);
-    }
-
-    static String joinFields(String... fields) {
-        return TextUtils.join(SEPARATOR, fields);
     }
 
     private void sendLogChunk() {
@@ -711,8 +554,8 @@ public class PlayKitProfiler {
         }
     };
 
-    private static class ConfigFile {
-        String putLogURL;
+    private static class Config {
+        String postURL;
         float sendPercentage;
     }
 }

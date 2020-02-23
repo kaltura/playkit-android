@@ -46,11 +46,11 @@ import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_PERIOD_
 import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK;
 import static com.kaltura.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT;
 
-import static com.kaltura.playkit.profiler.PlayKitProfiler.MSEC_MULTIPLIER_FLOAT;
-import static com.kaltura.playkit.profiler.PlayKitProfiler.field;
-import static com.kaltura.playkit.profiler.PlayKitProfiler.joinFields;
-import static com.kaltura.playkit.profiler.PlayKitProfiler.nullable;
-import static com.kaltura.playkit.profiler.PlayKitProfiler.timeField;
+import static com.kaltura.playkit.profiler.ProfilerUtil.MSEC_MULTIPLIER_FLOAT;
+import static com.kaltura.playkit.profiler.ProfilerUtil.field;
+import static com.kaltura.playkit.profiler.ProfilerUtil.joinFields;
+import static com.kaltura.playkit.profiler.ProfilerUtil.nullable;
+import static com.kaltura.playkit.profiler.ProfilerUtil.timeField;
 
 class ExoPlayerProfilingListener implements AnalyticsListener {
 
