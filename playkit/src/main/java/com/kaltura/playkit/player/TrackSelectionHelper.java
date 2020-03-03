@@ -1066,7 +1066,7 @@ class TrackSelectionHelper {
         }
         String preferredTrackUniqueId = null;
         String preferredTextISO3Lang = preferredTextLanguageConfig.getTrackLanguage();
-        if (preferredTextISO3Lang != null) {
+        if (preferredTextISO3Lang != null && preferredTextISO3Lang.length() <= 3) {
             for (TextTrack track : textTracks) {
                 String trackLang = track.getLanguage();
                 if (trackLang == null) {
@@ -1125,20 +1125,22 @@ class TrackSelectionHelper {
         }
         String preferredTrackUniqueId = null;
         String preferredAudioISO3Lang = preferredAudioLanguageConfig.getTrackLanguage();
-        for (AudioTrack track : audioTracks) {
-            String trackLang = track.getLanguage();
-            if (trackLang == null) {
-                continue;
-            }
-            Locale streamLang = new Locale(trackLang);
-            try {
-                if (streamLang.getISO3Language().equals(preferredAudioISO3Lang)) {
-                    log.d("changing track type " + trackType + " to " + preferredAudioLanguageConfig.getTrackLanguage());
-                    preferredTrackUniqueId = track.getUniqueId();
-                    break;
+        if (preferredAudioISO3Lang != null && preferredAudioISO3Lang.length() <= 3) {
+            for (AudioTrack track : audioTracks) {
+                String trackLang = track.getLanguage();
+                if (trackLang == null) {
+                    continue;
                 }
-            } catch (MissingResourceException ex) {
-                log.e(ex.getMessage());
+                Locale streamLang = new Locale(trackLang);
+                try {
+                    if (streamLang.getISO3Language().equals(preferredAudioISO3Lang)) {
+                        log.d("changing track type " + trackType + " to " + preferredAudioLanguageConfig.getTrackLanguage());
+                        preferredTrackUniqueId = track.getUniqueId();
+                        break;
+                    }
+                } catch (MissingResourceException ex) {
+                    log.e(ex.getMessage());
+                }
             }
         }
         return preferredTrackUniqueId;
