@@ -124,6 +124,10 @@ public class PlayKitProfiler {
             return;
         }
 
+        if (token == null) {
+            return;
+        }
+
         synchronized (PlayKitProfiler.class) {
 
             // Ask again, after sync.
