@@ -96,8 +96,6 @@ public class Consts {
 
     public static final float DEFAULT_PITCH_RATE = 1.0f;
 
-    public static final int MAX_CHARACTERS_FOR_LOCALE = 11;
-
     // Can't start playing offline if only this number of seconds is remaining in license duration.
     // NOTE this value is private as ExoPlayer DefaultDrmSession.MAX_LICENSE_DURATION_TO_RENEW, changing it here
     // won't change the actual behavior in ExoPlayer. It's only provided as reference.

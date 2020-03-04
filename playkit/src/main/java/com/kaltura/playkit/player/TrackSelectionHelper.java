@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 
-import static com.kaltura.playkit.utils.Consts.MAX_CHARACTERS_FOR_LOCALE;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_UNKNOWN;
@@ -353,10 +352,10 @@ class TrackSelectionHelper {
         if (trackList != null && selectedFormatLanguage != null) {
 
             for (int i = 0; i < trackList.size(); i++) {
-                    if (trackList.get(i) != null && selectedFormatLanguage.equals(trackList.get(i).getLanguage())) {
-                        defaultTrackIndex = i;
-                        break;
-                    }
+                if (trackList.get(i) != null && selectedFormatLanguage.equals(trackList.get(i).getLanguage())) {
+                    defaultTrackIndex = i;
+                    break;
+                }
             }
         }
 
@@ -1067,37 +1066,35 @@ class TrackSelectionHelper {
         }
         String preferredTrackUniqueId = null;
         String preferredTextISO3Lang = preferredTextLanguageConfig.getTrackLanguage();
-        if (preferredTextISO3Lang != null && preferredTextISO3Lang.length() <= MAX_CHARACTERS_FOR_LOCALE) {
-            for (TextTrack track : textTracks) {
-                String trackLang = track.getLanguage();
-                if (trackLang == null) {
-                    continue;
-                }
+        for (TextTrack track : textTracks) {
+            String trackLang = track.getLanguage();
+            if (trackLang == null) {
+                continue;
+            }
 
-                if (NONE.equals(preferredTextLanguageConfig.getTrackLanguage()) && NONE.equals(trackLang)) {
+            if (NONE.equals(preferredTextLanguageConfig.getTrackLanguage()) && NONE.equals(trackLang)) {
+                preferredTrackUniqueId = track.getUniqueId();
+                break;
+            } else if (NONE.equals(trackLang)) {
+                continue;
+            }
+
+            Locale streamLang = new Locale(trackLang);
+            try {
+                if (streamLang.getISO3Language().equals(preferredTextISO3Lang)) {
+                    log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
                     preferredTrackUniqueId = track.getUniqueId();
                     break;
-                } else if (NONE.equals(trackLang)) {
-                    continue;
                 }
-
-                Locale streamLang = new Locale(trackLang);
-                try {
-                    if (streamLang.getISO3Language().equals(preferredTextISO3Lang)) {
-                        log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
-                        preferredTrackUniqueId = track.getUniqueId();
-                        break;
-                    }
-                } catch (MissingResourceException ex) {
-                    log.e(ex.getMessage());
-                    preferredTrackUniqueId = null;
-                }
+            } catch (MissingResourceException | NullPointerException ex) {
+                log.e(ex.getMessage());
+                preferredTrackUniqueId = null;
             }
-            if (preferredTrackUniqueId == null) {
-                preferredTrackUniqueId = maybeSetFirstTextTrackAsAutoSelection();
-            }
-
         }
+        if (preferredTrackUniqueId == null) {
+            preferredTrackUniqueId = maybeSetFirstTextTrackAsAutoSelection();
+        }
+
         return preferredTrackUniqueId;
     }
 
@@ -1126,7 +1123,7 @@ class TrackSelectionHelper {
         }
         String preferredTrackUniqueId = null;
         String preferredAudioISO3Lang = preferredAudioLanguageConfig.getTrackLanguage();
-        if (preferredAudioISO3Lang != null && preferredAudioISO3Lang.length() <= MAX_CHARACTERS_FOR_LOCALE) {
+        if (preferredAudioISO3Lang != null) {
             for (AudioTrack track : audioTracks) {
                 String trackLang = track.getLanguage();
                 if (trackLang == null) {
@@ -1139,7 +1136,7 @@ class TrackSelectionHelper {
                         preferredTrackUniqueId = track.getUniqueId();
                         break;
                     }
-                } catch (MissingResourceException ex) {
+                } catch (MissingResourceException | NullPointerException ex) {
                     log.e(ex.getMessage());
                 }
             }

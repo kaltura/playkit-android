@@ -35,11 +35,9 @@ public class PKTrackConfig {
                 languageText =  Locale.getDefault().getISO3Language();
             }
             if (languageText == null && trackLanguage != null) {
-                if(trackLanguage.length() <= MAX_CHARACTERS_FOR_LOCALE) {
-                    languageText = new Locale(trackLanguage).getISO3Language();
-                }
+                languageText = new Locale(trackLanguage).getISO3Language();
             }
-        } catch (MissingResourceException ex) {
+        } catch (MissingResourceException | NullPointerException ex) {
             log.e("Error No Locale mapping to language " + trackLanguage) ;
         }
         return languageText;
