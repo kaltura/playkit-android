@@ -1125,24 +1125,23 @@ class TrackSelectionHelper {
         }
         String preferredTrackUniqueId = null;
         String preferredAudioISO3Lang = preferredAudioLanguageConfig.getTrackLanguage();
-        if (preferredAudioISO3Lang != null) {
-            for (AudioTrack track : audioTracks) {
-                String trackLang = track.getLanguage();
-                if (trackLang == null) {
-                    continue;
+        for (AudioTrack track : audioTracks) {
+            String trackLang = track.getLanguage();
+            if (trackLang == null) {
+                continue;
+            }
+            Locale streamLang = new Locale(trackLang);
+            try {
+                if (streamLang.getISO3Language().equals(preferredAudioISO3Lang)) {
+                    log.d("changing track type " + trackType + " to " + preferredAudioLanguageConfig.getTrackLanguage());
+                    preferredTrackUniqueId = track.getUniqueId();
+                    break;
                 }
-                Locale streamLang = new Locale(trackLang);
-                try {
-                    if (streamLang.getISO3Language().equals(preferredAudioISO3Lang)) {
-                        log.d("changing track type " + trackType + " to " + preferredAudioLanguageConfig.getTrackLanguage());
-                        preferredTrackUniqueId = track.getUniqueId();
-                        break;
-                    }
-                } catch (MissingResourceException | NullPointerException ex) {
-                    log.e(ex.getMessage());
-                }
+            } catch (MissingResourceException | NullPointerException ex) {
+                log.e(ex.getMessage());
             }
         }
+
         return preferredTrackUniqueId;
     }
 
