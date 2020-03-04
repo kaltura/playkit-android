@@ -352,10 +352,10 @@ class TrackSelectionHelper {
         if (trackList != null && selectedFormatLanguage != null) {
 
             for (int i = 0; i < trackList.size(); i++) {
-                    if (trackList.get(i) != null && selectedFormatLanguage.equals(trackList.get(i).getLanguage())) {
-                        defaultTrackIndex = i;
-                        break;
-                    }
+                if (trackList.get(i) != null && selectedFormatLanguage.equals(trackList.get(i).getLanguage())) {
+                    defaultTrackIndex = i;
+                    break;
+                }
             }
         }
 
@@ -1087,7 +1087,7 @@ class TrackSelectionHelper {
                         preferredTrackUniqueId = track.getUniqueId();
                         break;
                     }
-                } catch (MissingResourceException ex) {
+                } catch (MissingResourceException | NullPointerException ex) {
                     log.e(ex.getMessage());
                     preferredTrackUniqueId = null;
                 }
@@ -1095,8 +1095,8 @@ class TrackSelectionHelper {
             if (preferredTrackUniqueId == null) {
                 preferredTrackUniqueId = maybeSetFirstTextTrackAsAutoSelection();
             }
-
         }
+
         return preferredTrackUniqueId;
     }
 
@@ -1137,10 +1137,11 @@ class TrackSelectionHelper {
                     preferredTrackUniqueId = track.getUniqueId();
                     break;
                 }
-            } catch (MissingResourceException ex) {
+            } catch (MissingResourceException | NullPointerException ex) {
                 log.e(ex.getMessage());
             }
         }
+
         return preferredTrackUniqueId;
     }
 
