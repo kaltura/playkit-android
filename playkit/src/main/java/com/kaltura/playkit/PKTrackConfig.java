@@ -17,8 +17,6 @@ import androidx.annotation.NonNull;
 import java.util.Locale;
 import java.util.MissingResourceException;
 
-import static com.kaltura.playkit.utils.Consts.MAX_CHARACTERS_FOR_LOCALE;
-
 public class PKTrackConfig {
     private static final PKLog log = PKLog.get("PKTrackConfig");
 
