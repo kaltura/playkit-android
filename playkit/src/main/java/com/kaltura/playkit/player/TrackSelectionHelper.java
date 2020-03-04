@@ -1066,33 +1066,35 @@ class TrackSelectionHelper {
         }
         String preferredTrackUniqueId = null;
         String preferredTextISO3Lang = preferredTextLanguageConfig.getTrackLanguage();
-        for (TextTrack track : textTracks) {
-            String trackLang = track.getLanguage();
-            if (trackLang == null) {
-                continue;
-            }
+        if (preferredTextISO3Lang != null) {
+            for (TextTrack track : textTracks) {
+                String trackLang = track.getLanguage();
+                if (trackLang == null) {
+                    continue;
+                }
 
-            if (NONE.equals(preferredTextLanguageConfig.getTrackLanguage()) && NONE.equals(trackLang)) {
-                preferredTrackUniqueId = track.getUniqueId();
-                break;
-            } else if (NONE.equals(trackLang)) {
-                continue;
-            }
-
-            Locale streamLang = new Locale(trackLang);
-            try {
-                if (streamLang.getISO3Language().equals(preferredTextISO3Lang)) {
-                    log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
+                if (NONE.equals(preferredTextLanguageConfig.getTrackLanguage()) && NONE.equals(trackLang)) {
                     preferredTrackUniqueId = track.getUniqueId();
                     break;
+                } else if (NONE.equals(trackLang)) {
+                    continue;
                 }
-            } catch (MissingResourceException | NullPointerException ex) {
-                log.e(ex.getMessage());
-                preferredTrackUniqueId = null;
+
+                Locale streamLang = new Locale(trackLang);
+                try {
+                    if (streamLang.getISO3Language().equals(preferredTextISO3Lang)) {
+                        log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
+                        preferredTrackUniqueId = track.getUniqueId();
+                        break;
+                    }
+                } catch (MissingResourceException | NullPointerException ex) {
+                    log.e(ex.getMessage());
+                    preferredTrackUniqueId = null;
+                }
             }
-        }
-        if (preferredTrackUniqueId == null) {
-            preferredTrackUniqueId = maybeSetFirstTextTrackAsAutoSelection();
+            if (preferredTrackUniqueId == null) {
+                preferredTrackUniqueId = maybeSetFirstTextTrackAsAutoSelection();
+            }
         }
 
         return preferredTrackUniqueId;
