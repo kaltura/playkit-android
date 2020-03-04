@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 
+import static com.kaltura.playkit.utils.Consts.MAX_CHARACTERS_FOR_LOCALE;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_UNKNOWN;
@@ -1066,7 +1067,7 @@ class TrackSelectionHelper {
         }
         String preferredTrackUniqueId = null;
         String preferredTextISO3Lang = preferredTextLanguageConfig.getTrackLanguage();
-        if (preferredTextISO3Lang != null && preferredTextISO3Lang.length() <= 3) {
+        if (preferredTextISO3Lang != null && preferredTextISO3Lang.length() <= MAX_CHARACTERS_FOR_LOCALE) {
             for (TextTrack track : textTracks) {
                 String trackLang = track.getLanguage();
                 if (trackLang == null) {
@@ -1125,7 +1126,7 @@ class TrackSelectionHelper {
         }
         String preferredTrackUniqueId = null;
         String preferredAudioISO3Lang = preferredAudioLanguageConfig.getTrackLanguage();
-        if (preferredAudioISO3Lang != null && preferredAudioISO3Lang.length() <= 3) {
+        if (preferredAudioISO3Lang != null && preferredAudioISO3Lang.length() <= MAX_CHARACTERS_FOR_LOCALE) {
             for (AudioTrack track : audioTracks) {
                 String trackLang = track.getLanguage();
                 if (trackLang == null) {

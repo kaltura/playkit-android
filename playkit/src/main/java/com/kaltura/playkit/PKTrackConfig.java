@@ -17,6 +17,8 @@ import androidx.annotation.NonNull;
 import java.util.Locale;
 import java.util.MissingResourceException;
 
+import static com.kaltura.playkit.utils.Consts.MAX_CHARACTERS_FOR_LOCALE;
+
 public class PKTrackConfig {
     private static final PKLog log = PKLog.get("PKTrackConfig");
 
@@ -33,7 +35,7 @@ public class PKTrackConfig {
                 languageText =  Locale.getDefault().getISO3Language();
             }
             if (languageText == null && trackLanguage != null) {
-                if(trackLanguage.length() <= 3) {
+                if(trackLanguage.length() <= MAX_CHARACTERS_FOR_LOCALE) {
                     languageText = new Locale(trackLanguage).getISO3Language();
                 }
             }
