@@ -16,7 +16,10 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import com.kaltura.android.exoplayer2.text.CaptionStyleCompat;
+import com.kaltura.android.exoplayer2.ui.SubtitleView;
 
 public class SubtitleStyleSettings {
 
@@ -39,11 +42,14 @@ public class SubtitleStyleSettings {
     private static final float fraction150 = 1.50f;
     private static final float fraction200 = 2.0f;
 
+    private static final float bottomPaddingFractionUpperLimit = 0.90f;
+
     private int subtitleTextColor = Color.WHITE;
     private int subtitleBackgroundColor = Color.BLACK;
     // Recommended fraction values is  1f < subtitleTextSizeFraction < 2.5f with 0.25f Multiplier
     // Subtitle TextSize fraction, Default is 1.0f ; {@link com.kaltura.android.exoplayer2.ui.SubtitleView}
     private float subtitleTextSizeFraction = fraction100;
+    private float subtitleBottomPaddingFraction = SubtitleView.DEFAULT_BOTTOM_PADDING_FRACTION;
     private int subtitleWindowColor = Color.TRANSPARENT;
     private int subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
     private int subtitleEdgeColor = Color.WHITE;
@@ -90,6 +96,10 @@ public class SubtitleStyleSettings {
         return subtitleStyleName;
     }
 
+    public float getSubtitleBottomPaddingFraction() {
+        return subtitleBottomPaddingFraction;
+    }
+
     public SubtitleStyleSettings setTextColor(int subtitleTextColor) {
         this.subtitleTextColor = subtitleTextColor;
         return this;
@@ -110,11 +120,24 @@ public class SubtitleStyleSettings {
         return this;
     }
 
-    public SubtitleStyleSettings setEdgeType(SubtitleStyleEdgeType subtitleEdgeType) {
+    /**
+     * Set Subtitle Bottom Padding fraction value. It should range between 0.08f (which is default) - 0.90f
+     * @param subtitleBottomPaddingFraction Bottom Padding fraction value
+     * @return SubtitleStyleSettings
+     */
+    public SubtitleStyleSettings setSubtitleBottomPaddingFraction(float subtitleBottomPaddingFraction) {
+        if (subtitleBottomPaddingFraction > bottomPaddingFractionUpperLimit ||
+                subtitleBottomPaddingFraction < SubtitleView.DEFAULT_BOTTOM_PADDING_FRACTION) {
+            this.subtitleBottomPaddingFraction = SubtitleView.DEFAULT_BOTTOM_PADDING_FRACTION;
+            return this;
+        }
+
+        this.subtitleBottomPaddingFraction = subtitleBottomPaddingFraction;
+        return this;
+    }
+
+    public SubtitleStyleSettings setEdgeType(@NonNull SubtitleStyleEdgeType subtitleEdgeType) {
         switch (subtitleEdgeType) {
-            case EDGE_TYPE_NONE:
-                this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
-                break;
             case EDGE_TYPE_OUTLINE:
                 this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_OUTLINE;
                 break;
@@ -134,16 +157,13 @@ public class SubtitleStyleSettings {
         return this;
     }
 
-    public SubtitleStyleSettings setTextSizeFraction(SubtitleTextSizeFraction subtitleTextSizeFraction) {
+    public SubtitleStyleSettings setTextSizeFraction(@NonNull SubtitleTextSizeFraction subtitleTextSizeFraction) {
         switch (subtitleTextSizeFraction) {
             case SUBTITLE_FRACTION_50:
                 this.subtitleTextSizeFraction = fraction50;
                 break;
             case SUBTITLE_FRACTION_75:
                 this.subtitleTextSizeFraction = fraction75;
-                break;
-            case SUBTITLE_FRACTION_100:
-                this.subtitleTextSizeFraction = fraction100;
                 break;
             case SUBTITLE_FRACTION_125:
                 this.subtitleTextSizeFraction = fraction125;
@@ -161,7 +181,7 @@ public class SubtitleStyleSettings {
         return this;
     }
 
-    public SubtitleStyleSettings setTypeface(SubtitleStyleTypeface subtitleStyleTypeface) {
+    public SubtitleStyleSettings setTypeface(@NonNull SubtitleStyleTypeface subtitleStyleTypeface) {
         switch (subtitleStyleTypeface) {
             case DEFAULT:
                 subtitleTypeface = Typeface.DEFAULT;

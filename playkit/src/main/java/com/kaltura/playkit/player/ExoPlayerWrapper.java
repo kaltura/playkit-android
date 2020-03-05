@@ -1209,6 +1209,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (exoPlayerSubtitleView != null) {
             exoPlayerSubtitleView.setStyle(playerSettings.getSubtitleStyleSettings().toCaptionStyle());
             exoPlayerSubtitleView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * playerSettings.getSubtitleStyleSettings().getTextSizeFraction());
+            exoPlayerSubtitleView.setBottomPaddingFraction(playerSettings.getSubtitleStyleSettings().getSubtitleBottomPaddingFraction());
         } else {
             log.e("Subtitle View is not available");
         }
