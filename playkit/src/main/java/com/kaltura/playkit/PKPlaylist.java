@@ -12,7 +12,7 @@ public class PKPlaylist implements Parcelable {
     private String name;
     private String description;
     private String thumbnailUrl;
-    List<PKPlaylistMedia> mediaList;
+    private List<PKPlaylistMedia> mediaList;
 
     public PKPlaylist() {
     }
@@ -75,6 +75,7 @@ public class PKPlaylist implements Parcelable {
         return this;
     }
 
+
     @Override
     public int describeContents() {
         return 0;
@@ -96,7 +97,6 @@ public class PKPlaylist implements Parcelable {
         this.name = in.readString();
         this.description = in.readString();
         this.thumbnailUrl = in.readString();
-        int tmpPlaylistType = in.readInt();
         this.mediaList = in.createTypedArrayList(PKPlaylistMedia.CREATOR);
     }
 
