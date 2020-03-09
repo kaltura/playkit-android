@@ -8,7 +8,6 @@ import java.util.Map;
 
 public class PKPlaylistMedia implements Parcelable {
 
-    private Integer mediaIndex;
     private String id;
     private String ks;
     private String name;
@@ -22,10 +21,6 @@ public class PKPlaylistMedia implements Parcelable {
     public Map<String, String> metadata;
 
     public PKPlaylistMedia() { }
-
-    public Integer getMediaIndex() {
-        return mediaIndex;
-    }
 
     public String getId() {
         return id;
@@ -66,12 +61,6 @@ public class PKPlaylistMedia implements Parcelable {
     }
 
     public long getMsDuration() { return msDuration; }
-
-
-    public PKPlaylistMedia setMediaIndex(Integer mediaIndex) {
-        this.mediaIndex = mediaIndex;
-        return this;
-    }
 
     public PKPlaylistMedia setId(String id) {
         this.id = id;
@@ -128,7 +117,6 @@ public class PKPlaylistMedia implements Parcelable {
         return this;
     }
 
-
     @Override
     public int describeContents() {
         return 0;
@@ -136,7 +124,6 @@ public class PKPlaylistMedia implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeValue(this.mediaIndex);
         dest.writeString(this.id);
         dest.writeString(this.ks);
         dest.writeString(this.name);
@@ -155,7 +142,6 @@ public class PKPlaylistMedia implements Parcelable {
     }
 
     protected PKPlaylistMedia(Parcel in) {
-        this.mediaIndex = (Integer) in.readValue(Integer.class.getClassLoader());
         this.id = in.readString();
         this.ks = in.readString();
         this.name = in.readString();
