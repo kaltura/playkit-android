@@ -1077,11 +1077,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     preferredLanguageWasSelected = true;
                 }
                 sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
-                if (tracksReady.getVideoTracks().isEmpty()) {
-                    exoPlayerView.hideVideoSurface();
-                }
-                if (!tracksReady.getTextTracks().isEmpty()) {
-                    exoPlayerView.showVideoSubtitles();
+                if (exoPlayerView != null) {
+                    if (tracksReady.getVideoTracks().isEmpty()) {
+                        exoPlayerView.hideVideoSurface();
+                    }
+                    if (!tracksReady.getTextTracks().isEmpty()) {
+                        exoPlayerView.showVideoSubtitles();
+                    }
                 }
             }
 
