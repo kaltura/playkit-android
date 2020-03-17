@@ -14,6 +14,7 @@ import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionManager;
+import com.kaltura.android.exoplayer2.drm.ExoMediaCrypto;
 import com.kaltura.android.exoplayer2.drm.ExoMediaDrm;
 import com.kaltura.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.kaltura.android.exoplayer2.drm.MediaDrmCallback;
@@ -64,14 +65,14 @@ public class DummySurfaceWorkaroundTest {
         DataSource.Factory mediaDataSourceFactory = new DefaultDataSourceFactory(context, "whatever");
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory());
 
-        DefaultDrmSessionManager<FrameworkMediaCrypto> drmSessionManager = getDrmSessionManager();
+        DefaultDrmSessionManager<ExoMediaCrypto> drmSessionManager = getDrmSessionManager();
 
         if (drmSessionManager == null) {
             return;
         }
 
         DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context);
-        final SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, drmSessionManager);
+        final SimpleExoPlayer player = new SimpleExoPlayer.Builder(context, renderersFactory).setTrackSelector(trackSelector).build();
 
         player.addListener(new Player.EventListener() {
             @Override
@@ -108,13 +109,8 @@ public class DummySurfaceWorkaroundTest {
         }
     }
 
-    private static DefaultDrmSessionManager<FrameworkMediaCrypto> getDrmSessionManager() {
-        try {
-            return DefaultDrmSessionManager.newWidevineInstance(fakeDrmCallback, null);
-        } catch (UnsupportedDrmException e) {
-            e.printStackTrace();
-            return null;
-        }
+    private static DefaultDrmSessionManager<ExoMediaCrypto> getDrmSessionManager() {
+        return new DefaultDrmSessionManager.Builder().build(fakeDrmCallback);
     }
 
     private static void maybeSendReport(final Context context) {

@@ -36,7 +36,7 @@ public class DrmCallback implements MediaDrmCallback {
         this.adapter = adapter;
     }
 
-    void setLicenseUrl(String licenseUrl) {
+    public void setLicenseUrl(String licenseUrl) {
 
         if (licenseUrl == null) {
             log.e("Invalid license URL = null");

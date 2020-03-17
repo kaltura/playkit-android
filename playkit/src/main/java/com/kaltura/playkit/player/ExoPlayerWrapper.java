@@ -14,6 +14,7 @@ package com.kaltura.playkit.player;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -30,7 +31,14 @@ import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
+import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionManager;
+import com.kaltura.android.exoplayer2.drm.DrmInitData;
+import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
+import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
+import com.kaltura.android.exoplayer2.drm.HttpMediaDrmCallback;
+import com.kaltura.android.exoplayer2.drm.MediaDrmCallback;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
+import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
 import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
 import com.kaltura.android.exoplayer2.source.BehindLiveWindowException;
@@ -56,7 +64,7 @@ import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 import com.kaltura.playkit.*;
-import com.kaltura.playkit.drm.DeferredDrmSessionManager;
+import com.kaltura.playkit.LocalAssetsManager.LocalMediaSource;
 import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
@@ -102,7 +110,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private PKTracks tracks;
     private Timeline.Window window;
     private TrackSelectionHelper trackSelectionHelper;
-    private DeferredDrmSessionManager drmSessionManager;
+    private DrmSessionManager drmSessionManager;
+    private LocalMediaSource localMediaSource = null;
 
     private PlayerEvent.Type currentEvent;
     private PlayerState currentState = PlayerState.IDLE;
@@ -131,7 +140,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private TrackSelectionHelper.TracksErrorListener tracksErrorListener = initTracksErrorListener();
-    private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
+    //private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
 
     private PKMediaSourceConfig sourceConfig;
     @NonNull private Profiler profiler = Profiler.NOOP;
@@ -186,12 +195,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private void initializePlayer() {
         DefaultTrackSelector trackSelector = initializeTrackSelector();
-
-        final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
-        drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener);
+        drmSessionManager = DrmSessionManager.getDummyDrmSessionManager(); ///new DrmSessionManager.(mainHandler, drmCallback, drmSessionListener);
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context, playerSettings.allowClearLead(), playerSettings.enableDecoderFallback(), playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
 
-        player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
+        player = new SimpleExoPlayer.Builder(context, renderersFactory)
+                .setTrackSelector(trackSelector)
+                .setLoadControl(getUpdatedLoadControl())
+    .setBandwidthMeter(bandwidthMeter).build();
 
         window = new Timeline.Window();
         setPlayerListeners();
@@ -259,9 +269,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         //reset metadata on prepare.
         metadataList.clear();
 
-        if (sourceConfig.mediaSource.hasDrmParams()) {
-            drmSessionManager.setMediaSource(sourceConfig.mediaSource);
-        }
+//        if (sourceConfig.mediaSource.hasDrmParams()) {
+//            drmSessionManager.setMediaSource(sourceConfig.mediaSource);
+//        }
 
         shouldGetTracksInfo = true;
         trackSelectionHelper.applyPlayerSettings(playerSettings);
@@ -319,8 +329,20 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         switch (format) {
             case dash:
+                DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
+                if (sourceConfig.mediaSource instanceof LocalMediaSource) {
+                    localMediaSource = (LocalAssetsManager.LocalMediaSource) sourceConfig.mediaSource;
+                } else {
+                    drmCallback.setLicenseUrl(getLicenseUrl(sourceConfig.mediaSource));
+                }
+
+                drmSessionManager =
+                        new DefaultDrmSessionManager.Builder()
+                                .setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER)
+                                .setMultiSession(true)
+                                .build(drmCallback);
                 mediaSource = new DashMediaSource.Factory(
-                        new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory).createMediaSource(uri);
+                        new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory).setDrmSessionManager(drmSessionManager).createMediaSource(uri);
                 break;
 
             case hls:
@@ -340,6 +362,53 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
         return mediaSource;
     }
+
+    private DrmInitData.SchemeData getWidevineInitData(DrmInitData drmInitData) {
+        if (drmInitData == null) {
+            log.e("No PSSH in media");
+            return null;
+        }
+
+        DrmInitData.SchemeData schemeData = null;
+        for (int i = 0 ; i < drmInitData.schemeDataCount ; i++) {
+            if (drmInitData.get(i) != null && drmInitData.get(i).matches(MediaSupport.WIDEVINE_UUID)) {
+                schemeData = drmInitData.get(i);
+            }
+        }
+
+        if (schemeData == null) {
+            return null;
+        }
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            // Prior to L the Widevine CDM required data to be extracted from the PSSH atom.
+            byte[] psshData = PsshAtomUtil.parseSchemeSpecificData(schemeData.data, MediaSupport.WIDEVINE_UUID);
+            if (psshData == null) {
+                log.w("Extraction failed. schemeData isn't a Widevine PSSH atom, so leave it unchanged.");
+            } else {
+                schemeData = new DrmInitData.SchemeData(MediaSupport.WIDEVINE_UUID, schemeData.mimeType, psshData);
+            }
+        }
+        return schemeData;
+    }
+
+
+    private String getLicenseUrl(PKMediaSource mediaSource) {
+        String licenseUrl = null;
+
+        if (mediaSource.hasDrmParams()) {
+            List<PKDrmParams> drmData = mediaSource.getDrmData();
+            for (PKDrmParams pkDrmParam : drmData) {
+                // selecting WidevineCENC as default right now
+                if (PKDrmParams.Scheme.WidevineCENC == pkDrmParam.getScheme()) {
+                    licenseUrl = pkDrmParam.getLicenseUri();
+                    break;
+                }
+            }
+        }
+        return licenseUrl;
+    }
+
 
     /**
      * Return the media source with external subtitles if exists
@@ -1116,13 +1185,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
             eventListener.onEvent(PlayerEvent.Type.ERROR);
         }
-    }
-
-    private DeferredDrmSessionManager.DrmSessionListener initDrmSessionListener() {
-        return error -> {
-            currentError = error;
-            sendEvent(PlayerEvent.Type.ERROR);
-        };
     }
 
     @Override
