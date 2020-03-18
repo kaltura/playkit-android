@@ -16,13 +16,15 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
+import androidx.annotation.Nullable;
+
 import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionEventListener;
 import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.DrmInitData;
 import com.kaltura.android.exoplayer2.drm.DrmSession;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
-import com.kaltura.android.exoplayer2.drm.FrameworkMediaCrypto;
-import com.kaltura.android.exoplayer2.drm.UnsupportedDrmException;
+import com.kaltura.android.exoplayer2.drm.ExoMediaCrypto;
+import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil;
 import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.playkit.LocalAssetsManager;
@@ -44,7 +46,7 @@ import static com.kaltura.playkit.Utils.toBase64;
  * @hide
  */
 
-public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMediaCrypto>, DefaultDrmSessionEventListener {
+public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCrypto>, DefaultDrmSessionEventListener {
 
     private static final PKLog log = PKLog.get("DeferredDrmSessionManager");
 
@@ -52,7 +54,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
     private final DrmCallback drmCallback;
     private DrmSessionListener drmSessionListener;
     private LocalAssetsManager.LocalMediaSource localMediaSource = null;
-    private DefaultDrmSessionManager<FrameworkMediaCrypto> drmSessionManager = null;
+    private DrmSessionManager drmSessionManager = null;
 
     public interface DrmSessionListener {
         void onError(PKError error);
@@ -62,6 +64,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
         this.mainHandler = mainHandler;
         this.drmCallback = drmCallback;
         this.drmSessionListener = drmSessionListener;
+        drmSessionManager = DrmSessionManager.getDummyDrmSessionManager();
     }
 
     public void setMediaSource(PKMediaSource mediaSource) {
@@ -70,23 +73,25 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
             return;
         }
 
-        try {
-            if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
-                localMediaSource = (LocalAssetsManager.LocalMediaSource) mediaSource;
-            } else {
-                drmCallback.setLicenseUrl(getLicenseUrl(mediaSource));
-            }
+        drmSessionManager = new DefaultDrmSessionManager.Builder()
+                .setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER)
+                .setMultiSession(true)
+                .build(drmCallback);
 
-            drmSessionManager = DefaultDrmSessionManager.newWidevineInstance(drmCallback, null);
-            if (mainHandler != null) {
-                drmSessionManager.addListener(mainHandler, this);
-            }
-
-        } catch (UnsupportedDrmException exception) {
-
-            PKError error = new PKError(PKPlayerErrorType.DRM_ERROR, "This device doesn't support widevine modular", exception);
-            drmSessionListener.onError(error);
+        if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
+            localMediaSource = (LocalAssetsManager.LocalMediaSource) mediaSource;
+        } else {
+            drmCallback.setLicenseUrl(getLicenseUrl(mediaSource));
         }
+
+        //drmSessionManager = new DefaultDrmSessionManager.Builder().build(drmCallback);
+
+        if (mainHandler != null) {
+            if (drmSessionManager instanceof DefaultDrmSessionManager) {
+                ((DefaultDrmSessionManager) drmSessionManager).addListener(mainHandler, this);
+            }
+        }
+
     }
 
     @Override
@@ -94,8 +99,17 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
         return drmSessionManager != null && drmSessionManager.canAcquireSession(drmInitData);
     }
 
+    @Nullable
     @Override
-    public DrmSession<FrameworkMediaCrypto> acquireSession(Looper playbackLooper, DrmInitData drmInitData) {
+    public DrmSession<ExoMediaCrypto> acquirePlaceholderSession(Looper playbackLooper, int trackType) {
+        if (drmSessionManager != null) {
+            return drmSessionManager.acquirePlaceholderSession(playbackLooper, trackType);
+        }
+        return null;
+    }
+
+    @Override
+    public DrmSession<ExoMediaCrypto> acquireSession(Looper playbackLooper, DrmInitData drmInitData) {
         if (drmSessionManager == null) {
             return null;
         }
@@ -106,7 +120,9 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
             try {
                 if (schemeData != null) {
                     offlineKey = localMediaSource.getStorage().load(toBase64(schemeData.data));
-                    drmSessionManager.setMode(DefaultDrmSessionManager.MODE_PLAYBACK, offlineKey);
+                    if (drmSessionManager instanceof DefaultDrmSessionManager) {
+                        ((DefaultDrmSessionManager) drmSessionManager).setMode(DefaultDrmSessionManager.MODE_PLAYBACK, offlineKey);
+                    }
                     localMediaSource = null;
                 }
             } catch (FileNotFoundException e) {
@@ -118,12 +134,26 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
         return new SessionWrapper(playbackLooper, drmInitData, drmSessionManager);
     }
 
+    @Nullable
     @Override
-    public void releaseSession(DrmSession drmSession) {
-        if (drmSession instanceof SessionWrapper) {
-            ((SessionWrapper) drmSession).release();
-        } else {
-            throw new IllegalStateException("Can't release unknown session");
+    public Class<? extends ExoMediaCrypto> getExoMediaCryptoType(DrmInitData drmInitData) {
+        if (drmSessionManager != null) {
+            drmSessionManager.getExoMediaCryptoType(drmInitData);
+        }
+        return null;
+    }
+
+    @Override
+    public void prepare() {
+        if (drmSessionManager != null) {
+            drmSessionManager.prepare();
+        }
+    }
+
+    @Override
+    public void release() {
+        if (drmSessionManager != null) {
+            drmSessionManager.release();
         }
     }
 
@@ -194,21 +224,31 @@ public class DeferredDrmSessionManager implements DrmSessionManager<FrameworkMed
         log.d("onDrmKeysRemoved");
     }
 
+    @Override
+    public void onDrmSessionAcquired() {
+        log.d("onDrmSessionAcquired");
+    }
+
+    @Override
+    public void onDrmSessionReleased() {
+        log.d("onDrmSessionReleased");
+    }
+
 }
 
 
-class SessionWrapper implements DrmSession<FrameworkMediaCrypto> {
+class SessionWrapper implements DrmSession<ExoMediaCrypto> {
 
-    private DrmSession<FrameworkMediaCrypto> realDrmSession;
-    private DrmSessionManager<FrameworkMediaCrypto> realDrmSessionManager;
+    private DrmSession<ExoMediaCrypto> realDrmSession;
+    private DrmSessionManager<ExoMediaCrypto> realDrmSessionManager;
 
-    SessionWrapper(Looper playbackLooper, DrmInitData drmInitData, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager) {
+    SessionWrapper(Looper playbackLooper, DrmInitData drmInitData, DrmSessionManager drmSessionManager) {
         this.realDrmSession = drmSessionManager.acquireSession(playbackLooper, drmInitData);
         this.realDrmSessionManager = drmSessionManager;
     }
 
-    void release() {
-        realDrmSessionManager.releaseSession(realDrmSession);
+    public void release() {
+        realDrmSessionManager.release();
         realDrmSessionManager = null;
         realDrmSession = null;
     }
@@ -219,7 +259,12 @@ class SessionWrapper implements DrmSession<FrameworkMediaCrypto> {
     }
 
     @Override
-    public FrameworkMediaCrypto getMediaCrypto() {
+    public boolean playClearSamplesWithoutKeys() {
+        return realDrmSession.playClearSamplesWithoutKeys();
+    }
+
+    @Override
+    public ExoMediaCrypto getMediaCrypto() {
         return realDrmSession.getMediaCrypto();
     }
 
@@ -237,5 +282,10 @@ class SessionWrapper implements DrmSession<FrameworkMediaCrypto> {
     @Override
     public byte[] getOfflineLicenseKeySetId() {
         return realDrmSession.getOfflineLicenseKeySetId();
+    }
+
+    @Override
+    public void acquire() {
+        realDrmSession.acquire();
     }
 }

@@ -30,6 +30,7 @@ import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
+import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
 import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
@@ -186,12 +187,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private void initializePlayer() {
         DefaultTrackSelector trackSelector = initializeTrackSelector();
-
-        final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
-        drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener);
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context, playerSettings.allowClearLead(), playerSettings.enableDecoderFallback(), playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
 
-        player = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, getUpdatedLoadControl(), drmSessionManager, bandwidthMeter);
+         player = new SimpleExoPlayer.Builder(context, renderersFactory)
+                .setTrackSelector(trackSelector)
+                .setLoadControl(getUpdatedLoadControl())
+                .setBandwidthMeter(bandwidthMeter).build();
 
         window = new Timeline.Window();
         setPlayerListeners();
@@ -259,10 +260,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         //reset metadata on prepare.
         metadataList.clear();
 
-        if (sourceConfig.mediaSource.hasDrmParams()) {
-            drmSessionManager.setMediaSource(sourceConfig.mediaSource);
-        }
-
         shouldGetTracksInfo = true;
         trackSelectionHelper.applyPlayerSettings(playerSettings);
 
@@ -317,14 +314,24 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
 
+
         switch (format) {
             case dash:
+                if (sourceConfig.mediaSource.hasDrmParams()) {
+                    final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
+                    drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener);
+                    drmSessionManager.setMediaSource(sourceConfig.mediaSource);
+                }
+
                 mediaSource = new DashMediaSource.Factory(
-                        new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory).createMediaSource(uri);
+                        new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
+                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())
+                        .createMediaSource(uri);
                 break;
 
             case hls:
                 mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
+                        .setDrmSessionManager(DrmSessionManager.getDummyDrmSessionManager())
                         .createMediaSource(uri);
                 break;
 
@@ -332,6 +339,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             case mp4:
             case mp3:
                 mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                        .setDrmSessionManager(DrmSessionManager.getDummyDrmSessionManager())
                         .createMediaSource(uri);
                 break;
 
