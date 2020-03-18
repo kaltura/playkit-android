@@ -299,23 +299,22 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             return;
         }
 
-        try {
-            if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
-                localMediaSource = (LocalAssetsManager.LocalMediaSource) mediaSource;
-            } else {
-                drmCallback.setLicenseUrl(getLicenseUrl(mediaSource));
-            }
-
-            drmSessionManager = DefaultDrmSessionManager.newWidevineInstance(drmCallback, null);
-            if (mainHandler != null) {
-                drmSessionManager.addListener(mainHandler, this);
-            }
-
-        } catch (UnsupportedDrmException exception) {
-
-            PKError error = new PKError(PKPlayerErrorType.DRM_ERROR, "This device doesn't support widevine modular", exception);
-            drmSessionListener.onError(error);
+        if (mediaSource instanceof LocalMediaSource) {
+            localMediaSource = (LocalMediaSource) mediaSource;
+        } else {
+            drmCallback.setLicenseUrl(getLicenseUrl(mediaSource));
         }
+
+        drmSessionManager =
+                new DefaultDrmSessionManager.Builder()
+                        .setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER)
+                        .setMultiSession(true)
+                        .build(drmCallback);
+
+        if (mainHandler != null) {
+            //drmSessionManager.addListener(mainHandler, this);
+        }
+
     }
 
     private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig) {
@@ -331,7 +330,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (sourceConfig.mediaSource instanceof LocalAssetsManagerExo.LocalExoMediaSource) {
             final LocalAssetsManagerExo.LocalExoMediaSource pkMediaSource = (LocalAssetsManagerExo.LocalExoMediaSource) sourceConfig.mediaSource;
             mediaSource = pkMediaSource.getExoMediaSource();
-
         } else {
             mediaSource = buildInternalExoMediaSource(sourceConfig);
         }
@@ -360,17 +358,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         switch (format) {
             case dash:
 
-                if (sourceConfig.mediaSource instanceof LocalMediaSource) {
-                    localMediaSource = (LocalAssetsManager.LocalMediaSource) sourceConfig.mediaSource;
-                } else {
-                    drmCallback.setLicenseUrl(getLicenseUrl(sourceConfig.mediaSource));
-                }
-
-                drmSessionManager =
-                        new DefaultDrmSessionManager.Builder()
-                                .setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER)
-                                .setMultiSession(true)
-                                .build(drmCallback);
                 mediaSource = new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory).setDrmSessionManager(drmSessionManager).createMediaSource(uri);
                 break;
