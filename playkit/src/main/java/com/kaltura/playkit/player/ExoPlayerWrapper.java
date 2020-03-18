@@ -37,6 +37,7 @@ import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.kaltura.android.exoplayer2.drm.HttpMediaDrmCallback;
 import com.kaltura.android.exoplayer2.drm.MediaDrmCallback;
+import com.kaltura.android.exoplayer2.drm.UnsupportedDrmException;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
@@ -62,6 +63,7 @@ import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.LocalAssetsManager.LocalMediaSource;
@@ -88,6 +90,8 @@ import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
 
 public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
+    private DrmCallback drmCallback;
+
     public interface LoadControlStrategy {
         LoadControl getCustomLoadControl();
         BandwidthMeter getCustomBandwidthMeter();
@@ -269,9 +273,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         //reset metadata on prepare.
         metadataList.clear();
 
-//        if (sourceConfig.mediaSource.hasDrmParams()) {
-//            drmSessionManager.setMediaSource(sourceConfig.mediaSource);
-//        }
+        if (sourceConfig.mediaSource.hasDrmParams()) {
+            drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
+            setDrmMediaSource(sourceConfig.mediaSource);
+        }
 
         shouldGetTracksInfo = true;
         trackSelectionHelper.applyPlayerSettings(playerSettings);
@@ -285,6 +290,31 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         if (playerSettings.getSubtitleStyleSettings() != null) {
             configureSubtitleView();
+        }
+    }
+
+    public void setDrmMediaSource(PKMediaSource mediaSource) {
+        if (Util.SDK_INT < 18) {
+            drmSessionManager = null;
+            return;
+        }
+
+        try {
+            if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
+                localMediaSource = (LocalAssetsManager.LocalMediaSource) mediaSource;
+            } else {
+                drmCallback.setLicenseUrl(getLicenseUrl(mediaSource));
+            }
+
+            drmSessionManager = DefaultDrmSessionManager.newWidevineInstance(drmCallback, null);
+            if (mainHandler != null) {
+                drmSessionManager.addListener(mainHandler, this);
+            }
+
+        } catch (UnsupportedDrmException exception) {
+
+            PKError error = new PKError(PKPlayerErrorType.DRM_ERROR, "This device doesn't support widevine modular", exception);
+            drmSessionListener.onError(error);
         }
     }
 
@@ -329,7 +359,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         switch (format) {
             case dash:
-                DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
+
                 if (sourceConfig.mediaSource instanceof LocalMediaSource) {
                     localMediaSource = (LocalAssetsManager.LocalMediaSource) sourceConfig.mediaSource;
                 } else {
