@@ -259,7 +259,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         this.sourceConfig = sourceConfig;
         //reset metadata on prepare.
         metadataList.clear();
-
+        if (sourceConfig.mediaSource.hasDrmParams()) {
+            final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
+            drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener);
+            drmSessionManager.setMediaSource(sourceConfig.mediaSource);
+        }
         shouldGetTracksInfo = true;
         trackSelectionHelper.applyPlayerSettings(playerSettings);
 
@@ -317,12 +321,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         switch (format) {
             case dash:
-                if (sourceConfig.mediaSource.hasDrmParams()) {
-                    final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
-                    drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener);
-                    drmSessionManager.setMediaSource(sourceConfig.mediaSource);
-                }
-
                 mediaSource = new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
                         .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())

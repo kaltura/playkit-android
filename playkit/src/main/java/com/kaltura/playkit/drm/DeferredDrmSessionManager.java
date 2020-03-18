@@ -154,6 +154,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
     public void release() {
         if (drmSessionManager != null) {
             drmSessionManager.release();
+            drmSessionManager = null;
         }
     }
 
@@ -247,12 +248,6 @@ class SessionWrapper implements DrmSession<ExoMediaCrypto> {
         this.realDrmSessionManager = drmSessionManager;
     }
 
-    public void release() {
-        realDrmSessionManager.release();
-        realDrmSessionManager = null;
-        realDrmSession = null;
-    }
-
     @Override
     public int getState() {
         return realDrmSession.getState();
@@ -287,5 +282,13 @@ class SessionWrapper implements DrmSession<ExoMediaCrypto> {
     @Override
     public void acquire() {
         realDrmSession.acquire();
+    }
+
+    @Override
+    public void release() {
+        realDrmSession.release();
+        realDrmSessionManager.release();
+        realDrmSession = null;
+        realDrmSession = null;
     }
 }
