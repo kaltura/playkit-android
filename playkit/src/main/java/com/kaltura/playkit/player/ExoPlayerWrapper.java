@@ -1078,9 +1078,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 }
                 sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
                 if (exoPlayerView != null) {
-                    if (tracksReady.getVideoTracks().isEmpty()) {
+                    if (trackSelectionHelper != null && trackSelectionHelper.isAudioOnlyStream()) {
                         exoPlayerView.hideVideoSurface();
                     }
+
                     if (!tracksReady.getTextTracks().isEmpty()) {
                         exoPlayerView.showVideoSubtitles();
                     }
