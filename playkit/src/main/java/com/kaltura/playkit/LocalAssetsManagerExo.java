@@ -21,8 +21,8 @@ public class LocalAssetsManagerExo {
     }
 
     private static LocalAssetsManager.AssetStatus assetStatusFromWidevineMap(Map<String, String> map) {
-        long licenseDurationRemaining = 0;
-        long playbackDurationRemaining = 0;
+        long licenseDurationRemaining;
+        long playbackDurationRemaining;
         try {
             final String licenseDurationRemainingString = map.get("LicenseDurationRemaining");
             final String playbackDurationRemainingString = map.get("PlaybackDurationRemaining");

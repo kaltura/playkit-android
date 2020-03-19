@@ -54,7 +54,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
     private final DrmCallback drmCallback;
     private DrmSessionListener drmSessionListener;
     private LocalAssetsManager.LocalMediaSource localMediaSource = null;
-    private DrmSessionManager drmSessionManager = null;
+    private DrmSessionManager drmSessionManager;
 
     public interface DrmSessionListener {
         void onError(PKError error);

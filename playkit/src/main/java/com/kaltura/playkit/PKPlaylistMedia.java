@@ -154,7 +154,7 @@ public class PKPlaylistMedia implements Parcelable {
         this.type = tmpType == -1 ? null : PKMediaEntry.MediaEntryType.values()[tmpType];
         this.msDuration = in.readLong();
         int metadataSize = in.readInt();
-        this.metadata = new HashMap<String, String>(metadataSize);
+        this.metadata = new HashMap<>(metadataSize);
         for (int i = 0; i < metadataSize; i++) {
             String key = in.readString();
             String value = in.readString();

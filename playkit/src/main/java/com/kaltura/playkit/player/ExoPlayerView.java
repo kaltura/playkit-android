@@ -416,7 +416,7 @@ class ExoPlayerView extends BaseExoplayerView {
     }
 
     public static @AspectRatioFrameLayout.ResizeMode int getExoPlayerAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
-        @AspectRatioFrameLayout.ResizeMode int exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
+        @AspectRatioFrameLayout.ResizeMode int exoPlayerAspectRatioResizeMode;
         switch(resizeMode) {
             case fixedWidth:
                 exoPlayerAspectRatioResizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH;

@@ -23,7 +23,6 @@ import android.drm.DrmManagerClient;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.MediaDrm;
-import android.media.UnsupportedSchemeException;
 import android.os.AsyncTask;
 import android.os.Build;
 import androidx.annotation.NonNull;
