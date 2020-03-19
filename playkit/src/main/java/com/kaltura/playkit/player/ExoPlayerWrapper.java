@@ -1088,6 +1088,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     if (trackSelectionHelper != null && trackSelectionHelper.isAudioOnlyStream()) {
                         exoPlayerView.hideVideoSurface();
                     }
+
                     if (!tracksReady.getTextTracks().isEmpty()) {
                         exoPlayerView.showVideoSubtitles();
                     }
