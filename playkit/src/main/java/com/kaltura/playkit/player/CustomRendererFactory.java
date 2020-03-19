@@ -10,7 +10,7 @@ import com.kaltura.android.exoplayer2.Renderer;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecSelector;
-import com.kaltura.android.exoplayer2.video.CustomVideoCodecRenderer;
+import com.kaltura.android.exoplayer2.video.MediaCodecVideoRenderer;
 import com.kaltura.android.exoplayer2.video.VideoRendererEventListener;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class CustomRendererFactory extends DefaultRenderersFactory {
 
     @Override
     protected void buildVideoRenderers(Context context, int extensionRendererMode, MediaCodecSelector mediaCodecSelector, @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, boolean playClearSamplesWithoutKeys, boolean enableDecoderFallback, Handler eventHandler, VideoRendererEventListener eventListener, long allowedVideoJoiningTimeMs, ArrayList<Renderer> out) {
-        out.add(new CustomVideoCodecRenderer(context, MediaCodecSelector.DEFAULT,
+        out.add(new MediaCodecVideoRenderer(context, MediaCodecSelector.DEFAULT,
                 allowedVideoJoiningTimeMs, drmSessionManager, playClearSamplesWithoutKeys, enableDecoderFallback, eventHandler, eventListener,
                 MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY));
     }
