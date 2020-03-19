@@ -190,7 +190,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         DefaultTrackSelector trackSelector = initializeTrackSelector();
         CustomRendererFactory renderersFactory = new CustomRendererFactory(context, playerSettings.allowClearLead(), playerSettings.enableDecoderFallback(), playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
 
-         player = new SimpleExoPlayer.Builder(context, renderersFactory)
+        player = new SimpleExoPlayer.Builder(context, renderersFactory)
                 .setTrackSelector(trackSelector)
                 .setLoadControl(getUpdatedLoadControl())
                 .setBandwidthMeter(bandwidthMeter).build();
@@ -1085,11 +1085,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 }
                 sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
                 if (exoPlayerView != null) {
-                    if (tracksReady.getVideoTracks().isEmpty() &&
-                            sourceConfig != null &&
-                            sourceConfig.mediaSource != null &&
-                            (sourceConfig.mediaSource.getMediaFormat() == PKMediaFormat.hls || sourceConfig.mediaSource.getMediaFormat() == PKMediaFormat.dash)) {
-                       exoPlayerView.hideVideoSurface();
+                    if (trackSelectionHelper != null && trackSelectionHelper.isAudioOnlyStream()) {
+                        exoPlayerView.hideVideoSurface();
                     }
                     if (!tracksReady.getTextTracks().isEmpty()) {
                         exoPlayerView.showVideoSubtitles();
