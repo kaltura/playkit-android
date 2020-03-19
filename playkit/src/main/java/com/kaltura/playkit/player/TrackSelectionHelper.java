@@ -922,6 +922,14 @@ class TrackSelectionHelper {
         clearTracksLists();
     }
 
+    protected boolean isAudioOnlyStream() {
+        if (trackSelectionArray != null) {
+            TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
+            return trackSelection == null;
+        }
+        return false;
+    }
+
     protected long getCurrentVideoBitrate() {
         if (trackSelectionArray != null) {
             TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_VIDEO);
