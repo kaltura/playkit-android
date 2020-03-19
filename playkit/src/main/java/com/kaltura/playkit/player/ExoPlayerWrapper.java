@@ -259,7 +259,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         metadataList.clear();
         if (sourceConfig.mediaSource.hasDrmParams()) {
             final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
-            drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener);
+            drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener,playerSettings.allowClearLead());
             drmSessionManager.setMediaSource(sourceConfig.mediaSource);
         }
         shouldGetTracksInfo = true;

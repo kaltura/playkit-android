@@ -55,6 +55,15 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
     private DrmSessionListener drmSessionListener;
     private LocalAssetsManager.LocalMediaSource localMediaSource = null;
     private DrmSessionManager drmSessionManager;
+    private boolean allowClearLead;
+
+    public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener, boolean allowClearLead) {
+        this.mainHandler = mainHandler;
+        this.drmCallback = drmCallback;
+        this.drmSessionListener = drmSessionListener;
+        drmSessionManager = DrmSessionManager.getDummyDrmSessionManager();
+        this.allowClearLead = allowClearLead;
+    }
 
     public interface DrmSessionListener {
         void onError(PKError error);
@@ -65,6 +74,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
         this.drmCallback = drmCallback;
         this.drmSessionListener = drmSessionListener;
         drmSessionManager = DrmSessionManager.getDummyDrmSessionManager();
+        allowClearLead = true;
     }
 
     public void setMediaSource(PKMediaSource mediaSource) {
@@ -74,8 +84,9 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
         }
 
         drmSessionManager = new DefaultDrmSessionManager.Builder()
-                .setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER)
-                .setMultiSession(true)
+                //.setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER)
+                //.setMultiSession(true)
+                .setPlayClearSamplesWithoutKeys(allowClearLead)
                 .build(drmCallback);
 
         if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
