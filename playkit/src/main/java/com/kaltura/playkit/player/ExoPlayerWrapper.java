@@ -13,6 +13,7 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
+import android.media.MediaFormat;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -1084,8 +1085,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 }
                 sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
                 if (exoPlayerView != null) {
-                    if (tracksReady.getVideoTracks().isEmpty()) {
-                        exoPlayerView.hideVideoSurface();
+                    if (tracksReady.getVideoTracks().isEmpty() &&
+                            sourceConfig != null &&
+                            sourceConfig.mediaSource != null &&
+                            (sourceConfig.mediaSource.getMediaFormat() == PKMediaFormat.hls || sourceConfig.mediaSource.getMediaFormat() == PKMediaFormat.dash)) {
+                       exoPlayerView.hideVideoSurface();
                     }
                     if (!tracksReady.getTextTracks().isEmpty()) {
                         exoPlayerView.showVideoSubtitles();
