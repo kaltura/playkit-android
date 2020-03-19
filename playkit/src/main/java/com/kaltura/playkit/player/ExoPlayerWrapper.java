@@ -1078,9 +1078,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 }
                 sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
                 if (exoPlayerView != null) {
-                    if (tracksReady.getVideoTracks().isEmpty()) {
+                    if (isAudioOnlyAdaptiveStream(tracksReady)) {
                         exoPlayerView.hideVideoSurface();
                     }
+
                     if (!tracksReady.getTextTracks().isEmpty()) {
                         exoPlayerView.showVideoSubtitles();
                     }
@@ -1109,6 +1110,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 sendEvent(PlayerEvent.Type.TEXT_TRACK_CHANGED);
             }
         };
+    }
+
+    private boolean isAudioOnlyAdaptiveStream(PKTracks tracksReady) {
+        return tracksReady.getVideoTracks().isEmpty() &&
+                sourceConfig != null &&
+                sourceConfig.mediaSource != null &&
+                (sourceConfig.mediaSource.getMediaFormat() == PKMediaFormat.hls || sourceConfig.mediaSource.getMediaFormat() == PKMediaFormat.dash);
     }
 
     private void sendInvalidVideoBitrateRangeIfNeeded(String errorMessage) {
