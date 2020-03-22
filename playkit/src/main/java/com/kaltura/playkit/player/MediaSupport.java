@@ -84,8 +84,7 @@ public class MediaSupport {
         if (initSucceeded) {
             return;
         }
-        //Check if device needs codec`s workaround.
-        DummySurfaceWorkaroundTest.executeTest(context);
+
         try {
             checkWidevineClassic(context);
             checkWidevineModular();
