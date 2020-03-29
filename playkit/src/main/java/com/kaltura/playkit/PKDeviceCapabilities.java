@@ -244,8 +244,16 @@ public class PKDeviceCapabilities {
     }
 
     private JSONObject mediaCodecInfo(MediaCodecInfo mediaCodec) throws JSONException {
-        return new JSONObject()
-                .put("supportedTypes", jsonArray(mediaCodec.getSupportedTypes()));
+
+        JSONObject codecInfo =  new JSONObject();
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            codecInfo.put("isVendor", mediaCodec.isVendor());
+            codecInfo.put("isSoftwareOnly", mediaCodec.isSoftwareOnly());
+            codecInfo.put("isHardwareAccelerated", mediaCodec.isHardwareAccelerated());
+            codecInfo.put("isEncoder", mediaCodec.isEncoder());
+        }
+        codecInfo.put("supportedTypes", jsonArray(mediaCodec.getSupportedTypes()));
+        return codecInfo;
     }
 
     private JSONObject mediaCodecInfo() throws JSONException {
