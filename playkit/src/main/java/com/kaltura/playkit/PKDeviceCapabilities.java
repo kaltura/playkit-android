@@ -250,7 +250,6 @@ public class PKDeviceCapabilities {
             codecInfo.put("isVendor", mediaCodec.isVendor());
             codecInfo.put("isSoftwareOnly", mediaCodec.isSoftwareOnly());
             codecInfo.put("isHardwareAccelerated", mediaCodec.isHardwareAccelerated());
-            codecInfo.put("isEncoder", mediaCodec.isEncoder());
         }
         codecInfo.put("supportedTypes", jsonArray(mediaCodec.getSupportedTypes()));
         return codecInfo;
