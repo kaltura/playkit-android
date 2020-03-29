@@ -42,7 +42,7 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.0.2'
 
     // Ok is (optionally) used by ExoPlayer now
-    api('com.squareup.okhttp3:okhttp:3.12.1')
+    api('com.squareup.okhttp3:okhttp:3.12.8')
 
     // Tests
     testImplementation 'junit:junit:4.12'
