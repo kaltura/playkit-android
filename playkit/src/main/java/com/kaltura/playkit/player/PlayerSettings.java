@@ -31,6 +31,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
     private boolean isTunneledAudioPlayback;
+    private boolean handleAudioBecomingNoisy;
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
@@ -44,13 +45,11 @@ public class PlayerSettings implements Player.Settings {
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
-
     private PKMediaFormat preferredMediaFormat = PKMediaFormat.dash;
-
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
-
     private Object customLoadControlStrategy = null;
+
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
@@ -143,6 +142,8 @@ public class PlayerSettings implements Player.Settings {
     public boolean isTunneledAudioPlayback() {
         return isTunneledAudioPlayback;
     }
+
+    public boolean isHandleAudioBecomingNoisy() { return  handleAudioBecomingNoisy; }
 
     @Override
     public Player.Settings setVRPlayerEnabled(boolean vrPlayerEnabled) {
@@ -280,6 +281,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setTunneledAudioPlayback(boolean isTunneledAudioPlayback) {
         this.isTunneledAudioPlayback = isTunneledAudioPlayback;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisy) {
+        this.handleAudioBecomingNoisy = handleAudioBecomingNoisy;
         return this;
     }
 }

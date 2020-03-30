@@ -29,6 +29,9 @@ import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
+import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
+import com.kaltura.android.exoplayer2.analytics.PlaybackStats;
+import com.kaltura.android.exoplayer2.analytics.PlaybackStatsListener;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
@@ -192,6 +195,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 .setLoadControl(getUpdatedLoadControl())
                 .setBandwidthMeter(bandwidthMeter).build();
 
+        player.setHandleAudioBecomingNoisy(playerSettings.isHandleAudioBecomingNoisy());
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
@@ -228,6 +232,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (assertPlayerIsNotNull("setPlayerListeners()")) {
             player.addListener(this);
             player.addMetadataOutput(this);
+
+//            PlaybackStatsListener playbackStatsListener  = new PlaybackStatsListener(true, new PlaybackStatsListener.Callback() {
+//                @Override
+//                public void onPlaybackStatsReady(com.kaltura.android.exoplayer2.analytics.AnalyticsListener.EventTime eventTime, PlaybackStats playbackStats) {
+//                    log.d("XXX PlaybackStatsListener playbackCount = " + playbackStats.playbackCount);
+//                }
+//            });
+//            player.addAnalyticsListener(playbackStatsListener);
+
             player.addAnalyticsListener(analyticsAggregator);
             final com.kaltura.android.exoplayer2.analytics.AnalyticsListener exoAnalyticsListener = profiler.getExoAnalyticsListener();
             if (exoAnalyticsListener != null) {

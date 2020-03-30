@@ -223,6 +223,13 @@ public interface Player {
          * @param isTunneledAudioPlayback audio tunnelling enabled
          */
         Settings setTunneledAudioPlayback(boolean isTunneledAudioPlayback);
+
+        /**
+         * Set HandleAudioBecomingNoisy - Sets whether the player should pause automatically
+         * when audio is rerouted from a headset to device speakers
+         * @param ishandleAudioBecomingNoisy
+         */
+        Settings setHandleAudioBecomingNoisy(boolean ishandleAudioBecomingNoisy);
     }
 
     /**
