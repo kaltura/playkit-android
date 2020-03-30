@@ -49,6 +49,7 @@ public class PlayerSettings implements Player.Settings {
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
     private Object customLoadControlStrategy = null;
+    private PKMaxVideoSize maxVideoSize;
 
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
@@ -138,12 +139,14 @@ public class PlayerSettings implements Player.Settings {
     public Object getCustomLoadControlStrategy() {
         return customLoadControlStrategy;
     }
-  
+
     public boolean isTunneledAudioPlayback() {
         return isTunneledAudioPlayback;
     }
 
     public boolean isHandleAudioBecomingNoisy() { return  handleAudioBecomingNoisy; }
+
+    public PKMaxVideoSize getMaxVideoSize() { return maxVideoSize; }
 
     @Override
     public Player.Settings setVRPlayerEnabled(boolean vrPlayerEnabled) {
@@ -277,7 +280,7 @@ public class PlayerSettings implements Player.Settings {
         this.customLoadControlStrategy = customLoadControlStrategy;
         return this;
     }
-  
+
     @Override
     public Player.Settings setTunneledAudioPlayback(boolean isTunneledAudioPlayback) {
         this.isTunneledAudioPlayback = isTunneledAudioPlayback;
@@ -287,6 +290,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisy) {
         this.handleAudioBecomingNoisy = handleAudioBecomingNoisy;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setMaxVideoSize(PKMaxVideoSize maxVideoSize) {
+        this.maxVideoSize = maxVideoSize;
         return this;
     }
 }

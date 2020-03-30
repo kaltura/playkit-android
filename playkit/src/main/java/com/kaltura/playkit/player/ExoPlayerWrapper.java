@@ -253,12 +253,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(context);
         DefaultTrackSelector.ParametersBuilder parametersBuilder = new DefaultTrackSelector.ParametersBuilder(context);
-        if (playerSettings.isTunneledAudioPlayback() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            parametersBuilder.setTunnelingAudioSessionId(C.generateAudioSessionIdV21(context));
-        }
+
+        trackSelectionHelper = new TrackSelectionHelper(context, trackSelector, lastSelectedTrackIds);
+        trackSelectionHelper.updateTrackSelectorParameter(playerSettings, parametersBuilder);
         trackSelector.setParameters(parametersBuilder.build());
 
-        trackSelectionHelper = new TrackSelectionHelper(trackSelector, lastSelectedTrackIds);
         trackSelectionHelper.setTracksInfoListener(tracksInfoListener);
         trackSelectionHelper.setTracksErrorListener(tracksErrorListener);
 

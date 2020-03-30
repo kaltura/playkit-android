@@ -13,11 +13,13 @@
 package com.kaltura.playkit.player;
 
 
+import android.content.Context;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.RendererCapabilities;
 import com.kaltura.android.exoplayer2.source.TrackGroup;
@@ -72,7 +74,7 @@ class TrackSelectionHelper {
     private static final String CEA_608 = "application/cea-608";
     private static final String LANGUAGE_UNKNOWN = "Unknown";
 
-
+    private final Context context;
     private final DefaultTrackSelector selector;
     private TrackSelectionArray trackSelectionArray;
     private MappingTrackSelector.MappedTrackInfo mappedTrackInfo;
@@ -84,16 +86,10 @@ class TrackSelectionHelper {
     private String[] lastSelectedTrackIds;
     private String[] requestedChangeTrackIds;
 
-    private PKTrackConfig preferredAudioLanguageConfig;
-    private PKTrackConfig preferredTextLanguageConfig;
-
-    private boolean cea608CaptionsEnabled; //Flag that indicates if application interested in receiving cea-608 text track format.
-
-    private boolean mpgaAudioFormatEnabled; // Flag that indicates if application interested MPGA Audio format
-
     private TracksInfoListener tracksInfoListener;
 
-    private TracksErrorListener tracksErrorListener;
+    private TracksErrorListener tracksErrorListener;;
+    private PlayerSettings playerSettings;
 
     interface TracksInfoListener {
 
@@ -121,8 +117,9 @@ class TrackSelectionHelper {
      * @param selector             The track selector.
      * @param lastSelectedTrackIds - last selected track id`s.
      */
-    TrackSelectionHelper(DefaultTrackSelector selector,
+    TrackSelectionHelper(Context context, DefaultTrackSelector selector,
                          String[] lastSelectedTrackIds) {
+        this.context = context;
         this.selector = selector;
         this.lastSelectedTrackIds = lastSelectedTrackIds;
         this.requestedChangeTrackIds = Arrays.copyOf(lastSelectedTrackIds, lastSelectedTrackIds.length);
@@ -194,7 +191,7 @@ class TrackSelectionHelper {
                                 break;
                             case TRACK_TYPE_AUDIO:
                                 if (format.language == null && format.codecs == null) {
-                                    if (mpgaAudioFormatEnabled && format.id != null && format.id.matches("\\d+/\\d+")) {
+                                    if (playerSettings != null && playerSettings.mpgaAudioFormatEnabled() && format.id != null && format.id.matches("\\d+/\\d+")) {
                                         audioTracks.add(new AudioTrack(uniqueId, format.id, format.label, format.bitrate, format.channelCount, format.selectionFlags, false));
                                     }
                                 } else {
@@ -203,7 +200,7 @@ class TrackSelectionHelper {
                                 break;
                             case TRACK_TYPE_TEXT:
                                 if (CEA_608.equals(format.sampleMimeType)) {
-                                    if (cea608CaptionsEnabled) {
+                                    if (playerSettings != null && playerSettings.cea608CaptionsEnabled()) {
                                         textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
                                     }
                                 } else {
@@ -477,7 +474,6 @@ class TrackSelectionHelper {
             parametersBuilder.setRendererDisabled(TRACK_TYPE_TEXT, uniqueTrackId[TRACK_INDEX] == TRACK_DISABLED);
         }
 
-
         SelectionOverride override = retrieveOverrideSelection(uniqueTrackId);
         overrideTrack(rendererIndex, override, parametersBuilder);
     }
@@ -508,8 +504,8 @@ class TrackSelectionHelper {
         if (videoTracks != null) {
             Collections.sort(videoTracks);
             if (videoTracks.size() >= 2) {
-                if ((minVideoBitrate < videoTracks.get(1).getBitrate() && maxVideoBitrate <  videoTracks.get(1).getBitrate()) ||
-                        (minVideoBitrate > videoTracks.get(videoTracks.size() - 1).getBitrate() && maxVideoBitrate > videoTracks.get(videoTracks.size() - 1).getBitrate())) {
+                if ((minVideoBitrate > videoTracks.get(1).getBitrate() && maxVideoBitrate <  videoTracks.get(1).getBitrate()) ||
+                        (minVideoBitrate > videoTracks.get(videoTracks.size() - 1).getBitrate() && maxVideoBitrate < videoTracks.get(videoTracks.size() - 1).getBitrate())) {
                     isValidABRRange = false;
                     String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
                     PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
@@ -662,6 +658,8 @@ class TrackSelectionHelper {
 
                         if (videoGroupIndex == groupIndex && videoTrackIndex != TRACK_ADAPTIVE) {
                             adaptiveTrackIndexesList.add(getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX));
+                        } else {
+                            return null; // incase of back to auto need to clear the selection override so return null.
                         }
                     }
                     break;
@@ -759,7 +757,22 @@ class TrackSelectionHelper {
             //clear all the selections if the override is null.
             parametersBuilder.clearSelectionOverrides(rendererIndex);
         }
+        updateTrackSelectorParameter(playerSettings, parametersBuilder);
         selector.setParameters(parametersBuilder);
+
+    }
+
+    public void updateTrackSelectorParameter(PlayerSettings playerSettings, DefaultTrackSelector.ParametersBuilder parametersBuilder) {
+        if (playerSettings == null) {
+            return;
+        }
+
+        if (playerSettings.isTunneledAudioPlayback() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            parametersBuilder.setTunnelingAudioSessionId(C.generateAudioSessionIdV21(context));
+        }
+        if (playerSettings.getMaxVideoSize() != null) {
+            parametersBuilder.setMaxVideoSize(playerSettings.getMaxVideoSize().getMaxVideoWidth(), playerSettings.getMaxVideoSize().getMaxVideoHeight());
+        }
     }
 
     /**
@@ -1073,7 +1086,7 @@ class TrackSelectionHelper {
             return null;
         }
         String preferredTrackUniqueId = null;
-        String preferredTextISO3Lang = preferredTextLanguageConfig.getTrackLanguage();
+        String preferredTextISO3Lang = playerSettings.getPreferredTextTrackConfig().getTrackLanguage();
         if (preferredTextISO3Lang != null) {
             for (TextTrack track : textTracks) {
                 String trackLang = track.getLanguage();
@@ -1081,7 +1094,7 @@ class TrackSelectionHelper {
                     continue;
                 }
 
-                if (NONE.equals(preferredTextLanguageConfig.getTrackLanguage()) && NONE.equals(trackLang)) {
+                if (NONE.equals(preferredTextISO3Lang) && NONE.equals(trackLang)) {
                     preferredTrackUniqueId = track.getUniqueId();
                     break;
                 } else if (NONE.equals(trackLang)) {
@@ -1091,7 +1104,7 @@ class TrackSelectionHelper {
                 Locale streamLang = new Locale(trackLang);
                 try {
                     if (streamLang.getISO3Language().equals(preferredTextISO3Lang)) {
-                        log.d("changing track type " + trackType + " to " + preferredTextLanguageConfig.getTrackLanguage());
+                        log.d("changing track type " + trackType + " to " + preferredTextISO3Lang);
                         preferredTrackUniqueId = track.getUniqueId();
                         break;
                     }
@@ -1112,7 +1125,7 @@ class TrackSelectionHelper {
     private String maybeSetFirstTextTrackAsAutoSelection() {
         String preferredTrackUniqueId = null;
         //if user set mode to AUTO and the locale lang is not in the stream and no default text track in the stream so we will not select None but the first text track in the stream
-        if (preferredTextLanguageConfig != null && preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null) {
+        if (playerSettings != null && playerSettings.getPreferredTextTrackConfig() != null && playerSettings.getPreferredTextTrackConfig().getPreferredMode() == PKTrackConfig.Mode.AUTO && textTracks != null) {
             for (TextTrack track : textTracks) {
                 if (track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || track.getSelectionFlag() == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH) {
                     preferredTrackUniqueId = track.getUniqueId();
@@ -1132,7 +1145,7 @@ class TrackSelectionHelper {
             return null;
         }
         String preferredTrackUniqueId = null;
-        String preferredAudioISO3Lang = preferredAudioLanguageConfig.getTrackLanguage();
+        String preferredAudioISO3Lang = playerSettings.getPreferredAudioTrackConfig().getTrackLanguage();
         for (AudioTrack track : audioTracks) {
             String trackLang = track.getLanguage();
             if (trackLang == null) {
@@ -1141,7 +1154,7 @@ class TrackSelectionHelper {
             Locale streamLang = new Locale(trackLang);
             try {
                 if (streamLang.getISO3Language().equals(preferredAudioISO3Lang)) {
-                    log.d("changing track type " + trackType + " to " + preferredAudioLanguageConfig.getTrackLanguage());
+                    log.d("changing track type " + trackType + " to " + preferredAudioISO3Lang);
                     preferredTrackUniqueId = track.getUniqueId();
                     break;
                 }
@@ -1154,23 +1167,30 @@ class TrackSelectionHelper {
     }
 
     private boolean isValidPreferredAudioConfig() {
-        return !(preferredAudioLanguageConfig == null ||
-                preferredAudioLanguageConfig.getPreferredMode() == null ||
-                preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.OFF ||
-                (preferredAudioLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredAudioLanguageConfig.getTrackLanguage() == null));
+        if (playerSettings == null) {
+            return false;
+        }
+
+        PKTrackConfig preferredAudioTrackConfig = playerSettings.getPreferredAudioTrackConfig();
+        return !(preferredAudioTrackConfig == null ||
+                preferredAudioTrackConfig.getPreferredMode() == null ||
+                preferredAudioTrackConfig.getPreferredMode() == PKTrackConfig.Mode.OFF ||
+                (preferredAudioTrackConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredAudioTrackConfig.getTrackLanguage() == null));
     }
 
     private boolean isValidPreferredTextConfig() {
-        return !(preferredTextLanguageConfig == null ||
-                preferredTextLanguageConfig.getPreferredMode() == null ||
-                (preferredTextLanguageConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredTextLanguageConfig.getTrackLanguage() == null));
+        if (playerSettings == null) {
+            return false;
+        }
+
+        PKTrackConfig preferredTextTrackConfig = playerSettings.getPreferredTextTrackConfig();
+        return !(preferredTextTrackConfig == null ||
+                preferredTextTrackConfig.getPreferredMode() == null ||
+                (preferredTextTrackConfig.getPreferredMode() == PKTrackConfig.Mode.SELECTION && preferredTextTrackConfig.getTrackLanguage() == null));
     }
 
     protected void applyPlayerSettings(PlayerSettings settings) {
-        this.mpgaAudioFormatEnabled = settings.mpgaAudioFormatEnabled();
-        this.cea608CaptionsEnabled  = settings.cea608CaptionsEnabled();
-        this.preferredAudioLanguageConfig = settings.getPreferredAudioTrackConfig();
-        this.preferredTextLanguageConfig  = settings.getPreferredTextTrackConfig();
+        this.playerSettings = settings;
     }
 
     public static boolean isFormatSupported(@NonNull Format format, @Nullable TrackType type) {
