@@ -15,6 +15,7 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.C;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -232,6 +233,7 @@ public interface Player {
         /**
          * Set HandleAudioBecomingNoisy - Sets whether the player should pause automatically
          * when audio is rerouted from a headset to device speakers
+         *
          * @param ishandleAudioBecomingNoisy
          * @return - Player Settings
          */
@@ -239,10 +241,53 @@ public interface Player {
 
         /**
          * Sets the maximum allowed video width and height.
-         * @param pkMaxVideoSize - Max allowed video width and height
+         * @param maxVideoSize - Max allowed video width and height
          * @return - Player Settings
          */
-        Settings setMaxVideoSize(@NonNull PKMaxVideoSize pkMaxVideoSize);
+        Settings setMaxVideoSize(@NonNull PKMaxVideoSize maxVideoSize);
+
+        /**
+         * Sets the maximum allowed video bitrate.
+         *
+         * @param maxVideoBitrate Maximum allowed video bitrate in bits per second.
+         * @return - Player Settings
+         */
+
+        Settings setMaxVideoBitrate(@NonNull Integer maxVideoBitrate);
+
+        /**
+         * Sets the maximum allowed video bitrate to sd resolution.
+         * Equivalent to {@link #setMaxVideoSize setMaxVideoSize(1279, 719)}.
+         * to reset call: setMaxVideoSize(Integer.MAX_VALUE, Integer.MAX_VALUE)
+         *
+         * @param maxVideoSizeSdEnabled -  Maximum allowed audio channel count.
+         * @return - Player Settings
+         */
+        Settings setMaxVideoSizeSd(boolean maxVideoSizeSdEnabled);
+
+        /**
+         * Sets the maximum allowed audio bitrate
+         *
+         * @param maxAudioBitrate - maximum allowed audio bitrate in bits per second.
+         * @return - Player Settings
+         */
+        Settings setMaxAudioBitrate(@NonNull Integer maxAudioBitrate);
+
+        /**
+         * Sets the maximum allowed audio channel count.
+         *
+         * @param maxAudioChannelCount - maximum allowed audio bitrate in bits per second.
+         * @return - Player Settings
+         */
+        Settings SetMaxAudioChannelCount(int maxAudioChannelCount);
+
+        /**
+         * Sets the preferred {@link C.RoleFlags} for text tracks.
+         *
+         * @param preferredTextRoleFlags
+         * @return - Player Settings
+         */
+        Settings setPreferredTextRoleFlags(@C.RoleFlags int preferredTextRoleFlags);
     }
 
     /**

@@ -773,6 +773,21 @@ class TrackSelectionHelper {
         if (playerSettings.getMaxVideoSize() != null) {
             parametersBuilder.setMaxVideoSize(playerSettings.getMaxVideoSize().getMaxVideoWidth(), playerSettings.getMaxVideoSize().getMaxVideoHeight());
         }
+        if (playerSettings.getMaxVideoBitrate() != null) {
+            parametersBuilder.setMaxVideoBitrate(playerSettings.getMaxVideoBitrate());
+        }
+        if (playerSettings.getMaxAudioBitrate() != null) {
+            parametersBuilder.setMaxAudioBitrate(playerSettings.getMaxAudioBitrate());
+        }
+        if (playerSettings.getMaxAudioChannelCount() > 0) {
+            parametersBuilder.setMaxAudioChannelCount(playerSettings.getMaxAudioChannelCount());
+        }
+        if (playerSettings.getMaxVideoSizeSdEnabled()) {
+            parametersBuilder.setMaxVideoSizeSd();
+        }
+        if (playerSettings.getPreferredTextRoleFlags() >= 0) {
+            parametersBuilder.setPreferredTextRoleFlags(playerSettings.getPreferredTextRoleFlags());
+        }
     }
 
     /**

@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.player;
 
+import com.kaltura.android.exoplayer2.C;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
@@ -32,6 +33,12 @@ public class PlayerSettings implements Player.Settings {
     private boolean isVideoViewHidden;
     private boolean isTunneledAudioPlayback;
     private boolean handleAudioBecomingNoisy;
+    private Integer maxVideoBitrate;
+    private Integer maxAudioBitrate;
+    private boolean maxVideoSizeSdEnabled;
+    private int preferredTextRoleFlags = -1;
+    private int maxAudioChannelCount = -1;
+
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
@@ -147,6 +154,27 @@ public class PlayerSettings implements Player.Settings {
     public boolean isHandleAudioBecomingNoisy() { return  handleAudioBecomingNoisy; }
 
     public PKMaxVideoSize getMaxVideoSize() { return maxVideoSize; }
+
+    public Integer getMaxVideoBitrate() {
+        return maxVideoBitrate;
+    }
+
+    public boolean getMaxVideoSizeSdEnabled() {
+        return maxVideoSizeSdEnabled;
+    }
+
+    public Integer getMaxAudioBitrate() {
+        return maxAudioBitrate;
+    }
+
+
+    public int getMaxAudioChannelCount() {
+        return maxAudioChannelCount;
+    }
+
+    public @C.RoleFlags int getPreferredTextRoleFlags() {
+        return preferredTextRoleFlags;
+    }
 
     @Override
     public Player.Settings setVRPlayerEnabled(boolean vrPlayerEnabled) {
@@ -296,6 +324,36 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setMaxVideoSize(PKMaxVideoSize maxVideoSize) {
         this.maxVideoSize = maxVideoSize;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setMaxVideoBitrate(Integer maxVideoBitrate) {
+        this.maxVideoBitrate = maxVideoBitrate;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setMaxVideoSizeSd(boolean maxVideoSizeSdEnabled) {
+        this.maxVideoSizeSdEnabled = maxVideoSizeSdEnabled;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setMaxAudioBitrate(Integer maxAudioBitrate) {
+        this.maxAudioBitrate = maxAudioBitrate;
+        return this;
+    }
+
+    @Override
+    public Player.Settings SetMaxAudioChannelCount(int maxAudioChannelCount) {
+        this.maxAudioChannelCount = maxAudioChannelCount;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setPreferredTextRoleFlags(@C.RoleFlags int preferredTextRoleFlags) {
+        this.preferredTextRoleFlags = preferredTextRoleFlags;
         return this;
     }
 }
