@@ -234,10 +234,10 @@ public interface Player {
          * Set HandleAudioBecomingNoisy - Sets whether the player should pause automatically
          * when audio is rerouted from a headset to device speakers
          *
-         * @param ishandleAudioBecomingNoisy
+         * @param handleAudioBecomingNoisyEnabled
          * @return - Player Settings
          */
-        Settings setHandleAudioBecomingNoisy(boolean ishandleAudioBecomingNoisy);
+        Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled);
 
         /**
          * Sets the maximum allowed video width and height.
@@ -279,7 +279,7 @@ public interface Player {
          * @param maxAudioChannelCount - maximum allowed audio bitrate in bits per second.
          * @return - Player Settings
          */
-        Settings SetMaxAudioChannelCount(int maxAudioChannelCount);
+        Settings setMaxAudioChannelCount(int maxAudioChannelCount);
 
         /**
          * Sets the preferred {@link C.RoleFlags} for text tracks.

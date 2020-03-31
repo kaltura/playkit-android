@@ -32,7 +32,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
     private boolean isTunneledAudioPlayback;
-    private boolean handleAudioBecomingNoisy;
+    private boolean handleAudioBecomingNoisyEnabled;
     private Integer maxVideoBitrate;
     private Integer maxAudioBitrate;
     private boolean maxVideoSizeSdEnabled;
@@ -151,7 +151,7 @@ public class PlayerSettings implements Player.Settings {
         return isTunneledAudioPlayback;
     }
 
-    public boolean isHandleAudioBecomingNoisy() { return  handleAudioBecomingNoisy; }
+    public boolean isHandleAudioBecomingNoisyEnabled() { return handleAudioBecomingNoisyEnabled; }
 
     public PKMaxVideoSize getMaxVideoSize() { return maxVideoSize; }
 
@@ -316,8 +316,8 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisy) {
-        this.handleAudioBecomingNoisy = handleAudioBecomingNoisy;
+    public Player.Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled) {
+        this.handleAudioBecomingNoisyEnabled = handleAudioBecomingNoisyEnabled;
         return this;
     }
 
@@ -346,7 +346,7 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings SetMaxAudioChannelCount(int maxAudioChannelCount) {
+    public Player.Settings setMaxAudioChannelCount(int maxAudioChannelCount) {
         this.maxAudioChannelCount = maxAudioChannelCount;
         return this;
     }

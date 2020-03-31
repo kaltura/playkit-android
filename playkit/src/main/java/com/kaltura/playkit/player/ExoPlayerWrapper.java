@@ -29,9 +29,6 @@ import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
-import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
-import com.kaltura.android.exoplayer2.analytics.PlaybackStats;
-import com.kaltura.android.exoplayer2.analytics.PlaybackStatsListener;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
@@ -195,7 +192,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 .setLoadControl(getUpdatedLoadControl())
                 .setBandwidthMeter(bandwidthMeter).build();
 
-        player.setHandleAudioBecomingNoisy(playerSettings.isHandleAudioBecomingNoisy());
+        player.setHandleAudioBecomingNoisy(playerSettings.isHandleAudioBecomingNoisyEnabled());
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
