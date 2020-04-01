@@ -131,7 +131,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
             }
         }
 
-        return new SessionWrapper(playbackLooper, drmInitData, drmSessionManager);
+        return drmSessionManager.acquireSession(playbackLooper, drmInitData);
     }
 
     @Nullable
@@ -237,60 +237,3 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
 
 }
 
-
-class SessionWrapper implements DrmSession<ExoMediaCrypto> {
-
-    private DrmSession<ExoMediaCrypto> realDrmSession;
-    private DrmSessionManager<ExoMediaCrypto> realDrmSessionManager;
-
-    SessionWrapper(Looper playbackLooper, DrmInitData drmInitData, DrmSessionManager drmSessionManager) {
-        this.realDrmSession = drmSessionManager.acquireSession(playbackLooper, drmInitData);
-        this.realDrmSessionManager = drmSessionManager;
-    }
-
-    @Override
-    public int getState() {
-        return realDrmSession.getState();
-    }
-
-    @Override
-    public boolean playClearSamplesWithoutKeys() {
-        return realDrmSession.playClearSamplesWithoutKeys();
-    }
-
-    @Override
-    public ExoMediaCrypto getMediaCrypto() {
-        return realDrmSession.getMediaCrypto();
-    }
-
-    @Override
-    public DrmSessionException getError() {
-        return realDrmSession.getError();
-    }
-
-
-    @Override
-    public Map<String, String> queryKeyStatus() {
-        return realDrmSession.queryKeyStatus();
-    }
-
-    @Override
-    public byte[] getOfflineLicenseKeySetId() {
-        return realDrmSession.getOfflineLicenseKeySetId();
-    }
-
-    @Override
-    public void acquire() {
-        realDrmSession.acquire();
-    }
-
-    @Override
-    public void release() {
-        if (realDrmSessionManager != null) {
-            realDrmSessionManager.release();
-        }
-        if (realDrmSession != null) {
-            realDrmSession.release();
-        }
-    }
-}
