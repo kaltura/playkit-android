@@ -343,7 +343,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
             case hls:
                 mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
-                        .setDrmSessionManager(DrmSessionManager.getDummyDrmSessionManager())
                         .createMediaSource(uri);
                 break;
 
@@ -351,7 +350,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             case mp4:
             case mp3:
                 mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
-                        .setDrmSessionManager(DrmSessionManager.getDummyDrmSessionManager())
                         .createMediaSource(uri);
                 break;
 
