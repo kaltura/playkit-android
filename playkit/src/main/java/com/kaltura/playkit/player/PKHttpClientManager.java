@@ -43,7 +43,7 @@ public class PKHttpClientManager {
             .connectionPool(new ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_DURATION, TimeUnit.MINUTES))
             .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
             .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-            //.protocols(Collections.singletonList(Protocol.HTTP_1_1)) // By default this client will prefer the most efficient transport available, falling back to more ubiquitous protocols.
+            .protocols(Collections.singletonList(Protocol.HTTP_1_1))    // Avoid http/2 due to https://github.com/google/ExoPlayer/issues/4078
             .build();
 
     // Called by the player
