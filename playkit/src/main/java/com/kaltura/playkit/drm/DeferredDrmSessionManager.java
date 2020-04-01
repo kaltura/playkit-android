@@ -95,14 +95,11 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
             drmCallback.setLicenseUrl(getLicenseUrl(mediaSource));
         }
 
-        //drmSessionManager = new DefaultDrmSessionManager.Builder().build(drmCallback);
-
         if (mainHandler != null) {
             if (drmSessionManager instanceof DefaultDrmSessionManager) {
                 ((DefaultDrmSessionManager) drmSessionManager).addListener(mainHandler, this);
             }
         }
-
     }
 
     @Override
