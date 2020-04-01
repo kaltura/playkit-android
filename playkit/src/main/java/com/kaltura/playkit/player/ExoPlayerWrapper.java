@@ -237,7 +237,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 //            PlaybackStatsListener playbackStatsListener  = new PlaybackStatsListener(true, new PlaybackStatsListener.Callback() {
 //                @Override
 //                public void onPlaybackStatsReady(com.kaltura.android.exoplayer2.analytics.AnalyticsListener.EventTime eventTime, PlaybackStats playbackStats) {
-//                    log.d("XXX PlaybackStatsListener playbackCount = " + playbackStats.playbackCount);
+//                    log.d("PlaybackStatsListener playbackCount = " + playbackStats.playbackCount);
 //                }
 //            });
 //            player.addAnalyticsListener(playbackStatsListener);
