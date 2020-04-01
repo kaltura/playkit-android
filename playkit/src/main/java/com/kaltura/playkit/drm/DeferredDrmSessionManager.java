@@ -288,11 +288,9 @@ class SessionWrapper implements DrmSession<ExoMediaCrypto> {
     public void release() {
         if (realDrmSessionManager != null) {
             realDrmSessionManager.release();
-            //realDrmSessionManager = null;
         }
         if (realDrmSession != null) {
             realDrmSession.release();
-            //realDrmSession = null;
         }
     }
 }
