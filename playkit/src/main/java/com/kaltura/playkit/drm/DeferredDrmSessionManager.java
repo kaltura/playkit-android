@@ -154,7 +154,6 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
     public void release() {
         if (drmSessionManager != null) {
             drmSessionManager.release();
-            drmSessionManager = null;
         }
     }
 
