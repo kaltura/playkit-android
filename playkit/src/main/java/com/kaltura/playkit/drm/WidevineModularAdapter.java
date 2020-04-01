@@ -105,7 +105,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         FrameworkMediaDrm mediaDrm = createMediaDrm();
         try {
             session = MediaDrmSession.open(mediaDrm);
-        } catch (MediaDrmException e) {
+        } catch (Exception e) {
             throw new LocalAssetsManager.RegisterException("Can't open session", e);
         }
 
