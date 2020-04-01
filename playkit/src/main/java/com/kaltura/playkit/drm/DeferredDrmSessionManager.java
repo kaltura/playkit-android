@@ -69,14 +69,6 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
         void onError(PKError error);
     }
 
-    public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener) {
-        this.mainHandler = mainHandler;
-        this.drmCallback = drmCallback;
-        this.drmSessionListener = drmSessionListener;
-        drmSessionManager = DrmSessionManager.getDummyDrmSessionManager();
-        allowClearLead = true;
-    }
-
     public void setMediaSource(PKMediaSource mediaSource) {
         if (Util.SDK_INT < 18) {
             drmSessionManager = null;

@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.DefaultLoadControl;
+import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.kaltura.android.exoplayer2.Format;
@@ -189,7 +190,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private void initializePlayer() {
         DefaultTrackSelector trackSelector = initializeTrackSelector();
-        CustomRendererFactory renderersFactory = new CustomRendererFactory(context, playerSettings.allowClearLead(), playerSettings.enableDecoderFallback(), playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
+        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context);
+        renderersFactory.setAllowedVideoJoiningTimeMs(playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
+        renderersFactory.setPlayClearSamplesWithoutKeys(playerSettings.allowClearLead());
+        renderersFactory.setEnableDecoderFallback(playerSettings.enableDecoderFallback());
 
         player = new SimpleExoPlayer.Builder(context, renderersFactory)
                 .setTrackSelector(trackSelector)
