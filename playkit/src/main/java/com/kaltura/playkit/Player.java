@@ -241,6 +241,8 @@ public interface Player {
 
         /**
          * Sets the maximum allowed video width and height.
+         * to the maximum allowed video bitrate to sd resolution call: {@link #setMaxVideoSize setMaxVideoSize(1279, 719)}.
+         * to reset call: setMaxVideoSize(Integer.MAX_VALUE, Integer.MAX_VALUE)
          * @param maxVideoSize - Max allowed video width and height
          * @return - Player Settings
          */
@@ -254,16 +256,6 @@ public interface Player {
          */
 
         Settings setMaxVideoBitrate(@NonNull Integer maxVideoBitrate);
-
-        /**
-         * Sets the maximum allowed video bitrate to sd resolution.
-         * Equivalent to {@link #setMaxVideoSize setMaxVideoSize(1279, 719)}.
-         * to reset call: setMaxVideoSize(Integer.MAX_VALUE, Integer.MAX_VALUE)
-         *
-         * @param maxVideoSizeSdEnabled -  Maximum allowed audio channel count.
-         * @return - Player Settings
-         */
-        Settings setMaxVideoSizeSd(boolean maxVideoSizeSdEnabled);
 
         /**
          * Sets the maximum allowed audio bitrate
@@ -280,14 +272,6 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setMaxAudioChannelCount(int maxAudioChannelCount);
-
-        /**
-         * Sets the preferred {@link C.RoleFlags} for text tracks.
-         *
-         * @param preferredTextRoleFlags
-         * @return - Player Settings
-         */
-        Settings setPreferredTextRoleFlags(@C.RoleFlags int preferredTextRoleFlags);
     }
 
     /**

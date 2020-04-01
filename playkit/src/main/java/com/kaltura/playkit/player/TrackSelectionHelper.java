@@ -782,12 +782,6 @@ class TrackSelectionHelper {
         if (playerSettings.getMaxAudioChannelCount() > 0) {
             parametersBuilder.setMaxAudioChannelCount(playerSettings.getMaxAudioChannelCount());
         }
-        if (playerSettings.getMaxVideoSizeSdEnabled()) {
-            parametersBuilder.setMaxVideoSizeSd();
-        }
-        if (playerSettings.getPreferredTextRoleFlags() >= 0) {
-            parametersBuilder.setPreferredTextRoleFlags(playerSettings.getPreferredTextRoleFlags());
-        }
     }
 
     /**

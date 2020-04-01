@@ -35,8 +35,6 @@ public class PlayerSettings implements Player.Settings {
     private boolean handleAudioBecomingNoisyEnabled;
     private Integer maxVideoBitrate;
     private Integer maxAudioBitrate;
-    private boolean maxVideoSizeSdEnabled;
-    private int preferredTextRoleFlags = -1;
     private int maxAudioChannelCount = -1;
 
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
@@ -159,21 +157,12 @@ public class PlayerSettings implements Player.Settings {
         return maxVideoBitrate;
     }
 
-    public boolean getMaxVideoSizeSdEnabled() {
-        return maxVideoSizeSdEnabled;
-    }
-
     public Integer getMaxAudioBitrate() {
         return maxAudioBitrate;
     }
 
-
     public int getMaxAudioChannelCount() {
         return maxAudioChannelCount;
-    }
-
-    public @C.RoleFlags int getPreferredTextRoleFlags() {
-        return preferredTextRoleFlags;
     }
 
     @Override
@@ -334,12 +323,6 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setMaxVideoSizeSd(boolean maxVideoSizeSdEnabled) {
-        this.maxVideoSizeSdEnabled = maxVideoSizeSdEnabled;
-        return this;
-    }
-
-    @Override
     public Player.Settings setMaxAudioBitrate(Integer maxAudioBitrate) {
         this.maxAudioBitrate = maxAudioBitrate;
         return this;
@@ -348,12 +331,6 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setMaxAudioChannelCount(int maxAudioChannelCount) {
         this.maxAudioChannelCount = maxAudioChannelCount;
-        return this;
-    }
-
-    @Override
-    public Player.Settings setPreferredTextRoleFlags(@C.RoleFlags int preferredTextRoleFlags) {
-        this.preferredTextRoleFlags = preferredTextRoleFlags;
         return this;
     }
 }
