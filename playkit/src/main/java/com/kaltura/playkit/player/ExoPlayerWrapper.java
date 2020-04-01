@@ -16,6 +16,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
@@ -31,6 +32,8 @@ import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
+import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
+import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
 import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
 import com.kaltura.android.exoplayer2.source.BehindLiveWindowException;
@@ -53,6 +56,7 @@ import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.android.exoplayer2.util.ErrorMessageProvider;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
@@ -562,7 +566,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
+    public void onTimelineChanged(Timeline timeline, int reason) {
         log.d("onTimelineChanged reason = " + reason + " duration = " + getDuration());
         if (reason == Player.TIMELINE_CHANGE_REASON_PREPARED) {
             sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
@@ -596,6 +600,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 break;
             case ExoPlaybackException.TYPE_RENDERER:
                 errorType = PKPlayerErrorType.RENDERER_ERROR;
+                errorMessage = getDecoderInitializationErrorMessage(error, errorMessage);
                 break;
             case ExoPlaybackException.TYPE_OUT_OF_MEMORY:
                 errorType = PKPlayerErrorType.OUT_OF_MEMORY;
@@ -610,6 +615,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         String errorStr = (errorMessage == null) ? "Player error: " + errorType.name() : errorMessage;
+
         log.e(errorStr);
         currentError = new PKError(errorType, errorStr, error);
         if (eventListener != null) {
@@ -618,6 +624,27 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         } else {
             log.e("eventListener is null cannot send Error-Event type = " + error.type);
         }
+    }
+
+    private String getDecoderInitializationErrorMessage(ExoPlaybackException error, String errorMessage) {
+        Exception cause = error.getRendererException();
+        if (cause instanceof MediaCodecRenderer.DecoderInitializationException) {
+            // Special case for decoder initialization failures.
+            MediaCodecRenderer.DecoderInitializationException decoderInitializationException =
+                    (MediaCodecRenderer.DecoderInitializationException) cause;
+            if (decoderInitializationException.codecInfo == null) {
+                if (decoderInitializationException.getCause() instanceof MediaCodecUtil.DecoderQueryException) {
+                    errorMessage = "Unable to query device decoders";
+                } else if (decoderInitializationException.secureDecoderRequired) {
+                    errorMessage = "This device does not provide a secure decoder for " +  decoderInitializationException.mimeType;
+                } else {
+                    errorMessage = "This device does not provide a decoder for " + decoderInitializationException.mimeType;
+                }
+            } else {
+                errorMessage = "Unable to instantiate decoder" + decoderInitializationException.codecInfo.name;
+            }
+        }
+        return errorMessage;
     }
 
     @Override
