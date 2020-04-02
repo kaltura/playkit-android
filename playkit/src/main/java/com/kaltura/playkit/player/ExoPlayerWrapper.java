@@ -1176,8 +1176,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public boolean isLive() {
         log.v("isLive");
         if (assertPlayerIsNotNull("isLive()")) {
-            return player.isCurrentWindowDynamic() ||
-                    player.getCurrentTimeline().getWindow(player.getCurrentWindowIndex(), new Timeline.Window()).isLive;
+            return player.isCurrentWindowDynamic();
         }
         return false;
     }
