@@ -34,6 +34,11 @@ public class PlayerSettings implements Player.Settings {
     private boolean isVideoViewHidden;
     private VideoCodecSettings preferredVideoCodecSettings = new VideoCodecSettings();
     private boolean isTunneledAudioPlayback;
+    private boolean handleAudioBecomingNoisyEnabled;
+    private Integer maxVideoBitrate;
+    private Integer maxAudioBitrate;
+    private int maxAudioChannelCount = -1;
+
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
@@ -47,13 +52,12 @@ public class PlayerSettings implements Player.Settings {
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
-
     private PKMediaFormat preferredMediaFormat = PKMediaFormat.dash;
-
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
-
     private Object customLoadControlStrategy = null;
+    private PKMaxVideoSize maxVideoSize;
+
 
     public PKRequestParams.Adapter getContentRequestAdapter() {
         return contentRequestAdapter;
@@ -149,6 +153,22 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isTunneledAudioPlayback() {
         return isTunneledAudioPlayback;
+    }
+
+    public boolean isHandleAudioBecomingNoisyEnabled() { return handleAudioBecomingNoisyEnabled; }
+
+    public PKMaxVideoSize getMaxVideoSize() { return maxVideoSize; }
+
+    public Integer getMaxVideoBitrate() {
+        return maxVideoBitrate;
+    }
+
+    public Integer getMaxAudioBitrate() {
+        return maxAudioBitrate;
+    }
+
+    public int getMaxAudioChannelCount() {
+        return maxAudioChannelCount;
     }
 
     @Override
@@ -292,6 +312,36 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setTunneledAudioPlayback(boolean isTunneledAudioPlayback) {
         this.isTunneledAudioPlayback = isTunneledAudioPlayback;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled) {
+        this.handleAudioBecomingNoisyEnabled = handleAudioBecomingNoisyEnabled;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setMaxVideoSize(PKMaxVideoSize maxVideoSize) {
+        this.maxVideoSize = maxVideoSize;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setMaxVideoBitrate(Integer maxVideoBitrate) {
+        this.maxVideoBitrate = maxVideoBitrate;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setMaxAudioBitrate(Integer maxAudioBitrate) {
+        this.maxAudioBitrate = maxAudioBitrate;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setMaxAudioChannelCount(int maxAudioChannelCount) {
+        this.maxAudioChannelCount = maxAudioChannelCount;
         return this;
     }
 }

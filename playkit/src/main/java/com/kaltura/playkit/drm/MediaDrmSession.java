@@ -69,7 +69,7 @@ class MediaDrmSession {
         try {
             List<DrmInitData.SchemeData> schemeList = Collections.singletonList(new DrmInitData.SchemeData(MediaSupport.WIDEVINE_UUID, mimeType, initData));
             return mMediaDrm.getKeyRequest(mSessionId, schemeList, MediaDrm.KEY_TYPE_OFFLINE, null);
-        } catch (NotProvisionedException e) {
+        } catch (Exception e) {
             throw new WidevineNotSupportedException(e);
         }
     }
@@ -77,9 +77,7 @@ class MediaDrmSession {
     byte[] provideKeyResponse(byte[] keyResponse) throws DeniedByServerException {
         try {
             return mMediaDrm.provideKeyResponse(mSessionId, keyResponse);
-        } catch (NotProvisionedException e) {
-            throw new WidevineNotSupportedException(e);
-        } catch (IllegalStateException e) {
+        } catch (Exception e) {
             throw new WidevineNotSupportedException(e);
         }
     }

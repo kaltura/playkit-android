@@ -23,7 +23,6 @@ import android.drm.DrmManagerClient;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.MediaDrm;
-import android.media.UnsupportedSchemeException;
 import android.os.AsyncTask;
 import android.os.Build;
 import androidx.annotation.NonNull;
@@ -144,6 +143,7 @@ public class PKDeviceCapabilities {
             JSONObject root = this.root;
             root.put("reportType", "DeviceCapabilities");
             root.put("playkitVersion", PlayKitManager.VERSION_STRING);
+            root.put("kalturaPlayer", isKalturaPlayerAvailable());
             root.put("host", hostInfo());
             root.put("system", systemInfo());
             root.put("drm", drmInfo());
@@ -155,6 +155,15 @@ public class PKDeviceCapabilities {
         }
 
         return root;
+    }
+
+    private boolean isKalturaPlayerAvailable() {
+        try {
+            Class.forName( "com.kaltura.tvplayer.KalturaPlayer" );
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private JSONObject hostInfo() throws JSONException {
@@ -235,8 +244,15 @@ public class PKDeviceCapabilities {
     }
 
     private JSONObject mediaCodecInfo(MediaCodecInfo mediaCodec) throws JSONException {
-        return new JSONObject()
-                .put("supportedTypes", jsonArray(mediaCodec.getSupportedTypes()));
+
+        JSONObject codecInfo =  new JSONObject();
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            codecInfo.put("isVendor", mediaCodec.isVendor());
+            codecInfo.put("isSoftwareOnly", mediaCodec.isSoftwareOnly());
+            codecInfo.put("isHardwareAccelerated", mediaCodec.isHardwareAccelerated());
+        }
+        codecInfo.put("supportedTypes", jsonArray(mediaCodec.getSupportedTypes()));
+        return codecInfo;
     }
 
     private JSONObject mediaCodecInfo() throws JSONException {
@@ -302,7 +318,7 @@ public class PKDeviceCapabilities {
         MediaDrm mediaDrm;
         try {
             mediaDrm = new MediaDrm(WIDEVINE_UUID);
-        } catch (UnsupportedSchemeException e) {
+        } catch (Exception e) {
             return null;
         }
 

@@ -95,12 +95,16 @@ public class PlayKitProfiler {
     private static DisplayMetrics metrics;
     private static File externalFilesDir;   // for debug logs
     private static String packageName;
+    private static String networkType;
+    private static String deviceType;
     private final ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
     private final ExoPlayerProfilingListener analyticsListener = new ExoPlayerProfilingListener(this);
     private final EventListener.Factory okListenerFactory = call -> new OkHttpListener(PlayKitProfiler.this, call);
     private final Set<String> serversLookedUp = new HashSet<>();
     long sessionStartTime;
     private String sessionId;
+
+    private int chunkCount = 0;
 
     // We need a reference to the player, but make sure not to keep it alive.
     @Nullable
@@ -234,6 +238,9 @@ public class PlayKitProfiler {
         packageName = context.getPackageName();
 
         metrics = context.getResources().getDisplayMetrics();
+        networkType = Utils.getNetworkClass(context);
+        deviceType = Utils.getDeviceType(context);
+
 
         if (devMode) {
             externalFilesDir = context.getExternalFilesDir(null);
@@ -415,10 +422,13 @@ public class PlayKitProfiler {
 
         final String string = sb.toString();
 
+        int chunkIndex = chunkCount;
+        chunkCount++;
+
         if (Looper.myLooper() == ioHandler.getLooper()) {
-            postChunk(string);
+            postChunk(string, chunkIndex);
         } else {
-            ioHandler.post(() -> postChunk(string));
+            ioHandler.post(() -> postChunk(string, chunkIndex));
         }
 
         // TODO: 17/02/2019 what if there's no network when sending the log?
@@ -443,14 +453,14 @@ public class PlayKitProfiler {
         }
     }
 
-    private void postChunk(String string) {
+    private void postChunk(String string, int chunkIndex) {
         if (postURL == null) {
             pkLog.w("No POST URL");
             return;
         }
 
         try {
-            Utils.executePost(postURL + "?mode=addChunk&sessionId=" + sessionId, string.getBytes(), null);
+            Utils.executePost(postURL + "?mode=addChunk&sessionId=" + sessionId + "&index=" + chunkIndex, string.getBytes(), null);
         } catch (IOException e) {
             // FIXME: 03/09/2018 Is it bad that we lost this log chunk?
             pkLog.e("Failed sending log", e);
@@ -583,6 +593,7 @@ public class PlayKitProfiler {
             }
 
             PlayKitProfiler.this.sessionId = sessionId;
+            PlayKitProfiler.this.chunkCount = 0;
             if (sessionId == null) {
                 return;     // the null profiler
             }
@@ -617,7 +628,9 @@ public class PlayKitProfiler {
                     field("tags", Build.TAGS),
                     field("fingerprint", Build.FINGERPRINT),
                     field("screenSize", metrics.widthPixels + "x" + metrics.heightPixels),
-                    field("screenDpi", metrics.xdpi + "x" + metrics.ydpi)
+                    field("screenDpi", metrics.xdpi + "x" + metrics.ydpi),
+                    field("deviceType", deviceType),
+                    field("networkType", networkType)
             );
 
             log("PlayerSettings",

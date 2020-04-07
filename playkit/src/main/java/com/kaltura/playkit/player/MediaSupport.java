@@ -84,8 +84,7 @@ public class MediaSupport {
         if (initSucceeded) {
             return;
         }
-        //Check if device needs codec`s workaround.
-        DummySurfaceWorkaroundTest.executeTest(context);
+
         try {
             checkWidevineClassic(context);
             checkWidevineModular();
@@ -108,6 +107,12 @@ public class MediaSupport {
                     }
                 }
             });
+        }
+    }
+
+    private static void checkWidevineModular() throws DrmNotProvisionedException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            widevineModular = WidevineModularUtil.checkWidevineModular(widevineModular);
         }
     }
 
@@ -208,41 +213,6 @@ public class MediaSupport {
         return widevineModular;
     }
 
-    private static void checkWidevineModular() throws DrmNotProvisionedException {
-
-        if (widevineModular != null) {
-            return;
-        }
-
-        // Encrypted dash is only supported in Android v4.3 and up -- needs MediaDrm class.
-        // Make sure Widevine is supported
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID)) {
-
-            // Open a session to check if Widevine needs provisioning.
-            MediaDrm mediaDrm = null;
-            byte[] session = null;
-            try {
-                mediaDrm = new MediaDrm(WIDEVINE_UUID);
-                session = mediaDrm.openSession();
-                widevineModular = true;
-            } catch (NotProvisionedException e) {
-                log.e("Widevine Modular not provisioned");
-                throw new DrmNotProvisionedException("Widevine Modular not provisioned", e);
-            } catch (Exception e) {
-                widevineModular = false;
-            } finally {
-                if (session != null) {
-                    mediaDrm.closeSession(session);
-                }
-                if (mediaDrm != null) {
-                    mediaDrm.release();
-                }
-            }
-        } else {
-            widevineModular = false;
-        }
-    }
-
     public static boolean playReady() {
         return Boolean.FALSE;   // Not yet.
     }
@@ -283,6 +253,47 @@ public class MediaSupport {
          * @param provisionError      null if provisioning is successful, exception otherwise
          */
         void onDrmInitComplete(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean provisionPerformed, Exception provisionError);
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private static class WidevineModularUtil {
+
+        private static Boolean checkWidevineModular(Boolean widevineModular) throws MediaSupport.DrmNotProvisionedException {
+
+            if (widevineModular != null) {
+                return widevineModular;
+            }
+
+            // Encrypted dash is only supported in Android v4.3 and up -- needs MediaDrm class.
+            // Make sure Widevine is supported
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && MediaDrm.isCryptoSchemeSupported(MediaSupport.WIDEVINE_UUID)) {
+
+                // Open a session to check if Widevine needs provisioning.
+                MediaDrm mediaDrm = null;
+                byte[] session = null;
+                try {
+                    mediaDrm = new MediaDrm(MediaSupport.WIDEVINE_UUID);
+                    session = mediaDrm.openSession();
+                    widevineModular = true;
+                } catch (NotProvisionedException e) {
+                    log.e("Widevine Modular not provisioned");
+                    throw new MediaSupport.DrmNotProvisionedException("Widevine Modular not provisioned", e);
+                } catch (Exception e) {
+                    widevineModular = false;
+                } finally {
+                    if (session != null) {
+                        mediaDrm.closeSession(session);
+                    }
+                    if (mediaDrm != null) {
+                        mediaDrm.release();
+                    }
+                }
+            } else {
+                widevineModular = false;
+            }
+            return widevineModular;
+        }
     }
 
     public static class DrmNotProvisionedException extends Exception {
