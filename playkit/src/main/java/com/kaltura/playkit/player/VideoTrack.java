@@ -94,5 +94,4 @@ public class VideoTrack extends BaseTrack implements Comparable<VideoTrack> {
     public int compareTo(@NonNull VideoTrack track) {
         return Integer.compare((int)this.getBitrate(), (int)track.getBitrate());
     }
-
 }
