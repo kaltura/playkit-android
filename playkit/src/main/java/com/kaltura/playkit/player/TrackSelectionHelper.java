@@ -1285,7 +1285,7 @@ class TrackSelectionHelper {
                         preferredTrackUniqueId = track.getUniqueId();
                         break;
                     }
-                } catch (MissingResourceException ex) {
+                } catch (MissingResourceException | NullPointerException ex) {
                     log.e(ex.getMessage());
                     preferredTrackUniqueId = null;
                 }
