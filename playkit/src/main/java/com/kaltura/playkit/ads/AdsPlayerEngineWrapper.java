@@ -45,7 +45,7 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
         if (adsProvider != null) {
             //incase no ads provided - need to prepare so treating load state as ad was requested
             if (adsProvider.getCuePoints() != null && adsProvider.getCuePoints().getAdCuePoints() != null && adsProvider.getCuePoints().getAdCuePoints().size() == 0) {
-                adsProvider.setAdRequested(true); // need to prepare immeidatly
+                adsProvider.setAdRequested(true); // need to prepare immediately
             }
 
             if (preparePlayerForPlayback()) {
@@ -146,6 +146,8 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
         log.d("AdWrapper stop");
         if (adsProvider != null) {
             adsProvider.setAdRequested(false);
+            adsProvider.setAdError(false);
+            adsProvider.setAllAdsCompleted(false);
             adsProvider.destroyAdsManager();
         }
         super.stop();

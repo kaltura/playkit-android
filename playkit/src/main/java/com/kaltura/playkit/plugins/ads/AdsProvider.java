@@ -58,6 +58,10 @@ public interface AdsProvider {
 
     void setAdRequested(boolean isAdRequested);
 
+    void setAdError(boolean isAdError);
+
+    void setAllAdsCompleted(boolean isAllAdsCompleted);
+
     void removeAdProviderListener();
 
     void skipAd();
