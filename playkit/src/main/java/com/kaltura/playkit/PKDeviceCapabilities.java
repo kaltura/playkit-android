@@ -23,7 +23,6 @@ import android.drm.DrmManagerClient;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.MediaDrm;
-import android.media.UnsupportedSchemeException;
 import android.os.AsyncTask;
 import android.os.Build;
 import androidx.annotation.NonNull;
@@ -245,8 +244,15 @@ public class PKDeviceCapabilities {
     }
 
     private JSONObject mediaCodecInfo(MediaCodecInfo mediaCodec) throws JSONException {
-        return new JSONObject()
-                .put("supportedTypes", jsonArray(mediaCodec.getSupportedTypes()));
+
+        JSONObject codecInfo =  new JSONObject();
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            codecInfo.put("isVendor", mediaCodec.isVendor());
+            codecInfo.put("isSoftwareOnly", mediaCodec.isSoftwareOnly());
+            codecInfo.put("isHardwareAccelerated", mediaCodec.isHardwareAccelerated());
+        }
+        codecInfo.put("supportedTypes", jsonArray(mediaCodec.getSupportedTypes()));
+        return codecInfo;
     }
 
     private JSONObject mediaCodecInfo() throws JSONException {

@@ -105,7 +105,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         FrameworkMediaDrm mediaDrm = createMediaDrm();
         try {
             session = MediaDrmSession.open(mediaDrm);
-        } catch (MediaDrmException e) {
+        } catch (Exception e) {
             throw new LocalAssetsManager.RegisterException("Can't open session", e);
         }
 
@@ -131,7 +131,7 @@ public class WidevineModularAdapter extends DrmAdapter {
             try {
                 return session.provideKeyResponse(keyResponse);
 
-            } catch (DeniedByServerException e) {
+            } catch (Exception e) {
                 throw new LocalAssetsManager.RegisterException("Request denied by server", e);
             }
 
@@ -181,7 +181,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         FrameworkMediaDrm.KeyRequest releaseRequest;
         try {
             releaseRequest = mediaDrm.getKeyRequest(keySetId, null, MediaDrm.KEY_TYPE_RELEASE, null);
-        } catch (NotProvisionedException e) {
+        } catch (Exception e) {
             throw new WidevineNotSupportedException(e);
         }
 
@@ -265,7 +265,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         try {
             String key = toBase64(widevineInitData);
             session = openSessionWithKeys(mediaDrm, key);
-        } catch (MediaDrmException | FileNotFoundException | MediaCryptoException e) {
+        } catch (Exception e) {
             throw new LocalAssetsManager.RegisterException("Can't open session with keys", e);
         }
 
