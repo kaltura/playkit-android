@@ -16,7 +16,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
@@ -1257,6 +1256,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             exoPlayerSubtitleView.setStyle(playerSettings.getSubtitleStyleSettings().toCaptionStyle());
             exoPlayerSubtitleView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * playerSettings.getSubtitleStyleSettings().getTextSizeFraction());
             exoPlayerSubtitleView.setBottomPaddingFraction(playerSettings.getSubtitleStyleSettings().getSubtitleBottomPaddingFraction());
+            exoPlayerSubtitleView.setPadding(playerSettings.getSubtitleStyleSettings().getSubtitleLeftPadding(), 0, playerSettings.getSubtitleStyleSettings().getSubtitleRightPadding(), 0);
         } else {
             log.e("Subtitle View is not available");
         }

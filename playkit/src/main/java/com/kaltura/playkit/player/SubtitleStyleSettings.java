@@ -50,6 +50,8 @@ public class SubtitleStyleSettings {
     // Subtitle TextSize fraction, Default is 1.0f ; {@link com.kaltura.android.exoplayer2.ui.SubtitleView}
     private float subtitleTextSizeFraction = fraction100;
     private float subtitleBottomPaddingFraction = SubtitleView.DEFAULT_BOTTOM_PADDING_FRACTION;
+    private int subtitleLeftPadding = 0;
+    private int subtitleRightPadding = 0;
     private int subtitleWindowColor = Color.TRANSPARENT;
     private int subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
     private int subtitleEdgeColor = Color.WHITE;
@@ -100,6 +102,14 @@ public class SubtitleStyleSettings {
         return subtitleBottomPaddingFraction;
     }
 
+    public int getSubtitleLeftPadding() {
+        return subtitleLeftPadding;
+    }
+
+    public int getSubtitleRightPadding() {
+        return subtitleRightPadding;
+    }
+
     public SubtitleStyleSettings setTextColor(int subtitleTextColor) {
         this.subtitleTextColor = subtitleTextColor;
         return this;
@@ -125,7 +135,7 @@ public class SubtitleStyleSettings {
      * @param subtitleBottomPaddingFraction Bottom Padding fraction value
      * @return SubtitleStyleSettings
      */
-    public SubtitleStyleSettings setSubtitleBottomPaddingFraction(float subtitleBottomPaddingFraction) {
+    private SubtitleStyleSettings setSubtitleBottomPaddingFraction(float subtitleBottomPaddingFraction) {
         if (subtitleBottomPaddingFraction > bottomPaddingFractionUpperLimit ||
                 subtitleBottomPaddingFraction < SubtitleView.DEFAULT_BOTTOM_PADDING_FRACTION) {
             this.subtitleBottomPaddingFraction = SubtitleView.DEFAULT_BOTTOM_PADDING_FRACTION;
@@ -133,6 +143,22 @@ public class SubtitleStyleSettings {
         }
 
         this.subtitleBottomPaddingFraction = subtitleBottomPaddingFraction;
+        return this;
+    }
+
+    private SubtitleStyleSettings setSubtitleLeftPadding(int subtitleLeftPadding) {
+        if (subtitleLeftPadding < 0) {
+            subtitleLeftPadding = 0;
+        }
+        this.subtitleLeftPadding = subtitleLeftPadding;
+        return this;
+    }
+
+    private SubtitleStyleSettings setSubtitleRightPadding(int subtitleRightPadding) {
+        if (subtitleRightPadding < 0) {
+            subtitleRightPadding = 0;
+        }
+        this.subtitleRightPadding = subtitleRightPadding;
         return this;
     }
 
