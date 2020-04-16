@@ -41,6 +41,13 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
 
     @Override
     public void load(PKMediaSourceConfig mediaSourceConfig) {
+        if (mediaSourceConfig != null) {
+            if (!mediaSourceConfig.equals(this.mediaSourceConfig)) {
+                log.d("AdWrapper Change Media");
+                adsProvider.resetPluginFlags();
+            }
+        }
+
         this.mediaSourceConfig = mediaSourceConfig;
         if (adsProvider != null) {
             //incase no ads provided - need to prepare so treating load state as ad was requested
@@ -146,8 +153,6 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
         log.d("AdWrapper stop");
         if (adsProvider != null) {
             adsProvider.setAdRequested(false);
-            adsProvider.setAdError(false);
-            adsProvider.setAllAdsCompleted(false);
             adsProvider.destroyAdsManager();
         }
         super.stop();
