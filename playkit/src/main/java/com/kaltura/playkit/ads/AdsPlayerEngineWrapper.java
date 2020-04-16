@@ -41,11 +41,9 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
 
     @Override
     public void load(PKMediaSourceConfig mediaSourceConfig) {
-        if (mediaSourceConfig != null) {
-            if (!mediaSourceConfig.equals(this.mediaSourceConfig)) {
-                log.d("AdWrapper Change Media");
-                adsProvider.resetPluginFlags();
-            }
+        if (mediaSourceConfig != null && !mediaSourceConfig.equals(this.mediaSourceConfig)) {
+            log.d("AdWrapper Load New Media");
+            adsProvider.resetPluginFlags();
         }
 
         this.mediaSourceConfig = mediaSourceConfig;
