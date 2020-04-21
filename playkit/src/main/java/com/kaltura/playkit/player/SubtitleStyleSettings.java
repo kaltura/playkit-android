@@ -135,7 +135,7 @@ public class SubtitleStyleSettings {
      * @param subtitleBottomPaddingFraction Bottom Padding fraction value
      * @return SubtitleStyleSettings
      */
-    private SubtitleStyleSettings setSubtitleBottomPaddingFraction(float subtitleBottomPaddingFraction) {
+    public SubtitleStyleSettings setSubtitleBottomPaddingFraction(float subtitleBottomPaddingFraction) {
         if (subtitleBottomPaddingFraction > bottomPaddingFractionUpperLimit ||
                 subtitleBottomPaddingFraction < SubtitleView.DEFAULT_BOTTOM_PADDING_FRACTION) {
             this.subtitleBottomPaddingFraction = SubtitleView.DEFAULT_BOTTOM_PADDING_FRACTION;
@@ -146,7 +146,7 @@ public class SubtitleStyleSettings {
         return this;
     }
 
-    private SubtitleStyleSettings setSubtitleLeftPadding(int subtitleLeftPadding) {
+    public SubtitleStyleSettings setSubtitleLeftPadding(int subtitleLeftPadding) {
         if (subtitleLeftPadding < 0) {
             subtitleLeftPadding = 0;
         }
@@ -154,7 +154,7 @@ public class SubtitleStyleSettings {
         return this;
     }
 
-    private SubtitleStyleSettings setSubtitleRightPadding(int subtitleRightPadding) {
+    public SubtitleStyleSettings setSubtitleRightPadding(int subtitleRightPadding) {
         if (subtitleRightPadding < 0) {
             subtitleRightPadding = 0;
         }
