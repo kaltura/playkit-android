@@ -245,6 +245,7 @@ public interface Player {
          * setMaxVideoSize(new PKMaxVideoSize().setMaxVideoWidth(1279).setMaxVideoHeight(719)
          * to reset call:
          * setMaxVideoSize(new PKMaxVideoSize().setMaxVideoWidth(Integer.MAX_VALUE).setMaxVideoHeight(Integer.MAX_VALUE)
+         *
          * @param maxVideoSize - Max allowed video width and height
          * @return - Player Settings
          */
@@ -270,7 +271,7 @@ public interface Player {
         /**
          * Sets the maximum allowed audio channel count.
          *
-         * @param maxAudioChannelCount - maximum allowed audio bitrate in bits per second.
+         * @param maxAudioChannelCount - maximum allowed audio channel count. default max = Integer.MAX_VALUE
          * @return - Player Settings
          */
         Settings setMaxAudioChannelCount(int maxAudioChannelCount);
