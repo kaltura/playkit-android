@@ -3,6 +3,7 @@ package com.kaltura.playkit;
 import com.kaltura.playkit.player.BaseTrack;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
+import com.kaltura.playkit.player.PKSubtitlePosition;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.PlayerEngine;
 import com.kaltura.playkit.player.PlayerView;
@@ -184,6 +185,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     @Override
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         playerEngine.updateSubtitleStyle(subtitleStyleSettings);
+    }
+
+    @Override
+    public void updateSubtitleViewPosition(PKSubtitlePosition subtitlePosition) {
+        playerEngine.updateSubtitleViewPosition(subtitlePosition);
     }
 
     @Override

@@ -20,6 +20,7 @@ import android.graphics.RectF;
 import androidx.annotation.NonNull;
 
 import android.os.Build;
+import android.text.Layout;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.SurfaceView;
@@ -37,7 +38,10 @@ import com.kaltura.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.android.exoplayer2.video.VideoListener;
 import com.kaltura.playkit.PKLog;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static com.kaltura.android.exoplayer2.text.Cue.ANCHOR_TYPE_START;
 
 /**
  * View that is attached to the Exoplayer and responsible for displaying and managing
@@ -58,6 +62,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private Player.EventListener playerEventListener;
     private int textureViewRotation;
     private @AspectRatioFrameLayout.ResizeMode int resizeMode;
+    private PKSubtitlePosition subtitleViewPosition;
     private boolean isVideoViewVisible;
 
     ExoPlayerView(Context context) {
@@ -318,6 +323,11 @@ class ExoPlayerView extends BaseExoplayerView {
 
         @Override
         public void onCues(List<Cue> cues) {
+
+            if (subtitleViewPosition != null) {
+                cues = getModifiedSubtitlePosition(cues, subtitleViewPosition);
+            }
+
             if (subtitleView != null) {
                 subtitleView.onCues(cues);
             }
@@ -415,6 +425,11 @@ class ExoPlayerView extends BaseExoplayerView {
         }
     }
 
+    @Override
+    public void setSubtitleViewPosition(PKSubtitlePosition subtitleViewPosition) {
+        this.subtitleViewPosition = subtitleViewPosition;
+    }
+
     public static @AspectRatioFrameLayout.ResizeMode int getExoPlayerAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         @AspectRatioFrameLayout.ResizeMode int exoPlayerAspectRatioResizeMode;
         switch(resizeMode) {
@@ -436,6 +451,28 @@ class ExoPlayerView extends BaseExoplayerView {
                 break;
         }
         return exoPlayerAspectRatioResizeMode;
+    }
+
+    public List<Cue> getModifiedSubtitlePosition(List<Cue> cueList, PKSubtitlePosition subtitleViewPosition) {
+        if (!cueList.isEmpty()) {
+            for (int cuePosition = 0; cuePosition < cueList.size(); cuePosition++) {
+                CharSequence text = cueList.get(cuePosition).text;
+                if (text != null) {
+                    Cue newCue = new Cue(text,
+                            subtitleViewPosition.getSubtitleHorizontalPosition(),
+                            subtitleViewPosition.getVerticalPositionPercentage(), // line and line type are dependent
+                            Cue.LINE_TYPE_FRACTION,  ///
+                            cueList.get(cuePosition).lineAnchor, ///
+                            cueList.get(cuePosition).position, //
+                            cueList.get(cuePosition).positionAnchor,  ///
+                            subtitleViewPosition.getHorizontalPositionPercentage());
+                    cueList.clear();
+                    cueList.add(newCue);
+                }
+            }
+        }
+
+        return cueList;
     }
 }
 

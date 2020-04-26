@@ -203,6 +203,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
+        exoPlayerView.setSubtitleViewPosition(playerSettings.getSubtitlePosition());
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured, playerSettings.isVideoViewHidden());
 
         player.setPlayWhenReady(false);
@@ -1255,8 +1256,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (exoPlayerSubtitleView != null) {
             exoPlayerSubtitleView.setStyle(playerSettings.getSubtitleStyleSettings().toCaptionStyle());
             exoPlayerSubtitleView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * playerSettings.getSubtitleStyleSettings().getTextSizeFraction());
-            exoPlayerSubtitleView.setBottomPaddingFraction(playerSettings.getSubtitleStyleSettings().getSubtitleBottomPaddingFraction());
-            exoPlayerSubtitleView.setPadding(playerSettings.getSubtitleStyleSettings().getSubtitleLeftPadding(), 0, playerSettings.getSubtitleStyleSettings().getSubtitleRightPadding(), 0);
         } else {
             log.e("Subtitle View is not available");
         }
@@ -1278,9 +1277,22 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         sendEvent(PlayerEvent.Type.ASPECT_RATIO_RESIZE_MODE_CHANGED);
     }
 
+    @Override
+    public void updateSubtitleViewPosition(PKSubtitlePosition subtitlePosition) {
+        playerSettings.setSubtitlePosition(subtitlePosition);
+        configureSubtitlePosition();
+        //TODO: Send Event
+    }
+
     private void configureAspectRatioResizeMode() {
         if(exoPlayerView != null){
             exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
+        }
+    }
+
+    private void configureSubtitlePosition() {
+        if(exoPlayerView != null){
+            exoPlayerView.setSubtitleViewPosition(playerSettings.getSubtitlePosition());
         }
     }
 

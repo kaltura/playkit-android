@@ -645,6 +645,14 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void updateSubtitleViewPosition(PKSubtitlePosition subtitlePosition) {
+        log.v("updateSubtitleViewPosition");
+        if (assertPlayerIsNotNull("updateSubtitleViewPosition")) {
+            player.updateSubtitleViewPosition(subtitlePosition);
+        }
+    }
+
+    @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         log.v("updateSurfaceAspectRatioResizeMode");
         if (assertPlayerIsNotNull("updateSurfaceAspectRatioResizeMode")) {

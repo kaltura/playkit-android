@@ -42,16 +42,11 @@ public class SubtitleStyleSettings {
     private static final float fraction150 = 1.50f;
     private static final float fraction200 = 2.0f;
 
-    private static final float bottomPaddingFractionUpperLimit = 0.90f;
-
     private int subtitleTextColor = Color.WHITE;
     private int subtitleBackgroundColor = Color.BLACK;
     // Recommended fraction values is  1f < subtitleTextSizeFraction < 2.5f with 0.25f Multiplier
     // Subtitle TextSize fraction, Default is 1.0f ; {@link com.kaltura.android.exoplayer2.ui.SubtitleView}
     private float subtitleTextSizeFraction = fraction100;
-    private float subtitleBottomPaddingFraction = SubtitleView.DEFAULT_BOTTOM_PADDING_FRACTION;
-    private int subtitleLeftPadding = 0;
-    private int subtitleRightPadding = 0;
     private int subtitleWindowColor = Color.TRANSPARENT;
     private int subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
     private int subtitleEdgeColor = Color.WHITE;
@@ -98,18 +93,6 @@ public class SubtitleStyleSettings {
         return subtitleStyleName;
     }
 
-    public float getSubtitleBottomPaddingFraction() {
-        return subtitleBottomPaddingFraction;
-    }
-
-    public int getSubtitleLeftPadding() {
-        return subtitleLeftPadding;
-    }
-
-    public int getSubtitleRightPadding() {
-        return subtitleRightPadding;
-    }
-
     public SubtitleStyleSettings setTextColor(int subtitleTextColor) {
         this.subtitleTextColor = subtitleTextColor;
         return this;
@@ -127,38 +110,6 @@ public class SubtitleStyleSettings {
 
     public SubtitleStyleSettings setWindowColor(int subtitleWindowColor) {
         this.subtitleWindowColor = subtitleWindowColor;
-        return this;
-    }
-
-    /**
-     * Set Subtitle Bottom Padding fraction value. It should range between 0.08f (which is default) - 0.90f
-     * @param subtitleBottomPaddingFraction Bottom Padding fraction value
-     * @return SubtitleStyleSettings
-     */
-    public SubtitleStyleSettings setSubtitleBottomPaddingFraction(float subtitleBottomPaddingFraction) {
-        if (subtitleBottomPaddingFraction > bottomPaddingFractionUpperLimit ||
-                subtitleBottomPaddingFraction < SubtitleView.DEFAULT_BOTTOM_PADDING_FRACTION) {
-            this.subtitleBottomPaddingFraction = SubtitleView.DEFAULT_BOTTOM_PADDING_FRACTION;
-            return this;
-        }
-
-        this.subtitleBottomPaddingFraction = subtitleBottomPaddingFraction;
-        return this;
-    }
-
-    public SubtitleStyleSettings setSubtitleLeftPadding(int subtitleLeftPadding) {
-        if (subtitleLeftPadding < 0) {
-            subtitleLeftPadding = 0;
-        }
-        this.subtitleLeftPadding = subtitleLeftPadding;
-        return this;
-    }
-
-    public SubtitleStyleSettings setSubtitleRightPadding(int subtitleRightPadding) {
-        if (subtitleRightPadding < 0) {
-            subtitleRightPadding = 0;
-        }
-        this.subtitleRightPadding = subtitleRightPadding;
         return this;
     }
 

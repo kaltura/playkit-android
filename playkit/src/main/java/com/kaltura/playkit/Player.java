@@ -20,6 +20,7 @@ import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMaxVideoSize;
+import com.kaltura.playkit.player.PKSubtitlePosition;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
@@ -182,6 +183,14 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setABRSettings(ABRSettings abrSettings);
+
+        /**
+         *  Set the Player's Subtitle Position settings
+         *
+         * @param subtitlePosition Subtitle Position settings
+         * @return - Player Settings
+         */
+        Settings setSubtitlePosition(PKSubtitlePosition subtitlePosition);
 
         /**
          *  Set the Player's AspectRatio resize Mode
@@ -446,6 +455,11 @@ public interface Player {
      * Update Subtitle Styles
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
+
+    /**
+     * Update Subtitle Positions
+     */
+    void updateSubtitleViewPosition(PKSubtitlePosition subtitlePosition);
 
     /**
      * Update video size
