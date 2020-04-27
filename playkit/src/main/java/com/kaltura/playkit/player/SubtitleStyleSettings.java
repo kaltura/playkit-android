@@ -19,7 +19,6 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 
 import com.kaltura.android.exoplayer2.text.CaptionStyleCompat;
-import com.kaltura.android.exoplayer2.ui.SubtitleView;
 
 public class SubtitleStyleSettings {
 

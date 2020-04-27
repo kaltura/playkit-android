@@ -39,7 +39,6 @@ import com.kaltura.playkit.PKLog;
 
 import java.util.List;
 
-
 /**
  * View that is attached to the Exoplayer and responsible for displaying and managing
  * graphic content of the media.
