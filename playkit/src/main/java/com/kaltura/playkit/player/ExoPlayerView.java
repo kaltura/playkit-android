@@ -20,7 +20,6 @@ import android.graphics.RectF;
 import androidx.annotation.NonNull;
 
 import android.os.Build;
-import android.text.Layout;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.SurfaceView;
@@ -38,10 +37,8 @@ import com.kaltura.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.android.exoplayer2.video.VideoListener;
 import com.kaltura.playkit.PKLog;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static com.kaltura.android.exoplayer2.text.Cue.ANCHOR_TYPE_START;
 
 /**
  * View that is attached to the Exoplayer and responsible for displaying and managing

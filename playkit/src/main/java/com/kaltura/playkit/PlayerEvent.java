@@ -16,7 +16,6 @@ import androidx.annotation.NonNull;
 
 import com.kaltura.playkit.player.AudioTrack;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
-import com.kaltura.playkit.player.PKSubtitlePosition;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
 import com.kaltura.playkit.player.VideoTrack;
@@ -361,7 +360,7 @@ public class PlayerEvent implements PKEvent {
         OUTPUT_BUFFER_COUNT_UPDATE,
         BYTES_LOADED,           // Bytes were downloaded from the network
         SUBTITLE_STYLE_CHANGED,  // Subtitle style is changed.
-        ASPECT_RATIO_RESIZE_MODE_CHANGED, //Send when updating the Surface Vide Aspect Ratio size mode.
+        ASPECT_RATIO_RESIZE_MODE_CHANGED //Send when updating the Surface Vide Aspect Ratio size mode.
     }
 
     @Override
