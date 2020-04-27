@@ -645,14 +645,6 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void updateSubtitleViewPosition(PKSubtitlePosition subtitlePosition) {
-        log.v("updateSubtitleViewPosition");
-        if (assertPlayerIsNotNull("updateSubtitleViewPosition")) {
-            player.updateSubtitleViewPosition(subtitlePosition);
-        }
-    }
-
-    @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         log.v("updateSurfaceAspectRatioResizeMode");
         if (assertPlayerIsNotNull("updateSurfaceAspectRatioResizeMode")) {
@@ -834,9 +826,6 @@ public class PlayerController implements Player {
                         break;
                     case SUBTITLE_STYLE_CHANGED:
                         event = new PlayerEvent.SubtitlesStyleChanged(playerSettings.getSubtitleStyleSettings().getStyleName());
-                        break;
-                    case SUBTITLE_VIEW_POSITION_CHANGED:
-                        event = new PlayerEvent.SubtitlesViewPositionChanged(playerSettings.getSubtitlePosition());
                         break;
                     case ASPECT_RATIO_RESIZE_MODE_CHANGED:
                         event = new PlayerEvent.SurfaceAspectRationResizeModeChanged(playerSettings.getAspectRatioResizeMode());

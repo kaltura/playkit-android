@@ -202,7 +202,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
-        exoPlayerView.setSubtitleViewPosition(playerSettings.getSubtitlePosition());
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured, playerSettings.isVideoViewHidden());
 
         player.setPlayWhenReady(false);
@@ -1247,6 +1246,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private void configureSubtitleView() {
         SubtitleView exoPlayerSubtitleView = null;
         if(exoPlayerView != null) {
+            exoPlayerView.setSubtitleViewPosition(playerSettings.getSubtitleStyleSettings().getSubtitlePosition());
             exoPlayerSubtitleView = exoPlayerView.getSubtitleView();
         } else {
             log.e("ExoPlayerView is not available");
@@ -1276,22 +1276,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         sendEvent(PlayerEvent.Type.ASPECT_RATIO_RESIZE_MODE_CHANGED);
     }
 
-    @Override
-    public void updateSubtitleViewPosition(PKSubtitlePosition subtitlePosition) {
-        playerSettings.setSubtitleViewPosition(subtitlePosition);
-        configureSubtitlePosition();
-        sendEvent(PlayerEvent.Type.SUBTITLE_VIEW_POSITION_CHANGED);
-    }
-
     private void configureAspectRatioResizeMode() {
         if(exoPlayerView != null){
             exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
-        }
-    }
-
-    private void configureSubtitlePosition() {
-        if(exoPlayerView != null){
-            exoPlayerView.setSubtitleViewPosition(playerSettings.getSubtitlePosition());
         }
     }
 

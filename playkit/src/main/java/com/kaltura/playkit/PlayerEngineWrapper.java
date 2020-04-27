@@ -188,11 +188,6 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
-    public void updateSubtitleViewPosition(PKSubtitlePosition subtitlePosition) {
-        playerEngine.updateSubtitleViewPosition(subtitlePosition);
-    }
-
-    @Override
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         playerEngine.updateSurfaceAspectRatioResizeMode(resizeMode);
     }

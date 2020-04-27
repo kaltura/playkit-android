@@ -43,7 +43,6 @@ public class PlayerEvent implements PKEvent {
     public static final Class<TextTrackChanged> textTrackChanged = TextTrackChanged.class;
     public static final Class<PlaybackRateChanged> playbackRateChanged = PlaybackRateChanged.class;
     public static final Class<SubtitlesStyleChanged> subtitlesStyleChanged = SubtitlesStyleChanged.class;
-    public static final Class<SubtitlesViewPositionChanged> subtitlesViewPositionChanged = SubtitlesViewPositionChanged.class;
     public static final Class<VideoFramesDropped> videoFramesDropped = VideoFramesDropped.class;
     public static final Class<OutputBufferCountUpdate> outputBufferCountUpdate = OutputBufferCountUpdate.class;
     public static final Class<ConnectionAcquired> connectionAcquired = ConnectionAcquired.class;
@@ -239,16 +238,6 @@ public class PlayerEvent implements PKEvent {
         }
     }
 
-    public static class SubtitlesViewPositionChanged extends PlayerEvent {
-
-        public final PKSubtitlePosition subtitlePosition;
-
-        public SubtitlesViewPositionChanged(PKSubtitlePosition subtitlePosition) {
-            super(Type.SUBTITLE_VIEW_POSITION_CHANGED);
-            this.subtitlePosition = subtitlePosition;
-        }
-    }
-
     public static class VideoFramesDropped extends PlayerEvent {
         public final long droppedVideoFrames;
         public final long droppedVideoFramesPeriod;
@@ -373,7 +362,6 @@ public class PlayerEvent implements PKEvent {
         BYTES_LOADED,           // Bytes were downloaded from the network
         SUBTITLE_STYLE_CHANGED,  // Subtitle style is changed.
         ASPECT_RATIO_RESIZE_MODE_CHANGED, //Send when updating the Surface Vide Aspect Ratio size mode.
-        SUBTITLE_VIEW_POSITION_CHANGED //Send when subtitle position is changed.
     }
 
     @Override

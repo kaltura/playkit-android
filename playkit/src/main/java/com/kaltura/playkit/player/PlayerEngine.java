@@ -249,12 +249,6 @@ public interface PlayerEngine {
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
 
     /**
-     * Update Subtitle Positions
-     * @param subtitlePosition
-     */
-    default void updateSubtitleViewPosition(PKSubtitlePosition subtitlePosition) {}
-
-    /**
       *  update view size 
       *  @param resizeMode
       */

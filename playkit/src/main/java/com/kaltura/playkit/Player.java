@@ -185,14 +185,6 @@ public interface Player {
         Settings setABRSettings(ABRSettings abrSettings);
 
         /**
-         *  Set the Player's Subtitle Position settings
-         *
-         * @param subtitlePosition Subtitle Position settings
-         * @return - Player Settings
-         */
-        Settings setSubtitleViewPosition(PKSubtitlePosition subtitlePosition);
-
-        /**
          *  Set the Player's AspectRatio resize Mode
          *
          * @param resizeMode Resize mode
@@ -458,11 +450,6 @@ public interface Player {
      * Update Subtitle Styles
      */
     void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings);
-
-    /**
-     * Update Subtitle Positions
-     */
-    void updateSubtitleViewPosition(PKSubtitlePosition subtitlePosition);
 
     /**
      * Update video size

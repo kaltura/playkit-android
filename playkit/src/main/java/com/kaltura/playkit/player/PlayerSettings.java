@@ -41,7 +41,6 @@ public class PlayerSettings implements Player.Settings {
     private SubtitleStyleSettings subtitleStyleSettings;
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
     private ABRSettings abrSettings = new ABRSettings();
-    private PKSubtitlePosition subtitlePosition = new PKSubtitlePosition();
     private VRSettings vrSettings;
     /**
      * Flag helping to check if client app wants to use a single player instance at a time
@@ -128,10 +127,6 @@ public class PlayerSettings implements Player.Settings {
 
     public ABRSettings getAbrSettings() {
         return abrSettings;
-    }
-
-    public PKSubtitlePosition getSubtitlePosition() {
-        return subtitlePosition;
     }
 
     public PKAspectRatioResizeMode getAspectRatioResizeMode(){
@@ -270,12 +265,6 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setABRSettings(ABRSettings abrSettings) {
         this.abrSettings = abrSettings;
-        return this;
-    }
-
-    @Override
-    public Player.Settings setSubtitleViewPosition(PKSubtitlePosition subtitlePosition) {
-        this.subtitlePosition = subtitlePosition;
         return this;
     }
 

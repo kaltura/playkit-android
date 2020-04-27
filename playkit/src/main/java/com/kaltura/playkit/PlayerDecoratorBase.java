@@ -207,11 +207,6 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void updateSubtitleViewPosition(PKSubtitlePosition subtitlePosition) {
-        player.updateSubtitleViewPosition(subtitlePosition);
-    }
-
-    @Override
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         player.addListener(groupId, type, listener);
     }

@@ -52,6 +52,7 @@ public class SubtitleStyleSettings {
     private int subtitleEdgeColor = Color.WHITE;
     private Typeface subtitleTypeface = Typeface.DEFAULT;
     private String subtitleStyleName;
+    private PKSubtitlePosition subtitlePosition;
 
     public SubtitleStyleSettings(String subtitleStyleName) {
         if (!TextUtils.isEmpty(subtitleStyleName)) {
@@ -91,6 +92,10 @@ public class SubtitleStyleSettings {
 
     public String getStyleName() {
         return subtitleStyleName;
+    }
+
+    public PKSubtitlePosition getSubtitlePosition() {
+        return subtitlePosition;
     }
 
     public SubtitleStyleSettings setTextColor(int subtitleTextColor) {
@@ -179,6 +184,11 @@ public class SubtitleStyleSettings {
                 subtitleTypeface = Typeface.DEFAULT;
                 break;
         }
+        return this;
+    }
+
+    public SubtitleStyleSettings setSubtitlePosition(PKSubtitlePosition subtitlePosition) {
+        this.subtitlePosition = subtitlePosition;
         return this;
     }
 
