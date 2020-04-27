@@ -274,7 +274,7 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setSubtitlePosition(PKSubtitlePosition subtitlePosition) {
+    public Player.Settings setSubtitleViewPosition(PKSubtitlePosition subtitlePosition) {
         this.subtitlePosition = subtitlePosition;
         return this;
     }

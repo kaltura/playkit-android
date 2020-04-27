@@ -8,6 +8,7 @@ public class PKSubtitlePosition {
     private float verticalPositionPercentage = 1.0f;
     private float horizontalPositionPercentage = 1.0f;
     private boolean resetSubtitlePosition = false;
+    private float defaultPercentage = 1.0f;
 
     public Layout.Alignment getSubtitleHorizontalPosition() {
         return subtitleHorizontalPosition;
@@ -28,7 +29,7 @@ public class PKSubtitlePosition {
 
     public PKSubtitlePosition setVerticalPositionPercentage(float verticalPositionPercentage) {
         if (verticalPositionPercentage < 10 || verticalPositionPercentage > 100) {
-            this.verticalPositionPercentage = 1.0f;
+            this.verticalPositionPercentage = defaultPercentage;
             return this;
         }
 
@@ -38,11 +39,20 @@ public class PKSubtitlePosition {
 
     public PKSubtitlePosition setHorizontalPositionPercentage(float horizontalPositionPercentage) {
         if (horizontalPositionPercentage < 10 || horizontalPositionPercentage > 100) {
-            this.horizontalPositionPercentage = 1.0f;
+            this.horizontalPositionPercentage = defaultPercentage;
             return this;
         }
 
         this.horizontalPositionPercentage = horizontalPositionPercentage / 100f;
+        return this;
+    }
+
+    public PKSubtitlePosition resetSubtitleViewPosition() {
+        this.resetSubtitlePosition = true;
+        this.subtitleHorizontalPosition = Layout.Alignment.ALIGN_CENTER;
+        this.verticalPositionPercentage = defaultPercentage;
+        this.horizontalPositionPercentage = defaultPercentage;
+
         return this;
     }
 }

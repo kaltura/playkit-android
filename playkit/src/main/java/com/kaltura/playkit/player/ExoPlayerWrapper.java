@@ -56,7 +56,6 @@ import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
-import com.kaltura.android.exoplayer2.util.ErrorMessageProvider;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
@@ -1279,7 +1278,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public void updateSubtitleViewPosition(PKSubtitlePosition subtitlePosition) {
-        playerSettings.setSubtitlePosition(subtitlePosition);
+        playerSettings.setSubtitleViewPosition(subtitlePosition);
         configureSubtitlePosition();
         //TODO: Send Event
     }

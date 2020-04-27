@@ -190,7 +190,7 @@ public interface Player {
          * @param subtitlePosition Subtitle Position settings
          * @return - Player Settings
          */
-        Settings setSubtitlePosition(PKSubtitlePosition subtitlePosition);
+        Settings setSubtitleViewPosition(PKSubtitlePosition subtitlePosition);
 
         /**
          *  Set the Player's AspectRatio resize Mode
