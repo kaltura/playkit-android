@@ -1280,7 +1280,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void updateSubtitleViewPosition(PKSubtitlePosition subtitlePosition) {
         playerSettings.setSubtitleViewPosition(subtitlePosition);
         configureSubtitlePosition();
-        //TODO: Send Event
+        sendEvent(PlayerEvent.Type.SUBTITLE_VIEW_POSITION_CHANGED);
     }
 
     private void configureAspectRatioResizeMode() {
