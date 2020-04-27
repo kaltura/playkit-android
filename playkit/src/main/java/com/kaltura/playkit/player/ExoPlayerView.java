@@ -461,10 +461,10 @@ class ExoPlayerView extends BaseExoplayerView {
                     Cue newCue = new Cue(text,
                             subtitleViewPosition.getSubtitleHorizontalPosition(),
                             subtitleViewPosition.getVerticalPositionPercentage(), // line and line type are dependent
-                            Cue.LINE_TYPE_FRACTION,  ///
-                            cueList.get(cuePosition).lineAnchor, ///
-                            cueList.get(cuePosition).position, //
-                            cueList.get(cuePosition).positionAnchor,  ///
+                            Cue.LINE_TYPE_FRACTION,
+                            cueList.get(cuePosition).lineAnchor,
+                            cueList.get(cuePosition).position,
+                            cueList.get(cuePosition).positionAnchor,
                             subtitleViewPosition.getHorizontalPositionPercentage());
                     cueList.clear();
                     cueList.add(newCue);
