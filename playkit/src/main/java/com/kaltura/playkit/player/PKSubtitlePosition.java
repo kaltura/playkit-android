@@ -2,7 +2,10 @@ package com.kaltura.playkit.player;
 
 import android.text.Layout;
 
+import com.kaltura.android.exoplayer2.text.Cue;
 import com.kaltura.playkit.utils.Consts;
+
+import static com.kaltura.android.exoplayer2.text.Cue.DIMEN_UNSET;
 
 public class PKSubtitlePosition {
 
@@ -83,8 +86,8 @@ public class PKSubtitlePosition {
      */
     public PKSubtitlePosition resetSubtitleViewPosition() {
         this.subtitleHorizontalPosition = Layout.Alignment.ALIGN_CENTER;
-        this.verticalPositionPercentage = Consts.PERCENT_FACTOR_FLOAT / Consts.PERCENT_FACTOR_FLOAT;
-        this.horizontalPositionPercentage = Consts.PERCENT_FACTOR_FLOAT / Consts.PERCENT_FACTOR_FLOAT;
+        this.verticalPositionPercentage = Cue.DIMEN_UNSET;
+        this.horizontalPositionPercentage = Cue.DIMEN_UNSET;
 
         return this;
     }
