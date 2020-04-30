@@ -108,7 +108,7 @@ public class MediaSupport {
                     } catch (Exception e1) {
                         // Send any exception to the callback
                         log.e("Widevine provisioning has failed", e1);
-                        runCallback(drmInitCallback,  hardwareDrm(), true, e1);
+                        runCallback(drmInitCallback, hardwareDrm(), true, e1);
                     }
                 }
             });
@@ -266,7 +266,6 @@ public class MediaSupport {
          * @param provisionError      null if provisioning is successful, exception otherwise
          */
         void onDrmInitComplete(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean isHardwareDrmSupported, boolean provisionPerformed, Exception provisionError);
-
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -294,7 +293,8 @@ public class MediaSupport {
                     try {
                         securityLevel = mediaDrm.getPropertyString(SECURITY_LEVEL_PROPERTY);
                     } catch (RuntimeException e) {
-                        securityLevel = null;                    }
+                        securityLevel = null;                    
+                    }
                 } catch (NotProvisionedException e) {
                     log.e("Widevine Modular not provisioned");
                     throw new MediaSupport.DrmNotProvisionedException("Widevine Modular not provisioned", e);
