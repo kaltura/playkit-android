@@ -43,7 +43,6 @@ public class MediaSupport {
 
     public static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
     private static final String WIDEVINE_SECURITY_LEVEL_1 = "L1";
-    private static final String WIDEVINE_SECURITY_LEVEL_3 = "L3";
     private static final String SECURITY_LEVEL_PROPERTY = "securityLevel";
 
     private static boolean initSucceeded;
@@ -97,7 +96,7 @@ public class MediaSupport {
 
             initSucceeded = true;
 
-            runCallback(drmInitCallback, isL1WidevineAvailable(),false, null);
+            runCallback(drmInitCallback, isHardwareDRMSupported(),false, null);
 
         } catch (DrmNotProvisionedException e) {
             log.d("Widevine Modular needs provisioning");
@@ -105,11 +104,11 @@ public class MediaSupport {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                     try {
                         provisionWidevine();
-                        runCallback(drmInitCallback, isL1WidevineAvailable(), true, null);
+                        runCallback(drmInitCallback, isHardwareDRMSupported(), true, null);
                     } catch (Exception e1) {
                         // Send any exception to the callback
                         log.e("Widevine provisioning has failed", e1);
-                        runCallback(drmInitCallback,  isL1WidevineAvailable(), true, e1);
+                        runCallback(drmInitCallback,  isHardwareDRMSupported(), true, e1);
                     }
                 }
             });
@@ -122,11 +121,11 @@ public class MediaSupport {
         }
     }
 
-    private static void runCallback(DrmInitCallback drmInitCallback, boolean isL1WidevineAvailable, boolean provisionPerformed, Exception provisionError) {
+    private static void runCallback(DrmInitCallback drmInitCallback, boolean isHardwareDRMSupported, boolean provisionPerformed, Exception provisionError) {
 
         final Set<PKDrmParams.Scheme> supportedDrmSchemes = supportedDrmSchemes();
         if (drmInitCallback != null) {
-            drmInitCallback.onDrmInitComplete(supportedDrmSchemes, isL1WidevineAvailable, provisionPerformed, provisionError);
+            drmInitCallback.onDrmInitComplete(supportedDrmSchemes, isHardwareDRMSupported, provisionPerformed, provisionError);
 
         } else if (!initSucceeded) {
             if (provisionError != null) {
@@ -219,7 +218,7 @@ public class MediaSupport {
         return widevineModular;
     }
 
-    public static boolean isL1WidevineAvailable() {
+    public static boolean isHardwareDRMSupported() {
         if (widevineModular()) {
             return WIDEVINE_SECURITY_LEVEL_1.equals(securityLevel);
         }
@@ -262,18 +261,20 @@ public class MediaSupport {
          * Called when the DRM subsystem is initialized (with possible errors).
          *
          * @param supportedDrmSchemes supported DRM schemes
-         * @param isL1WidevineAvailable is L1 Widevine Availables
+         * @param isHardwareDRMSupported is Hardware DRM Supported
          * @param provisionPerformed  true if provisioning was required and performed, false otherwise
          * @param provisionError      null if provisioning is successful, exception otherwise
          */
-        void onDrmInitComplete(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean isL1WidevineAvailable, boolean provisionPerformed, Exception provisionError);
+        void onDrmInitComplete(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean isHardwareDRMSupported, boolean provisionPerformed, Exception provisionError);
 
     }
 
+//    @SuppressWarnings("ResourceType")
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private static class WidevineModularUtil {
 
+        @SuppressLint("WrongConstant")
         private static Boolean checkWidevineModular(Boolean widevineModular) throws MediaSupport.DrmNotProvisionedException {
 
             if (widevineModular != null) {
@@ -292,8 +293,7 @@ public class MediaSupport {
                     session = mediaDrm.openSession();
                     widevineModular = true;
                     try {
-                        String[] mediaDrmProps = {SECURITY_LEVEL_PROPERTY};
-                        securityLevel = WIDEVINE_SECURITY_LEVEL_1.equals(mediaDrm.getPropertyString(mediaDrmProps[0])) ? WIDEVINE_SECURITY_LEVEL_1 : WIDEVINE_SECURITY_LEVEL_3;
+                        securityLevel = mediaDrm.getPropertyString(SECURITY_LEVEL_PROPERTY);
                     } catch (RuntimeException e) {
                         securityLevel = null;                    }
                 } catch (NotProvisionedException e) {
