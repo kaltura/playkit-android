@@ -96,7 +96,7 @@ public class MediaSupport {
 
             initSucceeded = true;
 
-            runCallback(drmInitCallback, isHardwareDRMSupported(),false, null);
+            runCallback(drmInitCallback, hardwareDRM(), false, null);
 
         } catch (DrmNotProvisionedException e) {
             log.d("Widevine Modular needs provisioning");
@@ -104,11 +104,11 @@ public class MediaSupport {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                     try {
                         provisionWidevine();
-                        runCallback(drmInitCallback, isHardwareDRMSupported(), true, null);
+                        runCallback(drmInitCallback, hardwareDRM(), true, null);
                     } catch (Exception e1) {
                         // Send any exception to the callback
                         log.e("Widevine provisioning has failed", e1);
-                        runCallback(drmInitCallback,  isHardwareDRMSupported(), true, e1);
+                        runCallback(drmInitCallback,  hardwareDRM(), true, e1);
                     }
                 }
             });
@@ -218,7 +218,7 @@ public class MediaSupport {
         return widevineModular;
     }
 
-    public static boolean isHardwareDRMSupported() {
+    public static boolean hardwareDRM() {
         if (widevineModular()) {
             return WIDEVINE_SECURITY_LEVEL_1.equals(securityLevel);
         }
@@ -269,7 +269,6 @@ public class MediaSupport {
 
     }
 
-//    @SuppressWarnings("ResourceType")
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private static class WidevineModularUtil {
