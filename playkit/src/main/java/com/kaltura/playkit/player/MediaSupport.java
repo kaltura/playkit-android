@@ -96,7 +96,7 @@ public class MediaSupport {
 
             initSucceeded = true;
 
-            runCallback(drmInitCallback, hardwareDRM(), false, null);
+            runCallback(drmInitCallback, hardwareDrm(), false, null);
 
         } catch (DrmNotProvisionedException e) {
             log.d("Widevine Modular needs provisioning");
@@ -104,11 +104,11 @@ public class MediaSupport {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                     try {
                         provisionWidevine();
-                        runCallback(drmInitCallback, hardwareDRM(), true, null);
+                        runCallback(drmInitCallback, hardwareDrm(), true, null);
                     } catch (Exception e1) {
                         // Send any exception to the callback
                         log.e("Widevine provisioning has failed", e1);
-                        runCallback(drmInitCallback,  hardwareDRM(), true, e1);
+                        runCallback(drmInitCallback,  hardwareDrm(), true, e1);
                     }
                 }
             });
@@ -121,11 +121,11 @@ public class MediaSupport {
         }
     }
 
-    private static void runCallback(DrmInitCallback drmInitCallback, boolean isHardwareDRMSupported, boolean provisionPerformed, Exception provisionError) {
+    private static void runCallback(DrmInitCallback drmInitCallback, boolean isHardwareDrmSupported, boolean provisionPerformed, Exception provisionError) {
 
         final Set<PKDrmParams.Scheme> supportedDrmSchemes = supportedDrmSchemes();
         if (drmInitCallback != null) {
-            drmInitCallback.onDrmInitComplete(supportedDrmSchemes, isHardwareDRMSupported, provisionPerformed, provisionError);
+            drmInitCallback.onDrmInitComplete(supportedDrmSchemes, isHardwareDrmSupported, provisionPerformed, provisionError);
 
         } else if (!initSucceeded) {
             if (provisionError != null) {
@@ -218,7 +218,7 @@ public class MediaSupport {
         return widevineModular;
     }
 
-    public static boolean hardwareDRM() {
+    public static boolean hardwareDrm() {
         if (widevineModular()) {
             return WIDEVINE_SECURITY_LEVEL_1.equals(securityLevel);
         }
@@ -261,11 +261,11 @@ public class MediaSupport {
          * Called when the DRM subsystem is initialized (with possible errors).
          *
          * @param supportedDrmSchemes supported DRM schemes
-         * @param isHardwareDRMSupported is Hardware DRM Supported
+         * @param isHardwareDrmSupported is Hardware DRM Supported
          * @param provisionPerformed  true if provisioning was required and performed, false otherwise
          * @param provisionError      null if provisioning is successful, exception otherwise
          */
-        void onDrmInitComplete(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean isHardwareDRMSupported, boolean provisionPerformed, Exception provisionError);
+        void onDrmInitComplete(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean isHardwareDrmSupported, boolean provisionPerformed, Exception provisionError);
 
     }
 
