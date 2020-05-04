@@ -58,6 +58,8 @@ public interface AdsProvider {
 
     void setAdRequested(boolean isAdRequested);
 
+    void resetPluginFlags();
+
     void removeAdProviderListener();
 
     void skipAd();
