@@ -320,7 +320,7 @@ class ExoPlayerView extends BaseExoplayerView {
         @Override
         public void onCues(List<Cue> cues) {
 
-            if (subtitleViewPosition != null) {
+            if (subtitleViewPosition != null && !subtitleViewPosition.isOverrideSubtitlePositionConfig()) {
                 cues = getModifiedSubtitlePosition(cues, subtitleViewPosition);
             }
 
@@ -457,7 +457,7 @@ class ExoPlayerView extends BaseExoplayerView {
                     Cue newCue = new Cue(text,
                             subtitleViewPosition.getSubtitleHorizontalPosition(),
                             subtitleViewPosition.getVerticalPositionPercentage(), // line and line type are dependent
-                            Cue.LINE_TYPE_FRACTION,
+                            subtitleViewPosition.getLineType(),
                             cueList.get(cuePosition).lineAnchor,
                             cueList.get(cuePosition).position,
                             cueList.get(cuePosition).positionAnchor,
