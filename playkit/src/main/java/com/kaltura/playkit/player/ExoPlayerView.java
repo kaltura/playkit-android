@@ -320,7 +320,7 @@ class ExoPlayerView extends BaseExoplayerView {
         @Override
         public void onCues(List<Cue> cues) {
 
-            if (subtitleViewPosition != null && !subtitleViewPosition.isOverrideSubtitlePositionConfig()) {
+            if (subtitleViewPosition != null) {
                 cues = getModifiedSubtitlePosition(cues, subtitleViewPosition);
             }
 
@@ -452,15 +452,20 @@ class ExoPlayerView extends BaseExoplayerView {
     public List<Cue> getModifiedSubtitlePosition(List<Cue> cueList, PKSubtitlePosition subtitleViewPosition) {
         if (!cueList.isEmpty()) {
             for (int cuePosition = 0; cuePosition < cueList.size(); cuePosition++) {
-                CharSequence text = cueList.get(cuePosition).text;
+                Cue cue = cueList.get(cuePosition);
+                if ((cue.line !=  Cue.DIMEN_UNSET || cue.position != Cue.DIMEN_UNSET)
+                        && !subtitleViewPosition.isIgnoreCueSettings()) {
+                    continue;
+                }
+                CharSequence text = cue.text;
                 if (text != null) {
                     Cue newCue = new Cue(text,
                             subtitleViewPosition.getSubtitleHorizontalPosition(),
                             subtitleViewPosition.getVerticalPositionPercentage(), // line and line type are dependent
                             subtitleViewPosition.getLineType(),
-                            cueList.get(cuePosition).lineAnchor,
-                            cueList.get(cuePosition).position,
-                            cueList.get(cuePosition).positionAnchor,
+                            cue.lineAnchor,
+                            cue.position,
+                            cue.positionAnchor,
                             subtitleViewPosition.getHorizontalPositionPercentage());
                     cueList.clear();
                     cueList.add(newCue);
