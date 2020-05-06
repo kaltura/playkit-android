@@ -95,6 +95,21 @@ public class PKSubtitlePosition {
         return this;
     }
 
+    /**
+     * Set the subtitle position any where on the video frame. This method allows to move in X-Y coordinates
+     * To set the subtitle only in vertical direction (Y - coordinate) use {@link PKSubtitlePosition#setVerticalPosition(float)}
+     *
+     * @param horizontalPosition Allow the subtitle view to move left (ALIGN_NORMAL), middle (ALIGN_CENTER) and right (ALIGN_OPPOSITE)
+     *                           For RTL texts, Allow the subtitle view to move Right (ALIGN_NORMAL), middle (ALIGN_CENTER) and left (ALIGN_OPPOSITE)
+     *
+     * @param horizontalPositionPercentage Set the horizontal(Left/Right viewport) positions, percentage starts from
+     *                                     center(0.1f is for 10%) to Left/Right(1.0f is for 100%)
+     *
+     * @param verticalPositionPercentage Set the vertical(Top to Bottom) positions, percentage starts from
+     *                                   Top(0.1f is for 10%) to Bottom(1.0f is for 100%)
+     *
+     * @return PKSubtitlePosition
+     */
     public PKSubtitlePosition setPosition(Layout.Alignment horizontalPosition, float horizontalPositionPercentage, float verticalPositionPercentage) {
         setHorizontalPositionLevel(horizontalPosition, horizontalPositionPercentage);
         setVerticalPositionLevel(verticalPositionPercentage);
@@ -102,6 +117,13 @@ public class PKSubtitlePosition {
         return this;
     }
 
+    /**
+     * Set the subtitle position only in Vertical direction (Up or Down) on the video frame. This method only allows to move in Y - coordinate
+     * To set the subtitle any where on the video frame use {@link PKSubtitlePosition#setPosition(Layout.Alignment, float, float)}
+     *
+     * @param verticalPositionPercentage Top(0.1f is for 10%) to Bottom(1.0f is for 100%)
+     * @return PKSubtitlePosition
+     */
     public PKSubtitlePosition setVerticalPosition(float verticalPositionPercentage) {
         setVerticalPositionLevel(verticalPositionPercentage);
         subtitleHorizontalPosition = Layout.Alignment.ALIGN_CENTER;
@@ -112,7 +134,7 @@ public class PKSubtitlePosition {
 
     /**
      * Reset all the subtitle view positioning to default
-     * It will move subtitle to Center
+     * It will move subtitle to Bottom-Center
      * @return PKSubtitlePosition
      */
     public PKSubtitlePosition resetPosition() {
@@ -124,11 +146,8 @@ public class PKSubtitlePosition {
     }
 
     /**
-     * Override the current subtitle Positioning with the In-stream subtitle text track configuration
-     * This is different then resetting the subtitle position because in reset we set in variables to
-     * Cue.DIMEN_UNSET which eventually keeps everything in center.
-     * In this API, we are asking the Cue to pick whatever is coming in In-stream subtitle, does not
-     * care if configuration is there or not.
+     * If `ignoreCueSettings` is set to true, player will ignore the existing values coming in Cue Settings
+     * and will always use the given Cue Settings
      *
      * @param ignoreCueSettings true or false
      * @return PKSubtitlePosition

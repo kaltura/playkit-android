@@ -449,6 +449,14 @@ class ExoPlayerView extends BaseExoplayerView {
         return exoPlayerAspectRatioResizeMode;
     }
 
+    /**
+     * Creates new cue configuration if `isIgnoreCueSettings` is set to true by application
+     * Checks if the application wants to ignore the in-stream CueSettings otherwise goes with existing Cue configuration
+     *
+     * @param cueList cue list coming in stream
+     * @param subtitleViewPosition subtitle view position configuration set by application
+     * @return List of modified Cues
+     */
     public List<Cue> getModifiedSubtitlePosition(List<Cue> cueList, PKSubtitlePosition subtitleViewPosition) {
         if (!cueList.isEmpty()) {
             for (int cuePosition = 0; cuePosition < cueList.size(); cuePosition++) {
