@@ -87,6 +87,7 @@ public class MediaSupport {
     public static void initializeDrm(Context context, final DrmInitCallback drmInitCallback) {
 
         if (initSucceeded) {
+            runCallback(drmInitCallback, hardwareDrm(), false, null);
             return;
         }
 
