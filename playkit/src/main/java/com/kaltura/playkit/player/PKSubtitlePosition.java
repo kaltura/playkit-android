@@ -7,23 +7,23 @@ import com.kaltura.playkit.utils.Consts;
 
 public class PKSubtitlePosition {
 
-    // If `ignoreCueSettings` is set to true, player will ignore the existing values coming in Cue Settings
+    // If `overrideInlineCueConfig` is set to true, player will ignore the existing values coming in Cue Settings
     // and will always use the given Cue Settings
-    public PKSubtitlePosition(boolean ignoreCueSettings) {
-        this.ignoreCueSettings = ignoreCueSettings;
+    public PKSubtitlePosition(boolean overrideInlineCueConfig) {
+        this.overrideInlineCueConfig = overrideInlineCueConfig;
     }
 
     // For Left to Right Language texts(LTR), Allow the subtitle view to move left (ALIGN_NORMAL), middle (ALIGN_CENTER) and right (ALIGN_OPPOSITE)
     // For Right to Left Language texts(RTL), Allow the subtitle view to move Right (ALIGN_NORMAL), middle (ALIGN_CENTER) and left (ALIGN_OPPOSITE)
     private Layout.Alignment subtitleHorizontalPosition = Layout.Alignment.ALIGN_CENTER;
 
-    // Allow the subtitle view to move vertically (100% = 1.0f OR 10% = 0.1f)
-    // For vertical positions, percentage starts from Top(0.1f) to Bottom(1.0f)
+    // Allow the subtitle view to move vertically (100% = 100 OR 10% = 10)
+    // For vertical positions, percentage starts from Top(100) to Bottom(10)
     private float verticalPositionPercentage = Cue.DIMEN_UNSET;
 
     // Allow the subtitle view to move horizontally but with in the left-middle and middle-right viewport
-    // For horizontal(Left viewport) positions, percentage starts from center(0.1f or 10%) to Left(1.0f or 100%)
-    // For horizontal(Right viewport) positions, percentage starts from center(0.1f or 10%) to Right(1.0f or 100%)
+    // For horizontal(Left viewport) positions, percentage starts from center(10 or 10%) to Left(100 or 100%)
+    // For horizontal(Right viewport) positions, percentage starts from center(10 or 10%) to Right(100 or 100%)
     private float horizontalPositionPercentage = Cue.DIMEN_UNSET;
 
     // The type of line, Fraction, Number, Unset. We are accepting values for Line in fraction so
@@ -31,10 +31,10 @@ public class PKSubtitlePosition {
     private int lineType = Cue.LINE_TYPE_FRACTION;
 
     // Lower limit either for vertical (top to bottom) for horizontal (center to left/right)
-    private float positionLowerLimit = 0.10f;
+    private int positionLowerLimit = 10;
 
     // Override the current subtitle Positioning with the In-stream subtitle text track configuration
-    private boolean ignoreCueSettings;
+    private boolean overrideInlineCueConfig;
 
     public Layout.Alignment getSubtitleHorizontalPosition() {
         return subtitleHorizontalPosition;
@@ -48,8 +48,8 @@ public class PKSubtitlePosition {
         return horizontalPositionPercentage;
     }
 
-    public boolean isIgnoreCueSettings() {
-        return ignoreCueSettings;
+    public boolean isOverrideInlineCueConfig() {
+        return overrideInlineCueConfig;
     }
 
     public int getLineType() {
@@ -61,7 +61,7 @@ public class PKSubtitlePosition {
      * For RTL texts, Allow the subtitle view to move Right (ALIGN_NORMAL), middle (ALIGN_CENTER) and left (ALIGN_OPPOSITE)
      *
      * Set the horizontal(Left/Right viewport) positions, percentage starts from
-     * center(0.1f is for 10%) to Left/Right(1.0f is for 100%)
+     * center(10 is for 10%) to Left/Right(100 is for 100%)
      *
      * @param horizontalPosition subtitle view positioning
      * @param horizontalPositionPercentage percentage to left/right viewport from center
@@ -69,63 +69,58 @@ public class PKSubtitlePosition {
      */
     private PKSubtitlePosition setHorizontalPositionLevel(Layout.Alignment horizontalPosition, float horizontalPositionPercentage) {
         this.subtitleHorizontalPosition = horizontalPosition;
-
-        if (horizontalPositionPercentage < positionLowerLimit || horizontalPositionPercentage > Consts.DEFAULT_MAX_SUBTITLE_POSITION) {
-            horizontalPositionPercentage = Cue.DIMEN_UNSET;
-        }
-
         this.horizontalPositionPercentage = horizontalPositionPercentage;
-
         return this;
     }
 
     /**
      * Set the vertical(Top to Bottom) positions, percentage starts from
-     * Top(0.1f is for 10%) to Bottom(1.0f is for 100%)
+     * Top(10 is for 10%) to Bottom(100 is for 100%)
      *
      * @param verticalPositionPercentage percentage to vertical viewport from top to bottom
      * @return PKSubtitlePosition
      */
     private PKSubtitlePosition setVerticalPositionLevel(float verticalPositionPercentage) {
-        if (verticalPositionPercentage < positionLowerLimit || verticalPositionPercentage > Consts.DEFAULT_MAX_SUBTITLE_POSITION) {
-            verticalPositionPercentage = Cue.DIMEN_UNSET;
-        }
-
         this.verticalPositionPercentage = verticalPositionPercentage;
         return this;
     }
 
     /**
      * Set the subtitle position any where on the video frame. This method allows to move in X-Y coordinates
-     * To set the subtitle only in vertical direction (Y - coordinate) use {@link PKSubtitlePosition#setVerticalPosition(float)}
-     *
-     * @param horizontalPosition Allow the subtitle view to move left (ALIGN_NORMAL), middle (ALIGN_CENTER) and right (ALIGN_OPPOSITE)
-     *                           For RTL texts, Allow the subtitle view to move Right (ALIGN_NORMAL), middle (ALIGN_CENTER) and left (ALIGN_OPPOSITE)
+     * To set the subtitle only in vertical direction (Y - coordinate) use {@link PKSubtitlePosition#setVerticalPosition(int)}
      *
      * @param horizontalPositionPercentage Set the horizontal(Left/Right viewport) positions, percentage starts from
-     *                                     center(0.1f is for 10%) to Left/Right(1.0f is for 100%)
+     *                                     center(10 is for 10%) to Left/Right(100 is for 100%)
      *
      * @param verticalPositionPercentage Set the vertical(Top to Bottom) positions, percentage starts from
-     *                                   Top(0.1f is for 10%) to Bottom(1.0f is for 100%)
+     *                                   Top(10 is for 10%) to Bottom(100 is for 100%)
+     *
+     * @param horizontalAlignment Allow the subtitle view to move left (ALIGN_NORMAL), middle (ALIGN_CENTER) and right (ALIGN_OPPOSITE)
+     *                           For RTL texts, Allow the subtitle view to move Right (ALIGN_NORMAL), middle (ALIGN_CENTER) and left (ALIGN_OPPOSITE)
      *
      * @return PKSubtitlePosition
      */
-    public PKSubtitlePosition setPosition(Layout.Alignment horizontalPosition, float horizontalPositionPercentage, float verticalPositionPercentage) {
-        setHorizontalPositionLevel(horizontalPosition, horizontalPositionPercentage);
-        setVerticalPositionLevel(verticalPositionPercentage);
+    public PKSubtitlePosition setPosition(int horizontalPositionPercentage, int verticalPositionPercentage, Layout.Alignment horizontalAlignment) {
+        float verticalPosition = checkPositionPercentageLimit(verticalPositionPercentage);
+        float horizontalPosition = checkPositionPercentageLimit(horizontalPositionPercentage);
+
+        setHorizontalPositionLevel(horizontalAlignment, horizontalPosition);
+        setVerticalPositionLevel(verticalPosition);
         lineType = Cue.LINE_TYPE_FRACTION;
         return this;
     }
 
     /**
      * Set the subtitle position only in Vertical direction (Up or Down) on the video frame. This method only allows to move in Y - coordinate
-     * To set the subtitle any where on the video frame use {@link PKSubtitlePosition#setPosition(Layout.Alignment, float, float)}
+     * To set the subtitle any where on the video frame use {@link PKSubtitlePosition#setPosition(int, int, Layout.Alignment)}
      *
-     * @param verticalPositionPercentage Top(0.1f is for 10%) to Bottom(1.0f is for 100%)
+     * @param verticalPositionPercentage Top(10 is for 10%) to Bottom(100 is for 100%)
      * @return PKSubtitlePosition
      */
-    public PKSubtitlePosition setVerticalPosition(float verticalPositionPercentage) {
-        setVerticalPositionLevel(verticalPositionPercentage);
+    public PKSubtitlePosition setVerticalPosition(int verticalPositionPercentage) {
+        float verticalPosition = checkPositionPercentageLimit(verticalPositionPercentage);
+
+        setVerticalPositionLevel(verticalPosition);
         subtitleHorizontalPosition = Layout.Alignment.ALIGN_CENTER;
         horizontalPositionPercentage = Cue.DIMEN_UNSET;
         lineType = Cue.LINE_TYPE_FRACTION;
@@ -133,11 +128,25 @@ public class PKSubtitlePosition {
     }
 
     /**
-     * Reset all the subtitle view positioning to default
-     * It will move subtitle to Bottom-Center
+     * If `overrideInlineCueConfig` is false that mean; app does not want to override the inline Cue configuration.
+     * App wants to go with Cue configuration.
+     * BUT Beware that it will call {@link PKSubtitlePosition#setOverrideInlineCueConfig(boolean)} with false value
+     * means after that in next call, app needs to {@link PKSubtitlePosition#setOverrideInlineCueConfig(boolean)}
+     * with another value.
+     *
+     * OTHERWISE
+     *
+     * If `overrideInlineCueConfig` is true then it will move subtitle to Bottom-Center which is a standard position for it
+     *
      * @return PKSubtitlePosition
      */
-    public PKSubtitlePosition resetPosition() {
+    public PKSubtitlePosition setToDefaultPosition(boolean overrideInlineCueConfig) {
+
+        if (!overrideInlineCueConfig) {
+            setOverrideInlineCueConfig(false);
+            return this;
+        }
+
         subtitleHorizontalPosition = null;
         verticalPositionPercentage = Cue.DIMEN_UNSET;
         horizontalPositionPercentage = Cue.DIMEN_UNSET;
@@ -146,14 +155,24 @@ public class PKSubtitlePosition {
     }
 
     /**
-     * If `ignoreCueSettings` is set to true, player will ignore the existing values coming in Cue Settings
+     * If `overrideInlineCueConfig` is set to true, player will ignore the existing values coming in Cue Settings
      * and will always use the given Cue Settings
      *
-     * @param ignoreCueSettings true or false
+     * @param overrideInlineCueConfig true or false
      * @return PKSubtitlePosition
      */
-    public PKSubtitlePosition setIgnoreCueSettings(boolean ignoreCueSettings) {
-        this.ignoreCueSettings = ignoreCueSettings;
+    public PKSubtitlePosition setOverrideInlineCueConfig(boolean overrideInlineCueConfig) {
+        this.overrideInlineCueConfig = overrideInlineCueConfig;
         return this;
+    }
+
+    private float checkPositionPercentageLimit(int positionPercentage) {
+        float position;
+        if (positionPercentage < positionLowerLimit || positionPercentage > Consts.DEFAULT_MAX_SUBTITLE_POSITION) {
+            position = Cue.DIMEN_UNSET;
+        } else {
+            position = (float) positionPercentage / Consts.PERCENT_FACTOR_FLOAT;
+        }
+        return position;
     }
 }

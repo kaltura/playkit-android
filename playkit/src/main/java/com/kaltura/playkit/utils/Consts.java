@@ -74,7 +74,9 @@ public class Consts {
 
     public static final double PERCENT_FACTOR = 100.0;
 
-    public static final float DEFAULT_MAX_SUBTITLE_POSITION = 1.0F;
+    public static final float PERCENT_FACTOR_FLOAT = 100F;
+
+    public static final int DEFAULT_MAX_SUBTITLE_POSITION = 100;
 
     public static final long MILLISECONDS_MULTIPLIER = 1000L;
 

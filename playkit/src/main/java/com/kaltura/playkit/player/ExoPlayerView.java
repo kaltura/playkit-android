@@ -462,7 +462,7 @@ class ExoPlayerView extends BaseExoplayerView {
             for (int cuePosition = 0; cuePosition < cueList.size(); cuePosition++) {
                 Cue cue = cueList.get(cuePosition);
                 if ((cue.line !=  Cue.DIMEN_UNSET || cue.position != Cue.DIMEN_UNSET)
-                        && !subtitleViewPosition.isIgnoreCueSettings()) {
+                        && !subtitleViewPosition.isOverrideInlineCueConfig()) {
                     continue;
                 }
                 CharSequence text = cue.text;
