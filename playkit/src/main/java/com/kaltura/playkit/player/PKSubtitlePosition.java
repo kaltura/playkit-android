@@ -63,11 +63,11 @@ public class PKSubtitlePosition {
      * Set the horizontal(Left/Right viewport) positions, percentage starts from
      * center(10 is for 10%) to Left/Right(100 is for 100%)
      *
-     * @param horizontalPosition subtitle view positioning
      * @param horizontalPositionPercentage percentage to left/right viewport from center
+     * @param horizontalPosition subtitle view positioning
      * @return PKSubtitlePosition
      */
-    private PKSubtitlePosition setHorizontalPositionLevel(Layout.Alignment horizontalPosition, float horizontalPositionPercentage) {
+    private PKSubtitlePosition setHorizontalPositionLevel(float horizontalPositionPercentage, Layout.Alignment horizontalPosition) {
         this.subtitleHorizontalPosition = horizontalPosition;
         this.horizontalPositionPercentage = horizontalPositionPercentage;
         return this;
@@ -104,7 +104,11 @@ public class PKSubtitlePosition {
         float verticalPosition = checkPositionPercentageLimit(verticalPositionPercentage);
         float horizontalPosition = checkPositionPercentageLimit(horizontalPositionPercentage);
 
-        setHorizontalPositionLevel(horizontalAlignment, horizontalPosition);
+        if (horizontalAlignment == null) {
+            horizontalAlignment = Layout.Alignment.ALIGN_CENTER;
+        }
+
+        setHorizontalPositionLevel(horizontalPosition, horizontalAlignment);
         setVerticalPositionLevel(verticalPosition);
         lineType = Cue.LINE_TYPE_FRACTION;
         return this;

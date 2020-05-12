@@ -1245,16 +1245,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private void configureSubtitleView() {
         SubtitleView exoPlayerSubtitleView = null;
+        SubtitleStyleSettings subtitleStyleSettings = playerSettings.getSubtitleStyleSettings();
         if(exoPlayerView != null) {
-            exoPlayerView.setSubtitleViewPosition(playerSettings.getSubtitleStyleSettings().getSubtitlePosition());
+            if (subtitleStyleSettings.getSubtitlePosition() != null) {
+                exoPlayerView.setSubtitleViewPosition(subtitleStyleSettings.getSubtitlePosition());
+            }
             exoPlayerSubtitleView = exoPlayerView.getSubtitleView();
         } else {
             log.e("ExoPlayerView is not available");
         }
 
         if (exoPlayerSubtitleView != null) {
-            exoPlayerSubtitleView.setStyle(playerSettings.getSubtitleStyleSettings().toCaptionStyle());
-            exoPlayerSubtitleView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * playerSettings.getSubtitleStyleSettings().getTextSizeFraction());
+            exoPlayerSubtitleView.setStyle(subtitleStyleSettings.toCaptionStyle());
+            exoPlayerSubtitleView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * subtitleStyleSettings.getTextSizeFraction());
         } else {
             log.e("Subtitle View is not available");
         }

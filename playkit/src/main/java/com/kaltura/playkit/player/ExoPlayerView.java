@@ -37,6 +37,7 @@ import com.kaltura.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.android.exoplayer2.video.VideoListener;
 import com.kaltura.playkit.PKLog;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -458,11 +459,14 @@ class ExoPlayerView extends BaseExoplayerView {
      * @return List of modified Cues
      */
     public List<Cue> getModifiedSubtitlePosition(List<Cue> cueList, PKSubtitlePosition subtitleViewPosition) {
-        if (!cueList.isEmpty()) {
+        if (cueList != null && !cueList.isEmpty()) {
+            List<Cue> newCueList = new ArrayList<>();
+
             for (int cuePosition = 0; cuePosition < cueList.size(); cuePosition++) {
                 Cue cue = cueList.get(cuePosition);
                 if ((cue.line !=  Cue.DIMEN_UNSET || cue.position != Cue.DIMEN_UNSET)
                         && !subtitleViewPosition.isOverrideInlineCueConfig()) {
+                    newCueList.add(cue);
                     continue;
                 }
                 CharSequence text = cue.text;
@@ -475,10 +479,11 @@ class ExoPlayerView extends BaseExoplayerView {
                             cue.position,
                             cue.positionAnchor,
                             subtitleViewPosition.getHorizontalPositionPercentage());
-                    cueList.clear();
-                    cueList.add(newCue);
+                    newCueList.add(newCue);
                 }
             }
+
+            return newCueList;
         }
 
         return cueList;
