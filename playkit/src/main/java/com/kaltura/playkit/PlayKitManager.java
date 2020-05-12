@@ -53,7 +53,7 @@ public class PlayKitManager {
         return pluginFactory == null ? null : pluginFactory.newInstance();
     }
 
-    public static Player loadPlayer(Context context, @Nullable PKPluginConfigs pluginConfigs) {
+    public static Player loadPlayer(Context context, @Nullable PKPluginConfigs pluginConfigs, MessageBus messageBus) {
 
         MediaSupport.initializeDrm(context, null);
 
@@ -61,9 +61,14 @@ public class PlayKitManager {
             PKDeviceCapabilities.maybeSendReport(context);
         }
 
-        PlayerLoader playerLoader = new PlayerLoader(context);
+        PlayerLoader playerLoader = new PlayerLoader(context, messageBus);
         playerLoader.load(pluginConfigs != null ? pluginConfigs : new PKPluginConfigs());
         return playerLoader;
+    }
+
+    public static Player loadPlayer(Context context, @Nullable PKPluginConfigs pluginConfigs) {
+
+        return loadPlayer(context, pluginConfigs, null);
     }
 
 

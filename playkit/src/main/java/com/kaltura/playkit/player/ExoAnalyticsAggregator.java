@@ -73,6 +73,11 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     }
 
     @Override
+    public void onLoadingChanged(EventTime eventTime, boolean isLoading) {
+        log.v("onLoadingChanged eventPlaybackPositionMs = " + eventTime.eventPlaybackPositionMs + " totalBufferedDurationMs = " + eventTime.totalBufferedDurationMs + " isLoading = " +  Boolean.toString(isLoading));
+    }
+
+    @Override
     public void onLoadCanceled(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
         onLoadCompleted(eventTime, loadEventInfo, mediaLoadData);   // in case there are bytes loaded
     }

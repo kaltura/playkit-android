@@ -15,9 +15,11 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.C;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
@@ -203,26 +205,76 @@ public interface Player {
         /**
          * Set the flag which handles the video view
          * @param hide video surface visibility
+         * @return - Player Settings
          */
         Settings setHideVideoViews(boolean hide);
 
         /**
          * Set VR Settings on the player
          * @param vrSettings vr configuration
+         * @return - Player Settings
          */
         Settings setVRSettings(VRSettings vrSettings);
 
         /**
          * Set custom load control strategy
          * @param loadControlStrategy object implementing LoadControlStrategy interface
+         * @return - Player Settings
          */
         Settings setCustomLoadControlStrategy(Object loadControlStrategy);
       
         /**
          * Set Tunneled Audio Playback
          * @param isTunneledAudioPlayback audio tunnelling enabled
+         * @return - Player Settings
          */
         Settings setTunneledAudioPlayback(boolean isTunneledAudioPlayback);
+
+        /**
+         * Set HandleAudioBecomingNoisy - Sets whether the player should pause automatically
+         * when audio is rerouted from a headset to device speakers
+         *
+         * @param handleAudioBecomingNoisyEnabled
+         * @return - Player Settings
+         */
+        Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled);
+
+        /**
+         * Sets the maximum allowed video width and height.
+         * to set the maximum allowed video bitrate to sd resolution call:
+         * setMaxVideoSize(new PKMaxVideoSize().setMaxVideoWidth(1279).setMaxVideoHeight(719)
+         * to reset call:
+         * setMaxVideoSize(new PKMaxVideoSize().setMaxVideoWidth(Integer.MAX_VALUE).setMaxVideoHeight(Integer.MAX_VALUE)
+         *
+         * @param maxVideoSize - Max allowed video width and height
+         * @return - Player Settings
+         */
+        Settings setMaxVideoSize(@NonNull PKMaxVideoSize maxVideoSize);
+
+        /**
+         * Sets the maximum allowed video bitrate.
+         *
+         * @param maxVideoBitrate Maximum allowed video bitrate in bits per second.
+         * @return - Player Settings
+         */
+
+        Settings setMaxVideoBitrate(@NonNull Integer maxVideoBitrate);
+
+        /**
+         * Sets the maximum allowed audio bitrate
+         *
+         * @param maxAudioBitrate - maximum allowed audio bitrate in bits per second.
+         * @return - Player Settings
+         */
+        Settings setMaxAudioBitrate(@NonNull Integer maxAudioBitrate);
+
+        /**
+         * Sets the maximum allowed audio channel count.
+         *
+         * @param maxAudioChannelCount - maximum allowed audio channel count. default max = Integer.MAX_VALUE
+         * @return - Player Settings
+         */
+        Settings setMaxAudioChannelCount(int maxAudioChannelCount);
     }
 
     /**

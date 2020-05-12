@@ -73,7 +73,6 @@ public class PKMediaSource implements Parcelable {
         return this;
     }
 
-
     public boolean hasDrmParams() {
         return (drmData != null && drmData.size() > 0);
     }
@@ -109,23 +108,19 @@ public class PKMediaSource implements Parcelable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
+        if (this == o) return true;
+        if (!(o instanceof PKMediaSource)) return false;
 
         PKMediaSource that = (PKMediaSource) o;
 
-        if (!id.equals(that.id))
-            return false;
-        return url.equals(that.url);
-
+        if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
+        return getUrl() != null ? getUrl().equals(that.getUrl()) : that.getUrl() == null;
     }
 
     @Override
     public int hashCode() {
-        int result = id.hashCode();
-        result = 31 * result + url.hashCode();
+        int result = getId() != null ? getId().hashCode() : 0;
+        result = 31 * result + (getUrl() != null ? getUrl().hashCode() : 0);
         return result;
     }
 }

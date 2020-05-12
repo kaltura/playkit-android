@@ -192,7 +192,7 @@ public class AdInfo implements PKAdInfo {
 
     @Override
     public String toString() {
-        String adType = "";
+        String adType;
         if (adPodTimeOffset > 0) {
             adType = "Mid-Roll";
         } else if (adPodTimeOffset < 0) {
