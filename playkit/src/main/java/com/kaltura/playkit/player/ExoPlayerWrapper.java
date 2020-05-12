@@ -341,7 +341,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
 
         if (format == null) {
-            format = playerSettings.getPreferredMediaFormat();
+            return null;
         }
 
         PKRequestParams requestParams = sourceConfig.getRequestParams();
