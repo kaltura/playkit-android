@@ -461,9 +461,7 @@ class ExoPlayerView extends BaseExoplayerView {
     public List<Cue> getModifiedSubtitlePosition(List<Cue> cueList, PKSubtitlePosition subtitleViewPosition) {
         if (cueList != null && !cueList.isEmpty()) {
             List<Cue> newCueList = new ArrayList<>();
-
-            for (int cuePosition = 0; cuePosition < cueList.size(); cuePosition++) {
-                Cue cue = cueList.get(cuePosition);
+            for (Cue cue : cueList) {
                 if ((cue.line !=  Cue.DIMEN_UNSET || cue.position != Cue.DIMEN_UNSET)
                         && !subtitleViewPosition.isOverrideInlineCueConfig()) {
                     newCueList.add(cue);
@@ -482,7 +480,6 @@ class ExoPlayerView extends BaseExoplayerView {
                     newCueList.add(newCue);
                 }
             }
-
             return newCueList;
         }
 
