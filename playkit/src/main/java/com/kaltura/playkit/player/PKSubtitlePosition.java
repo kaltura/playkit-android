@@ -41,23 +41,23 @@ public class PKSubtitlePosition {
         this.overrideInlineCueConfig = overrideInlineCueConfig;
     }
 
-    protected Layout.Alignment getSubtitleHorizontalPosition() {
+    Layout.Alignment getSubtitleHorizontalPosition() {
         return subtitleHorizontalPosition;
     }
 
-    protected float getVerticalPositionPercentage() {
+    float getVerticalPositionPercentage() {
         return verticalPositionPercentage;
     }
 
-    protected float getHorizontalPositionPercentage() {
+    float getHorizontalPositionPercentage() {
         return horizontalPositionPercentage;
     }
 
-    protected boolean isOverrideInlineCueConfig() {
+    boolean isOverrideInlineCueConfig() {
         return overrideInlineCueConfig;
     }
 
-    protected int getLineType() {
+    int getLineType() {
         return lineType;
     }
 
