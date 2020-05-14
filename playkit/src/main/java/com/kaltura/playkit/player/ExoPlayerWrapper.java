@@ -16,7 +16,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
@@ -57,7 +56,6 @@ import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
-import com.kaltura.android.exoplayer2.util.ErrorMessageProvider;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
@@ -1269,15 +1267,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private void configureSubtitleView() {
         SubtitleView exoPlayerSubtitleView = null;
+        SubtitleStyleSettings subtitleStyleSettings = playerSettings.getSubtitleStyleSettings();
         if(exoPlayerView != null) {
+            if (subtitleStyleSettings.getSubtitlePosition() != null) {
+                exoPlayerView.setSubtitleViewPosition(subtitleStyleSettings.getSubtitlePosition());
+            }
             exoPlayerSubtitleView = exoPlayerView.getSubtitleView();
         } else {
             log.e("ExoPlayerView is not available");
         }
 
         if (exoPlayerSubtitleView != null) {
-            exoPlayerSubtitleView.setStyle(playerSettings.getSubtitleStyleSettings().toCaptionStyle());
-            exoPlayerSubtitleView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * playerSettings.getSubtitleStyleSettings().getTextSizeFraction());
+            exoPlayerSubtitleView.setStyle(subtitleStyleSettings.toCaptionStyle());
+            exoPlayerSubtitleView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * subtitleStyleSettings.getTextSizeFraction());
         } else {
             log.e("Subtitle View is not available");
         }

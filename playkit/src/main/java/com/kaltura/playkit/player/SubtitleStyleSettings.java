@@ -16,6 +16,8 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import com.kaltura.android.exoplayer2.text.CaptionStyleCompat;
 
 public class SubtitleStyleSettings {
@@ -49,6 +51,7 @@ public class SubtitleStyleSettings {
     private int subtitleEdgeColor = Color.WHITE;
     private Typeface subtitleTypeface = Typeface.DEFAULT;
     private String subtitleStyleName;
+    private PKSubtitlePosition subtitlePosition;
 
     public SubtitleStyleSettings(String subtitleStyleName) {
         if (!TextUtils.isEmpty(subtitleStyleName)) {
@@ -90,6 +93,10 @@ public class SubtitleStyleSettings {
         return subtitleStyleName;
     }
 
+    public PKSubtitlePosition getSubtitlePosition() {
+        return subtitlePosition;
+    }
+
     public SubtitleStyleSettings setTextColor(int subtitleTextColor) {
         this.subtitleTextColor = subtitleTextColor;
         return this;
@@ -110,11 +117,8 @@ public class SubtitleStyleSettings {
         return this;
     }
 
-    public SubtitleStyleSettings setEdgeType(SubtitleStyleEdgeType subtitleEdgeType) {
+    public SubtitleStyleSettings setEdgeType(@NonNull SubtitleStyleEdgeType subtitleEdgeType) {
         switch (subtitleEdgeType) {
-            case EDGE_TYPE_NONE:
-                this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_NONE;
-                break;
             case EDGE_TYPE_OUTLINE:
                 this.subtitleEdgeType = CaptionStyleCompat.EDGE_TYPE_OUTLINE;
                 break;
@@ -134,16 +138,13 @@ public class SubtitleStyleSettings {
         return this;
     }
 
-    public SubtitleStyleSettings setTextSizeFraction(SubtitleTextSizeFraction subtitleTextSizeFraction) {
+    public SubtitleStyleSettings setTextSizeFraction(@NonNull SubtitleTextSizeFraction subtitleTextSizeFraction) {
         switch (subtitleTextSizeFraction) {
             case SUBTITLE_FRACTION_50:
                 this.subtitleTextSizeFraction = fraction50;
                 break;
             case SUBTITLE_FRACTION_75:
                 this.subtitleTextSizeFraction = fraction75;
-                break;
-            case SUBTITLE_FRACTION_100:
-                this.subtitleTextSizeFraction = fraction100;
                 break;
             case SUBTITLE_FRACTION_125:
                 this.subtitleTextSizeFraction = fraction125;
@@ -161,7 +162,7 @@ public class SubtitleStyleSettings {
         return this;
     }
 
-    public SubtitleStyleSettings setTypeface(SubtitleStyleTypeface subtitleStyleTypeface) {
+    public SubtitleStyleSettings setTypeface(@NonNull SubtitleStyleTypeface subtitleStyleTypeface) {
         switch (subtitleStyleTypeface) {
             case DEFAULT:
                 subtitleTypeface = Typeface.DEFAULT;
@@ -182,6 +183,11 @@ public class SubtitleStyleSettings {
                 subtitleTypeface = Typeface.DEFAULT;
                 break;
         }
+        return this;
+    }
+
+    public SubtitleStyleSettings setSubtitlePosition(PKSubtitlePosition subtitlePosition) {
+        this.subtitlePosition = subtitlePosition;
         return this;
     }
 
