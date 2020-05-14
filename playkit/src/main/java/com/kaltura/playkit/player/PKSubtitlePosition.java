@@ -2,16 +2,21 @@ package com.kaltura.playkit.player;
 
 import android.text.Layout;
 
-import com.kaltura.android.exoplayer2.text.Cue;
 import com.kaltura.playkit.utils.Consts;
 
 public class PKSubtitlePosition {
 
-    // If `overrideInlineCueConfig` is set to true, player will ignore the existing values coming in Cue Settings
-    // and will always use the given Cue Settings
-    public PKSubtitlePosition(boolean overrideInlineCueConfig) {
-        this.overrideInlineCueConfig = overrideInlineCueConfig;
-    }
+    // Lower limit either for vertical (top to bottom) for horizontal (center to left/right)
+    private int positionLowerLimit = 10;
+
+    private int LINE_TYPE_FRACTION = 0;
+
+    private float DIMEN_UNSET = -Float.MAX_VALUE;
+
+    private int TYPE_UNSET = Integer.MIN_VALUE;
+
+    // Override the current subtitle Positioning with the In-stream subtitle text track configuration
+    private boolean overrideInlineCueConfig;
 
     // For Left to Right Language texts(LTR), Allow the subtitle view to move left (ALIGN_NORMAL), middle (ALIGN_CENTER) and right (ALIGN_OPPOSITE)
     // For Right to Left Language texts(RTL), Allow the subtitle view to move Right (ALIGN_NORMAL), middle (ALIGN_CENTER) and left (ALIGN_OPPOSITE)
@@ -19,40 +24,40 @@ public class PKSubtitlePosition {
 
     // Allow the subtitle view to move vertically (100% = 100 OR 10% = 10)
     // For vertical positions, percentage starts from Top(100) to Bottom(10)
-    private float verticalPositionPercentage = Cue.DIMEN_UNSET;
+    private float verticalPositionPercentage = DIMEN_UNSET;
 
     // Allow the subtitle view to move horizontally but with in the left-middle and middle-right viewport
     // For horizontal(Left viewport) positions, percentage starts from center(10 or 10%) to Left(100 or 100%)
     // For horizontal(Right viewport) positions, percentage starts from center(10 or 10%) to Right(100 or 100%)
-    private float horizontalPositionPercentage = Cue.DIMEN_UNSET;
+    private float horizontalPositionPercentage = DIMEN_UNSET;
 
     // The type of line, Fraction, Number, Unset. We are accepting values for Line in fraction so
     // keeping it LINE_TYPE_FRACTION. It is not exposed.
-    private int lineType = Cue.LINE_TYPE_FRACTION;
+    private int lineType = LINE_TYPE_FRACTION;
 
-    // Lower limit either for vertical (top to bottom) for horizontal (center to left/right)
-    private int positionLowerLimit = 10;
+    // If `overrideInlineCueConfig` is set to true, player will ignore the existing values coming in Cue Settings
+    // and will always use the given Cue Settings
+    public PKSubtitlePosition(boolean overrideInlineCueConfig) {
+        this.overrideInlineCueConfig = overrideInlineCueConfig;
+    }
 
-    // Override the current subtitle Positioning with the In-stream subtitle text track configuration
-    private boolean overrideInlineCueConfig;
-
-    public Layout.Alignment getSubtitleHorizontalPosition() {
+    protected Layout.Alignment getSubtitleHorizontalPosition() {
         return subtitleHorizontalPosition;
     }
 
-    public float getVerticalPositionPercentage() {
+    protected float getVerticalPositionPercentage() {
         return verticalPositionPercentage;
     }
 
-    public float getHorizontalPositionPercentage() {
+    protected float getHorizontalPositionPercentage() {
         return horizontalPositionPercentage;
     }
 
-    public boolean isOverrideInlineCueConfig() {
+    protected boolean isOverrideInlineCueConfig() {
         return overrideInlineCueConfig;
     }
 
-    public int getLineType() {
+    protected int getLineType() {
         return lineType;
     }
 
@@ -110,7 +115,7 @@ public class PKSubtitlePosition {
 
         setHorizontalPositionLevel(horizontalPosition, horizontalAlignment);
         setVerticalPositionLevel(verticalPosition);
-        lineType = Cue.LINE_TYPE_FRACTION;
+        lineType = LINE_TYPE_FRACTION;
         return this;
     }
 
@@ -126,8 +131,8 @@ public class PKSubtitlePosition {
 
         setVerticalPositionLevel(verticalPosition);
         subtitleHorizontalPosition = Layout.Alignment.ALIGN_CENTER;
-        horizontalPositionPercentage = Cue.DIMEN_UNSET;
-        lineType = Cue.LINE_TYPE_FRACTION;
+        horizontalPositionPercentage = DIMEN_UNSET;
+        lineType = LINE_TYPE_FRACTION;
         return this;
     }
 
@@ -152,9 +157,9 @@ public class PKSubtitlePosition {
         }
 
         subtitleHorizontalPosition = null;
-        verticalPositionPercentage = Cue.DIMEN_UNSET;
-        horizontalPositionPercentage = Cue.DIMEN_UNSET;
-        lineType = Cue.TYPE_UNSET;
+        verticalPositionPercentage = DIMEN_UNSET;
+        horizontalPositionPercentage = DIMEN_UNSET;
+        lineType = TYPE_UNSET;
         return this;
     }
 
@@ -173,9 +178,9 @@ public class PKSubtitlePosition {
     private float checkPositionPercentageLimit(int positionPercentage) {
         float position;
         if (positionPercentage < positionLowerLimit || positionPercentage > Consts.DEFAULT_MAX_SUBTITLE_POSITION) {
-            position = Cue.DIMEN_UNSET;
+            position = DIMEN_UNSET;
         } else {
-            position = (float) positionPercentage / Consts.PERCENT_FACTOR_FLOAT;
+            position = positionPercentage / Consts.PERCENT_FACTOR;
         }
         return position;
     }

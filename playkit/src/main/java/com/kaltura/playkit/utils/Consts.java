@@ -72,9 +72,7 @@ public class Consts {
      */
     public static final int TRACK_UNSELECTED_FLAG = 0;
 
-    public static final double PERCENT_FACTOR = 100.0;
-
-    public static final float PERCENT_FACTOR_FLOAT = 100F;
+    public static final float PERCENT_FACTOR = 100F;
 
     public static final int DEFAULT_MAX_SUBTITLE_POSITION = 100;
 
