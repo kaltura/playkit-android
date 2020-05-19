@@ -183,7 +183,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
-        sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+        if (!isPlayerReleased && player != null && trackSelectionHelper != null) {
+            sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+        }
     }
 
     private void initializePlayer() {
@@ -1059,14 +1061,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public PlaybackInfo getPlaybackInfo() {
-        if (bandwidthMeter == null) {
-            log.w("Attempt to invoke getBitrateEstimate() on null instance of bandwidthMeter in getPlaybackInfo()");
-            return null;
-        }
-
-        if (trackSelectionHelper == null) {
-            log.w("Attempt to invoke getPlaybackInfo() on null instance of trackSelectionHelper");
-            return null;
+        if (bandwidthMeter == null || trackSelectionHelper == null) {
+            return new PlaybackInfo(0L, 0L, 0L, 0L, 0L);
         }
 
         return new PlaybackInfo(trackSelectionHelper.getCurrentVideoBitrate(),
