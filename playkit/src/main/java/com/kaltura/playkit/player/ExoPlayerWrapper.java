@@ -949,13 +949,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
-        if (assertTrackSelectionIsNotNull("overrideMediaDefaultABR()") && (minVideoBitrate > maxVideoBitrate || maxVideoBitrate <= 0)) {
+        if (trackSelectionHelper == null) {
+            log.w("Attempt to invoke 'overrideMediaDefaultABR()' on null instance of the tracksSelectionHelper");
+            return;
+        }
+
+        if (minVideoBitrate > maxVideoBitrate || maxVideoBitrate <= 0) {
             minVideoBitrate = Long.MIN_VALUE;
             maxVideoBitrate = Long.MAX_VALUE;
             String errorMessage = "given maxVideoBitrate is not greater than the minVideoBitrate";
             sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
-            trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
         }
+
+        trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
     }
 
     private void sendTrackSelectionError(String uniqueId, IllegalArgumentException invalidUniqueIdException) {
