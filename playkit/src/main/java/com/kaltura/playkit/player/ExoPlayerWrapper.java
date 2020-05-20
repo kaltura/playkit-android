@@ -884,12 +884,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             savePlayerPosition();
             player.release();
             player = null;
+            if (bandwidthMeter != null) {
+                bandwidthMeter.removeEventListener(this);
+            }
             if (assertTrackSelectionIsNotNull("release()")) {
                 trackSelectionHelper.release();
                 trackSelectionHelper = null;
-            }
-            if (bandwidthMeter != null) {
-                bandwidthMeter.removeEventListener(this);
             }
         }
         isPlayerReleased = true;
