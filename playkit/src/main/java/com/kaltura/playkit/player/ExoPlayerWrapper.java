@@ -888,6 +888,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 trackSelectionHelper.release();
                 trackSelectionHelper = null;
             }
+            if (bandwidthMeter != null) {
+                bandwidthMeter.removeEventListener(this);
+            }
         }
         isPlayerReleased = true;
         shouldRestorePlayerToPreviousState = true;
@@ -897,6 +900,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void restore() {
         log.v("restore");
         if (player == null) {
+            if (bandwidthMeter != null) {
+                bandwidthMeter.addEventListener(mainHandler, this);
+            }
             initializePlayer();
             setVolume(lastKnownVolume);
             setPlaybackRate(lastKnownPlaybackRate);
