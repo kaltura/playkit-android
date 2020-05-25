@@ -26,6 +26,7 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.ExoPlayerWrapper;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.MediaSupport;
@@ -626,6 +627,14 @@ public class PlayKitProfiler {
                     );
                 }
 
+                final ABRSettings abrSettings = playerSettings.getAbrSettings();
+                if (abrSettings != null) {
+                    log("PlayerAbrSettings",
+                            field("initialBitrateEstimate", abrSettings.getInitialBitrateEstimate()),
+                            field("minVideoBitrate", abrSettings.getMinVideoBitrate()),
+                            field("maxVideoBitrate", abrSettings.getMaxVideoBitrate())
+                    );
+                }
 
                 logExperiments();
             }

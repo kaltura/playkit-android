@@ -109,6 +109,11 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
+    public void onIsPlayingChanged(EventTime eventTime, boolean isPlaying) {
+        log("IsPlayingChanged", field("isPlaying", isPlaying));
+    }
+
+    @Override
     public void onPlayerStateChanged(EventTime eventTime, boolean playWhenReady, int playbackState) {
         String state;
         switch (playbackState) {
