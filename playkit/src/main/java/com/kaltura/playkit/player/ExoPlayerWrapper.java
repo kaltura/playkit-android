@@ -56,7 +56,6 @@ import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
-import com.kaltura.android.exoplayer2.util.ErrorMessageProvider;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
@@ -281,15 +280,33 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         trackSelectionHelper.applyPlayerSettings(playerSettings);
 
         MediaSource mediaSource = buildExoMediaSource(sourceConfig);
-        profiler.onPrepareStarted(sourceConfig);
-        boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
-        player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
 
-        changeState(PlayerState.LOADING);
+        if (mediaSource != null) {
+            profiler.onPrepareStarted(sourceConfig);
+            boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
+            player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
 
-        if (playerSettings.getSubtitleStyleSettings() != null) {
-            configureSubtitleView();
+            changeState(PlayerState.LOADING);
+
+            if (playerSettings.getSubtitleStyleSettings() != null) {
+                configureSubtitleView();
+            }
+        } else {
+            sendPrepareSourceError(sourceConfig);
         }
+    }
+
+    private void sendPrepareSourceError(@NonNull PKMediaSourceConfig sourceConfig) {
+        String errorMessage = "Media Error";
+        if (sourceConfig == null) {
+            errorMessage += " sourceConfig == null";
+        } else if (sourceConfig.mediaSource == null) {
+            errorMessage += " sourceConfig.mediaSource == null";
+        } else {
+            errorMessage += " source = " + sourceConfig.mediaSource.getUrl() + " format = " + sourceConfig.mediaSource.getMediaFormat();
+        }
+        currentError = new PKError(PKPlayerErrorType.SOURCE_ERROR, PKError.Severity.Fatal, errorMessage, new IllegalArgumentException(errorMessage));
+        eventListener.onEvent(PlayerEvent.Type.ERROR);
     }
 
     private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig) {
@@ -322,7 +339,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
 
         if (format == null) {
-            // TODO: error?
             return null;
         }
 
@@ -353,7 +369,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 break;
 
             default:
-                throw new IllegalStateException("Unsupported type: " + format);
+                throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
         }
         return mediaSource;
     }
@@ -588,7 +604,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         log.d("onPlayerError error type => " + error.type);
         if (isBehindLiveWindow(error) && sourceConfig != null) {
             log.d("onPlayerError BehindLiveWindowException received, re-preparing player");
-            player.prepare(buildExoMediaSource(sourceConfig), true, false);
+            MediaSource mediaSource = buildExoMediaSource(sourceConfig);
+            if (mediaSource != null) {
+                player.prepare(mediaSource, true, false);
+            } else {
+                sendPrepareSourceError(sourceConfig);
+            }
             return;
         }
 
@@ -1267,15 +1288,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private void configureSubtitleView() {
         SubtitleView exoPlayerSubtitleView = null;
+        SubtitleStyleSettings subtitleStyleSettings = playerSettings.getSubtitleStyleSettings();
         if(exoPlayerView != null) {
+            if (subtitleStyleSettings.getSubtitlePosition() != null) {
+                exoPlayerView.setSubtitleViewPosition(subtitleStyleSettings.getSubtitlePosition());
+            }
             exoPlayerSubtitleView = exoPlayerView.getSubtitleView();
         } else {
             log.e("ExoPlayerView is not available");
         }
 
         if (exoPlayerSubtitleView != null) {
-            exoPlayerSubtitleView.setStyle(playerSettings.getSubtitleStyleSettings().toCaptionStyle());
-            exoPlayerSubtitleView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * playerSettings.getSubtitleStyleSettings().getTextSizeFraction());
+            exoPlayerSubtitleView.setStyle(subtitleStyleSettings.toCaptionStyle());
+            exoPlayerSubtitleView.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * subtitleStyleSettings.getTextSizeFraction());
         } else {
             log.e("Subtitle View is not available");
         }
