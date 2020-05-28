@@ -831,8 +831,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (window == null) {
             return TIME_UNSET;
         }
-
-        return window.presentationStartTimeMs;
+        return window.windowStartTimeMs;
     }
 
     @Override

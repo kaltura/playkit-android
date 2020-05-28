@@ -52,6 +52,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public long getCurrentProgramStartTime() {
+        return player.getCurrentProgramStartTime();
+    }
+
+    @Override
     public void seekTo(long position) {
         player.seekTo(position);
     }
