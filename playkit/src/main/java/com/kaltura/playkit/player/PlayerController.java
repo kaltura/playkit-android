@@ -386,14 +386,6 @@ public class PlayerController implements Player {
         return TIME_UNSET;
     }
 
-    @Override
-    public long getCurrentProgramStartTime() {
-        if (assertPlayerIsNotNull("getCurrentProgramStartTime()")) {
-            return player.getProgramStartTime();
-        }
-        return TIME_UNSET;
-    }
-
     public long getBufferedPosition() {
         log.v("getBufferedPosition");
         if (assertPlayerIsNotNull("getBufferedPosition()")) {
