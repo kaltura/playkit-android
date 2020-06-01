@@ -1067,8 +1067,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public PlaybackInfo getPlaybackInfo() {
-        if (bandwidthMeter == null || trackSelectionHelper == null) {
-            return new PlaybackInfo(0L, 0L, 0L, 0L, 0L);
+        if (bandwidthMeter == null) {
+            log.e("BandwidthMeter is null");
+            return null;
+        }
+
+        if (trackSelectionHelper == null) {
+            log.e("TrackSelectionHelper is null");
+            return null;
         }
 
         return new PlaybackInfo(trackSelectionHelper.getCurrentVideoBitrate(),
