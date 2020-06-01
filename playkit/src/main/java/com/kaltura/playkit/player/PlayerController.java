@@ -778,7 +778,7 @@ public class PlayerController implements Player {
                         break;
                     case PLAYBACK_INFO_UPDATED:
                         if (player.getPlaybackInfo() == null) {
-                            log.e("PLAYBACK_INFO_UPDATED event received, but can not send event.");
+                            log.e("PLAYBACK_INFO_UPDATED event payload == null, ignoring event");
                             return;
                         }
                         event = new PlayerEvent.PlaybackInfoUpdated(player.getPlaybackInfo());
