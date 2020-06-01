@@ -183,7 +183,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public void onBandwidthSample(int elapsedMs, long bytes, long bitrate) {
-        sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+        if (!isPlayerReleased && player != null && trackSelectionHelper != null) {
+            sendEvent(PlayerEvent.Type.PLAYBACK_INFO_UPDATED);
+        }
     }
 
     private void initializePlayer() {
@@ -689,15 +691,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         log.d("onTracksChanged");
         //if onOnTracksChanged happened when application went background, do not update the tracks.
-        if (trackSelectionHelper == null) {
-            return;
-        }
-        //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
-        if (shouldGetTracksInfo) {
-            shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(trackSelections);
-        }
+        if (assertTrackSelectionIsNotNull("onTracksChanged()")) {
+            //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
+            if (shouldGetTracksInfo) {
+                shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(trackSelections);
+            }
 
-        trackSelectionHelper.notifyAboutTrackChange(trackSelections);
+            trackSelectionHelper.notifyAboutTrackChange(trackSelections);
+        }
     }
 
     @Override
@@ -882,8 +883,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             savePlayerPosition();
             player.release();
             player = null;
-            trackSelectionHelper.release();
-            trackSelectionHelper = null;
+            if (bandwidthMeter != null) {
+                bandwidthMeter.removeEventListener(this);
+            }
+            if (assertTrackSelectionIsNotNull("release()")) {
+                trackSelectionHelper.release();
+                trackSelectionHelper = null;
+            }
         }
         isPlayerReleased = true;
         shouldRestorePlayerToPreviousState = true;
@@ -893,6 +899,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void restore() {
         log.v("restore");
         if (player == null) {
+            if (bandwidthMeter != null) {
+                bandwidthMeter.addEventListener(mainHandler, this);
+            }
             initializePlayer();
             setVolume(lastKnownVolume);
             setPlaybackRate(lastKnownPlaybackRate);
@@ -936,22 +945,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public void changeTrack(String uniqueId) {
-        if (trackSelectionHelper == null) {
-            log.w("Attempt to invoke 'changeTrack()' on null instance of the TracksSelectionHelper");
-            return;
-        }
-
-        try {
-            trackSelectionHelper.changeTrack(uniqueId);
-        } catch (IllegalArgumentException ex) {
-            sendTrackSelectionError(uniqueId, ex);
+        if (assertTrackSelectionIsNotNull("changeTrack()")) {
+            try {
+                trackSelectionHelper.changeTrack(uniqueId);
+            } catch (IllegalArgumentException ex) {
+                sendTrackSelectionError(uniqueId, ex);
+            }
         }
     }
 
     @Override
     public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
         if (trackSelectionHelper == null) {
-            log.w("Attempt to invoke 'overrideMediaDefaultABR()' on null instance of the TracksSelectionHelper");
+            log.w("Attempt to invoke 'overrideMediaDefaultABR()' on null instance of the tracksSelectionHelper");
             return;
         }
 
@@ -961,6 +967,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             String errorMessage = "given maxVideoBitrate is not greater than the minVideoBitrate";
             sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
         }
+
         trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
     }
 
@@ -1059,6 +1066,16 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public PlaybackInfo getPlaybackInfo() {
+        if (bandwidthMeter == null) {
+            log.e("BandwidthMeter is null");
+            return null;
+        }
+
+        if (trackSelectionHelper == null) {
+            log.e("TrackSelectionHelper is null");
+            return null;
+        }
+
         return new PlaybackInfo(trackSelectionHelper.getCurrentVideoBitrate(),
                 trackSelectionHelper.getCurrentAudioBitrate(),
                 bandwidthMeter.getBitrateEstimate(),
@@ -1080,7 +1097,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         lastKnownVolume = Consts.DEFAULT_VOLUME;
         lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
         lastSelectedTrackIds = new String[]{TrackSelectionHelper.NONE, TrackSelectionHelper.NONE, TrackSelectionHelper.NONE};
-        if (trackSelectionHelper != null) {
+        if (assertTrackSelectionIsNotNull("stop()")) {
             trackSelectionHelper.stop();
         }
 
@@ -1138,7 +1155,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 }
                 sendDistinctEvent(PlayerEvent.Type.TRACKS_AVAILABLE);
                 if (exoPlayerView != null) {
-                    if (trackSelectionHelper != null && trackSelectionHelper.isAudioOnlyStream()) {
+                    if (assertTrackSelectionIsNotNull("initTracksInfoListener()") && trackSelectionHelper.isAudioOnlyStream()) {
                         exoPlayerView.hideVideoSurface();
                     }
 
@@ -1188,7 +1205,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public BaseTrack getLastSelectedTrack(int renderType) {
-        return trackSelectionHelper.getLastSelectedTrack(renderType);
+        if (assertTrackSelectionIsNotNull("getLastSelectedTrack()")) {
+            return trackSelectionHelper.getLastSelectedTrack(renderType);
+        }
+        return null;
     }
 
     @Override
@@ -1228,13 +1248,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private void selectPreferredTracksLanguage(PKTracks tracksReady) {
-
-        for (int trackType : new int[]{TRACK_TYPE_AUDIO, TRACK_TYPE_TEXT}) {
-            String preferredLanguageId = trackSelectionHelper.getPreferredTrackId(trackType);
-            if (preferredLanguageId != null) {
-                log.d("preferred language selected for track type = " + trackType + " preferredLanguageId = " + preferredLanguageId);
-                changeTrack(preferredLanguageId);
-                updateDefaultSelectionIndex(tracksReady, trackType, preferredLanguageId);
+        if (assertTrackSelectionIsNotNull("selectPreferredTracksLanguage()")) {
+            for (int trackType : new int[]{TRACK_TYPE_AUDIO, TRACK_TYPE_TEXT}) {
+                String preferredLanguageId = trackSelectionHelper.getPreferredTrackId(trackType);
+                if (preferredLanguageId != null) {
+                    log.d("preferred language selected for track type = " + trackType + " preferredLanguageId = " + preferredLanguageId);
+                    changeTrack(preferredLanguageId);
+                    updateDefaultSelectionIndex(tracksReady, trackType, preferredLanguageId);
+                }
             }
         }
     }
@@ -1312,6 +1333,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
         String nullPlayerMsgFormat = "Attempt to invoke '%s' on null instance of the player engine";
         log.w(String.format(nullPlayerMsgFormat, methodName));
+        return false;
+    }
+
+    private boolean assertTrackSelectionIsNotNull(String methodName) {
+        if (trackSelectionHelper != null) {
+            return true;
+        }
+        String nullTrackSelectionMsgFormat = "Attempt to invoke '%s' on null instance of trackSelectionHelper";
+        log.w(String.format(nullTrackSelectionMsgFormat, methodName));
         return false;
     }
 }
