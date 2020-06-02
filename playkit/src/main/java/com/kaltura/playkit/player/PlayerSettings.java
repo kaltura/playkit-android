@@ -33,6 +33,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
     private VideoCodecSettings preferredVideoCodecSettings = new VideoCodecSettings();
+    private AudioCodecSettings preferredAudioCodecSettings = new AudioCodecSettings();
     private boolean isTunneledAudioPlayback;
     private boolean handleAudioBecomingNoisyEnabled;
     private Integer maxVideoBitrate;
@@ -145,6 +146,10 @@ public class PlayerSettings implements Player.Settings {
 
     public VideoCodecSettings getPreferredVideoCodecSettings() {
         return preferredVideoCodecSettings;
+    }
+
+    public AudioCodecSettings getPreferredAudioCodecSettings() {
+        return preferredAudioCodecSettings;
     }
 
     public Object getCustomLoadControlStrategy() {
@@ -301,6 +306,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setPreferredVideoCodecSettings(@NonNull VideoCodecSettings preferredVideoCodecSettings) {
         this.preferredVideoCodecSettings = preferredVideoCodecSettings;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setPreferredAudioCodecSettings(@NonNull AudioCodecSettings preferredAudioCodecSettings) {
+        this.preferredAudioCodecSettings = preferredAudioCodecSettings;
         return this;
     }
 

@@ -92,6 +92,7 @@ class TrackSelectionHelper {
     private List<AudioTrack> audioTracks = new ArrayList<>();
     private List<TextTrack> textTracks = new ArrayList<>();
     private Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
+    private Map<PKAudioCodec,List<AudioTrack>> audioTracksCodecsMap = new HashMap<>();
 
     private String[] lastSelectedTrackIds;
     private String[] requestedChangeTrackIds;
@@ -217,12 +218,29 @@ class TrackSelectionHelper {
                                 }
                                 break;
                             case TRACK_TYPE_AUDIO:
+                                PKAudioCodec currentAudioTrackCodec = null;
+                                AudioTrack currentAudioTrack = null;
+
                                 if (format.language == null && format.codecs == null) {
                                     if (playerSettings != null && playerSettings.mpgaAudioFormatEnabled() && format.id != null && format.id.matches("\\d+/\\d+")) {
-                                        audioTracks.add(new AudioTrack(uniqueId, format.id, format.label, format.bitrate, format.channelCount, format.selectionFlags, false, PKAudioCodec.AAC, AUDIO_AAC));
+                                        currentAudioTrackCodec = PKAudioCodec.AAC;
+                                        currentAudioTrack = new AudioTrack(uniqueId, format.id, format.label, format.bitrate, format.channelCount, format.selectionFlags, false, currentAudioTrackCodec, AUDIO_AAC);
+                                        audioTracks.add(currentAudioTrack);
                                     }
                                 } else {
-                                    audioTracks.add(new AudioTrack(uniqueId, getLanguageFromFormat(format), format.label, format.bitrate, format.channelCount, format.selectionFlags, false, getAudioCodec(format), format.codecs));
+                                    currentAudioTrackCodec = getAudioCodec(format);
+                                    currentAudioTrack = new AudioTrack(uniqueId, getLanguageFromFormat(format), format.label, format.bitrate, format.channelCount, format.selectionFlags, false, currentAudioTrackCodec, format.codecs);
+                                    audioTracks.add(currentAudioTrack);
+                                }
+
+
+                                if (currentAudioTrack != null && currentAudioTrackCodec != null) {
+                                    if (!audioTracksCodecsMap.containsKey(currentAudioTrackCodec)) {
+                                        audioTracksCodecsMap.put(currentAudioTrackCodec, new ArrayList<>());
+                                    }
+                                    if (audioTracksCodecsMap.get(currentAudioTrackCodec) != null) {
+                                        audioTracksCodecsMap.get(currentAudioTrackCodec).add(currentAudioTrack);
+                                    }
                                 }
                                 break;
                             case TRACK_TYPE_TEXT:
@@ -311,8 +329,6 @@ class TrackSelectionHelper {
                 return videoTracksCodecsMap.get(videoCodecForPlayback);
             } else if ((!atLeastOneCodecSupportedInHardware  || preferredVideoCodecSettings.isAllowSoftwareDecoder()) && isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, true)) {
                 return videoTracksCodecsMap.get(videoCodecForPlayback);
-            } else {
-                continue;
             }
         }
 
@@ -356,8 +372,6 @@ class TrackSelectionHelper {
                     videoTracks.add(codecVideoTrack);
                 } else if ((!atleastOneCodecSupportedInHardware || playerSettings.getPreferredVideoCodecSettings().isAllowSoftwareDecoder()) && isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, true)) {
                     videoTracks.add(codecVideoTrack);
-                } else {
-                    continue;
                 }
             }
         }
@@ -367,6 +381,7 @@ class TrackSelectionHelper {
      * Filter audioTracks, so that if it contain any sort of adaptive streams
      * PKTracks will expose only adaptive option
      * and hide all the bitrate variants.
+     * if app prefers to allow audio track selection by codec type it will return all available tracks by codec by audio groups
      */
     private ArrayList<AudioTrack> filterAdaptiveAudioTracks() {
         ArrayList<AudioTrack> filteredAudioTracks = new ArrayList<>();
@@ -386,6 +401,21 @@ class TrackSelectionHelper {
                 filteredAudioTracks.add(audioTrack);
                 currentGroup = -1;
             }
+        }
+
+        AudioCodecSettings preferredAudioCodecSettings = playerSettings.getPreferredAudioCodecSettings();
+        if (preferredAudioCodecSettings.getAllowAudioMixedMimeTypes()) {
+            return filteredAudioTracks;
+        }
+
+        if (audioTracksCodecsMap.containsKey(PKAudioCodec.E_AC3)) {
+            return  new ArrayList<>(audioTracksCodecsMap.get(PKAudioCodec.E_AC3));
+        } else if (audioTracksCodecsMap.containsKey(PKAudioCodec.AC3)) {
+            return  new ArrayList<>(audioTracksCodecsMap.get(PKAudioCodec.AC3));
+        } else if (audioTracksCodecsMap.containsKey(PKAudioCodec.OPUS)) {
+            return  new ArrayList<>(audioTracksCodecsMap.get(PKAudioCodec.OPUS));
+        } else if (audioTracksCodecsMap.containsKey(PKAudioCodec.AAC)) {
+            return  new ArrayList<>(audioTracksCodecsMap.get(PKAudioCodec.AAC));
         }
 
         return filteredAudioTracks;

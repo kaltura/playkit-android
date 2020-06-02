@@ -22,6 +22,7 @@ import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.VideoCodecSettings;
+import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
 
@@ -221,6 +222,12 @@ public interface Player {
          * @param videoCodecSettings Use {@link VideoCodecSettings}
          */
         Settings setPreferredVideoCodecSettings(@NonNull VideoCodecSettings videoCodecSettings);
+
+        /**
+         * Set Preferred codec for audio track
+         * @param audioCodecSettings Use {@link AudioCodecSettings}
+         */
+        Settings setPreferredAudioCodecSettings(@NonNull AudioCodecSettings audioCodecSettings);
 
         /**
          * Set custom load control strategy
