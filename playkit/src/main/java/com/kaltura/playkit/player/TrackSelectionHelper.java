@@ -431,6 +431,7 @@ class TrackSelectionHelper {
         if (textTracks.isEmpty()) {
             return;
         }
+        
         String uniqueId = getUniqueId(TRACK_TYPE_TEXT, 0, TRACK_DISABLED);
         textTracks.add(0, new TextTrack(uniqueId, NONE, NONE, -1));
     }
