@@ -695,6 +695,7 @@ public class PlayerController implements Player {
         long position;
         long bufferPosition;
         long duration;
+        long programStartTime;
 
         if (player == null || player.getView() == null) {
             return;
@@ -703,11 +704,12 @@ public class PlayerController implements Player {
         position = player.getCurrentPosition();
         bufferPosition = player.getBufferedPosition();
         duration = player.getDuration();
+        programStartTime = player.getProgramStartTime();
 
         if (!isAdDisplayed()) {
             log.v("updateProgress new position/duration = " + position + "/" + duration);
             if (eventListener != null && position > 0 && duration > 0) {
-                eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, bufferPosition, duration));
+                eventListener.onEvent(new PlayerEvent.PlayheadUpdated(position, bufferPosition, programStartTime, duration));
             }
         }
         // Cancel any pending updates and schedule a new one if necessary.
