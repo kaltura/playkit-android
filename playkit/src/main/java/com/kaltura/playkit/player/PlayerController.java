@@ -694,9 +694,9 @@ public class PlayerController implements Player {
         //log.d("Start updateProgress");
         long position;
         long bufferPosition;
-        long duration;
         long programStartTime;
-
+        long duration;
+        
         if (player == null || player.getView() == null) {
             return;
         }
