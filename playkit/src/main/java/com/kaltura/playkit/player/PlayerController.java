@@ -703,8 +703,8 @@ public class PlayerController implements Player {
 
         position = player.getCurrentPosition();
         bufferPosition = player.getBufferedPosition();
-        duration = player.getDuration();
         programStartTime = player.getProgramStartTime();
+        duration = player.getDuration();
 
         if (!isAdDisplayed()) {
             log.v("updateProgress new position/duration = " + position + "/" + duration);
