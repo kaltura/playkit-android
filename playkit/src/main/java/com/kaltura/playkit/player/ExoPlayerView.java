@@ -37,6 +37,7 @@ import com.kaltura.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.android.exoplayer2.video.VideoListener;
 import com.kaltura.playkit.PKLog;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -58,6 +59,7 @@ class ExoPlayerView extends BaseExoplayerView {
     private Player.EventListener playerEventListener;
     private int textureViewRotation;
     private @AspectRatioFrameLayout.ResizeMode int resizeMode;
+    private PKSubtitlePosition subtitleViewPosition;
     private boolean isVideoViewVisible;
 
     ExoPlayerView(Context context) {
@@ -318,6 +320,11 @@ class ExoPlayerView extends BaseExoplayerView {
 
         @Override
         public void onCues(List<Cue> cues) {
+
+            if (subtitleViewPosition != null) {
+                cues = getModifiedSubtitlePosition(cues, subtitleViewPosition);
+            }
+
             if (subtitleView != null) {
                 subtitleView.onCues(cues);
             }
@@ -415,6 +422,11 @@ class ExoPlayerView extends BaseExoplayerView {
         }
     }
 
+    @Override
+    public void setSubtitleViewPosition(PKSubtitlePosition subtitleViewPosition) {
+        this.subtitleViewPosition = subtitleViewPosition;
+    }
+
     public static @AspectRatioFrameLayout.ResizeMode int getExoPlayerAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         @AspectRatioFrameLayout.ResizeMode int exoPlayerAspectRatioResizeMode;
         switch(resizeMode) {
@@ -436,6 +448,42 @@ class ExoPlayerView extends BaseExoplayerView {
                 break;
         }
         return exoPlayerAspectRatioResizeMode;
+    }
+
+    /**
+     * Creates new cue configuration if `isIgnoreCueSettings` is set to true by application
+     * Checks if the application wants to ignore the in-stream CueSettings otherwise goes with existing Cue configuration
+     *
+     * @param cueList cue list coming in stream
+     * @param subtitleViewPosition subtitle view position configuration set by application
+     * @return List of modified Cues
+     */
+    public List<Cue> getModifiedSubtitlePosition(List<Cue> cueList, PKSubtitlePosition subtitleViewPosition) {
+        if (cueList != null && !cueList.isEmpty()) {
+            List<Cue> newCueList = new ArrayList<>();
+            for (Cue cue : cueList) {
+                if ((cue.line !=  Cue.DIMEN_UNSET || cue.position != Cue.DIMEN_UNSET)
+                        && !subtitleViewPosition.isOverrideInlineCueConfig()) {
+                    newCueList.add(cue);
+                    continue;
+                }
+                CharSequence text = cue.text;
+                if (text != null) {
+                    Cue newCue = new Cue(text,
+                            subtitleViewPosition.getSubtitleHorizontalPosition(),
+                            subtitleViewPosition.getVerticalPositionPercentage(), // line and line type are dependent
+                            subtitleViewPosition.getLineType(),
+                            cue.lineAnchor,
+                            cue.position,
+                            cue.positionAnchor,
+                            subtitleViewPosition.getHorizontalPositionPercentage());
+                    newCueList.add(newCue);
+                }
+            }
+            return newCueList;
+        }
+
+        return cueList;
     }
 }
 

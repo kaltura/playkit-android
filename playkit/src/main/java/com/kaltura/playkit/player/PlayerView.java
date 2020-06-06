@@ -44,6 +44,8 @@ public abstract class PlayerView extends FrameLayout {
 
     public void setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {}
 
+    public void setSubtitleViewPosition(PKSubtitlePosition subtitleViewPosition) {}
+
     /**
      * Method call is being handled from update the video view(ExoPlayerWrapper) from client app
      * @param isVisible videoSurface visibility

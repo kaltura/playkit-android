@@ -15,7 +15,6 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.C;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -355,9 +354,9 @@ public interface Player {
     long getPositionInWindowMs();
 
     /**
-     * The current program time is milliseconds since the epoch, or {@link Consts#TIME_UNSET} if not set.
+     * The current program time in milliseconds since the epoch, or {@link Consts#TIME_UNSET} if not set.
      * This value is derived from the attribute availabilityStartTime in DASH or the tag EXT-X-PROGRAM-DATE-TIME in HLS.
-     * @return The current program time is milliseconds since the epoch, or {@link Consts#TIME_UNSET} if not set.
+     * @return The current program time in milliseconds since the epoch, or {@link Consts#TIME_UNSET} if not set.
      */
     long getCurrentProgramTime();
 
