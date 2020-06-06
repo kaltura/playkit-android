@@ -484,9 +484,8 @@ public class PlayKitProfiler {
             @Override
             public void newSession(final String sessionId, PlayerSettings playerSettings) {
 
-                pkLog.e("New session " + sessionId);
-
-
+                pkLog.d("New session " + sessionId);
+                
                 if (PlayKitProfiler.this.sessionId != null) {
                     // close current session
                     closeSession();
