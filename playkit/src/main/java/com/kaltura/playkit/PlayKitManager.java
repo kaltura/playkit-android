@@ -15,7 +15,9 @@ package com.kaltura.playkit;
 import android.content.Context;
 import androidx.annotation.Nullable;
 
+import com.google.gson.Gson;
 import com.kaltura.playkit.player.MediaSupport;
+import com.kaltura.playkit.profiler.PlayKitProfiler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,10 +58,11 @@ public class PlayKitManager {
     public static Player loadPlayer(Context context, @Nullable PKPluginConfigs pluginConfigs, MessageBus messageBus) {
 
         MediaSupport.initializeDrm(context, null);
+        Gson gson = new Gson();
+        final ProfilerConfig profilerConfig = gson.fromJson("{\"postURL\": \"https://dtvqq1tbxf.execute-api.us-east-1.amazonaws.com/default/profilerLogCollector\", \"sendPercentage\":  100}", ProfilerConfig.class);
+        PlayKitProfiler.init(context, profilerConfig);
 
-        if (shouldSendDeviceCapabilitiesReport) {
-            PKDeviceCapabilities.maybeSendReport(context);
-        }
+        PKDeviceCapabilities.maybeSendReport(context);
 
         PlayerLoader playerLoader = new PlayerLoader(context, messageBus);
         playerLoader.load(pluginConfigs != null ? pluginConfigs : new PKPluginConfigs());
@@ -67,13 +70,14 @@ public class PlayKitManager {
     }
 
     public static Player loadPlayer(Context context, @Nullable PKPluginConfigs pluginConfigs) {
-
         return loadPlayer(context, pluginConfigs, null);
     }
 
+    public static final class ProfilerConfig {
+        public String postURL;
+        public float sendPercentage;
 
-    public static void disableDeviceCapabilitiesReport() {
-        shouldSendDeviceCapabilitiesReport = false;
+        private ProfilerConfig() {}
     }
 }
 

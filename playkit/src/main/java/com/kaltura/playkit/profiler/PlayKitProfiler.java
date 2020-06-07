@@ -13,11 +13,9 @@ import android.util.DisplayMetrics;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
@@ -25,6 +23,7 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlayKitManager;
+import com.kaltura.playkit.PlayKitManager.ProfilerConfig;
 import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.player.ExoPlayerWrapper;
 import com.kaltura.playkit.player.MediaSupport;
@@ -120,12 +119,7 @@ public class PlayKitProfiler {
      * Initialize the static part of the profiler -- load the config and store it,
      * create IO thread and handler. Must be called by the app to enable the profiler.
      */
-    @SuppressWarnings("unused") // Called by app
-    public static void init(Context context, String configToken) {
-        init(context, configToken, false);
-    }
-
-    public static void init(Context context, String configToken, boolean waitForConfig) {
+    public static void init(Context context, ProfilerConfig config) {
 
         // This only has to happen once.
         if (initialized) {
@@ -145,7 +139,7 @@ public class PlayKitProfiler {
             handlerThread.start();
             ioHandler = new Handler(handlerThread.getLooper());
 
-            ioHandler.post(() -> downloadConfig(configToken));
+            ioHandler.post(() -> applyConfig(config));
 
             initMembers(appContext);
 
@@ -170,16 +164,6 @@ public class PlayKitProfiler {
                 }
                 return null;
             });
-
-            if (waitForConfig) {
-                while (!configLoaded) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        pkLog.d("waitForConfig interrupted");
-                    }
-                }
-            }
         }
     }
 
@@ -270,34 +254,10 @@ public class PlayKitProfiler {
         return json;
     }
 
-    private static void downloadConfig(String configToken) {
-        final byte[] bytes;
-
-        // Download
-        try {
-            bytes = Utils.executeGet(CONFIG_BASE_URL + configToken + ".json", null);
-
-            if (bytes.length == 0) {
-                pkLog.w("Nothing returned from executeGet");
-                return;
-            }
-
-            parseConfig(bytes);
-
-        } catch (IOException e) {
-            pkLog.w("Failed to download config", e);
-        }
-    }
-
-    private static void parseConfig(byte[] bytes) {
-        try {
-            final ConfigFile configFile = new Gson().fromJson(new String(bytes), ConfigFile.class);
-//            postURL = configFile.postURL;
-//            sendPercentage = configFile.sendPercentage;
-            configLoaded = true;
-        } catch (JsonParseException e) {
-            pkLog.e("Failed to parse config", e);
-        }
+    private static void applyConfig(ProfilerConfig config) {
+        postURL = config.postURL;
+        sendPercentage = config.sendPercentage;
+        configLoaded = true;
     }
 
     private void sendLogChunk() {
@@ -485,7 +445,7 @@ public class PlayKitProfiler {
             public void newSession(final String sessionId, PlayerSettings playerSettings) {
 
                 pkLog.d("New session " + sessionId);
-                
+
                 if (PlayKitProfiler.this.sessionId != null) {
                     // close current session
                     closeSession();
@@ -606,10 +566,5 @@ public class PlayKitProfiler {
 
     public void append(JsonObject jo) {
         logQueue.add(jo.toString());
-    }
-
-    private static class ConfigFile {
-        String postURL;
-        float sendPercentage;
     }
 }
