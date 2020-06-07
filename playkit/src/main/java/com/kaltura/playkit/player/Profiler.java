@@ -31,7 +31,7 @@ public abstract class Profiler {
     public void onApplicationPaused() {/*NOOP*/}
     public void onApplicationResumed() {/*NOOP*/}
 
-    public static class Event extends Utils.JoBuilder {
+    public static class Event extends Utils.GsonObject {
 
         private final PlayKitProfiler profiler;
 

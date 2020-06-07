@@ -2,7 +2,6 @@ package com.kaltura.playkit.profiler;
 
 import android.content.Context;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -13,20 +12,15 @@ import android.util.DisplayMetrics;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
-import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
-import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.PlayKitManager.ProfilerConfig;
 import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.player.ExoPlayerWrapper;
-import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
 import com.kaltura.playkit.player.PlayerEngine;
 import com.kaltura.playkit.player.PlayerSettings;
@@ -67,8 +61,6 @@ public class PlayKitProfiler {
 
     private static final float DEFAULT_SEND_PERCENTAGE = devMode ? SEND_PERCENTAGE_DEV : 0; // Start disabled
 
-    private static final String CONFIG_BASE_URL = "https://s3.amazonaws.com/player-profiler/configs/";
-
     static final float MSEC_MULTIPLIER_FLOAT = 1000f;
 
     private static final JsonObject experiments = new JsonObject();
@@ -84,7 +76,6 @@ public class PlayKitProfiler {
     private static String packageName;
     private static String networkType;
     private static String deviceType;
-    private static boolean configLoaded;
     private final ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
     private final ExoPlayerProfilingListener analyticsListener = new ExoPlayerProfilingListener(this);
     private final EventListener.Factory okListenerFactory = call -> new OkHttpListener(PlayKitProfiler.this, call);
@@ -210,54 +201,9 @@ public class PlayKitProfiler {
         }
     }
 
-    private static JsonObject toJSON(PKMediaEntry entry) {
-
-        if (entry == null) {
-            return null;
-        }
-
-        JsonObject json = new JsonObject();
-
-        json.addProperty("id", entry.getId());
-        json.addProperty("duration", entry.getDuration());
-        json.addProperty("type", String.valueOf(entry.getMediaType()));
-
-        if (entry.hasSources()) {
-            JsonArray array = new JsonArray();
-            for (PKMediaSource source : entry.getSources()) {
-                array.add(toJSON(source));
-            }
-            json.add("sources", array);
-        }
-
-        return json;
-    }
-
-    private static JsonObject toJSON(PKMediaSource source) {
-        JsonObject json = new JsonObject();
-
-        json.addProperty("id", source.getId());
-        json.addProperty("format", source.getMediaFormat().name());
-        json.addProperty("url", source.getUrl());
-
-        if (source.hasDrmParams()) {
-            JsonArray array = new JsonArray();
-            for (PKDrmParams params : source.getDrmData()) {
-                PKDrmParams.Scheme scheme = params.getScheme();
-                if (scheme != null) {
-                    array.add(scheme.name());
-                }
-            }
-            json.add("drm", array);
-        }
-
-        return json;
-    }
-
     private static void applyConfig(ProfilerConfig config) {
         postURL = config.postURL;
         sendPercentage = config.sendPercentage;
-        configLoaded = true;
     }
 
     private void sendLogChunk() {
@@ -400,12 +346,6 @@ public class PlayKitProfiler {
         return logStart(event, playerEngine != null ? playerEngine.get() : null);
     }
 
-//    void logWithPlaybackInfo(String event, String... strings) {
-//        if (playerEngine != null) {
-//            logWithPlaybackInfo(event, playerEngine.get(), strings);
-//        }
-//    }
-
     private Profiler getProfilerImp() {
         if (profilerImp == null) {
             profilerImp = createProfilerImp();
@@ -485,16 +425,12 @@ public class PlayKitProfiler {
                         .add("networkType", networkType).end();
 
                 logStart("AndroidInfo")
-                        .add("apiLevel", Build.VERSION.SDK_INT)
-                        .add("chipset", MediaSupport.DEVICE_CHIPSET)
-                        .add("brand", Build.BRAND)
-                        .add("model", Build.MODEL)
-                        .add("manufacturer", Build.MANUFACTURER)
-                        .add("device", Build.DEVICE)
-                        .add("tags", Build.TAGS)
-                        .add("fingerprint", Build.FINGERPRINT).end();
+                        .addAll(ToJson.buildInfoJson())
+                        .end();
 
-                logPlayerSettings();
+                logStart("PlayerSettings")
+                        .addAll(ToJson.toJson(playerSettings))
+                        .end();
 
                 logExperiments();
             }
@@ -518,13 +454,16 @@ public class PlayKitProfiler {
             public void onSetMedia(PKMediaConfig mediaConfig) {
 
                 logStart("SetMedia")
-                        .add("entry", toJSON(mediaConfig.getMediaEntry()))
-                        .add("startPosition", mediaConfig.getStartPosition()).end();
+                        .add("entry", ToJson.toJson(mediaConfig.getMediaEntry()))
+                        .add("startPosition", mediaConfig.getStartPosition())
+                        .end();
             }
 
             @Override
             public void onSeekRequested(long position) {
-                logWithPlaybackInfo("SeekRequested").addTime("targetPosition", position).end();
+                logWithPlaybackInfo("SeekRequested")
+                        .addTime("targetPosition", position)
+                        .end();
             }
 
             @Override
@@ -549,7 +488,9 @@ public class PlayKitProfiler {
 
             @Override
             public void onDurationChanged(long duration) {
-                logStart("DurationChanged").addTime("duration", duration).end();
+                logStart("DurationChanged")
+                        .addTime("duration", duration)
+                        .end();
             }
 
             @Override
@@ -557,11 +498,6 @@ public class PlayKitProfiler {
                 return okListenerFactory;
             }
         };
-    }
-
-    private void logPlayerSettings() {
-        // TODO: 27/05/2020
-        logStart("PlayerSettings").end();
     }
 
     public void append(JsonObject jo) {

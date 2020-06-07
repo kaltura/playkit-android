@@ -78,7 +78,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             return null;
         }
 
-        return new Utils.JoBuilder()
+        return new Utils.GsonObject()
                 .add("id", trackFormat.id)
                 .add("bitrate", trackFormat.bitrate)
                 .add("codecs", trackFormat.codecs)
@@ -316,7 +316,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             return;
         }
 
-        final Utils.JoBuilder e = log(event)
+        final Utils.GsonObject e = log(event)
                 .addTime("time", loadEventInfo.elapsedRealtimeMs - profiler.sessionStartTime)
                 .add("uri", loadEventInfo.dataSpec.uri.toString())
                 .add("dataType", dataTypeString)
