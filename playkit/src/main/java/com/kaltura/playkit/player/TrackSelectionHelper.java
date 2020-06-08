@@ -30,7 +30,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.utils.Consts;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
