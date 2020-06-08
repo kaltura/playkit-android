@@ -80,6 +80,7 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 
+import static com.google.android.exoplayer2.C.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
 import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
@@ -335,7 +336,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
 
         return new SingleSampleMediaSource.Factory(getDataSourceFactory(null))
-                .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
+                .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, TIME_UNSET);
     }
 
     private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
@@ -578,7 +579,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
         //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
         if (shouldGetTracksInfo) {
-            shouldGetTracksInfo = !trackSelectionHelper.prepareTracks();
+            shouldGetTracksInfo = !trackSelectionHelper.prepareTracks(trackSelections);
         }
 
         trackSelectionHelper.notifyAboutTrackChange(trackSelections);
