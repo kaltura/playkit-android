@@ -14,6 +14,7 @@ package com.kaltura.playkit.player;
 
 import android.support.annotation.NonNull;
 
+
 /**
  * Video track data holder.
  * Created by anton.afanasiev on 17/11/2016.
