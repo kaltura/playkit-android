@@ -12,7 +12,6 @@
 
 package com.kaltura.playkit.player;
 
-
 import android.support.annotation.NonNull;
 
 /**
