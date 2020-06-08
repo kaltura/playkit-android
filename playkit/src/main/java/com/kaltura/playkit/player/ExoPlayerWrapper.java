@@ -82,7 +82,6 @@ import okhttp3.OkHttpClient;
 
 import static com.google.android.exoplayer2.C.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
-import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 

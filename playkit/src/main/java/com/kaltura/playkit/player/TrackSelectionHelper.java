@@ -39,10 +39,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 
-import static com.google.android.exoplayer2.C.TRACK_TYPE_TEXT;
-import static com.google.android.exoplayer2.C.TRACK_TYPE_AUDIO;
-import static com.google.android.exoplayer2.C.TRACK_TYPE_UNKNOWN;
-import static com.google.android.exoplayer2.C.TRACK_TYPE_VIDEO;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_UNKNOWN;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
 
 /**
  * Responsible for generating/sorting/holding and changing track info.
