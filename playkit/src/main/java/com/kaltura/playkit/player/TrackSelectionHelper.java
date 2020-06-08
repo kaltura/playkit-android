@@ -30,6 +30,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.utils.Consts;
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,9 +40,9 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 
 import static com.google.android.exoplayer2.C.TRACK_TYPE_TEXT;
-import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
-import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
-import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
+import static com.google.android.exoplayer2.C.TRACK_TYPE_AUDIO;
+import static com.google.android.exoplayer2.C.TRACK_TYPE_UNKNOWN;
+import static com.google.android.exoplayer2.C.TRACK_TYPE_VIDEO;
 
 /**
  * Responsible for generating/sorting/holding and changing track info.
@@ -330,7 +331,7 @@ class TrackSelectionHelper {
                 trackType = TRACK_TYPE_TEXT;
             }
 
-            if (trackType != TRACK_TYPE_UNKNOWN && trackSelectionArray != null && trackType < trackSelectionArray.length) {
+            if (trackType != Consts.TRACK_TYPE_UNKNOWN && trackSelectionArray != null && trackType < trackSelectionArray.length) {
                 TrackSelection trackSelection = trackSelectionArray.get(trackType);
                 if (trackSelection != null && trackSelection.getSelectedFormat() != null) {
                     defaultTrackIndex = findDefaultTrackIndex(trackSelection.getSelectedFormat().language, trackList, defaultTrackIndex);
