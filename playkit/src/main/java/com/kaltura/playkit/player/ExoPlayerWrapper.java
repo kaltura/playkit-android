@@ -335,7 +335,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
 
         return new SingleSampleMediaSource.Factory(getDataSourceFactory(null))
-                .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, TIME_UNSET);
+                .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
     }
 
     private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
