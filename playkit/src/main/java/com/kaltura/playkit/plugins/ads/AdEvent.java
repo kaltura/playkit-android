@@ -30,6 +30,7 @@ public class AdEvent implements PKEvent {
     public static final Class<AdRequestedEvent> adRequested = AdRequestedEvent.class;
     public static final Class<AdBufferStart> adBufferStart = AdBufferStart.class;
     public static final Class<AdBufferEnd> adBufferEnd = AdBufferEnd.class;
+    public static final Class<AdProgress> adProgress = AdProgress.class;
     public static final Class<AdPlaybackInfoUpdated> adPlaybackInfoUpdated = AdPlaybackInfoUpdated.class;
     public static final Class<AdClickedEvent> adClickedEvent = AdClickedEvent.class;
     public static final Class<Error> error = Error.class;
@@ -45,7 +46,6 @@ public class AdEvent implements PKEvent {
     public static final AdEvent.Type tapped = Type.TAPPED;
     public static final AdEvent.Type iconTapped = Type.ICON_TAPPED;
     public static final AdEvent.Type adBreakReady = Type.AD_BREAK_READY;
-    public static final AdEvent.Type adProgress = Type.AD_PROGRESS;
     public static final AdEvent.Type adBreakStarted = Type.AD_BREAK_STARTED;
     public static final AdEvent.Type adBreakEnded = Type.AD_BREAK_ENDED;
     public static final AdEvent.Type adBreakIgnored = Type.AD_BREAK_IGNORED;
@@ -168,6 +168,16 @@ public class AdEvent implements PKEvent {
         public AdBufferEnd(long adPosition) {
             super(Type.AD_BUFFER_END);
             this.adPosition = adPosition;
+        }
+    }
+
+    public static class AdProgress extends AdEvent {
+
+        public final long currentAdPosition;
+
+        public AdProgress(long currentAdPosition) {
+            super(Type.AD_PROGRESS);
+            this.currentAdPosition = currentAdPosition;
         }
     }
 
