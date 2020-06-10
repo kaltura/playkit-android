@@ -3,6 +3,10 @@ package com.kaltura.playkit.profiler;
 import android.graphics.Typeface;
 import android.os.Build;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.kaltura.android.exoplayer2.text.CaptionStyleCompat;
 import com.kaltura.playkit.PKDrmParams;
@@ -20,7 +24,8 @@ import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
 
 public class ToJson {
-    static GsonObject toJson(PKMediaEntry entry) {
+    @Nullable
+    static GsonObject toJson(@Nullable PKMediaEntry entry) {
 
         if (entry == null) {
             return null;
@@ -40,7 +45,11 @@ public class ToJson {
                 .add("sources", sources);
     }
 
-    static GsonObject toJson(PKMediaSource source) {
+    @NonNull
+    static GsonObject toJson(@Nullable PKMediaSource source) {
+        if (source == null) {
+            return new GsonObject();
+        }
         JsonArray drmParams = new JsonArray();
         if (source.hasDrmParams()) {
             for (PKDrmParams params : source.getDrmData()) {
@@ -58,14 +67,22 @@ public class ToJson {
                 .add("drm", drmParams);
     }
 
-    static GsonObject toJson(ABRSettings s) {
+    @Nullable
+    static GsonObject toJson(@Nullable ABRSettings s) {
+        if (s == null) {
+            return null;
+        }
         return new GsonObject()
                 .add("initialBitrateEstimate", s.getInitialBitrateEstimate())
                 .add("maxVideoBitrate", s.getMaxVideoBitrate())
                 .add("minVideoBitrate", s.getMinVideoBitrate());
     }
 
-    static GsonObject toJson(VRSettings s) {
+    @Nullable
+    static GsonObject toJson(@Nullable VRSettings s) {
+        if (s == null) {
+            return null;
+        }
         return new GsonObject()
                 .add("flingEnabled", s.isFlingEnabled())
                 .add("vrModeEnabled", s.isVrModeEnabled())
@@ -73,7 +90,11 @@ public class ToJson {
                 .add("interactionMode", s.getInteractionMode().name());
     }
 
-    static GsonObject toJson(SubtitleStyleSettings s) {
+    @Nullable
+    static GsonObject toJson(@Nullable SubtitleStyleSettings s) {
+        if (s == null) {
+            return null;
+        }
         return new GsonObject()
                 .add("textColor", Integer.toHexString(s.getTextColor()))
                 .add("backgroundColor", Integer.toHexString(s.getBackgroundColor()))
@@ -103,7 +124,11 @@ public class ToJson {
         }
     }
 
-    static GsonObject toJson(PKSubtitlePosition s) {
+    @Nullable
+    static GsonObject toJson(@Nullable PKSubtitlePosition s) {
+        if (s == null) {
+            return null;
+        }
         return new GsonObject()
                 .add("horizontalPositionPercentage", s.getHorizontalPositionPercentage())
                 .add("verticalPositionPercentage", s.getVerticalPositionPercentage())
@@ -111,7 +136,11 @@ public class ToJson {
                 .add("horizontalAlignment", s.getSubtitleHorizontalPosition().name());
     }
 
-    static GsonObject toJson(Typeface s) {
+    @Nullable
+    static GsonObject toJson(@Nullable Typeface s) {
+        if (s == null) {
+            return null;
+        }
         final GsonObject object = new GsonObject()
                 .add("bold", s.isBold())
                 .add("italic", s.isItalic());
@@ -123,19 +152,31 @@ public class ToJson {
         return object;
     }
 
-    static GsonObject toJson(PKTrackConfig s) {
+    @Nullable
+    static GsonObject toJson(@Nullable PKTrackConfig s) {
+        if (s == null) {
+            return null;
+        }
         return new GsonObject()
             .add("preferredMode", s.getPreferredMode().name())
             .add("language", s.getTrackLanguage());
     }
 
-    static GsonObject toJson(PKMaxVideoSize s) {
+    @Nullable
+    static GsonObject toJson(@Nullable PKMaxVideoSize s) {
+        if (s == null) {
+            return null;
+        }
         return new GsonObject()
                 .add("width", s.getMaxVideoWidth())
                 .add("height", s.getMaxVideoHeight());
     }
 
-    static GsonObject toJson(LoadControlBuffers s) {
+    @Nullable
+    static GsonObject toJson(@Nullable LoadControlBuffers s) {
+        if (s == null) {
+            return null;
+        }
         return new GsonObject()
                 .addTime("minBufferSec", s.getMinPlayerBufferMs())
                 .addTime("maxBufferSec", s.getMaxPlayerBufferMs())
@@ -146,7 +187,11 @@ public class ToJson {
                 .add("retainBackBufferFromKeyframe", s.getRetainBackBufferFromKeyframe());
     }
 
-    static GsonObject toJson(PlayerSettings settings) {
+    @Nullable
+    static GsonObject toJson(@Nullable PlayerSettings settings) {
+        if (settings == null) {
+            return null;
+        }
         return new GsonObject()
                     .add("clearLead", settings.allowClearLead())
                     .add("cea608Captions", settings.cea608CaptionsEnabled())
