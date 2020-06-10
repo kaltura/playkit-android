@@ -53,7 +53,7 @@ public class PlayKitProfiler {
 
     // Dev mode: shorter logs, write to local file, always enable
     private static final boolean devMode = true;
-    private static final int SEND_INTERVAL_DEV = 30;    // sec
+    private static final int SEND_INTERVAL_DEV = 10;    // sec
     private static final int SEND_PERCENTAGE_DEV = 100; // always
 
     private static final int SEND_INTERVAL_PROD = 60;  // sec
@@ -78,7 +78,7 @@ public class PlayKitProfiler {
     private static String deviceType;
     private final ConcurrentLinkedQueue<String> logQueue = new ConcurrentLinkedQueue<>();
     private final ExoPlayerProfilingListener analyticsListener = new ExoPlayerProfilingListener(this);
-    private final EventListener.Factory okListenerFactory = call -> new OkHttpListener(PlayKitProfiler.this, call);
+    private final EventListener.Factory okListenerFactory = call -> new OkHttpListener(PlayKitProfiler.this);
     private final Set<String> serversLookedUp = new HashSet<>();
     long sessionStartTime;
     private String sessionId;

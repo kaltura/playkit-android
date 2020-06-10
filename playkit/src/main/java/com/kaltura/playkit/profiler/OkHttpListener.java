@@ -1,26 +1,26 @@
 package com.kaltura.playkit.profiler;
 
-import android.os.Build;
+import android.net.Uri;
 import android.os.SystemClock;
+import android.text.TextUtils;
 
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.player.Profiler.Event;
+import com.kaltura.playkit.Utils.GsonObject;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import okhttp3.Call;
 import okhttp3.CipherSuite;
-import okhttp3.Connection;
 import okhttp3.EventListener;
 import okhttp3.Handshake;
-import okhttp3.HttpUrl;
 import okhttp3.Protocol;
-import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.TlsVersion;
 
@@ -30,178 +30,190 @@ class OkHttpListener extends EventListener {
 
     private static AtomicLong nextId = new AtomicLong(1);
 
-    private final PlayKitProfiler profiler;
-    private final String url;
-    private final String hostName;
-    private final long startTime = SystemClock.elapsedRealtime();
     private final long id = nextId.getAndIncrement();
 
-    OkHttpListener(PlayKitProfiler playKitProfiler, Call call) {
+    private final PlayKitProfiler profiler;
+
+    private long callStartTime;
+
+    // DNS, TCP, TLS - static because they are shared
+    private Map<String, Long> dnsStartTimes;
+    private Map<InetSocketAddress, Long> connectStartTimes;
+    private long secureConnectStartTime;
+
+    private long dnsTotalTime;
+    private long connectTotalTime;
+    private long secureConnectTotalTime;
+    private boolean redirecting;
+    private String lastHostName;
+    private int redirectCount;
+
+
+    OkHttpListener(PlayKitProfiler playKitProfiler) {
         profiler = playKitProfiler;
-        final Request request = call.request();
-        HttpUrl httpUrl = request.url();
-        hostName = httpUrl.host();
-        url = httpUrl.toString();
     }
 
-//    private void log(String event, String... strings) {
-//        profiler.log(event).add("id", id).addTime("callTime", relTime()), TextUtils.join("\t", strings));
-//    }
-
-    private Event logStart(String event) {
-        return (Event) profiler.logStart("net_" + event)
-                .add("id", id)
-                .addTime("callTime", relTime());
+    private GsonObject logStart(String event) {
+        return profiler.logStart("net_" + event)
+                .add("id", id);
     }
 
-    private long relTime() {
-        return SystemClock.elapsedRealtime() - startTime;
+    private long elapsedRealtime() {
+        return SystemClock.elapsedRealtime();
     }
 
     @Override
     public void callStart(Call call) {
-        logStart("callStart")
-                .add("url", url)
-                .add("hostName", hostName)
-                .add("method", call.request().method()).end();
+        callStartTime = elapsedRealtime();
+        updateLastDomain(call.request().url().toString());
+    }
+
+    @Override
+    public void callEnd(Call call) {
+        callEndOrFail("callEnd", call);
+    }
+
+    @Override
+    public void callFailed(Call call, IOException ioe) {
+        callEndOrFail("callFailed", call);
+    }
+
+    private void callEndOrFail(String eventName, Call call) {
+        if (callStartTime <= 0) {
+            return;
+        }
+
+        if (redirecting) {
+            // OkHttp bug https://github.com/square/okhttp/issues/4386
+            // Ignore this "callEnd"
+            return;
+        }
+
+        long callTotalTime = elapsedRealtime() - callStartTime;
+        callStartTime = 0;
+
+        final GsonObject event = logStart(eventName)
+                .add("url", call.request().url().toString())
+                .addTime("totalTime", callTotalTime);
+
+        // If ANY connection-related time was logged, show all of them.
+        if (dnsTotalTime > 0 || connectTotalTime > 0 || secureConnectTotalTime > 0) {
+            event
+                    .addTime("dnsTime", dnsTotalTime)
+                    .addTime("connectTime", connectTotalTime)
+                    .addTime("secureConnectTime", secureConnectTotalTime)
+                    .addTime("totalConnectionOverhead", dnsTotalTime + connectTotalTime + secureConnectTotalTime);
+        }
+
+        if (redirectCount > 0) {
+            event.add("redirects", redirectCount);
+        }
+
+        event.end();
+    }
+
+    @Override
+    public void responseHeadersEnd(Call call, Response response) {
+        redirecting = response.isRedirect();
+        if (redirecting) {
+            updateLastDomain(response.header("location"));
+            redirectCount++;
+        }
+    }
+
+    private void updateLastDomain(String location) {
+        if (!TextUtils.isEmpty(location)) {
+            final Uri uri = Uri.parse(location);
+            if (uri.isAbsolute()) {
+                final String host = uri.getHost();
+                if (!TextUtils.isEmpty(host)) {
+                    lastHostName = host;
+                }
+            }
+        }
     }
 
     @Override
     public void dnsStart(Call call, String domainName) {
-        logStart("dnsStart")
-                .add("hostName", domainName).end();
+        if (dnsStartTimes == null) {
+            dnsStartTimes = new HashMap<>();
+        }
+        dnsStartTimes.put(domainName, elapsedRealtime());
     }
 
     @Override
-    public void dnsEnd(Call call, String domainName, List<InetAddress> inetAddressList) {
-        if (!inetAddressList.isEmpty()) {
-            final InetAddress address = inetAddressList.get(0);
-            logStart("dnsEnd")
-                    .add("hostName", domainName)
-                    .add("hostIp", address.getHostAddress())
-                    .add("canonicalHostName", address.getCanonicalHostName()).end();
-        } else {
-            logStart("dnsEnd")
-                    .add("hostName", domainName).end();
+    public void dnsEnd(Call call, String domainName, List<InetAddress> addressList) {
+        if (dnsStartTimes == null) {
+            return; // shouldn't happen
+        }
+
+        final Long domainStartTime = dnsStartTimes.get(domainName);
+        if (domainStartTime != null) {
+            final long dnsTime = elapsedRealtime() - domainStartTime;
+            dnsTotalTime += dnsTime;
+            final InetAddress address = addressList.get(0);
+            if (address != null) {
+                logStart("domainResolution")
+                        .add("dnsTime", dnsTime)
+                        .add("domainName", domainName)
+                        .add("hostIp", address.getHostAddress())
+                        .add("canonicalHostName", address.getCanonicalHostName())
+                        .end();
+            }
+            dnsStartTimes.remove(domainName);
         }
     }
 
     @Override
     public void connectStart(Call call, InetSocketAddress inetSocketAddress, Proxy proxy) {
-        logStart("connectStart")
-                .add("hostName", host(inetSocketAddress))
-                .add("hostIp", inetSocketAddress.getAddress().getHostAddress())
-                .add("port", inetSocketAddress.getPort())
-                .add("proxy", String.valueOf(proxy)).end();
-    }
-
-    private static String host(InetSocketAddress inetSocketAddress) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            return inetSocketAddress.getHostString();
-        } else {
-            return inetSocketAddress.getHostName();
+        if (connectStartTimes == null) {
+            connectStartTimes = new HashMap<>();
         }
-    }
 
-    private static String host(Call call) {
-        try {
-            return call.request().url().host();
-        } catch (NullPointerException e) {
-            return null;
-        }
-    }
-
-    @Override
-    public void secureConnectStart(Call call) {
-        logStart("secureConnectStart").end();
-    }
-
-    @Override
-    public void secureConnectEnd(Call call, Handshake handshake) {
-        final CipherSuite cipherSuite = handshake.cipherSuite();
-        final TlsVersion tlsVersion = handshake.tlsVersion();
-
-        logStart("secureConnectEnd")
-                .add("cipherSuite", "" + cipherSuite)
-                .add("tlsVersion", tlsVersion.javaName())
-                .end();
+        connectStartTimes.put(inetSocketAddress, elapsedRealtime());
     }
 
     @Override
     public void connectEnd(Call call, InetSocketAddress inetSocketAddress, Proxy proxy, Protocol protocol) {
-        logStart("connectEnd")
-                .add("protocol", "" + protocol)
-                .end();
+        logConnectEndOrFail(inetSocketAddress);
+    }
+
+    private void logConnectEndOrFail(InetSocketAddress inetSocketAddress) {
+        if (connectStartTimes == null) {
+            return; // shouldn't happen
+        }
+
+        final Long connectStartTime = connectStartTimes.get(inetSocketAddress);
+        if (connectStartTime != null) {
+            connectTotalTime += (elapsedRealtime() - connectStartTime);
+            connectStartTimes.remove(inetSocketAddress);
+        }
     }
 
     @Override
     public void connectFailed(Call call, InetSocketAddress inetSocketAddress, Proxy proxy, Protocol protocol, IOException ioe) {
-        logStart("connectFailed")
-                .add("error", ioe.toString())
-                .end();
+        logConnectEndOrFail(inetSocketAddress);
     }
 
     @Override
-    public void connectionAcquired(Call call, Connection connection) {
-        logStart("connectionAcquired").end();
+    public void secureConnectStart(Call call) {
+        secureConnectStartTime = elapsedRealtime();
     }
 
     @Override
-    public void connectionReleased(Call call, Connection connection) {
-        logStart("connectionReleased").end();
-    }
+    public void secureConnectEnd(Call call, Handshake handshake) {
+        if (secureConnectStartTime > 0) {
+            secureConnectTotalTime += (elapsedRealtime() - secureConnectStartTime);
+            secureConnectStartTime = 0;
+        }
 
-    @Override
-    public void requestHeadersStart(Call call) {
-        logStart("requestHeadersStart").end();
-    }
+        final CipherSuite cipherSuite = handshake.cipherSuite();
+        final TlsVersion tlsVersion = handshake.tlsVersion();
 
-    @Override
-    public void requestHeadersEnd(Call call, Request request) {
-        logStart("requestHeadersEnd").end();
-    }
-
-    @Override
-    public void requestBodyStart(Call call) {
-        logStart("requestBodyStart").end();
-    }
-
-    @Override
-    public void requestBodyEnd(Call call, long byteCount) {
-        logStart("requestBodyEnd").end();
-    }
-
-    @Override
-    public void responseHeadersStart(Call call) {
-        logStart("responseHeadersStart").end();
-    }
-
-    @Override
-    public void responseHeadersEnd(Call call, Response response) {
-        logStart("responseHeadersEnd").end();
-    }
-
-    @Override
-    public void responseBodyStart(Call call) {
-        logStart("responseBodyStart").end();
-    }
-
-    @Override
-    public void responseBodyEnd(Call call, long byteCount) {
-        logStart("responseBodyEnd")
-                .add("byteCount", byteCount)
-                .end();
-    }
-
-    @Override
-    public void callEnd(Call call) {
-        logStart("callEnd").end();
-    }
-
-    @Override
-    public void callFailed(Call call, IOException ioe) {
-        logStart("callFailed")
-                .add("error", ioe)
+        logStart("securityInfo")
+                .add("hostName", lastHostName)
+                .add("cipherSuite", cipherSuite.javaName())
+                .add("tlsVersion", tlsVersion.javaName())
                 .end();
     }
 }
