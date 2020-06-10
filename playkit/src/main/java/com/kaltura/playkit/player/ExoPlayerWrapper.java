@@ -628,6 +628,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 break;
             case ExoPlaybackException.TYPE_OUT_OF_MEMORY:
                 errorType = PKPlayerErrorType.OUT_OF_MEMORY;
+                errorMessage = getOutOfMemoryErrorMessage(error, errorMessage);
                 break;
             case ExoPlaybackException.TYPE_REMOTE:
                 errorType = PKPlayerErrorType.REMOTE_COMPONENT_ERROR;
@@ -682,6 +683,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private String getSourceErrorMessage(ExoPlaybackException error, String errorMessage) {
         Exception cause = error.getSourceException();
+        if (cause.getCause() != null) {
+            errorMessage = cause.getCause().getMessage();
+        }
+        return errorMessage;
+    }
+
+    private String getOutOfMemoryErrorMessage(ExoPlaybackException error, String errorMessage) {
+        OutOfMemoryError cause = error.getOutOfMemoryError();
         if (cause.getCause() != null) {
             errorMessage = cause.getCause().getMessage();
         }
