@@ -777,6 +777,10 @@ public class PlayerController implements Player {
                         event = new PlayerEvent.VolumeChanged(player.getVolume());
                         break;
                     case PLAYBACK_INFO_UPDATED:
+                        if (player.getPlaybackInfo() == null) {
+                            log.e("PLAYBACK_INFO_UPDATED event payload == null, ignoring event");
+                            return;
+                        }
                         event = new PlayerEvent.PlaybackInfoUpdated(player.getPlaybackInfo());
                         break;
                     case ERROR:

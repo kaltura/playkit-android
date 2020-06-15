@@ -109,11 +109,13 @@ public class PKSubtitlePosition {
         float verticalPosition = checkPositionPercentageLimit(verticalPositionPercentage);
         float horizontalPosition = checkPositionPercentageLimit(horizontalPositionPercentage);
 
-        if (horizontalAlignment == null) {
-            horizontalAlignment = Layout.Alignment.ALIGN_CENTER;
+        if (horizontalAlignment != null && horizontalAlignment != Layout.Alignment.ALIGN_CENTER && horizontalPosition != DIMEN_UNSET) {
+            setHorizontalPositionLevel(horizontalPosition, horizontalAlignment);
+        } else {
+            this.horizontalPositionPercentage = DIMEN_UNSET;
+            this.subtitleHorizontalPosition = Layout.Alignment.ALIGN_CENTER;
         }
 
-        setHorizontalPositionLevel(horizontalPosition, horizontalAlignment);
         setVerticalPositionLevel(verticalPosition);
         lineType = LINE_TYPE_FRACTION;
         return this;
