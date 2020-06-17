@@ -689,10 +689,7 @@ class TrackSelectionHelper {
                 long minBitrateInStream = videoTracks.get(1).getBitrate();
                 long maxBitrateInStream = videoTracks.get(videoTracks.size() - 1).getBitrate();
 
-                if ((minVideoBitrate == Long.MIN_VALUE && maxVideoBitrate < minBitrateInStream) ||
-                        (maxVideoBitrate == Long.MAX_VALUE && minVideoBitrate > maxBitrateInStream) ||
-                        (minVideoBitrate > minBitrateInStream && maxVideoBitrate <  minBitrateInStream) ||
-                        (minVideoBitrate > maxBitrateInStream && maxVideoBitrate < maxBitrateInStream)) {
+                if ((minVideoBitrate > maxBitrateInStream) || (maxVideoBitrate < minBitrateInStream)) {
                     isValidABRRange = false;
                     String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
                     PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
@@ -716,7 +713,7 @@ class TrackSelectionHelper {
         }
         return uniqueIds;
     }
-
+    
     private SelectionOverride retrieveOverrideSelectionList(int[][] uniqueIds) {
         if (uniqueIds == null || uniqueIds[0] == null) {
             throw new IllegalArgumentException("Track selection with uniqueId = null");

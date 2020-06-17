@@ -129,6 +129,10 @@ public class PlayerSettings implements Player.Settings {
     }
 
     public ABRSettings getAbrSettings() {
+        if (abrSettings.getMinVideoBitrate() > abrSettings.getMaxVideoBitrate()) {
+            abrSettings.setMinVideoBitrate(Long.MIN_VALUE);
+            abrSettings.setMaxVideoBitrate(Long.MAX_VALUE);
+        }
         return abrSettings;
     }
 

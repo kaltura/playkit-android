@@ -36,6 +36,8 @@ public interface AdsProvider {
 
     boolean isAdPaused();
 
+    default boolean isForceSinglePlayerRequired() {return false;}
+
     boolean isAdRequested();
 
     boolean isAllAdsCompleted();

@@ -80,7 +80,6 @@ import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
-
 public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
     public interface LoadControlStrategy {
         LoadControl getCustomLoadControl();
@@ -621,6 +620,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         switch (error.type) {
             case ExoPlaybackException.TYPE_SOURCE:
                 errorType = PKPlayerErrorType.SOURCE_ERROR;
+                errorMessage = getSourceErrorMessage(error, errorMessage);
                 break;
             case ExoPlaybackException.TYPE_RENDERER:
                 errorType = PKPlayerErrorType.RENDERER_ERROR;
@@ -628,6 +628,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 break;
             case ExoPlaybackException.TYPE_OUT_OF_MEMORY:
                 errorType = PKPlayerErrorType.OUT_OF_MEMORY;
+                errorMessage = getOutOfMemoryErrorMessage(error, errorMessage);
                 break;
             case ExoPlaybackException.TYPE_REMOTE:
                 errorType = PKPlayerErrorType.REMOTE_COMPONENT_ERROR;
@@ -635,6 +636,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             case ExoPlaybackException.TYPE_UNEXPECTED:
             default:
                 errorType = PKPlayerErrorType.UNEXPECTED;
+                errorMessage = getUnexpectedErrorMessage(error, errorMessage);
                 break;
         }
 
@@ -667,6 +669,30 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             } else {
                 errorMessage = "Unable to instantiate decoder" + decoderInitializationException.codecInfo.name;
             }
+        }
+        return errorMessage;
+    }
+
+    private String getUnexpectedErrorMessage(ExoPlaybackException error, String errorMessage) {
+        Exception cause = error.getUnexpectedException();
+        if (cause.getCause() != null) {
+            errorMessage = cause.getCause().getMessage();
+        }
+        return errorMessage;
+    }
+
+    private String getSourceErrorMessage(ExoPlaybackException error, String errorMessage) {
+        Exception cause = error.getSourceException();
+        if (cause.getCause() != null) {
+            errorMessage = cause.getCause().getMessage();
+        }
+        return errorMessage;
+    }
+
+    private String getOutOfMemoryErrorMessage(ExoPlaybackException error, String errorMessage) {
+        OutOfMemoryError cause = error.getOutOfMemoryError();
+        if (cause.getCause() != null) {
+            errorMessage = cause.getCause().getMessage();
         }
         return errorMessage;
     }
@@ -824,15 +850,22 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public long getProgramStartTime() {
-        final int currentWindowIndex = player.getCurrentWindowIndex();
-        if (currentWindowIndex == C.INDEX_UNSET) {
-            return TIME_UNSET;
+        log.v("getProgramStartTime");
+        long windowStartTimeMs = TIME_UNSET;
+        if (assertPlayerIsNotNull("getProgramStartTime()")) {
+            final int currentWindowIndex = player.getCurrentWindowIndex();
+            if (currentWindowIndex == C.INDEX_UNSET) {
+                return windowStartTimeMs;
+            }
+            if (player.getCurrentTimeline() != null) {
+                final Timeline.Window window = player.getCurrentTimeline().getWindow(currentWindowIndex, new Timeline.Window());
+                if (window == null) {
+                    return windowStartTimeMs;
+                }
+                windowStartTimeMs = window.windowStartTimeMs;
+            }
         }
-        final Timeline.Window window = player.getCurrentTimeline().getWindow(currentWindowIndex, new Timeline.Window());
-        if (window == null) {
-            return TIME_UNSET;
-        }
-        return window.windowStartTimeMs;
+        return windowStartTimeMs;
     }
 
     @Override
