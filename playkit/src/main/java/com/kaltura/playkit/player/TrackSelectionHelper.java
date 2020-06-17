@@ -40,6 +40,7 @@ import java.util.MissingResourceException;
 
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_UNKNOWN;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
 
 /**
@@ -128,7 +129,8 @@ class TrackSelectionHelper {
      *
      * @return - true if tracks data created successful, if mappingTrackInfo not ready return false.
      */
-    protected boolean prepareTracks() {
+    protected boolean prepareTracks(TrackSelectionArray trackSelections) {
+        trackSelectionArray = trackSelections;
         mappedTrackInfo = selector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
             log.w("Trying to get current MappedTrackInfo returns null");
@@ -315,7 +317,42 @@ class TrackSelectionHelper {
             }
         }
 
-        return restoreLastSelectedTrack(trackList, lastSelectedTrackId, defaultTrackIndex);
+        return restoreLastSelectedTrack(trackList, lastSelectedTrackId, getUpdatedDefaultTrackIndex(trackList, defaultTrackIndex));
+    }
+
+    private int getUpdatedDefaultTrackIndex(List<? extends BaseTrack> trackList, int defaultTrackIndex) {
+
+        if (!trackList.isEmpty()) {
+            int trackType = TRACK_TYPE_UNKNOWN;
+            if (trackList.get(0) instanceof AudioTrack) {
+                trackType = TRACK_TYPE_AUDIO;
+            } else if (trackList.get(0) instanceof TextTrack) {
+                trackType = TRACK_TYPE_TEXT;
+            }
+
+            if (trackType != Consts.TRACK_TYPE_UNKNOWN && trackSelectionArray != null && trackType < trackSelectionArray.length) {
+                TrackSelection trackSelection = trackSelectionArray.get(trackType);
+                if (trackSelection != null && trackSelection.getSelectedFormat() != null) {
+                    defaultTrackIndex = findDefaultTrackIndex(trackSelection.getSelectedFormat().language, trackList, defaultTrackIndex);
+                }
+            }
+        }
+
+        return defaultTrackIndex;
+    }
+
+    private int findDefaultTrackIndex(String selectedFormatLanguage, List<? extends BaseTrack> trackList, int defaultTrackIndex) {
+        if (trackList != null && selectedFormatLanguage != null) {
+
+            for (int i = 0; i < trackList.size(); i++) {
+                if (trackList.get(i) != null && selectedFormatLanguage.equals(trackList.get(i).getLanguage())) {
+                    defaultTrackIndex = i;
+                    break;
+                }
+            }
+        }
+
+        return defaultTrackIndex;
     }
 
     /**
