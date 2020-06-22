@@ -65,8 +65,9 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
 
     private boolean preparePlayerForPlayback() {
 
-        return (adsProvider.isAdRequested() && (adsProvider.getCuePoints() == null || adsProvider.getAdInfo() == null)) || adsProvider.isAllAdsCompleted() ||
-                adsProvider.isAdError() || adsProvider.isAdDisplayed() ||
+        return  (adsProvider.isAdRequested() && adsProvider.isForceSinglePlayerRequired()) ||
+                (adsProvider.isAdRequested() && (adsProvider.getCuePoints() == null || adsProvider.getAdInfo() == null)) ||
+                adsProvider.isAllAdsCompleted() || adsProvider.isAdError() || adsProvider.isAdDisplayed() ||
                 adsProvider.isAdRequested() && adsProvider.getCuePoints() != null && (!adsProvider.getCuePoints().hasPreRoll() || getCurrentPosition() > 0) ||
                 adsProvider.getPlaybackStartPosition() != null && adsProvider.getPlaybackStartPosition() > 0 && !adsProvider.isAlwaysStartWithPreroll();
     }
