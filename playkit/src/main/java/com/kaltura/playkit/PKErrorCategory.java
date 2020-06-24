@@ -1,4 +1,4 @@
-package com.kaltura.playkit.ads;
+package com.kaltura.playkit;
 
 public enum PKErrorCategory {
     LOAD(1),
