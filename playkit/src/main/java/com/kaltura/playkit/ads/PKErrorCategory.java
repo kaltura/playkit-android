@@ -1,13 +1,13 @@
 package com.kaltura.playkit.ads;
 
-public enum PKAdErrorCategory {
+public enum PKErrorCategory {
     LOAD(1),
     PLAY(2),
-    UNKNOWN_CATEGORY(3);
+    UNKNOWN(3);
 
     public final int errorCategory;
 
-    PKAdErrorCategory(int errorCategory) {
+    PKErrorCategory(int errorCategory) {
         this.errorCategory = errorCategory;
     }
 }

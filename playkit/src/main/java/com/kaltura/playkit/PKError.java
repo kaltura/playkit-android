@@ -15,7 +15,7 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.playkit.ads.PKAdErrorCategory;
+import com.kaltura.playkit.ads.PKErrorCategory;
 
 public class PKError {
 
@@ -32,7 +32,7 @@ public class PKError {
 
 
     public PKError(@NonNull Enum errorType, @Nullable String message, @Nullable Throwable exception) {
-        this.errorCategory = PKAdErrorCategory.UNKNOWN_CATEGORY;
+        this.errorCategory = PKErrorCategory.UNKNOWN;
         this.errorType = errorType;
         this.severity = Severity.Fatal;
         this.message = message;
@@ -40,7 +40,7 @@ public class PKError {
     }
 
     public PKError(@NonNull Enum errorType, @NonNull Severity severity, @Nullable String message, @Nullable Throwable exception) {
-        this.errorCategory = PKAdErrorCategory.UNKNOWN_CATEGORY;
+        this.errorCategory = PKErrorCategory.UNKNOWN;
         this.errorType = errorType;
         this.severity = severity;
         this.message = message;
