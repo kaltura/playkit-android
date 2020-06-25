@@ -643,7 +643,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         String errorStr = (errorMessage == null) ? "Player error: " + errorType.name() : errorMessage;
 
         log.e(errorStr);
-        currentError = new PKError(errorType, errorStr, error);
+        currentError = new PKError(PKErrorCategory.PLAY, errorType, PKError.Severity.Fatal, errorStr, error);
         if (eventListener != null) {
             log.e("Error-Event sent, type = " + error.type);
             eventListener.onEvent(PlayerEvent.Type.ERROR);
@@ -1007,7 +1007,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private void sendTrackSelectionError(String uniqueId, IllegalArgumentException invalidUniqueIdException) {
         String errorStr = "Track Selection failed uniqueId = " + uniqueId;
         log.e(errorStr);
-        currentError = new PKError(PKPlayerErrorType.TRACK_SELECTION_FAILED, errorStr, invalidUniqueIdException);
+        currentError = new PKError(PKErrorCategory.LOAD, PKPlayerErrorType.TRACK_SELECTION_FAILED, PKError.Severity.Recoverable, errorStr, invalidUniqueIdException);
         if (eventListener != null) {
             log.e("Error-Event sent, type = " + PKPlayerErrorType.TRACK_SELECTION_FAILED);
             eventListener.onEvent(PlayerEvent.Type.ERROR);
@@ -1224,7 +1224,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private void sendInvalidVideoBitrateRangeIfNeeded(String errorMessage) {
         if (eventListener != null) {
-            currentError = new PKError(com.kaltura.playkit.ads.PKErrorCategory.PLAY, PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
+            currentError = new PKError(PKErrorCategory.LOAD, PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
             eventListener.onEvent(PlayerEvent.Type.ERROR);
         }
     }

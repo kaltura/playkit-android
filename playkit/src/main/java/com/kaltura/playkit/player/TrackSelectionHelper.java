@@ -30,6 +30,7 @@ import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.playkit.PKError;
+import com.kaltura.playkit.PKErrorCategory;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.utils.Consts;
@@ -510,7 +511,7 @@ class TrackSelectionHelper {
                 if ((minVideoBitrate > maxBitrateInStream) || (maxVideoBitrate < minBitrateInStream)) {
                     isValidABRRange = false;
                     String errorMessage = "given minVideoBitrate or maxVideoBitrate is invalid";
-                    PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
+                    PKError currentError = new PKError(PKErrorCategory.PLAY, PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
                     tracksErrorListener.onTracksOverrideABRError(currentError);
                 }
             }

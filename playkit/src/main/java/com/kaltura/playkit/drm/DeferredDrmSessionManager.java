@@ -30,6 +30,7 @@ import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
+import com.kaltura.playkit.PKErrorCategory;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.player.MediaSupport;
@@ -126,7 +127,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
                     localMediaSource = null;
                 }
             } catch (FileNotFoundException e) {
-                PKError error = new PKError(PKPlayerErrorType.DRM_ERROR, "Failed to obtain offline licence from LocalDataStore. Requested key: " + Arrays.toString(schemeData.data) + ", for keysetId not found.", e);
+                PKError error = new PKError(PKErrorCategory.PLAY, PKPlayerErrorType.DRM_ERROR, PKError.Severity.Fatal, "Failed to obtain offline licence from LocalDataStore. Requested key: " + Arrays.toString(schemeData.data) + ", for keysetId not found.", e);
                 drmSessionListener.onError(error);
             }
         }
@@ -210,7 +211,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCryp
     @Override
     public void onDrmSessionManagerError(Exception e) {
         log.d("onDrmSessionManagerError");
-        PKError error = new PKError(PKPlayerErrorType.DRM_ERROR, e.getMessage(), e);
+        PKError error = new PKError(PKErrorCategory.PLAY, PKPlayerErrorType.DRM_ERROR, PKError.Severity.Recoverable, e.getMessage(), e);
         drmSessionListener.onError(error);
     }
 
