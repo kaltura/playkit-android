@@ -15,8 +15,6 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.playkit.ads.PKErrorCategory;
-
 public class PKError {
 
     @Nullable
