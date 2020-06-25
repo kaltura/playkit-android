@@ -24,6 +24,7 @@ import androidx.annotation.Nullable;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
+import com.kaltura.playkit.PKErrorCategory;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
@@ -473,7 +474,7 @@ public class PlayerController implements Player {
                     public void onLoadError(IOException error, boolean wasCanceled) {
                         String errorStr = "onLoadError Player Load error: " + PKPlayerErrorType.LOAD_ERROR;
                         log.e(errorStr);
-                        PKError loadError = new PKError(PKPlayerErrorType.LOAD_ERROR, PKError.Severity.Recoverable, errorStr, error);
+                        PKError loadError = new PKError(PKErrorCategory.LOAD, PKPlayerErrorType.LOAD_ERROR, PKError.Severity.Recoverable, errorStr, error);
 
                         if (eventListener != null) {
                             eventListener.onEvent(new PlayerEvent.Error(loadError));
@@ -684,7 +685,7 @@ public class PlayerController implements Player {
 
     private void sendErrorMessage(Enum errorType, String errorMessage, @Nullable Exception exception) {
         log.e(errorMessage);
-        PlayerEvent errorEvent = new PlayerEvent.Error(new PKError(errorType, errorMessage, exception));
+        PlayerEvent errorEvent = new PlayerEvent.Error(new PKError(PKErrorCategory.LOAD, errorType, PKError.Severity.Fatal, errorMessage, exception));
         if (eventListener != null) {
             eventListener.onEvent(errorEvent);
         }

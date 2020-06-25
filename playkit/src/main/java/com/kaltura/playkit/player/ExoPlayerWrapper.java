@@ -306,7 +306,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         } else {
             errorMessage += " source = " + sourceConfig.mediaSource.getUrl() + " format = " + sourceConfig.mediaSource.getMediaFormat();
         }
-        currentError = new PKError(PKPlayerErrorType.SOURCE_ERROR, PKError.Severity.Fatal, errorMessage, new IllegalArgumentException(errorMessage));
+        currentError = new PKError(PKErrorCategory.PLAY, PKPlayerErrorType.SOURCE_ERROR, PKError.Severity.Fatal, errorMessage, new IllegalArgumentException(errorMessage));
         eventListener.onEvent(PlayerEvent.Type.ERROR);
     }
 
@@ -1224,7 +1224,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private void sendInvalidVideoBitrateRangeIfNeeded(String errorMessage) {
         if (eventListener != null) {
-            currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
+            currentError = new PKError(com.kaltura.playkit.ads.PKErrorCategory.PLAY, PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
             eventListener.onEvent(PlayerEvent.Type.ERROR);
         }
     }
