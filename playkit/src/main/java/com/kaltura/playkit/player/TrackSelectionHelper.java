@@ -660,8 +660,6 @@ class TrackSelectionHelper {
 
                         if (videoGroupIndex == groupIndex && videoTrackIndex != TRACK_ADAPTIVE) {
                             adaptiveTrackIndexesList.add(getIndexFromUniqueId(videoTrack.getUniqueId(), TRACK_INDEX));
-                        } else {
-                            return null; // incase of back to auto need to clear the selection override so return null.
                         }
                     }
                     break;
