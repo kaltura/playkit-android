@@ -37,12 +37,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.zip.GZIPOutputStream;
 
 public class PKDeviceCapabilities {
     private static final PKLog log = PKLog.get("PKDeviceCapabilities");
@@ -120,8 +122,21 @@ public class PKDeviceCapabilities {
     }
 
     public static boolean sendReport(String reportString) {
+
+        // Compress the report
+        final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(reportString.length() / 2);
+        try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream)) {
+            gzipOutputStream.write(reportString.getBytes());
+            gzipOutputStream.finish();
+        } catch (IOException e) {
+            log.e("Failed to compress report data", e);
+            return false;
+        }
+
+        final String compressedString = Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.NO_WRAP);
+
         JsonObject data = new JsonObject();
-        data.addProperty("data", reportString);
+        data.addProperty("data", compressedString);
 
         String dataString = data.toString();
         try {
