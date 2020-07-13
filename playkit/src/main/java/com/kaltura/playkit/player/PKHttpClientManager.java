@@ -48,7 +48,18 @@ public class PKHttpClientManager {
 
     // Called by the player
     public static OkHttpClient.Builder newClientBuilder() {
-        return okClient.newBuilder().followRedirects(true);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP){
+            return okClient.newBuilder()
+                    .followRedirects(true)
+                    .followSslRedirects(true);
+        } else{
+            return new OkHttpClient.Builder()
+                    .connectionPool(okClient.connectionPool())
+                    .followSslRedirects(true).followRedirects(true)
+                    .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                    .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                    .protocols(Collections.singletonList(Protocol.HTTP_1_1));
+        }
     }
 
     // Called by the player
