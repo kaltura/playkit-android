@@ -22,6 +22,7 @@ import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
+import com.kaltura.playkit.prefetch.PKCacheProvider;
 import com.kaltura.playkit.utils.Consts;
 
 @SuppressWarnings("unused")
@@ -274,6 +275,9 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setMaxAudioChannelCount(int maxAudioChannelCount);
+
+
+        Settings setCacheProvider(PKCacheProvider provider);
     }
 
     /**

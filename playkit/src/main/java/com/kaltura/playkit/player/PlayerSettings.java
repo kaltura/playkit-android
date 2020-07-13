@@ -18,6 +18,7 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.player.vr.VRSettings;
+import com.kaltura.playkit.prefetch.PKCacheProvider;
 
 public class PlayerSettings implements Player.Settings {
 
@@ -42,6 +43,7 @@ public class PlayerSettings implements Player.Settings {
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
     private ABRSettings abrSettings = new ABRSettings();
     private VRSettings vrSettings;
+    private PKCacheProvider cacheProvider;
     /**
      * Flag helping to check if client app wants to use a single player instance at a time
      * Only if IMA plugin is there then only this flag is set to true.
@@ -167,6 +169,10 @@ public class PlayerSettings implements Player.Settings {
 
     public int getMaxAudioChannelCount() {
         return maxAudioChannelCount;
+    }
+
+    public PKCacheProvider getCacheProvider() {
+        return cacheProvider;
     }
 
     @Override
@@ -337,4 +343,13 @@ public class PlayerSettings implements Player.Settings {
         this.maxAudioChannelCount = maxAudioChannelCount;
         return this;
     }
+
+    @Override
+    public Player.Settings setCacheProvider(PKCacheProvider provider) {
+        cacheProvider = provider;
+        return this;
+    }
+
 }
+
+
