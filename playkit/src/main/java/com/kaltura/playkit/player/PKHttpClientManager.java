@@ -77,8 +77,9 @@ public class PKHttpClientManager {
         final ExecutorService service = Executors.newCachedThreadPool();
 
         List<Callable<Void>> calls = new ArrayList<>(urls.length);
+        OkHttpClient okHttpClient = newClientBuilder().followRedirects(false).build();
         for (String url : urls) {
-            final Callable<Void> callable = useSystem() ? getSystemCallable(url) : getOkCallable(url);
+            final Callable<Void> callable = useSystem() ? getSystemCallable(url) : getOkCallable(okHttpClient, url);
 
             for (int i = 0; i < WARMUP_TIMES; i++) {
                 calls.add(callable);
@@ -109,9 +110,9 @@ public class PKHttpClientManager {
         };
     }
 
-    private static Callable<Void> getOkCallable(String url) {
+    private static Callable<Void> getOkCallable(OkHttpClient  okHttpClient, String url) {
         return () -> {
-            final Call call = newClientBuilder().followRedirects(false).build().newCall(
+            final Call call = okHttpClient.newCall(
                     new Request.Builder()
                             .url(url)
                             .header("user-agent", PKHttpClientManager.warmUpUserAgent)
