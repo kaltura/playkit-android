@@ -38,12 +38,12 @@ public class PKHttpClientManager {
 
     private static String httpProviderId;
 
-    private static ConnectionPool pkConnectionPool = new ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_DURATION, TimeUnit.MINUTES);
+    private static ConnectionPool okConnectionPool = new ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_DURATION, TimeUnit.MINUTES);
 
     // Called by the player
     public static OkHttpClient.Builder newClientBuilder() {
             return new OkHttpClient.Builder()
-                    .connectionPool(pkConnectionPool)
+                    .connectionPool(okConnectionPool)
                     .followRedirects(true)
                     .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
                     .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
