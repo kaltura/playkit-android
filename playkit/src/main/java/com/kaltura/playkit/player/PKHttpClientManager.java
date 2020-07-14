@@ -52,7 +52,7 @@ public class PKHttpClientManager {
             return okClient.newBuilder()
                     .followRedirects(true)
                     .followSslRedirects(true);
-        } else{
+        } else {
             return new OkHttpClient.Builder()
                     .connectionPool(okClient.connectionPool())
                     .followSslRedirects(true).followRedirects(true)
