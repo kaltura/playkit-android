@@ -38,28 +38,16 @@ public class PKHttpClientManager {
 
     private static String httpProviderId;
 
-    private static final OkHttpClient okClient = new OkHttpClient.Builder()
-            .followRedirects(false)     // Only warm up explicitly specified URLs
-            .connectionPool(new ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_DURATION, TimeUnit.MINUTES))
-            .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-            .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-            .protocols(Collections.singletonList(Protocol.HTTP_1_1))    // Avoid http/2 due to https://github.com/google/ExoPlayer/issues/4078
-            .build();
+    private static ConnectionPool pkConnectionPool = new ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_DURATION, TimeUnit.MINUTES);
 
     // Called by the player
     public static OkHttpClient.Builder newClientBuilder() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP){
-            return okClient.newBuilder()
-                    .followRedirects(true)
-                    .followSslRedirects(true);
-        } else {
             return new OkHttpClient.Builder()
-                    .connectionPool(okClient.connectionPool())
-                    .followSslRedirects(true).followRedirects(true)
+                    .connectionPool(pkConnectionPool)
+                    .followRedirects(true)
                     .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
                     .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
                     .protocols(Collections.singletonList(Protocol.HTTP_1_1));
-        }
     }
 
     // Called by the player
@@ -123,7 +111,7 @@ public class PKHttpClientManager {
 
     private static Callable<Void> getOkCallable(String url) {
         return () -> {
-            final Call call = PKHttpClientManager.okClient.newCall(
+            final Call call = newClientBuilder().followRedirects(false).build().newCall(
                     new Request.Builder()
                             .url(url)
                             .header("user-agent", PKHttpClientManager.warmUpUserAgent)
