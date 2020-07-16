@@ -68,9 +68,13 @@ import com.kaltura.playkit.utils.NativeCookieJarBridge;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -348,17 +352,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
 
-
         switch (format) {
             case dash:
                 mediaSource = new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
+                        //.setLoadErrorHandlingPolicy(new CustomTextLoadErrorHandlingPolicy())
                         .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())
                         .createMediaSource(uri);
+
                 break;
 
             case hls:
                 mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
+                       // .setLoadErrorHandlingPolicy(new CustomTextLoadErrorHandlingPolicy())
                         .createMediaSource(uri);
                 break;
 
@@ -372,6 +378,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             default:
                 throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
         }
+
         return mediaSource;
     }
 
@@ -385,12 +392,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         List<MediaSource> streamMediaSources = new ArrayList<>();
 
         if (externalSubtitleList != null && externalSubtitleList.size() > 0) {
+
             for (int subtitlePosition = 0 ; subtitlePosition < externalSubtitleList.size() ; subtitlePosition ++) {
                 MediaSource subtitleMediaSource = buildExternalSubtitleSource(subtitlePosition, externalSubtitleList.get(subtitlePosition));
                 streamMediaSources.add(subtitleMediaSource);
             }
         }
-
         // 0th position is secured for dash/hls/extractor media source
         streamMediaSources.add(0, mediaSource);
         return streamMediaSources.toArray(new MediaSource[0]);
@@ -417,6 +424,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
 
         return new SingleSampleMediaSource.Factory(getDataSourceFactory(null))
+               // .setLoadErrorHandlingPolicy(new CustomTextLoadErrorHandlingPolicy())
                 .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
     }
 
@@ -603,6 +611,36 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
+        if (error != null && error.getSourceException() != null) {
+            if (error.getSourceException() instanceof HttpDataSource.InvalidResponseCodeException) {
+                HttpDataSource.InvalidResponseCodeException invalidResponseCodeException = (HttpDataSource.InvalidResponseCodeException) error.getSourceException();
+                if (invalidResponseCodeException != null &&
+                        invalidResponseCodeException.dataSpec != null &&
+                        invalidResponseCodeException.dataSpec.uri != null &&
+                        invalidResponseCodeException.dataSpec.uri.getLastPathSegment() != null) {
+
+                    String lastPathSegment = invalidResponseCodeException.dataSpec.uri.getLastPathSegment();
+                    if (lastPathSegment.endsWith(".vtt")) {
+                        ListIterator<PKExternalSubtitle> iter = sourceConfig.getExternalSubtitleList().listIterator();
+                        while(iter.hasNext()){
+                            if(iter.next().getUrl().equals(invalidResponseCodeException.dataSpec.uri.toString())){
+                                iter.remove();
+                            }
+                        }
+
+                        MediaSource mediaSource = buildExoMediaSource(sourceConfig);
+                        if (mediaSource != null) {
+                            long cp = player.getContentDuration();
+                            player.prepare(mediaSource, true, false);
+                            player.seekTo(cp);
+                            return;
+                        }
+                    }
+
+                }
+            }
+        }
+
         if (isBehindLiveWindow(error) && sourceConfig != null) {
             log.d("onPlayerError BehindLiveWindowException received, re-preparing player");
             MediaSource mediaSource = buildExoMediaSource(sourceConfig);
