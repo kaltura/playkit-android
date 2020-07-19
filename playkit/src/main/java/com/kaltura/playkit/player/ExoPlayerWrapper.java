@@ -362,7 +362,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                         new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
                         .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())
                         .createMediaSource(uri);
-
                 break;
 
             case hls:
@@ -380,7 +379,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             default:
                 throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
         }
-
         return mediaSource;
     }
 
@@ -394,7 +392,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         List<MediaSource> streamMediaSources = new ArrayList<>();
 
         if (externalSubtitleList != null && externalSubtitleList.size() > 0) {
-
             for (int subtitlePosition = 0 ; subtitlePosition < externalSubtitleList.size() ; subtitlePosition ++) {
                 MediaSource subtitleMediaSource = buildExternalSubtitleSource(subtitlePosition, externalSubtitleList.get(subtitlePosition));
                 streamMediaSources.add(subtitleMediaSource);
@@ -623,7 +620,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
-
         if (isBehindLiveWindow(error) && sourceConfig != null) {
             log.d("onPlayerError BehindLiveWindowException received, re-preparing player");
             MediaSource mediaSource = buildExoMediaSource(sourceConfig);
