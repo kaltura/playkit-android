@@ -857,7 +857,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             if (currentWindowIndex == C.INDEX_UNSET) {
                 return windowStartTimeMs;
             }
-            if (player.getCurrentTimeline() != null) {
+            if (player.getCurrentTimeline() != null && currentWindowIndex >= 0 && currentWindowIndex < player.getCurrentTimeline().getWindowCount()) {
                 final Timeline.Window window = player.getCurrentTimeline().getWindow(currentWindowIndex, new Timeline.Window());
                 if (window == null) {
                     return windowStartTimeMs;
