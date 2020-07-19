@@ -68,6 +68,7 @@ import com.kaltura.playkit.utils.NativeCookieJarBridge;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +82,7 @@ import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
 public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
+
     public interface LoadControlStrategy {
         LoadControl getCustomLoadControl();
         BandwidthMeter getCustomBandwidthMeter();
@@ -133,6 +135,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private TrackSelectionHelper.TracksErrorListener tracksErrorListener = initTracksErrorListener();
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
+    private ExternalTextTrackLoadErrorPolicy externalTextTrackLoadErrorPolicy;
+
 
     private PKMediaSourceConfig sourceConfig;
     @NonNull private Profiler profiler = Profiler.NOOP;
@@ -329,9 +333,31 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         if (externalSubtitleList == null || externalSubtitleList.isEmpty()) {
+            removeExternalTextTrackListener();
             return mediaSource;
         } else {
+            addExternalTextTrackErrorListener();
             return new MergingMediaSource(buildMediaSourceList(mediaSource, externalSubtitleList));
+        }
+    }
+
+    private void removeExternalTextTrackListener() {
+        if (externalTextTrackLoadErrorPolicy != null) {
+            externalTextTrackLoadErrorPolicy.setOnTextTrackErrorListener(null);
+            externalTextTrackLoadErrorPolicy = null;
+        }
+    }
+
+    private void addExternalTextTrackErrorListener() {
+        if (externalTextTrackLoadErrorPolicy == null) {
+            externalTextTrackLoadErrorPolicy = new ExternalTextTrackLoadErrorPolicy();
+            externalTextTrackLoadErrorPolicy.setOnTextTrackErrorListener(err -> {
+                currentError = err;
+                if (eventListener != null) {
+                    log.e("Error-Event sent, type = " + currentError.errorType);
+                    eventListener.onEvent(PlayerEvent.Type.ERROR);
+                }
+            });
         }
     }
 
@@ -347,7 +373,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         Uri uri = requestParams.url;
 
         final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
-
 
         switch (format) {
             case dash:
@@ -390,7 +415,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 streamMediaSources.add(subtitleMediaSource);
             }
         }
-
         // 0th position is secured for dash/hls/extractor media source
         streamMediaSources.add(0, mediaSource);
         return streamMediaSources.toArray(new MediaSource[0]);
@@ -417,9 +441,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
 
         return new SingleSampleMediaSource.Factory(getDataSourceFactory(null))
+                .setLoadErrorHandlingPolicy(externalTextTrackLoadErrorPolicy)
+                .setTreatLoadErrorsAsEndOfStream(true)
                 .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
     }
-
+    
     private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
         HttpDataSource.Factory httpDataSourceFactory;
         final String userAgent = getUserAgent(context);
@@ -1152,7 +1178,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             currentError = null;
             playerWindow = player.getCurrentWindowIndex();
             Timeline timeline = player.getCurrentTimeline();
-            if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
+            if (timeline != null && !timeline.isEmpty()  && playerWindow >= 0 && playerWindow < player.getCurrentTimeline().getWindowCount() && timeline.getWindow(playerWindow, window).isSeekable) {
                 playerPosition = player.getCurrentPosition();
             }
         }
