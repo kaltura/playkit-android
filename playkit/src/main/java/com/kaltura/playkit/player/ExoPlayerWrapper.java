@@ -60,7 +60,6 @@ import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
-import com.kaltura.playkit.player.ExternalTextTrackLoadErrorPolicy.OnTextTrackLoadErrorListener;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
@@ -82,7 +81,7 @@ import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
-public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener, OnTextTrackLoadErrorListener {
+public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
 
     public interface LoadControlStrategy {
         LoadControl getCustomLoadControl();
@@ -153,9 +152,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         playerSettings = settings != null ? settings : new PlayerSettings();
         rootView = rootPlayerView;
-
-        externalTextTrackLoadErrorPolicy = new ExternalTextTrackLoadErrorPolicy();
-        externalTextTrackLoadErrorPolicy.setOnTextTrackErrorListener(this);
 
         LoadControlStrategy customLoadControlStrategy = getCustomLoadControlStrategy();
         if (customLoadControlStrategy != null && customLoadControlStrategy.getCustomBandwidthMeter() != null) {
@@ -339,6 +335,16 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (externalSubtitleList == null || externalSubtitleList.isEmpty()) {
             return mediaSource;
         } else {
+            if (externalTextTrackLoadErrorPolicy == null) {
+                externalTextTrackLoadErrorPolicy = new ExternalTextTrackLoadErrorPolicy();
+                externalTextTrackLoadErrorPolicy.setOnTextTrackErrorListener(err -> {
+                    currentError = err;
+                    if (eventListener != null) {
+                        log.e("Error-Event sent, type = " + currentError.errorType);
+                        eventListener.onEvent(PlayerEvent.Type.ERROR);
+                    }
+                });
+            }
             return new MergingMediaSource(buildMediaSourceList(mediaSource, externalSubtitleList));
         }
     }
@@ -427,16 +433,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 .setTreatLoadErrorsAsEndOfStream(true)
                 .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
     }
-
-    @Override
-    public void onTextTrackLoadError(PKError currentError) {
-        this.currentError = currentError;
-        if (eventListener != null) {
-            log.e("Error-Event sent, type = " + currentError.errorType);
-            eventListener.onEvent(PlayerEvent.Type.ERROR);
-        }
-    }
-
+    
     private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
         HttpDataSource.Factory httpDataSourceFactory;
         final String userAgent = getUserAgent(context);
@@ -982,10 +979,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         log.v("destroy");
         closeProfilerSession();
         if (assertPlayerIsNotNull("destroy()")) {
-            if (externalTextTrackLoadErrorPolicy != null) {
-                externalTextTrackLoadErrorPolicy.setOnTextTrackErrorListener(null);
-                externalTextTrackLoadErrorPolicy = null;
-            }
             player.release();
         }
         window = null;

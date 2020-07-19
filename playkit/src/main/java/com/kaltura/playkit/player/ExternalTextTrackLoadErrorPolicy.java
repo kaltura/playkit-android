@@ -22,8 +22,8 @@ public class ExternalTextTrackLoadErrorPolicy extends DefaultLoadErrorHandlingPo
         void onTextTrackLoadError(PKError currentError);
     }
 
-    public void setOnTextTrackErrorListener(ExternalTextTrackLoadErrorPolicy.OnTextTrackLoadErrorListener onAdPlayBackListener) {
-        this.textTrackLoadErrorListener = onAdPlayBackListener;
+    public void setOnTextTrackErrorListener(ExternalTextTrackLoadErrorPolicy.OnTextTrackLoadErrorListener onTextTrackErrorListener) {
+        this.textTrackLoadErrorListener = onTextTrackErrorListener;
     }
 
     @Override
