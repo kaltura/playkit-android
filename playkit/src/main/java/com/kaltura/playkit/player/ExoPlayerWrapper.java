@@ -60,6 +60,7 @@ import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
+import com.kaltura.playkit.player.ExternalTextTrackLoadErrorPolicy.OnTextTrackLoadErrorListener;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
@@ -71,10 +72,7 @@ import java.net.CookiePolicy;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -84,7 +82,8 @@ import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 
-public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener {
+public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, MetadataOutput, BandwidthMeter.EventListener, OnTextTrackLoadErrorListener {
+
     public interface LoadControlStrategy {
         LoadControl getCustomLoadControl();
         BandwidthMeter getCustomBandwidthMeter();
@@ -137,6 +136,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private TrackSelectionHelper.TracksErrorListener tracksErrorListener = initTracksErrorListener();
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
+    private ExternalTextTrackLoadErrorPolicy externalTextTrackLoadErrorPolicy;
+
 
     private PKMediaSourceConfig sourceConfig;
     @NonNull private Profiler profiler = Profiler.NOOP;
@@ -152,6 +153,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         playerSettings = settings != null ? settings : new PlayerSettings();
         rootView = rootPlayerView;
+
+        externalTextTrackLoadErrorPolicy = new ExternalTextTrackLoadErrorPolicy();
+        externalTextTrackLoadErrorPolicy.setOnTextTrackErrorListener(this);
 
         LoadControlStrategy customLoadControlStrategy = getCustomLoadControlStrategy();
         if (customLoadControlStrategy != null && customLoadControlStrategy.getCustomBandwidthMeter() != null) {
@@ -356,7 +360,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             case dash:
                 mediaSource = new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
-                        //.setLoadErrorHandlingPolicy(new CustomTextLoadErrorHandlingPolicy())
                         .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())
                         .createMediaSource(uri);
 
@@ -364,7 +367,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
             case hls:
                 mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
-                       // .setLoadErrorHandlingPolicy(new CustomTextLoadErrorHandlingPolicy())
                         .createMediaSource(uri);
                 break;
 
@@ -424,8 +426,18 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
 
         return new SingleSampleMediaSource.Factory(getDataSourceFactory(null))
-               // .setLoadErrorHandlingPolicy(new CustomTextLoadErrorHandlingPolicy())
+                .setLoadErrorHandlingPolicy(externalTextTrackLoadErrorPolicy)
+                .setTreatLoadErrorsAsEndOfStream(true)
                 .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
+    }
+
+    @Override
+    public void onTextTrackLoadError(PKError currentError) {
+        this.currentError = currentError;
+        if (eventListener != null) {
+            log.e("Error-Event sent, type = " + currentError.errorType);
+            eventListener.onEvent(PlayerEvent.Type.ERROR);
+        }
     }
 
     private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
@@ -611,35 +623,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         log.d("onPlayerError error type => " + error.type);
-        if (error != null && error.getSourceException() != null) {
-            if (error.getSourceException() instanceof HttpDataSource.InvalidResponseCodeException) {
-                HttpDataSource.InvalidResponseCodeException invalidResponseCodeException = (HttpDataSource.InvalidResponseCodeException) error.getSourceException();
-                if (invalidResponseCodeException != null &&
-                        invalidResponseCodeException.dataSpec != null &&
-                        invalidResponseCodeException.dataSpec.uri != null &&
-                        invalidResponseCodeException.dataSpec.uri.getLastPathSegment() != null) {
-
-                    String lastPathSegment = invalidResponseCodeException.dataSpec.uri.getLastPathSegment();
-                    if (lastPathSegment.endsWith(".vtt")) {
-                        ListIterator<PKExternalSubtitle> iter = sourceConfig.getExternalSubtitleList().listIterator();
-                        while(iter.hasNext()){
-                            if(iter.next().getUrl().equals(invalidResponseCodeException.dataSpec.uri.toString())){
-                                iter.remove();
-                            }
-                        }
-
-                        MediaSource mediaSource = buildExoMediaSource(sourceConfig);
-                        if (mediaSource != null) {
-                            long cp = player.getContentDuration();
-                            player.prepare(mediaSource, true, false);
-                            player.seekTo(cp);
-                            return;
-                        }
-                    }
-
-                }
-            }
-        }
 
         if (isBehindLiveWindow(error) && sourceConfig != null) {
             log.d("onPlayerError BehindLiveWindowException received, re-preparing player");
@@ -1003,6 +986,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         log.v("destroy");
         closeProfilerSession();
         if (assertPlayerIsNotNull("destroy()")) {
+            if (externalTextTrackLoadErrorPolicy != null) {
+                externalTextTrackLoadErrorPolicy.setOnTextTrackErrorListener(null);
+                externalTextTrackLoadErrorPolicy = null;
+            }
             player.release();
         }
         window = null;
