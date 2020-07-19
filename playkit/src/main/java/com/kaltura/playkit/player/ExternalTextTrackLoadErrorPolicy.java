@@ -14,7 +14,7 @@ import java.io.IOException;
 
 public class ExternalTextTrackLoadErrorPolicy extends DefaultLoadErrorHandlingPolicy {
 
-    private static final PKLog log = PKLog.get("CustomTextLoadError");
+    private static final PKLog log = PKLog.get("ExternalTextTrackLoadError");
 
     private ExternalTextTrackLoadErrorPolicy.OnTextTrackLoadErrorListener textTrackLoadErrorListener;
 
