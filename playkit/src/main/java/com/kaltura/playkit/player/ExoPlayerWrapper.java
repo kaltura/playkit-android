@@ -333,19 +333,31 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         if (externalSubtitleList == null || externalSubtitleList.isEmpty()) {
+            removeExternalTextTrackListener();
             return mediaSource;
         } else {
-            if (externalTextTrackLoadErrorPolicy == null) {
-                externalTextTrackLoadErrorPolicy = new ExternalTextTrackLoadErrorPolicy();
-                externalTextTrackLoadErrorPolicy.setOnTextTrackErrorListener(err -> {
-                    currentError = err;
-                    if (eventListener != null) {
-                        log.e("Error-Event sent, type = " + currentError.errorType);
-                        eventListener.onEvent(PlayerEvent.Type.ERROR);
-                    }
-                });
-            }
+            addExternalTextTrackErrorListener();
             return new MergingMediaSource(buildMediaSourceList(mediaSource, externalSubtitleList));
+        }
+    }
+
+    private void removeExternalTextTrackListener() {
+        if (externalTextTrackLoadErrorPolicy != null) {
+            externalTextTrackLoadErrorPolicy.setOnTextTrackErrorListener(null);
+            externalTextTrackLoadErrorPolicy = null;
+        }
+    }
+
+    private void addExternalTextTrackErrorListener() {
+        if (externalTextTrackLoadErrorPolicy == null) {
+            externalTextTrackLoadErrorPolicy = new ExternalTextTrackLoadErrorPolicy();
+            externalTextTrackLoadErrorPolicy.setOnTextTrackErrorListener(err -> {
+                currentError = err;
+                if (eventListener != null) {
+                    log.e("Error-Event sent, type = " + currentError.errorType);
+                    eventListener.onEvent(PlayerEvent.Type.ERROR);
+                }
+            });
         }
     }
 
