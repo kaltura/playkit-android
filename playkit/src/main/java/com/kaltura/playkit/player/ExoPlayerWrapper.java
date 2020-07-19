@@ -1178,7 +1178,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             currentError = null;
             playerWindow = player.getCurrentWindowIndex();
             Timeline timeline = player.getCurrentTimeline();
-            if (timeline != null && !timeline.isEmpty() && timeline.getWindow(playerWindow, window).isSeekable) {
+            if (timeline != null && !timeline.isEmpty()  && playerWindow >= 0 && playerWindow < player.getCurrentTimeline().getWindowCount() && timeline.getWindow(playerWindow, window).isSeekable) {
                 playerPosition = player.getCurrentPosition();
             }
         }
