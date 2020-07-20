@@ -789,7 +789,9 @@ public class PlayerController implements Player {
                             return;
                         }
                         event = new PlayerEvent.Error(player.getCurrentError());
-                        cancelUpdateProgress();
+                        if (player.getCurrentError().isFatal()){
+                           cancelUpdateProgress();
+                        }
                         break;
                     case METADATA_AVAILABLE:
                         if (player.getMetadata() == null || player.getMetadata().isEmpty()) {
