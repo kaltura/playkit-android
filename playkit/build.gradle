@@ -34,6 +34,9 @@ tasks.withType(Javadoc) {
 }
 
 dependencies {
+    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.fragment:fragment:1.1.0'
+    implementation 'com.google.android.material:material:1.1.0'
 
     def exoPlayerVersion = '2.11.7'
     api "com.kaltura.playkit:kexoplayer:$exoPlayerVersion"

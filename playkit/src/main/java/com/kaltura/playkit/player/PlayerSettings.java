@@ -43,7 +43,6 @@ public class PlayerSettings implements Player.Settings {
     private PKAspectRatioResizeMode resizeMode = PKAspectRatioResizeMode.fit;
     private ABRSettings abrSettings = new ABRSettings();
     private VRSettings vrSettings;
-    private PKCacheProvider cacheProvider;
     /**
      * Flag helping to check if client app wants to use a single player instance at a time
      * Only if IMA plugin is there then only this flag is set to true.
@@ -55,6 +54,7 @@ public class PlayerSettings implements Player.Settings {
     private PKMediaFormat preferredMediaFormat = PKMediaFormat.dash;
     private PKRequestParams.Adapter contentRequestAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
+    private PKCacheProvider cacheProvider;
     private Object customLoadControlStrategy = null;
     private PKMaxVideoSize maxVideoSize;
 
@@ -65,6 +65,10 @@ public class PlayerSettings implements Player.Settings {
 
     public PKRequestParams.Adapter getLicenseRequestAdapter() {
         return licenseRequestAdapter;
+    }
+
+    public PKCacheProvider getCacheProvider() {
+        return cacheProvider;
     }
 
     public boolean useTextureView() {
@@ -169,10 +173,6 @@ public class PlayerSettings implements Player.Settings {
 
     public int getMaxAudioChannelCount() {
         return maxAudioChannelCount;
-    }
-
-    public PKCacheProvider getCacheProvider() {
-        return cacheProvider;
     }
 
     @Override

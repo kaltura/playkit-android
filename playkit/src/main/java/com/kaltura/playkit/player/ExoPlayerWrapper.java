@@ -56,12 +56,14 @@ import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSourceFactory;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
+import com.kaltura.playkit.prefetch.PKCacheProvider;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.NativeCookieJarBridge;
 
@@ -348,25 +350,51 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
 
+        boolean isNullCache = getExoCacheProvider().getCache() == null;
+        CacheDataSourceFactory cacheDataSourceFactory = null;
+        if (!isNullCache) {
+            cacheDataSourceFactory = new CacheDataSourceFactory(
+                    getExoCacheProvider().getCache(), dataSourceFactory);
+        }
 
         switch (format) {
             case dash:
-                mediaSource = new DashMediaSource.Factory(
-                        new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
-                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())
-                        .createMediaSource(uri);
+
+                if (isNullCache) {
+                    mediaSource = new DashMediaSource.Factory(
+                            new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
+                            .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())
+                            .createMediaSource(uri);
+                } else {
+                    mediaSource = new DashMediaSource.Factory(
+                            new DefaultDashChunkSource.Factory(dataSourceFactory), cacheDataSourceFactory)
+                            .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())
+                            .createMediaSource(uri);
+                }
                 break;
 
             case hls:
-                mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
-                        .createMediaSource(uri);
+                if (isNullCache) {
+                    HlsMediaSource.Factory factory = new HlsMediaSource.Factory(dataSourceFactory);
+                    mediaSource = factory.createMediaSource(uri);
+                } else {
+                    HlsMediaSource.Factory factory = new HlsMediaSource.Factory(cacheDataSourceFactory);
+                    mediaSource = factory.createMediaSource(uri);
+                }
+
+
                 break;
 
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
-                mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
-                        .createMediaSource(uri);
+                if (isNullCache) {
+                    mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                            .createMediaSource(uri);
+                } else {
+                    mediaSource = new ProgressiveMediaSource.Factory(cacheDataSourceFactory)
+                            .createMediaSource(uri);
+                }
                 break;
 
             default:
@@ -463,6 +491,16 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
         return httpDataSourceFactory;
     }
+
+
+    private ExoCacheProvider getExoCacheProvider() {
+        final PKCacheProvider provider = playerSettings.getCacheProvider();
+        if (provider instanceof ExoCacheProvider) {
+            return ((ExoCacheProvider) provider);
+        }
+        return null;
+    }
+
 
     private DataSource.Factory getDataSourceFactory(Map<String, String> headers) {
         return new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
