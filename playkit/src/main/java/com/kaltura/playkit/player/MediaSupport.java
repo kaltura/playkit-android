@@ -20,11 +20,11 @@ import android.media.MediaDrm;
 import android.media.NotProvisionedException;
 import android.os.AsyncTask;
 import android.os.Build;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-
 import android.util.Base64;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
@@ -126,7 +126,8 @@ public class MediaSupport {
 
         final Set<PKDrmParams.Scheme> supportedDrmSchemes = supportedDrmSchemes();
         if (drmInitCallback != null) {
-            drmInitCallback.onDrmInitComplete(supportedDrmSchemes, isHardwareDrmSupported, provisionPerformed, provisionError);
+            drmInitCallback.onDrmInitComplete(new PKDeviceSupport(supportedDrmSchemes, isHardwareDrmSupported, provisionPerformed,
+                    PKCodecSupport.isSoftwareHevcSupported(), PKCodecSupport.isHardwareHevcSupported(), provisionError));
 
         } else if (!initSucceeded) {
             if (provisionError != null) {
@@ -261,12 +262,9 @@ public class MediaSupport {
         /**
          * Called when the DRM subsystem is initialized (with possible errors).
          *
-         * @param supportedDrmSchemes supported DRM schemes
-         * @param isHardwareDrmSupported is Hardware DRM Supported
-         * @param provisionPerformed  true if provisioning was required and performed, false otherwise
-         * @param provisionError      null if provisioning is successful, exception otherwise
+         * @param pkDeviceSupport model consist of various device codec and DRM level info {@link PKDeviceSupport}
          */
-        void onDrmInitComplete(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean isHardwareDrmSupported, boolean provisionPerformed, Exception provisionError);
+        void onDrmInitComplete(PKDeviceSupport pkDeviceSupport);
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -294,7 +292,7 @@ public class MediaSupport {
                     try {
                         securityLevel = mediaDrm.getPropertyString(SECURITY_LEVEL_PROPERTY);
                     } catch (RuntimeException e) {
-                        securityLevel = null;                    
+                        securityLevel = null;
                     }
                 } catch (NotProvisionedException e) {
                     log.e("Widevine Modular not provisioned");

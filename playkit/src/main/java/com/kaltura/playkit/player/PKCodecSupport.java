@@ -24,6 +24,9 @@ public class PKCodecSupport {
 
     private static final Set<String> softwareCodecs, hardwareCodecs;
 
+    // Video codec identifier for HEVC
+    private static final String VIDEO_CODEC_ID_HEVC = "video/hevc";
+
     // This is not a bullet-proof way to detect emulators, but it's good enough for this purpose.
     private static boolean deviceIsEmulator = Build.PRODUCT.equals("sdk") || Build.PRODUCT.startsWith("sdk_") || Build.PRODUCT.endsWith("_sdk");
 
@@ -97,7 +100,7 @@ public class PKCodecSupport {
         return codecInfo.isHardwareAccelerated();
     }
 
-    public static boolean hasDecoder(String codec, boolean isMimeType, boolean allowSoftware) {
+    static boolean hasDecoder(String codec, boolean isMimeType, boolean allowSoftware) {
 
         if (deviceIsEmulator) {
             // Emulators have no hardware codecs, but we still need to play.
@@ -110,5 +113,17 @@ public class PKCodecSupport {
         }
 
         return allowSoftware && softwareCodecs.contains(mimeType);
+    }
+
+    static boolean isSoftwareHevcSupported() {
+        return softwareCodecs.contains(VIDEO_CODEC_ID_HEVC);
+    }
+
+    static boolean isHardwareHevcSupported() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return hardwareCodecs.contains(VIDEO_CODEC_ID_HEVC);
+        } else {
+            return false;
+        }
     }
 }
