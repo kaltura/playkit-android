@@ -98,7 +98,7 @@ class TrackSelectionHelper {
     private String[] requestedChangeTrackIds;
 
     private TracksInfoListener tracksInfoListener;
-    private TracksErrorListener tracksErrorListener;;
+    private TracksErrorListener tracksErrorListener;
 
     private PlayerSettings playerSettings;
 
@@ -203,7 +203,7 @@ class TrackSelectionHelper {
                                     continue;
                                 }
 
-                                if (!videoTracksAvailable && rendererIndex == TRACK_TYPE_VIDEO) {
+                                if (!videoTracksAvailable) {
                                     videoTracksAvailable = true;
                                 }
 
@@ -306,8 +306,6 @@ class TrackSelectionHelper {
             return videoTracks;
         }
 
-
-
         boolean atLeastOneCodecSupportedInHardware = videoCodecsSupportedInHardware(); // if no hardware decoders play with the software
 
         VideoCodecSettings preferredVideoCodecSettings = playerSettings.getPreferredVideoCodecSettings();
@@ -321,13 +319,15 @@ class TrackSelectionHelper {
                 continue;
             }
 
-            if (videoTracksCodecsMap.get(videoCodecForPlayback).isEmpty()) {
+            if (videoTracksCodecsMap.get(videoCodecForPlayback) != null && videoTracksCodecsMap.get(videoCodecForPlayback).isEmpty()) {
                 continue;
             }
             VideoTrack candidateVideoTrack = videoTracksCodecsMap.get(videoCodecForPlayback).get(0);
-            if (isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
+            if (candidateVideoTrack.getCodecName() != null &&
+                    isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
                 return videoTracksCodecsMap.get(videoCodecForPlayback);
-            } else if ((!atLeastOneCodecSupportedInHardware  || preferredVideoCodecSettings.isAllowSoftwareDecoder()) && isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, true)) {
+            } else if ((!atLeastOneCodecSupportedInHardware  || preferredVideoCodecSettings.isAllowSoftwareDecoder())
+                    && (candidateVideoTrack.getCodecName() != null && isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, true))) {
                 return videoTracksCodecsMap.get(videoCodecForPlayback);
             }
         }
@@ -353,11 +353,13 @@ class TrackSelectionHelper {
                 continue;
             }
 
-            if (videoTracksCodecsMap.get(videoCodecForPlayback).isEmpty()) {
+            if (videoTracksCodecsMap.get(videoCodecForPlayback) != null &&
+                    videoTracksCodecsMap.get(videoCodecForPlayback).isEmpty()) {
                 continue;
             }
             VideoTrack candidateVideoTrack = videoTracksCodecsMap.get(videoCodecForPlayback).get(0);
-            if (isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
+            if (candidateVideoTrack.getCodecName() != null &&
+                    isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
                 return true;
             }
 
@@ -368,7 +370,8 @@ class TrackSelectionHelper {
     private void populateAllCodecTracks(boolean atleastOneCodecSupportedInHardware) {
         for (Map.Entry<PKVideoCodec, List<VideoTrack>> multipleCodecEntry  : videoTracksCodecsMap.entrySet()) {
             for (VideoTrack codecVideoTrack : multipleCodecEntry.getValue()) {
-                if (isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
+                if (codecVideoTrack.getCodecName() != null &&
+                        isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
                     videoTracks.add(codecVideoTrack);
                 } else if ((!atleastOneCodecSupportedInHardware || playerSettings.getPreferredVideoCodecSettings().isAllowSoftwareDecoder()) && isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, true)) {
                     videoTracks.add(codecVideoTrack);
@@ -861,7 +864,8 @@ class TrackSelectionHelper {
                             TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(TRACK_TYPE_AUDIO).get(audioGroupIndex);
                             if (trackGroup != null) {
                                 for (int ind = 0 ; ind < trackGroup.length ; ind++) {
-                                    if (audioTrack.getCodecType().equals(getAudioCodec(trackGroup.getFormat(ind)))) {
+                                    if (audioTrack.getCodecType() != null &&
+                                            audioTrack.getCodecType().equals(getAudioCodec(trackGroup.getFormat(ind)))) {
                                         adaptiveTrackIndexesList.add(ind);
                                         break;
                                     }
