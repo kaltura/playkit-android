@@ -199,6 +199,14 @@ class TrackSelectionHelper {
                                 }
                                 break;
                             case TRACK_TYPE_TEXT:
+                                if (format.language != null && isExternalSubtitle(format)) {
+                                    String language = format.language;
+                                    String extSubtitleLanguage = language.substring(0, language.indexOf("-"));
+                                    if (checkLanguageInTextTrackList(extSubtitleLanguage)) {
+                                        continue;
+                                    }
+                                }
+
                                 if (CEA_608.equals(format.sampleMimeType)) {
                                     if (playerSettings != null && playerSettings.cea608CaptionsEnabled()) {
                                         textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
@@ -252,6 +260,21 @@ class TrackSelectionHelper {
             return LANGUAGE_UNKNOWN;
         }
         return format.language;
+    }
+
+    private boolean isExternalSubtitle(Format format) {
+        return format.language != null && format.language.contains("-extsrt");
+    }
+
+    private boolean checkLanguageInTextTrackList(String language) {
+        if (!textTracks.isEmpty()) {
+            for (int track = 0; track < textTracks.size(); track ++) {
+                if (textTracks.get(track).getLanguage() != null && textTracks.get(track).getLanguage().equals(language)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
