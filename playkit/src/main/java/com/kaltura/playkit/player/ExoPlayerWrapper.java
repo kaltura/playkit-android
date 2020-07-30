@@ -438,7 +438,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 pkExternalSubtitle.getBitrate(),
                 pkExternalSubtitle.getSelectionFlags(),
                 pkExternalSubtitle.getRoleFlag(),
-                pkExternalSubtitle.getLanguage() + "-extsrt"); // The subtitle language. May be null.
+                pkExternalSubtitle.getLanguage() + "-" + pkExternalSubtitle.getMimeType()); // The subtitle language. May be null.
 
         return new SingleSampleMediaSource.Factory(getDataSourceFactory(null))
                 .setLoadErrorHandlingPolicy(externalTextTrackLoadErrorPolicy)

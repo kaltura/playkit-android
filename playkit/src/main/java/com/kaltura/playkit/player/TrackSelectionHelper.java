@@ -263,7 +263,7 @@ class TrackSelectionHelper {
     }
 
     private boolean isExternalSubtitle(Format format) {
-        return format.language != null && format.language.contains("-extsrt");
+        return format.language != null && format.language.contains("-" + format.sampleMimeType);
     }
 
     private boolean checkLanguageInTextTrackList(String language) {
