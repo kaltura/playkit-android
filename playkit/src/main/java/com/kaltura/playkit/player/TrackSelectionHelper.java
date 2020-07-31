@@ -37,6 +37,7 @@ import com.kaltura.playkit.utils.Consts;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -82,6 +83,7 @@ class TrackSelectionHelper {
     private List<VideoTrack> videoTracks = new ArrayList<>();
     private List<AudioTrack> audioTracks = new ArrayList<>();
     private List<TextTrack> textTracks = new ArrayList<>();
+    private HashMap<String, HashMap<String, Format>> subtitleList = new HashMap<>();
 
     private String[] lastSelectedTrackIds;
     private String[] requestedChangeTrackIds;
@@ -167,6 +169,10 @@ class TrackSelectionHelper {
             //the trackGroupArray of the current renderer.
             trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
 
+            if (rendererIndex == TRACK_TYPE_TEXT) {
+                extractTextTracksToMap(trackGroupArray);
+            }
+
             //run through the all track groups in current renderer.
             for (int groupIndex = 0; groupIndex < trackGroupArray.length; groupIndex++) {
 
@@ -199,12 +205,8 @@ class TrackSelectionHelper {
                                 }
                                 break;
                             case TRACK_TYPE_TEXT:
-                                if (format.language != null && isExternalSubtitle(format)) {
-                                    String language = format.language;
-                                    String extSubtitleLanguage = language.substring(0, language.indexOf("-"));
-                                    if (checkLanguageInTextTrackList(extSubtitleLanguage)) {
-                                        continue;
-                                    }
+                                if (format.language != null && removeTextTrackOnPreference(format)) {
+                                    continue;
                                 }
 
                                 if (CEA_608.equals(format.sampleMimeType)) {
@@ -263,15 +265,30 @@ class TrackSelectionHelper {
     }
 
     private boolean isExternalSubtitle(Format format) {
-        return format.language != null && format.language.contains("-" + format.sampleMimeType);
+        return format != null && format.language != null && format.language.contains("-" + format.sampleMimeType);
     }
 
-    private boolean checkLanguageInTextTrackList(String language) {
-        if (!textTracks.isEmpty()) {
-            for (int track = 0; track < textTracks.size(); track ++) {
-                if (textTracks.get(track).getLanguage() != null && textTracks.get(track).getLanguage().equals(language)) {
-                    return true;
-                }
+    private String getExternalSubtitleLanguage(Format format) {
+        if (format.language != null) {
+            return format.language.substring(0, format.language.indexOf("-"));
+        } else {
+            return null;
+        }
+    }
+
+    private boolean removeTextTrackOnPreference(Format format) {
+        String languageName = format.language;
+        if (isExternalSubtitle(format)) {
+            languageName = getExternalSubtitleLanguage(format);
+        }
+
+        if (subtitleList.containsKey(languageName) && subtitleList.get(languageName).size() > 1) {
+            if ((playerSettings.isPreferInternalSubtitles() && isExternalSubtitle(format)) ||
+                    (!playerSettings.isPreferInternalSubtitles() && !isExternalSubtitle(format))) {
+                return true;
+            } else if ((!playerSettings.isPreferInternalSubtitles() && isExternalSubtitle(format)) ||
+                    (playerSettings.isPreferInternalSubtitles() && !isExternalSubtitle(format))) {
+                return false;
             }
         }
         return false;
@@ -345,6 +362,31 @@ class TrackSelectionHelper {
         }
 
         return restoreLastSelectedTrack(trackList, lastSelectedTrackId, getUpdatedDefaultTrackIndex(trackList, defaultTrackIndex));
+    }
+
+    private void extractTextTracksToMap(TrackGroupArray trackGroupArray) {
+        for (int groupIndex = 0; groupIndex < trackGroupArray.length; groupIndex++) {
+            TrackGroup trackGroup = trackGroupArray.get(groupIndex);
+
+            for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
+                Format format = trackGroup.getFormat(trackIndex);
+
+                String languageName = format.language;
+                if (isExternalSubtitle(format)) {
+                    languageName = getExternalSubtitleLanguage(format);
+                }
+
+                if (subtitleList.containsKey(languageName)) {
+                    HashMap<String, Format> baseTrackHashMap = subtitleList.get(languageName);
+                    baseTrackHashMap.put(format.language, format);
+                    subtitleList.put(languageName, baseTrackHashMap);
+                } else {
+                    HashMap<String, Format> baseTrackHashMap = new HashMap<>();
+                    baseTrackHashMap.put(languageName, format);
+                    subtitleList.put(languageName, baseTrackHashMap);
+                }
+            }
+        }
     }
 
     private int getUpdatedDefaultTrackIndex(List<? extends BaseTrack> trackList, int defaultTrackIndex) {
@@ -553,7 +595,7 @@ class TrackSelectionHelper {
         }
         return uniqueIds;
     }
-    
+
     private SelectionOverride retrieveOverrideSelectionList(int[][] uniqueIds) {
         if (uniqueIds == null || uniqueIds[0] == null) {
             throw new IllegalArgumentException("Track selection with uniqueId = null");

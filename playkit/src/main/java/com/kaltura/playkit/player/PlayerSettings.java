@@ -33,6 +33,7 @@ public class PlayerSettings implements Player.Settings {
     private boolean isVideoViewHidden;
     private boolean isTunneledAudioPlayback;
     private boolean handleAudioBecomingNoisyEnabled;
+    private boolean preferInternalSubtitles = true;
     private Integer maxVideoBitrate;
     private Integer maxAudioBitrate;
     private int maxAudioChannelCount = -1;
@@ -154,6 +155,10 @@ public class PlayerSettings implements Player.Settings {
     }
 
     public boolean isHandleAudioBecomingNoisyEnabled() { return handleAudioBecomingNoisyEnabled; }
+
+    public boolean isPreferInternalSubtitles() {
+        return preferInternalSubtitles;
+    }
 
     public PKMaxVideoSize getMaxVideoSize() { return maxVideoSize; }
 
@@ -311,6 +316,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled) {
         this.handleAudioBecomingNoisyEnabled = handleAudioBecomingNoisyEnabled;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setSubtitlePreference(boolean keepInternal) {
+        this.preferInternalSubtitles = keepInternal;
         return this;
     }
 
