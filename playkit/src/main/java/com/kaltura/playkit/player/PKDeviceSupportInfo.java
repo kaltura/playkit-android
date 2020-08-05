@@ -5,14 +5,13 @@ import com.kaltura.playkit.PKDrmParams;
 import java.util.Set;
 
 
-public class PKDeviceSupport {
+public class PKDeviceSupportInfo {
 
     private Set<PKDrmParams.Scheme> supportedDrmSchemes;
     private boolean isHardwareDrmSupported;
     private boolean provisionPerformed;
     private boolean isSoftwareHevcSupported;
     private boolean isHardwareHevcSupported;
-    private Exception provisionError;
 
     /**
      * @param supportedDrmSchemes supported DRM schemes
@@ -20,17 +19,15 @@ public class PKDeviceSupport {
      * @param provisionPerformed  true if provisioning was required and performed, false otherwise
      * @param isSoftwareHevcSupported checks if only hevc s/w decoder is available on this device
      * @param isHardwareHevcSupported checks if only hevc h/w decoder is available on this device
-     * @param provisionError      null if provisioning is successful, exception otherwise
      */
 
-    PKDeviceSupport(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean isHardwareDrmSupported, boolean provisionPerformed,
-                    boolean isSoftwareHevcSupported, boolean isHardwareHevcSupported, Exception provisionError) {
+    PKDeviceSupportInfo(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean isHardwareDrmSupported, boolean provisionPerformed,
+                        boolean isSoftwareHevcSupported, boolean isHardwareHevcSupported) {
         this.supportedDrmSchemes = supportedDrmSchemes;
         this.isHardwareDrmSupported = isHardwareDrmSupported;
         this.provisionPerformed = provisionPerformed;
         this.isSoftwareHevcSupported = isSoftwareHevcSupported;
         this.isHardwareHevcSupported = isHardwareHevcSupported;
-        this.provisionError = provisionError;
     }
 
     public Set<PKDrmParams.Scheme> getSupportedDrmSchemes() {
@@ -53,7 +50,4 @@ public class PKDeviceSupport {
         return isHardwareHevcSupported;
     }
 
-    public Exception getProvisionError() {
-        return provisionError;
-    }
 }
