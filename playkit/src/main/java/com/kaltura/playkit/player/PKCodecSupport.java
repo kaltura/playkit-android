@@ -117,11 +117,7 @@ public class PKCodecSupport {
     }
 
     static boolean isSoftwareHevcSupported() {
-        if (isHardwareHevcSupported()) {
-            return false;
-        } else {
-            return softwareCodecs.contains(HEVC_MIME_TYPE);
-        }
+        return softwareCodecs.contains(HEVC_MIME_TYPE);
     }
 
     static boolean isHardwareHevcSupported() {

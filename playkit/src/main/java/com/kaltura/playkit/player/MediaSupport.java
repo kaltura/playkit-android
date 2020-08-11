@@ -263,6 +263,7 @@ public class MediaSupport {
          * Called when the DRM subsystem is initialized (with possible errors).
          *
          * @param pkDeviceSupportInfo model consist of various device codec and DRM level info {@link PKDeviceSupportInfo}
+         * @param provisionError null if provisioning is successful, exception otherwise
          */
         void onDrmInitComplete(PKDeviceSupportInfo pkDeviceSupportInfo, Exception provisionError);
     }
