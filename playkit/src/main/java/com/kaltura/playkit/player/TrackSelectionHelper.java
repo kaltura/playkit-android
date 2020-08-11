@@ -98,7 +98,7 @@ class TrackSelectionHelper {
     private String[] requestedChangeTrackIds;
 
     private TracksInfoListener tracksInfoListener;
-    private TracksErrorListener tracksErrorListener;;
+    private TracksErrorListener tracksErrorListener;
 
     private PlayerSettings playerSettings;
 
@@ -306,8 +306,6 @@ class TrackSelectionHelper {
             return videoTracks;
         }
 
-
-
         boolean atLeastOneCodecSupportedInHardware = videoCodecsSupportedInHardware(); // if no hardware decoders play with the software
 
         VideoCodecSettings preferredVideoCodecSettings = playerSettings.getPreferredVideoCodecSettings();
@@ -321,7 +319,7 @@ class TrackSelectionHelper {
                 continue;
             }
 
-            if (videoTracksCodecsMap.get(videoCodecForPlayback).isEmpty()) {
+            if (videoTracksCodecsMap.get(videoCodecForPlayback) != null && videoTracksCodecsMap.get(videoCodecForPlayback).isEmpty()) {
                 continue;
             }
             VideoTrack candidateVideoTrack = videoTracksCodecsMap.get(videoCodecForPlayback).get(0);
@@ -355,7 +353,8 @@ class TrackSelectionHelper {
                 continue;
             }
 
-            if (videoTracksCodecsMap.get(videoCodecForPlayback).isEmpty()) {
+            if (videoTracksCodecsMap.get(videoCodecForPlayback) != null &&
+                    videoTracksCodecsMap.get(videoCodecForPlayback).isEmpty()) {
                 continue;
             }
             VideoTrack candidateVideoTrack = videoTracksCodecsMap.get(videoCodecForPlayback).get(0);
@@ -866,7 +865,8 @@ class TrackSelectionHelper {
                             TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(TRACK_TYPE_AUDIO).get(audioGroupIndex);
                             if (trackGroup != null) {
                                 for (int ind = 0 ; ind < trackGroup.length ; ind++) {
-                                    if (audioTrack.getCodecType().equals(getAudioCodec(trackGroup.getFormat(ind)))) {
+                                    if (audioTrack.getCodecType() != null &&
+                                            audioTrack.getCodecType().equals(getAudioCodec(trackGroup.getFormat(ind)))) {
                                         adaptiveTrackIndexesList.add(ind);
                                         break;
                                     }
