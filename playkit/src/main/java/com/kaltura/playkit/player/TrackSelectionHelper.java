@@ -322,6 +322,7 @@ class TrackSelectionHelper {
             if (videoTracksCodecsMap.get(videoCodecForPlayback) != null && videoTracksCodecsMap.get(videoCodecForPlayback).isEmpty()) {
                 continue;
             }
+
             VideoTrack candidateVideoTrack = videoTracksCodecsMap.get(videoCodecForPlayback).get(0);
             if (candidateVideoTrack.getCodecName() != null &&
                     isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
@@ -353,16 +354,15 @@ class TrackSelectionHelper {
                 continue;
             }
 
-            if (videoTracksCodecsMap.get(videoCodecForPlayback) != null &&
-                    videoTracksCodecsMap.get(videoCodecForPlayback).isEmpty()) {
+            if (videoTracksCodecsMap.get(videoCodecForPlayback) != null && videoTracksCodecsMap.get(videoCodecForPlayback).isEmpty()) {
                 continue;
             }
+
             VideoTrack candidateVideoTrack = videoTracksCodecsMap.get(videoCodecForPlayback).get(0);
             if (candidateVideoTrack.getCodecName() != null &&
                     isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
                 return true;
             }
-
         }
         return false;
     }
@@ -990,9 +990,7 @@ class TrackSelectionHelper {
             case TRACK_TYPE_VIDEO:
                 List<VideoTrack> allVideoTracks = new ArrayList<>();
                 for (Map.Entry<PKVideoCodec,List<VideoTrack>> videoTrackEntry : videoTracksCodecsMap.entrySet()) {
-                    for (VideoTrack track : videoTrackEntry.getValue()) {
-                        allVideoTracks.add(track);
-                    }
+                    allVideoTracks.addAll(videoTrackEntry.getValue());
                 }
                 trackList = allVideoTracks;
                 break;
@@ -1329,7 +1327,6 @@ class TrackSelectionHelper {
             if (preferredTrackUniqueId == null) {
                 preferredTrackUniqueId = maybeSetFirstTextTrackAsAutoSelection();
             }
-
         }
         return preferredTrackUniqueId;
     }
@@ -1374,7 +1371,7 @@ class TrackSelectionHelper {
                     preferredTrackUniqueId = track.getUniqueId();
                     break;
                 }
-            } catch (MissingResourceException ex) {
+            } catch (MissingResourceException | NullPointerException ex) {
                 log.e(ex.getMessage());
             }
         }
