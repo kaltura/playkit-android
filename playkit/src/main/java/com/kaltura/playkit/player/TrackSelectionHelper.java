@@ -203,7 +203,7 @@ class TrackSelectionHelper {
                                     continue;
                                 }
 
-                                if (!videoTracksAvailable && rendererIndex == TRACK_TYPE_VIDEO) {
+                                if (!videoTracksAvailable) {
                                     videoTracksAvailable = true;
                                 }
 
@@ -325,9 +325,11 @@ class TrackSelectionHelper {
                 continue;
             }
             VideoTrack candidateVideoTrack = videoTracksCodecsMap.get(videoCodecForPlayback).get(0);
-            if (isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
+            if (candidateVideoTrack.getCodecName() != null &&
+                    isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
                 return videoTracksCodecsMap.get(videoCodecForPlayback);
-            } else if ((!atLeastOneCodecSupportedInHardware  || preferredVideoCodecSettings.isAllowSoftwareDecoder()) && isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, true)) {
+            } else if ((!atLeastOneCodecSupportedInHardware  || preferredVideoCodecSettings.isAllowSoftwareDecoder()) &&
+                    (candidateVideoTrack.getCodecName() != null && isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, true))) {
                 return videoTracksCodecsMap.get(videoCodecForPlayback);
             }
         }
@@ -357,7 +359,8 @@ class TrackSelectionHelper {
                 continue;
             }
             VideoTrack candidateVideoTrack = videoTracksCodecsMap.get(videoCodecForPlayback).get(0);
-            if (isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
+            if (candidateVideoTrack.getCodecName() != null &&
+                    isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
                 return true;
             }
 
@@ -368,9 +371,11 @@ class TrackSelectionHelper {
     private void populateAllCodecTracks(boolean atleastOneCodecSupportedInHardware) {
         for (Map.Entry<PKVideoCodec, List<VideoTrack>> multipleCodecEntry  : videoTracksCodecsMap.entrySet()) {
             for (VideoTrack codecVideoTrack : multipleCodecEntry.getValue()) {
-                if (isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
+                if (codecVideoTrack.getCodecName() != null &&
+                        isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
                     videoTracks.add(codecVideoTrack);
-                } else if ((!atleastOneCodecSupportedInHardware || playerSettings.getPreferredVideoCodecSettings().isAllowSoftwareDecoder()) && isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, true)) {
+                } else if ((!atleastOneCodecSupportedInHardware || playerSettings.getPreferredVideoCodecSettings().isAllowSoftwareDecoder()) &&
+                        (codecVideoTrack.getCodecName() != null && isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, true))) {
                     videoTracks.add(codecVideoTrack);
                 }
             }
