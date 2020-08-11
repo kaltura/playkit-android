@@ -52,8 +52,7 @@ public class VideoCodecSettings {
 
         return videoCodecPriorityList;
     }
-
-
+    
     public VideoCodecSettings setVideoCodecPriorityList(List<PKVideoCodec> videoCodecPriorityList) {
         if (videoCodecPriorityList != null && !videoCodecPriorityList.isEmpty()) {
             this.videoCodecPriorityList = videoCodecPriorityList;
