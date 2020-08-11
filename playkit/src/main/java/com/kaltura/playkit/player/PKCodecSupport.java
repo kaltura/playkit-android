@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 public class PKCodecSupport {
@@ -24,21 +25,24 @@ public class PKCodecSupport {
 
     private static final Set<String> softwareCodecs, hardwareCodecs;
 
+    // Video mime type for HEVC
+    private static final String HEVC_MIME_TYPE = MimeTypes.VIDEO_H265;
+
     // This is not a bullet-proof way to detect emulators, but it's good enough for this purpose.
     private static boolean deviceIsEmulator = Build.PRODUCT.equals("sdk") || Build.PRODUCT.startsWith("sdk_") || Build.PRODUCT.endsWith("_sdk");
 
 
     static {
-        Set<String> hardware = new HashSet<>();
-        Set<String> software = new HashSet<>();
+        Set<String> hardwareCodecSet = new HashSet<>();
+        Set<String> softwareCodeSet = new HashSet<>();
 
-        populateCodecSupport(hardware, software);
+        populateCodecSupport(hardwareCodecSet, softwareCodeSet);
 
-        softwareCodecs = Collections.unmodifiableSet(software);
-        hardwareCodecs = Collections.unmodifiableSet(hardware);
+        softwareCodecs = Collections.unmodifiableSet(softwareCodeSet);
+        hardwareCodecs = Collections.unmodifiableSet(hardwareCodecSet);
     }
 
-    private static void populateCodecSupport(Set<String> hardware, Set<String> software) {
+    private static void populateCodecSupport(Set<String> hardwareCodecSet, Set<String> softwareCodeSet) {
 
         ArrayList<MediaCodecInfo> decoders = new ArrayList<>();
 
@@ -62,8 +66,8 @@ public class PKCodecSupport {
 
         for (MediaCodecInfo codecInfo : decoders) {
             final String name = codecInfo.getName();
-
             final boolean isHardware;
+            
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 isHardware = isHardwareCodecV29(codecInfo);
             } else {
@@ -71,13 +75,13 @@ public class PKCodecSupport {
             }
 
             final List<String> supportedCodecs = Arrays.asList(codecInfo.getSupportedTypes());
-            final Set<String> set = isHardware ? hardware : software;
+            final Set<String> set = isHardware ? hardwareCodecSet : softwareCodeSet;
             set.addAll(supportedCodecs);
         }
     }
 
     private static boolean isSoftwareOnly(String codecName) {
-        String codecNameLowerCase = codecName.toLowerCase();
+        String codecNameLowerCase = codecName.toLowerCase(Locale.US);
         if (codecNameLowerCase.startsWith("arc.")) { // App Runtime for Chrome (ARC) codecs
             return false;
         }
@@ -97,7 +101,7 @@ public class PKCodecSupport {
         return codecInfo.isHardwareAccelerated();
     }
 
-    public static boolean hasDecoder(String codec, boolean isMimeType, boolean allowSoftware) {
+    static boolean hasDecoder(String codec, boolean isMimeType, boolean allowSoftware) {
 
         if (deviceIsEmulator) {
             // Emulators have no hardware codecs, but we still need to play.
@@ -110,5 +114,13 @@ public class PKCodecSupport {
         }
 
         return allowSoftware && softwareCodecs.contains(mimeType);
+    }
+
+    static boolean isSoftwareHevcSupported() {
+        return softwareCodecs.contains(HEVC_MIME_TYPE);
+    }
+
+    static boolean isHardwareHevcSupported() {
+        return hardwareCodecs.contains(HEVC_MIME_TYPE);
     }
 }

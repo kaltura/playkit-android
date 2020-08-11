@@ -326,8 +326,8 @@ class TrackSelectionHelper {
             if (candidateVideoTrack.getCodecName() != null &&
                     isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
                 return videoTracksCodecsMap.get(videoCodecForPlayback);
-            } else if ((!atLeastOneCodecSupportedInHardware  || preferredVideoCodecSettings.isAllowSoftwareDecoder())
-                    && (candidateVideoTrack.getCodecName() != null && isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, true))) {
+            } else if ((!atLeastOneCodecSupportedInHardware  || preferredVideoCodecSettings.isAllowSoftwareDecoder()) &&
+                    (candidateVideoTrack.getCodecName() != null && isCodecSupported(candidateVideoTrack.getCodecName(), TrackType.VIDEO, true))) {
                 return videoTracksCodecsMap.get(videoCodecForPlayback);
             }
         }
@@ -373,7 +373,8 @@ class TrackSelectionHelper {
                 if (codecVideoTrack.getCodecName() != null &&
                         isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, false)) {
                     videoTracks.add(codecVideoTrack);
-                } else if ((!atleastOneCodecSupportedInHardware || playerSettings.getPreferredVideoCodecSettings().isAllowSoftwareDecoder()) && isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, true)) {
+                } else if ((!atleastOneCodecSupportedInHardware || playerSettings.getPreferredVideoCodecSettings().isAllowSoftwareDecoder()) &&
+                        (codecVideoTrack.getCodecName() != null && isCodecSupported(codecVideoTrack.getCodecName(), TrackType.VIDEO, true))) {
                     videoTracks.add(codecVideoTrack);
                 }
             }
