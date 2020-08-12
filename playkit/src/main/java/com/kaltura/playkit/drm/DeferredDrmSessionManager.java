@@ -46,7 +46,7 @@ import static com.kaltura.playkit.Utils.toBase64;
  * @hide
  */
 
-public class DeferredDrmSessionManager implements DrmSessionManager<ExoMediaCrypto>, DefaultDrmSessionEventListener {
+public class DeferredDrmSessionManager implements DrmSessionManager, DefaultDrmSessionEventListener {
 
     private static final PKLog log = PKLog.get("DeferredDrmSessionManager");
 

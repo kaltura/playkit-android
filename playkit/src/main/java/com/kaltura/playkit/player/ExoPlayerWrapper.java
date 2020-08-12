@@ -445,7 +445,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 .setTreatLoadErrorsAsEndOfStream(true)
                 .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
     }
-    
+
     private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
         HttpDataSource.Factory httpDataSourceFactory;
         final String userAgent = getUserAgent(context);
@@ -742,7 +742,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
 
         log.d("onTracksChanged");
-        //if onOnTracksChanged happened when application went background, do not update the tracks.
+
+        //if onTracksChanged happened when application went background, do not update the tracks.
         if (assertTrackSelectionIsNotNull("onTracksChanged()")) {
             //if the track info new -> map the available tracks. and when ready, notify user about available tracks.
             if (shouldGetTracksInfo) {
