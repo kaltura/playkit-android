@@ -6,54 +6,54 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AudioCodecSettings {
-    private List<PKAudioCodec> audioCodecPriorityList = new ArrayList<>();
-    private boolean allowAudioMixedMimeTypes = false;
+    private List<PKAudioCodec> codecPriorityList = new ArrayList<>();
+    private boolean allowAudioMixedCodecs = false;
 
     public AudioCodecSettings() {
-        audioCodecPriorityList = getDefaultCodecsPriorityList();
+        codecPriorityList = getDefaultCodecsPriorityList();
     }
 
-    public AudioCodecSettings(List<PKAudioCodec> audioCodecPriorityList, boolean allowAudioMixedMimeTypes) {
-        if (audioCodecPriorityList != null || audioCodecPriorityList.isEmpty()) {
-            this.audioCodecPriorityList = audioCodecPriorityList;
+    public AudioCodecSettings(List<PKAudioCodec> codecPriorityList, boolean allowAudioMixedCodecs) {
+        if (codecPriorityList != null || codecPriorityList.isEmpty()) {
+            this.codecPriorityList = codecPriorityList;
         } else {
             getDefaultCodecsPriorityList();
         }
-        this.allowAudioMixedMimeTypes = allowAudioMixedMimeTypes;
+        this.allowAudioMixedCodecs = allowAudioMixedCodecs;
     }
 
-    public List<PKAudioCodec> getAudioCodecPriorityList() {
-        return audioCodecPriorityList;
+    public List<PKAudioCodec> getCodecPriorityList() {
+        return codecPriorityList;
     }
 
-    public boolean getAllowAudioMixedMimeTypes() {
-        return allowAudioMixedMimeTypes;
+    public boolean getAllowAudioMixedCodecs() {
+        return allowAudioMixedCodecs;
     }
 
     private List<PKAudioCodec> getDefaultCodecsPriorityList() {
-        if (audioCodecPriorityList == null) {
-            audioCodecPriorityList = new ArrayList<>();
+        if (codecPriorityList == null) {
+            codecPriorityList = new ArrayList<>();
         }
-        audioCodecPriorityList.add(PKAudioCodec.E_AC3);
+        codecPriorityList.add(PKAudioCodec.E_AC3);
 
-        audioCodecPriorityList.add(PKAudioCodec.AC3);
+        codecPriorityList.add(PKAudioCodec.AC3);
 
-        audioCodecPriorityList.add(PKAudioCodec.OPUS);
+        codecPriorityList.add(PKAudioCodec.OPUS);
 
-        audioCodecPriorityList.add(PKAudioCodec.AAC);
+        codecPriorityList.add(PKAudioCodec.AAC);
 
-        return audioCodecPriorityList;
+        return codecPriorityList;
     }
 
-    public AudioCodecSettings setAudioCodecPriorityList(List<PKAudioCodec> audioCodecPriorityList) {
-        if (audioCodecPriorityList != null && !audioCodecPriorityList.isEmpty()) {
-            this.audioCodecPriorityList = audioCodecPriorityList;
+    public AudioCodecSettings setCodecPriorityList(List<PKAudioCodec> codecPriorityList) {
+        if (codecPriorityList != null && !codecPriorityList.isEmpty()) {
+            this.codecPriorityList = codecPriorityList;
         }
         return this;
     }
 
     public AudioCodecSettings setAllowAudioMixedMimeTypess(boolean allowAudioMixedMimeTypes) {
-        this.allowAudioMixedMimeTypes = allowAudioMixedMimeTypes;
+        this.allowAudioMixedCodecs = allowAudioMixedMimeTypes;
         return this;
     }
 }

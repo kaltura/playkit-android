@@ -309,12 +309,12 @@ class TrackSelectionHelper {
         boolean atLeastOneCodecSupportedInHardware = videoCodecsSupportedInHardware(); // if no hardware decoders play with the software
 
         VideoCodecSettings preferredVideoCodecSettings = playerSettings.getPreferredVideoCodecSettings();
-        if (preferredVideoCodecSettings.getAllowVideoMixedMimeTypeAdaptiveness()) {
+        if (preferredVideoCodecSettings.getAllowVideoMixedCodecAdaptiveness()) {
             populateAllCodecTracks(atLeastOneCodecSupportedInHardware);
             return videoTracks;
         }
 
-        for (PKVideoCodec videoCodecForPlayback : preferredVideoCodecSettings.getVideoCodecPriorityList()) {
+        for (PKVideoCodec videoCodecForPlayback : preferredVideoCodecSettings.getCodecPriorityList()) {
             if (!videoTracksCodecsMap.containsKey(videoCodecForPlayback)) {
                 continue;
             }
@@ -333,23 +333,19 @@ class TrackSelectionHelper {
             }
         }
 
-        if (videoTracksCodecsMap.containsKey(PKVideoCodec.HEVC)) {
-            return  videoTracksCodecsMap.get(PKVideoCodec.HEVC);
-        } else if (videoTracksCodecsMap.containsKey(PKVideoCodec.AV1)) {
-            return  videoTracksCodecsMap.get(PKVideoCodec.AV1);
-        } else if (videoTracksCodecsMap.containsKey(PKVideoCodec.VP9)) {
-            return  videoTracksCodecsMap.get(PKVideoCodec.VP9);
-        } else if (videoTracksCodecsMap.containsKey(PKVideoCodec.VP8)) {
-            return  videoTracksCodecsMap.get(PKVideoCodec.VP8);
-        } else if (videoTracksCodecsMap.containsKey(PKVideoCodec.AVC)) {
-            return  videoTracksCodecsMap.get(PKVideoCodec.AVC);
-        } else {
-            return videoTracks;
+        List<PKVideoCodec> videoCodecList = new ArrayList<>(Arrays.asList(PKVideoCodec.HEVC, PKVideoCodec.AV1, PKVideoCodec.VP9, PKVideoCodec.VP8, PKVideoCodec.AVC));
+
+        for (PKVideoCodec pkVideoCodec : videoCodecList) {
+            if (videoTracksCodecsMap.containsKey(pkVideoCodec)) {
+                return videoTracksCodecsMap.get(pkVideoCodec);
+            }
         }
+
+        return videoTracks;
     }
 
     private boolean videoCodecsSupportedInHardware() {
-        for (PKVideoCodec videoCodecForPlayback : playerSettings.getPreferredVideoCodecSettings().getVideoCodecPriorityList()) {
+        for (PKVideoCodec videoCodecForPlayback : playerSettings.getPreferredVideoCodecSettings().getCodecPriorityList()) {
             if (!videoTracksCodecsMap.containsKey(videoCodecForPlayback)) {
                 continue;
             }
@@ -408,18 +404,16 @@ class TrackSelectionHelper {
         }
 
         AudioCodecSettings preferredAudioCodecSettings = playerSettings.getPreferredAudioCodecSettings();
-        if (preferredAudioCodecSettings.getAllowAudioMixedMimeTypes()) {
+        if (preferredAudioCodecSettings.getAllowAudioMixedCodecs()) {
             return filteredAudioTracks;
         }
 
-        if (audioTracksCodecsMap.containsKey(PKAudioCodec.E_AC3)) {
-            return  new ArrayList<>(audioTracksCodecsMap.get(PKAudioCodec.E_AC3));
-        } else if (audioTracksCodecsMap.containsKey(PKAudioCodec.AC3)) {
-            return  new ArrayList<>(audioTracksCodecsMap.get(PKAudioCodec.AC3));
-        } else if (audioTracksCodecsMap.containsKey(PKAudioCodec.OPUS)) {
-            return  new ArrayList<>(audioTracksCodecsMap.get(PKAudioCodec.OPUS));
-        } else if (audioTracksCodecsMap.containsKey(PKAudioCodec.AAC)) {
-            return  new ArrayList<>(audioTracksCodecsMap.get(PKAudioCodec.AAC));
+        List<PKAudioCodec> audioCodecList = new ArrayList<>(Arrays.asList(PKAudioCodec.E_AC3, PKAudioCodec.AC3, PKAudioCodec.OPUS, PKAudioCodec.AAC));
+
+        for (PKAudioCodec pkAudioCodec : audioCodecList) {
+            if (audioTracksCodecsMap.containsKey(pkAudioCodec)) {
+                return new ArrayList<>(audioTracksCodecsMap.get(pkAudioCodec));
+            }
         }
 
         return filteredAudioTracks;
@@ -971,7 +965,7 @@ class TrackSelectionHelper {
         if (playerSettings.getMaxAudioChannelCount() > 0) {
             parametersBuilder.setMaxAudioChannelCount(playerSettings.getMaxAudioChannelCount());
         }
-        if (playerSettings.getPreferredVideoCodecSettings().getAllowVideoMixedMimeTypeAdaptiveness()) {
+        if (playerSettings.getPreferredVideoCodecSettings().getAllowVideoMixedCodecAdaptiveness()) {
             parametersBuilder.setAllowVideoMixedMimeTypeAdaptiveness(true);
         }
     }

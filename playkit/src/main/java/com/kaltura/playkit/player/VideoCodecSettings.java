@@ -6,56 +6,56 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VideoCodecSettings {
-    private List<PKVideoCodec> videoCodecPriorityList = new ArrayList<>();
+    private List<PKVideoCodec> codecPriorityList = new ArrayList<>();
     private boolean allowSoftwareDecoder = false;
-    private boolean allowVideoMixedMimeTypeAdaptiveness = false;
+    private boolean allowVideoMixedCodecAdaptiveness = false;
 
     public VideoCodecSettings() {
-        videoCodecPriorityList = getDefaultCodecsPriorityList();
+        codecPriorityList = getDefaultCodecsPriorityList();
     }
 
-    public VideoCodecSettings(List<PKVideoCodec> videoCodecPriorityList, boolean allowSoftwareDecoder, boolean allowVideoMixedMimeTypeAdaptiveness) {
-        if (videoCodecPriorityList != null || videoCodecPriorityList.isEmpty()) {
-            this.videoCodecPriorityList = videoCodecPriorityList;
+    public VideoCodecSettings(List<PKVideoCodec> codecPriorityList, boolean allowSoftwareDecoder, boolean allowVideoMixedCodecAdaptiveness) {
+        if (codecPriorityList != null || codecPriorityList.isEmpty()) {
+            this.codecPriorityList = codecPriorityList;
         } else {
             getDefaultCodecsPriorityList();
         }
         this.allowSoftwareDecoder = allowSoftwareDecoder;
-        this.allowVideoMixedMimeTypeAdaptiveness = allowVideoMixedMimeTypeAdaptiveness;
+        this.allowVideoMixedCodecAdaptiveness = allowVideoMixedCodecAdaptiveness;
     }
 
-    public List<PKVideoCodec> getVideoCodecPriorityList() {
-        return videoCodecPriorityList;
+    public List<PKVideoCodec> getCodecPriorityList() {
+        return codecPriorityList;
     }
 
     public boolean isAllowSoftwareDecoder() {
         return allowSoftwareDecoder;
     }
 
-    public boolean getAllowVideoMixedMimeTypeAdaptiveness() {
-        return allowVideoMixedMimeTypeAdaptiveness;
+    public boolean getAllowVideoMixedCodecAdaptiveness() {
+        return allowVideoMixedCodecAdaptiveness;
     }
 
     private List<PKVideoCodec> getDefaultCodecsPriorityList() {
-        if (videoCodecPriorityList == null) {
-            videoCodecPriorityList = new ArrayList<>();
+        if (codecPriorityList == null) {
+            codecPriorityList = new ArrayList<>();
         }
-        videoCodecPriorityList.add(PKVideoCodec.HEVC);
+        codecPriorityList.add(PKVideoCodec.HEVC);
 
-        videoCodecPriorityList.add(PKVideoCodec.AV1);
+        codecPriorityList.add(PKVideoCodec.AV1);
 
-        videoCodecPriorityList.add(PKVideoCodec.VP9);
+        codecPriorityList.add(PKVideoCodec.VP9);
 
-        videoCodecPriorityList.add(PKVideoCodec.VP8);
+        codecPriorityList.add(PKVideoCodec.VP8);
 
-        videoCodecPriorityList.add(PKVideoCodec.AVC);
+        codecPriorityList.add(PKVideoCodec.AVC);
 
-        return videoCodecPriorityList;
+        return codecPriorityList;
     }
     
-    public VideoCodecSettings setVideoCodecPriorityList(List<PKVideoCodec> videoCodecPriorityList) {
-        if (videoCodecPriorityList != null && !videoCodecPriorityList.isEmpty()) {
-            this.videoCodecPriorityList = videoCodecPriorityList;
+    public VideoCodecSettings setCodecPriorityList(List<PKVideoCodec> codecPriorityList) {
+        if (codecPriorityList != null && !codecPriorityList.isEmpty()) {
+            this.codecPriorityList = codecPriorityList;
         }
         return this;
     }
@@ -65,8 +65,8 @@ public class VideoCodecSettings {
         return this;
     }
 
-    public VideoCodecSettings setAllowVideoMixedMimeTypeAdaptiveness(boolean allowVideoMixedMimeTypeAdaptiveness) {
-        this.allowVideoMixedMimeTypeAdaptiveness = allowVideoMixedMimeTypeAdaptiveness;
+    public VideoCodecSettings setAllowVideoMixedCodecAdaptiveness(boolean allowVideoMixedCodecAdaptiveness) {
+        this.allowVideoMixedCodecAdaptiveness = allowVideoMixedCodecAdaptiveness;
         return this;
     }
 }
