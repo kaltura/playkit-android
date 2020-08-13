@@ -309,7 +309,7 @@ class TrackSelectionHelper {
         boolean atLeastOneCodecSupportedInHardware = videoCodecsSupportedInHardware(); // if no hardware decoders play with the software
 
         VideoCodecSettings preferredVideoCodecSettings = playerSettings.getPreferredVideoCodecSettings();
-        if (preferredVideoCodecSettings.getAllowVideoMixedCodecAdaptiveness()) {
+        if (preferredVideoCodecSettings.getAllowMixedCodecAdaptiveness()) {
             populateAllCodecTracks(atLeastOneCodecSupportedInHardware);
             return videoTracks;
         }
@@ -404,7 +404,7 @@ class TrackSelectionHelper {
         }
 
         AudioCodecSettings preferredAudioCodecSettings = playerSettings.getPreferredAudioCodecSettings();
-        if (preferredAudioCodecSettings.getAllowAudioMixedCodecs()) {
+        if (preferredAudioCodecSettings.getAllowMixedCodecs()) {
             return filteredAudioTracks;
         }
 
@@ -965,7 +965,7 @@ class TrackSelectionHelper {
         if (playerSettings.getMaxAudioChannelCount() > 0) {
             parametersBuilder.setMaxAudioChannelCount(playerSettings.getMaxAudioChannelCount());
         }
-        if (playerSettings.getPreferredVideoCodecSettings().getAllowVideoMixedCodecAdaptiveness()) {
+        if (playerSettings.getPreferredVideoCodecSettings().getAllowMixedCodecAdaptiveness()) {
             parametersBuilder.setAllowVideoMixedMimeTypeAdaptiveness(true);
         }
     }

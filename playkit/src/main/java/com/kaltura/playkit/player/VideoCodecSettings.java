@@ -8,20 +8,20 @@ import java.util.List;
 public class VideoCodecSettings {
     private List<PKVideoCodec> codecPriorityList = new ArrayList<>();
     private boolean allowSoftwareDecoder = false;
-    private boolean allowVideoMixedCodecAdaptiveness = false;
+    private boolean allowMixedCodecAdaptiveness = false;
 
     public VideoCodecSettings() {
         codecPriorityList = getDefaultCodecsPriorityList();
     }
 
-    public VideoCodecSettings(List<PKVideoCodec> codecPriorityList, boolean allowSoftwareDecoder, boolean allowVideoMixedCodecAdaptiveness) {
+    public VideoCodecSettings(List<PKVideoCodec> codecPriorityList, boolean allowSoftwareDecoder, boolean allowMixedCodecAdaptiveness) {
         if (codecPriorityList != null || codecPriorityList.isEmpty()) {
             this.codecPriorityList = codecPriorityList;
         } else {
             getDefaultCodecsPriorityList();
         }
         this.allowSoftwareDecoder = allowSoftwareDecoder;
-        this.allowVideoMixedCodecAdaptiveness = allowVideoMixedCodecAdaptiveness;
+        this.allowMixedCodecAdaptiveness = allowMixedCodecAdaptiveness;
     }
 
     public List<PKVideoCodec> getCodecPriorityList() {
@@ -32,8 +32,8 @@ public class VideoCodecSettings {
         return allowSoftwareDecoder;
     }
 
-    public boolean getAllowVideoMixedCodecAdaptiveness() {
-        return allowVideoMixedCodecAdaptiveness;
+    public boolean getAllowMixedCodecAdaptiveness() {
+        return allowMixedCodecAdaptiveness;
     }
 
     private List<PKVideoCodec> getDefaultCodecsPriorityList() {
@@ -65,8 +65,8 @@ public class VideoCodecSettings {
         return this;
     }
 
-    public VideoCodecSettings setAllowVideoMixedCodecAdaptiveness(boolean allowVideoMixedCodecAdaptiveness) {
-        this.allowVideoMixedCodecAdaptiveness = allowVideoMixedCodecAdaptiveness;
+    public VideoCodecSettings setAllowMixedCodecAdaptiveness(boolean allowMixedCodecAdaptiveness) {
+        this.allowMixedCodecAdaptiveness = allowMixedCodecAdaptiveness;
         return this;
     }
 }

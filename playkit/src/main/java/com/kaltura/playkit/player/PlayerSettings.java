@@ -12,8 +12,6 @@
 
 package com.kaltura.playkit.player;
 
-import androidx.annotation.NonNull;
-
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
@@ -187,13 +185,13 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setContentRequestAdapter(@NonNull PKRequestParams.Adapter contentRequestAdapter) {
+    public Player.Settings setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
         this.contentRequestAdapter = contentRequestAdapter;
         return this;
     }
 
     @Override
-    public Player.Settings setLicenseRequestAdapter(@NonNull PKRequestParams.Adapter licenseRequestAdapter) {
+    public Player.Settings setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
         this.licenseRequestAdapter = licenseRequestAdapter;
         return this;
     }
@@ -229,19 +227,19 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setPreferredAudioTrack(@NonNull PKTrackConfig preferredAudioTrackConfig) {
+    public Player.Settings setPreferredAudioTrack(PKTrackConfig preferredAudioTrackConfig) {
         this.preferredAudioTrackConfig = preferredAudioTrackConfig;
         return this;
     }
 
     @Override
-    public Player.Settings setPreferredTextTrack(@NonNull PKTrackConfig preferredTextTrackConfig) {
+    public Player.Settings setPreferredTextTrack(PKTrackConfig preferredTextTrackConfig) {
         this.preferredTextTrackConfig = preferredTextTrackConfig;
         return this;
     }
 
     @Override
-    public Player.Settings setPreferredMediaFormat(@NonNull PKMediaFormat preferredMediaFormat) {
+    public Player.Settings setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
         this.preferredMediaFormat = preferredMediaFormat;
         return this;
     }
@@ -266,25 +264,25 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setPlayerBuffers(@NonNull LoadControlBuffers loadControlBuffers) {
+    public Player.Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers) {
         this.loadControlBuffers = loadControlBuffers;
         return this;
     }
 
     @Override
-    public Player.Settings setSubtitleStyle(@NonNull SubtitleStyleSettings subtitleStyleSettings) {
+    public Player.Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         this.subtitleStyleSettings = subtitleStyleSettings;
         return this;
     }
 
     @Override
-    public Player.Settings setABRSettings(@NonNull ABRSettings abrSettings) {
+    public Player.Settings setABRSettings(ABRSettings abrSettings) {
         this.abrSettings = abrSettings;
         return this;
     }
 
     @Override
-    public Player.Settings setSurfaceAspectRatioResizeMode(@NonNull PKAspectRatioResizeMode resizeMode) {
+    public Player.Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         this.resizeMode = resizeMode;
         return this;
     }
@@ -302,24 +300,32 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setVRSettings(@NonNull VRSettings vrSettings) {
+    public Player.Settings setVRSettings(VRSettings vrSettings) {
         this.vrSettings = vrSettings;
         return this;
     }
 
     @Override
-    public Player.Settings setPreferredVideoCodecSettings(@NonNull VideoCodecSettings preferredVideoCodecSettings) {
-        this.preferredVideoCodecSettings = preferredVideoCodecSettings;
+    public Player.Settings setPreferredVideoCodecSettings(VideoCodecSettings preferredVideoCodecSettings) {
+        if (preferredVideoCodecSettings == null) {
+            this.preferredVideoCodecSettings = new VideoCodecSettings().setAllowMixedCodecAdaptiveness(true);
+        } else {
+            this.preferredVideoCodecSettings = preferredVideoCodecSettings;
+        }
         return this;
     }
 
     @Override
-    public Player.Settings setPreferredAudioCodecSettings(@NonNull AudioCodecSettings preferredAudioCodecSettings) {
-        this.preferredAudioCodecSettings = preferredAudioCodecSettings;
+    public Player.Settings setPreferredAudioCodecSettings(AudioCodecSettings preferredAudioCodecSettings) {
+        if (preferredAudioCodecSettings == null) {
+            this.preferredAudioCodecSettings = new AudioCodecSettings().setAllowMixedCodecs(true);
+        } else {
+            this.preferredAudioCodecSettings = preferredAudioCodecSettings;
+        }
         return this;
     }
 
-    public Player.Settings setCustomLoadControlStrategy(@NonNull Object customLoadControlStrategy) {
+    public Player.Settings setCustomLoadControlStrategy(Object customLoadControlStrategy) {
         this.customLoadControlStrategy = customLoadControlStrategy;
         return this;
     }

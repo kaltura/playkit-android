@@ -7,27 +7,27 @@ import java.util.List;
 
 public class AudioCodecSettings {
     private List<PKAudioCodec> codecPriorityList = new ArrayList<>();
-    private boolean allowAudioMixedCodecs = false;
+    private boolean allowMixedCodecs = false;
 
     public AudioCodecSettings() {
         codecPriorityList = getDefaultCodecsPriorityList();
     }
 
-    public AudioCodecSettings(List<PKAudioCodec> codecPriorityList, boolean allowAudioMixedCodecs) {
+    public AudioCodecSettings(List<PKAudioCodec> codecPriorityList, boolean allowMixedCodecs) {
         if (codecPriorityList != null || codecPriorityList.isEmpty()) {
             this.codecPriorityList = codecPriorityList;
         } else {
             getDefaultCodecsPriorityList();
         }
-        this.allowAudioMixedCodecs = allowAudioMixedCodecs;
+        this.allowMixedCodecs = allowMixedCodecs;
     }
 
     public List<PKAudioCodec> getCodecPriorityList() {
         return codecPriorityList;
     }
 
-    public boolean getAllowAudioMixedCodecs() {
-        return allowAudioMixedCodecs;
+    public boolean getAllowMixedCodecs() {
+        return allowMixedCodecs;
     }
 
     private List<PKAudioCodec> getDefaultCodecsPriorityList() {
@@ -52,8 +52,8 @@ public class AudioCodecSettings {
         return this;
     }
 
-    public AudioCodecSettings setAllowAudioMixedMimeTypess(boolean allowAudioMixedMimeTypes) {
-        this.allowAudioMixedCodecs = allowAudioMixedMimeTypes;
+    public AudioCodecSettings setAllowMixedCodecs(boolean allowMixedCodecs) {
+        this.allowMixedCodecs = allowMixedCodecs;
         return this;
     }
 }
