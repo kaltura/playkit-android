@@ -1013,6 +1013,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
     }
 
+
     @Override
     public void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate) {
         if (trackSelectionHelper == null) {
@@ -1026,8 +1027,18 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             String errorMessage = "given maxVideoBitrate is not greater than the minVideoBitrate";
             sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
         }
-
+        
         trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
+    }
+
+    @Override
+    public void overrideMediaVideoCodec() {
+        if (trackSelectionHelper == null) {
+            log.w("Attempt to invoke 'overrideMediaVideoCodec()' on null instance of the TracksSelectionHelper");
+            return;
+        }
+
+        trackSelectionHelper.overrideMediaVideoCodec();
     }
 
     private void sendTrackSelectionError(String uniqueId, IllegalArgumentException invalidUniqueIdException) {
@@ -1189,10 +1200,21 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private TrackSelectionHelper.TracksErrorListener initTracksErrorListener() {
-        return pkError -> {
-            currentError = pkError;
-            if (eventListener != null) {
-                eventListener.onEvent(PlayerEvent.Type.ERROR);
+        return new TrackSelectionHelper.TracksErrorListener() {
+            @Override
+            public void onTracksOverrideABRError(PKError pkError) {
+                currentError = pkError;
+                if (eventListener != null) {
+                    eventListener.onEvent(PlayerEvent.Type.ERROR);
+                }
+            }
+
+            @Override
+            public void onUnsupportedVideoTracksError(PKError pkError) {
+                currentError = pkError;
+                if (eventListener != null) {
+                    eventListener.onEvent(PlayerEvent.Type.ERROR);
+                }
             }
         };
     }
@@ -1201,9 +1223,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return new TrackSelectionHelper.TracksInfoListener() {
             @Override
             public void onTracksInfoReady(PKTracks tracksReady) {
-                if (playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE) {
+                boolean isABREnabled = playerSettings.getAbrSettings().getMinVideoBitrate() != Long.MIN_VALUE || playerSettings.getAbrSettings().getMaxVideoBitrate() != Long.MAX_VALUE;
+
+                if(isABREnabled) {
                     overrideMediaDefaultABR(playerSettings.getAbrSettings().getMinVideoBitrate(), playerSettings.getAbrSettings().getMaxVideoBitrate());
+                } else {
+                    overrideMediaVideoCodec();
                 }
+
                 //when the track info is ready, cache it in ExoPlayerWrapper. And send event that tracks are available.
                 tracks = tracksReady;
                 shouldRestorePlayerToPreviousState = false;

@@ -12,7 +12,6 @@
 
 package com.kaltura.playkit.player;
 
-import com.kaltura.android.exoplayer2.C;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
@@ -31,6 +30,8 @@ public class PlayerSettings implements Player.Settings {
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
+    private VideoCodecSettings preferredVideoCodecSettings = new VideoCodecSettings();
+    private AudioCodecSettings preferredAudioCodecSettings = new AudioCodecSettings();
     private boolean isTunneledAudioPlayback;
     private boolean handleAudioBecomingNoisyEnabled;
     private Integer maxVideoBitrate;
@@ -143,6 +144,14 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isForceSinglePlayerEngine() {
         return forceSinglePlayerEngine;
+    }
+
+    public VideoCodecSettings getPreferredVideoCodecSettings() {
+        return preferredVideoCodecSettings;
+    }
+
+    public AudioCodecSettings getPreferredAudioCodecSettings() {
+        return preferredAudioCodecSettings;
     }
 
     public Object getCustomLoadControlStrategy() {
@@ -297,6 +306,25 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
+    public Player.Settings setPreferredVideoCodecSettings(VideoCodecSettings preferredVideoCodecSettings) {
+        if (preferredVideoCodecSettings == null) {
+            this.preferredVideoCodecSettings = new VideoCodecSettings().setAllowMixedCodecAdaptiveness(true);
+        } else {
+            this.preferredVideoCodecSettings = preferredVideoCodecSettings;
+        }
+        return this;
+    }
+
+    @Override
+    public Player.Settings setPreferredAudioCodecSettings(AudioCodecSettings preferredAudioCodecSettings) {
+        if (preferredAudioCodecSettings == null) {
+            this.preferredAudioCodecSettings = new AudioCodecSettings().setAllowMixedCodecs(true);
+        } else {
+            this.preferredAudioCodecSettings = preferredAudioCodecSettings;
+        }
+        return this;
+    }
+
     public Player.Settings setCustomLoadControlStrategy(Object customLoadControlStrategy) {
         this.customLoadControlStrategy = customLoadControlStrategy;
         return this;
