@@ -42,8 +42,18 @@ public class LocalAssetsManager {
         helper = new LocalAssetsManagerHelper(context, localDataStore);
     }
 
+    public LocalAssetsManager(Context context, LocalDataStore localDataStore, PKRequestParams.Adapter licenseRequestParamAdapter) {
+        helper = new LocalAssetsManagerHelper(context, localDataStore);
+        helper.setLicenseRequestAdapter(licenseRequestParamAdapter);
+    }
+
     public LocalAssetsManager(Context context) {
         helper = new LocalAssetsManagerHelper(context);
+    }
+
+    public LocalAssetsManager(Context context, PKRequestParams.Adapter licenseRequestParamAdapter) {
+        helper = new LocalAssetsManagerHelper(context);
+        helper.setLicenseRequestAdapter(licenseRequestParamAdapter);
     }
 
     /**
