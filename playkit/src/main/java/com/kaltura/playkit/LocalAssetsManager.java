@@ -36,7 +36,7 @@ import java.util.List;
 public class LocalAssetsManager {
 
     private static final PKLog log = PKLog.get("LocalAssetsManager");
-    private final LocalAssetsManagerHelper helper;
+    private LocalAssetsManagerHelper helper;
 
     public LocalAssetsManager(Context context, LocalDataStore localDataStore) {
         helper = new LocalAssetsManagerHelper(context, localDataStore);
@@ -54,6 +54,10 @@ public class LocalAssetsManager {
     public LocalAssetsManager(Context context, PKRequestParams.Adapter licenseRequestParamAdapter) {
         helper = new LocalAssetsManagerHelper(context);
         helper.setLicenseRequestAdapter(licenseRequestParamAdapter);
+    }
+
+    public LocalAssetsManagerHelper getHelper() {
+        return helper;
     }
 
     /**
