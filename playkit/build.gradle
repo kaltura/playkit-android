@@ -39,6 +39,7 @@ dependencies {
     api "com.kaltura.playkit:kexoplayer:$exoPlayerVersion"
     api 'com.google.code.gson:gson:2.8.2'
     implementation 'androidx.annotation:annotation:1.0.2'
+    implementation 'androidx.media:media:1.1.0'
 
     // Ok is (optionally) used by ExoPlayer now
     api('com.squareup.okhttp3:okhttp:3.12.8')

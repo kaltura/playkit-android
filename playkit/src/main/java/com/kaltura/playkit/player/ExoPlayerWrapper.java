@@ -58,6 +58,7 @@ import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 import com.kaltura.playkit.*;
+import com.kaltura.playkit.audio.AudioPlayerWrapper;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
@@ -137,9 +138,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
     private ExternalTextTrackLoadErrorPolicy externalTextTrackLoadErrorPolicy;
 
-
     private PKMediaSourceConfig sourceConfig;
     @NonNull private Profiler profiler = Profiler.NOOP;
+
+    private AudioPlayerWrapper audioPlayerWrapper;
 
     private Timeline.Period period;
 
@@ -210,6 +212,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured, playerSettings.isVideoViewHidden());
 
         player.setPlayWhenReady(false);
+
+        audioPlayerWrapper = new AudioPlayerWrapper(context, player);
+        audioPlayerWrapper.initAudioWrapper();
     }
 
     @NonNull
@@ -290,7 +295,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             profiler.onPrepareStarted(sourceConfig);
             boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
             player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
-
             changeState(PlayerState.LOADING);
 
             if (playerSettings.getSubtitleStyleSettings() != null) {
@@ -830,6 +834,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
             profiler.onPlayRequested();
             player.setPlayWhenReady(true);
+            audioPlayerWrapper.play();
         }
     }
 
@@ -849,6 +854,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             sendDistinctEvent(PlayerEvent.Type.PAUSE);
             profiler.onPauseRequested();
             player.setPlayWhenReady(false);
+            audioPlayerWrapper.pause();
         }
     }
 
