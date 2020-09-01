@@ -20,6 +20,10 @@ public class LocalAssetsManagerExo {
         this.helper = new LocalAssetsManagerHelper(context);
     }
 
+    public void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
+        helper.setLicenseRequestAdapter(licenseRequestAdapter);
+    }
+
     private static LocalAssetsManager.AssetStatus assetStatusFromWidevineMap(Map<String, String> map) {
         long licenseDurationRemaining;
         long playbackDurationRemaining;

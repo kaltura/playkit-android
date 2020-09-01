@@ -37,8 +37,7 @@ public class TextTrack extends BaseTrack {
      * @return - the language of the track.
      */
     @Override
-    public @Nullable
-    String getLanguage() {
+    @Nullable public String getLanguage() {
         return language;
     }
 
@@ -48,8 +47,7 @@ public class TextTrack extends BaseTrack {
      *
      * @return - the label of the track.
      */
-    public @Nullable
-    String getLabel() {
+    @Nullable public String getLabel() {
         return label;
     }
 
