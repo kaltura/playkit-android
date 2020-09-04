@@ -1290,8 +1290,13 @@ class TrackSelectionHelper {
             return null;
         }
         String preferredTrackUniqueId = null;
-        PKTrackConfig preferredAudioTrackConfig = playerSettings.getPreferredAudioTrackConfig();
-        String preferredTextISO3Lang = preferredAudioTrackConfig.getTrackLanguage();
+        PKTrackConfig preferredTextTrackConfig = playerSettings.getPreferredTextTrackConfig();
+
+        if (preferredTextTrackConfig == null) {
+            return preferredTrackUniqueId;
+        }
+
+        String preferredTextISO3Lang = preferredTextTrackConfig.getTrackLanguage();
         if (preferredTextISO3Lang != null) {
             for (TextTrack track : textTracks) {
                 String trackLang = track.getLanguage();
@@ -1352,6 +1357,11 @@ class TrackSelectionHelper {
         }
         String preferredTrackUniqueId = null;
         PKTrackConfig preferredAudioTrackConfig = playerSettings.getPreferredAudioTrackConfig();
+
+        if (preferredAudioTrackConfig == null) {
+            return preferredTrackUniqueId;
+        }
+
         String preferredAudioISO3Lang = preferredAudioTrackConfig.getTrackLanguage();
         for (AudioTrack track : audioTracks) {
             String trackLang = track.getLanguage();
