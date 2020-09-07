@@ -428,6 +428,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @NonNull
     private MediaSource buildExternalSubtitleSource(int subtitleId, PKExternalSubtitle pkExternalSubtitle) {
+        String subtitleMimeType = pkExternalSubtitle.getMimeType() == null ? "Unknown" : pkExternalSubtitle.getMimeType();
+
         // Build the subtitle MediaSource.
         Format subtitleFormat = Format.createTextContainerFormat(
                 String.valueOf(subtitleId), // An identifier for the track. May be null.
@@ -438,7 +440,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 pkExternalSubtitle.getBitrate(),
                 pkExternalSubtitle.getSelectionFlags(),
                 pkExternalSubtitle.getRoleFlag(),
-                pkExternalSubtitle.getLanguage() + "-" + pkExternalSubtitle.getMimeType()); // The subtitle language. May be null.
+                pkExternalSubtitle.getLanguage() + "-" + subtitleMimeType); // The subtitle language. May be null.
 
         return new SingleSampleMediaSource.Factory(getDataSourceFactory(null))
                 .setLoadErrorHandlingPolicy(externalTextTrackLoadErrorPolicy)
