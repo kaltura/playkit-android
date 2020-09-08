@@ -1213,6 +1213,7 @@ class TrackSelectionHelper {
         }
         videoTracksCodecsMap.clear();
         audioTracksCodecsMap.clear();
+        subtitleListMap.clear();
     }
 
     protected void release() {
