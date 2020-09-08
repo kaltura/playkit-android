@@ -348,8 +348,8 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setSubtitlePreference(boolean preferInternal) {
-        this.preferInternalSubtitles = preferInternal;
+    public Player.Settings setSubtitlePreference(boolean preferInternalSubtitles) {
+        this.preferInternalSubtitles = preferInternalSubtitles;
         return this;
     }
 

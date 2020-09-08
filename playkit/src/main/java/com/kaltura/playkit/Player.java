@@ -256,11 +256,11 @@ public interface Player {
          * Set preference to choose internal subtitles over external subtitles (Only in the case if the same language is present
          * in both Internal and External subtitles) - Default is true (Internal is preferred)
          *
-         * @param preferInternal if true, Internal will be present and External subtitle will be discarded
+         * @param preferInternalSubtitles if true, Internal will be present and External subtitle will be discarded
          *                   if false, External will be present and Internal subtitle will be discarded
          * @return - Player Settings
          */
-        Settings setSubtitlePreference(boolean preferInternal);
+        Settings setSubtitlePreference(boolean preferInternalSubtitles);
 
         /**
          * Sets the maximum allowed video width and height.
