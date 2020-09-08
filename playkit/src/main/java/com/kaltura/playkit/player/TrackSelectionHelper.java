@@ -241,7 +241,6 @@ class TrackSelectionHelper {
                                     audioTracks.add(currentAudioTrack);
                                 }
 
-
                                 if (currentAudioTrack != null && currentAudioTrackCodec != null) {
                                     if (!audioTracksCodecsMap.containsKey(currentAudioTrackCodec)) {
                                         audioTracksCodecsMap.put(currentAudioTrackCodec, new ArrayList<>());
@@ -1213,7 +1212,7 @@ class TrackSelectionHelper {
             videoTrackEntry.getValue().clear();
         }
         videoTracksCodecsMap.clear();
-
+        audioTracksCodecsMap.clear();
     }
 
     protected void release() {
