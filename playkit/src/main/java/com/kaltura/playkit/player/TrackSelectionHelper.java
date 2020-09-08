@@ -92,12 +92,14 @@ class TrackSelectionHelper {
     private List<AudioTrack> audioTracks = new ArrayList<>();
     private List<TextTrack> textTracks = new ArrayList<>();
 
-    private Map<String, HashMap<String, Format>> subtitleList = new HashMap<>();
+    private Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
     private Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
     private Map<PKAudioCodec,List<AudioTrack>> audioTracksCodecsMap = new HashMap<>();
 
     private String[] lastSelectedTrackIds;
     private String[] requestedChangeTrackIds;
+
+    private boolean hasExternalSubtitles = false;
 
     private TracksInfoListener tracksInfoListener;
     private TracksErrorListener tracksErrorListener;
@@ -184,7 +186,7 @@ class TrackSelectionHelper {
             //the trackGroupArray of the current renderer.
             trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
 
-            if (rendererIndex == TRACK_TYPE_TEXT) {
+            if (rendererIndex == TRACK_TYPE_TEXT && hasExternalSubtitles) {
                 extractTextTracksToMap(trackGroupArray);
             }
 
@@ -250,7 +252,7 @@ class TrackSelectionHelper {
                                 }
                                 break;
                             case TRACK_TYPE_TEXT:
-                                if (format.language != null && removeTextTrackOnPreference(format)) {
+                                if (format.language != null && hasExternalSubtitles && ignoreTextTrackOnPreference(format)) {
                                     continue;
                                 }
 
@@ -311,7 +313,7 @@ class TrackSelectionHelper {
     }
 
     private boolean isExternalSubtitle(Format format) {
-        return format != null && format.language != null && format.language.contains("-" + format.sampleMimeType);
+        return format != null && format.language != null && (format.language.contains("-" + format.sampleMimeType) || format.language.contains("-" + "Unknown"));
     }
 
     private String getExternalSubtitleLanguage(Format format) {
@@ -322,18 +324,21 @@ class TrackSelectionHelper {
         }
     }
 
-    private boolean removeTextTrackOnPreference(Format format) {
+    private boolean ignoreTextTrackOnPreference(Format format) {
         String languageName = format.language;
-        if (isExternalSubtitle(format)) {
+        boolean isExternalSubtitle = isExternalSubtitle(format);
+        boolean isPreferInternalSubtitles = playerSettings.isPreferInternalSubtitles();
+
+        if (isExternalSubtitle) {
             languageName = getExternalSubtitleLanguage(format);
         }
 
-        if (subtitleList.containsKey(languageName) && subtitleList.get(languageName).size() > 1) {
-            if ((playerSettings.isPreferInternalSubtitles() && isExternalSubtitle(format)) ||
-                    (!playerSettings.isPreferInternalSubtitles() && !isExternalSubtitle(format))) {
+        if (subtitleListMap.containsKey(languageName) && subtitleListMap.get(languageName).size() > 1) {
+            if ((isPreferInternalSubtitles && isExternalSubtitle) ||
+                    (!isPreferInternalSubtitles && !isExternalSubtitle)) {
                 return true;
-            } else if ((!playerSettings.isPreferInternalSubtitles() && isExternalSubtitle(format)) ||
-                    (playerSettings.isPreferInternalSubtitles() && !isExternalSubtitle(format))) {
+            } else if ((!isPreferInternalSubtitles && isExternalSubtitle) ||
+                    (isPreferInternalSubtitles && !isExternalSubtitle)) {
                 return false;
             }
         }
@@ -501,6 +506,12 @@ class TrackSelectionHelper {
         return restoreLastSelectedTrack(trackList, lastSelectedTrackId, getUpdatedDefaultTrackIndex(trackList, defaultTrackIndex));
     }
 
+    /**
+     * Creates a map which contains text language map
+     * which inside holds with list of available formats for that specific language
+     *
+     * @param trackGroupArray TrackGroupArray this includes Internal and External Text Formats
+     */
     private void extractTextTracksToMap(TrackGroupArray trackGroupArray) {
         for (int groupIndex = 0; groupIndex < trackGroupArray.length; groupIndex++) {
             TrackGroup trackGroup = trackGroupArray.get(groupIndex);
@@ -513,14 +524,22 @@ class TrackSelectionHelper {
                     languageName = getExternalSubtitleLanguage(format);
                 }
 
-                if (subtitleList.containsKey(languageName)) {
-                    HashMap<String, Format> baseTrackHashMap = subtitleList.get(languageName);
-                    baseTrackHashMap.put(format.language, format);
-                    subtitleList.put(languageName, baseTrackHashMap);
+                if (subtitleListMap.containsKey(languageName)) {
+                    Map<String, List<Format>> baseTrackHashMap = subtitleListMap.get(languageName);
+                    if (baseTrackHashMap.containsKey(format.language)) {
+                        List<Format> langaugeList = baseTrackHashMap.get(format.language);
+                        langaugeList.add(format);
+                    } else {
+                        List<Format> langaugeList = new ArrayList<>();
+                        langaugeList.add(format);
+                        baseTrackHashMap.put(format.language, langaugeList);
+                    }
                 } else {
-                    HashMap<String, Format> baseTrackHashMap = new HashMap<>();
-                    baseTrackHashMap.put(languageName, format);
-                    subtitleList.put(languageName, baseTrackHashMap);
+                    Map<String, List<Format>> baseTrackHashMap = new HashMap<>();
+                    List<Format> langaugeList = new ArrayList<>();
+                    langaugeList.add(format);
+                    baseTrackHashMap.put(format.language, langaugeList);
+                    subtitleListMap.put(languageName, baseTrackHashMap);
                 }
             }
         }
@@ -1504,6 +1523,10 @@ class TrackSelectionHelper {
 
     protected void applyPlayerSettings(PlayerSettings settings) {
         this.playerSettings = settings;
+    }
+
+    protected void hasExternalSubtitles(boolean hasExternalSubtitles) {
+        this.hasExternalSubtitles = hasExternalSubtitles;
     }
 
     public static boolean isCodecSupported(@NonNull String codecs, @Nullable TrackType type, boolean allowSoftware) {

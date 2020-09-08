@@ -333,9 +333,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         if (externalSubtitleList == null || externalSubtitleList.isEmpty()) {
+            if (assertTrackSelectionIsNotNull("buildExoMediaSource")) {
+                trackSelectionHelper.hasExternalSubtitles(false);
+            }
             removeExternalTextTrackListener();
             return mediaSource;
         } else {
+            if (assertTrackSelectionIsNotNull("buildExoMediaSource")) {
+                trackSelectionHelper.hasExternalSubtitles(true);
+            }
             addExternalTextTrackErrorListener();
             return new MergingMediaSource(buildMediaSourceList(mediaSource, externalSubtitleList));
         }
