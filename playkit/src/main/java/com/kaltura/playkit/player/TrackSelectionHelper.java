@@ -91,11 +91,15 @@ class TrackSelectionHelper {
     private List<VideoTrack> videoTracks = new ArrayList<>();
     private List<AudioTrack> audioTracks = new ArrayList<>();
     private List<TextTrack> textTracks = new ArrayList<>();
+
+    private Map<String, Map<String, List<Format>>> subtitleListMap = new HashMap<>();
     private Map<PKVideoCodec,List<VideoTrack>> videoTracksCodecsMap = new HashMap<>();
     private Map<PKAudioCodec,List<AudioTrack>> audioTracksCodecsMap = new HashMap<>();
 
     private String[] lastSelectedTrackIds;
     private String[] requestedChangeTrackIds;
+
+    private boolean hasExternalSubtitles = false;
 
     private TracksInfoListener tracksInfoListener;
     private TracksErrorListener tracksErrorListener;
@@ -182,6 +186,10 @@ class TrackSelectionHelper {
             //the trackGroupArray of the current renderer.
             trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
 
+            if (rendererIndex == TRACK_TYPE_TEXT && hasExternalSubtitles) {
+                extractTextTracksToMap(trackGroupArray);
+            }
+
             //run through the all track groups in current renderer.
             for (int groupIndex = 0; groupIndex < trackGroupArray.length; groupIndex++) {
 
@@ -243,6 +251,10 @@ class TrackSelectionHelper {
                                 }
                                 break;
                             case TRACK_TYPE_TEXT:
+                                if (format.language != null && hasExternalSubtitles && ignoreTextTrackOnPreference(format)) {
+                                    continue;
+                                }
+
                                 if (CEA_608.equals(format.sampleMimeType)) {
                                     if (playerSettings != null && playerSettings.cea608CaptionsEnabled()) {
                                         textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
@@ -299,6 +311,39 @@ class TrackSelectionHelper {
         return format.language;
     }
 
+    private boolean isExternalSubtitle(Format format) {
+        return format != null && format.language != null && (format.language.contains("-" + format.sampleMimeType) || format.language.contains("-" + "Unknown"));
+    }
+
+    private String getExternalSubtitleLanguage(Format format) {
+        if (format.language != null) {
+            return format.language.substring(0, format.language.indexOf("-"));
+        } else {
+            return null;
+        }
+    }
+
+    private boolean ignoreTextTrackOnPreference(Format format) {
+        String languageName = format.language;
+        boolean isExternalSubtitle = isExternalSubtitle(format);
+        boolean isPreferInternalSubtitles = playerSettings.isPreferInternalSubtitles();
+
+        if (isExternalSubtitle) {
+            languageName = getExternalSubtitleLanguage(format);
+        }
+
+        if (subtitleListMap.containsKey(languageName) && subtitleListMap.get(languageName).size() > 1) {
+            if ((isPreferInternalSubtitles && isExternalSubtitle) ||
+                    (!isPreferInternalSubtitles && !isExternalSubtitle)) {
+                return true;
+            } else if ((!isPreferInternalSubtitles && isExternalSubtitle) ||
+                    (isPreferInternalSubtitles && !isExternalSubtitle)) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     private List<VideoTrack> filterVideoTracks() {
 
         if (videoTracksCodecsMap == null || videoTracksCodecsMap.isEmpty()) {
@@ -339,7 +384,6 @@ class TrackSelectionHelper {
                 return videoTracksCodecsMap.get(pkVideoCodec);
             }
         }
-
         return videoTracks;
     }
 
@@ -459,6 +503,45 @@ class TrackSelectionHelper {
         }
 
         return restoreLastSelectedTrack(trackList, lastSelectedTrackId, getUpdatedDefaultTrackIndex(trackList, defaultTrackIndex));
+    }
+
+    /**
+     * Creates a map which contains text language map
+     * which inside holds with list of available formats for that specific language
+     *
+     * @param trackGroupArray TrackGroupArray this includes Internal and External Text Formats
+     */
+    private void extractTextTracksToMap(TrackGroupArray trackGroupArray) {
+        for (int groupIndex = 0; groupIndex < trackGroupArray.length; groupIndex++) {
+            TrackGroup trackGroup = trackGroupArray.get(groupIndex);
+
+            for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
+                Format format = trackGroup.getFormat(trackIndex);
+
+                String languageName = format.language;
+                if (isExternalSubtitle(format)) {
+                    languageName = getExternalSubtitleLanguage(format);
+                }
+
+                if (subtitleListMap.containsKey(languageName)) {
+                    Map<String, List<Format>> baseTrackHashMap = subtitleListMap.get(languageName);
+                    if (baseTrackHashMap.containsKey(format.language)) {
+                        List<Format> langaugeList = baseTrackHashMap.get(format.language);
+                        langaugeList.add(format);
+                    } else {
+                        List<Format> langaugeList = new ArrayList<>();
+                        langaugeList.add(format);
+                        baseTrackHashMap.put(format.language, langaugeList);
+                    }
+                } else {
+                    Map<String, List<Format>> baseTrackHashMap = new HashMap<>();
+                    List<Format> langaugeList = new ArrayList<>();
+                    langaugeList.add(format);
+                    baseTrackHashMap.put(format.language, langaugeList);
+                    subtitleListMap.put(languageName, baseTrackHashMap);
+                }
+            }
+        }
     }
 
     private int getUpdatedDefaultTrackIndex(List<? extends BaseTrack> trackList, int defaultTrackIndex) {
@@ -710,7 +793,7 @@ class TrackSelectionHelper {
         }
         return uniqueIds;
     }
-    
+
     private SelectionOverride retrieveOverrideSelectionList(int[][] uniqueIds) {
         if (uniqueIds == null || uniqueIds[0] == null) {
             throw new IllegalArgumentException("Track selection with uniqueId = null");
@@ -1130,6 +1213,7 @@ class TrackSelectionHelper {
         }
         videoTracksCodecsMap.clear();
         audioTracksCodecsMap.clear();
+        subtitleListMap.clear();
     }
 
     protected void release() {
@@ -1449,6 +1533,10 @@ class TrackSelectionHelper {
 
     protected void applyPlayerSettings(PlayerSettings settings) {
         this.playerSettings = settings;
+    }
+
+    protected void hasExternalSubtitles(boolean hasExternalSubtitles) {
+        this.hasExternalSubtitles = hasExternalSubtitles;
     }
 
     public static boolean isCodecSupported(@NonNull String codecs, @Nullable TrackType type, boolean allowSoftware) {

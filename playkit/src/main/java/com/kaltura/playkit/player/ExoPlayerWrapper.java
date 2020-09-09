@@ -333,9 +333,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         if (externalSubtitleList == null || externalSubtitleList.isEmpty()) {
+            if (assertTrackSelectionIsNotNull("buildExoMediaSource")) {
+                trackSelectionHelper.hasExternalSubtitles(false);
+            }
             removeExternalTextTrackListener();
             return mediaSource;
         } else {
+            if (assertTrackSelectionIsNotNull("buildExoMediaSource")) {
+                trackSelectionHelper.hasExternalSubtitles(true);
+            }
             addExternalTextTrackErrorListener();
             return new MergingMediaSource(buildMediaSourceList(mediaSource, externalSubtitleList));
         }
@@ -428,6 +434,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @NonNull
     private MediaSource buildExternalSubtitleSource(int subtitleId, PKExternalSubtitle pkExternalSubtitle) {
+        String subtitleMimeType = pkExternalSubtitle.getMimeType() == null ? "Unknown" : pkExternalSubtitle.getMimeType();
+
         // Build the subtitle MediaSource.
         Format subtitleFormat = Format.createTextContainerFormat(
                 String.valueOf(subtitleId), // An identifier for the track. May be null.
@@ -438,7 +446,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 pkExternalSubtitle.getBitrate(),
                 pkExternalSubtitle.getSelectionFlags(),
                 pkExternalSubtitle.getRoleFlag(),
-                pkExternalSubtitle.getLanguage()); // The subtitle language. May be null.
+                pkExternalSubtitle.getLanguage() + "-" + subtitleMimeType); // The subtitle language. May be null.
 
         return new SingleSampleMediaSource.Factory(getDataSourceFactory(null))
                 .setLoadErrorHandlingPolicy(externalTextTrackLoadErrorPolicy)
