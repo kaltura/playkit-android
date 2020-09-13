@@ -5,6 +5,8 @@ import android.os.SystemClock;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
+import com.kaltura.android.exoplayer2.source.LoadEventInfo;
+import com.kaltura.android.exoplayer2.source.MediaLoadData;
 import com.kaltura.android.exoplayer2.source.MediaSourceEventListener;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
@@ -60,7 +62,7 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     }
 
     @Override
-    public void onLoadCompleted(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
+    public void onLoadCompleted(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
         if (loadEventInfo.bytesLoaded > 0) {
             if (mediaLoadData.trackType == C.TRACK_TYPE_VIDEO  || mediaLoadData.trackType == C.TRACK_TYPE_AUDIO || mediaLoadData.trackType == C.TRACK_TYPE_DEFAULT) { // in HLS track type 0 is sent in dash type 1 is sent
                 totalBytesLoaded += loadEventInfo.bytesLoaded;
@@ -78,12 +80,12 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     }
 
     @Override
-    public void onLoadCanceled(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
+    public void onLoadCanceled(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
         onLoadCompleted(eventTime, loadEventInfo, mediaLoadData);   // in case there are bytes loaded
     }
 
     @Override
-    public void onLoadError(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData, IOException error, boolean wasCanceled) {
+    public void onLoadError(EventTime eventTime, LoadEventInfo loadEventInfo,MediaLoadData mediaLoadData, IOException error, boolean wasCanceled) {
         onLoadCompleted(eventTime, loadEventInfo, mediaLoadData);   // in case there are bytes loaded
         if (listener != null) {
             listener.onLoadError(error, wasCanceled);

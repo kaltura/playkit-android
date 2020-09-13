@@ -46,6 +46,10 @@ public class LocalAssetsManager {
         helper = new LocalAssetsManagerHelper(context);
     }
 
+    public void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
+        helper.setLicenseRequestAdapter(licenseRequestAdapter);
+    }
+
     /**
      * Will check if passed parameters are valid.
      *

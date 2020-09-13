@@ -61,7 +61,8 @@ public class LocalAssetsManagerExo {
      * @return - the {@link PKMediaSource} that should be passed to the player.
      */
     public PKMediaSource getLocalMediaSource(@NonNull final String assetId, @NonNull final MediaSource exoMediaSource) {
-        return new LocalExoMediaSource(helper.localDataStore, exoMediaSource, assetId, helper.getLocalAssetScheme(assetId));
+        LocalExoMediaSource localExoMediaSource = new LocalExoMediaSource(helper.localDataStore, exoMediaSource, assetId, helper.getLocalAssetScheme(assetId));
+        return localExoMediaSource;
     }
 
     public PKMediaSource getLocalMediaSource(@NonNull final String assetId, @NonNull final String localAssetPath) {

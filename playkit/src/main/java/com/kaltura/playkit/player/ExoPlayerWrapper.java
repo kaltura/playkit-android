@@ -30,7 +30,9 @@ import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
+import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
+import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
@@ -195,14 +197,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         DefaultTrackSelector trackSelector = initializeTrackSelector();
         DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context);
         renderersFactory.setAllowedVideoJoiningTimeMs(playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
-        renderersFactory.setPlayClearSamplesWithoutKeys(playerSettings.allowClearLead());
         renderersFactory.setEnableDecoderFallback(playerSettings.enableDecoderFallback());
+
 
         player = new SimpleExoPlayer.Builder(context, renderersFactory)
                 .setTrackSelector(trackSelector)
                 .setLoadControl(getUpdatedLoadControl())
                 .setBandwidthMeter(bandwidthMeter).build();
-
         player.setHandleAudioBecomingNoisy(playerSettings.isHandleAudioBecomingNoisyEnabled());
         window = new Timeline.Window();
         setPlayerListeners();
@@ -223,7 +224,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 return new DefaultLoadControl();
             }
             return new CustomLoadControl(new DefaultAllocator(/* trimOnReset= */ true, C.DEFAULT_BUFFER_SEGMENT_SIZE),
-                    loadControl.getMinPlayerBufferMs(),
                     loadControl.getMaxPlayerBufferMs(), // minBufferVideoMs is set same as the maxBufferMs due to issue in exo player FEM-2707
                     loadControl.getMaxPlayerBufferMs(),
                     loadControl.getMinBufferAfterInteractionMs(),
@@ -278,7 +278,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         metadataList.clear();
         if (sourceConfig.mediaSource.hasDrmParams()) {
             final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
-            drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener,playerSettings.allowClearLead());
+            drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener, playerSettings.allowClearLead());
             drmSessionManager.setMediaSource(sourceConfig.mediaSource);
         }
         shouldGetTracksInfo = true;
@@ -612,7 +612,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     @Override
     public void onTimelineChanged(Timeline timeline, int reason) {
         log.d("onTimelineChanged reason = " + reason + " duration = " + getDuration());
-        if (reason == Player.TIMELINE_CHANGE_REASON_PREPARED) {
+        if (reason == Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE) {
             sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
             if (getDuration() != TIME_UNSET) {
                 sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
@@ -620,10 +620,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             }
         }
 
-        if (reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC && getDuration() != TIME_UNSET) {
+        if (reason == Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE && getDuration() != TIME_UNSET) {
             sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         }
-        shouldResetPlayerPosition = (reason == Player.TIMELINE_CHANGE_REASON_DYNAMIC);
+        shouldResetPlayerPosition = (reason == Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE);
     }
 
     @Override
@@ -1287,7 +1287,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void setPlaybackRate(float rate) {
         log.v("setPlaybackRate");
         if (assertPlayerIsNotNull("setPlaybackRate()")) {
-            PlaybackParameters playbackParameters = new PlaybackParameters(rate, DEFAULT_PITCH_RATE);
+            PlaybackParameters  playbackParameters = new PlaybackParameters(rate);
             player.setPlaybackParameters(playbackParameters);
             this.lastKnownPlaybackRate = rate;
         }
@@ -1296,7 +1296,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     @Override
     public float getPlaybackRate() {
         log.v("getPlaybackRate");
-        if (assertPlayerIsNotNull("getPlaybackRate()") && player.getPlaybackParameters() != null) {
+        if (assertPlayerIsNotNull("getPlaybackRate()")) {
             return player.getPlaybackParameters().speed;
         }
         return lastKnownPlaybackRate;

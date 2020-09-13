@@ -6,16 +6,16 @@ import android.view.Surface;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.source.LoadEventInfo;
+import com.kaltura.android.exoplayer2.source.MediaLoadData;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.Format;
-import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
-import com.kaltura.android.exoplayer2.source.MediaSourceEventListener;
 import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
@@ -167,16 +167,6 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onSeekProcessed(EventTime eventTime) {
-        log("SeekProcessed");
-    }
-
-    @Override
-    public void onPlaybackParametersChanged(EventTime eventTime, PlaybackParameters playbackParameters) {
-        log("PlaybackParametersChanged", field("speed", playbackParameters.speed), field("pitch", playbackParameters.pitch));
-    }
-
-    @Override
     public void onRepeatModeChanged(EventTime eventTime, int repeatMode) {
         String strMode;
         switch (repeatMode) {
@@ -288,7 +278,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
         return jsonObject;
     }
 
-    private void logLoadingEvent(String event, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData, IOException error, Boolean wasCanceled) {
+    private void logLoadingEvent(String event, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData, IOException error, Boolean wasCanceled) {
         String dataTypeString = dataTypeString(mediaLoadData.dataType);
         String trackTypeString = trackTypeString(mediaLoadData.trackType);
 
@@ -306,28 +296,28 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onLoadStarted(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
+    public void onLoadStarted(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
         logLoadingEvent("LoadStarted", loadEventInfo, mediaLoadData, null, null);
         profiler.maybeLogServerInfo(loadEventInfo.uri);
     }
 
     @Override
-    public void onLoadCompleted(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
+    public void onLoadCompleted(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
         logLoadingEvent("LoadCompleted", loadEventInfo, mediaLoadData, null, null);
     }
 
     @Override
-    public void onLoadCanceled(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
+    public void onLoadCanceled(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
         logLoadingEvent("LoadCanceled", loadEventInfo, mediaLoadData, null, null);
     }
 
     @Override
-    public void onLoadError(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData, IOException error, boolean wasCanceled) {
+    public void onLoadError(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData, IOException error, boolean wasCanceled) {
         logLoadingEvent("LoadError", loadEventInfo, mediaLoadData, error, wasCanceled);
     }
 
     @Override
-    public void onDownstreamFormatChanged(EventTime eventTime, MediaSourceEventListener.MediaLoadData mediaLoadData) {
+    public void onDownstreamFormatChanged(EventTime eventTime, MediaLoadData mediaLoadData) {
         String trackTypeString = trackTypeString(mediaLoadData.trackType);
         if (trackTypeString == null) {
             return;
@@ -337,27 +327,12 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onUpstreamDiscarded(EventTime eventTime, MediaSourceEventListener.MediaLoadData mediaLoadData) {
+    public void onUpstreamDiscarded(EventTime eventTime, MediaLoadData mediaLoadData) {
         String trackTypeString = trackTypeString(mediaLoadData.trackType);
         if (trackTypeString == null) {
             return;
         }
         log("UpstreamDiscarded", field("trackType", trackTypeString), field("start", mediaLoadData.mediaStartTimeMs / MSEC_MULTIPLIER_FLOAT), field("end", mediaLoadData.mediaEndTimeMs / MSEC_MULTIPLIER_FLOAT));
-    }
-
-    @Override
-    public void onMediaPeriodCreated(EventTime eventTime) {
-
-    }
-
-    @Override
-    public void onMediaPeriodReleased(EventTime eventTime) {
-
-    }
-
-    @Override
-    public void onReadingStarted(EventTime eventTime) {
-
     }
 
     @Override
