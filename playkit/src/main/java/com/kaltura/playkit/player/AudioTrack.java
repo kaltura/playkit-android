@@ -14,6 +14,8 @@ package com.kaltura.playkit.player;
 
 import androidx.annotation.Nullable;
 
+import com.kaltura.playkit.PKAudioCodec;
+
 /**
  * Audio track data holder.
  * Created by anton.afanasiev on 17/11/2016.
@@ -24,13 +26,17 @@ public class AudioTrack extends BaseTrack {
     private String label;
     private String language;
     private int channelCount;
+    private PKAudioCodec codecType;
+    private String codecName;
 
-    AudioTrack(String uniqueId, String language, String label, long bitrate, int channelCount, int selectionFlag, boolean isAdaptive) {
+    AudioTrack(String uniqueId, String language, String label, long bitrate, int channelCount, int selectionFlag, boolean isAdaptive, PKAudioCodec codecType, String codecName) {
         super(uniqueId, selectionFlag, isAdaptive);
         this.label = label;
         this.bitrate = bitrate;
         this.language = language;
         this.channelCount = channelCount;
+        this.codecType = codecType;
+        this.codecName = codecName;
     }
 
     /**
@@ -40,8 +46,7 @@ public class AudioTrack extends BaseTrack {
      * @return - the language of the track.
      */
     @Override
-    public @Nullable
-    String getLanguage() {
+    @Nullable public String getLanguage() {
         return language;
     }
 
@@ -61,8 +66,7 @@ public class AudioTrack extends BaseTrack {
      *
      * @return - the label of the track.
      */
-    public @Nullable
-    String getLabel() {
+    @Nullable public String getLabel() {
         return label;
     }
 
@@ -74,5 +78,24 @@ public class AudioTrack extends BaseTrack {
      */
     public int getChannelCount() {
         return channelCount;
+    }
+
+    /**
+     * Getter for the track codec type.
+     *
+     * @return - the audio codec type.
+     */
+    @Nullable public PKAudioCodec getCodecType() {
+        return codecType;
+    }
+
+    /**
+     * Getter for the track codec name.
+     *
+     * @return - the audio codec name
+     */
+
+    @Nullable public String getCodecName() {
+        return codecName;
     }
 }

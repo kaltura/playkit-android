@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.player;
 
+import com.kaltura.playkit.PKVideoCodec;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PlaybackInfo;
@@ -124,12 +125,18 @@ public interface PlayerEngine {
     void changeTrack(String uniqueId);
 
     /**
-     * overrideMediaDefaultABR.
+     * Override media for video tracks with ABR
      *
      * @param minVideoBitrate - minVideoBitrate.
-     * @param maxVideoBitrate - minVideoBitrate.
+     * @param maxVideoBitrate - maxVideoBitrate.
      */
     void overrideMediaDefaultABR(long minVideoBitrate, long maxVideoBitrate);
+
+    /**
+     * Override codec for video tracks when more than 1 codec is available.
+     *
+     */
+    void overrideMediaVideoCodec();
 
     /**
      * Seek player to the specified position.
