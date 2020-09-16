@@ -32,6 +32,9 @@ import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
+import com.kaltura.android.exoplayer2.extractor.ExtractorsFactory;
+import com.kaltura.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory;
+import com.kaltura.android.exoplayer2.extractor.ts.TsExtractor;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
@@ -56,6 +59,8 @@ import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.android.exoplayer2.upstream.UdpDataSource;
+import com.kaltura.android.exoplayer2.util.TimestampAdjuster;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
@@ -76,6 +81,7 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 
+import static com.kaltura.android.exoplayer2.extractor.ts.TsExtractor.MODE_SINGLE_PMT;
 import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
 import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
@@ -399,9 +405,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
-            case udp:
+            //case udp:
                 mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(uri);
+                break;
+            case udp:
+                DataSource.Factory udpDatasourceFactory = () -> new UdpDataSource(3000, 100000);
+                ExtractorsFactory tsExtractorFactory = () -> new TsExtractor[]{new TsExtractor(MODE_SINGLE_PMT,
+                        new TimestampAdjuster(0), new DefaultTsPayloadReaderFactory())};
+                 mediaSource = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory).createMediaSource(uri);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
