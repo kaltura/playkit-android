@@ -73,6 +73,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import okhttp3.OkHttpClient;
 
@@ -273,6 +274,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private void preparePlayer(@NonNull PKMediaSourceConfig sourceConfig) {
+        if (this.sourceConfig != null && this.sourceConfig.mediaSource.getMediaFormat() == PKMediaFormat.udp) {
+            player.seekTo(0);
+        }
+
         this.sourceConfig = sourceConfig;
         //reset metadata on prepare.
         metadataList.clear();
@@ -290,7 +295,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             profiler.onPrepareStarted(sourceConfig);
             boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
             player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
-
             changeState(PlayerState.LOADING);
 
             if (playerSettings.getSubtitleStyleSettings() != null) {
@@ -396,10 +400,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
+            case udp:
                 mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(uri);
                 break;
-
             default:
                 throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
         }
@@ -779,7 +783,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             // for change media case need to verify if surface swap is needed
             maybeChangePlayerRenderView();
         }
-
         preparePlayer(mediaSourceConfig);
     }
 
