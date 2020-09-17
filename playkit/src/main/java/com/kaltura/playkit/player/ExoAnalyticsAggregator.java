@@ -7,7 +7,6 @@ import com.kaltura.android.exoplayer2.analytics.AnalyticsListener;
 import com.kaltura.android.exoplayer2.decoder.DecoderCounters;
 import com.kaltura.android.exoplayer2.source.LoadEventInfo;
 import com.kaltura.android.exoplayer2.source.MediaLoadData;
-import com.kaltura.android.exoplayer2.source.MediaSourceEventListener;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
 
@@ -51,13 +50,11 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
     }
 
     @Override
-    public void onDecoderDisabled(EventTime eventTime, int trackType, DecoderCounters decoderCounters) {
-        if (trackType == C.TRACK_TYPE_VIDEO || trackType == C.TRACK_TYPE_DEFAULT ) {
-            skippedOutputBufferCount  = decoderCounters.skippedOutputBufferCount;
-            renderedOutputBufferCount = decoderCounters.renderedOutputBufferCount;
-            if (listener != null) {
-                listener.onDecoderDisabled(skippedOutputBufferCount, renderedOutputBufferCount);
-            }
+    public void onVideoDisabled(EventTime eventTime, DecoderCounters decoderCounters) {
+        skippedOutputBufferCount  = decoderCounters.skippedOutputBufferCount;
+        renderedOutputBufferCount = decoderCounters.renderedOutputBufferCount;
+        if (listener != null) {
+            listener.onDecoderDisabled(skippedOutputBufferCount, renderedOutputBufferCount);
         }
     }
 
@@ -72,11 +69,6 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
                 listener.onBytesLoaded(mediaLoadData.trackType, mediaLoadData.dataType, loadEventInfo.bytesLoaded, loadEventInfo.loadDurationMs, totalBytesLoaded);
             }
         }
-    }
-
-    @Override
-    public void onLoadingChanged(EventTime eventTime, boolean isLoading) {
-        log.v("onLoadingChanged eventPlaybackPositionMs = " + eventTime.eventPlaybackPositionMs + " totalBufferedDurationMs = " + eventTime.totalBufferedDurationMs + " isLoading = " +  Boolean.toString(isLoading));
     }
 
     @Override

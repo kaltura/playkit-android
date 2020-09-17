@@ -31,7 +31,6 @@ import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil;
 import com.kaltura.android.exoplayer2.source.MediaSource;
 import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.playkit.LocalAssetsManager;
-import com.kaltura.playkit.LocalAssetsManagerExo;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -42,7 +41,6 @@ import com.kaltura.playkit.player.PKPlayerErrorType;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static com.kaltura.playkit.Utils.toBase64;
 
@@ -207,72 +205,37 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
         }
         return licenseUrl;
     }
-
-//    @Override
-//    public boolean canAcquireSession(DrmInitData drmInitData) {
-//        return drmSessionManager != null && drmSessionManager.canAcquireSession(drmInitData);
-//    }
-
-//    @Override
-//    public void onDrmKeysLoaded() {
-//        log.d("onDrmKeysLoaded");
-//    }
-//
-//    @Override
-//    public void onDrmSessionManagerError(Exception e) {
-//        log.d("onDrmSessionManagerError");
-//        PKError error = new PKError(PKPlayerErrorType.DRM_ERROR, e.getMessage(), e);
-//        drmSessionListener.onError(error);
-//    }
-//
-//    @Override
-//    public void onDrmKeysRestored() {
-//        log.d("onDrmKeysRestored");
-//    }
-//
-//    @Override
-//    public void onDrmKeysRemoved() {
-//        log.d("onDrmKeysRemoved");
-//    }
-//
-//    @Override
-//    public void onDrmSessionAcquired() {
-//        log.d("onDrmSessionAcquired");
-//    }
-//
-//    @Override
-//    public void onDrmSessionReleased() {
-//        log.d("onDrmSessionReleased");
-//    }
-
+    
     @Override
     public void onDrmSessionAcquired(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId) {
-
+        log.d("onDrmSessionAcquired");
     }
 
     @Override
     public void onDrmKeysLoaded(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId) {
-
+        log.d("onDrmKeysLoaded");
     }
 
     @Override
     public void onDrmSessionManagerError(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId, Exception error) {
-
+        log.d("onDrmSessionManagerError");
+        PKError pkError = new PKError(PKPlayerErrorType.DRM_ERROR, PKError.Severity.Recoverable, error.getMessage(), error);
+        drmSessionListener.onError(pkError);
     }
 
     @Override
     public void onDrmKeysRestored(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId) {
-
+        log.d("onDrmKeysRestored");
     }
 
     @Override
     public void onDrmKeysRemoved(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId) {
-
+        log.d("onDrmKeysRemoved");
     }
 
     @Override
     public void onDrmSessionReleased(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId) {
-
+       log.d("onDrmSessionReleased");
     }
 
 }

@@ -10,7 +10,6 @@ import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKRequestParams;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;

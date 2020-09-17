@@ -24,15 +24,13 @@ import com.kaltura.android.exoplayer2.DefaultLoadControl;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
-import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.LoadControl;
+import com.kaltura.android.exoplayer2.MediaItem;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
-import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
-import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
@@ -75,10 +73,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import okhttp3.OkHttpClient;
 
-import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
 import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
@@ -436,22 +434,23 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private MediaSource buildExternalSubtitleSource(int subtitleId, PKExternalSubtitle pkExternalSubtitle) {
         String subtitleMimeType = pkExternalSubtitle.getMimeType() == null ? "Unknown" : pkExternalSubtitle.getMimeType();
 
-        // Build the subtitle MediaSource.
-        Format subtitleFormat = Format.createTextContainerFormat(
-                String.valueOf(subtitleId), // An identifier for the track. May be null.
-                pkExternalSubtitle.getLabel(),
-                pkExternalSubtitle.getContainerMimeType(),
-                pkExternalSubtitle.getMimeType(), // The mime type. Must be set correctly.
-                pkExternalSubtitle.getCodecs(),
-                pkExternalSubtitle.getBitrate(),
-                pkExternalSubtitle.getSelectionFlags(),
-                pkExternalSubtitle.getRoleFlag(),
-                pkExternalSubtitle.getLanguage() + "-" + subtitleMimeType); // The subtitle language. May be null.
-
+//        // Build the subtitle MediaSource.
+//        Format subtitleFormat = Format.createTextContainerFormat(
+//                String.valueOf(subtitleId), // An identifier for the track. May be null.
+//                pkExternalSubtitle.getLabel(),
+//                pkExternalSubtitle.getContainerMimeType(),
+//                pkExternalSubtitle.getMimeType(), // The mime type. Must be set correctly.
+//                pkExternalSubtitle.getCodecs(),
+//                pkExternalSubtitle.getBitrate(),
+//                pkExternalSubtitle.getSelectionFlags(),
+//                pkExternalSubtitle.getRoleFlag(),
+//                pkExternalSubtitle.getLanguage() + "-" + subtitleMimeType); // The subtitle language. May be null.
+        MediaItem.Subtitle mediaItemSubtitle = new MediaItem.Subtitle(Uri.parse(pkExternalSubtitle.getUrl()), pkExternalSubtitle.getContainerMimeType(), pkExternalSubtitle.getLanguage() + "-" + subtitleMimeType, pkExternalSubtitle.getSelectionFlags());
         return new SingleSampleMediaSource.Factory(getDataSourceFactory(null))
                 .setLoadErrorHandlingPolicy(externalTextTrackLoadErrorPolicy)
                 .setTreatLoadErrorsAsEndOfStream(true)
-                .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
+                .createMediaSource(mediaItemSubtitle, C.TIME_UNSET);
+               // .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
     }
 
     private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
@@ -542,11 +541,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
-    public void onLoadingChanged(boolean isLoading) {
-        log.d("onLoadingChanged. isLoading => " + isLoading);
-    }
-
-    @Override
     public void onIsPlayingChanged(boolean isPlaying) {
         if (isPlaying) {
             sendDistinctEvent(PlayerEvent.Type.PLAYING);
@@ -558,11 +552,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         log.d("onPlaybackSuppressionReasonChanged. playbackSuppressionReason => " + playbackSuppressionReason);
     }
 
+
     @Override
-    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+    public void onPlaybackStateChanged(int playbackState) {
         switch (playbackState) {
             case Player.STATE_IDLE:
-                log.d("onPlayerStateChanged. IDLE. playWhenReady => " + playWhenReady);
+                log.d("onPlayerStateChanged = IDLE");
                 changeState(PlayerState.IDLE);
                 if (isSeeking) {
                     isSeeking = false;
@@ -570,12 +565,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 break;
 
             case Player.STATE_BUFFERING:
-                log.d("onPlayerStateChanged. BUFFERING. playWhenReady => " + playWhenReady);
+                log.d("onPlayerStateChanged = BUFFERING");
                 changeState(PlayerState.BUFFERING);
                 break;
 
             case Player.STATE_READY:
-                log.d("onPlayerStateChanged. READY. playWhenReady => " + playWhenReady);
+                log.d("onPlayerStateChanged. READY");
                 changeState(PlayerState.READY);
 
                 if (isSeeking) {
@@ -589,7 +584,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 break;
 
             case Player.STATE_ENDED:
-                log.d("onPlayerStateChanged. ENDED. playWhenReady => " + playWhenReady);
+                log.d("onPlayerStateChanged = ENDED");
                 pausePlayerAfterEndedEvent();
                 changeState(PlayerState.IDLE);
                 sendDistinctEvent(PlayerEvent.Type.ENDED);
@@ -598,6 +593,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             default:
                 break;
         }
+    }
+
+    @Override
+    public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
+        log.d("onPlayWhenReadyChanged. playWhenReady = " + playWhenReady);
+
     }
 
     private void pausePlayerAfterEndedEvent() {
@@ -663,6 +664,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             case ExoPlaybackException.TYPE_OUT_OF_MEMORY:
                 errorType = PKPlayerErrorType.OUT_OF_MEMORY;
                 errorMessage = getOutOfMemoryErrorMessage(error, errorMessage);
+                break;
+            case ExoPlaybackException.TYPE_TIMEOUT:
+                errorType = PKPlayerErrorType.TIMEOUT;
+                errorMessage = getTimeoutErrorMessage(error, errorMessage);
                 break;
             case ExoPlaybackException.TYPE_REMOTE:
                 errorType = PKPlayerErrorType.REMOTE_COMPONENT_ERROR;
@@ -731,6 +736,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return errorMessage;
     }
 
+    private String getTimeoutErrorMessage(ExoPlaybackException error, String errorMessage) {
+        TimeoutException cause = error.getTimeoutException();
+        if (cause.getCause() != null) {
+            errorMessage = cause.getCause().getMessage();
+        }
+        return errorMessage;
+    }
+
     @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
         sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
@@ -738,12 +751,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     @Override
     public void onPositionDiscontinuity(int reason) {
-        log.d("onPositionDiscontinuity");
-    }
-
-    @Override
-    public void onSeekProcessed() {
-        // TODO: use this instead of STATE_READY after isSeeking.
+        log.d("onPositionDiscontinuity reason = " + reason);
     }
 
     @Override

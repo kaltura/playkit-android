@@ -109,7 +109,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onPlayerStateChanged(EventTime eventTime, boolean playWhenReady, int playbackState) {
+    public void onPlaybackStateChanged(EventTime eventTime,  int playbackState) {
         String state;
         switch (playbackState) {
             case Player.STATE_IDLE:
@@ -127,7 +127,13 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             default: return;
         }
 
-        log("PlayerStateChanged", field("state", state), field("shouldPlay", playWhenReady));
+        log("PlayerStateChanged", field("state", state)); // TODO NOAM fix our profiler BE
+    }
+
+    @Override
+    public void onPlayWhenReadyChanged(EventTime eventTime, boolean playWhenReady, int reason) {
+        log("onPlayWhenReadyChanged", field("shouldPlay", playWhenReady));
+
     }
 
     @Override
@@ -189,11 +195,6 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     @Override
     public void onShuffleModeChanged(EventTime eventTime, boolean shuffleModeEnabled) {
         log("ShuffleModeChanged", field("shuffleModeEnabled", shuffleModeEnabled));
-    }
-
-    @Override
-    public void onLoadingChanged(EventTime eventTime, boolean isLoading) {
-        log("LoadingChanged", field("isLoading", isLoading));
     }
 
     @Override
@@ -350,22 +351,27 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
     }
 
     @Override
-    public void onDecoderEnabled(EventTime eventTime, int trackType, DecoderCounters decoderCounters) {
+    public void onAudioEnabled(EventTime eventTime, DecoderCounters counters) {
 
     }
 
     @Override
-    public void onDecoderInitialized(EventTime eventTime, int trackType, String decoderName, long initializationDurationMs) {
+    public void onVideoEnabled(EventTime eventTime, DecoderCounters counters) {
+
+    }
+
+    @Override
+    public void onVideoDecoderInitialized(EventTime eventTime, String decoderName, long initializationDurationMs) {
         log("DecoderInitialized", field("name", decoderName), field("duration", initializationDurationMs / MSEC_MULTIPLIER_FLOAT));
     }
 
     @Override
-    public void onDecoderInputFormatChanged(EventTime eventTime, int trackType, Format format) {
+    public void onVideoInputFormatChanged(EventTime eventTime, Format format) {
         log("DecoderInputFormatChanged", field("id", format.id), field("codecs", format.codecs), field("bitrate", format.bitrate));
     }
 
     @Override
-    public void onDecoderDisabled(EventTime eventTime, int trackType, DecoderCounters decoderCounters) {
+    public void onVideoDisabled(EventTime eventTime, DecoderCounters decoderCounters) {
 
     }
 

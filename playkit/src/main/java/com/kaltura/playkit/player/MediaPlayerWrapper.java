@@ -24,7 +24,6 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import android.view.SurfaceHolder;
 
-import com.kaltura.playkit.PKVideoCodec;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;

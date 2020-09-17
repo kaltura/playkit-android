@@ -16,7 +16,6 @@ import android.annotation.TargetApi;
 import android.media.DeniedByServerException;
 import android.media.MediaDrm;
 import android.media.MediaDrmException;
-import android.media.NotProvisionedException;
 import android.os.Build;
 import androidx.annotation.NonNull;
 
