@@ -205,7 +205,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
         }
         return licenseUrl;
     }
-    
+
     @Override
     public void onDrmSessionAcquired(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId) {
         log.d("onDrmSessionAcquired");

@@ -18,6 +18,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.DefaultLoadControl;
@@ -30,21 +31,13 @@ import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
-import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
 import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
 import com.kaltura.android.exoplayer2.source.BehindLiveWindowException;
-import com.kaltura.android.exoplayer2.source.MediaSource;
-import com.kaltura.android.exoplayer2.source.MergingMediaSource;
-import com.kaltura.android.exoplayer2.source.ProgressiveMediaSource;
-import com.kaltura.android.exoplayer2.source.SingleSampleMediaSource;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
-import com.kaltura.android.exoplayer2.source.dash.DashMediaSource;
-import com.kaltura.android.exoplayer2.source.dash.DefaultDashChunkSource;
-import com.kaltura.android.exoplayer2.source.hls.HlsMediaSource;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
@@ -70,6 +63,7 @@ import java.net.CookieManager;
 import java.net.CookiePolicy;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -282,13 +276,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         shouldGetTracksInfo = true;
         trackSelectionHelper.applyPlayerSettings(playerSettings);
 
-        MediaSource mediaSource = buildExoMediaSource(sourceConfig);
+        MediaItem mediaItem = buildExoMediaItem(sourceConfig);
 
-        if (mediaSource != null) {
+        if (mediaItem != null) {
             profiler.onPrepareStarted(sourceConfig);
             boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
-            player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
-
+            player.setMediaItems(Collections.singletonList(mediaItem), /* resetPosition= */ !haveStartPosition);
+            player.prepare();
             changeState(PlayerState.LOADING);
 
             if (playerSettings.getSubtitleStyleSettings() != null) {
@@ -312,7 +306,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         eventListener.onEvent(PlayerEvent.Type.ERROR);
     }
 
-    private MediaSource buildExoMediaSource(PKMediaSourceConfig sourceConfig) {
+    private MediaItem buildExoMediaItem(PKMediaSourceConfig sourceConfig) {
         List<PKExternalSubtitle> externalSubtitleList = null;
 
         if (sourceConfig.getExternalSubtitleList() != null) {
@@ -320,29 +314,26 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     sourceConfig.getExternalSubtitleList() : null;
         }
 
-        final MediaSource mediaSource;
+         MediaItem mediaItem;
 
-        if (sourceConfig.mediaSource instanceof LocalAssetsManagerExo.LocalExoMediaSource) {
-            final LocalAssetsManagerExo.LocalExoMediaSource pkMediaSource = (LocalAssetsManagerExo.LocalExoMediaSource) sourceConfig.mediaSource;
-            mediaSource = pkMediaSource.getExoMediaSource();
-
+        if (sourceConfig.mediaSource instanceof LocalAssetsManagerExo.LocalExoMediaItem) {
+            final LocalAssetsManagerExo.LocalExoMediaItem pkMediaSource = (LocalAssetsManagerExo.LocalExoMediaItem) sourceConfig.mediaSource;
+            mediaItem = pkMediaSource.getExoMediaItem();
         } else {
-            mediaSource = buildInternalExoMediaSource(sourceConfig);
+            mediaItem = buildInternalExoMediaItem(sourceConfig, externalSubtitleList);
         }
-
         if (externalSubtitleList == null || externalSubtitleList.isEmpty()) {
-            if (assertTrackSelectionIsNotNull("buildExoMediaSource")) {
+            if (assertTrackSelectionIsNotNull("buildExoMediaItem")) {
                 trackSelectionHelper.hasExternalSubtitles(false);
             }
             removeExternalTextTrackListener();
-            return mediaSource;
         } else {
-            if (assertTrackSelectionIsNotNull("buildExoMediaSource")) {
+            if (assertTrackSelectionIsNotNull("buildExoMediaItem")) {
                 trackSelectionHelper.hasExternalSubtitles(true);
             }
             addExternalTextTrackErrorListener();
-            return new MergingMediaSource(buildMediaSourceList(mediaSource, externalSubtitleList));
         }
+        return mediaItem;
     }
 
     private void removeExternalTextTrackListener() {
@@ -365,92 +356,84 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
     }
 
-    private MediaSource buildInternalExoMediaSource(PKMediaSourceConfig sourceConfig) {
-        MediaSource mediaSource;
+    private MediaItem buildInternalExoMediaItem(PKMediaSourceConfig sourceConfig, List<PKExternalSubtitle> externalSubtitleList) {
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
 
         if (format == null) {
-            return null;
+            return null; // throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
+
         }
 
         PKRequestParams requestParams = sourceConfig.getRequestParams();
         Uri uri = requestParams.url;
+        MediaItem.Builder builder =
+                new MediaItem.Builder()
+                        .setUri(uri)
+                        .setMimeType(format.mimeType)
+                        .setSubtitles(buildSubtitlesList(externalSubtitleList))
+                        .setClipStartPositionMs(0L)
+                        .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
 
-        final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
+        if (format == PKMediaFormat.dash) {
+            if (sourceConfig.mediaSource.hasDrmParams()) {
+                boolean setDrmSessionForClearTypes = false;
+                PKDrmParams.Scheme scheme = PKDrmParams.Scheme.WidevineCENC;
+                String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource);
 
-        switch (format) {
-            case dash:
-                mediaSource = new DashMediaSource.Factory(
-                        new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
-                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())
-                        .createMediaSource(uri);
-                break;
+                Map<String, String> headers = requestParams.headers;
+                @Nullable
+                String[] keyRequestPropertiesArray = new String[]{};
+                if (keyRequestPropertiesArray != null) {
+                    for (int i = 0; i < keyRequestPropertiesArray.length; i += 2) {
+                        headers.put(keyRequestPropertiesArray[i], keyRequestPropertiesArray[i + 1]);
+                    }
+                }
 
-            case hls:
-                mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
-                        .createMediaSource(uri);
-                break;
-
-            // mp4 and mp3 both use ExtractorMediaSource
-            case mp4:
-            case mp3:
-                mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
-                        .createMediaSource(uri);
-                break;
-
-            default:
-                throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
+                builder
+                        .setDrmUuid((scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID)
+                        .setDrmLicenseUri(licenseUri)
+                        .setDrmMultiSession(false)
+                        .setDrmForceDefaultLicenseUri(false)
+                        .setDrmLicenseRequestHeaders(headers);
+                if (setDrmSessionForClearTypes) {
+                    List<Integer> tracks = new ArrayList<>();
+                    tracks.add(C.TRACK_TYPE_VIDEO);
+                    tracks.add(C.TRACK_TYPE_AUDIO);
+                    builder.setDrmSessionForClearTypes(tracks);
+                }
+            }
         }
-        return mediaSource;
+        return builder.build();
     }
 
-    /**
-     * Return the media source with external subtitles if exists
-     * @param externalSubtitleList External subtitle List
-     * @return Media Source array
-     */
+    private String getDrmLicenseUrl(PKMediaSource mediaSource) {
+        String licenseUrl = null;
 
-    private MediaSource[] buildMediaSourceList(MediaSource mediaSource, List<PKExternalSubtitle> externalSubtitleList) {
-        List<MediaSource> streamMediaSources = new ArrayList<>();
+        if (mediaSource.hasDrmParams()) {
+            List<PKDrmParams> drmData = mediaSource.getDrmData();
+            for (PKDrmParams pkDrmParam : drmData) {
+                // selecting WidevineCENC as default right now
+                if (PKDrmParams.Scheme.WidevineCENC == pkDrmParam.getScheme()) {
+                    licenseUrl = pkDrmParam.getLicenseUri();
+                    break;
+                }
+            }
+        }
+        return licenseUrl;
+    }
+
+    private List<MediaItem.Subtitle> buildSubtitlesList(List<PKExternalSubtitle> externalSubtitleList) {
+        List<MediaItem.Subtitle> subtitleList = Collections.emptyList();
 
         if (externalSubtitleList != null && externalSubtitleList.size() > 0) {
             for (int subtitlePosition = 0 ; subtitlePosition < externalSubtitleList.size() ; subtitlePosition ++) {
-                MediaSource subtitleMediaSource = buildExternalSubtitleSource(subtitlePosition, externalSubtitleList.get(subtitlePosition));
-                streamMediaSources.add(subtitleMediaSource);
+                PKExternalSubtitle pkExternalSubtitle = externalSubtitleList.get(subtitlePosition);
+                String subtitleMimeType = pkExternalSubtitle.getMimeType() == null ? "Unknown" : pkExternalSubtitle.getMimeType();
+                MediaItem.Subtitle subtitleMediaItem = new MediaItem.Subtitle(Uri.parse(pkExternalSubtitle.getUrl()), pkExternalSubtitle.getContainerMimeType(), pkExternalSubtitle.getLanguage() + "-" + subtitleMimeType, pkExternalSubtitle.getSelectionFlags());
+                subtitleList.add(subtitleMediaItem);
             }
         }
-        // 0th position is secured for dash/hls/extractor media source
-        streamMediaSources.add(0, mediaSource);
-        return streamMediaSources.toArray(new MediaSource[0]);
-    }
-
-    /**
-     * Create single Media Source object with each subtitle
-     * @param pkExternalSubtitle External subtitle object
-     * @return An object of external subtitle media source
-     */
-
-    @NonNull
-    private MediaSource buildExternalSubtitleSource(int subtitleId, PKExternalSubtitle pkExternalSubtitle) {
-        String subtitleMimeType = pkExternalSubtitle.getMimeType() == null ? "Unknown" : pkExternalSubtitle.getMimeType();
-
-//        // Build the subtitle MediaSource.
-//        Format subtitleFormat = Format.createTextContainerFormat(
-//                String.valueOf(subtitleId), // An identifier for the track. May be null.
-//                pkExternalSubtitle.getLabel(),
-//                pkExternalSubtitle.getContainerMimeType(),
-//                pkExternalSubtitle.getMimeType(), // The mime type. Must be set correctly.
-//                pkExternalSubtitle.getCodecs(),
-//                pkExternalSubtitle.getBitrate(),
-//                pkExternalSubtitle.getSelectionFlags(),
-//                pkExternalSubtitle.getRoleFlag(),
-//                pkExternalSubtitle.getLanguage() + "-" + subtitleMimeType); // The subtitle language. May be null.
-        MediaItem.Subtitle mediaItemSubtitle = new MediaItem.Subtitle(Uri.parse(pkExternalSubtitle.getUrl()), pkExternalSubtitle.getContainerMimeType(), pkExternalSubtitle.getLanguage() + "-" + subtitleMimeType, pkExternalSubtitle.getSelectionFlags());
-        return new SingleSampleMediaSource.Factory(getDataSourceFactory(null))
-                .setLoadErrorHandlingPolicy(externalTextTrackLoadErrorPolicy)
-                .setTreatLoadErrorsAsEndOfStream(true)
-                .createMediaSource(mediaItemSubtitle, C.TIME_UNSET);
-               // .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
+        return subtitleList;
     }
 
     private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
@@ -640,9 +623,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         log.d("onPlayerError error type => " + error.type);
         if (isBehindLiveWindow(error) && sourceConfig != null) {
             log.d("onPlayerError BehindLiveWindowException received, re-preparing player");
-            MediaSource mediaSource = buildExoMediaSource(sourceConfig);
-            if (mediaSource != null) {
-                player.prepare(mediaSource, true, false);
+            MediaItem mediaItem = buildExoMediaItem(sourceConfig);
+            if (mediaItem != null) {
+                player.setMediaItems(Collections.singletonList(mediaItem), true);
+                player.prepare();
             } else {
                 sendPrepareSourceError(sourceConfig);
             }

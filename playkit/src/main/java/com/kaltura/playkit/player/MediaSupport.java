@@ -42,6 +42,7 @@ public class MediaSupport {
     private static final PKLog log = PKLog.get("MediaSupport");
 
     public static final UUID WIDEVINE_UUID = UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
+    public static final UUID PLAYREADY_UUID = UUID.fromString("9a04f079-9840-4286-ab92-e65be0885f95");
     private static final String WIDEVINE_SECURITY_LEVEL_1 = "L1";
     private static final String SECURITY_LEVEL_PROPERTY = "securityLevel";
 
