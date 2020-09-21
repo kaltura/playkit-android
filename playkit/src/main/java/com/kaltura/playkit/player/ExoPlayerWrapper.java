@@ -279,8 +279,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private void preparePlayer(@NonNull PKMediaSourceConfig sourceConfig) {
+        boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
+
         if (this.sourceConfig != null && this.sourceConfig.mediaSource.getMediaFormat() == PKMediaFormat.udp) {
-            player.seekTo(0);
+            haveStartPosition = false;
         }
 
         this.sourceConfig = sourceConfig;
@@ -298,7 +300,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         if (mediaSource != null) {
             profiler.onPrepareStarted(sourceConfig);
-            boolean haveStartPosition = player.getCurrentWindowIndex() != C.INDEX_UNSET;
             player.prepare(mediaSource, !haveStartPosition, shouldResetPlayerPosition);
             changeState(PlayerState.LOADING);
 
