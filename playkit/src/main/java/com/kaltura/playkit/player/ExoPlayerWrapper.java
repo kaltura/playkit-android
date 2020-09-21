@@ -411,9 +411,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 break;
             case udp:
                 DataSource.Factory udpDatasourceFactory = () -> new UdpDataSource(3000, 100000);
-                ExtractorsFactory tsExtractorFactory = () -> new TsExtractor[]{new TsExtractor(MODE_SINGLE_PMT,
-                        new TimestampAdjuster(0), new DefaultTsPayloadReaderFactory())};
-                 mediaSource = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory).createMediaSource(uri);
+                ExtractorsFactory tsExtractorFactory = () -> new TsExtractor[]{
+                        new TsExtractor(MODE_SINGLE_PMT,
+                                new TimestampAdjuster(0), new DefaultTsPayloadReaderFactory())
+                };
+                mediaSource = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory)
+                        .createMediaSource(uri);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
@@ -468,7 +471,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 .setTreatLoadErrorsAsEndOfStream(true)
                 .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
     }
-    
+
     private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
         HttpDataSource.Factory httpDataSourceFactory;
         final String userAgent = getUserAgent(context);
@@ -1049,7 +1052,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             String errorMessage = "given maxVideoBitrate is not greater than the minVideoBitrate";
             sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
         }
-        
+
         trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
     }
 
