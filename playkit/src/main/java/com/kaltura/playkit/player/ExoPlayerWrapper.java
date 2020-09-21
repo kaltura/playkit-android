@@ -51,8 +51,6 @@ import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 import com.kaltura.playkit.*;
-import com.kaltura.playkit.drm.DeferredDrmSessionManager;
-import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
@@ -99,7 +97,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private PKTracks tracks;
     private Timeline.Window window;
     private TrackSelectionHelper trackSelectionHelper;
-    private DeferredDrmSessionManager drmSessionManager;
 
     private PlayerEvent.Type currentEvent;
     private PlayerState currentState = PlayerState.IDLE;
@@ -128,7 +125,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private TrackSelectionHelper.TracksErrorListener tracksErrorListener = initTracksErrorListener();
-    private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
     private ExternalTextTrackLoadErrorPolicy externalTextTrackLoadErrorPolicy;
 
 
@@ -268,11 +264,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         this.sourceConfig = sourceConfig;
         //reset metadata on prepare.
         metadataList.clear();
-        if (sourceConfig.mediaSource.hasDrmParams()) {
-            final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
-            drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener, playerSettings.allowClearLead());
-            drmSessionManager.setMediaSource(sourceConfig.mediaSource);
-        }
         shouldGetTracksInfo = true;
         trackSelectionHelper.applyPlayerSettings(playerSettings);
 
@@ -1281,13 +1272,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalArgumentException(errorMessage));
             eventListener.onEvent(PlayerEvent.Type.ERROR);
         }
-    }
-
-    private DeferredDrmSessionManager.DrmSessionListener initDrmSessionListener() {
-        return error -> {
-            currentError = error;
-            sendEvent(PlayerEvent.Type.ERROR);
-        };
     }
 
     @Override
