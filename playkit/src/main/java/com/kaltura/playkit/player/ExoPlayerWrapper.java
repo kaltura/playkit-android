@@ -406,7 +406,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             // mp4 and mp3 both use ExtractorMediaSource
             case mp4:
             case mp3:
-            //case udp:
                 mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(uri);
                 break;
