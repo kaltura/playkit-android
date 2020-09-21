@@ -377,8 +377,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (format == PKMediaFormat.dash) {
             if (sourceConfig.mediaSource.hasDrmParams()) {
                 boolean setDrmSessionForClearTypes = false;
+                // selecting WidevineCENC as default right now
                 PKDrmParams.Scheme scheme = PKDrmParams.Scheme.WidevineCENC;
-                String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource);
+                String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
 
                 Map<String, String> headers = requestParams.headers;
                 @Nullable
@@ -406,14 +407,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return builder.build();
     }
 
-    private String getDrmLicenseUrl(PKMediaSource mediaSource) {
+    private String getDrmLicenseUrl(PKMediaSource mediaSource, PKDrmParams.Scheme scheme) {
         String licenseUrl = null;
 
         if (mediaSource.hasDrmParams()) {
             List<PKDrmParams> drmData = mediaSource.getDrmData();
             for (PKDrmParams pkDrmParam : drmData) {
-                // selecting WidevineCENC as default right now
-                if (PKDrmParams.Scheme.WidevineCENC == pkDrmParam.getScheme()) {
+                if (scheme == pkDrmParam.getScheme()) {
                     licenseUrl = pkDrmParam.getLicenseUri();
                     break;
                 }
