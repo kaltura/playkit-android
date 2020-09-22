@@ -71,6 +71,11 @@ public class LocalAssetsManagerExo {
         return localExoMediaSource;
     }
 
+    public PKMediaSource getLocalMediaSource(@NonNull final String assetId, @NonNull final MediaSource exoMediaSource) {
+        LocalExoMediaSource localExoMediaSource = new LocalExoMediaSource(helper.localDataStore, exoMediaSource, assetId, helper.getLocalAssetScheme(assetId));
+        return localExoMediaSource;
+    }
+
     public PKMediaSource getLocalMediaSource(@NonNull final String assetId, @NonNull final String localAssetPath) {
         return new LocalAssetsManager.LocalMediaSource(helper.localDataStore, localAssetPath, assetId, helper.getLocalAssetScheme(assetId));
     }
@@ -112,6 +117,25 @@ public class LocalAssetsManagerExo {
 
         public MediaItem getExoMediaItem() {
             return exoMediaItem;
+        }
+    }
+
+    public static class LocalExoMediaSource extends LocalAssetsManager.LocalMediaSource {
+        private MediaSource exoMediaSouce;
+
+        /**
+         * @param localDataStore - the storage from where drm keySetId is stored.
+         * @param assetId        - the id of the media.
+         * @param scheme
+         */
+        LocalExoMediaSource(LocalDataStore localDataStore, @NonNull MediaSource exoMediaSource, String assetId, PKDrmParams.Scheme scheme) {
+            super(localDataStore, null, assetId, scheme);
+
+            this.exoMediaSouce = exoMediaSouce;
+        }
+
+        public MediaSource getExoMediaSource() {
+            return exoMediaSouce;
         }
     }
 }
