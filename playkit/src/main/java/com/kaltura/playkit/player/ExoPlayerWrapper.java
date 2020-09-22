@@ -31,12 +31,15 @@ import com.kaltura.android.exoplayer2.PlaybackParameters;
 import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
+import com.kaltura.android.exoplayer2.audio.AudioAttributes;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
 import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
 import com.kaltura.android.exoplayer2.source.BehindLiveWindowException;
+import com.kaltura.android.exoplayer2.source.DefaultMediaSourceFactory;
+import com.kaltura.android.exoplayer2.source.MediaSourceFactory;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
@@ -187,12 +190,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         renderersFactory.setAllowedVideoJoiningTimeMs(playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
         renderersFactory.setEnableDecoderFallback(playerSettings.enableDecoderFallback());
 
-
+        MediaSourceFactory mediaSourceFactory =
+                new DefaultMediaSourceFactory(getDataSourceFactory(Collections.emptyMap()));
         player = new SimpleExoPlayer.Builder(context, renderersFactory)
                 .setTrackSelector(trackSelector)
                 .setLoadControl(getUpdatedLoadControl())
+                .setMediaSourceFactory(mediaSourceFactory)
                 .setBandwidthMeter(bandwidthMeter).build();
-        player.setHandleAudioBecomingNoisy(playerSettings.isHandleAudioBecomingNoisyEnabled());
+        player.setAudioAttributes(AudioAttributes.DEFAULT, /* handleAudioFocus= */ true);
+        // TODO add this + config - player.setHandleAudioBecomingNoisy(playerSettings.isHandleAudioBecomingNoisyEnabled());
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());

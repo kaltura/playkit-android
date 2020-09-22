@@ -127,7 +127,7 @@ public class MediaSupport {
 
         final Set<PKDrmParams.Scheme> supportedDrmSchemes = supportedDrmSchemes();
         if (drmInitCallback != null) {
-            drmInitCallback.onDrmInitComplete(new PKDeviceSupportInfo(supportedDrmSchemes, isHardwareDrmSupported, provisionPerformed,
+            drmInitCallback.onDrmInitComplete(new PKDeviceCapabilitiesInfo(supportedDrmSchemes, isHardwareDrmSupported, provisionPerformed,
                     PKCodecSupport.isSoftwareHevcSupported(), PKCodecSupport.isHardwareHevcSupported()), provisionError);
 
         } else if (!initSucceeded) {
@@ -263,10 +263,10 @@ public class MediaSupport {
         /**
          * Called when the DRM subsystem is initialized (with possible errors).
          *
-         * @param pkDeviceSupportInfo model consist of various device codec and DRM level info {@link PKDeviceSupportInfo}
+         * @param pkDeviceCapabilitiesInfo model consist of various device codec and DRM level info {@link PKDeviceCapabilitiesInfo}
          * @param provisionError null if provisioning is successful, exception otherwise
          */
-        void onDrmInitComplete(PKDeviceSupportInfo pkDeviceSupportInfo, Exception provisionError);
+        void onDrmInitComplete(PKDeviceCapabilitiesInfo pkDeviceCapabilitiesInfo, Exception provisionError);
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)

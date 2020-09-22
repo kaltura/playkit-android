@@ -3,7 +3,7 @@ package com.kaltura.playkit.player;
 import com.kaltura.playkit.PKDrmParams;
 import java.util.Set;
 
-public class PKDeviceSupportInfo {
+public class PKDeviceCapabilitiesInfo {
 
     private Set<PKDrmParams.Scheme> supportedDrmSchemes;
     private boolean isHardwareDrmSupported;
@@ -19,8 +19,8 @@ public class PKDeviceSupportInfo {
      * @param isHardwareHevcSupported checks if only hevc h/w decoder is available on this device
      */
 
-    PKDeviceSupportInfo(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean isHardwareDrmSupported, boolean provisionPerformed,
-                        boolean isSoftwareHevcSupported, boolean isHardwareHevcSupported) {
+    PKDeviceCapabilitiesInfo(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean isHardwareDrmSupported, boolean provisionPerformed,
+                             boolean isSoftwareHevcSupported, boolean isHardwareHevcSupported) {
         this.supportedDrmSchemes = supportedDrmSchemes;
         this.isHardwareDrmSupported = isHardwareDrmSupported;
         this.provisionPerformed = provisionPerformed;
