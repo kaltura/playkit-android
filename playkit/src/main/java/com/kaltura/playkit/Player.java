@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit;
 
+import android.app.Notification;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -288,6 +290,8 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setMaxAudioChannelCount(int maxAudioChannelCount);
+
+        Settings setAudioPlayerMode(boolean audioPlayerMode, Notification audioPlayerNotification);
     }
 
     /**

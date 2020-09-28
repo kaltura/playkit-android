@@ -12,10 +12,12 @@
 
 package com.kaltura.playkit.player;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.media.MediaBrowserCompat;
 
 import androidx.annotation.NonNull;
 
@@ -57,7 +59,17 @@ import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
-import com.kaltura.playkit.*;
+import com.kaltura.playkit.LocalAssetsManagerExo;
+import com.kaltura.playkit.PKError;
+import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.PlaybackInfo;
+import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.audio.AudioService;
 import com.kaltura.playkit.audio.AudioPlayerWrapper;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
@@ -69,7 +81,6 @@ import com.kaltura.playkit.utils.NativeCookieJarBridge;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -142,6 +153,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     @NonNull private Profiler profiler = Profiler.NOOP;
 
     private AudioPlayerWrapper audioPlayerWrapper;
+    private MediaBrowserCompat mMediaBrowser;
 
     private Timeline.Period period;
 
@@ -212,9 +224,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         exoPlayerView.setPlayer(player, useTextureView, isSurfaceSecured, playerSettings.isVideoViewHidden());
 
         player.setPlayWhenReady(false);
-
-        audioPlayerWrapper = new AudioPlayerWrapper(context, player);
-        audioPlayerWrapper.initAudioWrapper();
     }
 
     @NonNull
@@ -449,7 +458,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 .setTreatLoadErrorsAsEndOfStream(true)
                 .createMediaSource(Uri.parse(pkExternalSubtitle.getUrl()), subtitleFormat, C.TIME_UNSET);
     }
-    
+
     private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
         HttpDataSource.Factory httpDataSourceFactory;
         final String userAgent = getUserAgent(context);
@@ -834,7 +843,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
             profiler.onPlayRequested();
             player.setPlayWhenReady(true);
-            audioPlayerWrapper.play();
+
+            if (playerSettings.isAudioPlayerMode()) {
+                initAudioService(context);
+            }
         }
     }
 
@@ -854,7 +866,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             sendDistinctEvent(PlayerEvent.Type.PAUSE);
             profiler.onPauseRequested();
             player.setPlayWhenReady(false);
-            audioPlayerWrapper.pause();
+           // if (playerSettings.isAudioPlayerMode() && assertAudioPlayerWrapperIsNotNull("pause()")) {
+                mMediaBrowser.disconnect();
+                audioPlayerWrapper.pause();
+          //  }
         }
     }
 
@@ -1033,7 +1048,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             String errorMessage = "given maxVideoBitrate is not greater than the minVideoBitrate";
             sendInvalidVideoBitrateRangeIfNeeded(errorMessage);
         }
-        
+
         trackSelectionHelper.overrideMediaDefaultABR(minVideoBitrate, maxVideoBitrate);
     }
 
@@ -1436,4 +1451,27 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         log.w(String.format(nullTrackSelectionMsgFormat, methodName));
         return false;
     }
+
+    private boolean assertAudioPlayerWrapperIsNotNull(String methodName) {
+        if (audioPlayerWrapper != null) {
+            return true;
+        }
+        String nullAudioPlayerWrapperMsgFormat = "Attempt to invoke '%s' on null instance of audioPlayerWrapper";
+        log.w(String.format(nullAudioPlayerWrapperMsgFormat, methodName));
+        return false;
+    }
+
+    private void initAudioService(Context context) {
+        mMediaBrowser = new MediaBrowserCompat(context, new ComponentName(context, AudioService.class), mConnectionCallback, null);
+        mMediaBrowser.connect();
+    }
+
+    MediaBrowserCompat.ConnectionCallback mConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
+        @Override
+        public void onConnected() {
+            log.e("MediaBrowserCompat onConnected");
+            audioPlayerWrapper = AudioPlayerWrapper.getInstance();
+            audioPlayerWrapper.play(playerSettings.getAudioPlayerNotification());
+        }
+    };
 }

@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.player;
 
+import android.app.Notification;
+
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
@@ -30,6 +32,8 @@ public class PlayerSettings implements Player.Settings {
     private boolean adAutoPlayOnResume = true;
     private boolean vrPlayerEnabled = true;
     private boolean isVideoViewHidden;
+    private boolean audioPlayerMode;
+    private Notification audioPlayerNotification;
     private VideoCodecSettings preferredVideoCodecSettings = new VideoCodecSettings();
     private AudioCodecSettings preferredAudioCodecSettings = new AudioCodecSettings();
     private boolean isTunneledAudioPlayback;
@@ -176,6 +180,14 @@ public class PlayerSettings implements Player.Settings {
 
     public int getMaxAudioChannelCount() {
         return maxAudioChannelCount;
+    }
+
+    public boolean isAudioPlayerMode() {
+        return audioPlayerMode;
+    }
+
+    public Notification getAudioPlayerNotification() {
+        return audioPlayerNotification;
     }
 
     @Override
@@ -363,6 +375,13 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setMaxAudioChannelCount(int maxAudioChannelCount) {
         this.maxAudioChannelCount = maxAudioChannelCount;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setAudioPlayerMode(boolean audioPlayerMode, Notification audioPlayerNotification) {
+        this.audioPlayerMode = audioPlayerMode;
+        this.audioPlayerNotification = audioPlayerNotification;
         return this;
     }
 }
