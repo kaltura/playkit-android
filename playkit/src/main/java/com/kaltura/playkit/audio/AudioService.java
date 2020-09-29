@@ -6,10 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -71,6 +73,7 @@ public class AudioService extends MediaBrowserServiceCompat implements AudioServ
         super.onCreate();
         mSession = new MediaSessionCompat(this, AudioService.class.getName());
         setSessionToken(mSession.getSessionToken());
+        mSession.setCallback(new MediaSessionCallback());
         mSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
                 MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
         AudioPlayerWrapper audioPlayerWrapper = new AudioPlayerWrapper(this);
@@ -189,6 +192,48 @@ public class AudioService extends MediaBrowserServiceCompat implements AudioServ
         if (mAudioNoisyReceiverRegistered) {
             getApplicationContext().unregisterReceiver(mAudioNoisyReceiver);
             mAudioNoisyReceiverRegistered = false;
+        }
+    }
+
+    private class MediaSessionCallback extends MediaSessionCompat.Callback {
+        @Override
+        public void onPlay() {
+            log.d("MediaSessionCallback play");
+        }
+
+        @Override
+        public void onSkipToQueueItem(long queueId) {
+
+        }
+
+        @Override
+        public void onSeekTo(long position) {
+
+        }
+
+        @Override
+        public void onPlayFromMediaId(String mediaId, Bundle extras) {
+
+        }
+
+        @Override
+        public void onPause() {
+            log.d("MediaSessionCallback onPause");
+        }
+
+        @Override
+        public void onStop() {
+            log.d("MediaSessionCallback onStop");
+        }
+
+        @Override
+        public void onSkipToNext() {
+
+        }
+
+        @Override
+        public void onSkipToPrevious() {
+
         }
     }
 }
