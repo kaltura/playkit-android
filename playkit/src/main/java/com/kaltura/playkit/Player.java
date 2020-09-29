@@ -17,6 +17,7 @@ import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
+import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
@@ -202,7 +203,7 @@ public interface Player {
          * @return - Player Settings
          */
         Settings forceSinglePlayerEngine(boolean forceSinglePlayerEngine);
-      
+
         /**
          * Set the flag which handles the video view
          * @param hide video surface visibility
@@ -235,7 +236,7 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setCustomLoadControlStrategy(Object loadControlStrategy);
-      
+
         /**
          * Set Tunneled Audio Playback
          * @param isTunneledAudioPlayback audio tunnelling enabled
@@ -298,6 +299,14 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setMaxAudioChannelCount(int maxAudioChannelCount);
+
+        /**
+         * Sets the multicastSettings for udp streams.
+         *
+         * @param multicastSettings - maxPacketSize default = 3000 & socketTimeoutMillis default = 100000
+         * @return - Player Settings
+         */
+        Settings setMulticastSettings(MulticastSettings multicastSettings);
     }
 
     /**
