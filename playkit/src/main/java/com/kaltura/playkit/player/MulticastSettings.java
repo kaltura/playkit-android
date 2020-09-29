@@ -5,7 +5,7 @@ public class MulticastSettings {
     // maxPacketSize The maximum datagram packet size, in bytes.
     private int maxPacketSize = 3000;
     // socketTimeoutMillis The socket timeout in milliseconds. A timeout of zero is interpreted
-    private int socketTimeoutMillis = 10000;
+    private int socketTimeoutMillis = 100000;
 
     public MulticastSettings() {}
 
