@@ -255,6 +255,16 @@ public interface Player {
         Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled);
 
         /**
+         * Set preference to choose internal subtitles over external subtitles (Only in the case if the same language is present
+         * in both Internal and External subtitles) - Default is true (Internal is preferred)
+         *
+         * @param preferInternalSubtitles if true, Internal will be present and External subtitle will be discarded
+         *                   if false, External will be present and Internal subtitle will be discarded
+         * @return - Player Settings
+         */
+        Settings setSubtitlePreference(boolean preferInternalSubtitles);
+
+        /**
          * Sets the maximum allowed video width and height.
          * to set the maximum allowed video bitrate to sd resolution call:
          * setMaxVideoSize(new PKMaxVideoSize().setMaxVideoWidth(1279).setMaxVideoHeight(719)
