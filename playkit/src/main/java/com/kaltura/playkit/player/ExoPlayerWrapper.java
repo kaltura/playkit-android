@@ -32,6 +32,7 @@ import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
+import com.kaltura.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.kaltura.android.exoplayer2.extractor.ExtractorsFactory;
 import com.kaltura.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory;
 import com.kaltura.android.exoplayer2.extractor.ts.TsExtractor;
@@ -49,6 +50,7 @@ import com.kaltura.android.exoplayer2.source.dash.DashMediaSource;
 import com.kaltura.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.kaltura.android.exoplayer2.source.hls.HlsMediaSource;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.kaltura.android.exoplayer2.trackselection.RandomTrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
 import com.kaltura.android.exoplayer2.upstream.BandwidthMeter;
@@ -81,6 +83,7 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 
+import static com.kaltura.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory.FLAG_ALLOW_NON_IDR_KEYFRAMES;
 import static com.kaltura.android.exoplayer2.extractor.ts.TsExtractor.MODE_SINGLE_PMT;
 import static com.kaltura.playkit.utils.Consts.DEFAULT_PITCH_RATE;
 import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
@@ -267,7 +270,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         DefaultTrackSelector trackSelector = new DefaultTrackSelector(context);
         DefaultTrackSelector.ParametersBuilder parametersBuilder = new DefaultTrackSelector.ParametersBuilder(context);
-
         trackSelectionHelper = new TrackSelectionHelper(context, trackSelector, lastSelectedTrackIds);
         trackSelectionHelper.updateTrackSelectorParameter(playerSettings, parametersBuilder);
         trackSelector.setParameters(parametersBuilder.build());
@@ -410,11 +412,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                         .createMediaSource(uri);
                 break;
             case udp:
-                DataSource.Factory udpDatasourceFactory = () -> new UdpDataSource(3000, 100000);
-                ExtractorsFactory tsExtractorFactory = () -> new TsExtractor[]{
+                DataSource.Factory udpDatasourceFactory = () -> new UdpDataSource(playerSettings.getMulticastSettings().getMaxPacketSize(), playerSettings.getMulticastSettings().getSocketTimeoutMillis());
+                ExtractorsFactory tsExtractorFactory = () -> new TsExtractor[] {
                         new TsExtractor(MODE_SINGLE_PMT,
                                 new TimestampAdjuster(0), new DefaultTsPayloadReaderFactory())
                 };
+
+                //DefaultExtractorsFactory defaultExtractorsFactory = new DefaultExtractorsFactory().setTsExtractorFlags(FLAG_ALLOW_NON_IDR_KEYFRAMES);
                 mediaSource = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory)
                         .createMediaSource(uri);
                 break;
