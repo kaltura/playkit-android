@@ -23,6 +23,7 @@ public class AudioService extends MediaBrowserServiceCompat implements AudioServ
 
     private static final PKLog log = PKLog.get("AudioService");
 
+    public static final String MEDIA_ID_EMPTY_ROOT = "__EMPTY_ROOT__";
     // we don't have audio focus, and can't duck (play at a low volume)
     private static final int AUDIO_NO_FOCUS_NO_DUCK = 0;
     // we don't have focus, but can duck (play at a low volume)
@@ -94,12 +95,14 @@ public class AudioService extends MediaBrowserServiceCompat implements AudioServ
     @Nullable
     @Override
     public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @Nullable Bundle rootHints) {
-        return new BrowserRoot("__ROOT__", null);
+        // Do Nothing. We are passing the empty root id which will allow the clients to connect but will not allow
+        // then to browse the content.
+        return new BrowserRoot(MEDIA_ID_EMPTY_ROOT, null);
     }
 
     @Override
     public void onLoadChildren(@NonNull String parentId, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result) {
-        // Do Nothing
+        // Do Nothing if we allow clients to browse the content in `onGetRoot` then we need to put the logic here/
     }
 
     @Override

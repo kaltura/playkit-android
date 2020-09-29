@@ -1021,6 +1021,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
         exoPlayerView = null;
         playerPosition = TIME_UNSET;
+
+        mMediaBrowser.disconnect();
     }
 
     @Override
