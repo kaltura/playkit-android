@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.Assert;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
@@ -80,6 +81,7 @@ public class PlayerController implements Player {
     private PlayerEngine.EventListener eventTrigger = initEventListener();
     private PlayerEngine.StateChangedListener stateChangedTrigger = initStateChangeListener();
     private PlayerEngineWrapper playerEngineWrapper;
+    private Cache downloadCache;
 
     public PlayerController(Context context) {
         this.context = context;
@@ -158,6 +160,11 @@ public class PlayerController implements Player {
         } else {
             log.w("Error in " + visibilityFunction + " playerView is null");
         }
+    }
+
+    @Override
+    public void setDownloadCache(Cache downloadCache) {
+        this.downloadCache = downloadCache;
     }
 
     @Override
@@ -256,6 +263,7 @@ public class PlayerController implements Player {
         //Initialize new PlayerEngine.
         try {
             player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType, playerSettings, rootPlayerView);
+            player.setDownloadCache(downloadCache);
             if (playerEngineWrapper != null) {
                 playerEngineWrapper.setPlayerEngine(player);
                 player = playerEngineWrapper;
@@ -266,6 +274,7 @@ public class PlayerController implements Player {
             if (incomingPlayerType == PlayerEngineType.VRPlayer) {
                 incomingPlayerType = PlayerEngineType.Exoplayer;
                 player = new ExoPlayerWrapper(context, playerSettings, rootPlayerView);
+                player.setDownloadCache(downloadCache);
             } else {
                 return;
             }

@@ -32,6 +32,7 @@ import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
 import com.kaltura.android.exoplayer2.audio.AudioAttributes;
+import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
@@ -52,8 +53,12 @@ import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.kaltura.android.exoplayer2.video.CustomLoadControl;
 import com.kaltura.playkit.*;
+import com.kaltura.playkit.drm.DeferredDrmSessionManager;
+import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.playkit.player.metadata.MetadataConverter;
 import com.kaltura.playkit.player.metadata.PKMetadata;
 import com.kaltura.playkit.utils.Consts;
@@ -100,7 +105,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private PKTracks tracks;
     private Timeline.Window window;
     private TrackSelectionHelper trackSelectionHelper;
-
+    private DeferredDrmSessionManager drmSessionManager;
+    private MediaSourceFactory mediaSourceFactory;
     private PlayerEvent.Type currentEvent;
     private PlayerState currentState = PlayerState.IDLE;
     private PlayerState previousState;
@@ -129,12 +135,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private TrackSelectionHelper.TracksInfoListener tracksInfoListener = initTracksInfoListener();
     private TrackSelectionHelper.TracksErrorListener tracksErrorListener = initTracksErrorListener();
     private ExternalTextTrackLoadErrorPolicy externalTextTrackLoadErrorPolicy;
-
-
+    private DeferredDrmSessionManager.DrmSessionListener drmSessionListener = initDrmSessionListener();
     private PKMediaSourceConfig sourceConfig;
     @NonNull private Profiler profiler = Profiler.NOOP;
 
     private Timeline.Period period;
+
+    private Cache downloadCache;
 
     ExoPlayerWrapper(Context context, PlayerSettings playerSettings, PlayerView rootPlayerView) {
         this(context, new ExoPlayerView(context), playerSettings, rootPlayerView);
@@ -190,8 +197,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         renderersFactory.setAllowedVideoJoiningTimeMs(playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
         renderersFactory.setEnableDecoderFallback(playerSettings.enableDecoderFallback());
 
-        MediaSourceFactory mediaSourceFactory =
-                new DefaultMediaSourceFactory(getDataSourceFactory(Collections.emptyMap()));
+        mediaSourceFactory = new DefaultMediaSourceFactory(getDataSourceFactory(Collections.emptyMap()));
         player = new SimpleExoPlayer.Builder(context, renderersFactory)
                 .setTrackSelector(trackSelector)
                 .setLoadControl(getUpdatedLoadControl())
@@ -270,6 +276,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         this.sourceConfig = sourceConfig;
         //reset metadata on prepare.
         metadataList.clear();
+        if (sourceConfig.mediaSource.hasDrmParams()) {
+            final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
+            drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener,playerSettings.allowClearLead());
+            drmSessionManager.setMediaSource(sourceConfig.mediaSource);
+        }
         shouldGetTracksInfo = true;
         trackSelectionHelper.applyPlayerSettings(playerSettings);
 
@@ -319,6 +330,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         } else {
             mediaItem = buildInternalExoMediaItem(sourceConfig, externalSubtitleList);
         }
+
+        mediaSourceFactory.setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager());
         if (externalSubtitleList == null || externalSubtitleList.isEmpty()) {
             if (assertTrackSelectionIsNotNull("buildExoMediaItem")) {
                 trackSelectionHelper.hasExternalSubtitles(false);
@@ -478,7 +491,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private DataSource.Factory getDataSourceFactory(Map<String, String> headers) {
-        return new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
+        DataSource.Factory httpDataSourceFactory = new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
+        if (downloadCache != null) {
+            return buildReadOnlyCacheDataSource(httpDataSourceFactory, downloadCache);
+        } else {
+            return httpDataSourceFactory;
+        }
     }
 
     private static String getUserAgent(Context context) {
@@ -494,6 +512,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (stateChangedListener != null) {
             stateChangedListener.onStateChanged(previousState, currentState);
         }
+    }
+
+    private CacheDataSource.Factory buildReadOnlyCacheDataSource(
+            DataSource.Factory upstreamFactory, Cache cache) {
+        return new CacheDataSource.Factory()
+                .setCache(cache)
+                .setUpstreamDataSourceFactory(upstreamFactory)
+                .setCacheWriteDataSinkFactory(null)
+                .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR);
     }
 
     private void sendDistinctEvent(PlayerEvent.Type newEvent) {
@@ -1280,6 +1307,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
     }
 
+    private DeferredDrmSessionManager.DrmSessionListener initDrmSessionListener() {
+        return error -> {
+            currentError = error;
+            sendEvent(PlayerEvent.Type.ERROR);
+        };
+    }
+
     @Override
     public BaseTrack getLastSelectedTrack(int renderType) {
         if (assertTrackSelectionIsNotNull("getLastSelectedTrack()")) {
@@ -1322,6 +1356,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     @Override
     public void onOrientationChanged() {
         //Do nothing.
+    }
+
+    @Override
+    public void setDownloadCache(Cache downloadCache) {
+        this.downloadCache = downloadCache;
     }
 
     private void selectPreferredTracksLanguage(PKTracks tracksReady) {

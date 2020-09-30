@@ -24,6 +24,7 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import android.view.SurfaceHolder;
 
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -610,6 +611,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     @Override
     public void onOrientationChanged() {
         //Do nothing.
+    }
+
+    @Override
+    public void setDownloadCache(Cache downloadCache) {
+
     }
 
     @Override

@@ -15,6 +15,7 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -28,6 +29,8 @@ import com.kaltura.playkit.utils.Consts;
 
 @SuppressWarnings("unused")
 public interface Player {
+
+    void setDownloadCache(Cache downloadCache);
 
     /**
      * Interface used for setting optional Player settings.
