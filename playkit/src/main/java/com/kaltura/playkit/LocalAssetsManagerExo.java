@@ -67,8 +67,7 @@ public class LocalAssetsManagerExo {
      * @return - the {@link PKMediaSource} that should be passed to the player.
      */
     public PKMediaSource getLocalMediaSource(@NonNull final String assetId, @NonNull final MediaItem exoMediaItem) {
-        LocalExoMediaItem localExoMediaSource = new LocalExoMediaItem(helper.localDataStore, exoMediaItem, assetId, helper.getLocalAssetScheme(assetId));
-        return localExoMediaSource;
+        return new LocalExoMediaItem(helper.localDataStore, exoMediaItem, assetId, helper.getLocalAssetScheme(assetId));
     }
 
     /**
@@ -77,8 +76,7 @@ public class LocalAssetsManagerExo {
      * @return - the {@link PKMediaSource} that should be passed to the player.
      */
     public PKMediaSource getLocalMediaSource(@NonNull final String assetId, @NonNull final MediaSource exoMediaSource) {
-        LocalExoMediaSource localExoMediaSource = new LocalExoMediaSource(helper.localDataStore, exoMediaSource, assetId, helper.getLocalAssetScheme(assetId));
-        return localExoMediaSource;
+        return new LocalExoMediaSource(helper.localDataStore, exoMediaSource, assetId, helper.getLocalAssetScheme(assetId));
     }
 
     public PKMediaSource getLocalMediaSource(@NonNull final String assetId, @NonNull final String localAssetPath) {
