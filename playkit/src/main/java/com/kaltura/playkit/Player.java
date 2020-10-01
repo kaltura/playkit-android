@@ -31,8 +31,6 @@ import com.kaltura.playkit.utils.Consts;
 @SuppressWarnings("unused")
 public interface Player {
 
-    void setDownloadCache(Cache downloadCache);
-
     /**
      * Interface used for setting optional Player settings.
      */
@@ -328,6 +326,8 @@ public interface Player {
 
     void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
 
+    void setDownloadCache(Cache downloadCache);
+    
     /**
      * Player lifecycle method. Should be used when the application went to onPause();
      */
