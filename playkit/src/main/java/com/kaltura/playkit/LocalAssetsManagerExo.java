@@ -82,8 +82,7 @@ public class LocalAssetsManagerExo {
     public PKMediaSource getLocalMediaSource(@NonNull final String assetId, @NonNull final String localAssetPath) {
         return new LocalAssetsManager.LocalMediaSource(helper.localDataStore, localAssetPath, assetId, helper.getLocalAssetScheme(assetId));
     }
-
-
+    
     public PKMediaSource getLocalMediaItem(@NonNull final String assetId, @NonNull final String localAssetPath) {
         return new LocalAssetsManager.LocalMediaSource(helper.localDataStore, localAssetPath, assetId, helper.getLocalAssetScheme(assetId));
     }
