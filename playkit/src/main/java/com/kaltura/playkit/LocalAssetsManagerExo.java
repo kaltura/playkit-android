@@ -100,7 +100,6 @@ public class LocalAssetsManagerExo {
         }
     }
 
-
     public static class LocalExoMediaItem extends LocalAssetsManager.LocalMediaSource {
         private MediaItem exoMediaItem;
 
