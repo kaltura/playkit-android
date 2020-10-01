@@ -121,7 +121,7 @@ public class LocalAssetsManagerExo {
     }
 
     public static class LocalExoMediaSource extends LocalAssetsManager.LocalMediaSource {
-        private MediaSource exoMediaSouce;
+        private MediaSource exoMediaSource;
 
         /**
          * @param localDataStore - the storage from where drm keySetId is stored.
@@ -131,11 +131,11 @@ public class LocalAssetsManagerExo {
         LocalExoMediaSource(LocalDataStore localDataStore, @NonNull MediaSource exoMediaSource, String assetId, PKDrmParams.Scheme scheme) {
             super(localDataStore, null, assetId, scheme);
 
-            this.exoMediaSouce = exoMediaSouce;
+            this.exoMediaSource = this.exoMediaSource;
         }
 
         public MediaSource getExoMediaSource() {
-            return exoMediaSouce;
+            return exoMediaSource;
         }
     }
 }
