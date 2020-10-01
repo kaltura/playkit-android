@@ -71,6 +71,11 @@ public class LocalAssetsManagerExo {
         return localExoMediaSource;
     }
 
+    /**
+     * @param assetId        - the id of the asset.
+     * @param exoMediaSource - the actual url of the video that should be played.
+     * @return - the {@link PKMediaSource} that should be passed to the player.
+     */
     public PKMediaSource getLocalMediaSource(@NonNull final String assetId, @NonNull final MediaSource exoMediaSource) {
         LocalExoMediaSource localExoMediaSource = new LocalExoMediaSource(helper.localDataStore, exoMediaSource, assetId, helper.getLocalAssetScheme(assetId));
         return localExoMediaSource;
