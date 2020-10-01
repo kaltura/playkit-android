@@ -130,7 +130,7 @@ public class LocalAssetsManagerExo {
         LocalExoMediaSource(LocalDataStore localDataStore, @NonNull MediaSource exoMediaSource, String assetId, PKDrmParams.Scheme scheme) {
             super(localDataStore, null, assetId, scheme);
 
-            this.exoMediaSource = this.exoMediaSource;
+            this.exoMediaSource = exoMediaSource;
         }
 
         public MediaSource getExoMediaSource() {
