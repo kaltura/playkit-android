@@ -57,7 +57,7 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
             listener.onDecoderDisabled(skippedOutputBufferCount, renderedOutputBufferCount);
         }
     }
-
+    
     @Override
     public void onLoadCompleted(EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
         if (loadEventInfo.bytesLoaded > 0) {
@@ -69,6 +69,11 @@ class ExoAnalyticsAggregator extends EventListener implements AnalyticsListener 
                 listener.onBytesLoaded(mediaLoadData.trackType, mediaLoadData.dataType, loadEventInfo.bytesLoaded, loadEventInfo.loadDurationMs, totalBytesLoaded);
             }
         }
+    }
+
+    @Override
+    public void onIsLoadingChanged(EventTime eventTime, boolean isLoading) {
+        log.v("onIsLoadingChanged eventPlaybackPositionMs = " + eventTime.eventPlaybackPositionMs + " totalBufferedDurationMs = " + eventTime.totalBufferedDurationMs + " isLoading = " +  Boolean.toString(isLoading));
     }
 
     @Override
