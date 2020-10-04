@@ -407,33 +407,34 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     PKDrmParams.Scheme scheme = PKDrmParams.Scheme.WidevineCENC;
                     String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
 
+                    if (licenseUri != null) {
+                        PKRequestParams params = new PKRequestParams(Uri.parse(licenseUri), new HashMap<>());
 
-                    PKRequestParams params = new PKRequestParams(Uri.parse(licenseUri), new HashMap<>());
-
-                    if (playerSettings.getLicenseRequestAdapter() != null) {
-                        params = playerSettings.getLicenseRequestAdapter().adapt(params);
-                    }
-
-                    Map<String, String> headers = (params != null) ? params.headers : new HashMap<>();
-                    @Nullable
-                    String[] keyRequestPropertiesArray = new String[]{};
-                    if (keyRequestPropertiesArray != null) {
-                        for (int i = 0; i < keyRequestPropertiesArray.length; i += 2) {
-                            headers.put(keyRequestPropertiesArray[i], keyRequestPropertiesArray[i + 1]);
+                        if (playerSettings.getLicenseRequestAdapter() != null) {
+                            params = playerSettings.getLicenseRequestAdapter().adapt(params);
                         }
-                    }
 
-                    builder
-                            .setDrmUuid((scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID)
-                            .setDrmLicenseUri(licenseUri)
-                            .setDrmMultiSession(false)
-                            .setDrmForceDefaultLicenseUri(false)
-                            .setDrmLicenseRequestHeaders(headers);
-                    if (setDrmSessionForClearTypes) {
-                        List<Integer> tracks = new ArrayList<>();
-                        tracks.add(C.TRACK_TYPE_VIDEO);
-                        tracks.add(C.TRACK_TYPE_AUDIO);
-                        builder.setDrmSessionForClearTypes(tracks);
+                        Map<String, String> headers = (params != null) ? params.headers : new HashMap<>();
+                        @Nullable
+                        String[] keyRequestPropertiesArray = new String[]{};
+                        if (keyRequestPropertiesArray != null) {
+                            for (int i = 0; i < keyRequestPropertiesArray.length; i += 2) {
+                                headers.put(keyRequestPropertiesArray[i], keyRequestPropertiesArray[i + 1]);
+                            }
+                        }
+
+                        builder
+                                .setDrmUuid((scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID)
+                                .setDrmLicenseUri(licenseUri)
+                                .setDrmMultiSession(false)
+                                .setDrmForceDefaultLicenseUri(false)
+                                .setDrmLicenseRequestHeaders(headers);
+                        if (setDrmSessionForClearTypes) {
+                            List<Integer> tracks = new ArrayList<>();
+                            tracks.add(C.TRACK_TYPE_VIDEO);
+                            tracks.add(C.TRACK_TYPE_AUDIO);
+                            builder.setDrmSessionForClearTypes(tracks);
+                        }
                     }
                 }
 
