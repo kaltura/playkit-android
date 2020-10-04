@@ -84,7 +84,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
         drmSessionManager = new DefaultDrmSessionManager.Builder()
                 .setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER)
                 .setMultiSession(true) // key rotation
-                .setPlayClearSamplesWithoutKeys(true)
+                .setPlayClearSamplesWithoutKeys(allowClearLead)
                 .build(drmCallback);
 
         if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
