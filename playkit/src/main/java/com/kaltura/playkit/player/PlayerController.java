@@ -263,7 +263,9 @@ public class PlayerController implements Player {
         //Initialize new PlayerEngine.
         try {
             player = PlayerEngineFactory.initializePlayerEngine(context, incomingPlayerType, playerSettings, rootPlayerView);
-            player.setDownloadCache(downloadCache);
+            if (downloadCache != null) {
+                player.setDownloadCache(downloadCache);
+            }
             if (playerEngineWrapper != null) {
                 playerEngineWrapper.setPlayerEngine(player);
                 player = playerEngineWrapper;
@@ -274,7 +276,9 @@ public class PlayerController implements Player {
             if (incomingPlayerType == PlayerEngineType.VRPlayer) {
                 incomingPlayerType = PlayerEngineType.Exoplayer;
                 player = new ExoPlayerWrapper(context, playerSettings, rootPlayerView);
-                player.setDownloadCache(downloadCache);
+                if (downloadCache != null) {
+                    player.setDownloadCache(downloadCache);
+                }
             } else {
                 return;
             }
