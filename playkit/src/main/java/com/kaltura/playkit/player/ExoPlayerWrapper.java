@@ -81,6 +81,7 @@ import java.net.CookiePolicy;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -406,7 +407,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     PKDrmParams.Scheme scheme = PKDrmParams.Scheme.WidevineCENC;
                     String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
 
-                    Map<String, String> headers = requestParams.headers;
+
+                    PKRequestParams params = new PKRequestParams(Uri.parse(licenseUri), new HashMap<>());
+
+                    if (playerSettings.getLicenseRequestAdapter() != null) {
+                        params = playerSettings.getLicenseRequestAdapter().adapt(params);
+                    }
+
+                    Map<String, String> headers = (params != null) ? params.headers : new HashMap<>();
                     @Nullable
                     String[] keyRequestPropertiesArray = new String[]{};
                     if (keyRequestPropertiesArray != null) {
