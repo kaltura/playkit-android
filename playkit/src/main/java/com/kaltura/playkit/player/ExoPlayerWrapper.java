@@ -290,11 +290,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         this.sourceConfig = sourceConfig;
         //reset metadata on prepare.
         metadataList.clear();
-        if (sourceConfig.mediaSource.hasDrmParams()) {
-            final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
-            drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener,playerSettings.allowClearLead());
-            drmSessionManager.setMediaSource(sourceConfig.mediaSource);
-        }
+
         shouldGetTracksInfo = true;
         trackSelectionHelper.applyPlayerSettings(playerSettings);
 
@@ -342,10 +338,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             final LocalAssetsManagerExo.LocalExoMediaItem pkMediaSource = (LocalAssetsManagerExo.LocalExoMediaItem) sourceConfig.mediaSource;
             mediaItem = pkMediaSource.getExoMediaItem();
         } else {
+            if (sourceConfig.mediaSource instanceof LocalAssetsManager.LocalMediaSource && sourceConfig.mediaSource.hasDrmParams()) {
+                final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
+                drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener,playerSettings.allowClearLead());
+                drmSessionManager.setMediaSource(sourceConfig.mediaSource);
+            }
             mediaItem = buildInternalExoMediaItem(sourceConfig, externalSubtitleList);
         }
-
-        mediaSourceFactory.setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager());
+        
         if (externalSubtitleList == null || externalSubtitleList.isEmpty()) {
             if (assertTrackSelectionIsNotNull("buildExoMediaItem")) {
                 trackSelectionHelper.hasExternalSubtitles(false);
@@ -398,7 +398,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                         .setSubtitles(buildSubtitlesList(externalSubtitleList))
                         .setClipStartPositionMs(0L)
                         .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
-        MediaSource mediaSource;
+
         switch (format) {
             case dash:
                 if (sourceConfig.mediaSource.hasDrmParams()) {
@@ -438,23 +438,17 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     }
                 }
 
-                mediaSource = new DashMediaSource.Factory(
+                mediaSourceFactory = new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
-                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())
-                        .createMediaSource(builder.build());
+                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager());
 
-                player.setMediaSource(mediaSource);
                 break;
             case hls:
-                mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
-                        .createMediaSource(builder.build());
-                player.setMediaSource(mediaSource);
+                mediaSourceFactory = new HlsMediaSource.Factory(dataSourceFactory);
                 break;
             case mp3:
             case mp4:
-                mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
-                        .createMediaSource(builder.build());
-                player.setMediaSource(mediaSource);
+                mediaSourceFactory = new ProgressiveMediaSource.Factory(dataSourceFactory);
                 break;
             case udp:
                 builder.setMimeType(null);
@@ -465,13 +459,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 };
                 //DefaultExtractorsFactory defaultExtractorsFactory = new DefaultExtractorsFactory().setTsExtractorFlags(FLAG_ALLOW_NON_IDR_KEYFRAMES);
 
-                mediaSource = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory).createMediaSource(builder.build());
-                player.setMediaSource(mediaSource);
+                mediaSourceFactory = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
         }
 
+        player.setMediaSource(mediaSourceFactory.createMediaSource(builder.build()));
         return builder.build();
     }
 
