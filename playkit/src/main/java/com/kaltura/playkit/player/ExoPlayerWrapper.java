@@ -345,7 +345,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             }
             mediaItem = buildInternalExoMediaItem(sourceConfig, externalSubtitleList);
         }
-        
+
+        mediaSourceFactory.setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager());
         if (externalSubtitleList == null || externalSubtitleList.isEmpty()) {
             if (assertTrackSelectionIsNotNull("buildExoMediaItem")) {
                 trackSelectionHelper.hasExternalSubtitles(false);
@@ -398,7 +399,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                         .setSubtitles(buildSubtitlesList(externalSubtitleList))
                         .setClipStartPositionMs(0L)
                         .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
-
+        MediaSource mediaSource;
         switch (format) {
             case dash:
                 if (sourceConfig.mediaSource.hasDrmParams()) {
@@ -438,17 +439,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     }
                 }
 
-                mediaSourceFactory = new DashMediaSource.Factory(
+                mediaSource = new DashMediaSource.Factory(
                         new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
-                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager());
-
+                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())
+                        .createMediaSource(builder.build());
                 break;
             case hls:
-                mediaSourceFactory = new HlsMediaSource.Factory(dataSourceFactory);
+                mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(builder.build());
                 break;
             case mp3:
             case mp4:
-                mediaSourceFactory = new ProgressiveMediaSource.Factory(dataSourceFactory);
+                mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(builder.build());
                 break;
             case udp:
                 builder.setMimeType(null);
@@ -458,14 +461,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                                 new TimestampAdjuster(0), new DefaultTsPayloadReaderFactory())
                 };
                 //DefaultExtractorsFactory defaultExtractorsFactory = new DefaultExtractorsFactory().setTsExtractorFlags(FLAG_ALLOW_NON_IDR_KEYFRAMES);
-
-                mediaSourceFactory = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory);
+                mediaSource = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory)
+                        .createMediaSource(builder.build());
                 break;
             default:
                 throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
         }
 
-        player.setMediaSource(mediaSourceFactory.createMediaSource(builder.build()));
+        player.setMediaSource(mediaSource);
         return builder.build();
     }
 
@@ -848,7 +851,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             // for change media case need to verify if surface swap is needed
             maybeChangePlayerRenderView();
         }
-        
+
         preparePlayer(mediaSourceConfig);
     }
 
