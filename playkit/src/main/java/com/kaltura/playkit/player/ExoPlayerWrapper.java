@@ -332,8 +332,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     sourceConfig.getExternalSubtitleList() : null;
         }
 
-        MediaItem mediaItem;
+        if (externalSubtitleList == null || externalSubtitleList.isEmpty()) {
+            if (assertTrackSelectionIsNotNull("buildExoMediaItem")) {
+                trackSelectionHelper.hasExternalSubtitles(false);
+            }
+            removeExternalTextTrackListener();
+        } else {
+            if (assertTrackSelectionIsNotNull("buildExoMediaItem")) {
+                trackSelectionHelper.hasExternalSubtitles(true);
+            }
+            addExternalTextTrackErrorListener();
+        }
 
+        MediaItem mediaItem;
         if (sourceConfig.mediaSource instanceof LocalAssetsManagerExo.LocalExoMediaItem) {
             final LocalAssetsManagerExo.LocalExoMediaItem pkMediaSource = (LocalAssetsManagerExo.LocalExoMediaItem) sourceConfig.mediaSource;
             mediaItem = pkMediaSource.getExoMediaItem();
@@ -347,17 +358,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         mediaSourceFactory.setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager());
-        if (externalSubtitleList == null || externalSubtitleList.isEmpty()) {
-            if (assertTrackSelectionIsNotNull("buildExoMediaItem")) {
-                trackSelectionHelper.hasExternalSubtitles(false);
-            }
-            removeExternalTextTrackListener();
-        } else {
-            if (assertTrackSelectionIsNotNull("buildExoMediaItem")) {
-                trackSelectionHelper.hasExternalSubtitles(true);
-            }
-            addExternalTextTrackErrorListener();
-        }
+
         return mediaItem;
     }
 
@@ -494,14 +495,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             for (int subtitlePosition = 0 ; subtitlePosition < externalSubtitleList.size() ; subtitlePosition ++) {
                 PKExternalSubtitle pkExternalSubtitle = externalSubtitleList.get(subtitlePosition);
                 String subtitleMimeType = pkExternalSubtitle.getMimeType() == null ? "Unknown" : pkExternalSubtitle.getMimeType();
-                MediaItem.Subtitle subtitleMediaItem = new MediaItem.Subtitle(Uri.parse(pkExternalSubtitle.getUrl()), subtitleMimeType, pkExternalSubtitle.getLanguage() + "-" + subtitleMimeType, pkExternalSubtitle.getSelectionFlags());
+                MediaItem.Subtitle subtitleMediaItem = new MediaItem.Subtitle(Uri.parse(pkExternalSubtitle.getUrl()), subtitleMimeType, pkExternalSubtitle.getLanguage() + "-" + subtitleMimeType, pkExternalSubtitle.getLabel(), pkExternalSubtitle.getSelectionFlags());
                 subtitleList.add(subtitleMediaItem);
             }
         }
         return subtitleList;
     }
 
-    private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
+    private HttpDataSource.Factory getHttpDataSourceFactory(Map<String,String> headers) {
         HttpDataSource.Factory httpDataSourceFactory;
         final String userAgent = getUserAgent(context);
         final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
