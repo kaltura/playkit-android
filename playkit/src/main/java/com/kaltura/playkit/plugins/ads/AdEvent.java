@@ -44,6 +44,7 @@ public class AdEvent implements PKEvent {
     public static final AdEvent.Type thirdQuartile = Type.THIRD_QUARTILE;
     public static final AdEvent.Type skippableStateChanged = Type.SKIPPABLE_STATE_CHANGED;
     public static final AdEvent.Type tapped = Type.TAPPED;
+    public static final AdEvent.Type iconFallbackImageClosed = Type.ICON_FALLBACK_IMAGE_CLOSED;
     public static final AdEvent.Type iconTapped = Type.ICON_TAPPED;
     public static final AdEvent.Type adBreakReady = Type.AD_BREAK_READY;
     public static final AdEvent.Type adBreakStarted = Type.AD_BREAK_STARTED;
@@ -230,6 +231,7 @@ public class AdEvent implements PKEvent {
         SKIPPABLE_STATE_CHANGED,
         CLICKED,
         TAPPED,
+        ICON_FALLBACK_IMAGE_CLOSED,
         ICON_TAPPED,
         AD_BREAK_READY,
         AD_PROGRESS,
