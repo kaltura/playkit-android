@@ -252,7 +252,7 @@ class TrackSelectionHelper {
                                 }
                                 break;
                             case TRACK_TYPE_TEXT:
-                                if (format.language != null && hasExternalSubtitles && ignoreTextTrackOnPreference(format)) {
+                                if (format.language != null && hasExternalSubtitles && discardTextTrackOnPreference(format)) {
                                     continue;
                                 }
 
@@ -324,17 +324,22 @@ class TrackSelectionHelper {
         }
     }
 
-    private boolean ignoreTextTrackOnPreference(Format format) {
-        String languageName = format.language;
-        boolean isExternalSubtitle = isExternalSubtitle(format);
+    private boolean discardTextTrackOnPreference(Format format) {
         PKSubtitlePreference subtitlePreference = playerSettings.getSubtitlePreference();
-
         if (subtitlePreference == PKSubtitlePreference.OFF) {
             return false;
         }
 
+        String languageName = format.language;
+        boolean isExternalSubtitle = isExternalSubtitle(format);
+
         if (isExternalSubtitle) {
             languageName = getExternalSubtitleLanguage(format);
+            if (subtitlePreference == PKSubtitlePreference.INTERNAL && !subtitleListMap.get(languageName).containsKey(languageName)) {
+                // If there is no internal subtitle and the preference is PKSubtitlePreference.Internal from App
+                // then we are not discarding this text track.
+                return false;
+            }
         }
 
         if (subtitleListMap.containsKey(languageName) && subtitleListMap.get(languageName).size() > 1) {
