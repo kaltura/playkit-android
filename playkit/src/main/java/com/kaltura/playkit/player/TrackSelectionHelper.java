@@ -32,6 +32,7 @@ import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.playkit.PKAudioCodec;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PKVideoCodec;
 import com.kaltura.playkit.utils.Consts;
@@ -326,18 +327,22 @@ class TrackSelectionHelper {
     private boolean ignoreTextTrackOnPreference(Format format) {
         String languageName = format.language;
         boolean isExternalSubtitle = isExternalSubtitle(format);
-        boolean isPreferInternalSubtitles = playerSettings.isPreferInternalSubtitles();
+        PKSubtitlePreference subtitlePreference = playerSettings.getSubtitlePreference();
+
+        if (subtitlePreference == PKSubtitlePreference.OFF) {
+            return false;
+        }
 
         if (isExternalSubtitle) {
             languageName = getExternalSubtitleLanguage(format);
         }
 
         if (subtitleListMap.containsKey(languageName) && subtitleListMap.get(languageName).size() > 1) {
-            if ((isPreferInternalSubtitles && isExternalSubtitle) ||
-                    (!isPreferInternalSubtitles && !isExternalSubtitle)) {
+            if ((subtitlePreference == PKSubtitlePreference.INTERNAL && isExternalSubtitle) ||
+                    (subtitlePreference == PKSubtitlePreference.EXTERNAL && !isExternalSubtitle)) {
                 return true;
-            } else if ((!isPreferInternalSubtitles && isExternalSubtitle) ||
-                    (isPreferInternalSubtitles && !isExternalSubtitle)) {
+            } else if ((subtitlePreference == PKSubtitlePreference.EXTERNAL && isExternalSubtitle) ||
+                    (subtitlePreference == PKSubtitlePreference.INTERNAL && !isExternalSubtitle)) {
                 return false;
             }
         }
