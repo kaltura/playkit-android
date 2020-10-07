@@ -335,7 +335,8 @@ class TrackSelectionHelper {
 
         if (isExternalSubtitle) {
             languageName = getExternalSubtitleLanguage(format);
-            if (subtitlePreference == PKSubtitlePreference.INTERNAL && !subtitleListMap.get(languageName).containsKey(languageName)) {
+            Map<String, List<Format>> languageNameMap = subtitleListMap.get(languageName);
+            if (subtitlePreference == PKSubtitlePreference.INTERNAL && languageNameMap != null && !languageNameMap.containsKey(languageName)) {
                 // If there is no internal subtitle and the preference is PKSubtitlePreference.Internal from App
                 // then we are not discarding this text track.
                 return false;
