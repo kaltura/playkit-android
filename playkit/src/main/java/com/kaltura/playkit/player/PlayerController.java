@@ -803,7 +803,7 @@ public class PlayerController implements Player {
                         }
                         event = new PlayerEvent.Error(player.getCurrentError());
                         if (player.getCurrentError().isFatal()){
-                           cancelUpdateProgress();
+                            cancelUpdateProgress();
                         }
                         break;
                     case METADATA_AVAILABLE:
