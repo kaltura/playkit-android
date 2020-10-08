@@ -32,6 +32,7 @@ import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.playkit.PKAudioCodec;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PKVideoCodec;
 import com.kaltura.playkit.utils.Consts;
@@ -251,7 +252,7 @@ class TrackSelectionHelper {
                                 }
                                 break;
                             case TRACK_TYPE_TEXT:
-                                if (format.language != null && hasExternalSubtitles && ignoreTextTrackOnPreference(format)) {
+                                if (format.language != null && hasExternalSubtitles && discardTextTrackOnPreference(format)) {
                                     continue;
                                 }
 
@@ -323,21 +324,31 @@ class TrackSelectionHelper {
         }
     }
 
-    private boolean ignoreTextTrackOnPreference(Format format) {
+    private boolean discardTextTrackOnPreference(Format format) {
+        PKSubtitlePreference subtitlePreference = playerSettings.getSubtitlePreference();
+        if (subtitlePreference == PKSubtitlePreference.OFF) {
+            return false;
+        }
+
         String languageName = format.language;
         boolean isExternalSubtitle = isExternalSubtitle(format);
-        boolean isPreferInternalSubtitles = playerSettings.isPreferInternalSubtitles();
 
         if (isExternalSubtitle) {
             languageName = getExternalSubtitleLanguage(format);
+            Map<String, List<Format>> languageNameMap = subtitleListMap.get(languageName);
+            if (subtitlePreference == PKSubtitlePreference.INTERNAL && languageNameMap != null && !languageNameMap.containsKey(languageName)) {
+                // If there is no internal subtitle and the preference is PKSubtitlePreference.Internal from App
+                // then we are not discarding this text track.
+                return false;
+            }
         }
 
         if (subtitleListMap.containsKey(languageName) && subtitleListMap.get(languageName).size() > 1) {
-            if ((isPreferInternalSubtitles && isExternalSubtitle) ||
-                    (!isPreferInternalSubtitles && !isExternalSubtitle)) {
+            if ((subtitlePreference == PKSubtitlePreference.INTERNAL && isExternalSubtitle) ||
+                    (subtitlePreference == PKSubtitlePreference.EXTERNAL && !isExternalSubtitle)) {
                 return true;
-            } else if ((!isPreferInternalSubtitles && isExternalSubtitle) ||
-                    (isPreferInternalSubtitles && !isExternalSubtitle)) {
+            } else if ((subtitlePreference == PKSubtitlePreference.EXTERNAL && isExternalSubtitle) ||
+                    (subtitlePreference == PKSubtitlePreference.INTERNAL && !isExternalSubtitle)) {
                 return false;
             }
         }

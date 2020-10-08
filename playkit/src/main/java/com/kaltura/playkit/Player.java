@@ -257,11 +257,12 @@ public interface Player {
          * Set preference to choose internal subtitles over external subtitles (Only in the case if the same language is present
          * in both Internal and External subtitles) - Default is true (Internal is preferred)
          *
-         * @param preferInternalSubtitles if true, Internal will be present and External subtitle will be discarded
-         *                   if false, External will be present and Internal subtitle will be discarded
+         * @param subtitlePreference PKSubtitlePreference.INTERNAL, Internal will be present and External subtitle will be discarded
+         *                    PKSubtitlePreference.EXTERNAL, External will be present and Internal subtitle will be discarded
+         *                   PKSubtitlePreference.OFF, Both internal and external subtitles will be there
          * @return - Player Settings
          */
-        Settings setSubtitlePreference(boolean preferInternalSubtitles);
+        Settings setSubtitlePreference(PKSubtitlePreference subtitlePreference);
 
         /**
          * Sets the maximum allowed video width and height.
