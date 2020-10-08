@@ -14,6 +14,7 @@ package com.kaltura.playkit.player;
 
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.player.vr.VRSettings;
@@ -34,7 +35,7 @@ public class PlayerSettings implements Player.Settings {
     private AudioCodecSettings preferredAudioCodecSettings = new AudioCodecSettings();
     private boolean isTunneledAudioPlayback;
     private boolean handleAudioBecomingNoisyEnabled;
-    private boolean preferInternalSubtitles = true;
+    private PKSubtitlePreference subtitlePreference = PKSubtitlePreference.INTERNAL;
     private Integer maxVideoBitrate;
     private Integer maxAudioBitrate;
     private int maxAudioChannelCount = -1;
@@ -166,8 +167,8 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isHandleAudioBecomingNoisyEnabled() { return handleAudioBecomingNoisyEnabled; }
 
-    public boolean isPreferInternalSubtitles() {
-        return preferInternalSubtitles;
+    public PKSubtitlePreference getSubtitlePreference() {
+        return subtitlePreference;
     }
 
     public PKMaxVideoSize getMaxVideoSize() { return maxVideoSize; }
@@ -351,8 +352,12 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setSubtitlePreference(boolean preferInternalSubtitles) {
-        this.preferInternalSubtitles = preferInternalSubtitles;
+    public Player.Settings setSubtitlePreference(PKSubtitlePreference subtitlePreference) {
+        if (subtitlePreference == null) {
+            this.subtitlePreference = PKSubtitlePreference.OFF;
+        } else {
+            this.subtitlePreference = subtitlePreference;
+        }
         return this;
     }
 
