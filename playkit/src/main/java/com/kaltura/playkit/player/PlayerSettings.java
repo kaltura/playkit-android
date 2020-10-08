@@ -355,9 +355,9 @@ public class PlayerSettings implements Player.Settings {
     public Player.Settings setSubtitlePreference(PKSubtitlePreference subtitlePreference) {
         if (subtitlePreference == null) {
             this.subtitlePreference = PKSubtitlePreference.OFF;
-            return this;
+        } else {
+            this.subtitlePreference = subtitlePreference;
         }
-        this.subtitlePreference = subtitlePreference;
         return this;
     }
 
