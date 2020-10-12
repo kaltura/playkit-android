@@ -35,6 +35,7 @@ public class PlayerSettings implements Player.Settings {
     private AudioCodecSettings preferredAudioCodecSettings = new AudioCodecSettings();
     private boolean isTunneledAudioPlayback;
     private boolean handleAudioBecomingNoisyEnabled;
+    private boolean handleAudioFocus = true;
     private PKSubtitlePreference subtitlePreference = PKSubtitlePreference.INTERNAL;
     private Integer maxVideoBitrate;
     private Integer maxAudioBitrate;
@@ -166,6 +167,10 @@ public class PlayerSettings implements Player.Settings {
     }
 
     public boolean isHandleAudioBecomingNoisyEnabled() { return handleAudioBecomingNoisyEnabled; }
+
+    public boolean isHandleAudioFocus() {
+        return handleAudioFocus;
+    }
 
     public PKSubtitlePreference getSubtitlePreference() {
         return subtitlePreference;
@@ -348,6 +353,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled) {
         this.handleAudioBecomingNoisyEnabled = handleAudioBecomingNoisyEnabled;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setHandleAudioFocus(boolean handleAudioFocus) {
+        this.handleAudioFocus = handleAudioFocus;
         return this;
     }
 

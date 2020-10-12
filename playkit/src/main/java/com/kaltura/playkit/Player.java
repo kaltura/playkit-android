@@ -255,6 +255,14 @@ public interface Player {
         Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled);
 
         /**
+         * Set HandleAudioFocus - Support for automatic audio focus handling
+         *
+         * @param handleAudioFocus
+         * @return - Player Settings
+         */
+        Settings setHandleAudioFocus(boolean handleAudioFocus);
+
+        /**
          * Set preference to choose internal subtitles over external subtitles (Only in the case if the same language is present
          * in both Internal and External subtitles) - Default is true (Internal is preferred)
          *
@@ -328,7 +336,7 @@ public interface Player {
     void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig);
 
     void setDownloadCache(Cache downloadCache);
-    
+
     /**
      * Player lifecycle method. Should be used when the application went to onPause();
      */
