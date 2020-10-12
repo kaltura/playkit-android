@@ -12,7 +12,6 @@
 
 package com.kaltura.playkit.player;
 
-import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PlaybackInfo;
@@ -274,8 +273,6 @@ public interface PlayerEngine {
      * Must be called by application when Android onConfigurationChanged triggered by system.
      */
     void onOrientationChanged();
-
-    void setDownloadCache(Cache downloadCache);
 
     interface EventListener {
         void onEvent(PlayerEvent.Type event);

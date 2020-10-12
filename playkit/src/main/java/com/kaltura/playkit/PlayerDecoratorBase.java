@@ -15,17 +15,11 @@ package com.kaltura.playkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 
 public class PlayerDecoratorBase implements Player {
-
-    @Override
-    public void setDownloadCache(Cache downloadCache) {
-        player.setDownloadCache(downloadCache);
-    }
 
     @Override
     public Settings getSettings() {

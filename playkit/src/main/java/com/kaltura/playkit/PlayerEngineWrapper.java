@@ -1,6 +1,5 @@
 package com.kaltura.playkit;
 
-import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.player.BaseTrack;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMediaSourceConfig;
@@ -205,11 +204,6 @@ public class PlayerEngineWrapper implements PlayerEngine {
     @Override
     public void onOrientationChanged() {
         playerEngine.onOrientationChanged();
-    }
-
-    @Override
-    public void setDownloadCache(Cache downloadCache) {
-        playerEngine.setDownloadCache(downloadCache);
     }
 
     public void setPlayerEngine(PlayerEngine playerEngine) {
