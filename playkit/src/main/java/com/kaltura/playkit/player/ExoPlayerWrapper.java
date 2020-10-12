@@ -384,13 +384,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private MediaItem buildInternalExoMediaItem(PKMediaSourceConfig sourceConfig, List<PKExternalSubtitle> externalSubtitleList) {
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
+        PKRequestParams requestParams = sourceConfig.getRequestParams();
 
         if (format == null) {
-            return null; // throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
-
+            throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
         }
 
-        PKRequestParams requestParams = sourceConfig.getRequestParams();
         Uri uri = requestParams.url;
         MediaItem.Builder builder =
                 new MediaItem.Builder()
@@ -401,59 +400,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                         .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
 
         if (format == PKMediaFormat.dash) {
-            if (sourceConfig.mediaSource.hasDrmParams()) {
-                boolean setDrmSessionForClearTypes = false;
-                // selecting WidevineCENC as default right now
-                PKDrmParams.Scheme scheme = PKDrmParams.Scheme.WidevineCENC;
-                String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
-
-                Map<String, String> headers = requestParams.headers;
-                @Nullable
-                String[] keyRequestPropertiesArray = new String[]{};
-                if (keyRequestPropertiesArray != null) {
-                    for (int i = 0; i < keyRequestPropertiesArray.length; i += 2) {
-                        headers.put(keyRequestPropertiesArray[i], keyRequestPropertiesArray[i + 1]);
-                    }
-                }
-
-                builder
-                        .setDrmUuid((scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID)
-                        .setDrmLicenseUri(licenseUri)
-                        .setDrmMultiSession(false)
-                        .setDrmForceDefaultLicenseUri(false)
-                        .setDrmLicenseRequestHeaders(headers);
-                if (setDrmSessionForClearTypes) {
-                    List<Integer> tracks = new ArrayList<>();
-                    tracks.add(C.TRACK_TYPE_VIDEO);
-                    tracks.add(C.TRACK_TYPE_AUDIO);
-                    builder.setDrmSessionForClearTypes(tracks);
-                }
-            }
-        }
-        return builder.build();
-    }
-
-    private MediaItem buildInternalExoMediaItem1(PKMediaSourceConfig sourceConfig, List<PKExternalSubtitle> externalSubtitleList) {
-        PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
-
-        if (format == null) {
-            return null; // throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
-
-        }
-
-        PKRequestParams requestParams = sourceConfig.getRequestParams();
-        final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
-        Uri uri = requestParams.url;
-        MediaItem.Builder builder =
-                new MediaItem.Builder()
-                        .setUri(uri)
-                        .setMimeType(format.mimeType)
-                        .setSubtitles(buildSubtitlesList(externalSubtitleList))
-                        .setClipStartPositionMs(0L)
-                        .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
-        MediaSource mediaSource;
-        switch (format) {
-            case dash:
                 if (sourceConfig.mediaSource.hasDrmParams()) {
                     boolean setDrmSessionForClearTypes = false;
                     // selecting WidevineCENC as default right now
@@ -461,18 +407,18 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
 
                     if (licenseUri != null) {
-                        PKRequestParams params = new PKRequestParams(Uri.parse(licenseUri), new HashMap<>());
+                        PKRequestParams licenseRequestParams = new PKRequestParams(Uri.parse(licenseUri), new HashMap<>());
 
                         if (playerSettings.getLicenseRequestAdapter() != null) {
-                            params = playerSettings.getLicenseRequestAdapter().adapt(params);
+                            licenseRequestParams = playerSettings.getLicenseRequestAdapter().adapt(licenseRequestParams);
                         }
 
-                        Map<String, String> headers = (params != null) ? params.headers : new HashMap<>();
+                        Map<String, String> licenseRequestParamsHeaders = licenseRequestParams.headers;
                         @Nullable
                         String[] keyRequestPropertiesArray = new String[]{};
                         if (keyRequestPropertiesArray != null) {
                             for (int i = 0; i < keyRequestPropertiesArray.length; i += 2) {
-                                headers.put(keyRequestPropertiesArray[i], keyRequestPropertiesArray[i + 1]);
+                                licenseRequestParamsHeaders.put(keyRequestPropertiesArray[i], keyRequestPropertiesArray[i + 1]);
                             }
                         }
 
@@ -481,7 +427,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                                 .setDrmLicenseUri(licenseUri)
                                 .setDrmMultiSession(false)
                                 .setDrmForceDefaultLicenseUri(false)
-                                .setDrmLicenseRequestHeaders(headers);
+                                .setDrmLicenseRequestHeaders(licenseRequestParamsHeaders);
                         if (setDrmSessionForClearTypes) {
                             List<Integer> tracks = new ArrayList<>();
                             tracks.add(C.TRACK_TYPE_VIDEO);
@@ -490,39 +436,102 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                         }
                     }
                 }
-
-                mediaSource = new DashMediaSource.Factory(
-                        new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
-                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())
-                        .createMediaSource(builder.build());
-                break;
-            case hls:
-                mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
-                        .createMediaSource(builder.build());
-                break;
-            case mp3:
-            case mp4:
-                mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
-                        .createMediaSource(builder.build());
-                break;
-            case udp:
-                builder.setMimeType(null);
-                DataSource.Factory udpDatasourceFactory = () -> new UdpDataSource(playerSettings.getMulticastSettings().getMaxPacketSize(), playerSettings.getMulticastSettings().getSocketTimeoutMillis());
-                ExtractorsFactory tsExtractorFactory = () -> new TsExtractor[]{
-                        new TsExtractor(MODE_SINGLE_PMT,
-                                new TimestampAdjuster(0), new DefaultTsPayloadReaderFactory())
-                };
-                //DefaultExtractorsFactory defaultExtractorsFactory = new DefaultExtractorsFactory().setTsExtractorFlags(FLAG_ALLOW_NON_IDR_KEYFRAMES);
-                mediaSource = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory)
-                        .createMediaSource(builder.build());
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
+        } else  if (format == PKMediaFormat.udp) {
+            builder.setMimeType(null);
         }
-
-        player.setMediaSource(mediaSource);
         return builder.build();
     }
+
+//    private MediaItem buildInternalExoMediaItem1(PKMediaSourceConfig sourceConfig, List<PKExternalSubtitle> externalSubtitleList) {
+//        PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
+//
+//        if (format == null) {
+//            return null; // throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
+//
+//        }
+//
+//        PKRequestParams requestParams = sourceConfig.getRequestParams();
+//        final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
+//        Uri uri = requestParams.url;
+//        MediaItem.Builder builder =
+//                new MediaItem.Builder()
+//                        .setUri(uri)
+//                        .setMimeType(format.mimeType)
+//                        .setSubtitles(buildSubtitlesList(externalSubtitleList))
+//                        .setClipStartPositionMs(0L)
+//                        .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
+//        MediaSource mediaSource;
+//        switch (format) {
+//            case dash:
+//                if (sourceConfig.mediaSource.hasDrmParams()) {
+//                    boolean setDrmSessionForClearTypes = false;
+//                    // selecting WidevineCENC as default right now
+//                    PKDrmParams.Scheme scheme = PKDrmParams.Scheme.WidevineCENC;
+//                    String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
+//
+//                    if (licenseUri != null) {
+//                        PKRequestParams params = new PKRequestParams(Uri.parse(licenseUri), new HashMap<>());
+//
+//                        if (playerSettings.getLicenseRequestAdapter() != null) {
+//                            params = playerSettings.getLicenseRequestAdapter().adapt(params);
+//                        }
+//
+//                        Map<String, String> headers = (params != null) ? params.headers : new HashMap<>();
+//                        @Nullable
+//                        String[] keyRequestPropertiesArray = new String[]{};
+//                        if (keyRequestPropertiesArray != null) {
+//                            for (int i = 0; i < keyRequestPropertiesArray.length; i += 2) {
+//                                headers.put(keyRequestPropertiesArray[i], keyRequestPropertiesArray[i + 1]);
+//                            }
+//                        }
+//
+//                        builder
+//                                .setDrmUuid((scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID)
+//                                .setDrmLicenseUri(licenseUri)
+//                                .setDrmMultiSession(false)
+//                                .setDrmForceDefaultLicenseUri(false)
+//                                .setDrmLicenseRequestHeaders(headers);
+//                        if (setDrmSessionForClearTypes) {
+//                            List<Integer> tracks = new ArrayList<>();
+//                            tracks.add(C.TRACK_TYPE_VIDEO);
+//                            tracks.add(C.TRACK_TYPE_AUDIO);
+//                            builder.setDrmSessionForClearTypes(tracks);
+//                        }
+//                    }
+//                }
+//
+//                mediaSource = new DashMediaSource.Factory(
+//                        new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
+//                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())
+//                        .createMediaSource(builder.build());
+//                break;
+//            case hls:
+//                mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
+//                        .createMediaSource(builder.build());
+//                break;
+//            case mp3:
+//            case mp4:
+//                mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+//                        .createMediaSource(builder.build());
+//                break;
+//            case udp:
+//                builder.setMimeType(null);
+//                DataSource.Factory udpDatasourceFactory = () -> new UdpDataSource(playerSettings.getMulticastSettings().getMaxPacketSize(), playerSettings.getMulticastSettings().getSocketTimeoutMillis());
+//                ExtractorsFactory tsExtractorFactory = () -> new TsExtractor[]{
+//                        new TsExtractor(MODE_SINGLE_PMT,
+//                                new TimestampAdjuster(0), new DefaultTsPayloadReaderFactory())
+//                };
+//                //DefaultExtractorsFactory defaultExtractorsFactory = new DefaultExtractorsFactory().setTsExtractorFlags(FLAG_ALLOW_NON_IDR_KEYFRAMES);
+//                mediaSource = new ProgressiveMediaSource.Factory(udpDatasourceFactory, tsExtractorFactory)
+//                        .createMediaSource(builder.build());
+//                break;
+//            default:
+//                throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
+//        }
+//
+//        player.setMediaSource(mediaSource);
+//        return builder.build();
+//    }
 
     private String getDrmLicenseUrl(PKMediaSource mediaSource, PKDrmParams.Scheme scheme) {
         String licenseUrl = null;
