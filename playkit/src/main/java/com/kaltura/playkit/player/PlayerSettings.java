@@ -166,7 +166,9 @@ public class PlayerSettings implements Player.Settings {
         return isTunneledAudioPlayback;
     }
 
-    public boolean isHandleAudioBecomingNoisyEnabled() { return handleAudioBecomingNoisyEnabled; }
+    public boolean isHandleAudioBecomingNoisyEnabled() {
+        return handleAudioBecomingNoisyEnabled;
+    }
 
     public boolean isHandleAudioFocus() {
         return handleAudioFocus;
