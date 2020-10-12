@@ -33,23 +33,15 @@ import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
 import com.kaltura.android.exoplayer2.audio.AudioAttributes;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
-import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
-import com.kaltura.android.exoplayer2.extractor.ExtractorsFactory;
-import com.kaltura.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory;
-import com.kaltura.android.exoplayer2.extractor.ts.TsExtractor;
+import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
 import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
 import com.kaltura.android.exoplayer2.source.BehindLiveWindowException;
 import com.kaltura.android.exoplayer2.source.DefaultMediaSourceFactory;
-import com.kaltura.android.exoplayer2.source.MediaSource;
 import com.kaltura.android.exoplayer2.source.MediaSourceFactory;
-import com.kaltura.android.exoplayer2.source.ProgressiveMediaSource;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
-import com.kaltura.android.exoplayer2.source.dash.DashMediaSource;
-import com.kaltura.android.exoplayer2.source.dash.DefaultDashChunkSource;
-import com.kaltura.android.exoplayer2.source.hls.HlsMediaSource;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
@@ -88,9 +80,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import okhttp3.OkHttpClient;
-
-import static com.kaltura.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory.FLAG_ALLOW_NON_IDR_KEYFRAMES;
-import static com.kaltura.android.exoplayer2.extractor.ts.TsExtractor.MODE_SINGLE_PMT;
 
 import static com.kaltura.playkit.utils.Consts.TIME_UNSET;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
@@ -133,7 +122,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private boolean useTextureView;
     private boolean isSurfaceSecured;
     private boolean shouldGetTracksInfo;
-    private boolean shouldResetPlayerPosition;
     private boolean preferredLanguageWasSelected;
     private boolean shouldRestorePlayerToPreviousState;
     private boolean isPlayerReleased;
@@ -664,7 +652,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         if (reason == Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE && getDuration() != TIME_UNSET) {
             sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         }
-        shouldResetPlayerPosition = (reason == Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE);
     }
 
     @Override
@@ -1212,7 +1199,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void stop() {
         log.v("stop");
 
-        shouldResetPlayerPosition = true;
         preferredLanguageWasSelected = false;
         lastKnownVolume = Consts.DEFAULT_VOLUME;
         lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
