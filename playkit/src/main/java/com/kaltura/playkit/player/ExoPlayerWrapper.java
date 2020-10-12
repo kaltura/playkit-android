@@ -298,7 +298,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
         if (mediaItem != null) {
             profiler.onPrepareStarted(sourceConfig);
-            player.setMediaItem(mediaItem);
+            player.setMediaItems(Collections.singletonList(mediaItem), 0, playerPosition == TIME_UNSET ? 0 : playerPosition);
             player.prepare();
 
             changeState(PlayerState.LOADING);
@@ -383,6 +383,57 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private MediaItem buildInternalExoMediaItem(PKMediaSourceConfig sourceConfig, List<PKExternalSubtitle> externalSubtitleList) {
+        PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
+
+        if (format == null) {
+            return null; // throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
+
+        }
+
+        PKRequestParams requestParams = sourceConfig.getRequestParams();
+        Uri uri = requestParams.url;
+        MediaItem.Builder builder =
+                new MediaItem.Builder()
+                        .setUri(uri)
+                        .setMimeType(format.mimeType)
+                        .setSubtitles(buildSubtitlesList(externalSubtitleList))
+                        .setClipStartPositionMs(0L)
+                        .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
+
+        if (format == PKMediaFormat.dash) {
+            if (sourceConfig.mediaSource.hasDrmParams()) {
+                boolean setDrmSessionForClearTypes = false;
+                // selecting WidevineCENC as default right now
+                PKDrmParams.Scheme scheme = PKDrmParams.Scheme.WidevineCENC;
+                String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
+
+                Map<String, String> headers = requestParams.headers;
+                @Nullable
+                String[] keyRequestPropertiesArray = new String[]{};
+                if (keyRequestPropertiesArray != null) {
+                    for (int i = 0; i < keyRequestPropertiesArray.length; i += 2) {
+                        headers.put(keyRequestPropertiesArray[i], keyRequestPropertiesArray[i + 1]);
+                    }
+                }
+
+                builder
+                        .setDrmUuid((scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID)
+                        .setDrmLicenseUri(licenseUri)
+                        .setDrmMultiSession(false)
+                        .setDrmForceDefaultLicenseUri(false)
+                        .setDrmLicenseRequestHeaders(headers);
+                if (setDrmSessionForClearTypes) {
+                    List<Integer> tracks = new ArrayList<>();
+                    tracks.add(C.TRACK_TYPE_VIDEO);
+                    tracks.add(C.TRACK_TYPE_AUDIO);
+                    builder.setDrmSessionForClearTypes(tracks);
+                }
+            }
+        }
+        return builder.build();
+    }
+
+    private MediaItem buildInternalExoMediaItem1(PKMediaSourceConfig sourceConfig, List<PKExternalSubtitle> externalSubtitleList) {
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
 
         if (format == null) {
@@ -705,7 +756,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             log.d("onPlayerError BehindLiveWindowException received, re-preparing player");
             MediaItem mediaItem = buildExoMediaItem(sourceConfig);
             if (mediaItem != null) {
-                player.setMediaItems(Collections.singletonList(mediaItem), true);
+                player.setMediaItems(Collections.singletonList(mediaItem), 0, C.TIME_UNSET);
                 player.prepare();
             } else {
                 sendPrepareSourceError(sourceConfig);
