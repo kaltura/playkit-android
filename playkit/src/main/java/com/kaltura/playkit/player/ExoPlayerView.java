@@ -62,7 +62,6 @@ class ExoPlayerView extends BaseExoplayerView {
     private @AspectRatioFrameLayout.ResizeMode int resizeMode;
     private PKSubtitlePosition subtitleViewPosition;
     private boolean isVideoViewVisible;
-    private boolean isPlayWhenReady;
 
     ExoPlayerView(Context context) {
         this(context, null);
@@ -89,8 +88,8 @@ class ExoPlayerView extends BaseExoplayerView {
                 switch (playbackState) {
 
                     case Player.STATE_READY:
-                        if (isPlayWhenReady) {
-                            log.d("ExoPlayerView READY. playWhenReady => " + isPlayWhenReady);
+                        if (player != null && player.getPlayWhenReady()) {
+                            log.d("ExoPlayerView READY. playWhenReady => true");
                             shutterView.setVisibility(INVISIBLE);
                         }
                         break;
@@ -101,7 +100,7 @@ class ExoPlayerView extends BaseExoplayerView {
 
             @Override
             public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
-                isPlayWhenReady = playWhenReady;
+                log.d("onPlayWhenReadyChanged . playWhenReady => " + playWhenReady);
             }
         };
     }
