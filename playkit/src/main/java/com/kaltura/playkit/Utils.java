@@ -20,11 +20,14 @@ import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-
 import android.telephony.TelephonyManager;
 import android.util.Base64;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
 import java.io.BufferedInputStream;
@@ -292,5 +295,78 @@ public class Utils {
             }
         }
         return deviceType;
+    }
+
+    public static class GsonObject {
+        private final JsonObject jo = new JsonObject();
+
+        public JsonObject jsonObject() {
+            return jo;
+        }
+
+        public GsonObject add(String key, String value) {
+            jo.addProperty(key, value);
+            return this;
+        }
+
+        public GsonObject add(String key, Number value) {
+            jo.addProperty(key, value);
+            return this;
+        }
+
+        public GsonObject add(String key, long value) {
+            jo.addProperty(key, value);
+            return this;
+        }
+
+        public GsonObject add(String key, float value) {
+            jo.addProperty(key, value);
+            return this;
+        }
+
+        public GsonObject add(String key, boolean value) {
+            jo.addProperty(key, value);
+            return this;
+        }
+
+        public GsonObject add(String key, Throwable value) {
+            jo.addProperty(key, "" + value);
+            return this;
+        }
+
+        public GsonObject add(String key, JsonElement value) {
+            jo.add(key, value);
+            return this;
+        }
+
+        public GsonObject add(String key, @Nullable GsonObject value) {
+            jo.add(key, value != null ? value.jo : null);
+            return this;
+        }
+
+        public GsonObject addAll(@Nullable JsonObject otherJo) {
+            if (otherJo != null) {
+                for (Map.Entry<String, JsonElement> entry : otherJo.entrySet()) {
+                    jo.add(entry.getKey(), entry.getValue());
+                }
+            }
+            return this;
+        }
+
+        public GsonObject addAll(@Nullable GsonObject otherGo) {
+            if (otherGo != null) {
+                for (Map.Entry<String, JsonElement> entry : otherGo.jo.entrySet()) {
+                    jo.add(entry.getKey(), entry.getValue());
+                }
+            }
+            return this;
+        }
+
+        public GsonObject addTime(String key, long millis) {
+            jo.addProperty(key, millis / 1000f);
+            return this;
+        }
+
+        public void end() {}
     }
 }
