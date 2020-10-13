@@ -103,7 +103,7 @@ class ExoPlayerView extends BaseExoplayerView {
             @Override
             public void onIsPlayingChanged(boolean isPlaying) {
                 log.d("ExoPlayerView onIsPlayingChanged isPlaying = " + isPlaying);
-                if (isPlaying && subtitleView != null) {
+                if (isPlaying && shutterView != null) {
                     shutterView.setVisibility(INVISIBLE);
                 }
             }
