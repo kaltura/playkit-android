@@ -90,7 +90,9 @@ class ExoPlayerView extends BaseExoplayerView {
                     case Player.STATE_READY:
                         if (player != null && player.getPlayWhenReady()) {
                             log.d("ExoPlayerView READY. playWhenReady => true");
-                            shutterView.setVisibility(INVISIBLE);
+                            if (shutterView != null) {
+                                shutterView.setVisibility(INVISIBLE);
+                            }
                         }
                         break;
                     default:
