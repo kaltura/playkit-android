@@ -71,9 +71,9 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
         void onError(PKError error);
     }
 
-//    public void setDrmSessionManager(DrmSessionManager drmSessionManager) {
-//        this.drmSessionManager = drmSessionManager;
-//    }
+    public void setDrmSessionManager(DrmSessionManager drmSessionManager) {
+        this.drmSessionManager = drmSessionManager;
+    }
 
     public void setMediaSource(PKMediaSource mediaSource) {
         if (Util.SDK_INT < 18) {
@@ -92,22 +92,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
         } else {
             drmCallback.setLicenseUrl(getLicenseUrl(mediaSource));
         }
-
-//        if (mainHandler != null) {
-//            if (drmSessionManager instanceof DefaultDrmSessionManager) {
-//                ((DefaultDrmSessionManager) drmSessionManager).addListener(mainHandler, this);
-//            }
-//        }
     }
-
-//    @Nullable
-//    @Override
-//    public DrmSession acquirePlaceholderSession(Looper playbackLooper, int trackType) {
-//        if (drmSessionManager != null) {
-//            return drmSessionManager.acquirePlaceholderSession(playbackLooper, trackType);
-//        }
-//        return null;
-//    }
 
     @Nullable
     @Override
