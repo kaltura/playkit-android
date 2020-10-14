@@ -54,6 +54,8 @@ import static com.kaltura.playkit.profiler.PlayKitProfiler.timeField;
 
 class ExoPlayerProfilingListener implements AnalyticsListener {
 
+    private boolean shouldPlay;
+
     @NonNull
     private final PlayKitProfiler profiler;
 
@@ -127,13 +129,12 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
             default: return;
         }
 
-        log("PlayerStateChanged", field("state", state)); // TODO NOAM fix our profiler BE
+        log("PlayerStateChanged", field("state", state), field("shouldPlay", shouldPlay));
     }
 
     @Override
     public void onPlayWhenReadyChanged(EventTime eventTime, boolean playWhenReady, int reason) {
-        log("onPlayWhenReadyChanged", field("shouldPlay", playWhenReady));
-
+        this.shouldPlay = playWhenReady;
     }
 
     @Override
