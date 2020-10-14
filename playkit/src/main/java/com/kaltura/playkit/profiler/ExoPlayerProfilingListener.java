@@ -134,7 +134,7 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
 
     @Override
     public void onPlayWhenReadyChanged(EventTime eventTime, boolean playWhenReady, int reason) {
-        this.shouldPlay = playWhenReady;
+        shouldPlay = playWhenReady;
     }
 
     @Override

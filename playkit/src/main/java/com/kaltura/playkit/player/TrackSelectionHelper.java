@@ -1289,19 +1289,19 @@ class TrackSelectionHelper {
         }
 
         if (shouldNotifyAboutTrackChanged(TRACK_TYPE_VIDEO)) {
-            log.i("Video track changed to: " + requestedChangeTrackIds[TRACK_TYPE_VIDEO]);
+            log.d("Video track changed to: " + requestedChangeTrackIds[TRACK_TYPE_VIDEO]);
             lastSelectedTrackIds[TRACK_TYPE_VIDEO] = requestedChangeTrackIds[TRACK_TYPE_VIDEO];
             tracksInfoListener.onVideoTrackChanged();
         }
 
         if (shouldNotifyAboutTrackChanged(TRACK_TYPE_AUDIO)) {
-            log.i("Audio track changed to: " + requestedChangeTrackIds[TRACK_TYPE_AUDIO]);
+            log.d("Audio track changed to: " + requestedChangeTrackIds[TRACK_TYPE_AUDIO]);
             lastSelectedTrackIds[TRACK_TYPE_AUDIO] = requestedChangeTrackIds[TRACK_TYPE_AUDIO];
             tracksInfoListener.onAudioTrackChanged();
         }
 
         if (shouldNotifyAboutTrackChanged(TRACK_TYPE_TEXT)) {
-            log.i("Text track changed to: " + requestedChangeTrackIds[TRACK_TYPE_TEXT]);
+            log.d("Text track changed to: " + requestedChangeTrackIds[TRACK_TYPE_TEXT]);
             lastSelectedTrackIds[TRACK_TYPE_TEXT] = requestedChangeTrackIds[TRACK_TYPE_TEXT];
             tracksInfoListener.onTextTrackChanged();
         }

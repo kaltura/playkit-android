@@ -381,47 +381,35 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                         .setClipStartPositionMs(0L)
                         .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
 
-        if (format == PKMediaFormat.dash) {
-                if (sourceConfig.mediaSource.hasDrmParams()) {
-                    boolean setDrmSessionForClearTypes = false;
-                    // selecting WidevineCENC as default right now
-                    PKDrmParams.Scheme scheme = PKDrmParams.Scheme.WidevineCENC;
-                    String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
-
-                    if (licenseUri != null) {
-                        PKRequestParams licenseRequestParams = new PKRequestParams(Uri.parse(licenseUri), new HashMap<>());
-
-                        if (playerSettings.getLicenseRequestAdapter() != null) {
-                            licenseRequestParams = playerSettings.getLicenseRequestAdapter().adapt(licenseRequestParams);
-                        }
-
-                        Map<String, String> licenseRequestParamsHeaders = licenseRequestParams.headers;
-                        @Nullable
-                        String[] keyRequestPropertiesArray = new String[]{};
-                        if (keyRequestPropertiesArray != null) {
-                            for (int i = 0; i < keyRequestPropertiesArray.length; i += 2) {
-                                licenseRequestParamsHeaders.put(keyRequestPropertiesArray[i], keyRequestPropertiesArray[i + 1]);
-                            }
-                        }
-
-                        builder
-                                .setDrmUuid((scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID)
-                                .setDrmLicenseUri(licenseUri)
-                                .setDrmMultiSession(false)
-                                .setDrmForceDefaultLicenseUri(false)
-                                .setDrmLicenseRequestHeaders(licenseRequestParamsHeaders);
-                        if (setDrmSessionForClearTypes) {
-                            List<Integer> tracks = new ArrayList<>();
-                            tracks.add(C.TRACK_TYPE_VIDEO);
-                            tracks.add(C.TRACK_TYPE_AUDIO);
-                            builder.setDrmSessionForClearTypes(tracks);
-                        }
-                    }
-                }
+        if (format == PKMediaFormat.dash && sourceConfig.mediaSource.hasDrmParams()) {
+            setMediaItemBuilderDRMParams(sourceConfig, builder);
         } else  if (format == PKMediaFormat.udp) {
             builder.setMimeType(null);
         }
         return builder.build();
+    }
+
+    private void setMediaItemBuilderDRMParams(PKMediaSourceConfig sourceConfig, MediaItem.Builder builder) {
+        // selecting WidevineCENC as default right now
+        PKDrmParams.Scheme scheme = PKDrmParams.Scheme.WidevineCENC;
+        String licenseUri = getDrmLicenseUrl(sourceConfig.mediaSource, scheme);
+
+        if (licenseUri != null) {
+            PKRequestParams licenseRequestParams = new PKRequestParams(Uri.parse(licenseUri), new HashMap<>());
+
+            if (playerSettings.getLicenseRequestAdapter() != null) {
+                licenseRequestParams = playerSettings.getLicenseRequestAdapter().adapt(licenseRequestParams);
+            }
+
+            Map<String, String> licenseRequestParamsHeaders = licenseRequestParams.headers;
+
+            builder
+                    .setDrmUuid((scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID)
+                    .setDrmLicenseUri(licenseUri)
+                    .setDrmMultiSession(false)
+                    .setDrmForceDefaultLicenseUri(false)
+                    .setDrmLicenseRequestHeaders(licenseRequestParamsHeaders);
+        }
     }
 
     private String getDrmLicenseUrl(PKMediaSource mediaSource, PKDrmParams.Scheme scheme) {
@@ -453,7 +441,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         return subtitleList;
     }
 
-    private HttpDataSource.Factory getHttpDataSourceFactory(Map<String,String> headers) {
+    private HttpDataSource.Factory getHttpDataSourceFactory(Map<String, String> headers) {
         HttpDataSource.Factory httpDataSourceFactory;
         final String userAgent = getUserAgent(context);
         final boolean crossProtocolRedirectEnabled = playerSettings.crossProtocolRedirectEnabled();
@@ -477,9 +465,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     builder.eventListenerFactory(okListenerFactory);
                 }
             }
-
             httpDataSourceFactory = new OkHttpDataSourceFactory(builder.build(), userAgent);
-
         } else {
 
             httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent,
@@ -498,8 +484,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private DataSource.Factory getDataSourceFactory(Map<String, String> headers) {
-        DataSource.Factory httpDataSourceFactory = new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
-        return httpDataSourceFactory;
+        return new DefaultDataSourceFactory(context, getHttpDataSourceFactory(headers));
     }
 
     private static String getUserAgent(Context context) {
@@ -594,12 +579,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             default:
                 break;
         }
-    }
-
-    @Override
-    public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
-        log.d("onPlayWhenReadyChanged. playWhenReady = " + playWhenReady);
-
     }
 
     private void pausePlayerAfterEndedEvent() {
