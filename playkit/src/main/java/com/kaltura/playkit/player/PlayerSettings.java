@@ -40,7 +40,6 @@ public class PlayerSettings implements Player.Settings {
     private Integer maxVideoBitrate;
     private Integer maxAudioBitrate;
     private int maxAudioChannelCount = -1;
-    private MulticastSettings multicastSettings = new MulticastSettings();
 
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
@@ -191,8 +190,6 @@ public class PlayerSettings implements Player.Settings {
     public int getMaxAudioChannelCount() {
         return maxAudioChannelCount;
     }
-
-    public MulticastSettings getMulticastSettings() { return multicastSettings; }
 
     @Override
     public Player.Settings setVRPlayerEnabled(boolean vrPlayerEnabled) {
@@ -397,12 +394,5 @@ public class PlayerSettings implements Player.Settings {
         this.maxAudioChannelCount = maxAudioChannelCount;
         return this;
     }
-
-    @Override
-    public Player.Settings setMulticastSettings(MulticastSettings multicastSettings) {
-        this.multicastSettings = multicastSettings;
-        return this;
-    }
-
-
 }
+
