@@ -35,11 +35,11 @@ public class PlayerSettings implements Player.Settings {
     private AudioCodecSettings preferredAudioCodecSettings = new AudioCodecSettings();
     private boolean isTunneledAudioPlayback;
     private boolean handleAudioBecomingNoisyEnabled;
+    private boolean handleAudioFocus;
     private PKSubtitlePreference subtitlePreference = PKSubtitlePreference.INTERNAL;
     private Integer maxVideoBitrate;
     private Integer maxAudioBitrate;
     private int maxAudioChannelCount = -1;
-    private MulticastSettings multicastSettings = new MulticastSettings();
 
     private LoadControlBuffers loadControlBuffers = new LoadControlBuffers();
     private SubtitleStyleSettings subtitleStyleSettings;
@@ -165,7 +165,13 @@ public class PlayerSettings implements Player.Settings {
         return isTunneledAudioPlayback;
     }
 
-    public boolean isHandleAudioBecomingNoisyEnabled() { return handleAudioBecomingNoisyEnabled; }
+    public boolean isHandleAudioBecomingNoisyEnabled() {
+        return handleAudioBecomingNoisyEnabled;
+    }
+
+    public boolean isHandleAudioFocus() {
+        return handleAudioFocus;
+    }
 
     public PKSubtitlePreference getSubtitlePreference() {
         return subtitlePreference;
@@ -184,8 +190,6 @@ public class PlayerSettings implements Player.Settings {
     public int getMaxAudioChannelCount() {
         return maxAudioChannelCount;
     }
-
-    public MulticastSettings getMulticastSettings() { return multicastSettings; }
 
     @Override
     public Player.Settings setVRPlayerEnabled(boolean vrPlayerEnabled) {
@@ -352,6 +356,12 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
+    public Player.Settings setHandleAudioFocus(boolean handleAudioFocus) {
+        this.handleAudioFocus = handleAudioFocus;
+        return this;
+    }
+
+    @Override
     public Player.Settings setSubtitlePreference(PKSubtitlePreference subtitlePreference) {
         if (subtitlePreference == null) {
             this.subtitlePreference = PKSubtitlePreference.OFF;
@@ -384,12 +394,5 @@ public class PlayerSettings implements Player.Settings {
         this.maxAudioChannelCount = maxAudioChannelCount;
         return this;
     }
-
-    @Override
-    public Player.Settings setMulticastSettings(MulticastSettings multicastSettings) {
-        this.multicastSettings = multicastSettings;
-        return this;
-    }
-
-
 }
+

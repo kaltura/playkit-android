@@ -22,7 +22,6 @@ public class PKExternalSubtitle implements Parcelable {
     private int roleFlag = C.ROLE_FLAG_SUBTITLE;
     private String language;
     private String label;
-    private String containerMimeType = null;
     private String codecs = null;
     private int bitrate = Format.NO_VALUE;
     private boolean isDefault;
@@ -36,10 +35,6 @@ public class PKExternalSubtitle implements Parcelable {
 
     public String getLabel() {
         return label;
-    }
-
-    public String getContainerMimeType() {
-        return containerMimeType;
     }
 
     public String getCodecs() {
@@ -112,7 +107,6 @@ public class PKExternalSubtitle implements Parcelable {
         selectionFlags = in.readInt();
         language = in.readString();
         label = in.readString();
-        containerMimeType = in.readString();
         codecs = in.readString();
         bitrate = in.readInt();
         isDefault = in.readByte() != 0;
@@ -125,7 +119,6 @@ public class PKExternalSubtitle implements Parcelable {
         dest.writeInt(selectionFlags);
         dest.writeString(language);
         dest.writeString(label);
-        dest.writeString(containerMimeType);
         dest.writeString(codecs);
         dest.writeInt(bitrate);
         dest.writeByte((byte) (isDefault ? 1 : 0));

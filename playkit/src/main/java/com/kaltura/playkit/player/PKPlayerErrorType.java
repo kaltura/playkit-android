@@ -27,7 +27,8 @@ public enum PKPlayerErrorType {
     TRACK_SELECTION_FAILED(7006),
     LOAD_ERROR(7007),
     OUT_OF_MEMORY(7008),
-    REMOTE_COMPONENT_ERROR(7009);
+    REMOTE_COMPONENT_ERROR(7009),
+    TIMEOUT(7010);
 
     public final int errorCode;
 

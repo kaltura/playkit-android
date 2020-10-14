@@ -81,6 +81,7 @@ public class PlayerController implements Player {
     private PlayerEngine.StateChangedListener stateChangedTrigger = initStateChangeListener();
     private PlayerEngineWrapper playerEngineWrapper;
 
+
     public PlayerController(Context context) {
         this.context = context;
         initializeRootPlayerView();
@@ -266,6 +267,7 @@ public class PlayerController implements Player {
             if (incomingPlayerType == PlayerEngineType.VRPlayer) {
                 incomingPlayerType = PlayerEngineType.Exoplayer;
                 player = new ExoPlayerWrapper(context, playerSettings, rootPlayerView);
+
             } else {
                 return;
             }
@@ -790,7 +792,7 @@ public class PlayerController implements Player {
                         }
                         event = new PlayerEvent.Error(player.getCurrentError());
                         if (player.getCurrentError().isFatal()){
-                           cancelUpdateProgress();
+                            cancelUpdateProgress();
                         }
                         break;
                     case METADATA_AVAILABLE:

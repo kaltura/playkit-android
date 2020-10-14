@@ -17,7 +17,6 @@ import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
-import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
@@ -254,6 +253,14 @@ public interface Player {
         Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled);
 
         /**
+         * Set HandleAudioFocus - Support for automatic audio focus handling
+         *
+         * @param handleAudioFocus
+         * @return - Player Settings
+         */
+        Settings setHandleAudioFocus(boolean handleAudioFocus);
+
+        /**
          * Set preference to choose internal subtitles over external subtitles (Only in the case if the same language is present
          * in both Internal and External subtitles) - Default is true (Internal is preferred)
          *
@@ -300,14 +307,6 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setMaxAudioChannelCount(int maxAudioChannelCount);
-
-        /**
-         * Sets the multicastSettings for udp streams.
-         *
-         * @param multicastSettings - maxPacketSize default = 3000 & socketTimeoutMillis default = 100000
-         * @return - Player Settings
-         */
-        Settings setMulticastSettings(MulticastSettings multicastSettings);
     }
 
     /**
