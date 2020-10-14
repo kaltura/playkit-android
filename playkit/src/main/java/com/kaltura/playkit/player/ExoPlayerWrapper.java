@@ -768,7 +768,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             // for change media case need to verify if surface swap is needed
             maybeChangePlayerRenderView();
         }
-
         preparePlayer(mediaSourceConfig);
     }
 
