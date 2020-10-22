@@ -602,7 +602,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void onTimelineChanged(Timeline timeline, int reason) {
         log.d("onTimelineChanged reason = " + reason + " duration = " + getDuration());
         if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
-            sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
+            if (isLive() || isLiveMediaWithoutDvr()) {
+                sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
+            }
             if (getDuration() != TIME_UNSET) {
                 sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
                 profiler.onDurationChanged(getDuration());
@@ -610,6 +612,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         if (reason == Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE && getDuration() != TIME_UNSET) {
+            if (!isLive() || !isLiveMediaWithoutDvr()) {
+                sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
+            }
             sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         }
     }
