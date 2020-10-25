@@ -273,7 +273,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         this.sourceConfig = sourceConfig;
         //reset metadata on prepare.
         metadataList.clear();
-
+        isLoadedMetaDataFired = false;
         shouldGetTracksInfo = true;
         trackSelectionHelper.applyPlayerSettings(playerSettings);
 
@@ -616,9 +616,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         if (reason == Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE && getDuration() != TIME_UNSET) {
-            if (!isLoadedMetaDataFired && isLive()) {
-                sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
-            } else if (!isLive()) {
+            if (!isLoadedMetaDataFired)  {
                 sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
             }
             sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
