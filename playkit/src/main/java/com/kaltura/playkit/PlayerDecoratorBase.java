@@ -160,6 +160,21 @@ public class PlayerDecoratorBase implements Player {
         player.removeListeners(listener);
     }
 
+    @Override
+    public void addMediaEntryInterceptor(@NonNull PKMediaEntryInterceptor listener) {
+        player.addMediaEntryInterceptor(listener);
+    }
+
+    @Override
+    public void removeMediaEntryInterceptor(@NonNull PKMediaEntryInterceptor listener) {
+        player.removeMediaEntryInterceptor(listener);
+    }
+
+    @Override
+    public void applyMediaEntryInterceptors(PKMediaEntry mediaEntry, PKMediaEntryInterceptor.OnMediaInterceptorListener listener) {
+        player.applyMediaEntryInterceptors(mediaEntry, listener);
+    }
+
     void setPlayer(Player player) {
         this.player = player;
     }

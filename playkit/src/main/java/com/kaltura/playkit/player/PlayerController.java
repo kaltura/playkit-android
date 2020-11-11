@@ -28,6 +28,7 @@ import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaEntryInterceptor;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
@@ -39,6 +40,7 @@ import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
@@ -70,6 +72,8 @@ public class PlayerController implements Player {
     private long targetSeekPosition;
     private boolean isNewEntry = true;
     private boolean isPlayerStopped;
+
+    private ArrayList<PKMediaEntryInterceptor> interceptors = new ArrayList<>();
 
     private Handler handler = new Handler(Looper.getMainLooper());
 
@@ -525,6 +529,41 @@ public class PlayerController implements Player {
     }
 
     @Override
+    public void addMediaEntryInterceptor(@NonNull PKMediaEntryInterceptor listener) {
+        interceptors.add(listener);
+    }
+
+    @Override
+    public void removeMediaEntryInterceptor(@NonNull PKMediaEntryInterceptor listener) {
+        interceptors.remove(listener);
+    }
+
+    @Override
+    public void applyMediaEntryInterceptors(PKMediaEntry mediaEntry, PKMediaEntryInterceptor.OnMediaInterceptorListener listener) {
+        ArrayList<PKMediaEntryInterceptor> localInterceptors = new ArrayList<>(interceptors);
+        applyMediaEntryInterceptor(localInterceptors, mediaEntry, listener);
+    }
+
+    private void applyMediaEntryInterceptor(ArrayList<PKMediaEntryInterceptor> localInterceptors,
+                                            PKMediaEntry mediaEntry,
+                                            PKMediaEntryInterceptor.OnMediaInterceptorListener listener) {
+        if (localInterceptors.size() == 0) {
+            listener.onApplyMediaCompleted(null);
+            return;
+        }
+
+        PKMediaEntryInterceptor interceptor = localInterceptors.get(0);
+        interceptor.apply(mediaEntry, error -> {
+            if (error == null) {
+                localInterceptors.remove(0);
+                applyMediaEntryInterceptor(localInterceptors, mediaEntry, listener);
+            } else {
+                listener.onApplyMediaCompleted(error);
+            }
+        });
+    }
+
+    @Override
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         Assert.shouldNeverHappen();
     }
@@ -791,7 +830,7 @@ public class PlayerController implements Player {
                             return;
                         }
                         event = new PlayerEvent.Error(player.getCurrentError());
-                        if (player.getCurrentError().isFatal()){
+                        if (player.getCurrentError().isFatal()) {
                             cancelUpdateProgress();
                         }
                         break;

@@ -54,6 +54,16 @@ public abstract class PlayerDecorator extends PlayerDecoratorBase {
         super.removeListener(listener);
     }
 
+    @Override
+    public void addMediaEntryInterceptor(@NonNull PKMediaEntryInterceptor listener) {
+        super.addMediaEntryInterceptor(listener);
+    }
+
+    @Override
+    public void removeMediaEntryInterceptor(@NonNull PKMediaEntryInterceptor listener) {
+        super.removeMediaEntryInterceptor(listener);
+    }
+
     final Player getPlayer() {
         return super.getPlayer();
     }

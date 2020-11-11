@@ -532,6 +532,11 @@ public interface Player {
      */
     void removeListener(@NonNull PKEvent.Listener listener);
 
+    void addMediaEntryInterceptor(@NonNull PKMediaEntryInterceptor listener);
+
+    void removeMediaEntryInterceptor(@NonNull PKMediaEntryInterceptor listener);
+
+    void applyMediaEntryInterceptors(PKMediaEntry mediaEntry, PKMediaEntryInterceptor.OnMediaInterceptorListener listener);
     /**
      * Add event listener to the player.
      *
