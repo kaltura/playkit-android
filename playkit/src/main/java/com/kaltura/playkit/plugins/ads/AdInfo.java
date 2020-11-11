@@ -25,6 +25,7 @@ public class AdInfo implements PKAdInfo {
     private long adPlayHead;
 
     private String adTitle;
+    private String streamId;
     private boolean isAdSkippable;
     private long skipTimeOffset;
     private String adContentType;
@@ -196,6 +197,10 @@ public class AdInfo implements PKAdInfo {
         return adPodTimeOffset;
     }
 
+    public String getStreamId() {
+        return streamId;
+    }
+
     public void setAdPlayHead(long adPlayHead) {
         this.adPlayHead = adPlayHead;
     }
@@ -217,6 +222,10 @@ public class AdInfo implements PKAdInfo {
         if (this.skipTimeOffset > 0) {
             isAdSkippable = true;
         }
+    }
+
+    public void setStreamId(String streamId) {
+        this.streamId = streamId;
     }
 
     public long getSkipTimeOffset() {
