@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.Assert;
+import com.kaltura.playkit.OnMediaInterceptorListener;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
@@ -539,27 +540,23 @@ public class PlayerController implements Player {
     }
 
     @Override
-    public void applyMediaEntryInterceptors(PKMediaEntry mediaEntry, PKMediaEntryInterceptor.OnMediaInterceptorListener listener) {
+    public void applyMediaEntryInterceptors(PKMediaEntry mediaEntry, OnMediaInterceptorListener listener) {
         ArrayList<PKMediaEntryInterceptor> localInterceptors = new ArrayList<>(interceptors);
         applyMediaEntryInterceptor(localInterceptors, mediaEntry, listener);
     }
 
     private void applyMediaEntryInterceptor(ArrayList<PKMediaEntryInterceptor> localInterceptors,
                                             PKMediaEntry mediaEntry,
-                                            PKMediaEntryInterceptor.OnMediaInterceptorListener listener) {
+                                            OnMediaInterceptorListener listener) {
         if (localInterceptors.size() == 0) {
-            listener.onApplyMediaCompleted(null);
+            listener.onApplyMediaCompleted();
             return;
         }
 
         PKMediaEntryInterceptor interceptor = localInterceptors.get(0);
-        interceptor.apply(mediaEntry, error -> {
-            if (error == null) {
-                localInterceptors.remove(0);
-                applyMediaEntryInterceptor(localInterceptors, mediaEntry, listener);
-            } else {
-                listener.onApplyMediaCompleted(error);
-            }
+        interceptor.apply(mediaEntry, () -> {
+            localInterceptors.remove(0);
+            applyMediaEntryInterceptor(localInterceptors, mediaEntry, listener);
         });
     }
 

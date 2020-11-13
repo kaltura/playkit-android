@@ -5,8 +5,4 @@ package com.kaltura.playkit;
  */
 public interface PKMediaEntryInterceptor {
     void apply(PKMediaEntry mediaEntry, OnMediaInterceptorListener listener);
-
-    interface OnMediaInterceptorListener {
-        void onApplyMediaCompleted(PKError error);
-    }
 }

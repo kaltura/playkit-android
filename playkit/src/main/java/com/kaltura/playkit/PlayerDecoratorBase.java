@@ -171,7 +171,7 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
-    public void applyMediaEntryInterceptors(PKMediaEntry mediaEntry, PKMediaEntryInterceptor.OnMediaInterceptorListener listener) {
+    public void applyMediaEntryInterceptors(PKMediaEntry mediaEntry, OnMediaInterceptorListener listener) {
         player.applyMediaEntryInterceptors(mediaEntry, listener);
     }
 
