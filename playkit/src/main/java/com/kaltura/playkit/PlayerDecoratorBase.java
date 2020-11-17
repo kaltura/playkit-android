@@ -19,6 +19,8 @@ import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 
+import java.util.List;
+
 public class PlayerDecoratorBase implements Player {
 
     @Override
@@ -160,19 +162,10 @@ public class PlayerDecoratorBase implements Player {
         player.removeListeners(listener);
     }
 
+    @NonNull
     @Override
-    public void addMediaEntryInterceptor(@NonNull PKMediaEntryInterceptor listener) {
-        player.addMediaEntryInterceptor(listener);
-    }
-
-    @Override
-    public void removeMediaEntryInterceptor(@NonNull PKMediaEntryInterceptor listener) {
-        player.removeMediaEntryInterceptor(listener);
-    }
-
-    @Override
-    public void applyMediaEntryInterceptors(PKMediaEntry mediaEntry, OnMediaInterceptorListener listener) {
-        player.applyMediaEntryInterceptors(mediaEntry, listener);
+    public  <PluginType> List<PluginType> getLoadedPluginsOfType(Class<PluginType> pluginClass) {
+        return player.getLoadedPluginsOfType(pluginClass);
     }
 
     void setPlayer(Player player) {

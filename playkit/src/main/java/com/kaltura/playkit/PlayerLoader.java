@@ -249,4 +249,15 @@ class PlayerLoader extends PlayerDecoratorBase {
     public void removeListeners(@NonNull Object groupId) {
         messageBus.removeListeners(groupId);
     }
+
+    @NonNull
+    @Override
+    public <PluginType> List<PluginType> getLoadedPluginsOfType(Class<PluginType> pluginClass) {
+        List<PluginType> filteredPlugins = new ArrayList<>();
+        for (LoadedPlugin loadedPlugin : loadedPlugins.values()) {
+            if (pluginClass.isAssignableFrom(loadedPlugin.plugin.getClass()))
+                filteredPlugins.add((PluginType) loadedPlugin.plugin);
+        }
+        return filteredPlugins;
+    }
 }

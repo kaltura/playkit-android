@@ -26,6 +26,8 @@ import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
 
+import java.util.List;
+
 @SuppressWarnings("unused")
 public interface Player {
 
@@ -544,31 +546,11 @@ public interface Player {
     void removeListener(@NonNull PKEvent.Listener listener);
 
     /**
-     * Add interceptor for MediaEntry in order to perform manipulations
-     * <p>
-     * Sample usage:
-     * <pre>
-     *   player.addMediaEntryInterceptor(this);
-     * </pre>
+     * Get loaded plugins of type.
      *
-     * @param listener listener
+     * @param pluginClass - PluginType class.
      */
-    void addMediaEntryInterceptor(@NonNull PKMediaEntryInterceptor listener);
-
-    /**
-     * Remove interceptor listener.
-     *
-     * @param listener - interceptor listener
-     */
-    void removeMediaEntryInterceptor(@NonNull PKMediaEntryInterceptor listener);
-
-    /**
-     * Apply MediaEntry interceptors.
-     *
-     * @param mediaEntry - MediaEntry.
-     * @param listener   - MediaEntry interceptor listener.
-     */
-    void applyMediaEntryInterceptors(PKMediaEntry mediaEntry, OnMediaInterceptorListener listener);
+    @NonNull <PluginType> List<PluginType> getLoadedPluginsOfType(Class<PluginType> pluginClass);
 
     /**
      * Add event listener to the player.
