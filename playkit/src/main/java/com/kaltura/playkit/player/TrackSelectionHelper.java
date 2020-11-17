@@ -509,6 +509,7 @@ class TrackSelectionHelper {
                 int selectionFlag = trackList.get(i).getSelectionFlag();
                 if (selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH) {
                     defaultTrackIndex = i;
+                    break;
                 }
             }
         }
