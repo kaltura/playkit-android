@@ -52,6 +52,11 @@ public class TextTrack extends BaseTrack {
         return label;
     }
 
+    /**
+     * Getter for the track mimeType.
+     *
+     * @return - the mimeType of the track.
+     */
     public String getMimeType() {
         return mimeType;
     }

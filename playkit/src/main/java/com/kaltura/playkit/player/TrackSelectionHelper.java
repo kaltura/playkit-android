@@ -508,7 +508,7 @@ class TrackSelectionHelper {
             if (trackList.get(i) != null) {
                 int selectionFlag = trackList.get(i).getSelectionFlag();
                 if (selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH) {
-                    if (trackList.get(i) instanceof TextTrack && hasExternalSubtitles) {
+                    if (trackList.get(i) instanceof TextTrack && hasExternalSubtitles && playerSettings.getSubtitlePreference() != PKSubtitlePreference.OFF) {
                         TextTrack textTrack = (TextTrack) trackList.get(i);
                         if (isExternalSubtitle(textTrack.getLanguage(), textTrack.getMimeType()) &&
                                 playerSettings.getSubtitlePreference() == PKSubtitlePreference.EXTERNAL) {
