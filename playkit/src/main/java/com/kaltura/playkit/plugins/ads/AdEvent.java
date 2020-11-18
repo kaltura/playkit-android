@@ -49,6 +49,7 @@ public class AdEvent implements PKEvent {
     public static final AdEvent.Type adBreakReady = Type.AD_BREAK_READY;
     public static final AdEvent.Type adBreakStarted = Type.AD_BREAK_STARTED;
     public static final AdEvent.Type adBreakEnded = Type.AD_BREAK_ENDED;
+    public static final AdEvent.Type adBreakFetchError = Type.AD_BREAK_FETCH_ERROR;
     public static final AdEvent.Type adBreakIgnored = Type.AD_BREAK_IGNORED;
     public static final AdEvent.Type contentPauseRequested = Type.CONTENT_PAUSE_REQUESTED;
     public static final AdEvent.Type contentResumeRequested = Type.CONTENT_RESUME_REQUESTED;
@@ -237,6 +238,7 @@ public class AdEvent implements PKEvent {
         AD_PROGRESS,
         AD_BREAK_STARTED,
         AD_BREAK_ENDED,
+        AD_BREAK_FETCH_ERROR,
         AD_BREAK_IGNORED,
         CUEPOINTS_CHANGED,
         PLAY_HEAD_CHANGED,
