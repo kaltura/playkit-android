@@ -100,7 +100,12 @@ class TrackSelectionHelper {
     private String[] lastSelectedTrackIds;
     private String[] requestedChangeTrackIds;
 
+    // To know if application passed the external subtitles
     private boolean hasExternalSubtitles = false;
+
+    // To know if tracks has external subtitles or not.
+    // Helpful in case if subtitles are removed by ExoPlayer in case of any discrepancy
+    private boolean hasExternalSubtitlesInTracks = false;
 
     private TracksInfoListener tracksInfoListener;
     private TracksErrorListener tracksErrorListener;
@@ -508,17 +513,23 @@ class TrackSelectionHelper {
             if (trackList.get(i) != null) {
                 int selectionFlag = trackList.get(i).getSelectionFlag();
                 if (selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH) {
-                    if (trackList.get(i) instanceof TextTrack && hasExternalSubtitles && playerSettings.getSubtitlePreference() != PKSubtitlePreference.OFF) {
-                        TextTrack textTrack = (TextTrack) trackList.get(i);
-                        if (isExternalSubtitle(textTrack.getLanguage(), textTrack.getMimeType()) &&
-                                playerSettings.getSubtitlePreference() == PKSubtitlePreference.EXTERNAL) {
-                            defaultTrackIndex = i;
-                            break;
-                        } else if (!isExternalSubtitle(textTrack.getLanguage(), textTrack.getMimeType()) &&
-                                playerSettings.getSubtitlePreference() == PKSubtitlePreference.INTERNAL) {
-                            defaultTrackIndex = i;
-                            break;
+                    if (trackList.get(i) instanceof TextTrack && hasExternalSubtitlesInTracks && playerSettings.getSubtitlePreference() != PKSubtitlePreference.OFF) {
+                        PKSubtitlePreference pkSubtitlePreference = playerSettings.getSubtitlePreference();
+                        TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_TEXT);
+                        if (trackSelection != null && trackSelection.getSelectedFormat() != null &&
+                                isExternalSubtitle(trackSelection.getSelectedFormat().language, trackSelection.getSelectedFormat().sampleMimeType)) {
+                            pkSubtitlePreference = PKSubtitlePreference.EXTERNAL;
                         }
+
+                        TextTrack textTrack = (TextTrack) trackList.get(i);
+                        boolean isExternalSubtitle = isExternalSubtitle(textTrack.getLanguage(), textTrack.getMimeType());
+                        if (isExternalSubtitle && pkSubtitlePreference == PKSubtitlePreference.EXTERNAL) {
+                            defaultTrackIndex = i;
+                            break;
+                        } else if (!isExternalSubtitle && pkSubtitlePreference == PKSubtitlePreference.INTERNAL) {
+                            defaultTrackIndex = i;
+                            break;
+                        } 
                     } else {
                         defaultTrackIndex = i;
                         break;
@@ -546,6 +557,7 @@ class TrackSelectionHelper {
                 String languageName = format.language;
                 if (isExternalSubtitle(format.language, format.sampleMimeType)) {
                     languageName = getExternalSubtitleLanguage(format);
+                    hasExternalSubtitlesInTracks = true;
                 }
 
                 if (subtitleListMap.containsKey(languageName)) {
