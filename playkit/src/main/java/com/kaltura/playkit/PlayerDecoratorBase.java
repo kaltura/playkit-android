@@ -164,8 +164,8 @@ public class PlayerDecoratorBase implements Player {
 
     @NonNull
     @Override
-    public  <PluginType> List<PluginType> getLoadedPluginsOfType(Class<PluginType> pluginClass) {
-        return player.getLoadedPluginsOfType(pluginClass);
+    public  <PluginType> List<PluginType> getLoadedPluginsByType(Class<PluginType> pluginClass) {
+        return player.getLoadedPluginsByType(pluginClass);
     }
 
     void setPlayer(Player player) {
