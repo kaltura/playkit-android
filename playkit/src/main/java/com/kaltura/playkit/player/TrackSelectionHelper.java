@@ -516,6 +516,11 @@ class TrackSelectionHelper {
                     if (trackList.get(i) instanceof TextTrack && hasExternalSubtitlesInTracks && playerSettings.getSubtitlePreference() != PKSubtitlePreference.OFF) {
                         PKSubtitlePreference pkSubtitlePreference = playerSettings.getSubtitlePreference();
                         TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_TEXT);
+
+                        // TrackSelection is giving the default tracks for video, audio and text.
+                        // If trackSelection contains a text which is an external text track, it means that either internal text track
+                        // does not contain any track or there is no default track in internal text track. If there is no internal text track then
+                        // forcing the preference to be External.
                         if (trackSelection != null && trackSelection.getSelectedFormat() != null &&
                                 isExternalSubtitle(trackSelection.getSelectedFormat().language, trackSelection.getSelectedFormat().sampleMimeType)) {
                             pkSubtitlePreference = PKSubtitlePreference.EXTERNAL;
