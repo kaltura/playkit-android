@@ -252,7 +252,7 @@ class PlayerLoader extends PlayerDecoratorBase {
 
     @NonNull
     @Override
-    public <PluginType> List<PluginType> getLoadedPluginsOfType(Class<PluginType> pluginClass) {
+    public <PluginType> List<PluginType> getLoadedPluginsByType(Class<PluginType> pluginClass) {
         List<PluginType> filteredPlugins = new ArrayList<>();
         for (LoadedPlugin loadedPlugin : loadedPlugins.values()) {
             if (pluginClass.isAssignableFrom(loadedPlugin.plugin.getClass()))
