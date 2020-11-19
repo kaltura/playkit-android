@@ -1220,6 +1220,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     eventListener.onEvent(PlayerEvent.Type.ERROR);
                 }
             }
+
+            @Override
+            public void onNoVideoAudioTrackAvailableError(PKError pkError) {
+                currentError = pkError;
+                if (eventListener != null) {
+                    eventListener.onEvent(PlayerEvent.Type.ERROR);
+                }
+            }
         };
     }
 
