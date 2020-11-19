@@ -550,7 +550,7 @@ public interface Player {
      *
      * @param pluginClass - PluginType class.
      */
-    @NonNull <PluginType> List<PluginType> getLoadedPluginsOfType(Class<PluginType> pluginClass);
+    @NonNull <PluginType> List<PluginType> getLoadedPluginsByType(Class<PluginType> pluginClass);
 
     /**
      * Add event listener to the player.
@@ -591,4 +591,3 @@ public interface Player {
     @Deprecated
     void removeStateChangeListener(@NonNull PKEvent.Listener listener);
 }
-
