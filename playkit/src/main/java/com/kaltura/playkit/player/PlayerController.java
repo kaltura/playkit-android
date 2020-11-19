@@ -527,7 +527,7 @@ public class PlayerController implements Player {
 
     @NonNull
     @Override
-    public <PluginType> List<PluginType> getLoadedPluginsOfType(Class<PluginType> pluginClass) {
+    public <PluginType> List<PluginType> getLoadedPluginsByType(Class<PluginType> pluginClass) {
         Assert.shouldNeverHappen();
         return null;
     }
