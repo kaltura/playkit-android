@@ -253,6 +253,15 @@ public interface Player {
         Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled);
 
         /**
+         * Set WakeLock Mode  - Sets whether the player should not handle wakeLock or should handle a wake lock only or both wakeLock & wifiLock
+         * default - NONE - not handling wake lock
+         *
+         * @param wakeMode
+         * @return - Player Settings
+         */
+        Settings setWakeMode(PKWakeMode wakeMode);
+
+        /**
          * Set HandleAudioFocus - Support for automatic audio focus handling
          *
          * @param handleAudioFocus
