@@ -129,7 +129,7 @@ class TrackSelectionHelper {
 
         void onTracksOverrideABRError(PKError pkError);
         void onUnsupportedVideoTracksError(PKError pkError);
-        void onNoVideoAudioTrackAvailableError(PKError pkError);
+        void noTracksAvailableError(PKError pkError);
     }
 
     enum TrackType {
@@ -164,10 +164,10 @@ class TrackSelectionHelper {
             return false;
         }
 
-        if (!checkVideoAudioTracksAvailability(mappedTrackInfo)) {
-            String errorMessage = "No Video and Audio track found";
+        if (checkTracksUnavailability(mappedTrackInfo)) {
+            String errorMessage = "No audio/video/text track found";
             PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Fatal, errorMessage, new IllegalStateException(errorMessage));
-            tracksErrorListener.onNoVideoAudioTrackAvailableError(currentError);
+            tracksErrorListener.noTracksAvailableError(currentError);
             return false;
         }
 
@@ -298,8 +298,10 @@ class TrackSelectionHelper {
         return new PKTracks(videoTracks, filteredAudioTracks, textTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex);
     }
 
-    private boolean checkVideoAudioTracksAvailability(MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
-        return mappedTrackInfo.getTrackGroups(TRACK_TYPE_VIDEO).length != 0 && mappedTrackInfo.getTrackGroups(TRACK_TYPE_AUDIO).length != 0;
+    private boolean checkTracksUnavailability(MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
+        return mappedTrackInfo.getTrackGroups(TRACK_TYPE_VIDEO).length == 0 &&
+                mappedTrackInfo.getTrackGroups(TRACK_TYPE_AUDIO).length == 0 &&
+                mappedTrackInfo.getTrackGroups(TRACK_TYPE_TEXT).length == 0;
     }
 
     @NonNull
