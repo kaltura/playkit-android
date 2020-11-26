@@ -250,6 +250,7 @@ class PlayerLoader extends PlayerDecoratorBase {
         messageBus.removeListeners(groupId);
     }
 
+    @SuppressWarnings({"unchecked", "isAssignableFrom checks both superclass and superinterface"})
     @NonNull
     @Override
     public <PluginType> List<PluginType> getLoadedPluginsByType(Class<PluginType> pluginClass) {
