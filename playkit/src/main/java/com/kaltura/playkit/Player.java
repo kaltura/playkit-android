@@ -253,6 +253,24 @@ public interface Player {
         Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled);
 
         /**
+         * Set WakeLock Mode  - Sets whether the player should not handle wakeLock or should handle a wake lock only or both wakeLock & wifiLock when the screen is off
+         *
+         * <p>It should be used together with a foreground {@link android.app.Service} for use cases where
+         * playback occurs and the screen is off (e.g. background audio playback). It is not useful when
+         * the screen will be kept on during playback (e.g. foreground video playback).
+         *
+         * <p>When enabled, the locks ({@link android.os.PowerManager.WakeLock} / {@link
+         * android.net.wifi.WifiManager.WifiLock}) will be held whenever the player is in the
+         * STATE_READY STATE_BUFFERINGstates with {@code playWhenReady = true}. The locks
+         * held depends on the specified {@link PKWakeMode}.
+         * default - NONE - not handling wake lock
+         *
+         * @param wakeMode
+         * @return - Player Settings
+         */
+        Settings setWakeMode(PKWakeMode wakeMode);
+
+        /**
          * Set HandleAudioFocus - Support for automatic audio focus handling
          *
          * @param handleAudioFocus

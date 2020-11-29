@@ -16,6 +16,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
+import com.kaltura.playkit.PKWakeMode;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.player.vr.VRSettings;
 
@@ -35,6 +36,7 @@ public class PlayerSettings implements Player.Settings {
     private AudioCodecSettings preferredAudioCodecSettings = new AudioCodecSettings();
     private boolean isTunneledAudioPlayback;
     private boolean handleAudioBecomingNoisyEnabled;
+    private PKWakeMode wakeMode = PKWakeMode.NONE;
     private boolean handleAudioFocus;
     private PKSubtitlePreference subtitlePreference = PKSubtitlePreference.INTERNAL;
     private Integer maxVideoBitrate;
@@ -167,6 +169,10 @@ public class PlayerSettings implements Player.Settings {
 
     public boolean isHandleAudioBecomingNoisyEnabled() {
         return handleAudioBecomingNoisyEnabled;
+    }
+
+    public PKWakeMode getWakeMode() {
+        return wakeMode;
     }
 
     public boolean isHandleAudioFocus() {
@@ -352,6 +358,14 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled) {
         this.handleAudioBecomingNoisyEnabled = handleAudioBecomingNoisyEnabled;
+        return this;
+    }
+
+    @Override
+    public Player.Settings setWakeMode(PKWakeMode wakeMode) {
+        if (wakeMode != null) {
+            this.wakeMode = wakeMode;
+        }
         return this;
     }
 
