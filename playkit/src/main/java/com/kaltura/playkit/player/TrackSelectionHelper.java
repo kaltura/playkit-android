@@ -129,6 +129,8 @@ class TrackSelectionHelper {
 
         void onTracksOverrideABRError(PKError pkError);
         void onUnsupportedVideoTracksError(PKError pkError);
+        void onUnsupportedAudioTracksError(PKError pkError);
+        void noSupportedAudioVideoTracksError(PKError pkError);
         void noTracksAvailableError(PKError pkError);
     }
 
@@ -165,13 +167,13 @@ class TrackSelectionHelper {
         }
 
         if (checkTracksUnavailability(mappedTrackInfo)) {
-            String errorMessage = "No audio/video/text track found";
+            String errorMessage = "No audio, video and text track found";
             PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Fatal, errorMessage, new IllegalStateException(errorMessage));
             tracksErrorListener.noTracksAvailableError(currentError);
             return false;
         }
 
-        warnAboutUnsupportedRenderTypes();
+        warnAboutUnsupportedRendererTypes();
         PKTracks tracksInfo = buildTracks();
 
         if (tracksInfoListener != null) {
@@ -1241,14 +1243,36 @@ class TrackSelectionHelper {
     /**
      * Notify to log, that video/audio renderer has only unsupported tracks.
      */
-    private void warnAboutUnsupportedRenderTypes() {
+    private void warnAboutUnsupportedRendererTypes() {
+        int whichTrackUnsupported = -1;
+        String errorMessage;
+        PKError currentError;
+
         if (mappedTrackInfo.getTypeSupport(TRACK_TYPE_VIDEO)
                 == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-            log.w("Warning! All the video tracks are unsupported by this device.");
+            whichTrackUnsupported = TRACK_TYPE_VIDEO;
         }
         if (mappedTrackInfo.getTypeSupport(TRACK_TYPE_AUDIO)
                 == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-            log.w("Warning! All the audio tracks are unsupported by this device.");
+            if (whichTrackUnsupported == TRACK_TYPE_VIDEO) {
+                whichTrackUnsupported = 2;
+            } else {
+                whichTrackUnsupported = TRACK_TYPE_AUDIO;
+            }
+        }
+
+        if (whichTrackUnsupported == TRACK_TYPE_VIDEO) {
+            errorMessage = "Warning! All the video tracks are unsupported by this device.";
+            currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalStateException(errorMessage));
+            tracksErrorListener.onUnsupportedVideoTracksError(currentError);
+        } else if (whichTrackUnsupported == TRACK_TYPE_AUDIO) {
+            errorMessage = "Warning! All the audio tracks are unsupported by this device.";
+            currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalStateException(errorMessage));
+            tracksErrorListener.onUnsupportedAudioTracksError(currentError);
+        } else if (whichTrackUnsupported == 2) {
+            errorMessage = "Warning! All the video and audio tracks are unsupported by this device.";
+            currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalStateException(errorMessage));
+            tracksErrorListener.noSupportedAudioVideoTracksError(currentError);
         }
     }
 
