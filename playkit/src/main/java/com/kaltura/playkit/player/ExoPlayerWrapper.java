@@ -203,6 +203,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 .setBandwidthMeter(bandwidthMeter).build();
         player.setAudioAttributes(AudioAttributes.DEFAULT, /* handleAudioFocus= */ playerSettings.isHandleAudioFocus());
         player.setHandleAudioBecomingNoisy(playerSettings.isHandleAudioBecomingNoisyEnabled());
+        player.setWakeMode(playerSettings.getWakeMode().ordinal());
+
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
