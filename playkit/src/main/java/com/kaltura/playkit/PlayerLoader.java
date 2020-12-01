@@ -250,14 +250,16 @@ class PlayerLoader extends PlayerDecoratorBase {
         messageBus.removeListeners(groupId);
     }
 
-    @SuppressWarnings({"unchecked", "isAssignableFrom checks both superclass and superinterface"})
     @NonNull
     @Override
     public <PluginType> List<PluginType> getLoadedPluginsByType(Class<PluginType> pluginClass) {
         List<PluginType> filteredPlugins = new ArrayList<>();
         for (LoadedPlugin loadedPlugin : loadedPlugins.values()) {
-            if (pluginClass.isAssignableFrom(loadedPlugin.plugin.getClass()))
-                filteredPlugins.add((PluginType) loadedPlugin.plugin);
+            if (pluginClass.isAssignableFrom(loadedPlugin.plugin.getClass())) {
+                @SuppressWarnings({"unchecked", "isAssignableFrom checks both superclass and superinterface"})
+                PluginType pluginType = (PluginType) loadedPlugin.plugin;
+                filteredPlugins.add(pluginType);
+            }
         }
         return filteredPlugins;
     }
