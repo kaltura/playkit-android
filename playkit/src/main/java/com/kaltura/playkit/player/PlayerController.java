@@ -39,6 +39,7 @@ import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
@@ -524,6 +525,13 @@ public class PlayerController implements Player {
         Assert.shouldNeverHappen();
     }
 
+    @NonNull
+    @Override
+    public <PluginType> List<PluginType> getLoadedPluginsByType(Class<PluginType> pluginClass) {
+        Assert.shouldNeverHappen();
+        return null;
+    }
+
     @Override
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         Assert.shouldNeverHappen();
@@ -791,7 +799,7 @@ public class PlayerController implements Player {
                             return;
                         }
                         event = new PlayerEvent.Error(player.getCurrentError());
-                        if (player.getCurrentError().isFatal()){
+                        if (player.getCurrentError().isFatal()) {
                             cancelUpdateProgress();
                         }
                         break;
