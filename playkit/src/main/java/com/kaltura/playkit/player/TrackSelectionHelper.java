@@ -129,8 +129,8 @@ class TrackSelectionHelper {
         void onTracksOverrideABRError(PKError pkError);
         void onUnsupportedVideoTracksError(PKError pkError);
         void onUnsupportedAudioTracksError(PKError pkError);
-        void noSupportedAudioVideoTracksError(PKError pkError);
-        void noTracksAvailableError(PKError pkError);
+        void onNoSupportedAudioVideoTracksError(PKError pkError);
+        void onNoTracksAvailableError(PKError pkError);
     }
 
     enum TrackType {
@@ -168,7 +168,7 @@ class TrackSelectionHelper {
         if (checkTracksUnavailability(mappedTrackInfo)) {
             String errorMessage = "No audio, video and text track found";
             PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Fatal, errorMessage, new IllegalStateException(errorMessage));
-            tracksErrorListener.noTracksAvailableError(currentError);
+            tracksErrorListener.onNoTracksAvailableError(currentError);
             return false;
         }
 
@@ -1258,7 +1258,7 @@ class TrackSelectionHelper {
 
         if (videoTrackUnsupported && audioTrackUnsupported) {
             errorMessage = "Warning! All the video and audio tracks are unsupported by this device.";
-            tracksErrorListener.noSupportedAudioVideoTracksError(getUnsupportedTrackError(errorMessage));
+            tracksErrorListener.onNoSupportedAudioVideoTracksError(getUnsupportedTrackError(errorMessage));
         } else if (videoTrackUnsupported) {
             errorMessage = "Warning! All the video tracks are unsupported by this device.";
             tracksErrorListener.onUnsupportedVideoTracksError(getUnsupportedTrackError(errorMessage));
