@@ -126,7 +126,6 @@ class TrackSelectionHelper {
     }
 
     interface TracksErrorListener {
-
         void onTracksOverrideABRError(PKError pkError);
         void onUnsupportedVideoTracksError(PKError pkError);
         void onUnsupportedAudioTracksError(PKError pkError);
@@ -1244,36 +1243,33 @@ class TrackSelectionHelper {
      * Notify to log, that video/audio renderer has only unsupported tracks.
      */
     private void warnAboutUnsupportedRendererTypes() {
-        int whichTrackUnsupported = -1;
+        boolean videoTrackUnsupported = false;
+        boolean audioTrackUnsupported = false;
         String errorMessage;
-        PKError currentError;
 
         if (mappedTrackInfo.getTypeSupport(TRACK_TYPE_VIDEO)
                 == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-            whichTrackUnsupported = TRACK_TYPE_VIDEO;
+            videoTrackUnsupported = true;
         }
         if (mappedTrackInfo.getTypeSupport(TRACK_TYPE_AUDIO)
                 == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-            if (whichTrackUnsupported == TRACK_TYPE_VIDEO) {
-                whichTrackUnsupported = 2;
-            } else {
-                whichTrackUnsupported = TRACK_TYPE_AUDIO;
-            }
+            audioTrackUnsupported = true;
         }
 
-        if (whichTrackUnsupported == TRACK_TYPE_VIDEO) {
-            errorMessage = "Warning! All the video tracks are unsupported by this device.";
-            currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalStateException(errorMessage));
-            tracksErrorListener.onUnsupportedVideoTracksError(currentError);
-        } else if (whichTrackUnsupported == TRACK_TYPE_AUDIO) {
-            errorMessage = "Warning! All the audio tracks are unsupported by this device.";
-            currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalStateException(errorMessage));
-            tracksErrorListener.onUnsupportedAudioTracksError(currentError);
-        } else if (whichTrackUnsupported == 2) {
+        if (videoTrackUnsupported && audioTrackUnsupported) {
             errorMessage = "Warning! All the video and audio tracks are unsupported by this device.";
-            currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalStateException(errorMessage));
-            tracksErrorListener.noSupportedAudioVideoTracksError(currentError);
+            tracksErrorListener.noSupportedAudioVideoTracksError(getUnsupportedTrackError(errorMessage));
+        } else if (videoTrackUnsupported) {
+            errorMessage = "Warning! All the video tracks are unsupported by this device.";
+            tracksErrorListener.onUnsupportedVideoTracksError(getUnsupportedTrackError(errorMessage));
+        } else if (audioTrackUnsupported) {
+            errorMessage = "Warning! All the audio tracks are unsupported by this device.";
+            tracksErrorListener.onUnsupportedAudioTracksError(getUnsupportedTrackError(errorMessage));
         }
+    }
+
+    private PKError getUnsupportedTrackError(String errorMessage) {
+        return new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalStateException(errorMessage));
     }
 
     protected void setTracksInfoListener(TracksInfoListener tracksInfoListener) {
