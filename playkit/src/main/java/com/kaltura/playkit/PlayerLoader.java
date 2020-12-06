@@ -249,4 +249,18 @@ class PlayerLoader extends PlayerDecoratorBase {
     public void removeListeners(@NonNull Object groupId) {
         messageBus.removeListeners(groupId);
     }
+
+    @NonNull
+    @Override
+    public <PluginType> List<PluginType> getLoadedPluginsByType(Class<PluginType> pluginClass) {
+        List<PluginType> filteredPlugins = new ArrayList<>();
+        for (LoadedPlugin loadedPlugin : loadedPlugins.values()) {
+            if (pluginClass.isAssignableFrom(loadedPlugin.plugin.getClass())) {
+                @SuppressWarnings({"unchecked", "isAssignableFrom checks both superclass and superinterface"})
+                PluginType pluginType = (PluginType) loadedPlugin.plugin;
+                filteredPlugins.add(pluginType);
+            }
+        }
+        return filteredPlugins;
+    }
 }

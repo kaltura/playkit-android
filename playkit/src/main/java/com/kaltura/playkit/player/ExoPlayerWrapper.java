@@ -121,6 +121,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     private boolean preferredLanguageWasSelected;
     private boolean shouldRestorePlayerToPreviousState;
     private boolean isPlayerReleased;
+    private boolean isLoadedMetaDataFired;
 
     private int playerWindow;
     private long playerPosition = TIME_UNSET;
@@ -202,6 +203,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 .setBandwidthMeter(bandwidthMeter).build();
         player.setAudioAttributes(AudioAttributes.DEFAULT, /* handleAudioFocus= */ playerSettings.isHandleAudioFocus());
         player.setHandleAudioBecomingNoisy(playerSettings.isHandleAudioBecomingNoisyEnabled());
+        player.setWakeMode(playerSettings.getWakeMode().ordinal());
+
         window = new Timeline.Window();
         setPlayerListeners();
         exoPlayerView.setSurfaceAspectRatioResizeMode(playerSettings.getAspectRatioResizeMode());
@@ -272,7 +275,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         this.sourceConfig = sourceConfig;
         //reset metadata on prepare.
         metadataList.clear();
-
+        isLoadedMetaDataFired = false;
         shouldGetTracksInfo = true;
         trackSelectionHelper.applyPlayerSettings(playerSettings);
 
@@ -515,6 +518,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             log.i("Trying to send event " + event.name() + ". Should be blocked from sending now, because the player is restoring to the previous state.");
             return;
         }
+
+        if (event == PlayerEvent.Type.LOADED_METADATA) {
+            isLoadedMetaDataFired = true;
+        }
+
         currentEvent = event;
         if (eventListener != null) {
             if (event != PlayerEvent.Type.PLAYBACK_INFO_UPDATED) {
@@ -602,7 +610,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void onTimelineChanged(Timeline timeline, int reason) {
         log.d("onTimelineChanged reason = " + reason + " duration = " + getDuration());
         if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
-            sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
+            isLoadedMetaDataFired = false;
             if (getDuration() != TIME_UNSET) {
                 sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
                 profiler.onDurationChanged(getDuration());
@@ -610,6 +618,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         if (reason == Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE && getDuration() != TIME_UNSET) {
+            if (!isLoadedMetaDataFired)  {
+                sendDistinctEvent(PlayerEvent.Type.LOADED_METADATA);
+            }
             sendDistinctEvent(PlayerEvent.Type.DURATION_CHANGE);
         }
     }
@@ -1296,7 +1307,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public boolean isLive() {
         log.v("isLive");
         if (assertPlayerIsNotNull("isLive()")) {
-            return player.isCurrentWindowDynamic();
+            return player.isCurrentWindowLive();
         }
         return false;
     }
