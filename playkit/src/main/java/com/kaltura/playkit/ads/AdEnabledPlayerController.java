@@ -84,6 +84,16 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     }
 
     @Override
+    public void setVolume(float volume) {
+        if (adsProvider.isAdDisplayed()) {
+            adsProvider.setVolume(volume);
+            return;
+        }
+
+        super.setVolume(volume);
+    }
+
+    @Override
     public void play() {
         log.d("PLAY IMA decorator");
         if (adsProvider != null) {

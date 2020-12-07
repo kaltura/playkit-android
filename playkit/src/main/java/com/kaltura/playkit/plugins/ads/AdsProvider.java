@@ -26,6 +26,8 @@ public interface AdsProvider {
 
     void pause();
 
+    default void setVolume(float volume) {};
+
     void contentCompleted();
 
     PKAdInfo getAdInfo();
