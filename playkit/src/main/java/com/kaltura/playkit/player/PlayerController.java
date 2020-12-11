@@ -39,6 +39,7 @@ import com.kaltura.playkit.player.metadata.URIConnectionAcquiredInfo;
 import com.kaltura.playkit.utils.Consts;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import static com.kaltura.playkit.utils.Consts.MILLISECONDS_MULTIPLIER;
@@ -80,6 +81,7 @@ public class PlayerController implements Player {
     private PlayerEngine.EventListener eventTrigger = initEventListener();
     private PlayerEngine.StateChangedListener stateChangedTrigger = initStateChangeListener();
     private PlayerEngineWrapper playerEngineWrapper;
+
 
     public PlayerController(Context context) {
         this.context = context;
@@ -266,6 +268,7 @@ public class PlayerController implements Player {
             if (incomingPlayerType == PlayerEngineType.VRPlayer) {
                 incomingPlayerType = PlayerEngineType.Exoplayer;
                 player = new ExoPlayerWrapper(context, playerSettings, rootPlayerView);
+
             } else {
                 return;
             }
@@ -520,6 +523,13 @@ public class PlayerController implements Player {
     @Override
     public void removeListener(@NonNull PKEvent.Listener listener) {
         Assert.shouldNeverHappen();
+    }
+
+    @NonNull
+    @Override
+    public <PluginType> List<PluginType> getLoadedPluginsByType(Class<PluginType> pluginClass) {
+        Assert.shouldNeverHappen();
+        return null;
     }
 
     @Override
@@ -789,8 +799,8 @@ public class PlayerController implements Player {
                             return;
                         }
                         event = new PlayerEvent.Error(player.getCurrentError());
-                        if (player.getCurrentError().isFatal()){
-                           cancelUpdateProgress();
+                        if (player.getCurrentError().isFatal()) {
+                            cancelUpdateProgress();
                         }
                         break;
                     case METADATA_AVAILABLE:

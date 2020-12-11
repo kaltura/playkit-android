@@ -26,29 +26,34 @@ public class ExternalTextTrackLoadErrorPolicy extends DefaultLoadErrorHandlingPo
         this.textTrackLoadErrorListener = onTextTrackErrorListener;
     }
 
-    @Override
-    public long getRetryDelayMsFor(
-            int dataType,
-            long loadDurationMs,
-            IOException exception,
-            int errorCount) {
+    //public void onTextTrackLoadError(PKError currentError) {
+    //    textTrackLoadErrorListener.onTextTrackLoadError(currentError);
+    //} TODO // need to test with vtt errored file
 
-        if (exception instanceof HttpDataSource.InvalidResponseCodeException || exception instanceof HttpDataSource.HttpDataSourceException) {
-            Uri pathSegment = getPathSegmentUri(exception);
-            if (pathSegment != null) {
-                String lastPathSegment = pathSegment.getLastPathSegment();
-                if (lastPathSegment.endsWith(PKSubtitleFormat.vtt.pathExt) || lastPathSegment.endsWith(PKSubtitleFormat.srt.pathExt)) {
-                    PKError currentError = new PKError(PKPlayerErrorType.SOURCE_ERROR, PKError.Severity.Recoverable, "TextTrack is invalid url=" + pathSegment, exception);
-                    if (textTrackLoadErrorListener != null) {
-                        log.e("Error-Event sent, type = " + PKPlayerErrorType.SOURCE_ERROR);
-                        textTrackLoadErrorListener.onTextTrackLoadError(currentError);
-                    }
-                    return Consts.TIME_UNSET;
-                }
-            }
+    @Override
+    public long getRetryDelayMsFor(LoadErrorInfo loadErrorInfo) {
+        if (loadErrorInfo == null) {
+            return Consts.TIME_UNSET;
         }
-        return super.getRetryDelayMsFor(
-                dataType, loadDurationMs, exception, errorCount);
+
+        IOException exception = loadErrorInfo.exception;
+        Uri pathSegment = getPathSegmentUri(exception);
+        if (pathSegment == null || !(exception instanceof HttpDataSource.HttpDataSourceException)) {
+            return super.getRetryDelayMsFor(loadErrorInfo);
+        }
+
+
+        String lastPathSegment = pathSegment.getLastPathSegment();
+        if (lastPathSegment != null && (lastPathSegment.endsWith(PKSubtitleFormat.vtt.pathExt) || lastPathSegment.endsWith(PKSubtitleFormat.srt.pathExt))) {
+            PKError currentError = new PKError(PKPlayerErrorType.SOURCE_ERROR, PKError.Severity.Recoverable, "TextTrack is invalid url=" + pathSegment, exception);
+            if (textTrackLoadErrorListener != null) {
+                log.e("Error-Event sent, type = " + PKPlayerErrorType.SOURCE_ERROR);
+                textTrackLoadErrorListener.onTextTrackLoadError(currentError);
+            }
+            return Consts.TIME_UNSET;
+        } else {
+            return super.getRetryDelayMsFor(loadErrorInfo);
+        }
     }
 
     private Uri getPathSegmentUri(IOException ioException) {

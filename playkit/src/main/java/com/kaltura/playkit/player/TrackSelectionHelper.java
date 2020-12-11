@@ -32,6 +32,7 @@ import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.playkit.PKAudioCodec;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PKVideoCodec;
 import com.kaltura.playkit.utils.Consts;
@@ -99,7 +100,12 @@ class TrackSelectionHelper {
     private String[] lastSelectedTrackIds;
     private String[] requestedChangeTrackIds;
 
+    // To know if application passed the external subtitles
     private boolean hasExternalSubtitles = false;
+
+    // To know if tracks has external subtitles or not.
+    // Helpful in case if subtitles are removed by ExoPlayer in case of any discrepancy
+    private boolean hasExternalSubtitlesInTracks = false;
 
     private TracksInfoListener tracksInfoListener;
     private TracksErrorListener tracksErrorListener;
@@ -251,16 +257,16 @@ class TrackSelectionHelper {
                                 }
                                 break;
                             case TRACK_TYPE_TEXT:
-                                if (format.language != null && hasExternalSubtitles && ignoreTextTrackOnPreference(format)) {
+                                if (format.language != null && hasExternalSubtitles && discardTextTrackOnPreference(format)) {
                                     continue;
                                 }
 
                                 if (CEA_608.equals(format.sampleMimeType)) {
                                     if (playerSettings != null && playerSettings.cea608CaptionsEnabled()) {
-                                        textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.selectionFlags));
+                                        textTracks.add(new TextTrack(uniqueId, format.language, format.id, format.sampleMimeType, format.selectionFlags));
                                     }
                                 } else {
-                                    textTracks.add(new TextTrack(uniqueId, getLanguageFromFormat(format), format.label, format.selectionFlags));
+                                    textTracks.add(new TextTrack(uniqueId, getLanguageFromFormat(format), format.label, format.sampleMimeType, format.selectionFlags));
                                 }
                                 break;
                         }
@@ -280,7 +286,7 @@ class TrackSelectionHelper {
         int defaultVideoTrackIndex = getDefaultTrackIndex(videoTracks, lastSelectedTrackIds[TRACK_TYPE_VIDEO]);
         int defaultAudioTrackIndex = getDefaultTrackIndex(filteredAudioTracks, lastSelectedTrackIds[TRACK_TYPE_AUDIO]);
         int defaultTextTrackIndex = getDefaultTrackIndex(textTracks, lastSelectedTrackIds[TRACK_TYPE_TEXT]);
-
+        Collections.sort(videoTracks);
         return new PKTracks(videoTracks, filteredAudioTracks, textTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex);
     }
 
@@ -311,8 +317,8 @@ class TrackSelectionHelper {
         return format.language;
     }
 
-    private boolean isExternalSubtitle(Format format) {
-        return format != null && format.language != null && (format.language.contains("-" + format.sampleMimeType) || format.language.contains("-" + "Unknown"));
+    private boolean isExternalSubtitle(String language, String sampleMimeType) {
+        return language != null && (language.contains("-" + sampleMimeType) || language.contains("-" + "Unknown"));
     }
 
     private String getExternalSubtitleLanguage(Format format) {
@@ -323,21 +329,31 @@ class TrackSelectionHelper {
         }
     }
 
-    private boolean ignoreTextTrackOnPreference(Format format) {
+    private boolean discardTextTrackOnPreference(Format format) {
+        PKSubtitlePreference subtitlePreference = playerSettings.getSubtitlePreference();
+        if (subtitlePreference == PKSubtitlePreference.OFF) {
+            return false;
+        }
+
         String languageName = format.language;
-        boolean isExternalSubtitle = isExternalSubtitle(format);
-        boolean isPreferInternalSubtitles = playerSettings.isPreferInternalSubtitles();
+        boolean isExternalSubtitle = isExternalSubtitle(format.language, format.sampleMimeType);
 
         if (isExternalSubtitle) {
             languageName = getExternalSubtitleLanguage(format);
+            Map<String, List<Format>> languageNameMap = subtitleListMap.get(languageName);
+            if (subtitlePreference == PKSubtitlePreference.INTERNAL && languageNameMap != null && !languageNameMap.containsKey(languageName)) {
+                // If there is no internal subtitle and the preference is PKSubtitlePreference.Internal from App
+                // then we are not discarding this text track.
+                return false;
+            }
         }
 
         if (subtitleListMap.containsKey(languageName) && subtitleListMap.get(languageName).size() > 1) {
-            if ((isPreferInternalSubtitles && isExternalSubtitle) ||
-                    (!isPreferInternalSubtitles && !isExternalSubtitle)) {
+            if ((subtitlePreference == PKSubtitlePreference.INTERNAL && isExternalSubtitle) ||
+                    (subtitlePreference == PKSubtitlePreference.EXTERNAL && !isExternalSubtitle)) {
                 return true;
-            } else if ((!isPreferInternalSubtitles && isExternalSubtitle) ||
-                    (isPreferInternalSubtitles && !isExternalSubtitle)) {
+            } else if ((subtitlePreference == PKSubtitlePreference.EXTERNAL && isExternalSubtitle) ||
+                    (subtitlePreference == PKSubtitlePreference.INTERNAL && !isExternalSubtitle)) {
                 return false;
             }
         }
@@ -474,7 +490,7 @@ class TrackSelectionHelper {
         }
         
         String uniqueId = getUniqueId(TRACK_TYPE_TEXT, 0, TRACK_DISABLED);
-        textTracks.add(0, new TextTrack(uniqueId, NONE, NONE, -1));
+        textTracks.add(0, new TextTrack(uniqueId, NONE, NONE, NONE, -1));
     }
 
     /**
@@ -497,7 +513,32 @@ class TrackSelectionHelper {
             if (trackList.get(i) != null) {
                 int selectionFlag = trackList.get(i).getSelectionFlag();
                 if (selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_HLS || selectionFlag == Consts.DEFAULT_TRACK_SELECTION_FLAG_DASH) {
-                    defaultTrackIndex = i;
+                    if (trackList.get(i) instanceof TextTrack && hasExternalSubtitlesInTracks && playerSettings.getSubtitlePreference() != PKSubtitlePreference.OFF) {
+                        PKSubtitlePreference pkSubtitlePreference = playerSettings.getSubtitlePreference();
+                        TrackSelection trackSelection = trackSelectionArray.get(TRACK_TYPE_TEXT);
+
+                        // TrackSelection is giving the default tracks for video, audio and text.
+                        // If trackSelection contains a text which is an external text track, it means that either internal text track
+                        // does not contain any track or there is no default track in internal text track. If there is no internal text track then
+                        // forcing the preference to be External.
+                        if (trackSelection != null && trackSelection.getSelectedFormat() != null &&
+                                isExternalSubtitle(trackSelection.getSelectedFormat().language, trackSelection.getSelectedFormat().sampleMimeType)) {
+                            pkSubtitlePreference = PKSubtitlePreference.EXTERNAL;
+                        }
+
+                        TextTrack textTrack = (TextTrack) trackList.get(i);
+                        boolean isExternalSubtitle = isExternalSubtitle(textTrack.getLanguage(), textTrack.getMimeType());
+                        if (isExternalSubtitle && pkSubtitlePreference == PKSubtitlePreference.EXTERNAL) {
+                            defaultTrackIndex = i;
+                            break;
+                        } else if (!isExternalSubtitle && pkSubtitlePreference == PKSubtitlePreference.INTERNAL) {
+                            defaultTrackIndex = i;
+                            break;
+                        } 
+                    } else {
+                        defaultTrackIndex = i;
+                        break;
+                    }
                 }
             }
         }
@@ -519,8 +560,9 @@ class TrackSelectionHelper {
                 Format format = trackGroup.getFormat(trackIndex);
 
                 String languageName = format.language;
-                if (isExternalSubtitle(format)) {
+                if (isExternalSubtitle(format.language, format.sampleMimeType)) {
                     languageName = getExternalSubtitleLanguage(format);
+                    hasExternalSubtitlesInTracks = true;
                 }
 
                 if (subtitleListMap.containsKey(languageName)) {
@@ -554,7 +596,7 @@ class TrackSelectionHelper {
                 trackType = TRACK_TYPE_TEXT;
             }
 
-            if (trackType != TRACK_TYPE_UNKNOWN && trackSelectionArray != null && trackType < trackSelectionArray.length) {
+            if (trackType == TRACK_TYPE_AUDIO && trackSelectionArray != null && trackType < trackSelectionArray.length) {
                 TrackSelection trackSelection = trackSelectionArray.get(trackType);
                 if (trackSelection != null && trackSelection.getSelectedFormat() != null) {
                     defaultTrackIndex = findDefaultTrackIndex(trackSelection.getSelectedFormat().language, trackList, defaultTrackIndex);
@@ -625,7 +667,7 @@ class TrackSelectionHelper {
                 case TRACK_TYPE_AUDIO:
                     audioTracks.add(new AudioTrack(uniqueId, format.language, format.label, 0, format.channelCount, format.selectionFlags, true, getAudioCodec(format), format.codecs));                    break;
                 case TRACK_TYPE_TEXT:
-                    textTracks.add(new TextTrack(uniqueId, format.language, format.label, format.selectionFlags));
+                    textTracks.add(new TextTrack(uniqueId, format.language, format.label, format.sampleMimeType, format.selectionFlags));
                     break;
             }
         }
@@ -1278,19 +1320,19 @@ class TrackSelectionHelper {
         }
 
         if (shouldNotifyAboutTrackChanged(TRACK_TYPE_VIDEO)) {
-            log.i("Video track changed to: " + requestedChangeTrackIds[TRACK_TYPE_VIDEO]);
+            log.d("Video track changed to: " + requestedChangeTrackIds[TRACK_TYPE_VIDEO]);
             lastSelectedTrackIds[TRACK_TYPE_VIDEO] = requestedChangeTrackIds[TRACK_TYPE_VIDEO];
             tracksInfoListener.onVideoTrackChanged();
         }
 
         if (shouldNotifyAboutTrackChanged(TRACK_TYPE_AUDIO)) {
-            log.i("Audio track changed to: " + requestedChangeTrackIds[TRACK_TYPE_AUDIO]);
+            log.d("Audio track changed to: " + requestedChangeTrackIds[TRACK_TYPE_AUDIO]);
             lastSelectedTrackIds[TRACK_TYPE_AUDIO] = requestedChangeTrackIds[TRACK_TYPE_AUDIO];
             tracksInfoListener.onAudioTrackChanged();
         }
 
         if (shouldNotifyAboutTrackChanged(TRACK_TYPE_TEXT)) {
-            log.i("Text track changed to: " + requestedChangeTrackIds[TRACK_TYPE_TEXT]);
+            log.d("Text track changed to: " + requestedChangeTrackIds[TRACK_TYPE_TEXT]);
             lastSelectedTrackIds[TRACK_TYPE_TEXT] = requestedChangeTrackIds[TRACK_TYPE_TEXT];
             tracksInfoListener.onTextTrackChanged();
         }

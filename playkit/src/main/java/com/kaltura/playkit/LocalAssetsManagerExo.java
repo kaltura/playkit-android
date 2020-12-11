@@ -3,6 +3,8 @@ package com.kaltura.playkit;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.kaltura.android.exoplayer2.MediaItem;
 import com.kaltura.android.exoplayer2.source.MediaSource;
 import com.kaltura.playkit.drm.WidevineModularAdapter;
 
@@ -61,6 +63,15 @@ public class LocalAssetsManagerExo {
 
     /**
      * @param assetId        - the id of the asset.
+     * @param exoMediaItem - the actual url of the video that should be played.
+     * @return - the {@link PKMediaSource} that should be passed to the player.
+     */
+    public PKMediaSource getLocalMediaSource(@NonNull final String assetId, @NonNull final MediaItem exoMediaItem) {
+        return new LocalExoMediaItem(helper.localDataStore, exoMediaItem, assetId, helper.getLocalAssetScheme(assetId));
+    }
+
+    /**
+     * @param assetId        - the id of the asset.
      * @param exoMediaSource - the actual url of the video that should be played.
      * @return - the {@link PKMediaSource} that should be passed to the player.
      */
@@ -72,6 +83,9 @@ public class LocalAssetsManagerExo {
         return new LocalAssetsManager.LocalMediaSource(helper.localDataStore, localAssetPath, assetId, helper.getLocalAssetScheme(assetId));
     }
 
+    public PKMediaSource getLocalMediaItem(@NonNull final String assetId, @NonNull final String localAssetPath) {
+        return new LocalAssetsManager.LocalMediaSource(helper.localDataStore, localAssetPath, assetId, helper.getLocalAssetScheme(assetId));
+    }
 
     public LocalAssetsManager.AssetStatus getDrmStatus(String assetId, byte[] drmInitData) {
         final PKDrmParams.Scheme scheme = helper.getLocalAssetScheme(assetId);
@@ -85,6 +99,25 @@ public class LocalAssetsManagerExo {
             return assetStatusFromWidevineMap(map);
         } catch (LocalAssetsManager.RegisterException e) {
             return LocalAssetsManager.AssetStatus.invalid;
+        }
+    }
+
+    public static class LocalExoMediaItem extends LocalAssetsManager.LocalMediaSource {
+        private MediaItem exoMediaItem;
+
+        /**
+         * @param localDataStore - the storage from where drm keySetId is stored.
+         * @param assetId        - the id of the media.
+         * @param scheme
+         */
+        LocalExoMediaItem(LocalDataStore localDataStore, @NonNull MediaItem exoMediaItem, String assetId, PKDrmParams.Scheme scheme) {
+            super(localDataStore, null, assetId, scheme);
+
+            this.exoMediaItem = exoMediaItem;
+        }
+
+        public MediaItem getExoMediaItem() {
+            return exoMediaItem;
         }
     }
 

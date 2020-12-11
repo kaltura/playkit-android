@@ -23,6 +23,8 @@ public enum PKMediaFormat {
     wvm("video/wvm", "wvm"),
     mp4("video/mp4", "mp4"),
     mp3("audio/mpeg", "mp3"),
+    udp("video/multicast", null),
+
     unknown(null, null);
 
     public final String mimeType;
@@ -50,6 +52,9 @@ public enum PKMediaFormat {
     public static PKMediaFormat valueOfUrl(String sourceURL) {
         PKMediaFormat mediaFormat = null;
         if (sourceURL != null) {
+            if (sourceURL.toLowerCase().startsWith("udp://")) {
+                return PKMediaFormat.udp;
+            }
             String path = Uri.parse(sourceURL).getPath();
             if (path != null) {
                 int extIndex = path.lastIndexOf('.');

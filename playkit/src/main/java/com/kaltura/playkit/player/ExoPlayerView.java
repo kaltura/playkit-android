@@ -18,6 +18,7 @@ import android.graphics.Matrix;
 import android.graphics.RectF;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import android.os.Build;
 import android.util.AttributeSet;
@@ -83,18 +84,27 @@ class ExoPlayerView extends BaseExoplayerView {
     private Player.EventListener getPlayerEventListener() {
         return new Player.EventListener() {
             @Override
-            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+            public void onPlaybackStateChanged(int playbackState) {
                 switch (playbackState) {
 
                     case Player.STATE_READY:
-                        if (playWhenReady) {
-                            log.d("ExoPlayerView READY. playWhenReady => " + playWhenReady);
-                            shutterView.setVisibility(INVISIBLE);
+                        if (player != null && player.getPlayWhenReady()) {
+                            log.d("ExoPlayerView READY. playWhenReady => true");
+                            if (shutterView != null) {
+                                shutterView.setVisibility(INVISIBLE);
+                            }
                         }
                         break;
                     default:
                         break;
+                }
+            }
 
+            @Override
+            public void onIsPlayingChanged(boolean isPlaying) {
+                log.d("ExoPlayerView onIsPlayingChanged isPlaying = " + isPlaying);
+                if (isPlaying && shutterView != null) {
+                    shutterView.setVisibility(INVISIBLE);
                 }
             }
         };
@@ -270,7 +280,7 @@ class ExoPlayerView extends BaseExoplayerView {
     public SubtitleView getSubtitleView() {
         return subtitleView;
     }
-    
+
     @Override
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
@@ -469,14 +479,14 @@ class ExoPlayerView extends BaseExoplayerView {
                 }
                 CharSequence text = cue.text;
                 if (text != null) {
-                    Cue newCue = new Cue(text,
-                            subtitleViewPosition.getSubtitleHorizontalPosition(),
-                            subtitleViewPosition.getVerticalPositionPercentage(), // line and line type are dependent
-                            subtitleViewPosition.getLineType(),
-                            cue.lineAnchor,
-                            cue.position,
-                            cue.positionAnchor,
-                            subtitleViewPosition.getHorizontalPositionPercentage());
+                    Cue newCue = new Cue.Builder().
+                            setText(text).
+                            setTextAlignment(subtitleViewPosition.getSubtitleHorizontalPosition()).
+                            setLine(subtitleViewPosition.getVerticalPositionPercentage(), subtitleViewPosition.getLineType()).
+                            setLineAnchor(cue.lineAnchor).
+                            setPosition(cue.position).
+                            setPositionAnchor(cue.positionAnchor).
+                            setSize(subtitleViewPosition.getHorizontalPositionPercentage()).build();
                     newCueList.add(newCue);
                 }
             }
