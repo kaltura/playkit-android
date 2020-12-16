@@ -434,6 +434,12 @@ public interface Player {
     long getBufferedPosition();
 
     /**
+     * @return - The Current Live Offset of the media,
+     * or {@link Consts#TIME_UNSET} if the offset is unknown or player engine is null.
+     */
+    long getCurrentLiveOffset();
+
+    /**
      * Change the volume of the current audio track.
      * Accept values between 0 and 1. Where 0 is mute and 1 is maximum volume.
      * If the volume parameter is higher then 1, it will be converted to 1.

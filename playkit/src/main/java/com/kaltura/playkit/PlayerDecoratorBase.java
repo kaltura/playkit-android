@@ -119,6 +119,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public long getCurrentLiveOffset() {
+        return player.getCurrentLiveOffset();
+    }
+
+    @Override
     public void destroy() {
         player.destroy();
     }

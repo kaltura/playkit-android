@@ -67,6 +67,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public long getCurrentLiveOffset() {
+        return playerEngine.getCurrentLiveOffset();
+    }
+
+    @Override
     public float getVolume() {
         return playerEngine.getVolume();
     }

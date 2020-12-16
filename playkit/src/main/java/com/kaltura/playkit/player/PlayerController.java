@@ -397,6 +397,14 @@ public class PlayerController implements Player {
         return Consts.POSITION_UNSET;
     }
 
+    public long getCurrentLiveOffset() {
+        log.v("getCurrentLiveOffset");
+        if (assertPlayerIsNotNull("getCurrentLiveOffset()")) {
+            return player.getCurrentLiveOffset();
+        }
+        return Consts.POSITION_UNSET;
+    }
+
     public void seekTo(long position) {
         log.v("seek to " + position);
         if (assertPlayerIsNotNull("seekTo()")) {
