@@ -136,10 +136,12 @@ public class AdEvent implements PKEvent {
     public static class AdRequestedEvent extends AdEvent {
 
         public final String adTagUrl;
+        public final boolean isAutoPlay;
 
-        public AdRequestedEvent(String adTagUrl) {
+        public AdRequestedEvent(String adTagUrl, boolean isAutoPlay) {
             super(Type.AD_REQUESTED);
             this.adTagUrl = adTagUrl;
+            this.isAutoPlay = isAutoPlay;
         }
     }
 
