@@ -137,6 +137,12 @@ public class AdsPlayerEngineWrapper extends PlayerEngineWrapper implements PKAdP
     }
 
     @Override
+    public void seekToDefaultPosition() {
+        log.d("AdWrapper seekToDefaultPosition");
+        super.seekToDefaultPosition();
+    }
+
+    @Override
     public boolean isPlaying() {
         log.d("AdWrapper isPlaying");
         return super.isPlaying();
