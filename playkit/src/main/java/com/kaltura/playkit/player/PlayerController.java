@@ -331,6 +331,7 @@ public class PlayerController implements Player {
 
     private void startPlaybackFrom(long startPosition) {
         log.v("startPlaybackFrom " + startPosition);
+
         if (assertPlayerIsNotNull("startPlaybackFrom()")) {
             if (startPosition <= getDuration()) {
                 player.startFrom(startPosition);
@@ -402,6 +403,14 @@ public class PlayerController implements Player {
         if (assertPlayerIsNotNull("seekTo()")) {
             targetSeekPosition = position;
             player.seekTo(position);
+        }
+    }
+
+    @Override
+    public void seekToLiveDefaultPosition() {
+        log.v("seekToLiveDefaultPosition");
+        if (assertPlayerIsNotNull("seekToLiveDefaultPosition()") && player.isLive()) {
+            player.seekToDefaultPosition();
         }
     }
 
@@ -775,6 +784,8 @@ public class PlayerController implements Player {
                                         mediaConfig.getStartPosition() > 0) {
                                     startPlaybackFrom(mediaConfig.getStartPosition() * MILLISECONDS_MULTIPLIER);
                                 }
+                            } else if (isLiveMediaWithDvr() && mediaConfig.getStartPosition() == null) {
+                                player.seekToDefaultPosition();
                             }
                             isNewEntry = false;
                             isPlayerStopped = false;
