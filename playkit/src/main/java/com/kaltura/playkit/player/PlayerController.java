@@ -331,7 +331,6 @@ public class PlayerController implements Player {
 
     private void startPlaybackFrom(long startPosition) {
         log.v("startPlaybackFrom " + startPosition);
-
         if (assertPlayerIsNotNull("startPlaybackFrom()")) {
             if (startPosition <= getDuration()) {
                 player.startFrom(startPosition);

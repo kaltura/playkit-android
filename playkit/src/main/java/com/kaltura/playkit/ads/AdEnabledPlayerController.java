@@ -86,7 +86,7 @@ public class AdEnabledPlayerController extends PlayerDecorator implements AdCont
     @Override
     public void seekToLiveDefaultPosition() {
         if (adsProvider.isAdDisplayed()) {
-            log.d("seekToDefaultPosition is not enabled during AD playback");
+            log.d("seekToLiveDefaultPosition is not enabled during AD playback");
             return;
         }
         super.seekToLiveDefaultPosition();
