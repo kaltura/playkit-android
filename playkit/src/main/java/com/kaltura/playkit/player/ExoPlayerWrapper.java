@@ -1239,7 +1239,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             }
 
             @Override
-            public void onNoSupportedAudioVideoTracksError(PKError pkError) {
+            public void onUnsupportedAudioVideoTracksError(PKError pkError) {
                 currentError = pkError;
                 if (eventListener != null) {
                     eventListener.onEvent(PlayerEvent.Type.ERROR);
@@ -1247,7 +1247,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             }
 
             @Override
-            public void onNoTracksAvailableError(PKError pkError) {
+            public void onUnsupportedTracksAvailableError(PKError pkError) {
                 currentError = pkError;
                 if (eventListener != null) {
                     eventListener.onEvent(PlayerEvent.Type.ERROR);
