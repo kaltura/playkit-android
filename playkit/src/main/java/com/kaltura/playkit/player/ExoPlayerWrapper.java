@@ -925,6 +925,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
+    public void seekToDefaultPosition() {
+        log.v("seekToDefaultPosition");
+        if (assertPlayerIsNotNull("seekToDefaultPosition()")) {
+            player.seekToDefaultPosition();
+        }
+    }
+
+    @Override
     public long getDuration() {
         log.v("getDuration");
         if (assertPlayerIsNotNull("getDuration()")) {
