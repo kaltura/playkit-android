@@ -59,6 +59,11 @@ public class PlayerDecoratorBase implements Player {
     }
 
     @Override
+    public void seekToLiveDefaultPosition() {
+        player.seekToLiveDefaultPosition();
+    }
+
+    @Override
     public <T extends PKController> T getController(Class<T> type) {
         return player.getController(type);
     }
