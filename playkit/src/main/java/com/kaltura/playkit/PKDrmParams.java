@@ -47,8 +47,6 @@ public class PKDrmParams implements Parcelable {
                     case PlayReadyClassic:
                     case FairPlay:
                     case Unknown:
-                        supported = false;
-                        break;
                     default:
                         supported = false;
                         break;

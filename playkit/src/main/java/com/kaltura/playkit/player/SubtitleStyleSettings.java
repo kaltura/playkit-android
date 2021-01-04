@@ -164,9 +164,6 @@ public class SubtitleStyleSettings {
 
     public SubtitleStyleSettings setTypeface(@NonNull SubtitleStyleTypeface subtitleStyleTypeface) {
         switch (subtitleStyleTypeface) {
-            case DEFAULT:
-                subtitleTypeface = Typeface.DEFAULT;
-                break;
             case DEFAULT_BOLD:
                 subtitleTypeface = Typeface.DEFAULT_BOLD;
                 break;
@@ -179,6 +176,7 @@ public class SubtitleStyleSettings {
             case SANS_SERIF:
                 subtitleTypeface = Typeface.SANS_SERIF;
                 break;
+            case DEFAULT:
             default:
                 subtitleTypeface = Typeface.DEFAULT;
                 break;

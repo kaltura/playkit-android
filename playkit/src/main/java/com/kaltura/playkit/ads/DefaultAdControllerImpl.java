@@ -51,7 +51,6 @@ public class DefaultAdControllerImpl implements AdController {
         //control playback volume [0..1.0]
         if (adsProvider.isAdDisplayed()) {
             adsProvider.setVolume(volume);
-            return;
         }
     }
 
