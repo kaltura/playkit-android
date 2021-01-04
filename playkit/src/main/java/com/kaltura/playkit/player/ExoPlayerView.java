@@ -18,7 +18,6 @@ import android.graphics.Matrix;
 import android.graphics.RectF;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import android.os.Build;
 import android.util.AttributeSet;

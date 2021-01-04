@@ -150,16 +150,16 @@ class ExoPlayerProfilingListener implements AnalyticsListener {
                 reasonString = "PeriodTransition";
                 break;
             case DISCONTINUITY_REASON_SEEK:
-                reasonString = "PeriodTransition";
+                reasonString = "Seek";
                 break;
             case DISCONTINUITY_REASON_SEEK_ADJUSTMENT:
-                reasonString = "PeriodTransition";
+                reasonString = "SeekAdjustment";
                 break;
             case DISCONTINUITY_REASON_AD_INSERTION:
-                reasonString = "PeriodTransition";
+                reasonString = "AdInsertion";
                 break;
             case DISCONTINUITY_REASON_INTERNAL:
-                reasonString = "PeriodTransition";
+                reasonString = "Internal";
                 break;
             default:
                 reasonString = "Unknown:" + reason;
