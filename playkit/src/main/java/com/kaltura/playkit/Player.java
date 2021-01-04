@@ -472,6 +472,12 @@ public interface Player {
     void seekTo(long position);
 
     /**
+     * Seek player to Live Default Position.
+     *
+     */
+     void seekToLiveDefaultPosition();
+
+    /**
      * Get the Player's SessionId. The SessionId is generated each time new media is set.
      *
      * @return Player's SessionId, as a String object.

@@ -102,6 +102,11 @@ public class PlayerEngineWrapper implements PlayerEngine {
     }
 
     @Override
+    public void seekToDefaultPosition() {
+        playerEngine.seekToDefaultPosition();
+    }
+    
+    @Override
     public void startFrom(long position) {
         playerEngine.startFrom(position);
     }

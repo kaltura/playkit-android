@@ -151,6 +151,12 @@ public interface PlayerEngine {
     void seekTo(long position);
 
     /**
+     * Seek player to Live Default Position.
+     *
+     */
+    default void seekToDefaultPosition() {};
+    
+    /**
      * Start players playback from the specified position.
      * Note! The position is passed in seconds.
      *
