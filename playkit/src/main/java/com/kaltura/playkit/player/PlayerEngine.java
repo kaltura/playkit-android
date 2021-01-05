@@ -103,6 +103,12 @@ public interface PlayerEngine {
     long getBufferedPosition();
 
     /**
+     * @return - The Current Live Offset of the media,
+     * or {@link Consts#TIME_UNSET} if the offset is unknown or player is null.
+     */
+    long getCurrentLiveOffset();
+
+    /**
      * @return - the volume of the current audio,
      * with 0 as total silence and 1 as maximum volume up.
      */

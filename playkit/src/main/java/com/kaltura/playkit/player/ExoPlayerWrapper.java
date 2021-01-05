@@ -950,6 +950,15 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     @Override
+    public long getCurrentLiveOffset() {
+        log.v("getCurrentLiveOffset");
+        if (assertPlayerIsNotNull("getCurrentLiveOffset()")) {
+            return player.getCurrentLiveOffset();
+        }
+        return TIME_UNSET;
+    }
+
+    @Override
     public void release() {
         log.v("release");
         if (assertPlayerIsNotNull("release()")) {
