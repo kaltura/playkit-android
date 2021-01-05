@@ -18,7 +18,6 @@ import android.os.Handler;
 import android.os.Looper;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.DefaultLoadControl;
@@ -33,7 +32,7 @@ import com.kaltura.android.exoplayer2.SimpleExoPlayer;
 import com.kaltura.android.exoplayer2.Timeline;
 import com.kaltura.android.exoplayer2.audio.AudioAttributes;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
-import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;;
+import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
