@@ -275,6 +275,11 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     }
 
     @Override
+    public long getCurrentLiveOffset() {
+        return TIME_UNSET;
+    }
+
+    @Override
     public float getVolume() {
         return 0;
     }
