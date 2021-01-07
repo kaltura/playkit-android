@@ -126,10 +126,11 @@ class TrackSelectionHelper {
     }
 
     interface TracksErrorListener {
-
         void onTracksOverrideABRError(PKError pkError);
         void onUnsupportedVideoTracksError(PKError pkError);
-
+        void onUnsupportedAudioTracksError(PKError pkError);
+        void onUnsupportedAudioVideoTracksError(PKError pkError);
+        void onUnsupportedTracksAvailableError(PKError pkError);
     }
 
     enum TrackType {
@@ -163,7 +164,15 @@ class TrackSelectionHelper {
             log.w("Trying to get current MappedTrackInfo returns null");
             return false;
         }
-        warnAboutUnsupportedRenderTypes();
+
+        if (checkTracksUnavailability(mappedTrackInfo)) {
+            String errorMessage = "No audio, video and text track found";
+            PKError currentError = new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Fatal, errorMessage, new IllegalStateException(errorMessage));
+            tracksErrorListener.onUnsupportedTracksAvailableError(currentError);
+            return false;
+        }
+
+        warnAboutUnsupportedRendererTypes();
         PKTracks tracksInfo = buildTracks();
 
         if (tracksInfoListener != null) {
@@ -288,6 +297,12 @@ class TrackSelectionHelper {
         int defaultTextTrackIndex = getDefaultTrackIndex(textTracks, lastSelectedTrackIds[TRACK_TYPE_TEXT]);
         Collections.sort(videoTracks);
         return new PKTracks(videoTracks, filteredAudioTracks, textTracks, defaultVideoTrackIndex, defaultAudioTrackIndex, defaultTextTrackIndex);
+    }
+
+    private boolean checkTracksUnavailability(MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
+        return mappedTrackInfo.getTrackGroups(TRACK_TYPE_VIDEO).length == 0 &&
+                mappedTrackInfo.getTrackGroups(TRACK_TYPE_AUDIO).length == 0 &&
+                mappedTrackInfo.getTrackGroups(TRACK_TYPE_TEXT).length == 0;
     }
 
     @NonNull
@@ -1227,15 +1242,34 @@ class TrackSelectionHelper {
     /**
      * Notify to log, that video/audio renderer has only unsupported tracks.
      */
-    private void warnAboutUnsupportedRenderTypes() {
+    private void warnAboutUnsupportedRendererTypes() {
+        boolean videoTrackUnsupported = false;
+        boolean audioTrackUnsupported = false;
+        String errorMessage;
+
         if (mappedTrackInfo.getTypeSupport(TRACK_TYPE_VIDEO)
                 == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-            log.w("Warning! All the video tracks are unsupported by this device.");
+            videoTrackUnsupported = true;
         }
         if (mappedTrackInfo.getTypeSupport(TRACK_TYPE_AUDIO)
                 == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-            log.w("Warning! All the audio tracks are unsupported by this device.");
+            audioTrackUnsupported = true;
         }
+
+        if (videoTrackUnsupported && audioTrackUnsupported) {
+            errorMessage = "Warning! All the video and audio tracks are unsupported by this device.";
+            tracksErrorListener.onUnsupportedAudioVideoTracksError(getUnsupportedTrackError(errorMessage));
+        } else if (videoTrackUnsupported) {
+            errorMessage = "Warning! All the video tracks are unsupported by this device.";
+            tracksErrorListener.onUnsupportedVideoTracksError(getUnsupportedTrackError(errorMessage));
+        } else if (audioTrackUnsupported) {
+            errorMessage = "Warning! All the audio tracks are unsupported by this device.";
+            tracksErrorListener.onUnsupportedAudioTracksError(getUnsupportedTrackError(errorMessage));
+        }
+    }
+
+    private PKError getUnsupportedTrackError(String errorMessage) {
+        return new PKError(PKPlayerErrorType.UNEXPECTED, PKError.Severity.Recoverable, errorMessage, new IllegalStateException(errorMessage));
     }
 
     protected void setTracksInfoListener(TracksInfoListener tracksInfoListener) {

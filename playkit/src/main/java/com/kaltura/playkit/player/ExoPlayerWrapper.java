@@ -1238,6 +1238,30 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                     eventListener.onEvent(PlayerEvent.Type.ERROR);
                 }
             }
+
+            @Override
+            public void onUnsupportedAudioTracksError(PKError pkError) {
+                currentError = pkError;
+                if (eventListener != null) {
+                    eventListener.onEvent(PlayerEvent.Type.ERROR);
+                }
+            }
+
+            @Override
+            public void onUnsupportedAudioVideoTracksError(PKError pkError) {
+                currentError = pkError;
+                if (eventListener != null) {
+                    eventListener.onEvent(PlayerEvent.Type.ERROR);
+                }
+            }
+
+            @Override
+            public void onUnsupportedTracksAvailableError(PKError pkError) {
+                currentError = pkError;
+                if (eventListener != null) {
+                    eventListener.onEvent(PlayerEvent.Type.ERROR);
+                }
+            }
         };
     }
 
