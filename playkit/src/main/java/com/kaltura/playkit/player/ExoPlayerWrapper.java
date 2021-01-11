@@ -194,7 +194,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         renderersFactory.setAllowedVideoJoiningTimeMs(playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
         renderersFactory.setEnableDecoderFallback(playerSettings.enableDecoderFallback());
 
-        mediaSourceFactory = new DefaultMediaSourceFactory(getDataSourceFactory(Collections.emptyMap()));
+        addExternalTextTrackErrorListener();
+        mediaSourceFactory = new CustomMediaSourceFactory(getDataSourceFactory(Collections.emptyMap()));
+        mediaSourceFactory.setLoadErrorHandlingPolicy(externalTextTrackLoadErrorPolicy);
+
         player = new SimpleExoPlayer.Builder(context, renderersFactory)
                 .setTrackSelector(trackSelector)
                 .setLoadControl(getUpdatedLoadControl())
@@ -325,7 +328,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             if (assertTrackSelectionIsNotNull("buildExoMediaItem")) {
                 trackSelectionHelper.hasExternalSubtitles(true);
             }
-            addExternalTextTrackErrorListener();
         }
 
         MediaItem mediaItem;
