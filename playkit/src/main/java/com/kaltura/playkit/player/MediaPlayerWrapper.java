@@ -19,6 +19,7 @@ import android.content.pm.PackageManager;
 import android.drm.DrmErrorEvent;
 import android.drm.DrmEvent;
 import android.media.MediaPlayer;
+import android.media.PlaybackParams;
 import android.net.Uri;
 import android.os.Build;
 import android.view.SurfaceHolder;
@@ -613,11 +614,17 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             return;
         }
 
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            player.setPlaybackParams(player.getPlaybackParams().setSpeed(rate));
+            final PlaybackParams playbackParams = player.getPlaybackParams();
+            if (playbackParams.getSpeed() == rate) {
+                return;
+            }
+            player.setPlaybackParams(playbackParams.setSpeed(rate));
             this.lastKnownPlaybackRate = rate;
+            sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
         } else {
-            log.w("setPlaybackRate is not supported since RequiresApi(api = Build.VERSION_CODES.M");
+            log.w("setPlaybackRate is not supported since RequiresApi(api >= Build.VERSION_CODES.M");
         }
     }
 
