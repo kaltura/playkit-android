@@ -614,7 +614,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            player.setPlaybackParams(player.getPlaybackParams());
+            player.setPlaybackParams(player.getPlaybackParams().setSpeed(rate));
             this.lastKnownPlaybackRate = rate;
         } else {
             log.w("setPlaybackRate is not supported since RequiresApi(api = Build.VERSION_CODES.M");
