@@ -2,7 +2,6 @@ package com.kaltura.playkit;
 
 import android.content.Context;
 import android.net.Uri;
-import android.util.Pair;
 import android.util.SparseArray;
 
 import androidx.annotation.Nullable;
@@ -35,7 +34,7 @@ import com.kaltura.android.exoplayer2.util.Util;
 import java.util.Arrays;
 import java.util.List;
 
-public class CustomMediaSourceFactory implements MediaSourceFactory {
+public final class CustomMediaSourceFactory implements MediaSourceFactory {
 
     /**
      * Provides {@link AdsLoader} instances for media items that have {@link
@@ -61,7 +60,7 @@ public class CustomMediaSourceFactory implements MediaSourceFactory {
     private final SparseArray<MediaSourceFactory> mediaSourceFactories;
     @C.ContentType private final int[] supportedTypes;
 
-    @Nullable private DefaultMediaSourceFactory.AdsLoaderProvider adsLoaderProvider;
+    @Nullable private AdsLoaderProvider adsLoaderProvider;
     @Nullable private AdsLoader.AdViewProvider adViewProvider;
     @Nullable private DrmSessionManager drmSessionManager;
     @Nullable private List<StreamKey> streamKeys;
@@ -124,7 +123,7 @@ public class CustomMediaSourceFactory implements MediaSourceFactory {
      * @return This factory, for convenience.
      */
     public CustomMediaSourceFactory setAdsLoaderProvider(
-            @Nullable DefaultMediaSourceFactory.AdsLoaderProvider adsLoaderProvider) {
+            @Nullable AdsLoaderProvider adsLoaderProvider) {
         this.adsLoaderProvider = adsLoaderProvider;
         return this;
     }
@@ -211,8 +210,8 @@ public class CustomMediaSourceFactory implements MediaSourceFactory {
             mediaSources[0] = mediaSource;
             SingleSampleMediaSource.Factory singleSampleSourceFactory =
                     new SingleSampleMediaSource.Factory(dataSourceFactory)
-                    .setLoadErrorHandlingPolicy(loadErrorHandlingPolicy)
-                    .setTreatLoadErrorsAsEndOfStream(true);
+                            .setLoadErrorHandlingPolicy(loadErrorHandlingPolicy)
+                            .setTreatLoadErrorsAsEndOfStream(true);
             for (int i = 0; i < subtitles.size(); i++) {
                 mediaSources[i + 1] =
                         singleSampleSourceFactory.createMediaSource(
@@ -246,7 +245,7 @@ public class CustomMediaSourceFactory implements MediaSourceFactory {
         if (adTagUri == null) {
             return mediaSource;
         }
-        DefaultMediaSourceFactory.AdsLoaderProvider adsLoaderProvider = this.adsLoaderProvider;
+        AdsLoaderProvider adsLoaderProvider = this.adsLoaderProvider;
         AdsLoader.AdViewProvider adViewProvider = this.adViewProvider;
         if (adsLoaderProvider == null || adViewProvider == null) {
             Log.w(
