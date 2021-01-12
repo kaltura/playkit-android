@@ -323,7 +323,6 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             if (assertTrackSelectionIsNotNull("buildExoMediaItem")) {
                 trackSelectionHelper.hasExternalSubtitles(false);
             }
-            removeExternalTextTrackListener();
         } else {
             if (assertTrackSelectionIsNotNull("buildExoMediaItem")) {
                 trackSelectionHelper.hasExternalSubtitles(true);
@@ -970,6 +969,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             if (bandwidthMeter != null) {
                 bandwidthMeter.removeEventListener(this);
             }
+            removeExternalTextTrackListener();
             if (assertTrackSelectionIsNotNull("release()")) {
                 trackSelectionHelper.release();
                 trackSelectionHelper = null;
@@ -1015,6 +1015,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void destroy() {
         log.v("destroy");
         closeProfilerSession();
+        removeExternalTextTrackListener();
         if (assertPlayerIsNotNull("destroy()")) {
             player.release();
         }
