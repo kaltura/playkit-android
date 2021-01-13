@@ -194,7 +194,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         renderersFactory.setAllowedVideoJoiningTimeMs(playerSettings.getLoadControlBuffers().getAllowedVideoJoiningTimeMs());
         renderersFactory.setEnableDecoderFallback(playerSettings.enableDecoderFallback());
 
-        mediaSourceFactory = new DefaultMediaSourceFactory(getDataSourceFactory(Collections.emptyMap()));
+        addExternalTextTrackErrorListener();
+        mediaSourceFactory = new CustomMediaSourceFactory(getDataSourceFactory(Collections.emptyMap()));
+        mediaSourceFactory.setLoadErrorHandlingPolicy(externalTextTrackLoadErrorPolicy);
+
         player = new SimpleExoPlayer.Builder(context, renderersFactory)
                 .setTrackSelector(trackSelector)
                 .setLoadControl(getUpdatedLoadControl())
@@ -320,12 +323,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             if (assertTrackSelectionIsNotNull("buildExoMediaItem")) {
                 trackSelectionHelper.hasExternalSubtitles(false);
             }
-            removeExternalTextTrackListener();
         } else {
             if (assertTrackSelectionIsNotNull("buildExoMediaItem")) {
                 trackSelectionHelper.hasExternalSubtitles(true);
             }
-            addExternalTextTrackErrorListener();
         }
 
         MediaItem mediaItem;
@@ -968,6 +969,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             if (bandwidthMeter != null) {
                 bandwidthMeter.removeEventListener(this);
             }
+            removeExternalTextTrackListener();
             if (assertTrackSelectionIsNotNull("release()")) {
                 trackSelectionHelper.release();
                 trackSelectionHelper = null;
@@ -1013,6 +1015,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     public void destroy() {
         log.v("destroy");
         closeProfilerSession();
+        removeExternalTextTrackListener();
         if (assertPlayerIsNotNull("destroy()")) {
             player.release();
         }
