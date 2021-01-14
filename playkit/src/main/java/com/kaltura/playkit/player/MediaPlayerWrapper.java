@@ -19,10 +19,12 @@ import android.content.pm.PackageManager;
 import android.drm.DrmErrorEvent;
 import android.drm.DrmEvent;
 import android.media.MediaPlayer;
+import android.media.PlaybackParams;
 import android.net.Uri;
 import android.os.Build;
-import androidx.annotation.NonNull;
 import android.view.SurfaceHolder;
+
+import androidx.annotation.NonNull;
 
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
@@ -80,6 +82,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
     private boolean appInBackground;
     private boolean isFirstPlayback = true;
     private long currentBufferPercentage;
+    private float lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
 
     MediaPlayerWrapper(Context context) {
         this.context = context;
@@ -359,7 +362,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public void setAnalyticsListener(AnalyticsListener analyticsListener) {
-      // Not implemented
+        // Not implemented
     }
 
     @Override
@@ -382,7 +385,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
             if (playerPosition != 0) {
                 seekTo(playerPosition);
                 shouldRestorePlayerToPreviousState = false;
-
+                setPlaybackRate(lastKnownPlaybackRate);
             }
             pause();
         } else {
@@ -419,6 +422,7 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public void stop() {
+        lastKnownPlaybackRate = Consts.DEFAULT_PLAYBACK_RATE_SPEED;
         if (player != null) {
             player.pause();
             player.seekTo(0);
@@ -604,12 +608,33 @@ class MediaPlayerWrapper implements PlayerEngine, SurfaceHolder.Callback, MediaP
 
     @Override
     public void setPlaybackRate(float rate) {
-        log.w("setPlaybackRate is not supported since RequiresApi(api = Build.VERSION_CODES.M");
+        log.v("setPlaybackRate");
+        if (player == null) {
+            log.w("Attempt to invoke 'setPlaybackRate()' on null instance of mediaplayer");
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            final PlaybackParams playbackParams = player.getPlaybackParams();
+            if (playbackParams.getSpeed() == rate) {
+                return;
+            }
+            player.setPlaybackParams(playbackParams.setSpeed(rate));
+            this.lastKnownPlaybackRate = rate;
+            sendEvent(PlayerEvent.Type.PLAYBACK_RATE_CHANGED);
+        } else {
+            log.w("setPlaybackRate is not supported since RequiresApi(api >= Build.VERSION_CODES.M");
+        }
     }
 
     @Override
     public float getPlaybackRate() {
-        return Consts.DEFAULT_PLAYBACK_RATE_SPEED;
+        log.d("getPlaybackRate");
+        if (player != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return player.getPlaybackParams().getSpeed();
+        }
+
+        return lastKnownPlaybackRate;
     }
 
     @Override
