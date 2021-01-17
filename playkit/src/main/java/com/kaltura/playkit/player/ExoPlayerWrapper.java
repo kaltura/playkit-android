@@ -39,8 +39,13 @@ import com.kaltura.android.exoplayer2.metadata.Metadata;
 import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
 import com.kaltura.android.exoplayer2.source.BehindLiveWindowException;
 import com.kaltura.android.exoplayer2.source.DefaultMediaSourceFactory;
+import com.kaltura.android.exoplayer2.source.MediaSource;
 import com.kaltura.android.exoplayer2.source.MediaSourceFactory;
+import com.kaltura.android.exoplayer2.source.ProgressiveMediaSource;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
+import com.kaltura.android.exoplayer2.source.dash.DashMediaSource;
+import com.kaltura.android.exoplayer2.source.dash.DefaultDashChunkSource;
+import com.kaltura.android.exoplayer2.source.hls.HlsMediaSource;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.kaltura.android.exoplayer2.ui.SubtitleView;
@@ -281,11 +286,19 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         shouldGetTracksInfo = true;
         trackSelectionHelper.applyPlayerSettings(playerSettings);
 
+        MediaSource mediaSource = null;
         MediaItem mediaItem = buildExoMediaItem(sourceConfig);
-
+        if (!isLocalMediaItem(sourceConfig) && !isLocalMediaSource(sourceConfig)) {
+            mediaSource = buildInternalExoMediaSource(mediaItem, sourceConfig);
+        }
         if (mediaItem != null) {
             profiler.onPrepareStarted(sourceConfig);
-            player.setMediaItems(Collections.singletonList(mediaItem), 0, playerPosition == TIME_UNSET ? 0 : playerPosition);
+            if (mediaSource == null) {
+                player.setMediaItems(Collections.singletonList(mediaItem), 0, playerPosition == TIME_UNSET ? 0 : playerPosition);
+            } else {
+                player.setMediaSources(Collections.singletonList(mediaSource), 0, playerPosition == TIME_UNSET ? 0 : playerPosition);
+            }
+
             player.prepare();
 
             changeState(PlayerState.LOADING);
@@ -296,6 +309,14 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         } else {
             sendPrepareSourceError(sourceConfig);
         }
+    }
+
+    private boolean isLocalMediaSource(@NonNull PKMediaSourceConfig sourceConfig) {
+        return sourceConfig.mediaSource instanceof LocalAssetsManager.LocalMediaSource;
+    }
+
+    private boolean isLocalMediaItem(@NonNull PKMediaSourceConfig sourceConfig) {
+        return sourceConfig.mediaSource instanceof LocalAssetsManagerExo.LocalExoMediaItem;
     }
 
     private void sendPrepareSourceError(@NonNull PKMediaSourceConfig sourceConfig) {
@@ -330,11 +351,11 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         MediaItem mediaItem;
-        if (sourceConfig.mediaSource instanceof LocalAssetsManagerExo.LocalExoMediaItem) {
+        if (isLocalMediaItem(sourceConfig)) {
             final LocalAssetsManagerExo.LocalExoMediaItem pkMediaSource = (LocalAssetsManagerExo.LocalExoMediaItem) sourceConfig.mediaSource;
             mediaItem = pkMediaSource.getExoMediaItem();
         } else {
-            if (sourceConfig.mediaSource instanceof LocalAssetsManager.LocalMediaSource && sourceConfig.mediaSource.hasDrmParams()) {
+            if (isLocalMediaSource(sourceConfig) && sourceConfig.mediaSource.hasDrmParams()) {
                 final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
                 drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener,playerSettings.allowClearLead());
                 drmSessionManager.setMediaSource(sourceConfig.mediaSource);
@@ -345,6 +366,47 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         mediaSourceFactory.setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager());
 
         return mediaItem;
+    }
+
+    private MediaSource buildInternalExoMediaSource(MediaItem mediaItem, PKMediaSourceConfig sourceConfig) {
+        PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
+
+        if (format == null) {
+            return null;
+        }
+
+        PKRequestParams requestParams = sourceConfig.getRequestParams();
+        if (requestParams.headers == null || requestParams.headers.isEmpty()) {
+            return null;
+        }
+
+        final DataSource.Factory dataSourceFactory = getDataSourceFactory(requestParams.headers);
+
+        MediaSource mediaSource;
+        switch (format) {
+            case dash:
+                mediaSource = new DashMediaSource.Factory(
+                        new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
+                        .setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager())
+                        .createMediaSource(mediaItem);
+                break;
+
+            case hls:
+                mediaSource = new HlsMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(mediaItem);
+                break;
+
+            // mp4 and mp3 both use ExtractorMediaSource
+            case mp4:
+            case mp3:
+                mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(mediaItem);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
+        }
+        return mediaSource;
     }
 
     private void removeExternalTextTrackListener() {
