@@ -24,6 +24,7 @@ import com.kaltura.android.exoplayer2.DefaultLoadControl;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.ExoPlaybackException;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
+import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.LoadControl;
 import com.kaltura.android.exoplayer2.MediaItem;
 import com.kaltura.android.exoplayer2.PlaybackParameters;
@@ -40,7 +41,9 @@ import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
 import com.kaltura.android.exoplayer2.source.BehindLiveWindowException;
 import com.kaltura.android.exoplayer2.source.MediaSource;
 import com.kaltura.android.exoplayer2.source.MediaSourceFactory;
+import com.kaltura.android.exoplayer2.source.MergingMediaSource;
 import com.kaltura.android.exoplayer2.source.ProgressiveMediaSource;
+import com.kaltura.android.exoplayer2.source.SingleSampleMediaSource;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.source.dash.DashMediaSource;
 import com.kaltura.android.exoplayer2.source.dash.DefaultDashChunkSource;
@@ -368,6 +371,13 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
     }
 
     private MediaSource buildInternalExoMediaSource(MediaItem mediaItem, PKMediaSourceConfig sourceConfig) {
+        List<PKExternalSubtitle> externalSubtitleList = null;
+
+        if (sourceConfig.getExternalSubtitleList() != null) {
+            externalSubtitleList = sourceConfig.getExternalSubtitleList().size() > 0 ?
+                    sourceConfig.getExternalSubtitleList() : null;
+        }
+
         PKMediaFormat format = sourceConfig.mediaSource.getMediaFormat();
 
         if (format == null) {
@@ -405,7 +415,47 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             default:
                 throw new IllegalArgumentException("Unknown media format: " + format + " for url: " + requestParams.url);
         }
-        return mediaSource;
+        if (externalSubtitleList == null || externalSubtitleList.isEmpty()) {
+            removeExternalTextTrackListener();
+            return mediaSource;
+        } else {
+            addExternalTextTrackErrorListener();
+            return new MergingMediaSource(buildMediaSourceList(mediaSource, externalSubtitleList));
+        }
+    }
+
+    /**
+     * Return the media source with external subtitles if exists
+     * @param externalSubtitleList External subtitle List
+     * @return Media Source array
+     */
+
+    private MediaSource[] buildMediaSourceList(MediaSource mediaSource, List<PKExternalSubtitle> externalSubtitleList) {
+        List<MediaSource> streamMediaSources = new ArrayList<>();
+        List<MediaItem.Subtitle> mediaItemSubtitles = buildSubtitlesList(externalSubtitleList);
+        if (externalSubtitleList != null && externalSubtitleList.size() > 0) {
+            for (int subtitlePosition = 0 ; subtitlePosition < externalSubtitleList.size() ; subtitlePosition ++) {
+                MediaSource subtitleMediaSource = buildExternalSubtitleSource(mediaItemSubtitles.get(subtitlePosition));
+                streamMediaSources.add(subtitleMediaSource);
+            }
+        }
+        // 0th position is secured for dash/hls/extractor media source
+        streamMediaSources.add(0, mediaSource);
+        return streamMediaSources.toArray(new MediaSource[0]);
+    }
+
+    /**
+     * Create single Media Source object with each subtitle
+     * @param mediaItemSubtitle External subtitle object
+     * @return An object of external subtitle media source
+     */
+
+    @NonNull
+    private MediaSource buildExternalSubtitleSource(MediaItem.Subtitle mediaItemSubtitle) {
+        return new SingleSampleMediaSource.Factory(getDataSourceFactory(null))
+                .setLoadErrorHandlingPolicy(externalTextTrackLoadErrorPolicy)
+                .setTreatLoadErrorsAsEndOfStream(true)
+                .createMediaSource(mediaItemSubtitle, C.TIME_UNSET);
     }
 
     private void removeExternalTextTrackListener() {
