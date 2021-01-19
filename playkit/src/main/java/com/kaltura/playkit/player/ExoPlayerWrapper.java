@@ -16,6 +16,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
@@ -336,10 +337,18 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         } else {
             if (sourceConfig.mediaSource instanceof LocalAssetsManager.LocalMediaSource && sourceConfig.mediaSource.hasDrmParams()) {
                 final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
-                drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener,playerSettings.allowClearLead());
+                drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener, playerSettings.allowClearLead());
                 drmSessionManager.setMediaSource(sourceConfig.mediaSource);
             }
             mediaItem = buildInternalExoMediaItem(sourceConfig, externalSubtitleList);
+        }
+
+        if (mediaItem.playbackProperties.drmConfiguration != null &&
+                mediaItem.playbackProperties.drmConfiguration.licenseUri != null &&
+                !TextUtils.isEmpty(mediaItem.playbackProperties.drmConfiguration.licenseUri.toString())) {
+            final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
+            drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener,playerSettings.allowClearLead());
+            drmSessionManager.setLicenseUrl(mediaItem.playbackProperties.drmConfiguration.licenseUri.toString());
         }
 
         mediaSourceFactory.setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager());

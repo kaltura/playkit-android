@@ -27,6 +27,7 @@ import com.kaltura.android.exoplayer2.drm.DrmSessionEventListener;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.ExoMediaCrypto;
 import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
+import com.kaltura.android.exoplayer2.drm.UnsupportedDrmException;
 import com.kaltura.android.exoplayer2.extractor.mp4.PsshAtomUtil;
 import com.kaltura.android.exoplayer2.source.MediaSource;
 import com.kaltura.android.exoplayer2.util.Util;
@@ -51,6 +52,9 @@ import static com.kaltura.playkit.Utils.toBase64;
 public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionEventListener {
 
     private static final PKLog log = PKLog.get("DeferredDrmSessionManager");
+    private static final String WIDEVINE_SECURITY_LEVEL_1 = "L1";
+    private static final String WIDEVINE_SECURITY_LEVEL_3 = "L3";
+    private static final String SECURITY_LEVEL_PROPERTY = "securityLevel";
 
     private Handler mainHandler;
     private final DrmCallback drmCallback;
@@ -63,7 +67,30 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
         this.mainHandler = mainHandler;
         this.drmCallback = drmCallback;
         this.drmSessionListener = drmSessionListener;
-        drmSessionManager = DrmSessionManager.getDummyDrmSessionManager();
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            drmSessionManager = new DefaultDrmSessionManager.Builder()
+                    //.setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER)
+                    .setMultiSession(true) // key rotation
+                    .setPlayClearSamplesWithoutKeys(allowClearLead)
+                    .setUuidAndExoMediaDrmProvider(
+                            MediaSupport.WIDEVINE_UUID,
+                            uuid -> {
+                                try {
+                                    FrameworkMediaDrm drm = null;
+                                    drm = FrameworkMediaDrm.newInstance(MediaSupport.WIDEVINE_UUID);
+
+                                    if (true/*!useL1Widevine*/) {
+                                        drm.setPropertyString(SECURITY_LEVEL_PROPERTY, WIDEVINE_SECURITY_LEVEL_3);
+                                    }
+                                    return drm;
+                                } catch (UnsupportedDrmException e) {
+                                    throw new IllegalStateException(e);
+                                }
+                            })
+                    .build(drmCallback);
+        } else {
+            drmSessionManager = DrmSessionManager.getDummyDrmSessionManager();
+        }
         this.allowClearLead = allowClearLead;
     }
 
@@ -81,17 +108,19 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
             return;
         }
 
-        drmSessionManager = new DefaultDrmSessionManager.Builder()
-                .setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER)
-                .setMultiSession(true) // key rotation
-                .setPlayClearSamplesWithoutKeys(allowClearLead)
-                .build(drmCallback);
-
         if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
             localMediaSource = (LocalAssetsManager.LocalMediaSource) mediaSource;
         } else {
             drmCallback.setLicenseUrl(getLicenseUrl(mediaSource));
         }
+    }
+
+    public void setLicenseUrl(String license) {
+        if (Util.SDK_INT < 18) {
+            drmSessionManager = null;
+            return;
+        }
+        drmCallback.setLicenseUrl(license);
     }
 
     @Nullable
@@ -220,7 +249,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
 
     @Override
     public void onDrmSessionReleased(int windowIndex, @Nullable MediaSource.MediaPeriodId mediaPeriodId) {
-       log.d("onDrmSessionReleased");
+        log.d("onDrmSessionReleased");
     }
 
 }
