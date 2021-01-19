@@ -334,6 +334,16 @@ public interface Player {
          * @return - Player Settings
          */
         Settings setMaxAudioChannelCount(int maxAudioChannelCount);
+
+        /**
+         * If the device codec is known to fail if security level L1 is used
+         * then set flag to true, it will force the player to use Widevine L3
+         * Will work only SDK level 18 or above
+         *
+         * @param isForceWidevineL3Playback - force the L3 Playback. Default is false
+         * @return - Player Settings
+         */
+        Settings setForceWidevineL3Playback(boolean isForceWidevineL3Playback);
     }
 
     /**

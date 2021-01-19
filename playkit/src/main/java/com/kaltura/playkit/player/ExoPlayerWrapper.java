@@ -39,7 +39,6 @@ import com.kaltura.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.kaltura.android.exoplayer2.metadata.Metadata;
 import com.kaltura.android.exoplayer2.metadata.MetadataOutput;
 import com.kaltura.android.exoplayer2.source.BehindLiveWindowException;
-import com.kaltura.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.kaltura.android.exoplayer2.source.MediaSourceFactory;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -336,24 +335,29 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             mediaItem = pkMediaSource.getExoMediaItem();
         } else {
             if (sourceConfig.mediaSource instanceof LocalAssetsManager.LocalMediaSource && sourceConfig.mediaSource.hasDrmParams()) {
-                final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
-                drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener, playerSettings.allowClearLead());
+                drmSessionManager = getDeferredDRMSessionManager();
                 drmSessionManager.setMediaSource(sourceConfig.mediaSource);
             }
             mediaItem = buildInternalExoMediaItem(sourceConfig, externalSubtitleList);
         }
 
-        if (mediaItem.playbackProperties.drmConfiguration != null &&
+        if (playerSettings.isForceWidevineL3Playback() &&
+                mediaItem.playbackProperties.drmConfiguration != null &&
                 mediaItem.playbackProperties.drmConfiguration.licenseUri != null &&
                 !TextUtils.isEmpty(mediaItem.playbackProperties.drmConfiguration.licenseUri.toString())) {
-            final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
-            drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener,playerSettings.allowClearLead());
+            drmSessionManager = getDeferredDRMSessionManager();
             drmSessionManager.setLicenseUrl(mediaItem.playbackProperties.drmConfiguration.licenseUri.toString());
         }
 
         mediaSourceFactory.setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager());
 
         return mediaItem;
+    }
+
+    private DeferredDrmSessionManager getDeferredDRMSessionManager() {
+        final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
+        drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener, playerSettings.allowClearLead(), playerSettings.isForceWidevineL3Playback());
+        return drmSessionManager;
     }
 
     private void removeExternalTextTrackListener() {

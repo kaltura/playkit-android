@@ -63,35 +63,12 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
     private DrmSessionManager drmSessionManager;
     private boolean allowClearLead;
 
-    public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener, boolean allowClearLead) {
+    public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener, boolean allowClearLead, boolean isForceWidevineL3Playback) {
         this.mainHandler = mainHandler;
         this.drmCallback = drmCallback;
         this.drmSessionListener = drmSessionListener;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            drmSessionManager = new DefaultDrmSessionManager.Builder()
-                    //.setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER)
-                    .setMultiSession(true) // key rotation
-                    .setPlayClearSamplesWithoutKeys(allowClearLead)
-                    .setUuidAndExoMediaDrmProvider(
-                            MediaSupport.WIDEVINE_UUID,
-                            uuid -> {
-                                try {
-                                    FrameworkMediaDrm drm = null;
-                                    drm = FrameworkMediaDrm.newInstance(MediaSupport.WIDEVINE_UUID);
-
-                                    if (true/*!useL1Widevine*/) {
-                                        drm.setPropertyString(SECURITY_LEVEL_PROPERTY, WIDEVINE_SECURITY_LEVEL_3);
-                                    }
-                                    return drm;
-                                } catch (UnsupportedDrmException e) {
-                                    throw new IllegalStateException(e);
-                                }
-                            })
-                    .build(drmCallback);
-        } else {
-            drmSessionManager = DrmSessionManager.getDummyDrmSessionManager();
-        }
         this.allowClearLead = allowClearLead;
+        this.drmSessionManager = getDRMSessionManager(drmCallback, allowClearLead, isForceWidevineL3Playback);
     }
 
     public interface DrmSessionListener {
@@ -150,6 +127,33 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
         }
 
         return drmSessionManager.acquireSession(playbackLooper, eventDispatcher, format);
+    }
+
+    private DrmSessionManager getDRMSessionManager(DrmCallback drmCallback, boolean allowClearLead, boolean isForceWidevineL3Playback) {
+        DrmSessionManager drmSessionManager;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && isForceWidevineL3Playback) {
+            drmSessionManager = new DefaultDrmSessionManager.Builder()
+                    //.setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER) // Not using default provider
+                    .setMultiSession(true) // key rotation
+                    .setPlayClearSamplesWithoutKeys(allowClearLead)
+                    .setUuidAndExoMediaDrmProvider(
+                            MediaSupport.WIDEVINE_UUID,
+                            uuid -> {
+                                try {
+                                    FrameworkMediaDrm frameworkMediaDrm = FrameworkMediaDrm.newInstance(MediaSupport.WIDEVINE_UUID);
+                                    frameworkMediaDrm.setPropertyString(SECURITY_LEVEL_PROPERTY, WIDEVINE_SECURITY_LEVEL_3);
+                                    return frameworkMediaDrm;
+                                } catch (UnsupportedDrmException e) {
+                                    throw new IllegalStateException(e);
+                                }
+                            })
+                    .build(drmCallback);
+        } else {
+            drmSessionManager = DrmSessionManager.getDummyDrmSessionManager();
+        }
+
+        return drmSessionManager;
     }
 
     @Nullable
