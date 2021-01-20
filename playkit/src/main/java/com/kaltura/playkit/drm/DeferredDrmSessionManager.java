@@ -62,13 +62,15 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
     private LocalAssetsManager.LocalMediaSource localMediaSource = null;
     private DrmSessionManager drmSessionManager;
     private boolean allowClearLead;
+    private boolean isForceWidevineL3Playback;
 
     public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener, boolean allowClearLead, boolean isForceWidevineL3Playback) {
         this.mainHandler = mainHandler;
         this.drmCallback = drmCallback;
         this.drmSessionListener = drmSessionListener;
         this.allowClearLead = allowClearLead;
-        this.drmSessionManager = getDRMSessionManager(drmCallback, allowClearLead, isForceWidevineL3Playback);
+        this.isForceWidevineL3Playback = isForceWidevineL3Playback;
+        this.drmSessionManager = getDRMSessionManager(drmCallback);
     }
 
     public interface DrmSessionListener {
@@ -85,6 +87,12 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
             return;
         }
 
+        drmSessionManager = new DefaultDrmSessionManager.Builder()
+                .setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER)
+                .setMultiSession(true) // key rotation
+                .setPlayClearSamplesWithoutKeys(allowClearLead)
+                .build(drmCallback);
+
         if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
             localMediaSource = (LocalAssetsManager.LocalMediaSource) mediaSource;
         } else {
@@ -97,7 +105,12 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
             drmSessionManager = null;
             return;
         }
-        drmCallback.setLicenseUrl(license);
+
+        if (drmCallback != null) {
+            drmCallback.setLicenseUrl(license);
+        } else {
+            log.d("DrmCallback is null");
+        }
     }
 
     @Nullable
@@ -129,12 +142,11 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
         return drmSessionManager.acquireSession(playbackLooper, eventDispatcher, format);
     }
 
-    private DrmSessionManager getDRMSessionManager(DrmCallback drmCallback, boolean allowClearLead, boolean isForceWidevineL3Playback) {
+    private DrmSessionManager getDRMSessionManager(DrmCallback drmCallback) {
         DrmSessionManager drmSessionManager;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && isForceWidevineL3Playback) {
             drmSessionManager = new DefaultDrmSessionManager.Builder()
-                    //.setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER) // Not using default provider
                     .setMultiSession(true) // key rotation
                     .setPlayClearSamplesWithoutKeys(allowClearLead)
                     .setUuidAndExoMediaDrmProvider(
