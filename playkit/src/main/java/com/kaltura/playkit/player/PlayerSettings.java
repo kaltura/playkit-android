@@ -415,7 +415,7 @@ public class PlayerSettings implements Player.Settings {
     }
 
     @Override
-    public Player.Settings setForceWidevineL3Playback(boolean forceWidevineL3Playback) {
+    public Player.Settings forceWidevineL3Playback(boolean forceWidevineL3Playback) {
         this.forceWidevineL3Playback = forceWidevineL3Playback;
         return this;
     }

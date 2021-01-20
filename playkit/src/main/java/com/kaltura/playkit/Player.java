@@ -340,10 +340,10 @@ public interface Player {
          * then set flag to true, it will force the player to use Widevine L3
          * Will work only SDK level 18 or above
          *
-         * @param isForceWidevineL3Playback - force the L3 Playback. Default is false
+         * @param forceWidevineL3Playback - force the L3 Playback. Default is false
          * @return - Player Settings
          */
-        Settings setForceWidevineL3Playback(boolean isForceWidevineL3Playback);
+        Settings forceWidevineL3Playback(boolean forceWidevineL3Playback);
     }
 
     /**
