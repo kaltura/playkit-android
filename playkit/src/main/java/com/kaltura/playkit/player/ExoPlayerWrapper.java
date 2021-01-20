@@ -366,7 +366,8 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         }
 
         MediaItem.DrmConfiguration drmConfiguration = mediaItem.playbackProperties.drmConfiguration;
-        if (playerSettings.isForceWidevineL3Playback() &&
+        if (!(sourceConfig.mediaSource instanceof LocalAssetsManager.LocalMediaSource) &&
+                playerSettings.isForceWidevineL3Playback() &&
                 drmConfiguration != null &&
                 drmConfiguration.licenseUri != null &&
                 !TextUtils.isEmpty(drmConfiguration.licenseUri.toString())) {
@@ -381,8 +382,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
 
     private DeferredDrmSessionManager getDeferredDRMSessionManager() {
         final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
-        drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener, playerSettings.allowClearLead(), playerSettings.isForceWidevineL3Playback());
-        return drmSessionManager;
+        return new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener, playerSettings.allowClearLead(), playerSettings.isForceWidevineL3Playback());
     }
 
     private MediaSource buildInternalExoMediaSource(MediaItem mediaItem, PKMediaSourceConfig sourceConfig) {

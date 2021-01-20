@@ -87,12 +87,6 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
             return;
         }
 
-        drmSessionManager = new DefaultDrmSessionManager.Builder()
-                .setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER)
-                .setMultiSession(true) // key rotation
-                .setPlayClearSamplesWithoutKeys(allowClearLead)
-                .build(drmCallback);
-
         if (mediaSource instanceof LocalAssetsManager.LocalMediaSource) {
             localMediaSource = (LocalAssetsManager.LocalMediaSource) mediaSource;
         } else {
@@ -143,24 +137,27 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
     }
 
     private DrmSessionManager getDRMSessionManager(DrmCallback drmCallback) {
-        DrmSessionManager drmSessionManager;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            DefaultDrmSessionManager.Builder drmSessionManagerBuilder = new DefaultDrmSessionManager.Builder();
+            drmSessionManagerBuilder.setMultiSession(true) // key rotation
+                    .setPlayClearSamplesWithoutKeys(allowClearLead);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && isForceWidevineL3Playback) {
-            drmSessionManager = new DefaultDrmSessionManager.Builder()
-                    .setMultiSession(true) // key rotation
-                    .setPlayClearSamplesWithoutKeys(allowClearLead)
-                    .setUuidAndExoMediaDrmProvider(
-                            MediaSupport.WIDEVINE_UUID,
-                            uuid -> {
-                                try {
-                                    FrameworkMediaDrm frameworkMediaDrm = FrameworkMediaDrm.newInstance(MediaSupport.WIDEVINE_UUID);
-                                    frameworkMediaDrm.setPropertyString(SECURITY_LEVEL_PROPERTY, WIDEVINE_SECURITY_LEVEL_3);
-                                    return frameworkMediaDrm;
-                                } catch (UnsupportedDrmException e) {
-                                    throw new IllegalStateException(e);
-                                }
-                            })
-                    .build(drmCallback);
+            if (isForceWidevineL3Playback) {
+                drmSessionManagerBuilder.setUuidAndExoMediaDrmProvider(
+                        MediaSupport.WIDEVINE_UUID,
+                        uuid -> {
+                            try {
+                                FrameworkMediaDrm frameworkMediaDrm = FrameworkMediaDrm.newInstance(MediaSupport.WIDEVINE_UUID);
+                                frameworkMediaDrm.setPropertyString(SECURITY_LEVEL_PROPERTY, WIDEVINE_SECURITY_LEVEL_3);
+                                return frameworkMediaDrm;
+                            } catch (UnsupportedDrmException e) {
+                                throw new IllegalStateException(e);
+                            }
+                        });
+            } else {
+                drmSessionManagerBuilder.setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER);
+            }
+            drmSessionManager = drmSessionManagerBuilder.build(drmCallback);
         } else {
             drmSessionManager = DrmSessionManager.getDummyDrmSessionManager();
         }
