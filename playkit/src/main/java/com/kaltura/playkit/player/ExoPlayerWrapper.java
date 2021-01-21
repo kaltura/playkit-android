@@ -13,6 +13,7 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
+import android.media.MediaCodec;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -825,6 +826,9 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             } else {
                 errorMessage = "Unable to instantiate decoder" + decoderInitializationException.codecInfo.name;
             }
+        } else if (cause instanceof MediaCodec.CryptoException) {
+            MediaCodec.CryptoException mediaCodecCryptoException = (MediaCodec.CryptoException) cause;
+            errorMessage = mediaCodecCryptoException.getMessage() != null ? mediaCodecCryptoException.getMessage() : "MediaCodec.CryptoException occurred";
         }
         return errorMessage;
     }
