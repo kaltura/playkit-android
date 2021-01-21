@@ -776,8 +776,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 errorMessage = getSourceErrorMessage(error, errorMessage);
                 break;
             case ExoPlaybackException.TYPE_RENDERER:
-                errorType = PKPlayerErrorType.RENDERER_ERROR;
                 errorMessage = getDecoderInitializationErrorMessage(error, errorMessage);
+                if (errorMessage != null && errorMessage.startsWith("DRM_ERROR:")) {
+                    errorType = PKPlayerErrorType.DRM_ERROR;
+                } else {
+                    errorType = PKPlayerErrorType.RENDERER_ERROR;
+                }
                 break;
             case ExoPlaybackException.TYPE_OUT_OF_MEMORY:
                 errorType = PKPlayerErrorType.OUT_OF_MEMORY;
@@ -829,6 +833,7 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
         } else if (cause instanceof MediaCodec.CryptoException) {
             MediaCodec.CryptoException mediaCodecCryptoException = (MediaCodec.CryptoException) cause;
             errorMessage = mediaCodecCryptoException.getMessage() != null ? mediaCodecCryptoException.getMessage() : "MediaCodec.CryptoException occurred";
+            errorMessage = "DRM_ERROR:" + errorMessage;
         }
         return errorMessage;
     }
