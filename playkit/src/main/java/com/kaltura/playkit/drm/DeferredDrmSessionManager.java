@@ -152,7 +152,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
                                 frameworkMediaDrm.setPropertyString(SECURITY_LEVEL_PROPERTY, WIDEVINE_SECURITY_LEVEL_3);
                                 return frameworkMediaDrm;
                             } catch (UnsupportedDrmException e) {
-                                log.d("ForceWidevineL3Playback failed due to " + e.getMessage());
+                                log.e("ForceWidevineL3Playback failed due to " + e.getMessage());
                                 return FrameworkMediaDrm.DEFAULT_PROVIDER.acquireExoMediaDrm(MediaSupport.WIDEVINE_UUID);
                             }
                         });
