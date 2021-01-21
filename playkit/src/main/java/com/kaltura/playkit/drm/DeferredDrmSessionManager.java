@@ -36,7 +36,6 @@ import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKPlayerErrorType;
 
@@ -64,14 +63,14 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
     private LocalAssetsManager.LocalMediaSource localMediaSource = null;
     private DrmSessionManager drmSessionManager;
     private boolean allowClearLead;
-    private boolean isForceWidevineL3Playback;
+    private boolean forceWidevineL3Playback;
 
-    public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener, boolean allowClearLead, boolean isForceWidevineL3Playback) {
+    public DeferredDrmSessionManager(Handler mainHandler, DrmCallback drmCallback, DrmSessionListener drmSessionListener, boolean allowClearLead, boolean forceWidevineL3Playback) {
         this.mainHandler = mainHandler;
         this.drmCallback = drmCallback;
         this.drmSessionListener = drmSessionListener;
         this.allowClearLead = allowClearLead;
-        this.isForceWidevineL3Playback = isForceWidevineL3Playback;
+        this.forceWidevineL3Playback = forceWidevineL3Playback;
         this.drmSessionManager = getDRMSessionManager(drmCallback);
     }
 
@@ -144,7 +143,7 @@ public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionE
             drmSessionManagerBuilder.setMultiSession(true) // key rotation
                     .setPlayClearSamplesWithoutKeys(allowClearLead);
 
-            if (isForceWidevineL3Playback) {
+            if (forceWidevineL3Playback) {
                 drmSessionManagerBuilder.setUuidAndExoMediaDrmProvider(
                         MediaSupport.WIDEVINE_UUID,
                         uuid -> {

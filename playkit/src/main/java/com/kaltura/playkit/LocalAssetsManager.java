@@ -37,7 +37,7 @@ public class LocalAssetsManager {
 
     private static final PKLog log = PKLog.get("LocalAssetsManager");
     private final LocalAssetsManagerHelper helper;
-    private boolean isForceWidevineL3Playback = false;
+    private boolean forceWidevineL3Playback = false;
 
     public LocalAssetsManager(Context context, LocalDataStore localDataStore) {
         helper = new LocalAssetsManagerHelper(context, localDataStore);
@@ -51,8 +51,15 @@ public class LocalAssetsManager {
         helper.setLicenseRequestAdapter(licenseRequestAdapter);
     }
 
-    public void forceWidevineL3Playback(boolean isForceWidevineL3Playback) {
-        this.isForceWidevineL3Playback = isForceWidevineL3Playback;
+    /**
+     * If the device codec is known to fail if security level L1 is used
+     * then set flag to true, it will force the player to use Widevine L3
+     * Will work only SDK level 18 or above
+     *
+     * @param forceWidevineL3Playback - force the L3 Playback. Default is false
+     */
+    public void forceWidevineL3Playback(boolean forceWidevineL3Playback) {
+        this.forceWidevineL3Playback = forceWidevineL3Playback;
     }
 
     /**
@@ -172,7 +179,7 @@ public class LocalAssetsManager {
         }
 
         if (drmParams != null) {
-            registerDrmAsset(localAssetPath, assetId, mediaFormat, drmParams, listener, isForceWidevineL3Playback);
+            registerDrmAsset(localAssetPath, assetId, mediaFormat, drmParams, listener, forceWidevineL3Playback);
         } else {
             registerClearAsset(localAssetPath, assetId, mediaFormat, listener);
         }
@@ -186,15 +193,15 @@ public class LocalAssetsManager {
      * @param mediaFormat                   - the media format converted to byte[].
      * @param drmParams                     - drm params of the media.
      * @param listener                      - notify about the success/fail after the completion of the registration process.
-     * @param isForceWidevineL3Playback     - if the device codec is known to fail if security level L1 is used then set flag to true, it will force the player to use Widevine L3
+     * @param forceWidevineL3Playback     - if the device codec is known to fail if security level L1 is used then set flag to true, it will force the player to use Widevine L3
      */
-    private void registerDrmAsset(final String localAssetPath, final String assetId, final PKMediaFormat mediaFormat, final PKDrmParams drmParams, final AssetRegistrationListener listener, boolean isForceWidevineL3Playback) {
+    private void registerDrmAsset(final String localAssetPath, final String assetId, final PKMediaFormat mediaFormat, final PKDrmParams drmParams, final AssetRegistrationListener listener, boolean forceWidevineL3Playback) {
         doInBackground(() -> {
             try {
                 DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(drmParams.getScheme(), helper.context, helper.localDataStore);
                 String licenseUri = drmParams.getLicenseUri();
 
-                boolean isRegistered = drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, helper.licenseRequestParamAdapter, listener, isForceWidevineL3Playback);
+                boolean isRegistered = drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, helper.licenseRequestParamAdapter, listener, forceWidevineL3Playback);
                 if (isRegistered) {
                     helper.saveMediaFormat(assetId, mediaFormat, drmParams.getScheme());
                 }
@@ -238,7 +245,7 @@ public class LocalAssetsManager {
                 helper.mainHandler.post(() -> {
                     removeAsset(localAssetPath1, assetId, listener);
                 });
-            });
+            }, forceWidevineL3Playback);
         });
     }
 
@@ -274,7 +281,7 @@ public class LocalAssetsManager {
                     listener.onStatus(localAssetPath1, expiryTimeSeconds, availableTimeSeconds, isRegistered);
                 });
             }
-        }));
+        }, forceWidevineL3Playback));
     }
 
     private void checkClearAssetStatus(String localAssetPath, String assetId, AssetStatusListener listener) {

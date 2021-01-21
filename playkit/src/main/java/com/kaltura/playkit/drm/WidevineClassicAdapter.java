@@ -37,7 +37,7 @@ class WidevineClassicAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean checkAssetStatus(String localAssetPath, String assetId, final LocalAssetsManager.AssetStatusListener listener) {
+    public boolean checkAssetStatus(String localAssetPath, String assetId, final LocalAssetsManager.AssetStatusListener listener, boolean forceWidevineL3Playback) {
         WidevineClassicDrm widevineClassicDrm = new WidevineClassicDrm(context);
         WidevineClassicDrm.RightsInfo info = widevineClassicDrm.getRightsInfo(localAssetPath);
         if (listener != null) {
@@ -47,7 +47,7 @@ class WidevineClassicAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean registerAsset(final String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener, boolean isForceWidevineL3Playback) {
+    public boolean registerAsset(final String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener, boolean forceWidevineL3Playback) {
         WidevineClassicDrm widevineClassicDrm = new WidevineClassicDrm(context);
         widevineClassicDrm.setEventListener(new WidevineClassicDrm.EventListener() {
             @Override
@@ -77,12 +77,12 @@ class WidevineClassicAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter,LocalAssetsManager.AssetRegistrationListener listener, boolean isForceWidevineL3Playback) {
-        return registerAsset(localAssetPath, assetId, licenseUri,  null, listener, isForceWidevineL3Playback);
+    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter,LocalAssetsManager.AssetRegistrationListener listener, boolean forceWidevineL3Playback) {
+        return registerAsset(localAssetPath, assetId, licenseUri,  null, listener, forceWidevineL3Playback);
     }
 
     @Override
-    public boolean unregisterAsset(final String localAssetPath, String assetId, final LocalAssetsManager.AssetRemovalListener listener) {
+    public boolean unregisterAsset(final String localAssetPath, String assetId, final LocalAssetsManager.AssetRemovalListener listener, boolean forceWidevineL3Playback) {
         WidevineClassicDrm widevineClassicDrm = new WidevineClassicDrm(context);
         widevineClassicDrm.setEventListener(new WidevineClassicDrm.EventListener() {
             @Override

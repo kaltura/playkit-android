@@ -52,17 +52,17 @@ public abstract class DrmAdapter {
         return new NullDrmAdapter();
     }
 
-    public abstract boolean registerAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener, boolean isForceWidevineL3Playback) throws IOException;
+    public abstract boolean registerAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener, boolean forceWidevineL3Playback) throws IOException;
 
-    public abstract boolean refreshAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener, boolean isForceWidevineL3Playback);
+    public abstract boolean refreshAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener, boolean forceWidevineL3Playback);
 
-    public abstract boolean unregisterAsset(final String localAssetPath, final String assetId, final LocalAssetsManager.AssetRemovalListener listener);
+    public abstract boolean unregisterAsset(final String localAssetPath, final String assetId, final LocalAssetsManager.AssetRemovalListener listener, boolean forceWidevineL3Playback);
 
-    public abstract boolean checkAssetStatus(final String localAssetPath, final String assetId, final LocalAssetsManager.AssetStatusListener listener);
+    public abstract boolean checkAssetStatus(final String localAssetPath, final String assetId, final LocalAssetsManager.AssetStatusListener listener, boolean forceWidevineL3Playback);
 
     private static class NullDrmAdapter extends DrmAdapter {
         @Override
-        public boolean checkAssetStatus(String localAssetPath, String assetId, LocalAssetsManager.AssetStatusListener listener) {
+        public boolean checkAssetStatus(String localAssetPath, String assetId, LocalAssetsManager.AssetStatusListener listener, boolean forceWidevineL3Playback) {
             if (listener != null) {
                 listener.onStatus(localAssetPath, -1, -1, false);
             }
@@ -70,7 +70,7 @@ public abstract class DrmAdapter {
         }
 
         @Override
-        public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener, boolean isForceWidevineL3Playback) {
+        public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener, boolean forceWidevineL3Playback) {
             if (listener != null) {
                 listener.onRegistered(localAssetPath);
             }
@@ -78,12 +78,12 @@ public abstract class DrmAdapter {
         }
 
         @Override
-        public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener, boolean isForceWidevineL3Playback) {
-            return registerAsset(localAssetPath, assetId, licenseUri, adapter, listener, isForceWidevineL3Playback);
+        public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener, boolean forceWidevineL3Playback) {
+            return registerAsset(localAssetPath, assetId, licenseUri, adapter, listener, forceWidevineL3Playback);
         }
 
         @Override
-        public boolean unregisterAsset(String localAssetPath, String assetId, LocalAssetsManager.AssetRemovalListener listener) {
+        public boolean unregisterAsset(String localAssetPath, String assetId, LocalAssetsManager.AssetRemovalListener listener, boolean forceWidevineL3Playback) {
             if (listener != null) {
                 listener.onRemoved(localAssetPath);
             }
