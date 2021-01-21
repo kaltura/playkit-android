@@ -52,9 +52,9 @@ public abstract class DrmAdapter {
         return new NullDrmAdapter();
     }
 
-    public abstract boolean registerAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener) throws IOException;
+    public abstract boolean registerAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener, boolean isForceWidevineL3Playback) throws IOException;
 
-    public abstract boolean refreshAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener);
+    public abstract boolean refreshAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener, boolean isForceWidevineL3Playback);
 
     public abstract boolean unregisterAsset(final String localAssetPath, final String assetId, final LocalAssetsManager.AssetRemovalListener listener);
 
@@ -70,7 +70,7 @@ public abstract class DrmAdapter {
         }
 
         @Override
-        public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener) {
+        public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener, boolean isForceWidevineL3Playback) {
             if (listener != null) {
                 listener.onRegistered(localAssetPath);
             }
@@ -78,8 +78,8 @@ public abstract class DrmAdapter {
         }
 
         @Override
-        public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener) {
-            return registerAsset(localAssetPath, assetId, licenseUri, adapter, listener);
+        public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener, boolean isForceWidevineL3Playback) {
+            return registerAsset(localAssetPath, assetId, licenseUri, adapter, listener, isForceWidevineL3Playback);
         }
 
         @Override

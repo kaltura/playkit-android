@@ -48,9 +48,9 @@ public class LocalAssetsManagerExo {
         }
     }
 
-    public void registerWidevineDashAsset(String assetId, String licenseUri, byte[] drmInitData) throws LocalAssetsManager.RegisterException {
+    public void registerWidevineDashAsset(String assetId, String licenseUri, byte[] drmInitData, boolean isForceWidevineL3Playback) throws LocalAssetsManager.RegisterException {
         final WidevineModularAdapter widevine = new WidevineModularAdapter(helper.context, helper.localDataStore);
-        widevine.registerAsset(drmInitData, "video/mp4", licenseUri, helper.licenseRequestParamAdapter);
+        widevine.registerAsset(drmInitData, "video/mp4", licenseUri, helper.licenseRequestParamAdapter, isForceWidevineL3Playback);
         helper.saveMediaFormat(assetId, PKMediaFormat.dash, PKDrmParams.Scheme.WidevineCENC);
     }
 

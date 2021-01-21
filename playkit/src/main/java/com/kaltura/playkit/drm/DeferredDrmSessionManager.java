@@ -36,6 +36,7 @@ import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.Utils;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKPlayerErrorType;
 
@@ -52,9 +53,10 @@ import static com.kaltura.playkit.Utils.toBase64;
 public class DeferredDrmSessionManager implements DrmSessionManager, DrmSessionEventListener {
 
     private static final PKLog log = PKLog.get("DeferredDrmSessionManager");
-    private static final String WIDEVINE_SECURITY_LEVEL_1 = "L1";
-    private static final String WIDEVINE_SECURITY_LEVEL_3 = "L3";
-    private static final String SECURITY_LEVEL_PROPERTY = "securityLevel";
+
+    private String WIDEVINE_SECURITY_LEVEL_1 = "L1";
+    private String WIDEVINE_SECURITY_LEVEL_3 = "L3";
+    private String SECURITY_LEVEL_PROPERTY = "securityLevel";
 
     private Handler mainHandler;
     private final DrmCallback drmCallback;

@@ -49,9 +49,11 @@ public class WidevineModularAdapter extends DrmAdapter {
 
     private static final PKLog log = PKLog.get("WidevineModularAdapter");
 
+    private String WIDEVINE_SECURITY_LEVEL_1 = "L1";
+    private String WIDEVINE_SECURITY_LEVEL_3 = "L3";
+    private String SECURITY_LEVEL_PROPERTY = "securityLevel";
     private Context context;
     private final LocalDataStore localDataStore;
-
 
     public WidevineModularAdapter(Context context, LocalDataStore localDataStore) {
         this.context = context;
@@ -59,10 +61,9 @@ public class WidevineModularAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener) {
-
+    public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener, boolean isForceWidevineL3Playback) {
         try {
-            boolean result = registerAsset(localAssetPath, assetId, licenseUri, adapter);
+            boolean result = registerAsset(localAssetPath, assetId, licenseUri, adapter, isForceWidevineL3Playback);
             if (listener != null) {
                 listener.onRegistered(localAssetPath);
             }
@@ -75,7 +76,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         }
     }
 
-    private boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter requestParamsAdapter) throws LocalAssetsManager.RegisterException {
+    private boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter requestParamsAdapter, boolean isForceWidevineL3Playback) throws LocalAssetsManager.RegisterException {
 
         // obtain the dash manifest.
         SimpleDashParser dash = parseDash(localAssetPath, assetId);
@@ -88,19 +89,24 @@ public class WidevineModularAdapter extends DrmAdapter {
         String mimeType = dash.format.containerMimeType;
         byte[] initData = dash.widevineInitData;
 
-        registerAsset(initData, mimeType, licenseUri, requestParamsAdapter);
+        registerAsset(initData, mimeType, licenseUri, requestParamsAdapter, isForceWidevineL3Playback);
 
         return true;
     }
 
-    public void registerAsset(byte[] initData, String mimeType, String licenseUri, PKRequestParams.Adapter requestParamsAdapter) throws LocalAssetsManager.RegisterException {
-        final byte[] offlineKeyId = downloadOfflineLicense(licenseUri, requestParamsAdapter, mimeType, initData);
+    public void registerAsset(byte[] initData, String mimeType, String licenseUri, PKRequestParams.Adapter requestParamsAdapter, boolean isForceWidevineL3Playback) throws LocalAssetsManager.RegisterException {
+        final byte[] offlineKeyId = downloadOfflineLicense(licenseUri, requestParamsAdapter, mimeType, initData, isForceWidevineL3Playback);
         localDataStore.save(toBase64(initData), offlineKeyId);
     }
 
-    private byte[] downloadOfflineLicense(String licenseUri, PKRequestParams.Adapter requestParamsAdapter, String mimeType, byte[] initData) throws LocalAssetsManager.RegisterException {
+    private byte[] downloadOfflineLicense(String licenseUri, PKRequestParams.Adapter requestParamsAdapter, String mimeType, byte[] initData, boolean isForceWidevineL3Playback) throws LocalAssetsManager.RegisterException {
         MediaDrmSession session;
         FrameworkMediaDrm mediaDrm = createMediaDrm();
+
+        if (isForceWidevineL3Playback) {
+            mediaDrm.setPropertyString(SECURITY_LEVEL_PROPERTY, WIDEVINE_SECURITY_LEVEL_3);
+        }
+
         try {
             session = MediaDrmSession.open(mediaDrm);
         } catch (Exception e) {
@@ -191,9 +197,9 @@ public class WidevineModularAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener) {
+    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener, boolean isForceWidevineL3Playback) {
         // TODO -- verify that we just need to register again
-        return registerAsset(localAssetPath, assetId, licenseUri, adapter, listener);
+        return registerAsset(localAssetPath, assetId, licenseUri, adapter, listener, isForceWidevineL3Playback);
     }
 
     @Override

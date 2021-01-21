@@ -47,7 +47,7 @@ class WidevineClassicAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean registerAsset(final String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener) {
+    public boolean registerAsset(final String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener, boolean isForceWidevineL3Playback) {
         WidevineClassicDrm widevineClassicDrm = new WidevineClassicDrm(context);
         widevineClassicDrm.setEventListener(new WidevineClassicDrm.EventListener() {
             @Override
@@ -77,8 +77,8 @@ class WidevineClassicAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter,LocalAssetsManager.AssetRegistrationListener listener) {
-        return registerAsset(localAssetPath, assetId, licenseUri,  null, listener);
+    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter,LocalAssetsManager.AssetRegistrationListener listener, boolean isForceWidevineL3Playback) {
+        return registerAsset(localAssetPath, assetId, licenseUri,  null, listener, isForceWidevineL3Playback);
     }
 
     @Override
