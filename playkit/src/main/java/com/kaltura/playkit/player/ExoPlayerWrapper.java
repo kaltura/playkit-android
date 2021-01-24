@@ -13,9 +13,11 @@
 package com.kaltura.playkit.player;
 
 import android.content.Context;
+import android.media.MediaCodec;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
@@ -358,16 +360,30 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             mediaItem = pkMediaSource.getExoMediaItem();
         } else {
             if (isLocalMediaSource(sourceConfig) && sourceConfig.mediaSource.hasDrmParams()) {
-                final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
-                drmSessionManager = new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener,playerSettings.allowClearLead());
+                drmSessionManager = getDeferredDRMSessionManager();
                 drmSessionManager.setMediaSource(sourceConfig.mediaSource);
             }
             mediaItem = buildInternalExoMediaItem(sourceConfig, externalSubtitleList);
         }
 
+        MediaItem.DrmConfiguration drmConfiguration = mediaItem.playbackProperties.drmConfiguration;
+        if (!(sourceConfig.mediaSource instanceof LocalAssetsManager.LocalMediaSource) &&
+                playerSettings.isForceWidevineL3Playback() &&
+                drmConfiguration != null &&
+                drmConfiguration.licenseUri != null &&
+                !TextUtils.isEmpty(drmConfiguration.licenseUri.toString())) {
+            drmSessionManager = getDeferredDRMSessionManager();
+            drmSessionManager.setLicenseUrl(drmConfiguration.licenseUri.toString());
+        }
+
         mediaSourceFactory.setDrmSessionManager(sourceConfig.mediaSource.hasDrmParams() ? drmSessionManager : DrmSessionManager.getDummyDrmSessionManager());
 
         return mediaItem;
+    }
+
+    private DeferredDrmSessionManager getDeferredDRMSessionManager() {
+        final DrmCallback drmCallback = new DrmCallback(getHttpDataSourceFactory(null), playerSettings.getLicenseRequestAdapter());
+        return new DeferredDrmSessionManager(mainHandler, drmCallback, drmSessionListener, playerSettings.allowClearLead(), playerSettings.isForceWidevineL3Playback());
     }
 
     private MediaSource buildInternalExoMediaSource(MediaItem mediaItem, PKMediaSourceConfig sourceConfig) {
@@ -760,8 +776,12 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
                 errorMessage = getSourceErrorMessage(error, errorMessage);
                 break;
             case ExoPlaybackException.TYPE_RENDERER:
-                errorType = PKPlayerErrorType.RENDERER_ERROR;
                 errorMessage = getDecoderInitializationErrorMessage(error, errorMessage);
+                if (errorMessage != null && errorMessage.startsWith("DRM_ERROR:")) {
+                    errorType = PKPlayerErrorType.DRM_ERROR;
+                } else {
+                    errorType = PKPlayerErrorType.RENDERER_ERROR;
+                }
                 break;
             case ExoPlaybackException.TYPE_OUT_OF_MEMORY:
                 errorType = PKPlayerErrorType.OUT_OF_MEMORY;
@@ -810,6 +830,10 @@ public class ExoPlayerWrapper implements PlayerEngine, Player.EventListener, Met
             } else {
                 errorMessage = "Unable to instantiate decoder" + decoderInitializationException.codecInfo.name;
             }
+        } else if (cause instanceof MediaCodec.CryptoException) {
+            MediaCodec.CryptoException mediaCodecCryptoException = (MediaCodec.CryptoException) cause;
+            errorMessage = mediaCodecCryptoException.getMessage() != null ? mediaCodecCryptoException.getMessage() : "MediaCodec.CryptoException occurred";
+            errorMessage = "DRM_ERROR:" + errorMessage;
         }
         return errorMessage;
     }

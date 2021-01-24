@@ -49,9 +49,11 @@ public class WidevineModularAdapter extends DrmAdapter {
 
     private static final PKLog log = PKLog.get("WidevineModularAdapter");
 
+    private String WIDEVINE_SECURITY_LEVEL_1 = "L1";
+    private String WIDEVINE_SECURITY_LEVEL_3 = "L3";
+    private String SECURITY_LEVEL_PROPERTY = "securityLevel";
     private Context context;
     private final LocalDataStore localDataStore;
-
 
     public WidevineModularAdapter(Context context, LocalDataStore localDataStore) {
         this.context = context;
@@ -59,10 +61,9 @@ public class WidevineModularAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener) {
-
+    public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener, boolean forceWidevineL3Playback) {
         try {
-            boolean result = registerAsset(localAssetPath, assetId, licenseUri, adapter);
+            boolean result = registerAsset(localAssetPath, assetId, licenseUri, adapter, forceWidevineL3Playback);
             if (listener != null) {
                 listener.onRegistered(localAssetPath);
             }
@@ -75,7 +76,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         }
     }
 
-    private boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter requestParamsAdapter) throws LocalAssetsManager.RegisterException {
+    private boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter requestParamsAdapter, boolean forceWidevineL3Playback) throws LocalAssetsManager.RegisterException {
 
         // obtain the dash manifest.
         SimpleDashParser dash = parseDash(localAssetPath, assetId);
@@ -88,19 +89,20 @@ public class WidevineModularAdapter extends DrmAdapter {
         String mimeType = dash.format.containerMimeType;
         byte[] initData = dash.widevineInitData;
 
-        registerAsset(initData, mimeType, licenseUri, requestParamsAdapter);
+        registerAsset(initData, mimeType, licenseUri, requestParamsAdapter, forceWidevineL3Playback);
 
         return true;
     }
 
-    public void registerAsset(byte[] initData, String mimeType, String licenseUri, PKRequestParams.Adapter requestParamsAdapter) throws LocalAssetsManager.RegisterException {
-        final byte[] offlineKeyId = downloadOfflineLicense(licenseUri, requestParamsAdapter, mimeType, initData);
+    public void registerAsset(byte[] initData, String mimeType, String licenseUri, PKRequestParams.Adapter requestParamsAdapter, boolean forceWidevineL3Playback) throws LocalAssetsManager.RegisterException {
+        final byte[] offlineKeyId = downloadOfflineLicense(licenseUri, requestParamsAdapter, mimeType, initData, forceWidevineL3Playback);
         localDataStore.save(toBase64(initData), offlineKeyId);
     }
 
-    private byte[] downloadOfflineLicense(String licenseUri, PKRequestParams.Adapter requestParamsAdapter, String mimeType, byte[] initData) throws LocalAssetsManager.RegisterException {
+    private byte[] downloadOfflineLicense(String licenseUri, PKRequestParams.Adapter requestParamsAdapter, String mimeType, byte[] initData, boolean forceWidevineL3Playback) throws LocalAssetsManager.RegisterException {
         MediaDrmSession session;
-        FrameworkMediaDrm mediaDrm = createMediaDrm();
+        FrameworkMediaDrm mediaDrm = createMediaDrm(forceWidevineL3Playback);
+
         try {
             session = MediaDrmSession.open(mediaDrm);
         } catch (Exception e) {
@@ -142,10 +144,10 @@ public class WidevineModularAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean unregisterAsset(String localAssetPath, String assetId, LocalAssetsManager.AssetRemovalListener listener) {
+    public boolean unregisterAsset(String localAssetPath, String assetId, LocalAssetsManager.AssetRemovalListener listener, boolean forceWidevineL3Playback) {
 
         try {
-            unregisterAsset(localAssetPath, assetId);
+            unregisterAsset(localAssetPath, assetId, forceWidevineL3Playback);
             return true;
         } catch (LocalAssetsManager.RegisterException e) {
             log.e("Failed to unregister", e);
@@ -157,7 +159,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         }
     }
 
-    private boolean unregisterAsset(String localAssetPath, String assetId) throws LocalAssetsManager.RegisterException {
+    private boolean unregisterAsset(String localAssetPath, String assetId, boolean forceWidevineL3Playback) throws LocalAssetsManager.RegisterException {
 
         SimpleDashParser dash = parseDash(localAssetPath, assetId);
         if (!dash.hasContentProtection) {
@@ -175,7 +177,7 @@ public class WidevineModularAdapter extends DrmAdapter {
             throw new LocalAssetsManager.RegisterException("Can't unregister -- keySetId not found", e);
         }
 
-        FrameworkMediaDrm mediaDrm = createMediaDrm();
+        FrameworkMediaDrm mediaDrm = createMediaDrm(forceWidevineL3Playback);
         FrameworkMediaDrm.KeyRequest releaseRequest;
         try {
             releaseRequest = mediaDrm.getKeyRequest(keySetId, null, MediaDrm.KEY_TYPE_RELEASE, null);
@@ -191,16 +193,16 @@ public class WidevineModularAdapter extends DrmAdapter {
     }
 
     @Override
-    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener) {
+    public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener, boolean forceWidevineL3Playback) {
         // TODO -- verify that we just need to register again
-        return registerAsset(localAssetPath, assetId, licenseUri, adapter, listener);
+        return registerAsset(localAssetPath, assetId, licenseUri, adapter, listener, forceWidevineL3Playback);
     }
 
     @Override
-    public boolean checkAssetStatus(String localAssetPath, String assetId, LocalAssetsManager.AssetStatusListener listener) {
+    public boolean checkAssetStatus(String localAssetPath, String assetId, LocalAssetsManager.AssetStatusListener listener, boolean forceWidevineL3Playback) {
 
         try {
-            Map<String, String> assetStatus = checkAssetStatus(localAssetPath, assetId);
+            Map<String, String> assetStatus = checkAssetStatus(localAssetPath, assetId, forceWidevineL3Playback);
             if (assetStatus != null) {
                 long licenseDurationRemaining = 0;
                 long playbackDurationRemaining = 0;
@@ -241,7 +243,7 @@ public class WidevineModularAdapter extends DrmAdapter {
         return true;
     }
 
-    private Map<String, String> checkAssetStatus(String localAssetPath, String assetId) throws LocalAssetsManager.RegisterException {
+    private Map<String, String> checkAssetStatus(String localAssetPath, String assetId, boolean forceWidevineL3Playback) throws LocalAssetsManager.RegisterException {
         SimpleDashParser dash = parseDash(localAssetPath, assetId);
 
         //no content protection, so there could not be any status info, so return null.
@@ -253,11 +255,11 @@ public class WidevineModularAdapter extends DrmAdapter {
             throw new NoWidevinePSSHException("No Widevine PSSH in media", null);
         }
 
-        return checkAssetStatus(dash.widevineInitData);
+        return checkAssetStatus(dash.widevineInitData, forceWidevineL3Playback);
     }
 
-    public Map<String, String> checkAssetStatus(byte[] widevineInitData) throws LocalAssetsManager.RegisterException {
-        FrameworkMediaDrm mediaDrm = createMediaDrm();
+    public Map<String, String> checkAssetStatus(byte[] widevineInitData, boolean forceWidevineL3Playback) throws LocalAssetsManager.RegisterException {
+        FrameworkMediaDrm mediaDrm = createMediaDrm(forceWidevineL3Playback);
 
         MediaDrmSession session;
         try {
@@ -278,10 +280,13 @@ public class WidevineModularAdapter extends DrmAdapter {
     }
 
     @NonNull
-    private FrameworkMediaDrm createMediaDrm() throws LocalAssetsManager.RegisterException {
+    private FrameworkMediaDrm createMediaDrm(boolean forceWidevineL3Playback) throws LocalAssetsManager.RegisterException {
         FrameworkMediaDrm mediaDrm = null;
         try {
             mediaDrm = FrameworkMediaDrm.newInstance(MediaSupport.WIDEVINE_UUID);
+            if (forceWidevineL3Playback) {
+                mediaDrm.setPropertyString(SECURITY_LEVEL_PROPERTY, WIDEVINE_SECURITY_LEVEL_3);
+            }
         } catch (UnsupportedDrmException e) {
             e.printStackTrace();
         }

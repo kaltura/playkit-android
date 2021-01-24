@@ -37,6 +37,7 @@ public class LocalAssetsManager {
 
     private static final PKLog log = PKLog.get("LocalAssetsManager");
     private final LocalAssetsManagerHelper helper;
+    private boolean forceWidevineL3Playback = false;
 
     public LocalAssetsManager(Context context, LocalDataStore localDataStore) {
         helper = new LocalAssetsManagerHelper(context, localDataStore);
@@ -48,6 +49,17 @@ public class LocalAssetsManager {
 
     public void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
         helper.setLicenseRequestAdapter(licenseRequestAdapter);
+    }
+
+    /**
+     * If the device codec is known to fail if security level L1 is used
+     * then set flag to true, it will force the player to use Widevine L3
+     * Will work only SDK level 18 or above
+     *
+     * @param forceWidevineL3Playback - force the L3 Playback. Default is false
+     */
+    public void forceWidevineL3Playback(boolean forceWidevineL3Playback) {
+        this.forceWidevineL3Playback = forceWidevineL3Playback;
     }
 
     /**
@@ -167,7 +179,7 @@ public class LocalAssetsManager {
         }
 
         if (drmParams != null) {
-            registerDrmAsset(localAssetPath, assetId, mediaFormat, drmParams, listener);
+            registerDrmAsset(localAssetPath, assetId, mediaFormat, drmParams, listener, forceWidevineL3Playback);
         } else {
             registerClearAsset(localAssetPath, assetId, mediaFormat, listener);
         }
@@ -176,19 +188,20 @@ public class LocalAssetsManager {
     /**
      * Will register the drm asset and store the keyset id and {@link PKMediaFormat} in local storage.
      *
-     * @param localAssetPath - the local asset path of the asset.
-     * @param assetId        - the asset id.
-     * @param mediaFormat    - the media format converted to byte[].
-     * @param drmParams      - drm params of the media.
-     * @param listener       - notify about the success/fail after the completion of the registration process.
+     * @param localAssetPath                - the local asset path of the asset.
+     * @param assetId                       - the asset id.
+     * @param mediaFormat                   - the media format converted to byte[].
+     * @param drmParams                     - drm params of the media.
+     * @param listener                      - notify about the success/fail after the completion of the registration process.
+     * @param forceWidevineL3Playback     - if the device codec is known to fail if security level L1 is used then set flag to true, it will force the player to use Widevine L3
      */
-    private void registerDrmAsset(final String localAssetPath, final String assetId, final PKMediaFormat mediaFormat, final PKDrmParams drmParams, final AssetRegistrationListener listener) {
+    private void registerDrmAsset(final String localAssetPath, final String assetId, final PKMediaFormat mediaFormat, final PKDrmParams drmParams, final AssetRegistrationListener listener, boolean forceWidevineL3Playback) {
         doInBackground(() -> {
             try {
                 DrmAdapter drmAdapter = DrmAdapter.getDrmAdapter(drmParams.getScheme(), helper.context, helper.localDataStore);
                 String licenseUri = drmParams.getLicenseUri();
 
-                boolean isRegistered = drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, helper.licenseRequestParamAdapter, listener);
+                boolean isRegistered = drmAdapter.registerAsset(localAssetPath, assetId, licenseUri, helper.licenseRequestParamAdapter, listener, forceWidevineL3Playback);
                 if (isRegistered) {
                     helper.saveMediaFormat(assetId, mediaFormat, drmParams.getScheme());
                 }
@@ -232,7 +245,7 @@ public class LocalAssetsManager {
                 helper.mainHandler.post(() -> {
                     removeAsset(localAssetPath1, assetId, listener);
                 });
-            });
+            }, forceWidevineL3Playback);
         });
     }
 
@@ -268,7 +281,7 @@ public class LocalAssetsManager {
                     listener.onStatus(localAssetPath1, expiryTimeSeconds, availableTimeSeconds, isRegistered);
                 });
             }
-        }));
+        }, forceWidevineL3Playback));
     }
 
     private void checkClearAssetStatus(String localAssetPath, String assetId, AssetStatusListener listener) {

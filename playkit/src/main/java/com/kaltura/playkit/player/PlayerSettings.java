@@ -53,6 +53,7 @@ public class PlayerSettings implements Player.Settings {
      * Only if IMA plugin is there then only this flag is set to true.
      */
     private boolean forceSinglePlayerEngine = false;
+    private boolean forceWidevineL3Playback = false;
 
     private PKTrackConfig preferredTextTrackConfig;
     private PKTrackConfig preferredAudioTrackConfig;
@@ -195,6 +196,10 @@ public class PlayerSettings implements Player.Settings {
 
     public int getMaxAudioChannelCount() {
         return maxAudioChannelCount;
+    }
+
+    public boolean isForceWidevineL3Playback() {
+        return forceWidevineL3Playback;
     }
 
     @Override
@@ -406,6 +411,12 @@ public class PlayerSettings implements Player.Settings {
     @Override
     public Player.Settings setMaxAudioChannelCount(int maxAudioChannelCount) {
         this.maxAudioChannelCount = maxAudioChannelCount;
+        return this;
+    }
+
+    @Override
+    public Player.Settings forceWidevineL3Playback(boolean forceWidevineL3Playback) {
+        this.forceWidevineL3Playback = forceWidevineL3Playback;
         return this;
     }
 }
