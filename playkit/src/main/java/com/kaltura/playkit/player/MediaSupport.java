@@ -25,7 +25,6 @@ import androidx.annotation.RequiresApi;
 
 import android.util.Base64;
 import android.util.Log;
-import android.view.View;
 
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
