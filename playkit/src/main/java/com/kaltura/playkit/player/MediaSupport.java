@@ -25,12 +25,21 @@ import androidx.annotation.RequiresApi;
 
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
 
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaConfig;
+import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PlayKitManager;
+import com.kaltura.playkit.Player;
+import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.Utils;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -50,6 +59,7 @@ public class MediaSupport {
     @Nullable private static Boolean widevineClassic;
     @Nullable private static Boolean widevineModular;
     @Nullable private static String securityLevel;
+    private static Player player;
 
     public static final String DEVICE_CHIPSET = getDeviceChipset();
 
@@ -86,6 +96,19 @@ public class MediaSupport {
      * @param drmInitCallback callback object that will get the result. See {@link DrmInitCallback}.
      */
     public static void initializeDrm(Context context, final DrmInitCallback drmInitCallback) {
+        initializeDrm(context, false, drmInitCallback);
+    }
+
+    /**
+     * Initialize the DRM subsystem, performing provisioning if required and L3 provisioning
+     * on L1 device if forceWidevineL3Provisioning is set to true. The callback is called
+     * when done. If provisioning was required, it is performed before the callback is called.
+     *
+     * @param context
+     * @param forceWidevineL3Provisioning - this flag will force L3 provision on L1 Device.
+     * @param drmInitCallback callback object that will get the result. See {@link DrmInitCallback}.
+     */
+    public static void initializeDrm(Context context, boolean forceWidevineL3Provisioning, final DrmInitCallback drmInitCallback) {
 
         if (initSucceeded) {
             runCallback(drmInitCallback, hardwareDrm(), false, null);
@@ -97,7 +120,11 @@ public class MediaSupport {
             checkWidevineModular();
 
             initSucceeded = true;
-
+            if (forceWidevineL3Provisioning && hardwareDrm()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    provisionL3ForL1Device(context);
+                }
+            }
             runCallback(drmInitCallback, hardwareDrm(), false, null);
 
         } catch (DrmNotProvisionedException e) {
@@ -115,6 +142,31 @@ public class MediaSupport {
                 }
             });
         }
+    }
+
+    private static void provisionL3ForL1Device(Context context) {
+        String contentUrl = "https://storage.googleapis.com/shaka-demo-assets/angel-one-widevine/dash.mpd";
+        String licenseUrl = "https://cwip-shaka-proxy.appspot.com/no_auth";
+
+        PKMediaSource mediaSource = new PKMediaSource().setMediaFormat(PKMediaFormat.dash).setId("testSource").setUrl(contentUrl).
+                setDrmData(Collections.singletonList(new PKDrmParams(licenseUrl, PKDrmParams.Scheme.WidevineCENC)));
+
+        PKMediaEntry entry  = new PKMediaEntry().setId("id").setMediaType(PKMediaEntry.MediaEntryType.Vod).setSources(Collections.singletonList(mediaSource));
+        entry.setSources(Collections.singletonList(mediaSource));
+
+        player = PlayKitManager.loadPlayer(context, null);
+        player.getSettings().forceWidevineL3Playback(true);
+        player.addListener("testDrm", PlayerEvent.canPlay, event -> {
+            player.removeListeners("testDrm");
+            player.destroy();
+            player = null;
+        });
+        player.addListener("testDrm", PlayerEvent.error, event -> {
+            player.removeListeners("testDrm");
+            player.destroy();
+            player = null;
+        });
+        player.prepare(new PKMediaConfig().setMediaEntry(entry));
     }
 
     private static void checkWidevineModular() throws DrmNotProvisionedException {
