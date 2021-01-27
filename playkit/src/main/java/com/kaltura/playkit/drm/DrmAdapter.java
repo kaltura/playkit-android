@@ -52,17 +52,17 @@ public abstract class DrmAdapter {
         return new NullDrmAdapter();
     }
 
-    public abstract boolean registerAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener, boolean forceWidevineL3Playback) throws IOException;
+    public abstract boolean registerAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, final LocalAssetsManager.AssetRegistrationListener listener) throws IOException;
 
-    public abstract boolean refreshAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, final LocalAssetsManager.AssetRegistrationListener listener, boolean forceWidevineL3Playback);
+    public abstract boolean refreshAsset(final String localAssetPath, final String assetId, final String licenseUri, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, final LocalAssetsManager.AssetRegistrationListener listener);
 
-    public abstract boolean unregisterAsset(final String localAssetPath, final String assetId, final LocalAssetsManager.AssetRemovalListener listener, boolean forceWidevineL3Playback);
+    public abstract boolean unregisterAsset(final String localAssetPath, final String assetId, boolean forceWidevineL3Playback, final LocalAssetsManager.AssetRemovalListener listener);
 
-    public abstract boolean checkAssetStatus(final String localAssetPath, final String assetId, final LocalAssetsManager.AssetStatusListener listener, boolean forceWidevineL3Playback);
+    public abstract boolean checkAssetStatus(final String localAssetPath, final String assetId, boolean forceWidevineL3Playback, final LocalAssetsManager.AssetStatusListener listener);
 
     private static class NullDrmAdapter extends DrmAdapter {
         @Override
-        public boolean checkAssetStatus(String localAssetPath, String assetId, LocalAssetsManager.AssetStatusListener listener, boolean forceWidevineL3Playback) {
+        public boolean checkAssetStatus(String localAssetPath, String assetId, boolean forceWidevineL3Playback, LocalAssetsManager.AssetStatusListener listener) {
             if (listener != null) {
                 listener.onStatus(localAssetPath, -1, -1, false);
             }
@@ -70,7 +70,7 @@ public abstract class DrmAdapter {
         }
 
         @Override
-        public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener, boolean forceWidevineL3Playback) {
+        public boolean registerAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, LocalAssetsManager.AssetRegistrationListener listener) {
             if (listener != null) {
                 listener.onRegistered(localAssetPath);
             }
@@ -78,12 +78,12 @@ public abstract class DrmAdapter {
         }
 
         @Override
-        public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, LocalAssetsManager.AssetRegistrationListener listener, boolean forceWidevineL3Playback) {
-            return registerAsset(localAssetPath, assetId, licenseUri, adapter, listener, forceWidevineL3Playback);
+        public boolean refreshAsset(String localAssetPath, String assetId, String licenseUri, PKRequestParams.Adapter adapter, boolean forceWidevineL3Playback, LocalAssetsManager.AssetRegistrationListener listener) {
+            return registerAsset(localAssetPath, assetId, licenseUri, adapter, forceWidevineL3Playback,  listener);
         }
 
         @Override
-        public boolean unregisterAsset(String localAssetPath, String assetId, LocalAssetsManager.AssetRemovalListener listener, boolean forceWidevineL3Playback) {
+        public boolean unregisterAsset(String localAssetPath, String assetId, boolean forceWidevineL3Playback, LocalAssetsManager.AssetRemovalListener listener) {
             if (listener != null) {
                 listener.onRemoved(localAssetPath);
             }
