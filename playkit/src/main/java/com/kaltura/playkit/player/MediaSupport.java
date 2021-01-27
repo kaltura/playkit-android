@@ -47,6 +47,7 @@ public class MediaSupport {
     private static final String WIDEVINE_SECURITY_LEVEL_1 = "L1";
     private static final String WIDEVINE_SECURITY_LEVEL_3 = "L3";
     private static final String SECURITY_LEVEL_PROPERTY = "securityLevel";
+    private static boolean initializing;
 
     private static boolean initSucceeded;
     @Nullable private static Boolean widevineClassic;
@@ -89,6 +90,9 @@ public class MediaSupport {
      * @param drmInitCallback callback object that will get the result. See {@link DrmInitCallback}.
      */
     public static void initializeDrm(Context context, final DrmInitCallback drmInitCallback) {
+        if (initializing) {
+            return;
+        }
         initializeDrm(context, false, drmInitCallback);
     }
 
@@ -101,8 +105,12 @@ public class MediaSupport {
      * @param forceWidevineL3Provisioning - this flag will force L3 provision on L1 Device.
      * @param drmInitCallback callback object that will get the result. See {@link DrmInitCallback}.
      */
-     private static void initializeDrm(Context context, boolean forceWidevineL3Provisioning, final DrmInitCallback drmInitCallback) {
-         log.d("initializeDrm forceWidevineL3Provisioning = " + forceWidevineL3Provisioning);
+    private static void initializeDrm(Context context, boolean forceWidevineL3Provisioning, final DrmInitCallback drmInitCallback) {
+        if (initializing) {
+            return;
+        }
+        initializing = true;
+        log.d("initializeDrm forceWidevineL3Provisioning = " + forceWidevineL3Provisioning);
 
         if (initSucceeded) {
             runCallback(drmInitCallback, hardwareDrm(), false, null);
@@ -168,7 +176,7 @@ public class MediaSupport {
     }
 
     private static void runCallback(DrmInitCallback drmInitCallback, boolean isHardwareDrmSupported, boolean provisionPerformed, Exception provisionError) {
-
+        initializing = false;
         final Set<PKDrmParams.Scheme> supportedDrmSchemes = supportedDrmSchemes();
         if (drmInitCallback != null) {
             drmInitCallback.onDrmInitComplete(new PKDeviceCapabilitiesInfo(supportedDrmSchemes, isHardwareDrmSupported, provisionPerformed,
@@ -350,7 +358,7 @@ public class MediaSupport {
                     try {
                         securityLevel = mediaDrm.getPropertyString(SECURITY_LEVEL_PROPERTY);
                     } catch (RuntimeException e) {
-                        securityLevel = null;                    
+                        securityLevel = null;
                     }
                 } catch (NotProvisionedException notProvisionedException) {
                     String secLevel = forceWidevineL3Provisioning ? "L3" : "L1";
