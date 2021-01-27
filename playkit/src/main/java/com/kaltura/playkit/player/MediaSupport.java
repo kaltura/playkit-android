@@ -101,7 +101,7 @@ public class MediaSupport {
      * @param forceWidevineL3Provisioning - this flag will force L3 provision on L1 Device.
      * @param drmInitCallback callback object that will get the result. See {@link DrmInitCallback}.
      */
-     public static void initializeDrm(Context context, boolean forceWidevineL3Provisioning, final DrmInitCallback drmInitCallback) {
+     private static void initializeDrm(Context context, boolean forceWidevineL3Provisioning, final DrmInitCallback drmInitCallback) {
          log.d("initializeDrm forceWidevineL3Provisioning = " + forceWidevineL3Provisioning);
 
         if (initSucceeded) {
